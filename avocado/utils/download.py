@@ -5,7 +5,7 @@ import shutil
 import urllib2
 import urlparse
 
-log = logging.getLogger('inspektor.utils')
+log = logging.getLogger('avocado.utils')
 
 
 def is_url(path):

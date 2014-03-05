@@ -3,9 +3,9 @@ import subprocess
 import shlex
 import time
 
-from inspektor import exceptions
+from avocado.core import exceptions
 
-log = logging.getLogger('inspektor.utils')
+log = logging.getLogger('avocado.utils')
 
 
 class CmdResult(object):

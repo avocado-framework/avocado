@@ -5,7 +5,7 @@ import string
 import download
 import process
 
-log = logging.getLogger('inspektor.utils')
+log = logging.getLogger('avocado.utils')
 
 
 def ask(question, auto=False):

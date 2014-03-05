@@ -1,6 +1,5 @@
 import os
-from avocado.api import data_dir
-
+from avocado.core import data_dir
 
 class Test(object):
 
@@ -13,6 +12,7 @@ class Test(object):
         self.srcdir = os.path.join(self.bindir, 'src')
         if not os.path.isdir(self.srcdir):
             os.makedirs(self.srcdir)
+
 
         self.tmpdir = os.path.join(self.bindir, 'tmp')
         if not os.path.isdir(self.tmpdir):
