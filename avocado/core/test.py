@@ -37,6 +37,6 @@ class Test(object):
             os.makedirs(self.profdir)
         self.logfile = os.path.join(self.debugdir, 'debug.log')
 
-    def run_once(self):
+    def run(self):
         test_passed = True
         return test_passed
