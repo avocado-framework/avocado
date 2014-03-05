@@ -15,10 +15,12 @@ TMP_DIR = os.path.join(ROOT_DIR, 'tmp')
 def get_root_dir():
     return ROOT_DIR
 
+
 def get_tmp_dir():
     if not os.path.isdir(TMP_DIR):
         os.makedirs(TMP_DIR)
     return TMP_DIR
+
 
 def clean_tmp_files():
     if os.path.isdir(TMP_DIR):

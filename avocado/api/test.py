@@ -1,6 +1,7 @@
 import os
 from avocado.api import data_dir
 
+
 class Test(object):
 
     """
