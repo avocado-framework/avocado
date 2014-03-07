@@ -108,12 +108,13 @@ class Test(object):
         pass
 
 
-def run_test(url):
+def run_test(args):
     """
     Find test module in tests dir and run it.
 
-    :param url:
+    :param args: Command line arguments.
     """
+    url = args.url
     test_dir = data_dir.get_test_dir()
     test_module_dir = os.path.join(test_dir, url)
     f, p, d = imp.find_module(url, [test_module_dir])
