@@ -3,10 +3,14 @@ Contains the base test implementation, used as a base for the actual
 framework tests.
 """
 
+import imp
+import logging
 import os
 import time
 from avocado.core import data_dir
 from avocado.core import exceptions
+
+log = logging.getLogger("avocado.test")
 
 
 class Test(object):
@@ -18,7 +22,7 @@ class Test(object):
     to implement setup(), action() and cleanup() methods on your own tests.
     """
 
-    def __init__(self, name, tag):
+    def __init__(self, name, tag=''):
         """
         Initializes the test.
 
@@ -37,8 +41,7 @@ class Test(object):
         """
         self.name = name
         self.tag = tag
-        self.basedir = os.path.join(data_dir.get_root_dir(),
-                                    '%s.%s' % (name, tag))
+        self.basedir = os.path.join(data_dir.get_test_dir(), name)
         self.depsdir = os.path.join(self.basedir, 'deps')
         self.workdir = os.path.join(self.basedir, 'work')
         self.srcdir = os.path.join(self.basedir, 'src')
@@ -87,9 +90,11 @@ class Test(object):
             self.status = 'PASS'
         except exceptions.TestBaseException, detail:
             self.status = detail.status
-
-        end_time = time.time()
-        self.time_elapsed = end_time - start_time
+        finally:
+            end_time = time.time()
+            self.time_elapsed = end_time - start_time
+        log.info('Test %s %s after %.2f seconds',
+                 self.name, self.status, self.time_elapsed)
         return self.status == 'PASS'
 
     def cleanup(self):
@@ -101,3 +106,19 @@ class Test(object):
         in setup.
         """
         pass
+
+
+def run_test(url):
+    """
+    Find test module in tests dir and run it.
+
+    :param url:
+    """
+    test_dir = data_dir.get_test_dir()
+    test_module_dir = os.path.join(test_dir, url)
+    f, p, d = imp.find_module(url, [test_module_dir])
+    test_module = imp.load_module(url, f, p, d)
+    f.close()
+    test_class = getattr(test_module, url)
+    test_instance = test_class(name=url)
+    test_instance.run()

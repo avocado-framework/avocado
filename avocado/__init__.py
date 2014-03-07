@@ -32,6 +32,11 @@ DEFAULT_LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'avocado.test': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'avocado.utils': {
             'handlers': ['console'],
             'level': 'INFO',

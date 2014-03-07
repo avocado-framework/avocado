@@ -16,7 +16,11 @@ def get_root_dir():
     return DEFAULT_ROOT_DIR
 
 
-def get_DEFAULT_TMP_DIR():
+def get_test_dir():
+    return os.path.join(get_root_dir(), 'tests')
+
+
+def get_tmp_dir():
     if not os.path.isdir(DEFAULT_TMP_DIR):
         os.makedirs(DEFAULT_TMP_DIR)
     return DEFAULT_TMP_DIR

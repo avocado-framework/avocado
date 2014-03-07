@@ -6,9 +6,7 @@ import re
 import shutil
 import subprocess
 
-from avocado.utils import process
-from avocado.utils import misc
-from avocado.utils import memory
+from avocado import utils
 from avocado.linux import software_manager
 
 _DEFAULT_COMMANDS_TO_LOG_PER_TEST = []
@@ -49,7 +47,7 @@ class Loggable(object):
     def readline(self, logdir):
         path = os.path.join(logdir, self.logf)
         if os.path.exists(path):
-            return misc.read_one_line(path)
+            return utils.misc.read_one_line(path)
         else:
             return ""
 
@@ -137,8 +135,9 @@ class Command(Loggable):
             for f in (stdin, stdout, stderr):
                 f.close()
             if self._compress_log and os.path.exists(logf_path):
-                process.run('gzip -9 "%s"' % logf_path, ignore_status=True,
-                            verbose=False)
+                utils.process.run('gzip -9 "%s"' % logf_path,
+                                  ignore_status=True,
+                                  verbose=False)
 
 
 class SysInfo(object):
@@ -251,7 +250,7 @@ class SysInfo(object):
             # also log any installed packages
             installed_path = os.path.join(logdir, "installed_packages")
             installed_packages = "\n".join(self.sm.list_all()) + "\n"
-            misc.write_file(installed_path, installed_packages)
+            utils.misc.write_file(installed_path, installed_packages)
 
     def log_before_each_test(self, test):
         """ Logging hook called before a test starts. """
@@ -261,7 +260,7 @@ class SysInfo(object):
             test_sysinfodir = self._get_sysinfodir(test.outputdir)
             installed_path = os.path.join(test_sysinfodir, "installed_packages")
             installed_packages = "\n".join(self._installed_packages)
-            misc.write_file(installed_path, installed_packages)
+            utils.misc.write_file(installed_path, installed_packages)
 
         if os.path.exists("/var/log/messages"):
             stat = os.stat("/var/log/messages")
@@ -280,8 +279,8 @@ class SysInfo(object):
         reboot_dir = self._get_boot_subdir()
         assert os.path.exists(reboot_dir)
         symlink_dest = os.path.join(test_sysinfodir, "reboot_current")
-        symlink_src = misc.get_relative_path(reboot_dir,
-                                             os.path.dirname(symlink_dest))
+        symlink_src = utils.misc.get_relative_path(reboot_dir,
+                                                   os.path.dirname(symlink_dest))
         try:
             os.symlink(symlink_src, symlink_dest)
         except Exception, e:
@@ -305,10 +304,10 @@ class SysInfo(object):
             new_packages = set(self.sm.list_all())
             added_path = os.path.join(test_sysinfodir, "added_packages")
             added_packages = "\n".join(new_packages - old_packages) + "\n"
-            misc.write_file(added_path, added_packages)
+            utils.misc.write_file(added_path, added_packages)
             removed_path = os.path.join(test_sysinfodir, "removed_packages")
             removed_packages = "\n".join(old_packages - new_packages) + "\n"
-            misc.write_file(removed_path, removed_packages)
+            utils.misc.write_file(removed_path, removed_packages)
 
     def log_before_each_iteration(self, test, iteration=None):
         """ Logging hook called before a test iteration."""
@@ -376,8 +375,10 @@ class SysInfo(object):
         return keyval
 
     def log_test_keyvals(self, test_sysinfodir):
-        """ Logging hook called by log_after_each_test to collect keyval
-        entries to be written in the test keyval. """
+        """
+        Logging hook called by log_after_each_test to collect keyval
+        entries to be written in the test keyval.
+        """
         keyval = {}
 
         # grab any loggables that should be in the keyval
@@ -403,7 +404,7 @@ class SysInfo(object):
                 keyval["sysinfo-memtotal-in-kb"] = match.group(1)
 
         # guess the system's total physical memory, including sys tables
-        keyval["sysinfo-phys-mbytes"] = memory.rounded_memtotal() // 1024
+        keyval["sysinfo-phys-mbytes"] = utils.memory.rounded_memtotal() // 1024
 
         # return what we collected
         return keyval
