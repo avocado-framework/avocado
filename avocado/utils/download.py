@@ -1,3 +1,7 @@
+"""
+Methods to download URLs and regular files.
+"""
+
 import logging
 import os
 import socket
@@ -46,18 +50,22 @@ def url_download(url, filename, data=None, timeout=300):
         src_file.close()
 
 
-def get_file(src, dest, permissions=None):
+def get_file(src, dst, permissions=None):
     """
-    Get a file from src, which can be local or a remote URL
+    Get a file from src and put it in dest, returning dest path.
+
+    :param src: Source path or URL. May be local or a remote file.
+    :param dst: Destination path.
+    :returns: Destination path.
     """
-    if src == dest:
+    if src == dst:
         return
 
     if is_url(src):
-        url_download(src, dest)
+        url_download(src, dst)
     else:
-        shutil.copyfile(src, dest)
+        shutil.copyfile(src, dst)
 
     if permissions:
-        os.chmod(dest, permissions)
-    return dest
+        os.chmod(dst, permissions)
+    return dst
