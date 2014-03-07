@@ -216,7 +216,6 @@ class Probe(object):
         name = None
         version = UNKNOWN_DISTRO_VERSION
         release = UNKNOWN_DISTRO_RELEASE
-        arch = UNKNOWN_DISTRO_ARCH
 
         distro = None
 
@@ -262,9 +261,8 @@ class StdLibProbe(Probe):
         name = None
         version = UNKNOWN_DISTRO_VERSION
         release = UNKNOWN_DISTRO_RELEASE
-        arch = UNKNOWN_DISTRO_ARCH
 
-        d_name, d_version_release, d_codename = platform.dist()
+        d_name, d_version_release, _ = platform.dist()
         if d_name:
             name = d_name
 
