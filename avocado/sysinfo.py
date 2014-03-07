@@ -1,10 +1,39 @@
+import gzip
+import glob
 import logging
 import os
+import re
 import shutil
 import subprocess
 
-from avocado import utils
 from avocado.utils import process
+from avocado.utils import misc
+from avocado.utils import memory
+from avocado.linux import software_manager
+
+_DEFAULT_COMMANDS_TO_LOG_PER_TEST = []
+_DEFAULT_COMMANDS_TO_LOG_PER_BOOT = [
+    "lspci -vvnn", "gcc --version", "ld --version", "mount", "hostname",
+    "uptime", "dmidecode",
+]
+_DEFAULT_COMMANDS_TO_LOG_BEFORE_ITERATION = []
+_DEFAULT_COMMANDS_TO_LOG_AFTER_ITERATION = []
+
+_DEFAULT_FILES_TO_LOG_PER_TEST = []
+_DEFAULT_FILES_TO_LOG_PER_BOOT = [
+    "/proc/pci", "/proc/meminfo", "/proc/slabinfo", "/proc/version",
+    "/proc/cpuinfo", "/proc/modules", "/proc/interrupts", "/proc/partitions",
+]
+_DEFAULT_FILES_TO_LOG_BEFORE_ITERATION = [
+    "/proc/schedstat", "/proc/meminfo", "/proc/slabinfo", "/proc/interrupts",
+    "/proc/buddyinfo"
+]
+_DEFAULT_FILES_TO_LOG_AFTER_ITERATION = [
+    "/proc/schedstat", "/proc/meminfo", "/proc/slabinfo", "/proc/interrupts",
+    "/proc/buddyinfo"
+]
+
+_LOG_INSTALLED_PACKAGES = True
 
 
 class Loggable(object):
@@ -20,7 +49,7 @@ class Loggable(object):
     def readline(self, logdir):
         path = os.path.join(logdir, self.logf)
         if os.path.exists(path):
-            return utils.read_one_line(path)
+            return misc.read_one_line(path)
         else:
             return ""
 
@@ -208,7 +237,6 @@ class SysInfo(object):
             os.mkdir(logdir)
         return logdir
 
-    @log.log_and_ignore_errors("post-reboot sysinfo error:")
     def log_per_reboot_data(self):
         """ Logging hook called whenever a job starts, and again after
         any reboot. """
@@ -223,9 +251,8 @@ class SysInfo(object):
             # also log any installed packages
             installed_path = os.path.join(logdir, "installed_packages")
             installed_packages = "\n".join(self.sm.list_all()) + "\n"
-            utils.open_write_close(installed_path, installed_packages)
+            misc.write_file(installed_path, installed_packages)
 
-    @log.log_and_ignore_errors("pre-test sysinfo error:")
     def log_before_each_test(self, test):
         """ Logging hook called before a test starts. """
         if _LOG_INSTALLED_PACKAGES:
@@ -234,7 +261,7 @@ class SysInfo(object):
             test_sysinfodir = self._get_sysinfodir(test.outputdir)
             installed_path = os.path.join(test_sysinfodir, "installed_packages")
             installed_packages = "\n".join(self._installed_packages)
-            utils.open_write_close(installed_path, installed_packages)
+            misc.write_file(installed_path, installed_packages)
 
         if os.path.exists("/var/log/messages"):
             stat = os.stat("/var/log/messages")
@@ -245,7 +272,6 @@ class SysInfo(object):
             self._messages_size = stat.st_size
             self._messages_inode = stat.st_ino
 
-    @log.log_and_ignore_errors("post-test sysinfo error:")
     def log_after_each_test(self, test):
         """ Logging hook called after a test finishs. """
         test_sysinfodir = self._get_sysinfodir(test.outputdir)
@@ -254,8 +280,8 @@ class SysInfo(object):
         reboot_dir = self._get_boot_subdir()
         assert os.path.exists(reboot_dir)
         symlink_dest = os.path.join(test_sysinfodir, "reboot_current")
-        symlink_src = utils.get_relative_path(reboot_dir,
-                                              os.path.dirname(symlink_dest))
+        symlink_src = misc.get_relative_path(reboot_dir,
+                                             os.path.dirname(symlink_dest))
         try:
             os.symlink(symlink_src, symlink_dest)
         except Exception, e:
@@ -279,12 +305,11 @@ class SysInfo(object):
             new_packages = set(self.sm.list_all())
             added_path = os.path.join(test_sysinfodir, "added_packages")
             added_packages = "\n".join(new_packages - old_packages) + "\n"
-            utils.open_write_close(added_path, added_packages)
+            misc.write_file(added_path, added_packages)
             removed_path = os.path.join(test_sysinfodir, "removed_packages")
             removed_packages = "\n".join(old_packages - new_packages) + "\n"
-            utils.open_write_close(removed_path, removed_packages)
+            misc.write_file(removed_path, removed_packages)
 
-    @log.log_and_ignore_errors("pre-test siteration sysinfo error:")
     def log_before_each_iteration(self, test, iteration=None):
         """ Logging hook called before a test iteration."""
         if not iteration:
@@ -294,7 +319,6 @@ class SysInfo(object):
         for log in self.before_iteration_loggables:
             log.run(logdir)
 
-    @log.log_and_ignore_errors("post-test siteration sysinfo error:")
     def log_after_each_iteration(self, test, iteration=None):
         """ Logging hook called after a test iteration."""
         if not iteration:
@@ -379,7 +403,7 @@ class SysInfo(object):
                 keyval["sysinfo-memtotal-in-kb"] = match.group(1)
 
         # guess the system's total physical memory, including sys tables
-        keyval["sysinfo-phys-mbytes"] = utils_memory.rounded_memtotal() // 1024
+        keyval["sysinfo-phys-mbytes"] = memory.rounded_memtotal() // 1024
 
         # return what we collected
         return keyval

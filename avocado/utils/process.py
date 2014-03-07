@@ -15,6 +15,7 @@ log = logging.getLogger('avocado.utils')
 
 
 class CmdNotFoundError(Exception):
+
     def __init__(self, cmd, paths):
         super(CmdNotFoundError, self)
         self.cmd = cmd

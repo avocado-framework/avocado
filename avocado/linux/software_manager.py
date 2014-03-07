@@ -335,7 +335,7 @@ class YumBackend(RpmBackend):
         self.cfgparser.read(self.repo_file_path)
         y_cmd = executable + ' --version | head -1'
         cmd_result = process.run(y_cmd, ignore_status=True,
-                               verbose=False)
+                                 verbose=False)
         out = cmd_result.stdout.strip()
         try:
             ver = re.findall('\d*.\d*.\d*', out)[0]
@@ -476,7 +476,7 @@ class ZypperBackend(RpmBackend):
         self.base_command = process.find_command('zypper') + ' -n'
         z_cmd = self.base_command + ' --version'
         cmd_result = process.run(z_cmd, ignore_status=True,
-                               verbose=False)
+                                 verbose=False)
         out = cmd_result.stdout.strip()
         try:
             ver = re.findall('\d.\d*.\d*', out)[0]
@@ -604,8 +604,8 @@ class AptBackend(DpkgBackend):
         self.base_command = executable + ' -y'
         self.repo_file_path = '/etc/apt/sources.list.d/autotest'
         cmd_result = process.run('apt-get -v | head -1',
-                               ignore_status=True,
-                               verbose=False)
+                                 ignore_status=True,
+                                 verbose=False)
         out = cmd_result.stdout.strip()
         try:
             ver = re.findall('\d\S*', out)[0]
