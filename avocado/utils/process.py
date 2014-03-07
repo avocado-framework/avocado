@@ -21,7 +21,7 @@ class CmdNotFoundError(Exception):
         self.paths = paths
 
     def __str__(self):
-        return ("Command %s could not be found in any of the PATH dirs: %s" %
+        return ("Command '%s' could not be found in any of the PATH dirs: %s" %
                 (self.cmd, self.paths))
 
 
