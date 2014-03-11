@@ -93,8 +93,10 @@ class Test(object):
         finally:
             end_time = time.time()
             self.time_elapsed = end_time - start_time
+
         log.info('Test %s %s after %.2f seconds',
                  self.name, self.status, self.time_elapsed)
+
         return self.status == 'PASS'
 
     def cleanup(self):
