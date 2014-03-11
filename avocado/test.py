@@ -94,9 +94,6 @@ class Test(object):
             end_time = time.time()
             self.time_elapsed = end_time - start_time
 
-        log.info('Test %s %s after %.2f seconds',
-                 self.name, self.status, self.time_elapsed)
-
         return self.status == 'PASS'
 
     def cleanup(self):
@@ -108,20 +105,3 @@ class Test(object):
         in setup.
         """
         pass
-
-
-def run_test(args):
-    """
-    Find test module in tests dir and run it.
-
-    :param args: Command line arguments.
-    """
-    url = args.url
-    test_dir = data_dir.get_test_dir()
-    test_module_dir = os.path.join(test_dir, url)
-    f, p, d = imp.find_module(url, [test_module_dir])
-    test_module = imp.load_module(url, f, p, d)
-    f.close()
-    test_class = getattr(test_module, url)
-    test_instance = test_class(name=url)
-    test_instance.run()
