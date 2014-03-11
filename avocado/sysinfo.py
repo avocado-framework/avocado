@@ -1,37 +1,61 @@
 import gzip
-import glob
 import logging
 import os
-import re
 import shutil
 import subprocess
 
 from avocado import utils
 from avocado.linux import software_manager
 
-_DEFAULT_COMMANDS_TO_LOG_PER_TEST = []
-_DEFAULT_COMMANDS_TO_LOG_PER_BOOT = [
-    "lspci -vvnn", "gcc --version", "ld --version", "mount", "hostname",
-    "uptime", "dmidecode",
-]
-_DEFAULT_COMMANDS_TO_LOG_BEFORE_ITERATION = []
-_DEFAULT_COMMANDS_TO_LOG_AFTER_ITERATION = []
+log = logging.getLogger("avocado.utils")
 
-_DEFAULT_FILES_TO_LOG_PER_TEST = []
-_DEFAULT_FILES_TO_LOG_PER_BOOT = [
-    "/proc/pci", "/proc/meminfo", "/proc/slabinfo", "/proc/version",
-    "/proc/cpuinfo", "/proc/modules", "/proc/interrupts", "/proc/partitions",
-]
-_DEFAULT_FILES_TO_LOG_BEFORE_ITERATION = [
-    "/proc/schedstat", "/proc/meminfo", "/proc/slabinfo", "/proc/interrupts",
-    "/proc/buddyinfo"
-]
-_DEFAULT_FILES_TO_LOG_AFTER_ITERATION = [
-    "/proc/schedstat", "/proc/meminfo", "/proc/slabinfo", "/proc/interrupts",
-    "/proc/buddyinfo"
-]
 
-_LOG_INSTALLED_PACKAGES = True
+_DEFAULT_COMMANDS_START_JOB = ["df -mP",
+                               "dmesg -c",
+                               "uname -a",
+                               "lspci -vvnn",
+                               "gcc --version",
+                               "ld --version",
+                               "mount",
+                               "hostname",
+                               "uptime",
+                               "dmidecode"]
+_DEFAULT_COMMANDS_END_JOB = []
+
+_DEFAULT_FILES_START_JOB = ["/proc/cmdline",
+                            "/proc/mounts",
+                            "/proc/pci",
+                            "/proc/meminfo",
+                            "/proc/slabinfo",
+                            "/proc/version",
+                            "/proc/cpuinfo",
+                            "/proc/modules",
+                            "/proc/interrupts",
+                            "/proc/partitions"]
+
+_DEFAULT_FILES_END_JOB = []
+
+_DEFAULT_COMMANDS_START_TEST = []
+
+_DEFAULT_COMMANDS_END_TEST = []
+
+_DEFAULT_FILES_START_TEST = []
+
+_DEFAULT_FILES_END_TEST = []
+
+_DEFAULT_COMMANDS_START_ITERATION = []
+_DEFAULT_COMMANDS_END_ITERATION = ["/proc/schedstat",
+                                   "/proc/meminfo",
+                                   "/proc/slabinfo",
+                                   "/proc/interrupts",
+                                   "/proc/buddyinfo"]
+
+_DEFAULT_FILES_START_ITERATION = []
+_DEFAULT_FILES_END_ITERATION = ["/proc/schedstat",
+                                "/proc/meminfo",
+                                "/proc/slabinfo",
+                                "/proc/interrupts",
+                                "/proc/buddyinfo"]
 
 
 class Loggable(object):
@@ -40,9 +64,8 @@ class Loggable(object):
     Abstract class for representing all things "loggable" by sysinfo.
     """
 
-    def __init__(self, logf, log_in_keyval):
+    def __init__(self, logf):
         self.logf = logf
-        self.log_in_keyval = log_in_keyval
 
     def readline(self, logdir):
         path = os.path.join(logdir, self.logf)
@@ -54,15 +77,15 @@ class Loggable(object):
 
 class Logfile(Loggable):
 
-    def __init__(self, path, logf=None, log_in_keyval=False):
+    def __init__(self, path, logf=None):
         if not logf:
             logf = os.path.basename(path)
-        super(Logfile, self).__init__(logf, log_in_keyval)
+        super(Logfile, self).__init__(logf)
         self.path = path
 
     def __repr__(self):
-        r = "sysinfo.logfile(%r, %r, %r)"
-        r %= (self.path, self.logf, self.log_in_keyval)
+        r = "sysinfo.Logfile(%r, %r)"
+        r %= (self.path, self.logf)
         return r
 
     def __eq__(self, other):
@@ -86,22 +109,21 @@ class Logfile(Loggable):
             try:
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
             except IOError:
-                logging.info("Not logging %s (lack of permissions)",
-                             self.path)
+                log.info("Not logging %s (lack of permissions)", self.path)
 
 
 class Command(Loggable):
 
-    def __init__(self, cmd, logf=None, log_in_keyval=False, compress_log=False):
+    def __init__(self, cmd, logf=None, compress_log=False):
         if not logf:
             logf = cmd.replace(" ", "_")
-        super(Command, self).__init__(logf, log_in_keyval)
+        super(Command, self).__init__(logf)
         self.cmd = cmd
         self._compress_log = compress_log
 
     def __repr__(self):
-        r = "sysinfo.command(%r, %r, %r)"
-        r %= (self.cmd, self.logf, self.log_in_keyval)
+        r = "sysinfo.Command(%r, %r, %r)"
+        r %= (self.cmd, self.logf)
         return r
 
     def __eq__(self, other):
@@ -129,8 +151,8 @@ class Command(Loggable):
         stderr = open(os.devnull, "w")
         stdout = open(logf_path, "w")
         try:
-            subprocess.call(self.cmd, stdin=stdin, stdout=stdout, stderr=stderr,
-                            shell=True, env=env)
+            subprocess.call(self.cmd, stdin=stdin, stdout=stdout,
+                            stderr=stderr, shell=True, env=env)
         finally:
             for f in (stdin, stdout, stderr):
                 f.close()
@@ -140,214 +162,74 @@ class Command(Loggable):
                                   verbose=False)
 
 
-class SysInfo(object):
+class LogWatcher(Loggable):
 
-    def __init__(self, job_resultsdir):
-        self.sysinfodir = self._get_sysinfodir(job_resultsdir)
+    """
+    Keep track of the contents of a log file in another compressed file.
 
-        # pull in the post-test logs to collect
-        self.test_loggables = set()
-        for cmd in _DEFAULT_COMMANDS_TO_LOG_PER_TEST:
-            self.test_loggables.add(Command(cmd))
-        for filename in _DEFAULT_FILES_TO_LOG_PER_TEST:
-            self.test_loggables.add(Logfile(filename))
+    This object is normally used to track contents of the system log
+    (/var/log/messages), and the outputs are gzipped since they can be
+    potentially large, helping to save space.
+    """
 
-        # pull in the EXTRA post-boot logs to collect
-        self.boot_loggables = set()
-        for cmd in _DEFAULT_COMMANDS_TO_LOG_PER_BOOT:
-            self.boot_loggables.add(Command(cmd))
-        for filename in _DEFAULT_FILES_TO_LOG_PER_BOOT:
-            self.boot_loggables.add(Logfile(filename))
-
-        # pull in the pre test iteration logs to collect
-        self.before_iteration_loggables = set()
-        for cmd in _DEFAULT_COMMANDS_TO_LOG_BEFORE_ITERATION:
-            self.before_iteration_loggables.add(
-                Command(cmd, logf=cmd.replace(" ", "_") + '.before'))
-        for fname in _DEFAULT_FILES_TO_LOG_BEFORE_ITERATION:
-            self.before_iteration_loggables.add(
-                Logfile(fname, logf=os.path.basename(fname) + '.before'))
-
-        # pull in the post test iteration logs to collect
-        self.after_iteration_loggables = set()
-        for cmd in _DEFAULT_COMMANDS_TO_LOG_AFTER_ITERATION:
-            self.after_iteration_loggables.add(
-                Command(cmd, logf=cmd.replace(" ", "_") + '.after'))
-        for fname in _DEFAULT_FILES_TO_LOG_AFTER_ITERATION:
-            self.after_iteration_loggables.add(
-                Logfile(fname, logf=os.path.basename(fname) + '.after'))
-
-        # add in a couple of extra files and commands we want to grab
-        self.test_loggables.add(Command("df -mP", logf="df"))
-        # We compress the dmesg because it can get large when kernels are
-        # configured with a large buffer and some tests trigger OOMs or
-        # other large "spam" that fill it up...
-        self.test_loggables.add(Command("dmesg -c", logf="dmesg",
-                                        compress_log=True))
-        self.boot_loggables.add(Logfile("/proc/cmdline",
-                                        log_in_keyval=True))
-        # log /proc/mounts but with custom filename since we already
-        # log the output of the "mount" command as the filename "mount"
-        self.boot_loggables.add(Logfile('/proc/mounts', logf='proc_mounts'))
-        self.boot_loggables.add(Command("uname -a", logf="uname",
-                                        log_in_keyval=True))
-        self.sm = software_manager.SoftwareManager()
-
-    def __getstate__(self):
-        ret = dict(self.__dict__)
-        ret["sm"] = None
-        return ret
-
-    def serialize(self):
-        return {"boot": self.boot_loggables, "test": self.test_loggables}
-
-    def deserialize(self, serialized):
-        self.boot_loggables = serialized["boot"]
-        self.test_loggables = serialized["test"]
-
-    @staticmethod
-    def _get_sysinfodir(resultsdir):
-        sysinfodir = os.path.join(resultsdir, "sysinfo")
-        if not os.path.exists(sysinfodir):
-            os.makedirs(sysinfodir)
-        return sysinfodir
-
-    def _get_reboot_count(self):
-        if not glob.glob(os.path.join(self.sysinfodir, "*")):
-            return -1
+    def __init__(self, path, logf=None):
+        if not logf:
+            logf = os.path.basename(path) + ".gz"
         else:
-            return len(glob.glob(os.path.join(self.sysinfodir, "boot.*")))
+            logf += ".gz"
 
-    def _get_boot_subdir(self, next=False):
-        reboot_count = self._get_reboot_count()
-        if next:
-            reboot_count += 1
-        if reboot_count < 1:
-            return self.sysinfodir
-        else:
-            boot_dir = "boot.%d" % (reboot_count - 1)
-            return os.path.join(self.sysinfodir, boot_dir)
-
-    def _get_iteration_subdir(self, test, iteration):
-        iter_dir = "iteration.%d" % iteration
-
-        logdir = os.path.join(self._get_sysinfodir(test.outputdir), iter_dir)
-        if not os.path.exists(logdir):
-            os.mkdir(logdir)
-        return logdir
-
-    def log_per_reboot_data(self):
-        """ Logging hook called whenever a job starts, and again after
-        any reboot. """
-        logdir = self._get_boot_subdir(next=True)
-        if not os.path.exists(logdir):
-            os.mkdir(logdir)
-
-        for log in (self.test_loggables | self.boot_loggables):
-            log.run(logdir)
-
-        if _LOG_INSTALLED_PACKAGES:
-            # also log any installed packages
-            installed_path = os.path.join(logdir, "installed_packages")
-            installed_packages = "\n".join(self.sm.list_all()) + "\n"
-            utils.misc.write_file(installed_path, installed_packages)
-
-    def log_before_each_test(self, test):
-        """ Logging hook called before a test starts. """
-        if _LOG_INSTALLED_PACKAGES:
-            self._installed_packages = self.sm.list_all()
-            # Also log the list of installed packaged before each test starts
-            test_sysinfodir = self._get_sysinfodir(test.outputdir)
-            installed_path = os.path.join(test_sysinfodir, "installed_packages")
-            installed_packages = "\n".join(self._installed_packages)
-            utils.misc.write_file(installed_path, installed_packages)
-
-        if os.path.exists("/var/log/messages"):
-            stat = os.stat("/var/log/messages")
-            self._messages_size = stat.st_size
-            self._messages_inode = stat.st_ino
-        elif os.path.exists("/var/log/syslog"):
-            stat = os.stat("/var/log/syslog")
-            self._messages_size = stat.st_size
-            self._messages_inode = stat.st_ino
-
-    def log_after_each_test(self, test):
-        """ Logging hook called after a test finishs. """
-        test_sysinfodir = self._get_sysinfodir(test.outputdir)
-
-        # create a symlink in the test sysinfo dir to the current boot
-        reboot_dir = self._get_boot_subdir()
-        assert os.path.exists(reboot_dir)
-        symlink_dest = os.path.join(test_sysinfodir, "reboot_current")
-        symlink_src = utils.misc.get_relative_path(reboot_dir,
-                                                   os.path.dirname(symlink_dest))
+        super(LogWatcher, self).__init__(logf)
+        self.path = path
+        self.size = 0
+        self.inode = 0
         try:
-            os.symlink(symlink_src, symlink_dest)
-        except Exception, e:
-            raise Exception('%s: whilst linking %s to %s' % (e, symlink_src,
-                                                             symlink_dest))
+            stat = os.stat(path)
+            self.size = stat.st_size
+            self.inode = stat.st_ino
+        except (IOError, OSError):
+            log.info("Not logging %s (lack of permissions)", self.path)
 
-        # run all the standard logging commands
-        for log in self.test_loggables:
-            log.run(test_sysinfodir)
+    def __repr__(self):
+        r = "sysinfo.LogWatcher(%r, %r)"
+        r %= (self.path, self.logf)
+        return r
 
-        # grab any new data from the system log
-        self._log_messages(test_sysinfodir)
+    def __eq__(self, other):
+        if isinstance(other, Logfile):
+            return (self.path, self.logf) == (other.path, other.logf)
+        elif isinstance(other, Loggable):
+            return False
+        return NotImplemented
 
-        # log some sysinfo data into the test keyval file
-        keyval = self.log_test_keyvals(test_sysinfodir)
-        test.write_test_keyval(keyval)
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return result
+        return not result
 
-        if _LOG_INSTALLED_PACKAGES:
-            # log any changes to installed packages
-            old_packages = set(self._installed_packages)
-            new_packages = set(self.sm.list_all())
-            added_path = os.path.join(test_sysinfodir, "added_packages")
-            added_packages = "\n".join(new_packages - old_packages) + "\n"
-            utils.misc.write_file(added_path, added_packages)
-            removed_path = os.path.join(test_sysinfodir, "removed_packages")
-            removed_packages = "\n".join(old_packages - new_packages) + "\n"
-            utils.misc.write_file(removed_path, removed_packages)
+    def __hash__(self):
+        return hash((self.path, self.logf))
 
-    def log_before_each_iteration(self, test, iteration=None):
-        """ Logging hook called before a test iteration."""
-        if not iteration:
-            iteration = test.iteration
-        logdir = self._get_iteration_subdir(test, iteration)
-
-        for log in self.before_iteration_loggables:
-            log.run(logdir)
-
-    def log_after_each_iteration(self, test, iteration=None):
-        """ Logging hook called after a test iteration."""
-        if not iteration:
-            iteration = test.iteration
-        logdir = self._get_iteration_subdir(test, iteration)
-
-        for log in self.after_iteration_loggables:
-            log.run(logdir)
-
-    def _log_messages(self, logdir):
-        """ Log all of the new data in the system log. """
+    def run(self, logdir):
+        """
+        Log all of the new data present in the log file.
+        """
         try:
-            # log all of the new data in the system log
-            logpaths = ["/var/log/messages", "/var/log/syslog"]
-            for logpath in logpaths:
-                if os.path.exists(logpath):
-                    break
-            else:
-                raise ValueError("System log file not found (looked for %s)" %
-                                 logpaths)
+            dstname = self.logf
+            dstpath = os.path.join(logdir, dstname)
 
             bytes_to_skip = 0
-            if hasattr(self, "_messages_size"):
-                current_inode = os.stat(logpath).st_ino
-                if current_inode == self._messages_inode:
-                    bytes_to_skip = self._messages_size
-            in_messages = open(logpath)
-            out_file_basename = os.path.basename(logpath) + ".gz"
-            out_file_name = os.path.join(logdir, out_file_basename)
-            out_messages = gzip.GzipFile(out_file_name, "w")
+            current_stat = os.stat(self.path)
+            current_inode = current_stat.st_ino
+            current_size = current_stat.st_size
+            if current_inode == self.inode:
+                bytes_to_skip = self.size
+
+            self.inode = current_inode
+            self.size = current_size
+
+            in_messages = open(self.path)
+            out_messages = gzip.GzipFile(dstpath, "w")
             try:
                 in_messages.seek(bytes_to_skip)
                 while True:
@@ -360,51 +242,190 @@ class SysInfo(object):
                 out_messages.close()
                 in_messages.close()
         except ValueError, e:
-            logging.info(e)
+            log.info(e)
         except (IOError, OSError):
-            logging.info("Not logging %s (lack of permissions)", logpath)
+            log.info("Not logging %s (lack of permissions)", self.path)
         except Exception, e:
-            logging.info("System log collection failed: %s", e)
+            log.info("Log file %s collection failed: %s", self.path, e)
 
-    @staticmethod
-    def _read_sysinfo_keyvals(loggables, logdir):
-        keyval = {}
-        for log in loggables:
-            if log.log_in_keyval:
-                keyval["sysinfo-" + log.logf] = log.readline(logdir)
-        return keyval
 
-    def log_test_keyvals(self, test_sysinfodir):
+class SysInfo(object):
+
+    """
+    Log different system properties at some key control points:
+
+    * start_job
+    * start_test
+    * start_iteration
+    * end_iteration
+    * end_test
+    * end_job
+    """
+
+    def __init__(self, basedir=None, log_packages=False):
+        if basedir is None:
+            basedir = os.getcwd()
+
+        self.basedir = basedir
+        self.log_packages = log_packages
+        self._installed_pkgs = None
+
+        self.start_job_loggables = set()
+        self.end_job_loggables = set()
+
+        self.start_test_loggables = set()
+        self.end_test_loggables = set()
+
+        self.start_iteration_loggables = set()
+        self.end_iteration_loggables = set()
+
+        self.hook_mapping = {'start_job': self.start_job_loggables,
+                             'end_job': self.end_job_loggables,
+                             'start_test': self.start_test_loggables,
+                             'end_test': self.end_test_loggables,
+                             'start_iteration': self.start_iteration_loggables,
+                             'end_iteration': self.end_iteration_loggables}
+
+        self._set_loggables()
+
+    def _get_syslog_watcher(self):
+        syslog_watcher = None
+
+        logpaths = ["/var/log/messages", "/var/log/syslog"]
+        for logpath in logpaths:
+            if os.path.exists(logpath):
+                syslog_watcher = LogWatcher(logpath)
+
+        if syslog_watcher is None:
+            raise ValueError("System log file not found (looked for %s)" %
+                             logpaths)
+
+        return syslog_watcher
+
+    def _set_loggables(self):
+        for cmd in _DEFAULT_COMMANDS_START_JOB:
+            self.start_job_loggables.add(Command(cmd))
+
+        for cmd in _DEFAULT_COMMANDS_END_JOB:
+            self.end_job_loggables.add(Command(cmd))
+
+        for filename in _DEFAULT_FILES_START_JOB:
+            self.start_job_loggables.add(Logfile(filename))
+
+        for filename in _DEFAULT_FILES_END_JOB:
+            self.end_job_loggables.add(Logfile(filename))
+
+        for cmd in _DEFAULT_COMMANDS_START_TEST:
+            self.start_job_loggables.add(Command(cmd))
+
+        for cmd in _DEFAULT_COMMANDS_END_TEST:
+            self.end_test_loggables.add(Command(cmd))
+
+        # As the system log path is not standardized between distros,
+        # we have to probe and find out the correct path.
+        self.end_test_loggables.add(self._get_syslog_watcher())
+
+        for filename in _DEFAULT_FILES_START_TEST:
+            self.start_test_loggables.add(Logfile(filename))
+
+        for filename in _DEFAULT_FILES_END_TEST:
+            self.end_test_loggables.add(Logfile(filename))
+
+        for cmd in _DEFAULT_COMMANDS_START_ITERATION:
+            self.start_iteration_loggables.add(Command(cmd))
+
+        for cmd in _DEFAULT_COMMANDS_END_ITERATION:
+            self.end_iteration_loggables.add(Command(cmd))
+
+        for filename in _DEFAULT_FILES_START_ITERATION:
+            self.start_iteration_loggables.add(Logfile(filename))
+
+        for filename in _DEFAULT_FILES_END_ITERATION:
+            self.end_iteration_loggables.add(Logfile(filename))
+
+    def _get_loggables(self, hook):
+        loggables = self.hook_mapping.get(hook)
+        if loggables is None:
+            raise ValueError('Incorrect hook, valid hook names: %s' %
+                             self.hook_mapping.keys())
+        return loggables
+
+    def add_cmd(self, cmd, hook):
+        loggables = self._get_loggables(hook)
+        loggables.add(Command(cmd))
+
+    def add_file(self, filename, hook):
+        loggables = self._get_loggables(hook)
+        loggables.add(Logfile(filename))
+
+    def add_watcher(self, filename, hook):
+        loggables = self._get_loggables(hook)
+        loggables.add(LogWatcher(filename))
+
+    def _get_installed_packages(self):
+        sm = software_manager.SoftwareManager()
+        installed_pkgs = sm.list_all()
+        self._installed_pkgs = installed_pkgs
+        return installed_pkgs
+
+    def _log_installed_packages(self):
+        installed_path = os.path.join(self.basedir, "installed_packages")
+        installed_packages = "\n".join(self._get_installed_packages()) + "\n"
+        utils.misc.write_file(installed_path, installed_packages)
+
+    def _log_modified_packages(self):
         """
-        Logging hook called by log_after_each_test to collect keyval
-        entries to be written in the test keyval.
+        Log any changes to installed packages.
         """
-        keyval = {}
+        old_packages = set(self._installed_packages)
+        new_packages = set(self._get_installed_packages())
+        added_path = os.path.join(self.basedir, "added_packages")
+        added_packages = "\n".join(new_packages - old_packages) + "\n"
+        utils.misc.write_file(added_path, added_packages)
+        removed_path = os.path.join(self.basedir, "removed_packages")
+        removed_packages = "\n".join(old_packages - new_packages) + "\n"
+        utils.misc.write_file(removed_path, removed_packages)
 
-        # grab any loggables that should be in the keyval
-        keyval.update(self._read_sysinfo_keyvals(
-            self.test_loggables, test_sysinfodir))
-        keyval.update(self._read_sysinfo_keyvals(
-            self.boot_loggables,
-            os.path.join(test_sysinfodir, "reboot_current")))
+    def start_job_hook(self):
+        """
+        Logging hook called whenever a job starts, and again after reboot.
+        """
+        for log in self.start_job_loggables:
+            log.run(self.basedir)
 
-        # remove hostname from uname info
-        # Linux lpt36 2.6.18-smp-230.1 #1 [4069269] SMP Fri Oct 24 11:30:...
-        if "sysinfo-uname" in keyval:
-            kernel_vers = " ".join(keyval["sysinfo-uname"].split()[2:])
-            keyval["sysinfo-uname"] = kernel_vers
+        if self.log_packages:
+            self._log_installed_packages()
 
-        # grab the total avail memory, not used by sys tables
-        path = os.path.join(test_sysinfodir, "reboot_current", "meminfo")
-        if os.path.exists(path):
-            mem_data = open(path).read()
-            match = re.search(r"^MemTotal:\s+(\d+) kB$", mem_data,
-                              re.MULTILINE)
-            if match:
-                keyval["sysinfo-memtotal-in-kb"] = match.group(1)
+    def start_test_hook(self):
+        """
+        Logging hook called before a test starts.
+        """
+        for log in self.start_test_loggables:
+            log.run(self.basedir)
 
-        # guess the system's total physical memory, including sys tables
-        keyval["sysinfo-phys-mbytes"] = utils.memory.rounded_memtotal() // 1024
+        if self.log_packages:
+            self._log_installed_packages()
 
-        # return what we collected
-        return keyval
+    def end_test_hook(self):
+        """
+        Logging hook called after a test finishes.
+        """
+        for log in self.end_test_loggables:
+            log.run(self.basedir)
+
+        if self.log_packages:
+            self._log_modified_packages()
+
+    def start_iteration_hook(self):
+        """
+        Logging hook called before a test iteration
+        """
+        for log in self.start_iteration_loggables:
+            log.run(self.basedir)
+
+    def end_iteration_hook(self, test, iteration=None):
+        """
+        Logging hook called after a test iteration
+        """
+        for log in self.end_iteration_loggables:
+            log.run(self.basedir)
