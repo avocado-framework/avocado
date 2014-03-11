@@ -4,6 +4,7 @@ Implements the base avocado runner application.
 import imp
 import logging
 import os
+import time
 from argparse import ArgumentParser
 
 from avocado import sysinfo
@@ -19,11 +20,29 @@ def run_tests(args):
 
     :param args: Command line arguments.
     """
+    test_start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
+    logdir = args.logdir or data_dir.get_logs_dir()
+    debugbase = 'run-%s' % test_start_time
+    debugdir = os.path.join(logdir, debugbase)
+    latestdir = os.path.join(logdir, "latest")
+    if not os.path.isdir(debugdir):
+        os.makedirs(debugdir)
+    try:
+        os.unlink(latestdir)
+    except OSError:
+        pass
+    os.symlink(debugbase, latestdir)
+
+    debuglog = os.path.join(debugdir, "debug.log")
+    loglevel = args.log_level or logging.INFO
     output_manager = output.OutputManager()
+
+    job_file_handler = output_manager.create_file_handler(debuglog, loglevel)
+
     urls = args.url.split()
     total_tests = len(urls)
     test_dir = data_dir.get_test_dir()
-    output_manager.log_header("TESTS DIR: %s" % test_dir)
+    output_manager.log_header("DEBUG LOG: %s" % debuglog)
     output_manager.log_header("TOTAL TESTS: %s" % total_tests)
     output_mapping = {'PASS': output_manager.log_pass,
                       'FAIL': output_manager.log_fail,
@@ -38,12 +57,22 @@ def run_tests(args):
         test_module = imp.load_module(url, f, p, d)
         f.close()
         test_class = getattr(test_module, url)
-        test_instance = test_class(name=url)
+        test_instance = test_class(name=url, base_logdir=debugdir)
+        sysinfo_logger = sysinfo.SysInfo(basedir=test_instance.sysinfodir)
+        test_file_handler = output_manager.create_file_handler(
+                                                test_instance.logfile, loglevel)
+        test_instance.setup()
+        sysinfo_logger.start_job_hook()
         test_instance.run()
+        test_instance.cleanup()
         output_func = output_mapping[test_instance.status]
-        label = "(%s/%s) %s:" % (test_index, total_tests, test_instance.name)
+        label = "(%s/%s) %s:" % (test_index, total_tests,
+                                 test_instance.tagged_name)
         output_func(label, test_instance.time_elapsed)
         test_index += 1
+        output_manager.remove_file_handler(test_file_handler)
+
+    output_manager.remove_file_handler(job_file_handler)
 
 
 class AvocadoRunnerApp(object):
@@ -57,6 +86,12 @@ class AvocadoRunnerApp(object):
         self.arg_parser.add_argument('-v', '--verbose', action='store_true',
                                      help='print extra debug messages',
                                      dest='verbose')
+        self.arg_parser.add_argument('--logdir', action='store',
+                                     help='Alternate logs directory',
+                                     dest='logdir', default='')
+        self.arg_parser.add_argument('--loglevel', action='store',
+                                     help='Debug Level',
+                                     dest='log_level', default='')
 
         subparsers = self.arg_parser.add_subparsers(title='subcommands',
                                                     description='valid subcommands',

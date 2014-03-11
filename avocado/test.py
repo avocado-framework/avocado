@@ -3,7 +3,6 @@ Contains the base test implementation, used as a base for the actual
 framework tests.
 """
 
-import imp
 import logging
 import os
 import time
@@ -22,7 +21,7 @@ class Test(object):
     to implement setup(), action() and cleanup() methods on your own tests.
     """
 
-    def __init__(self, name, tag=''):
+    def __init__(self, name, base_logdir, tag=None):
         """
         Initializes the test.
 
@@ -38,6 +37,7 @@ class Test(object):
                 basedir, 'deps' subdirectory.
         workdir: Place where temporary copies of the source code, binaries,
                 image files will be created and modified.
+        base_logdir: Base log directory, where logs from all tests go to.
         """
         self.name = name
         self.tag = tag
@@ -46,14 +46,30 @@ class Test(object):
         self.workdir = os.path.join(self.basedir, 'work')
         self.srcdir = os.path.join(self.basedir, 'src')
         self.tmpdir = os.path.join(self.basedir, 'tmp')
-
+        self.tagged_name = self.get_tagged_name(base_logdir, self.name,
+                                                self.tag)
+        self.logdir = os.path.join(base_logdir, self.tagged_name)
+        if not os.path.isdir(self.logdir):
+            os.makedirs(self.logdir)
+        self.logfile = os.path.join(self.logdir, 'debug.log')
+        self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
         self.debugdir = None
-        self.outputdir = None
         self.resultsdir = None
-        self.logfile = None
         self.status = None
 
         self.time_elapsed = None
+
+    def get_tagged_name(self, logdir, name, tag):
+        if tag is not None:
+            return "%s.%s" % (self.name, self.tag)
+        tag = 1
+        tagged_name = "%s.%s" % (name, tag)
+        test_logdir = os.path.join(logdir, tagged_name)
+        while os.path.isdir(test_logdir):
+            tag += 1
+            tagged_name = "%s.%s" % (name, tag)
+            test_logdir = os.path.join(logdir, tagged_name)
+        return tagged_name
 
     def setup(self):
         """

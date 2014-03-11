@@ -133,6 +133,27 @@ class OutputManager(object):
     def _log(self, sr, level=logging.INFO):
         self.log.log(level, sr)
 
+    def create_file_handler(self, logfile, level=logging.DEBUG):
+        """
+        Simple helper for adding a file logger to the root logger.
+        """
+        file_handler = logging.FileHandler(filename=logfile)
+        file_handler.setLevel(level)
+
+        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+
+        file_handler.setFormatter(formatter)
+        self.log.addHandler(file_handler)
+        return file_handler
+
+    def remove_file_handler(self, handler):
+        """
+        Simple helper for removing a handler from the current logger.
+        """
+        self.log.removeHandler(handler)
+        handler.close()
+
     def info(self, sr):
         self._log(sr, level=logging.INFO)
 
