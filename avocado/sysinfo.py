@@ -20,7 +20,13 @@ _DEFAULT_COMMANDS_START_JOB = ["df -mP",
                                "mount",
                                "hostname",
                                "uptime",
-                               "dmidecode"]
+                               "dmidecode",
+                               "ifconfig -a",
+                               "brctl show",
+                               "ip link",
+                               "numactl --hardware show",
+                               "lscpu",
+                               "fdisk -l"]
 _DEFAULT_COMMANDS_END_JOB = []
 
 _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
@@ -32,7 +38,10 @@ _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/proc/cpuinfo",
                             "/proc/modules",
                             "/proc/interrupts",
-                            "/proc/partitions"]
+                            "/proc/partitions",
+                            "/sys/kernel/debug/sched_features",
+                            "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
+                            "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
 
 _DEFAULT_FILES_END_JOB = []
 
