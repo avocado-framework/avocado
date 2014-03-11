@@ -126,7 +126,7 @@ class OutputManager(object):
     """
     Takes care of both disk logs and stdout/err logs.
     """
-    def __init__(self, logger_name='avocado.utils'):
+    def __init__(self, logger_name='avocado.app'):
         self.colors = Bcolors()
         self.log = logging.getLogger(logger_name)
 
