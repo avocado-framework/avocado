@@ -263,8 +263,18 @@ class SysInfo(object):
     """
 
     def __init__(self, basedir=None, log_packages=False):
+        """
+        Set sysinfo loggables.
+
+        :param basedir: Base log dir where sysinfo files will be located.
+        :param log_packages: Whether to log system packages (optional because
+                logging packages is a costly operation).
+        """
         if basedir is None:
-            basedir = os.getcwd()
+            basedir = os.path.join(os.getcwd(), 'sysinfo')
+
+        if not os.path.isdir(basedir):
+            os.makedirs(basedir)
 
         self.basedir = basedir
         self.log_packages = log_packages
