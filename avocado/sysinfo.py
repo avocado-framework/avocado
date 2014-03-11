@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 
 from avocado import utils
 from avocado.linux import software_manager
@@ -439,3 +440,18 @@ class SysInfo(object):
         """
         for log in self.end_iteration_loggables:
             log.run(self.basedir)
+
+
+def collect_sysinfo(args):
+    """
+    Collect sysinfo to a base directory.
+    """
+    basedir = args.sysinfodir
+    if not basedir:
+        cwd = os.getcwd()
+        timestamp = time.strftime('%Y-%m-%d-%H.%M.%S')
+        basedir = os.path.join(cwd, 'sysinfo-%s' % timestamp)
+
+    sysinfo_logger = SysInfo(basedir=basedir, log_packages=True)
+    sysinfo_logger.start_job_hook()
+    log.info("Logged system information to %s", basedir)
