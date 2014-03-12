@@ -14,7 +14,7 @@ class synctest(test.Test):
 
     def setup(self, tarball='synctest.tar.bz2'):
         tarball_path = self.get_deps_path(tarball)
-        tarball = archive.extract(tarball_path, self.srcdir)
+        archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         build.make(self.srcdir)
 
