@@ -69,8 +69,10 @@ class OutputManager(object):
         self.file_handler.setFormatter(formatter)
         test_logger = logging.getLogger('avocado.test')
         utils_logger = logging.getLogger('avocado.utils')
+        linux_logger = logging.getLogger('avocado.linux')
         test_logger.addHandler(self.file_handler)
         utils_logger.addHandler(self.file_handler)
+        linux_logger.addHandler(self.file_handler)
 
     def stop_file_logging(self):
         """
@@ -78,8 +80,10 @@ class OutputManager(object):
         """
         test_logger = logging.getLogger('avocado.test')
         utils_logger = logging.getLogger('avocado.utils')
+        linux_logger = logging.getLogger('avocado.linux')
         test_logger.removeHandler(self.file_handler)
         utils_logger.removeHandler(self.file_handler)
+        linux_logger.removeHandler(self.file_handler)
         self.file_handler.close()
 
     def info(self, sr):
