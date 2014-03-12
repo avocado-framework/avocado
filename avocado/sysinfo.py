@@ -244,7 +244,7 @@ class LogWatcher(Loggable):
             try:
                 in_messages.seek(bytes_to_skip)
                 while True:
-                    # Read data in managable chunks rather than all at once.
+                    # Read data in manageable chunks rather than all at once.
                     in_data = in_messages.read(200000)
                     if not in_data:
                         break
