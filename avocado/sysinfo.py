@@ -120,7 +120,7 @@ class Logfile(Loggable):
             try:
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
             except IOError:
-                log.info("Not logging %s (lack of permissions)", self.path)
+                log.debug("Not logging %s (lack of permissions)", self.path)
 
 
 class Command(Loggable):
@@ -198,7 +198,7 @@ class LogWatcher(Loggable):
             self.size = stat.st_size
             self.inode = stat.st_ino
         except (IOError, OSError):
-            log.info("Not logging %s (lack of permissions)", self.path)
+            log.debug("Not logging %s (lack of permissions)", self.path)
 
     def __repr__(self):
         r = "sysinfo.LogWatcher(%r, %r)"
@@ -255,9 +255,9 @@ class LogWatcher(Loggable):
         except ValueError, e:
             log.info(e)
         except (IOError, OSError):
-            log.info("Not logging %s (lack of permissions)", self.path)
+            log.debug("Not logging %s (lack of permissions)", self.path)
         except Exception, e:
-            log.info("Log file %s collection failed: %s", self.path, e)
+            log.error("Log file %s collection failed: %s", self.path, e)
 
 
 class SysInfo(object):
