@@ -13,9 +13,10 @@ from avocado.core import output
 
 
 def list_tests(args):
+    bcolors = output.Bcolors()
     pipe = output.get_paginator()
     test_dirs = os.listdir(data_dir.get_test_dir())
-    pipe.write("Tests available:\n")
+    pipe.write(bcolors.HEADER + "Tests available:" + bcolors.ENDC + "\n")
     for test_dir in test_dirs:
         pipe.write("    %s\n" % test_dir)
 
