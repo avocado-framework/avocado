@@ -10,6 +10,8 @@ setup(name='avocado',
       url='http://autotest.github.com',
       packages=['avocado',
                 'avocado.cli',
-                'avocado.utils'
-                ],
+                'avocado.conf',
+                'avocado.core',
+                'avocado.linux',
+                'avocado.utils'],
       scripts=['scripts/avocado-run'])
