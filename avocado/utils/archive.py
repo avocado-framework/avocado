@@ -59,17 +59,17 @@ class Archive(object):
     The external API class that encapsulates an archive implementation.
     """
 
-    def __init__(self, file):
-        self._archive = self._archive_cls(file)(file)
+    def __init__(self, path):
+        self._archive = self._archive_cls(path)(path)
 
     @staticmethod
-    def _archive_cls(file):
+    def _archive_cls(path):
         cls = None
-        if isinstance(file, basestring):
-            filename = file
+        if isinstance(path, basestring):
+            filename = path
         else:
             try:
-                filename = file.name
+                filename = path.name
             except AttributeError:
                 raise UnrecognizedArchiveFormat(
                     "File object not a recognized archive format.")
@@ -143,8 +143,8 @@ class BaseArchive(object):
 
 class TarArchive(BaseArchive):
 
-    def __init__(self, file):
-        self._archive = tarfile.open(file)
+    def __init__(self, path):
+        self._archive = tarfile.open(path)
 
     def list(self, *args, **kwargs):
         self._archive.list(*args, **kwargs)
@@ -186,8 +186,8 @@ class TarArchive(BaseArchive):
 
 class ZipArchive(BaseArchive):
 
-    def __init__(self, file):
-        self._archive = zipfile.ZipFile(file)
+    def __init__(self, path):
+        self._archive = zipfile.ZipFile(path)
 
     def list(self, *args, **kwargs):
         self._archive.printdir(*args, **kwargs)
