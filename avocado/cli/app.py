@@ -12,6 +12,14 @@ from avocado.core import data_dir
 from avocado.core import output
 
 
+def list_tests(args):
+    pipe = output.get_paginator()
+    test_dirs = os.listdir(data_dir.get_test_dir())
+    pipe.write("Tests available:\n")
+    for test_dir in test_dirs:
+        pipe.write("    %s\n" % test_dir)
+
+
 def run_tests(args):
     """
     Find test modules in tests dir and run them.
@@ -103,6 +111,10 @@ class AvocadoRunnerApp(object):
                           help='Test module names (space separated)',
                           nargs='?', default='')
         prun.set_defaults(func=run_tests)
+
+        plist = subparsers.add_parser('list',
+                                      help='List available test modules')
+        plist.set_defaults(func=list_tests)
 
         psysinfo = subparsers.add_parser('sysinfo',
                                          help='Collect system information')

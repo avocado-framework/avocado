@@ -3,6 +3,17 @@ Manages output and logging in avocado applications.
 """
 import logging
 import os
+import sys
+
+from avocado.utils import process
+
+
+def get_paginator():
+    try:
+        less_cmd = process.find_command('less')
+        return os.popen('%s -FRSX' % less_cmd, 'w')
+    except ValueError:
+        return sys.stdout
 
 
 class Bcolors(object):
