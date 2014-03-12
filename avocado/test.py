@@ -43,9 +43,12 @@ class Test(object):
         self.tag = tag
         self.basedir = os.path.join(data_dir.get_test_dir(), name)
         self.depsdir = os.path.join(self.basedir, 'deps')
-        self.workdir = os.path.join(self.basedir, 'work')
-        self.srcdir = os.path.join(self.basedir, 'src')
-        self.tmpdir = os.path.join(self.basedir, 'tmp')
+        self.workdir = os.path.join(data_dir.get_tmp_dir(), self.name)
+        if not os.path.isdir(self.workdir):
+            os.makedirs(self.workdir)
+        self.srcdir = os.path.join(self.workdir, 'src')
+        if not os.path.isdir(self.srcdir):
+            os.makedirs(self.srcdir)
         self.tagged_name = self.get_tagged_name(base_logdir, self.name,
                                                 self.tag)
         self.logdir = os.path.join(base_logdir, self.tagged_name)
@@ -62,6 +65,9 @@ class Test(object):
         self.fail_reason = None
 
         self.time_elapsed = None
+
+    def get_deps_path(self, basename):
+        return os.path.join(self.depsdir, basename)
 
     def start_logging(self):
         """
