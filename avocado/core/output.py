@@ -3,83 +3,6 @@ Manages output and logging in avocado applications.
 """
 import logging
 import os
-import sys
-
-class StreamProxy(object):
-
-    """
-    Mechanism to redirect a stream to a file, allowing the original stream to
-    be restored later.
-    """
-
-    def __init__(self, filename='/dev/null', stream=sys.stdout):
-        """
-        Keep 2 streams to write to, and eventually switch.
-        """
-        self.terminal = stream
-        if filename is None:
-            self.log = stream
-        else:
-            self.log = open(filename, "a")
-        self.redirect()
-
-    def write(self, message):
-        """
-        Write to the current stream.
-        """
-        self.stream.write(message)
-
-    def flush(self):
-        """
-        Flush the current stream.
-        """
-        self.stream.flush()
-
-    def restore(self):
-        """Restore original stream"""
-        self.stream = self.terminal
-
-    def redirect(self):
-        """Redirect stream to log file"""
-        self.stream = self.log
-
-
-def _silence_stderr():
-    """
-    Points the stderr FD (2) to /dev/null, silencing it.
-    """
-    out_fd = os.open('/dev/null', os.O_WRONLY | os.O_CREAT)
-    try:
-        os.dup2(out_fd, 2)
-    finally:
-        os.close(out_fd)
-    sys.stderr = os.fdopen(2, 'w')
-
-
-def _handle_stdout(options):
-    """
-    Replace stdout with a proxy object.
-
-    Depending on self.options.verbose, make proxy print to /dev/null, or
-    original sys.stdout stream.
-    """
-    if not options.verbose:
-        _silence_stderr()
-        # Replace stdout with our proxy pointing to /dev/null
-        sys.stdout = StreamProxy(filename="/dev/null", stream=sys.stdout)
-    else:
-        # Retain full stdout
-        sys.stdout = StreamProxy(filename=None, stream=sys.stdout)
-
-
-def _restore_stdout():
-    """
-    Restore stdout. Used to re-enable stdout on error paths.
-    """
-    try:
-        sys.stdout.restore()
-    except AttributeError:
-        pass
 
 
 class Bcolors(object):
@@ -123,36 +46,41 @@ class Bcolors(object):
 
 
 class OutputManager(object):
+
     """
     Takes care of both disk logs and stdout/err logs.
     """
+
     def __init__(self, logger_name='avocado.app'):
         self.colors = Bcolors()
-        self.log = logging.getLogger(logger_name)
+
+        self.console_log = logging.getLogger('avocado.app')
 
     def _log(self, sr, level=logging.INFO):
-        self.log.log(level, sr)
+        self.console_log.log(level, sr)
 
-    def create_file_handler(self, logfile, level=logging.DEBUG):
-        """
-        Simple helper for adding a file logger to the root logger.
-        """
-        file_handler = logging.FileHandler(filename=logfile)
-        file_handler.setLevel(level)
+    def start_file_logging(self, logfile, level):
+        self.file_handler = logging.FileHandler(filename=logfile)
+        self.file_handler.setLevel(level)
 
-        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
+        fmt = '%(asctime)s %(module)-10.10s L%(lineno)-.4d %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
-        file_handler.setFormatter(formatter)
-        self.log.addHandler(file_handler)
-        return file_handler
+        self.file_handler.setFormatter(formatter)
+        test_logger = logging.getLogger('avocado.test')
+        utils_logger = logging.getLogger('avocado.utils')
+        test_logger.addHandler(self.file_handler)
+        utils_logger.addHandler(self.file_handler)
 
-    def remove_file_handler(self, handler):
+    def stop_file_logging(self):
         """
         Simple helper for removing a handler from the current logger.
         """
-        self.log.removeHandler(handler)
-        handler.close()
+        test_logger = logging.getLogger('avocado.test')
+        utils_logger = logging.getLogger('avocado.utils')
+        test_logger.removeHandler(self.file_handler)
+        utils_logger.removeHandler(self.file_handler)
+        self.file_handler.close()
 
     def info(self, sr):
         self._log(sr, level=logging.INFO)

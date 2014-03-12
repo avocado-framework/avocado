@@ -12,4 +12,5 @@ class sleeptest(test.Test):
         """
         Sleep for length seconds.
         """
+        self.log.debug("Sleeping for %d seconds", length)
         time.sleep(length)

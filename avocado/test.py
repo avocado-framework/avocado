@@ -5,11 +5,11 @@ framework tests.
 
 import logging
 import os
+import sys
 import time
+import traceback
 from avocado.core import data_dir
 from avocado.core import exceptions
-
-log = logging.getLogger("avocado.test")
 
 
 class Test(object):
@@ -53,11 +53,31 @@ class Test(object):
             os.makedirs(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
+
+        self.log = logging.getLogger("avocado.test")
+
         self.debugdir = None
         self.resultsdir = None
         self.status = None
+        self.fail_reason = None
 
         self.time_elapsed = None
+
+    def start_logging(self):
+        """
+        Simple helper for adding a file logger to the root logger.
+        """
+        self.file_handler = logging.FileHandler(filename=self.logfile)
+        self.file_handler.setLevel(logging.DEBUG)
+
+        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+
+        self.file_handler.setFormatter(formatter)
+        self.log.addHandler(self.file_handler)
+
+    def stop_logging(self):
+        self.log.removeHandler(self.file_handler)
 
     def get_tagged_name(self, logdir, name, tag):
         if tag is not None:
@@ -106,6 +126,16 @@ class Test(object):
             self.status = 'PASS'
         except exceptions.TestBaseException, detail:
             self.status = detail.status
+            self.fail_reason = detail
+        except Exception, detail:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            tb_info = "".join(tb_info)
+            for e_line in tb_info.splitlines():
+                self.log.error(e_line)
+            self.status = 'FAIL'
+            self.fail_reason = detail
         finally:
             end_time = time.time()
             self.time_elapsed = end_time - start_time
@@ -121,3 +151,14 @@ class Test(object):
         in setup.
         """
         pass
+
+    def report(self):
+        if self.fail_reason is not None:
+            self.log.error("%s %s -> %s: %s", self.status,
+                           self.tagged_name,
+                           self.fail_reason.__class__.__name__,
+                           self.fail_reason)
+
+        else:
+            self.log.info("%s %s", self.status,
+                          self.tagged_name)

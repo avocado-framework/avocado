@@ -11,8 +11,6 @@ from avocado import sysinfo
 from avocado.core import data_dir
 from avocado.core import output
 
-log = logging.getLogger("avocado.app")
-
 
 def run_tests(args):
     """
@@ -34,10 +32,11 @@ def run_tests(args):
     os.symlink(debugbase, latestdir)
 
     debuglog = os.path.join(debugdir, "debug.log")
-    loglevel = args.log_level or logging.INFO
+    loglevel = args.log_level or logging.DEBUG
+
     output_manager = output.OutputManager()
 
-    job_file_handler = output_manager.create_file_handler(debuglog, loglevel)
+    output_manager.start_file_logging(debuglog, loglevel)
 
     urls = args.url.split()
     total_tests = len(urls)
@@ -57,22 +56,24 @@ def run_tests(args):
         test_module = imp.load_module(url, f, p, d)
         f.close()
         test_class = getattr(test_module, url)
+
         test_instance = test_class(name=url, base_logdir=debugdir)
         sysinfo_logger = sysinfo.SysInfo(basedir=test_instance.sysinfodir)
-        test_file_handler = output_manager.create_file_handler(
-                                                test_instance.logfile, loglevel)
+        test_instance.start_logging()
         test_instance.setup()
         sysinfo_logger.start_job_hook()
         test_instance.run()
         test_instance.cleanup()
+        test_instance.report()
+        test_instance.stop_logging()
+
         output_func = output_mapping[test_instance.status]
         label = "(%s/%s) %s:" % (test_index, total_tests,
                                  test_instance.tagged_name)
         output_func(label, test_instance.time_elapsed)
         test_index += 1
-        output_manager.remove_file_handler(test_file_handler)
 
-    output_manager.remove_file_handler(job_file_handler)
+    output_manager.stop_file_logging()
 
 
 class AvocadoRunnerApp(object):

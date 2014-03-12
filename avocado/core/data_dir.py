@@ -23,6 +23,7 @@ def get_test_dir():
 def get_logs_dir():
     return os.path.join(get_root_dir(), 'logs')
 
+
 def get_tmp_dir():
     if not os.path.isdir(DEFAULT_TMP_DIR):
         os.makedirs(DEFAULT_TMP_DIR)
