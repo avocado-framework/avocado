@@ -455,6 +455,11 @@ def collect_sysinfo(args):
     """
     Collect sysinfo to a base directory.
     """
+    console_handler = logging.StreamHandler()
+    formatter = logging.Formatter(fmt='%(message)s')
+    console_handler.setFormatter(formatter)
+    log.addHandler(console_handler)
+
     basedir = args.sysinfodir
     if not basedir:
         cwd = os.getcwd()
