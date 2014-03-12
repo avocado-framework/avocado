@@ -16,6 +16,16 @@ def get_paginator():
         return sys.stdout
 
 
+def add_console_handler(logger):
+    """
+    Add a console handler to a logger.
+    """
+    console_handler = logging.StreamHandler()
+    formatter = logging.Formatter(fmt='%(message)s')
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+
 class Bcolors(object):
 
     """

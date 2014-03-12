@@ -7,6 +7,7 @@ import time
 
 from avocado import utils
 from avocado.linux import software_manager
+from avocado.core import output
 
 log = logging.getLogger("avocado.utils")
 
@@ -455,10 +456,7 @@ def collect_sysinfo(args):
     """
     Collect sysinfo to a base directory.
     """
-    console_handler = logging.StreamHandler()
-    formatter = logging.Formatter(fmt='%(message)s')
-    console_handler.setFormatter(formatter)
-    log.addHandler(console_handler)
+    output.add_console_handler(log)
 
     basedir = args.sysinfodir
     if not basedir:
