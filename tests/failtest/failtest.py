@@ -5,7 +5,7 @@ from avocado.core import exceptions
 class failtest(test.Test):
 
     """
-    Functional test for avocado. Straight up fail the test
+    Functional test for avocado. Straight up fail the test.
     """
 
     def action(self, length=1):
