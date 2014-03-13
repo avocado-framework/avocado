@@ -10,6 +10,7 @@ import time
 import traceback
 from avocado.core import data_dir
 from avocado.core import exceptions
+from avocado.utils import process
 
 
 class Test(object):
@@ -168,3 +169,19 @@ class Test(object):
         else:
             self.log.info("%s %s", self.status,
                           self.tagged_name)
+
+
+class DropinTest(Test):
+
+    """
+    Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
+    """
+
+    def __init__(self, path, base_logdir, tag=None):
+        basename = os.path.basename(path)
+        name = basename.split(".")[0]
+        self.path = os.path.abspath(path)
+        super(DropinTest, self).__init__(name, base_logdir, tag)
+
+    def action(self):
+        process.run(self.path, verbose=True)

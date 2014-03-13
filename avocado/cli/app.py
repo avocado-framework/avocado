@@ -8,6 +8,7 @@ import time
 from argparse import ArgumentParser
 
 from avocado import sysinfo
+from avocado import test
 from avocado.core import data_dir
 from avocado.core import output
 
@@ -61,13 +62,18 @@ def run_tests(args):
     test_index = 1
 
     for url in urls:
-        test_module_dir = os.path.join(test_dir, url)
-        f, p, d = imp.find_module(url, [test_module_dir])
-        test_module = imp.load_module(url, f, p, d)
-        f.close()
-        test_class = getattr(test_module, url)
+        path_attempt = os.path.abspath(url)
+        if os.path.exists(path_attempt):
+            test_class = test.DropinTest
+            test_instance = test_class(path=path_attempt, base_logdir=debugdir)
+        else:
+            test_module_dir = os.path.join(test_dir, url)
+            f, p, d = imp.find_module(url, [test_module_dir])
+            test_module = imp.load_module(url, f, p, d)
+            f.close()
+            test_class = getattr(test_module, url)
+            test_instance = test_class(name=url, base_logdir=debugdir)
 
-        test_instance = test_class(name=url, base_logdir=debugdir)
         sysinfo_logger = sysinfo.SysInfo(basedir=test_instance.sysinfodir)
         test_instance.start_logging()
         test_instance.setup()
@@ -108,15 +114,17 @@ class AvocadoRunnerApp(object):
                                                     description='valid subcommands',
                                                     help='subcommand help')
 
-        prun = subparsers.add_parser('run', help='Run a single test module')
-        prun.add_argument('url', type=str,
-                          help='Test module names (space separated)',
-                          nargs='?', default='')
-        prun.set_defaults(func=run_tests)
-
         plist = subparsers.add_parser('list',
                                       help='List available test modules')
         plist.set_defaults(func=list_tests)
+
+        prun = subparsers.add_parser('run', help=('Run a single test module '
+                                                  'or dropin test'))
+        prun.add_argument('url', type=str,
+                          help=('Test module names or paths to dropin tests '
+                                '(space separated)'),
+                          nargs='?', default='')
+        prun.set_defaults(func=run_tests)
 
         psysinfo = subparsers.add_parser('sysinfo',
                                          help='Collect system information')
