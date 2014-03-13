@@ -26,11 +26,17 @@ def add_console_handler(logger):
     logger.addHandler(console_handler)
 
 
-class Bcolors(object):
+class TermColors(object):
 
     """
-    Very simple class with color support.
+    Class to help applications to colorize their outputs for terminals.
+
+    This will probe the current terminal and colorize ouput only if the
+    stdout is in a tty or the terminal type is recognized.
     """
+
+    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
+                     'screen-256color']
 
     def __init__(self):
         self.blue = '\033[94m'
@@ -45,10 +51,8 @@ class Bcolors(object):
         self.ERROR = self.red
         self.WARN = self.yellow
         self.ENDC = self.end
-        allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100',
-                         'screen', 'screen-256color']
         term = os.environ.get("TERM")
-        if (not os.isatty(1)) or (not term in allowed_terms):
+        if (not os.isatty(1)) or (not term in self.allowed_terms):
             self.disable()
 
     def disable(self):
@@ -65,6 +69,27 @@ class Bcolors(object):
         self.WARN = ''
         self.ENDC = ''
 
+    def header_str(self, sr):
+        return self.HEADER + sr + self.ENDC
+
+    def pass_str(self):
+        return self.PASS + 'PASS' + self.ENDC
+
+    def skip_str(self):
+        return self.SKIP + 'SKIP' + self.ENDC
+
+    def fail_str(self):
+        return self.FAIL + 'FAIL' + self.ENDC
+
+    def error_str(self):
+        return self.ERROR + 'ERROR' + self.ENDC
+
+    def warn_str(self):
+        return self.WARN + 'WARN' + self.ENDC
+
+
+colors = TermColors()
+
 
 class OutputManager(object):
 
@@ -73,8 +98,6 @@ class OutputManager(object):
     """
 
     def __init__(self, logger_name='avocado.app'):
-        self.colors = Bcolors()
-
         self.console_log = logging.getLogger('avocado.app')
 
     def _log(self, sr, level=logging.INFO):
@@ -114,25 +137,23 @@ class OutputManager(object):
         self._log(sr, level=logging.ERROR)
 
     def log_header(self, sr):
-        header_msg = self.colors.HEADER + sr + self.colors.ENDC
-        self.info(header_msg)
+        self.info(colors.header_str(sr))
 
     def log_pass(self, label, t_elapsed):
-        normal_pass_msg = (label + " " + self.colors.PASS + "PASS" +
-                           self.colors.ENDC + " (%.2f s)" % t_elapsed)
+        normal_pass_msg = (label + " " + colors.pass_str() +
+                           " (%.2f s)" % t_elapsed)
         self.info(normal_pass_msg)
 
     def log_fail(self, label, t_elapsed):
-        normal_fail_msg = (label + " " + self.colors.FAIL + "FAIL" +
-                           self.colors.ENDC + " (%.2f s)" % t_elapsed)
+        normal_fail_msg = (label + " " + colors.fail_str() +
+                           " (%.2f s)" % t_elapsed)
         self.error(normal_fail_msg)
 
     def log_skip(self, label, t_elapsed):
-        normal_skip_msg = (label + " " + self.colors.SKIP + "SKIP" +
-                           self.colors.ENDC)
+        normal_skip_msg = (label + " " + colors.skip_str())
         self.info(normal_skip_msg)
 
     def log_warn(self, label, t_elapsed):
-        normal_warn_msg = (label + " " + self.colors.WARN + "WARN" +
-                           self.colors.ENDC + " (%.2f s)" % t_elapsed)
+        normal_warn_msg = (label + " " + colors.warn_str() +
+                           " (%.2f s)" % t_elapsed)
         self.error(normal_warn_msg)
