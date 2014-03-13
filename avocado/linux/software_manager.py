@@ -32,6 +32,7 @@ from avocado.core import exceptions
 
 log = logging.getLogger('avocado.linux')
 
+
 SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper']
 
 
@@ -143,7 +144,7 @@ class BaseBackend(object):
         if provides is not None:
             return self.install(provides)
         else:
-            logging.warning('No package seems to provide %s', path)
+            log.warning('No package seems to provide %s', path)
             return False
 
 
@@ -217,7 +218,7 @@ class RpmBackend(BaseBackend):
         :param software_components: log in a format suitable for the
                                     SoftwareComponent schema
         """
-        logging.debug("Listing all system packages (may take a while)")
+        log.debug("Listing all system packages (may take a while)")
 
         if software_components:
             cmd_format = "rpm -qa --qf '%s' | sort"
@@ -287,7 +288,7 @@ class DpkgBackend(BaseBackend):
         """
         List all packages available in the system.
         """
-        logging.debug("Listing all system packages (may take a while)")
+        log.debug("Listing all system packages (may take a while)")
         installed_packages = []
         cmd_result = process.run('dpkg -l', verbose=False)
         out = cmd_result.stdout.strip()
@@ -342,7 +343,7 @@ class YumBackend(RpmBackend):
         except IndexError:
             ver = out
         self.pm_version = ver
-        logging.debug('Yum version: %s' % self.pm_version)
+        log.debug('Yum version: %s' % self.pm_version)
 
         self.yum_base = yum.YumBase()
 
@@ -449,8 +450,8 @@ class YumBackend(RpmBackend):
         try:
             d_provides = self.yum_base.searchPackageProvides(args=[name])
         except Exception, e:
-            logging.error("Error searching for package that "
-                          "provides %s: %s", name, e)
+            log.error("Error searching for package that "
+                      "provides %s: %s", name, e)
             d_provides = []
 
         provides_list = [key for key in d_provides]
@@ -483,7 +484,7 @@ class ZypperBackend(RpmBackend):
         except IndexError:
             ver = out
         self.pm_version = ver
-        logging.debug('Zypper version: %s' % self.pm_version)
+        log.debug('Zypper version: %s' % self.pm_version)
 
     def install(self, name):
         """
@@ -576,10 +577,10 @@ class ZypperBackend(RpmBackend):
                 except IndexError:
                     pass
             if len(list_provides) > 1:
-                logging.warning('More than one package found, '
-                                'opting by the first queue result')
+                log.warning('More than one package found, '
+                            'opting by the first queue result')
             if list_provides:
-                logging.info("Package %s provides %s", list_provides[0], name)
+                log.info("Package %s provides %s", list_provides[0], name)
                 return list_provides[0]
             return None
         except exceptions.CmdError:
@@ -613,7 +614,7 @@ class AptBackend(DpkgBackend):
             ver = out
         self.pm_version = ver
 
-        logging.debug('apt-get version: %s' % self.pm_version)
+        log.debug('apt-get version: %s' % self.pm_version)
 
     def install(self, name):
         """
@@ -690,7 +691,7 @@ class AptBackend(DpkgBackend):
         try:
             process.system(ud_cmd)
         except exceptions.CmdError:
-            logging.error("Apt package update failed")
+            log.error("Apt package update failed")
 
         if name:
             up_command = 'install --only-upgrade'
@@ -721,7 +722,7 @@ class AptBackend(DpkgBackend):
         try:
             process.system(cache_update_cmd, ignore_status=True)
         except exceptions.CmdError:
-            logging.error("Apt file cache update failed")
+            log.error("Apt file cache update failed")
         fu_cmd = command + ' search ' + path
         try:
             provides = process.system_output(fu_cmd).split('\n')
@@ -737,10 +738,10 @@ class AptBackend(DpkgBackend):
                     except IndexError:
                         pass
             if len(list_provides) > 1:
-                logging.warning('More than one package found, '
-                                'opting by the first result')
+                log.warning('More than one package found, '
+                            'opting by the first result')
             if list_provides:
-                logging.info("Package %s provides %s", list_provides[0], path)
+                log.info("Package %s provides %s", list_provides[0], path)
                 return list_provides[0]
             return None
         except exceptions.CmdError:
@@ -793,7 +794,7 @@ def install_distro_packages(distro_pkg_map, interactive=False):
         break
 
     if not pkgs:
-        logging.info("No specific distro release package list")
+        log.info("No specific distro release package list")
 
         # when comparing distro names only, fallback to a lowercase version
         # of the distro name is it's more common than the case as detected
@@ -802,7 +803,7 @@ def install_distro_packages(distro_pkg_map, interactive=False):
             pkgs = distro_pkg_map.get(detected_distro.name.lower(), None)
 
         if not pkgs:
-            logging.error("No generic distro package list")
+            log.error("No generic distro package list")
 
     if pkgs:
         needed_pkgs = []
@@ -812,12 +813,12 @@ def install_distro_packages(distro_pkg_map, interactive=False):
                 needed_pkgs.append(pkg)
         if needed_pkgs:
             text = ' '.join(needed_pkgs)
-            logging.info('Installing packages "%s"', text)
+            log.info('Installing packages "%s"', text)
             result = software_manager.install(text)
     else:
-        logging.error("No packages found for %s %s %s %s",
-                      detected_distro.name, detected_distro.arch,
-                      detected_distro.version, detected_distro.release)
+        log.error("No packages found for %s %s %s %s",
+                  detected_distro.name, detected_distro.arch,
+                  detected_distro.version, detected_distro.release)
     return result
 
 
@@ -839,54 +840,54 @@ if __name__ == '__main__':
 
     if action == 'install':
         if software_manager.install(args):
-            logging.info("Packages %s installed successfully", args)
+            log.info("Packages %s installed successfully", args)
         else:
-            logging.error("Failed to install %s", args)
+            log.error("Failed to install %s", args)
 
     elif action == 'remove':
         if software_manager.remove(args):
-            logging.info("Packages %s removed successfully", args)
+            log.info("Packages %s removed successfully", args)
         else:
-            logging.error("Failed to remove %s", args)
+            log.error("Failed to remove %s", args)
 
     elif action == 'check-installed':
         if software_manager.check_installed(args):
-            logging.info("Package %s already installed", args)
+            log.info("Package %s already installed", args)
         else:
-            logging.info("Package %s not installed", args)
+            log.info("Package %s not installed", args)
 
     elif action == 'list-all':
         for pkg in software_manager.list_all():
-            logging.info(pkg)
+            log.info(pkg)
 
     elif action == 'list-files':
         for f in software_manager.list_files(args):
-            logging.info(f)
+            log.info(f)
 
     elif action == 'add-repo':
         if software_manager.add_repo(args):
-            logging.info("Repo %s added successfully", args)
+            log.info("Repo %s added successfully", args)
         else:
-            logging.error("Failed to remove repo %s", args)
+            log.error("Failed to remove repo %s", args)
 
     elif action == 'remove-repo':
         if software_manager.remove_repo(args):
-            logging.info("Repo %s removed successfully", args)
+            log.info("Repo %s removed successfully", args)
         else:
-            logging.error("Failed to remove repo %s", args)
+            log.error("Failed to remove repo %s", args)
 
     elif action == 'upgrade':
         if software_manager.upgrade():
-            logging.info("Package manager upgrade successful")
+            log.info("Package manager upgrade successful")
 
     elif action == 'what-provides':
         provides = software_manager.provides(args)
         if provides is not None:
-            logging.info("Package %s provides %s", provides, args)
+            log.info("Package %s provides %s", provides, args)
 
     elif action == 'install-what-provides':
         if software_manager.install_what_provides(args):
-            logging.info("Installed successfully what provides %s", args)
+            log.info("Installed successfully what provides %s", args)
 
     elif action == 'show-help':
         parser.print_help()
