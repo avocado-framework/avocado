@@ -9,7 +9,7 @@ from avocado import utils
 from avocado.linux import software_manager
 from avocado.core import output
 
-log = logging.getLogger("avocado.utils")
+log = logging.getLogger("avocado.test")
 
 
 _DEFAULT_COMMANDS_START_JOB = ["df -mP",

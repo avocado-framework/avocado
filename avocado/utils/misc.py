@@ -1,7 +1,7 @@
 import logging
 import os
 
-log = logging.getLogger('avocado.utils')
+log = logging.getLogger('avocado.test')
 
 
 def ask(question, auto=False):

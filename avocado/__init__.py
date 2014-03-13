@@ -36,14 +36,6 @@ DEFAULT_LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-        'avocado.utils': {
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'avocado.linux': {
-            'level': 'DEBUG',
-            'propagate': False,
-        },
     }
 }
 

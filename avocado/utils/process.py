@@ -11,7 +11,7 @@ import time
 from avocado.core import exceptions
 from avocado.utils import misc
 
-log = logging.getLogger('avocado.utils')
+log = logging.getLogger('avocado.test')
 
 
 class CmdNotFoundError(Exception):

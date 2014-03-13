@@ -30,7 +30,7 @@ from avocado.utils import crypto
 from avocado.linux import distro
 from avocado.core import exceptions
 
-log = logging.getLogger('avocado.linux')
+log = logging.getLogger('avocado.test')
 
 
 SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper']

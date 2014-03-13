@@ -9,7 +9,7 @@ import shutil
 import urllib2
 import urlparse
 
-log = logging.getLogger('avocado.utils')
+log = logging.getLogger('avocado.test')
 
 
 def is_url(path):
