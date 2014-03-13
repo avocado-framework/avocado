@@ -12,6 +12,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado import sysinfo
 
+
 class SysinfoTest(unittest.TestCase):
 
     def testLoggablesEqual(self):
