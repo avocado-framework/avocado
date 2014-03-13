@@ -183,5 +183,15 @@ class DropinTest(Test):
         self.path = os.path.abspath(path)
         super(DropinTest, self).__init__(name, base_logdir, tag)
 
+    def _log_detailed_cmd_info(self, result):
+        run_info = str(result)
+        for line in run_info.splitlines():
+            self.log.info(line)
+
     def action(self):
-        process.run(self.path, verbose=True)
+        try:
+            result = process.run(self.path, verbose=True)
+            self._log_detailed_cmd_info(result)
+        except exceptions.CmdError, details:
+            self._log_detailed_cmd_info(details.result)
+            raise exceptions.TestFail(details)
