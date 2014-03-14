@@ -15,4 +15,4 @@ setup(name='avocado',
                 'avocado.linux',
                 'avocado.utils',
                 'avocado.plugins'],
-      scripts=['scripts/avocado-run'])
+      scripts=['scripts/avocado'])
