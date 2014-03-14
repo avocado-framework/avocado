@@ -1,48 +1,66 @@
-"""Runner Plugins."""
+"""
+Base Test Runner Plugins.
+"""
 
 import imp
 import logging
 import os
 import time
 
-from avocado.plugins.plugin import Plugin
+from avocado.plugins import plugin
 from avocado.core import data_dir
 from avocado.core import output
 from avocado import sysinfo
 from avocado import test
 
 
-class TestListerRunner(Plugin):
+class TestLister(plugin.Plugin):
 
     """
-    This runner list all tests available.
+    Implements the avocado 'list' functionality.
     """
 
     def configure(self, parser):
+        """
+        Add the subparser for the list action.
+
+        :param parser: Main test runner parser.
+        """
         tlist = parser.add_parser('list',
                                   help='List available test modules')
         tlist.set_defaults(func=self.list_tests)
         self.enabled = True
 
-    def list_tests(self, arguments):
+    def list_tests(self, args):
+        """
+        List available test modules.
+
+        :param args: Command line args received from the list subparser.
+        """
         bcolors = output.colors
         pipe = output.get_paginator()
         test_dirs = os.listdir(data_dir.get_test_dir())
-        pipe.write(bcolors.header_str("Tests available:"))
+        pipe.write(bcolors.header_str('Tests available:'))
         pipe.write("\n")
         for test_dir in test_dirs:
             pipe.write("    %s\n" % test_dir)
 
 
-class SimpleTestRunner(Plugin):
+class TestRunner(plugin.Plugin):
 
     """
-    This runner executes tests.
+    Implements the avocado 'run' functionality.
     """
 
     def configure(self, parser):
-        myparser = parser.add_parser('run', help=('Run a single test module '
-                                                  'or dropin test'))
+        """
+        Add the subparser for the run action.
+
+        :param parser: Main test runner parser.
+        """
+        myparser = parser.add_parser('run', help=('Run a list of test modules '
+                                                  'or dropin tests '
+                                                  '(space separated)'))
         myparser.add_argument('url', type=str,
                               help=('Test module names or paths to dropin tests '
                                     '(space separated)'),
@@ -51,9 +69,9 @@ class SimpleTestRunner(Plugin):
 
     def run_tests(self, args):
         """
-        Find test modules in tests dir and run them.
+        Run test modules or dropin tests.
 
-        :param args: Command line arguments.
+        :param args: Command line args received from the run subparser.
         """
         test_start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
         logdir = args.logdir or data_dir.get_logs_dir()
