@@ -1,6 +1,5 @@
 """Runner Plugins."""
 
-import os
 import imp
 import logging
 import os
