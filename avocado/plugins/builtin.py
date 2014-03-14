@@ -5,6 +5,7 @@ from importlib import import_module
 __all__ = ['load_builtins']
 
 Builtins = [('avocado.plugins.runner', 'TestLister'),
+            ('avocado.plugins.runner', 'SystemInformation'),
             ('avocado.plugins.runner', 'TestRunner'), ]
 
 
