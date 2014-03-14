@@ -6,5 +6,3 @@ the autotest framework. It aims to implement the good concepts that make
 autotest a good test suite, while trying to streamline and reduce some of its
 shortcomings.
 
-Getting Started
-===============
