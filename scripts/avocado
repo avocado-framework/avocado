@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os
 import sys
 
@@ -10,5 +11,5 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 import avocado
 
 if __name__ == '__main__':
-    app = avocado.cli.app.AvocadoRunnerApp()
+    app = avocado.cli.app.AvocadoApp()
     app.run()

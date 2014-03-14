@@ -1,6 +1,7 @@
 """
-Implements the base avocado runner application.
+The core Avocado application.
 """
+
 import imp
 import logging
 import os
@@ -11,10 +12,10 @@ from avocado import sysinfo
 from avocado.plugins.manager import get_plugin_manager
 
 
-class AvocadoRunnerApp(object):
+class AvocadoApp(object):
 
     """
-    Basic avocado runner application.
+    Avocado application.
     """
 
     def __init__(self):
@@ -33,13 +34,6 @@ class AvocadoRunnerApp(object):
         subparsers = self.arg_parser.add_subparsers(title='subcommands',
                                                     description='valid subcommands',
                                                     help='subcommand help')
-
-        psysinfo = subparsers.add_parser('sysinfo',
-                                         help='Collect system information')
-        psysinfo.add_argument('sysinfodir', type=str,
-                              help='Dir where to dump sysinfo',
-                              nargs='?', default='')
-        psysinfo.set_defaults(func=sysinfo.collect_sysinfo)
 
         self.load_plugin_manager(subparsers)
         self.args = self.arg_parser.parse_args()
