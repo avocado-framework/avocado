@@ -4,8 +4,8 @@ from importlib import import_module
 
 __all__ = ['load_builtins']
 
-Builtins = [('avocado.plugins.runner', 'TestListerRunner'),
-            ('avocado.plugins.runner', 'SimpleTestRunner'), ]
+Builtins = [('avocado.plugins.runner', 'TestLister'),
+            ('avocado.plugins.runner', 'TestRunner'), ]
 
 
 def load_builtins(set_globals=True):
