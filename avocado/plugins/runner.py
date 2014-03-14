@@ -26,9 +26,9 @@ class TestLister(plugin.Plugin):
 
         :param parser: Main test runner parser.
         """
-        tlist = parser.add_parser('list',
-                                  help='List available test modules')
-        tlist.set_defaults(func=self.list_tests)
+        myparser = parser.add_parser('list',
+                                     help='List available test modules')
+        myparser.set_defaults(func=self.list_tests)
         self.enabled = True
 
     def list_tests(self, args):
@@ -66,6 +66,7 @@ class TestRunner(plugin.Plugin):
                                     '(space separated)'),
                               nargs='?', default='')
         myparser.set_defaults(func=self.run_tests)
+        self.enabled = True
 
     def run_tests(self, args):
         """
@@ -134,3 +135,22 @@ class TestRunner(plugin.Plugin):
             test_index += 1
 
         output_manager.stop_file_logging()
+
+
+class SystemInformation(plugin.Plugin):
+    """
+    Collect system information and log.
+    """
+    def configure(self, parser):
+        """
+        Add the subparser for the run action.
+
+        :param parser: Main test runner parser.
+        """
+        myparser = parser.add_parser('sysinfo',
+                                     help='Collect system information')
+        myparser.add_argument('sysinfodir', type=str,
+                              help='Dir where to dump sysinfo',
+                              nargs='?', default='')
+        myparser.set_defaults(func=sysinfo.collect_sysinfo)
+        self.enabled = True
