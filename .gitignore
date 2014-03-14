@@ -4,3 +4,8 @@
 tmp/*
 logs/*
 *.pyc
+*~
+tags
+cscope.*
+build
+sysinfo-*
