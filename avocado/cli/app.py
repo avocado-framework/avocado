@@ -2,13 +2,8 @@
 The core Avocado application.
 """
 
-import imp
-import logging
-import os
-import time
 from argparse import ArgumentParser
 
-from avocado import sysinfo
 from avocado.plugins.manager import get_plugin_manager
 
 
