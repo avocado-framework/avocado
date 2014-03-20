@@ -138,9 +138,11 @@ class TestRunner(plugin.Plugin):
 
 
 class SystemInformation(plugin.Plugin):
+
     """
     Collect system information and log.
     """
+
     def configure(self, parser):
         """
         Add the subparser for the run action.
