@@ -12,4 +12,4 @@ import avocado
 
 if __name__ == '__main__':
     app = avocado.cli.app.AvocadoApp()
-    app.run()
+    sys.exit(app.run())
