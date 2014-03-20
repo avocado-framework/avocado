@@ -41,11 +41,31 @@ class BuiltinPluginManager(PluginManager):
             plugin.configure(parser)
 
 
+class ExternalPluginManager(PluginManager):
+
+    """
+    Load external plugins.
+    """
+
+    def add_plugins(self, plugins):
+        for plugin in plugins:
+            self.add_plugin(plugin)
+
+
+class AvocadoPluginManager(BuiltinPluginManager, ExternalPluginManager):
+
+    """
+    Avocado Plugin Manager.
+
+    Load builtins and external plugins.
+    """
+
+
 def get_plugin_manager():
     """
     Get default plugin manager.
     """
     global DefaultPluginManager
     if DefaultPluginManager is None:
-        DefaultPluginManager = BuiltinPluginManager()
+        DefaultPluginManager = AvocadoPluginManager()
     return DefaultPluginManager
