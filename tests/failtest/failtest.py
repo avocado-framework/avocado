@@ -1,4 +1,7 @@
+#!/usr/bin/python
+
 from avocado import test
+from avocado import job
 from avocado.core import exceptions
 
 
@@ -13,3 +16,7 @@ class failtest(test.Test):
         Sleep for length seconds.
         """
         raise exceptions.TestFail('This test is supposed to fail')
+
+
+if __name__ == "__main__":
+    job.main()

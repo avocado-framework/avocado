@@ -1,4 +1,8 @@
+#!/usr/bin/python
+
 import time
+
+from avocado import job
 from avocado import test
 
 
@@ -14,3 +18,7 @@ class sleeptest(test.Test):
         """
         self.log.debug("Sleeping for %d seconds", length)
         time.sleep(length)
+
+
+if __name__ == "__main__":
+    job.main()
