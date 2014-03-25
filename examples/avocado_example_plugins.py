@@ -2,6 +2,7 @@ from avocado.plugins import plugin
 from avocado.plugins.manager import get_plugin_manager
 from avocado.core import output
 
+
 class HelloWorld(plugin.Plugin):
 
     """

@@ -81,6 +81,7 @@ class AvocadoPluginManager(BuiltinPluginManager, ExternalPluginManager):
         BuiltinPluginManager.load_plugins(self)
         ExternalPluginManager.load_plugins(self, path)
 
+
 def get_plugin_manager():
     """
     Get default plugin manager.
