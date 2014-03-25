@@ -1,6 +1,9 @@
+#!/usr/bin/python
+
 import os
 
 from avocado import test
+from avocado import job
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
@@ -24,3 +27,7 @@ class synctest(test.Test):
         cmd = './synctest %s %s' % (length, loop)
         process.system(cmd)
         os.chdir(self.cwd)
+
+
+if __name__ == "__main__":
+    job.main()
