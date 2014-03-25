@@ -13,7 +13,8 @@ class AvocadoApp(object):
     Avocado application.
     """
 
-    def __init__(self):
+    def __init__(self, external_plugins=None):
+        self.external_plugins = external_plugins
         self.plugin_manager = None
         self.arg_parser = ArgumentParser(description='Avocado Test Runner')
         self.arg_parser.add_argument('-v', '--verbose', action='store_true',
@@ -25,18 +26,29 @@ class AvocadoApp(object):
         self.arg_parser.add_argument('--loglevel', action='store',
                                      help='Debug Level',
                                      dest='log_level', default='')
+        self.arg_parser.add_argument('--plugins', action='store',
+                                     help='Load extra plugins from directory',
+                                     dest='plugins_dir', default='')
 
+        args, extra = self.arg_parser.parse_known_args()
         subparsers = self.arg_parser.add_subparsers(title='subcommands',
                                                     description='valid subcommands',
                                                     help='subcommand help')
 
-        self.load_plugin_manager(subparsers)
+        self.load_plugin_manager(subparsers, args.plugins_dir)
         self.args = self.arg_parser.parse_args()
 
-    def load_plugin_manager(self, parser):
+    def load_plugin_manager(self, parser, plugins_dir):
+        """Load Plugin Manager.
+
+        :param parser: Main argument parser.
+        :param plugins_dir: Extra plugins directory.
+        """
         self.plugin_manager = get_plugin_manager()
-        self.plugin_manager.load_plugins()
+        self.plugin_manager.load_plugins(plugins_dir)
+        if self.external_plugins:
+            self.plugin_manager.add_plugins(self.external_plugins)
         self.plugin_manager.configure(parser)
 
     def run(self):
-        self.args.func(self.args)
+        return self.args.func(self.args)
