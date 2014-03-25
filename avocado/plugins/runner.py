@@ -8,7 +8,7 @@ from avocado.plugins import plugin
 from avocado.core import data_dir
 from avocado.core import output
 from avocado import sysinfo
-from avocado import test
+from avocado import job
 
 
 class TestLister(plugin.Plugin):
@@ -71,7 +71,8 @@ class TestRunner(plugin.Plugin):
 
         :param args: Command line args received from the run subparser.
         """
-        test.run_tests(args)
+        job_instance = job.Job(args)
+        job_instance.run()
 
 
 class SystemInformation(plugin.Plugin):
