@@ -30,7 +30,7 @@ class AvocadoApp(object):
                                      help='Load extra plugins from directory',
                                      dest='plugins_dir', default='')
 
-        args, extra = self.arg_parser.parse_known_args()
+        args, _ = self.arg_parser.parse_known_args()
         subparsers = self.arg_parser.add_subparsers(title='subcommands',
                                                     description='valid subcommands',
                                                     help='subcommand help')
