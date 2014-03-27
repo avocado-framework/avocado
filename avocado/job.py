@@ -10,6 +10,7 @@ from avocado.core import data_dir
 from avocado.core import output
 from avocado import test
 from avocado import sysinfo
+from avocado import result
 
 JOB_STATUSES = {"TEST_NA": False,
                 "ABORT": False,
@@ -108,24 +109,15 @@ class Job(object):
         if urls is None:
             urls = self.args.url.split()
 
-        total_tests = len(urls)
-        self.output_manager.start_file_logging(self.debuglog, self.loglevel)
-        self.output_manager.log_header("DEBUG LOG: %s" % self.debuglog)
-        self.output_manager.log_header("TOTAL TESTS: %s" % total_tests)
-        self.output_mapping = {'PASS': self.output_manager.log_pass,
-                               'FAIL': self.output_manager.log_fail,
-                               'TEST_NA': self.output_manager.log_skip,
-                               'WARN': self.output_manager.log_warn}
-
+        test_result = result.TestResult(stream=self.output_manager,
+                                        debuglog=self.debuglog,
+                                        loglevel=self.loglevel,
+                                        tests_total=len(urls))
+        test_result.start_tests()
         for url in urls:
             test_instance = self.run_test(url)
-            output_func = self.output_mapping[test_instance.status]
-            label = "(%s/%s) %s:" % (self.test_index, total_tests,
-                                     test_instance.tagged_name)
-            output_func(label, test_instance.time_elapsed)
-            self.test_index += 1
-
-        self.output_manager.stop_file_logging()
+            test_result.check_test(test_instance)
+        test_result.end_tests()
 
 
 class TestModuleRunner(object):
