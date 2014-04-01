@@ -5,6 +5,7 @@ The core Avocado application.
 from argparse import ArgumentParser
 
 from avocado.plugins.manager import get_plugin_manager
+from avocado.version import VERSION
 
 
 class AvocadoApp(object):
@@ -16,8 +17,10 @@ class AvocadoApp(object):
     def __init__(self, external_plugins=None):
         self.external_plugins = external_plugins
         self.plugin_manager = None
-        self.arg_parser = ArgumentParser(description='Avocado Test Runner')
-        self.arg_parser.add_argument('-v', '--verbose', action='store_true',
+        self.arg_parser = ArgumentParser(prog='avocado',
+                                         version=VERSION,
+                                         description='Avocado Test Runner')
+        self.arg_parser.add_argument('-V', '--verbose', action='store_true',
                                      help='print extra debug messages',
                                      dest='verbose')
         self.arg_parser.add_argument('--logdir', action='store',

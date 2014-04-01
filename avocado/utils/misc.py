@@ -94,14 +94,4 @@ def unique(lst):
     :param lst: List with values.
     :return: List with non duplicate elements.
     """
-    n = len(lst)
-    if n == 0:
-        return []
-    u = {}
-    try:
-        for x in lst:
-            u[x] = 1
-    except TypeError:
-        return None
-    else:
-        return u.keys()
+    return list(set(lst))
