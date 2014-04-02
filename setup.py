@@ -17,5 +17,7 @@ setup(name='avocado',
                 'avocado.plugins'],
       data_files=[('/etc/avocado', ['etc/settings.ini']),
                   ('/usr/share/avocado/tests/sleeptest', glob.glob('tests/sleeptest/*')),
-                  ('/usr/share/avocado/tests/failtest', glob.glob('tests/failtest/*'))],
+                  ('/usr/share/avocado/tests/failtest', glob.glob('tests/failtest/*')),
+                  ('/usr/share/avocado/tests/synctest', glob.glob('tests/synctest/synctest.py')),
+                  ('/usr/share/avocado/tests/synctest/deps', glob.glob('tests/synctest/deps/synctest.tar.bz2'))],
       scripts=['scripts/avocado'])
