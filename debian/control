@@ -1,0 +1,13 @@
+Source: avocado
+Section: python
+Priority: optional
+Maintainer: Lucas Meneghel Rodrigues (lmr) <lookkas@gmail.com>
+Build-Depends: debhelper (>=7.0.50~), python-support (>= 0.6), cdbs (>= 0.4.49)
+Standards-Version: 3.8.4
+
+Package: avocado
+Architecture: all
+Homepage: http://autotest.github.com/
+XB-Python-Version: ${python:Versions}
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Avocado is a framework for fully automated testing.
