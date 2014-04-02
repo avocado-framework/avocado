@@ -120,35 +120,6 @@ class Test(object):
         raise NotImplementedError('Test subclasses must implement an action '
                                   'method')
 
-    def run(self):
-        """
-        Main test execution entry point.
-
-        It'll run the action payload, taking into consideration profiling
-        requirements. After the test is done, it reports time and status.
-        """
-        start_time = time.time()
-        try:
-            self.action()
-            self.status = 'PASS'
-        except exceptions.TestBaseException, detail:
-            self.status = detail.status
-            self.fail_reason = detail
-        except Exception, detail:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            tb_info = traceback.format_exception(exc_type, exc_value,
-                                                 exc_traceback.tb_next)
-            tb_info = "".join(tb_info)
-            for e_line in tb_info.splitlines():
-                self.log.error(e_line)
-            self.status = 'FAIL'
-            self.fail_reason = detail
-        finally:
-            end_time = time.time()
-            self.time_elapsed = end_time - start_time
-
-        return self.status == 'PASS'
-
     def cleanup(self):
         """
         Cleanup stage after the action is done.
