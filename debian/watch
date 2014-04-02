@@ -1,0 +1,3 @@
+version=3
+
+https://github.com/lmr/avocado/tags .*/(\d[\d\.]+)\.tar\.gz
