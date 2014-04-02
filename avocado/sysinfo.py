@@ -312,7 +312,9 @@ class SysInfo(object):
     def _get_syslog_watcher(self):
         syslog_watcher = None
 
-        logpaths = ["/var/log/messages", "/var/log/syslog"]
+        logpaths = ["/var/log/messages",
+                    "/var/log/syslog",
+                    "/var/log/system.log"]
         for logpath in logpaths:
             if os.path.exists(logpath):
                 syslog_watcher = LogWatcher(logpath)
