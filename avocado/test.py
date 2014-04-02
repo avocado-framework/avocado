@@ -5,9 +5,6 @@ framework tests.
 
 import logging
 import os
-import sys
-import time
-import traceback
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import process
