@@ -32,7 +32,7 @@ def get_logs_dir():
     if settings.intree:
         return os.path.join(get_root_dir(), 'logs')
     else:
-        return settings.get_value('runner', 'logs_dir')
+        return os.path.expanduser(settings.get_value('runner', 'logs_dir'))
 
 
 def get_tmp_dir():
