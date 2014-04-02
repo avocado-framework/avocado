@@ -70,6 +70,7 @@ class TestResult(object):
         'Called once for a test to check status and report.'
         self.start_test(test)
         status_map = {'PASS': self.add_pass,
+                      'ERROR': self.add_fail,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn}

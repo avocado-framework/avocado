@@ -11,6 +11,14 @@ class TestBaseException(Exception):
     status = "NEVER_RAISE_THIS"
 
 
+class TestSetupFail(TestBaseException):
+
+    """
+    Indicates an error during a setup procedure.
+    """
+    status = "FAIL"
+
+
 class TestError(TestBaseException):
 
     """
