@@ -9,3 +9,5 @@ tags
 cscope.*
 build
 sysinfo-*
+MANIFEST
+dist
