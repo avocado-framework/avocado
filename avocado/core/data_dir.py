@@ -7,37 +7,55 @@ import sys
 import glob
 import shutil
 
+from avocado.settings import settings
+
 _ROOT_PATH = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
-DEFAULT_ROOT_DIR = os.path.abspath(_ROOT_PATH)
-DEFAULT_TMP_DIR = os.path.join(DEFAULT_ROOT_DIR, 'tmp')
+IN_TREE_ROOT_DIR = os.path.abspath(_ROOT_PATH)
+IN_TREE_TMP_DIR = os.path.join(IN_TREE_ROOT_DIR, 'tmp')
 
 
 def get_root_dir():
-    return DEFAULT_ROOT_DIR
+    if settings.intree:
+        return IN_TREE_ROOT_DIR
+    else:
+        return settings.get_value('runner', 'root_dir')
 
 
 def get_test_dir():
-    return os.path.join(get_root_dir(), 'tests')
+    if settings.intree:
+        return os.path.join(get_root_dir(), 'tests')
+    else:
+        return settings.get_value('runner', 'test_dir')
 
 
 def get_logs_dir():
-    return os.path.join(get_root_dir(), 'logs')
+    if settings.intree:
+        return os.path.join(get_root_dir(), 'logs')
+    else:
+        return os.path.expanduser(settings.get_value('runner', 'logs_dir'))
 
 
 def get_tmp_dir():
-    if not os.path.isdir(DEFAULT_TMP_DIR):
-        os.makedirs(DEFAULT_TMP_DIR)
-    return DEFAULT_TMP_DIR
+    if settings.intree:
+        if not os.path.isdir(IN_TREE_TMP_DIR):
+            os.makedirs(IN_TREE_TMP_DIR)
+        return IN_TREE_TMP_DIR
+    else:
+        return settings.get_value('runner', 'tmp_dir')
 
 
 def clean_tmp_files():
-    if os.path.isdir(DEFAULT_TMP_DIR):
-        hidden_paths = glob.glob(os.path.join(DEFAULT_TMP_DIR, ".??*"))
-        paths = glob.glob(os.path.join(DEFAULT_TMP_DIR, "*"))
+    tmp_dir = get_tmp_dir()
+    if os.path.isdir(tmp_dir):
+        hidden_paths = glob.glob(os.path.join(tmp_dir, ".??*"))
+        paths = glob.glob(os.path.join(tmp_dir, "*"))
         for path in paths + hidden_paths:
-            shutil.rmtree(path, ignore_errors=True)
+            try:
+                shutil.rmtree(path, ignore_errors=True)
+            except OSError:
+                pass
 
 
 if __name__ == '__main__':
-    print "root dir:         " + DEFAULT_ROOT_DIR
-    print "tmp dir:          " + DEFAULT_TMP_DIR
+    print "root dir:         " + get_root_dir()
+    print "tmp dir:          " + get_tmp_dir()
