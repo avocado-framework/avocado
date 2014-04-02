@@ -4,10 +4,13 @@ Class that describes a sequence of automated operations.
 import imp
 import logging
 import os
+import sys
 import time
+import traceback
 
 from avocado.core import data_dir
 from avocado.core import output
+from avocado.core import exceptions
 from avocado import test
 from avocado import sysinfo
 from avocado import result
@@ -84,14 +87,36 @@ class Job(object):
 
         :params test_instance: avocado.test.Test derived class instance.
         """
-        sysinfo_logger = sysinfo.SysInfo(basedir=test_instance.sysinfodir)
-        test_instance.start_logging()
-        test_instance.setup()
-        sysinfo_logger.start_job_hook()
-        test_instance.run()
-        test_instance.cleanup()
-        test_instance.report()
-        test_instance.stop_logging()
+        start_time = time.time()
+        try:
+            sysinfo_logger = sysinfo.SysInfo(basedir=test_instance.sysinfodir)
+            test_instance.start_logging()
+            sysinfo_logger.start_job_hook()
+            try:
+                test_instance.setup()
+            except Exception, details:
+                raise exceptions.TestSetupFail(details)
+            test_instance.action()
+            test_instance.cleanup()
+            test_instance.status = 'PASS'
+        except exceptions.TestBaseException, detail:
+            test_instance.status = detail.status
+            test_instance.fail_reason = detail
+        except Exception, detail:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            tb_info = "".join(tb_info)
+            for e_line in tb_info.splitlines():
+                test_instance.log.error(e_line)
+            test_instance.status = 'FAIL'
+            test_instance.fail_reason = detail
+        finally:
+            end_time = time.time()
+            test_instance.time_elapsed = end_time - start_time
+            test_instance.report()
+            test_instance.stop_logging()
+
         return test_instance
 
     def run_test(self, url):
