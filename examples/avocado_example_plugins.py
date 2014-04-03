@@ -19,14 +19,17 @@ from avocado.core import output
 class HelloWorld(plugin.Plugin):
 
     """
-    Hello World! plugin example.
+    The classical Hello World! plugin example.
     """
 
-    def configure(self, parser):
-        myparser = parser.add_parser('hello',
-                                     help='Hello World! plugin example')
+    name = 'hello_world'
+    enabled = True
+
+    def configure(self, app_parser, cmd_parser):
+        myparser = cmd_parser.add_parser('hello',
+                                         help='Hello World! plugin example')
         myparser.set_defaults(func=self.hello)
-        self.enabled = True
+        self.configured = True
 
     def hello(self, args):
         print self.__doc__
@@ -38,11 +41,14 @@ class PluginsList(plugin.Plugin):
     List all plugins loaded.
     """
 
-    def configure(self, parser):
-        myparser = parser.add_parser('plugins',
-                                     help='List all plugins loaded')
+    name = 'plugins_list'
+    enabled = True
+
+    def configure(self, app_parser, cmd_parser):
+        myparser = cmd_parser.add_parser('plugins',
+                                         help='List all plugins loaded')
         myparser.set_defaults(func=self.list_plugins)
-        self.enabled = True
+        self.configured = True
 
     def list_plugins(self, args):
         bcolors = output.colors
@@ -51,4 +57,4 @@ class PluginsList(plugin.Plugin):
         pipe.write(bcolors.header_str('Plugins loaded:'))
         pipe.write('\n')
         for plug in pm.plugins:
-            pipe.write('    %s - %s\n' % (plug, plug.__doc__))
+            pipe.write('    %s - %s\n' % (plug.name, plug.__doc__.strip()))

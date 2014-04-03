@@ -20,17 +20,28 @@ class TestResult(object):
     Test result class, holder for test result information.
     """
 
-    def __init__(self, stream, debuglog, loglevel, tests_total):
-        self.stream = stream
-        self.debuglog = debuglog
-        self.loglevel = loglevel
+    def __init__(self):
+        self.stream = None
+        self.debuglog = None
+        self.loglevel = None
         self.tests_run = 0
-        self.tests_total = tests_total
+        self.tests_total = 0
         self.total_time = 0.0
         self.passed = []
+        self.errors = []
         self.failed = []
         self.skipped = []
         self.warned = []
+
+    def set_stream(self, stream):
+        self.stream = stream
+
+    def set_debuglog(self, debuglog, loglevel):
+        self.debuglog = debuglog
+        self.loglevel = loglevel
+
+    def set_totals(self, total):
+        self.tests_total = total
 
     def start_tests(self):
         'Called once before any tests are executed.'
@@ -42,6 +53,7 @@ class TestResult(object):
     def end_tests(self):
         'Called once after all tests are executed.'
         self.stream.log_header("TOTAL PASSED: %d" % len(self.passed))
+        self.stream.log_header("TOTAL ERROR: %d" % len(self.errors))
         self.stream.log_header("TOTAL FAILED: %d" % len(self.failed))
         self.stream.log_header("TOTAL SKIPPED: %d" % len(self.skipped))
         self.stream.log_header("TOTAL WARNED: %d" % len(self.warned))
@@ -64,6 +76,11 @@ class TestResult(object):
         self.stream.log_pass(self.test_label, test.time_elapsed)
         self.passed.append(test)
 
+    def add_error(self, test):
+        'Called when a test got error.'
+        self.stream.log_pass(self.test_label, test.time_elapsed)
+        self.errors.append(test)
+
     def add_fail(self, test):
         'Called when a test fails.'
         self.stream.log_fail(self.test_label, test.time_elapsed)
@@ -83,7 +100,7 @@ class TestResult(object):
         'Called once for a test to check status and report.'
         self.start_test(test)
         status_map = {'PASS': self.add_pass,
-                      'ERROR': self.add_fail,
+                      'ERROR': self.add_error,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn}

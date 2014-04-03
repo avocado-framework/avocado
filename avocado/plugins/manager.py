@@ -29,6 +29,7 @@ class PluginManager(object):
 
     def __init__(self):
         self.plugins = []
+        self.disabled_plugins = []
 
     def add_plugin(self, plugin):
         self.plugins.append(plugin)
@@ -36,10 +37,15 @@ class PluginManager(object):
     def load_plugins(self):
         raise NotImplementedError('Managers must implement the method load_plugins')
 
-    def configure(self, parser):
+    def configure(self, app_parser, cmd_parser):
         for plugin in self.plugins:
-            plugin.configure(parser)
+            if plugin.enabled:
+                plugin.configure(app_parser, cmd_parser)
 
+    def activate(self, app_args):
+        for plugin in self.plugins:
+            if plugin.configured:
+                plugin.activate(app_args)
 
 class BuiltinPluginManager(PluginManager):
 
