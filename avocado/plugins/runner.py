@@ -30,16 +30,19 @@ class TestLister(plugin.Plugin):
     Implements the avocado 'list' functionality.
     """
 
-    def configure(self, parser):
+    name = 'test_lister'
+    enabled = True
+
+    def configure(self, app_parser, cmd_parser):
         """
         Add the subparser for the list action.
 
         :param parser: Main test runner parser.
         """
-        myparser = parser.add_parser('list',
+        myparser = cmd_parser.add_parser('list',
                                      help='List available test modules')
         myparser.set_defaults(func=self.list_tests)
-        self.enabled = True
+        self.configured = True
 
     def list_tests(self, args):
         """
@@ -62,21 +65,24 @@ class TestRunner(plugin.Plugin):
     Implements the avocado 'run' functionality.
     """
 
-    def configure(self, parser):
+    name = 'test_runner'
+    enabled = True
+
+    def configure(self, app_parser, cmd_parser):
         """
         Add the subparser for the run action.
 
         :param parser: Main test runner parser.
         """
-        myparser = parser.add_parser('run', help=('Run a list of test modules '
-                                                  'or dropin tests '
-                                                  '(space separated)'))
+        myparser = cmd_parser.add_parser('run', help=('Run a list of test modules '
+                                                      'or dropin tests '
+                                                      '(space separated)'))
         myparser.add_argument('url', type=str,
                               help=('Test module names or paths to dropin tests '
                                     '(space separated)'),
                               nargs='?', default='')
         myparser.set_defaults(func=self.run_tests)
-        self.enabled = True
+        self.configured = True
 
     def run_tests(self, args):
         """
@@ -94,16 +100,19 @@ class SystemInformation(plugin.Plugin):
     Collect system information and log.
     """
 
-    def configure(self, parser):
+    name = 'sysinfo'
+    enabled = True
+
+    def configure(self, app_parser, cmd_parser):
         """
         Add the subparser for the run action.
 
         :param parser: Main test runner parser.
         """
-        myparser = parser.add_parser('sysinfo',
-                                     help='Collect system information')
+        myparser = cmd_parser.add_parser('sysinfo',
+                                         help='Collect system information')
         myparser.add_argument('sysinfodir', type=str,
                               help='Dir where to dump sysinfo',
                               nargs='?', default='')
         myparser.set_defaults(func=sysinfo.collect_sysinfo)
-        self.enabled = True
+        self.configured = True

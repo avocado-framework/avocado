@@ -147,10 +147,13 @@ class Job(object):
         if urls is None:
             urls = self.args.url.split()
 
-        test_result = result.TestResult(stream=self.output_manager,
-                                        debuglog=self.debuglog,
-                                        loglevel=self.loglevel,
-                                        tests_total=len(urls))
+        if hasattr(self.args, 'test_result'):
+            test_result = self.args.test_result
+        else:
+            test_result = result.TestResult()
+        test_result.set_stream(self.output_manager)
+        test_result.set_debuglog(self.debuglog, self.loglevel)
+        test_result.set_totals(len(urls))
         test_result.start_tests()
         for url in urls:
             test_instance = self.run_test(url)

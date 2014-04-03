@@ -22,20 +22,26 @@ class Plugin(object):
     You'll inherit from this to write you own plugins.
     """
 
-    def __init__(self, name=None, enabled=False):
-        """Creates a new plugin instance.
+    name = 'plugin'
+    enabled = True
 
-        :param name: plugin name
-        :param enabled: enabled/disabled status
-        """
-        if name is None:
-            name = self.__class__.__name__.lower()
-        self.name = name
-        self.enabled = enabled
+    def __init__(self):
+        """Creates a new plugin instance."""
+        self.name = self.__class__.name
+        self.enabled = self.__class__.enabled
+        self.configured = False
 
-    def configure(self, parser):
+    def configure(self, app_parser, cmd_parser):
         """Configuration and argument parsing.
 
-        :param parser: a subparser of `ArgumentParser`
+        :param app_parser: application parser, modify to add extra options.
+        :param cmd_parser: subcommand parser, modify to add new subcommands.
         """
         raise NotImplementedError('Plugins must implement the method configure')
+
+    def activate(self, app_args):
+        """Activate plugin.
+
+        :param app_args: the parsed arguments.
+        """
+        pass
