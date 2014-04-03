@@ -6,13 +6,14 @@ import os
 import sys
 
 
-config_filename = 'settings.ini'
 _config_dir_system = os.path.join('/etc', 'avocado')
-config_path_system = os.path.join(_config_dir_system, config_filename)
 _config_dir_local = os.path.join(os.path.expanduser("~"), '.config', 'avocado')
-config_path_local = os.path.join(_config_dir_local, config_filename)
 _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..")
 _config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc')
+
+config_filename = 'settings.ini'
+config_path_system = os.path.join(_config_dir_system, config_filename)
+config_path_local = os.path.join(_config_dir_local, config_filename)
 config_path_intree = os.path.join(_config_path_intree, config_filename)
 
 
