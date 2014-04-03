@@ -81,24 +81,27 @@ class Settings(object):
 
     no_default = object()
 
-    def __init__(self):
+    def __init__(self, config_path=None):
         self.config = ConfigParser.ConfigParser()
-        config_system = os.path.exists(config_path_system)
-        config_local = os.path.exists(config_path_local)
-        config_intree = os.path.exists(config_path_intree)
         self.intree = False
-        if not config_local and not config_system:
-            if not config_intree:
-                raise ConfigFileNotFound([config_path_system,
-                                          config_path_local,
-                                          config_path_intree])
-            self.config_path = config_path_intree
-            self.intree = True
-        else:
-            if config_local:
-                self.config_path = config_path_local
+        if config_path is None:
+            config_system = os.path.exists(config_path_system)
+            config_local = os.path.exists(config_path_local)
+            config_intree = os.path.exists(config_path_intree)
+            if not config_local and not config_system:
+                if not config_intree:
+                    raise ConfigFileNotFound([config_path_system,
+                                              config_path_local,
+                                              config_path_intree])
+                self.config_path = config_path_intree
+                self.intree = True
             else:
-                self.config_path = config_path_system
+                if config_local:
+                    self.config_path = config_path_local
+                else:
+                    self.config_path = config_path_system
+        else:
+            self.config_path = config_path
         self.parse_file()
 
     def parse_file(self):
