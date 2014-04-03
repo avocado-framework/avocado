@@ -102,9 +102,6 @@ class Settings(object):
                     self.config_path = config_path_system
         else:
             self.config_path = config_path
-        self.parse_file()
-
-    def parse_file(self):
         self.config.read(self.config_path)
 
     def _handle_no_value(self, section, key, default):
