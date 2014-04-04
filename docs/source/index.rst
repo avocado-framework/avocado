@@ -12,8 +12,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro
-
+   Introduction
+   GetStartedGuide
 
 Indices and tables
 ==================
