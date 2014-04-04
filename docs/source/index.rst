@@ -14,6 +14,7 @@ Contents:
 
    Introduction
    GetStartedGuide
+   WritingTests
 
 Indices and tables
 ==================
