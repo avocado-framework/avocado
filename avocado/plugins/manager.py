@@ -47,6 +47,7 @@ class PluginManager(object):
             if plugin.configured:
                 plugin.activate(app_args)
 
+
 class BuiltinPluginManager(PluginManager):
 
     """
