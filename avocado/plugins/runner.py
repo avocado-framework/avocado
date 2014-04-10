@@ -40,7 +40,7 @@ class TestLister(plugin.Plugin):
         :param parser: Main test runner parser.
         """
         myparser = cmd_parser.add_parser('list',
-                                     help='List available test modules')
+                                         help='List available test modules')
         myparser.set_defaults(func=self.list_tests)
         self.configured = True
 

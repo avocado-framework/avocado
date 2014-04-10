@@ -1,6 +1,7 @@
 from avocado.plugins import plugin
 from avocado.result import TestResult
 
+
 class xUnitTestResult(TestResult):
 
     """
@@ -40,10 +41,11 @@ class xUnitTestResult(TestResult):
         values = {'tests': self.tests_total,
                   'errors': len(self.errors),
                   'failures': len(self.failed),
-                  'skip': len(self.skipped),}
+                  'skip': len(self.skipped), }
         xml = xml.format(**values)
         with open(self.filename, 'w') as fresult:
             fresult.write(xml)
+
 
 class XUnit(plugin.Plugin):
 
