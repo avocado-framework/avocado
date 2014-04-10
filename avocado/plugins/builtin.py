@@ -19,7 +19,8 @@ __all__ = ['load_builtins']
 
 Builtins = [('avocado.plugins.runner', 'TestLister'),
             ('avocado.plugins.runner', 'SystemInformation'),
-            ('avocado.plugins.runner', 'TestRunner'), ]
+            ('avocado.plugins.runner', 'TestRunner'),
+            ('avocado.plugins.xunit', 'XUnit'), ]
 
 
 def load_builtins(set_globals=True):
