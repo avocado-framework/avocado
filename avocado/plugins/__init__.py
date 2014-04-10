@@ -10,4 +10,3 @@
 #
 # Copyright: RedHat 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
