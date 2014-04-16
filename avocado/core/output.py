@@ -65,7 +65,7 @@ class TermColors(object):
         self.WARN = self.yellow
         self.ENDC = self.end
         term = os.environ.get("TERM")
-        if (not os.isatty(1)) or (not term in self.allowed_terms):
+        if (not os.isatty(1)) or (term not in self.allowed_terms):
             self.disable()
 
     def disable(self):
