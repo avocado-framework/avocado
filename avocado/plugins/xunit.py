@@ -11,6 +11,8 @@
 # Copyright: 2014 Red Hat
 # Author: Ruda Moura <rmoura@redhat.com>
 
+"""xUnit module."""
+
 from avocado.plugins import plugin
 from avocado.result import TestResult
 
@@ -21,9 +23,13 @@ class xUnitTestResult(TestResult):
     xUnit Test Result class.
     """
 
-    def __init__(self, filename='result.xml'):
-        TestResult.__init__(self)
-        self.filename = filename
+    def __init__(self, stream=None, debuglog=None, loglevel=None,
+                 tests_total=0, args=None):
+        TestResult.__init__(self, stream, debuglog, loglevel, tests_total, args)
+        if hasattr(self.args, 'xunit_output'):
+            self.filename = self.args.xunit_output
+        else:
+            self.filename = 'result.xml'
         self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
 
     def start_tests(self):
@@ -63,7 +69,7 @@ class xUnitTestResult(TestResult):
 class XUnit(plugin.Plugin):
 
     """
-    xUnit output
+    xUnit output plugin.
     """
 
     name = 'xunit'
@@ -80,4 +86,4 @@ class XUnit(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.xunit:
-            self.parser.set_defaults(test_result=xUnitTestResult(filename=app_args.xunit_output))
+            self.parser.set_defaults(test_result=xUnitTestResult)

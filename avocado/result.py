@@ -9,7 +9,8 @@
 # See LICENSE for more details.
 #
 # Copyright: RedHat 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
+#          Ruda Moura <rmoura@redhat.com>
 
 """Test result module."""
 
@@ -20,28 +21,20 @@ class TestResult(object):
     Test result class, holder for test result information.
     """
 
-    def __init__(self):
-        self.stream = None
-        self.debuglog = None
-        self.loglevel = None
+    def __init__(self, stream=None, debuglog=None, loglevel=None,
+                 tests_total=0, args=None):
+        self.stream = stream
+        self.debuglog = debuglog
+        self.loglevel = loglevel
+        self.tests_total = tests_total
+        self.args = args
         self.tests_run = 0
-        self.tests_total = 0
         self.total_time = 0.0
         self.passed = []
         self.errors = []
         self.failed = []
         self.skipped = []
         self.warned = []
-
-    def set_stream(self, stream):
-        self.stream = stream
-
-    def set_debuglog(self, debuglog, loglevel):
-        self.debuglog = debuglog
-        self.loglevel = loglevel
-
-    def set_totals(self, total):
-        self.tests_total = total
 
     def start_tests(self):
         'Called once before any tests are executed.'
