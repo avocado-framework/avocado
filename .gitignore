@@ -1,6 +1,9 @@
 .project
 .pydevproject
 .settings
+.coverage
+coverage.xml
+xunit.xml
 tmp/*
 logs/*
 *.pyc
