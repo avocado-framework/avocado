@@ -13,10 +13,13 @@
 
 """Plugin Managers."""
 
+import logging
 from avocado.plugins.builtin import load_builtins
 from avocado.plugins.plugin import Plugin
 
 DefaultPluginManager = None
+
+log = logging.getLogger("avocado.plugins")
 
 
 class PluginManager(object):
@@ -40,7 +43,11 @@ class PluginManager(object):
     def configure(self, app_parser, cmd_parser):
         for plugin in self.plugins:
             if plugin.enabled:
-                plugin.configure(app_parser, cmd_parser)
+                try:
+                    plugin.configure(app_parser, cmd_parser)
+                except Exception as err:
+                    log.error("Could not configure plugin '%s': %s",
+                              plugin.name, err)
 
     def activate(self, app_args):
         for plugin in self.plugins:
@@ -74,11 +81,15 @@ class ExternalPluginManager(PluginManager):
             candidates = [(os.path.splitext(os.path.basename(x))[0], path) for x in candidates]
             candidates = [(x[0], imp.find_module(x[0], [path])) for x in candidates]
             for candidate in candidates:
-                mod = imp.load_module(candidate[0], *candidate[1])
-                for name in mod.__dict__:
-                    x = getattr(mod, name)
-                    if isinstance(x, type) and issubclass(x, Plugin):
-                        self.add_plugin(x())
+                try:
+                    mod = imp.load_module(candidate[0], *candidate[1])
+                except Exception as err:
+                    log.error("Could not load plugin '%s': %s", mod, err)
+                else:
+                    for name in mod.__dict__:
+                        x = getattr(mod, name)
+                        if isinstance(x, type) and issubclass(x, Plugin):
+                            self.add_plugin(x())
 
     def add_plugins(self, plugins):
         for plugin in plugins:

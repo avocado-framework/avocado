@@ -57,4 +57,6 @@ class PluginsList(plugin.Plugin):
         pipe.write(bcolors.header_str('Plugins loaded:'))
         pipe.write('\n')
         for plug in pm.plugins:
-            pipe.write('    %s - %s\n' % (plug.name, plug.__doc__.strip()))
+            status = "Enabled" if plug.enabled else "Disabled"
+            pipe.write('    %s - %s (%s)\n' % (plug.name, plug.__doc__.strip(),
+                                               status))
