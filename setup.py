@@ -12,6 +12,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import glob
+# pylint: disable=E0611
 from distutils.core import setup
 
 import avocado.version
