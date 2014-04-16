@@ -144,7 +144,7 @@ class Job(object):
         if hasattr(self.args, 'test_result'):
             test_result_class = self.args.test_result
         else:
-            test_result_class = result.TestResult
+            test_result_class = result.HumanTestResult
         test_result = test_result_class(self.output_manager,
                                         self.debuglog,
                                         self.loglevel,
