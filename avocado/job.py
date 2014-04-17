@@ -19,6 +19,7 @@ import imp
 import logging
 import os
 import time
+import uuid
 
 from avocado.core import data_dir
 from avocado.core import output
@@ -38,6 +39,7 @@ class Job(object):
 
     def __init__(self, args=None):
         self.args = args
+        self.unique_id = args.unique_id or str(uuid.uuid4())
         start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
         if self.args is not None:
             logdir = args.logdir or data_dir.get_logs_dir()
