@@ -140,6 +140,18 @@ class Job(object):
         self._run_test_instance(test_instance)
         return test_instance
 
+    def _make_test_result(self, urls):
+        if hasattr(self.args, 'test_result'):
+            test_result_class = self.args.test_result
+        else:
+            test_result_class = result.HumanTestResult
+        test_result = test_result_class(self.output_manager,
+                                        self.debuglog,
+                                        self.loglevel,
+                                        len(urls),
+                                        self.args)
+        return test_result
+
     def run(self, urls=None):
         """
         Main job method. Runs a list of test URLs to its completion.
@@ -147,13 +159,8 @@ class Job(object):
         if urls is None:
             urls = self.args.url.split()
 
-        if hasattr(self.args, 'test_result'):
-            test_result = self.args.test_result
-        else:
-            test_result = result.TestResult()
-        test_result.set_stream(self.output_manager)
-        test_result.set_debuglog(self.debuglog, self.loglevel)
-        test_result.set_totals(len(urls))
+        test_result = self._make_test_result(urls)
+
         test_result.start_tests()
         for url in urls:
             test_instance = self.run_test(url)
