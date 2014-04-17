@@ -70,14 +70,17 @@ class Job(object):
         if os.path.exists(path_attempt):
             test_class = test.DropinTest
             test_instance = test_class(path=path_attempt,
-                                       base_logdir=self.debugdir)
+                                       base_logdir=self.debugdir,
+                                       job=self)
         else:
             test_module_dir = os.path.join(self.test_dir, url)
             f, p, d = imp.find_module(url, [test_module_dir])
             test_module = imp.load_module(url, f, p, d)
             f.close()
             test_class = getattr(test_module, url)
-            test_instance = test_class(base_logdir=self.debugdir)
+            test_instance = test_class(name=url,
+                                       base_logdir=self.debugdir,
+                                       job=self)
         return test_instance
 
     def run_test(self, url):

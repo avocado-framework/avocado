@@ -51,10 +51,15 @@ class Test(unittest.TestCase):
         image files will be created and modified.
     base_logdir:
         Base log directory, where logs from all tests go to.
+    tag:
+        A name that can differentiate between 2 executions of the same test
+        name.
+    job:
+        The job that this test is part of.
     """
 
     def __init__(self, methodName='runTest', name=None, base_logdir=None,
-                 tag=None):
+                 tag=None, job=None):
         """
         Initializes the test.
 
@@ -69,6 +74,7 @@ class Test(unittest.TestCase):
         :param tag: Tag that differentiates 2 executions of the same test name.
                     Example: 'long', 'short', so we can differentiate
                     'sleeptest.long' and 'sleeptest.short'.
+        :param job: The job that this test is part of.
         """
         if name is not None:
             self.name = name
@@ -76,6 +82,7 @@ class Test(unittest.TestCase):
             self.name = self.__class__.__name__
 
         self.tag = tag
+        self.job = job
         self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
         self.depsdir = os.path.join(self.basedir, 'deps')
         self.workdir = os.path.join(data_dir.get_tmp_dir(), self.name)
@@ -278,12 +285,12 @@ class DropinTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
-    def __init__(self, path, base_logdir, tag=None):
+    def __init__(self, path, base_logdir, tag=None, job=None):
         basename = os.path.basename(path)
         name = basename.split(".")[0]
         self.path = os.path.abspath(path)
         super(DropinTest, self).__init__(name=name, base_logdir=base_logdir,
-                                         tag=tag)
+                                         tag=tag, job=job)
 
     def _log_detailed_cmd_info(self, result):
         """
