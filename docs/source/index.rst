@@ -15,6 +15,7 @@ Contents:
    Introduction
    GetStartedGuide
    WritingTests
+   api/modules
 
 Indices and tables
 ==================
