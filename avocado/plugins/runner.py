@@ -82,6 +82,12 @@ class TestRunner(plugin.Plugin):
                               help=('Test module names or paths to dropin tests '
                                     '(space separated)'),
                               nargs='?', default='')
+
+        myparser.add_argument('--unique-id', type=str, default=None,
+                              help=('Unique Job id. Used by a server when job '
+                                    'was created at the server and run on a '
+                                    'different test machine'))
+
         myparser.set_defaults(func=self.run_tests)
         self.configured = True
 
