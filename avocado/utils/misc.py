@@ -68,9 +68,9 @@ def get_relative_path(path, reference):
     Given 2 absolute paths "path" and "reference", compute the path of
     "path" as relative to the directory "reference".
 
-    :param path the absolute path to convert to a relative path
-    :param reference an absolute directory path to which the relative
-        path will be computed
+    :param path: The absolute path to convert to a relative path.
+    :param reference: An absolute directory path to which the relative
+                      path will be computed.
     """
     # normalize the paths (remove double slashes, etc)
     assert(os.path.isabs(path))
