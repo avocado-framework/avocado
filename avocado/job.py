@@ -24,20 +24,10 @@ import traceback
 from avocado.core import data_dir
 from avocado.core import output
 from avocado.core import exceptions
+from avocado.core import status
 from avocado import test
 from avocado import sysinfo
 from avocado import result
-
-JOB_STATUSES = {"TEST_NA": False,
-                "ABORT": False,
-                "ERROR": False,
-                "FAIL": False,
-                "WARN": False,
-                "PASS": True,
-                "START": True,
-                "ALERT": False,
-                "RUNNING": False,
-                "NOSTATUS": False}
 
 
 class Job(object):
@@ -74,6 +64,7 @@ class Job(object):
             self.loglevel = logging.DEBUG
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
+        self.status = "RUNNING"
 
         self.output_manager = output.OutputManager()
 
@@ -155,7 +146,15 @@ class Job(object):
     def run(self, urls=None):
         """
         Main job method. Runs a list of test URLs to its completion.
+
+        :param urls: String with tests to run.
+
+        :return: Integer with overall job status
+                 0 - Job passed, all tests passed
+                 1 - Job passed, some/all tests failed
+                 2 - Job failed
         """
+        failures = []
         if urls is None:
             urls = self.args.url.split()
 
@@ -165,7 +164,22 @@ class Job(object):
         for url in urls:
             test_instance = self.run_test(url)
             test_result.check_test(test_instance)
+            if not status.mapping[test_instance.status]:
+                failures.append(test_instance.name)
         test_result.end_tests()
+        # If it's all good so far, set job status to 'PASS'
+        if self.status == 'RUNNING':
+            self.status = 'PASS'
+        # Let's assess the overall status:
+        job_status = status.mapping[self.status]
+        tests_status = not bool(failures)
+        if job_status:
+            if tests_status:
+                return 0
+            else:
+                return 1
+        else:
+            return 2
 
 
 class TestModuleRunner(object):

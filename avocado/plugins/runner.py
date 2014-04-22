@@ -91,7 +91,7 @@ class TestRunner(plugin.Plugin):
         :param args: Command line args received from the run subparser.
         """
         job_instance = job.Job(args)
-        job_instance.run()
+        return job_instance.run()
 
 
 class SystemInformation(plugin.Plugin):
