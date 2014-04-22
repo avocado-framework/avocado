@@ -26,9 +26,9 @@ class failtest(test.Test):
     Functional test for avocado. Straight up fail the test.
     """
 
-    def action(self, length=1):
+    def action(self):
         """
-        Sleep for length seconds.
+        Should fail.
         """
         raise exceptions.TestFail('This test is supposed to fail')
 

@@ -14,8 +14,83 @@
 
 """xUnit module."""
 
+import sys
+import datetime
+
 from avocado.plugins import plugin
 from avocado.result import TestResult
+
+
+class XmlResult(object):
+
+    """
+    Handles the XML details for xUnit output.
+    """
+
+    def __init__(self):
+        self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+
+    def _escape_cdata(self, cdata):
+        return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
+
+    def save(self, filename):
+        xml = '\n'.join(self.xml)
+        if filename == '-':
+            sys.stdout.write(xml)
+        else:
+            with open(filename, 'w') as fresult:
+                fresult.write(xml)
+
+    def start_testsuite(self, timestamp):
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testcases = []
+
+    def end_testsuite(self, tests, errors, failures, skip, total_time):
+        values = {'tests': tests,
+                  'errors': errors,
+                  'failures': failures,
+                  'skip': skip,
+                  'total_time': total_time}
+        self.xml.append(self.testsuite.format(**values))
+        for tc in self.testcases:
+            self.xml.append(tc)
+        self.xml.append('</testsuite>')
+
+    def add_success(self, test):
+        tc = '\t<testcase classname="{class}" name="{name}" time="{time}"/>'
+        values = {'class': test.__class__.__name__,
+                  'name': test.tagged_name,
+                  'time': test.time_elapsed}
+        self.testcases.append(tc.format(**values))
+
+    def add_skip(self, test):
+        tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
+\t\t<skipped />
+\t</testcase>'''
+        values = {'class': test.__class__.__name__,
+                  'name': test.tagged_name,
+                  'time': test.time_elapsed}
+        self.testcases.append(tc.format(**values))
+
+    def add_failure(self, test):
+        tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
+\t\t<failure><![CDATA[{reason}]]></failure>
+\t</testcase>'''
+        values = {'class': test.__class__.__name__,
+                  'name': test.tagged_name,
+                  'time': test.time_elapsed,
+                  'reason': self._escape_cdata(str(test.fail_reason))}
+        self.testcases.append(tc.format(**values))
+
+    def add_error(self, test):
+        tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
+\t\t<error><![CDATA[{reason}]]></error>
+\t</testcase>'''
+        values = {'class': test.__class__.__name__,
+                  'name': test.tagged_name,
+                  'time': test.time_elapsed,
+                  'reason': self._escape_cdata(str(test.fail_reason))}
+        self.testcases.append(tc.format(**values))
 
 
 class xUnitTestResult(TestResult):
@@ -30,41 +105,36 @@ class xUnitTestResult(TestResult):
         if hasattr(self.args, 'xunit_output'):
             self.filename = self.args.xunit_output
         else:
-            self.filename = 'result.xml'
-        self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+            self.filename = '-'
+        self.xml = XmlResult()
 
     def start_tests(self):
         TestResult.start_tests(self)
-        self.xml.append('<testsuite name="avocado" '
-                        'tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}">')
+        self.xml.start_testsuite(datetime.datetime.now())
 
     def start_test(self, test):
         TestResult.start_test(self, test)
 
     def end_test(self, test):
         TestResult.end_test(self, test)
-        tc = '\t<testcase classname="{class}" name="{name}" time="{time}">'
-        tag = test.tag
-        if test.tag is None:
-            tag = 1
-        nametag = '%s.%s' % (test.name, tag)
-        values = {'class': test.__class__.__name__,
-                  'name': nametag,
-                  'time': test.time_elapsed}
-        self.xml.append(tc.format(**values))
-        self.xml.append('\t</testcase>')
+        if test.status == 'PASS':
+            self.xml.add_success(test)
+        if test.status == 'TEST_NA':
+            self.xml.add_skip(test)
+        if test.status == 'FAIL':
+            self.xml.add_failure(test)
+        if test.status == 'ERROR':
+            self.xml.add_error(test)
 
     def end_tests(self):
         TestResult.end_tests(self)
-        self.xml.append('</testsuite>')
-        xml = '\n'.join(self.xml)
         values = {'tests': self.tests_total,
                   'errors': len(self.errors),
                   'failures': len(self.failed),
-                  'skip': len(self.skipped), }
-        xml = xml.format(**values)
-        with open(self.filename, 'w') as fresult:
-            fresult.write(xml)
+                  'skip': len(self.skipped),
+                  'total_time': self.total_time}
+        self.xml.end_testsuite(**values)
+        self.xml.save(self.filename)
 
 
 class XUnit(plugin.Plugin):
@@ -80,7 +150,7 @@ class XUnit(plugin.Plugin):
         self.parser = app_parser
         app_parser.add_argument('--xunit', action='store_true')
         app_parser.add_argument('--xunit-output',
-                                default='result.xml', type=str,
+                                default='-', type=str,
                                 dest='xunit_output',
                                 help='the file where the result should be written')
         self.configured = True
