@@ -19,12 +19,18 @@ framework tests.
 
 import logging
 import os
+import sys
+import time
+import traceback
+import unittest
+
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import process
+from avocado import sysinfo
 
 
-class Test(object):
+class Test(unittest.TestCase):
 
     """
     Base implementation for the test class.
@@ -77,6 +83,13 @@ class Test(object):
         self.fail_reason = None
 
         self.time_elapsed = None
+        unittest.TestCase.__init__(self)
+
+    def __str__(self):
+        return str(self.name)
+
+    def __repr__(self):
+        return "Test(%r)" % self.tagged_name
 
     def get_deps_path(self, basename):
         return os.path.join(self.depsdir, basename)
@@ -140,6 +153,43 @@ class Test(object):
         in setup.
         """
         pass
+
+    def runTest(self, result=None):
+        """
+        Run test method, for compatibility with unittest.TestCase.
+        """
+        start_time = time.time()
+        try:
+            sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
+            self.start_logging()
+            sysinfo_logger.start_job_hook()
+            try:
+                self.setup()
+            except Exception, details:
+                raise exceptions.TestSetupFail(details)
+            self.action()
+            self.cleanup()
+            self.status = 'PASS'
+        except exceptions.TestBaseException, detail:
+            self.status = detail.status
+            self.fail_reason = detail
+        except AssertionError, detail:
+            self.status = 'FAIL'
+            self.fail_reason = detail
+        except Exception, detail:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            tb_info = "".join(tb_info)
+            for e_line in tb_info.splitlines():
+                self.log.error(e_line)
+            self.status = 'FAIL'
+            self.fail_reason = detail
+        finally:
+            end_time = time.time()
+            self.time_elapsed = end_time - start_time
+            self.report()
+            self.stop_logging()
 
     def report(self):
         if self.fail_reason is not None:
