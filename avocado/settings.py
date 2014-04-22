@@ -101,7 +101,7 @@ def convert_value_type(key, section, value, value_type):
         return conv_val
     except Exception:
         msg = ("Could not convert %s value %r in section %s to type %s" %
-              (key, sval, section, value_type))
+               (key, sval, section, value_type))
         raise SettingsValueError(msg)
 
 
