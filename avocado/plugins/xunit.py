@@ -34,6 +34,10 @@ class XmlResult(object):
         return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
 
     def save(self, filename):
+        """Save the XML document to a file or standard output.
+
+        :param filename: File name to save. Use '-' for standard output.
+        """
         xml = '\n'.join(self.xml)
         if filename == '-':
             sys.stdout.write(xml)
@@ -42,10 +46,22 @@ class XmlResult(object):
                 fresult.write(xml)
 
     def start_testsuite(self, timestamp):
+        """Start a new testsuite node.
+
+        :param timestamp: Timestamp string in date/time format.
+        """
         self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
     def end_testsuite(self, tests, errors, failures, skip, total_time):
+        """End of testsuite node.
+
+        :param tests: Number of tests.
+        :param errors: Number of test errors.
+        :param failures: Number of test failures.
+        :param skip: Number of test skipped.
+        :param total_time: The total time of test execution.
+        """
         values = {'tests': tests,
                   'errors': errors,
                   'failures': failures,
@@ -57,6 +73,10 @@ class XmlResult(object):
         self.xml.append('</testsuite>')
 
     def add_success(self, test):
+        """Add a testcase node of kind succeed.
+
+        :param test: an instance of :class:`Test`.
+        """
         tc = '\t<testcase classname="{class}" name="{name}" time="{time}"/>'
         values = {'class': test.__class__.__name__,
                   'name': test.tagged_name,
@@ -64,6 +84,10 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
     def add_skip(self, test):
+        """Add a testcase node of kind skipped.
+
+        :param test: an instance of :class:`Test`.
+        """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
 \t\t<skipped />
 \t</testcase>'''
@@ -73,6 +97,10 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
     def add_failure(self, test):
+        """Add a testcase node of kind failed.
+
+        :param test: an instance of :class:`Test`.
+        """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
 \t\t<failure><![CDATA[{reason}]]></failure>
 \t</testcase>'''
@@ -83,6 +111,10 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
     def add_error(self, test):
+        """Add a testcase node of kind error.
+
+        :param test: an instance of :class:`Test`.
+        """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
 \t\t<error><![CDATA[{reason}]]></error>
 \t</testcase>'''
