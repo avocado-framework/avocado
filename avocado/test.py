@@ -37,29 +37,39 @@ class Test(unittest.TestCase):
 
     You'll inherit from this to write your own tests. Tipically you'll want
     to implement setup(), action() and cleanup() methods on your own tests.
+
+    Test Attributes:
+
+    basedir:
+        Where the test .py file is located (root dir).
+    depsdir:
+        If this is an existing test suite wrapper, it'll contain the
+        test suite sources and other auxiliary files. Usually inside
+        basedir, 'deps' subdirectory.
+    workdir:
+        Place where temporary copies of the source code, binaries,
+        image files will be created and modified.
+    base_logdir:
+        Base log directory, where logs from all tests go to.
     """
 
-    def __init__(self, name, base_logdir=None, tag=None):
+    def __init__(self, methodName='runTest', base_logdir=None, tag=None):
         """
         Initializes the test.
 
-        :param name: Test Name. Example: 'sleeptest'.
+        :param methodName: Name of the main method to run. For the sake of
+                           compatibility with the original unittest class,
+                           you should not set this.
+        :param base_logdir: Directory where test logs should go. If None
+                            provided, it'll use ~/avocado.
         :param tag: Tag that differentiates 2 executions of the same test name.
-                Example: 'long', 'short', so we can differentiate
-                'sleeptest.long' and 'sleeptest.short'.
-
-        Test Attributes:
-        basedir: Where the test .py file is located (root dir).
-        depsdir: If this is an existing test suite wrapper, it'll contain the
-                test suite sources and other auxiliary files. Usually inside
-                basedir, 'deps' subdirectory.
-        workdir: Place where temporary copies of the source code, binaries,
-                image files will be created and modified.
-        base_logdir: Base log directory, where logs from all tests go to.
+                    Example: 'long', 'short', so we can differentiate
+                    'sleeptest.long' and 'sleeptest.short'.
         """
-        self.name = name
+        self.name = self.__class__.__name__
+
         self.tag = tag
-        self.basedir = os.path.join(data_dir.get_test_dir(), name)
+        self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
         self.depsdir = os.path.join(self.basedir, 'deps')
         self.workdir = os.path.join(data_dir.get_tmp_dir(), self.name)
         if not os.path.isdir(self.workdir):
@@ -160,18 +170,24 @@ class Test(unittest.TestCase):
         """
         Run test method, for compatibility with unittest.TestCase.
         """
+        sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
+        self.start_logging()
+        sysinfo_logger.start_job_hook()
+        try:
+            self.setup()
+        except Exception, details:
+            raise exceptions.TestSetupFail(details)
+        self.action()
+        self.cleanup()
+        self.status = 'PASS'
+
+    def run_avocado(self, result=None):
+        """
+        Wraps the runTest metod, for execution inside the avocado runner.
+        """
         start_time = time.time()
         try:
-            sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
-            self.start_logging()
-            sysinfo_logger.start_job_hook()
-            try:
-                self.setup()
-            except Exception, details:
-                raise exceptions.TestSetupFail(details)
-            self.action()
-            self.cleanup()
-            self.status = 'PASS'
+            self.runTest(result)
         except exceptions.TestBaseException, detail:
             self.status = detail.status
             self.fail_reason = detail
