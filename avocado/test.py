@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
     to implement setup(), action() and cleanup() methods on your own tests.
     """
 
-    def __init__(self, name, base_logdir, tag=None):
+    def __init__(self, name, base_logdir=None, tag=None):
         """
         Initializes the test.
 
@@ -67,6 +67,8 @@ class Test(unittest.TestCase):
         self.srcdir = os.path.join(self.workdir, 'src')
         if not os.path.isdir(self.srcdir):
             os.makedirs(self.srcdir)
+        if base_logdir is None:
+            base_logdir = os.path.expanduser('~/avocado')
         self.tagged_name = self.get_tagged_name(base_logdir, self.name,
                                                 self.tag)
         self.logdir = os.path.join(base_logdir, self.tagged_name)
