@@ -53,20 +53,27 @@ class Test(unittest.TestCase):
         Base log directory, where logs from all tests go to.
     """
 
-    def __init__(self, methodName='runTest', base_logdir=None, tag=None):
+    def __init__(self, methodName='runTest', name=None, base_logdir=None,
+                 tag=None):
         """
         Initializes the test.
 
         :param methodName: Name of the main method to run. For the sake of
                            compatibility with the original unittest class,
                            you should not set this.
+        :param name: Pretty name of the test name. For normal tests, written
+                     with the avocado API, this should not be set, this is
+                     reserved for running random executables as tests.
         :param base_logdir: Directory where test logs should go. If None
                             provided, it'll use ~/avocado.
         :param tag: Tag that differentiates 2 executions of the same test name.
                     Example: 'long', 'short', so we can differentiate
                     'sleeptest.long' and 'sleeptest.short'.
         """
-        self.name = self.__class__.__name__
+        if name is not None:
+            self.name = name
+        else:
+            self.name = self.__class__.__name__
 
         self.tag = tag
         self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
@@ -231,7 +238,8 @@ class DropinTest(Test):
         basename = os.path.basename(path)
         name = basename.split(".")[0]
         self.path = os.path.abspath(path)
-        super(DropinTest, self).__init__(name, base_logdir, tag)
+        super(DropinTest, self).__init__(name=name, base_logdir=base_logdir,
+                                         tag=tag)
 
     def _log_detailed_cmd_info(self, result):
         run_info = str(result)
