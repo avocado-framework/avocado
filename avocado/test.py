@@ -19,41 +19,64 @@ framework tests.
 
 import logging
 import os
+import sys
+import time
+import traceback
+import unittest
+
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import process
+from avocado import sysinfo
 
 
-class Test(object):
+class Test(unittest.TestCase):
 
     """
     Base implementation for the test class.
 
     You'll inherit from this to write your own tests. Tipically you'll want
     to implement setup(), action() and cleanup() methods on your own tests.
+
+    Test Attributes:
+
+    basedir:
+        Where the test .py file is located (root dir).
+    depsdir:
+        If this is an existing test suite wrapper, it'll contain the
+        test suite sources and other auxiliary files. Usually inside
+        basedir, 'deps' subdirectory.
+    workdir:
+        Place where temporary copies of the source code, binaries,
+        image files will be created and modified.
+    base_logdir:
+        Base log directory, where logs from all tests go to.
     """
 
-    def __init__(self, name, base_logdir, tag=None):
+    def __init__(self, methodName='runTest', name=None, base_logdir=None,
+                 tag=None):
         """
         Initializes the test.
 
-        :param name: Test Name. Example: 'sleeptest'.
+        :param methodName: Name of the main method to run. For the sake of
+                           compatibility with the original unittest class,
+                           you should not set this.
+        :param name: Pretty name of the test name. For normal tests, written
+                     with the avocado API, this should not be set, this is
+                     reserved for running random executables as tests.
+        :param base_logdir: Directory where test logs should go. If None
+                            provided, it'll use ~/avocado.
         :param tag: Tag that differentiates 2 executions of the same test name.
-                Example: 'long', 'short', so we can differentiate
-                'sleeptest.long' and 'sleeptest.short'.
-
-        Test Attributes:
-        basedir: Where the test .py file is located (root dir).
-        depsdir: If this is an existing test suite wrapper, it'll contain the
-                test suite sources and other auxiliary files. Usually inside
-                basedir, 'deps' subdirectory.
-        workdir: Place where temporary copies of the source code, binaries,
-                image files will be created and modified.
-        base_logdir: Base log directory, where logs from all tests go to.
+                    Example: 'long', 'short', so we can differentiate
+                    'sleeptest.long' and 'sleeptest.short'.
         """
-        self.name = name
+        if name is not None:
+            self.name = name
+        else:
+            self.name = self.__class__.__name__
+
         self.tag = tag
-        self.basedir = os.path.join(data_dir.get_test_dir(), name)
+        self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
         self.depsdir = os.path.join(self.basedir, 'deps')
         self.workdir = os.path.join(data_dir.get_tmp_dir(), self.name)
         if not os.path.isdir(self.workdir):
@@ -61,6 +84,8 @@ class Test(object):
         self.srcdir = os.path.join(self.workdir, 'src')
         if not os.path.isdir(self.srcdir):
             os.makedirs(self.srcdir)
+        if base_logdir is None:
+            base_logdir = os.path.expanduser('~/avocado')
         self.tagged_name = self.get_tagged_name(base_logdir, self.name,
                                                 self.tag)
         self.logdir = os.path.join(base_logdir, self.tagged_name)
@@ -77,6 +102,13 @@ class Test(object):
         self.fail_reason = None
 
         self.time_elapsed = None
+        unittest.TestCase.__init__(self)
+
+    def __str__(self):
+        return str(self.name)
+
+    def __repr__(self):
+        return "Test(%r)" % self.tagged_name
 
     def get_deps_path(self, basename):
         return os.path.join(self.depsdir, basename)
@@ -141,6 +173,49 @@ class Test(object):
         """
         pass
 
+    def runTest(self, result=None):
+        """
+        Run test method, for compatibility with unittest.TestCase.
+        """
+        sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
+        self.start_logging()
+        sysinfo_logger.start_job_hook()
+        try:
+            self.setup()
+        except Exception, details:
+            raise exceptions.TestSetupFail(details)
+        self.action()
+        self.cleanup()
+        self.status = 'PASS'
+
+    def run_avocado(self, result=None):
+        """
+        Wraps the runTest metod, for execution inside the avocado runner.
+        """
+        start_time = time.time()
+        try:
+            self.runTest(result)
+        except exceptions.TestBaseException, detail:
+            self.status = detail.status
+            self.fail_reason = detail
+        except AssertionError, detail:
+            self.status = 'FAIL'
+            self.fail_reason = detail
+        except Exception, detail:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            tb_info = "".join(tb_info)
+            for e_line in tb_info.splitlines():
+                self.log.error(e_line)
+            self.status = 'FAIL'
+            self.fail_reason = detail
+        finally:
+            end_time = time.time()
+            self.time_elapsed = end_time - start_time
+            self.report()
+            self.stop_logging()
+
     def report(self):
         if self.fail_reason is not None:
             self.log.error("%s %s -> %s: %s", self.status,
@@ -163,7 +238,8 @@ class DropinTest(Test):
         basename = os.path.basename(path)
         name = basename.split(".")[0]
         self.path = os.path.abspath(path)
-        super(DropinTest, self).__init__(name, base_logdir, tag)
+        super(DropinTest, self).__init__(name=name, base_logdir=base_logdir,
+                                         tag=tag)
 
     def _log_detailed_cmd_info(self, result):
         run_info = str(result)
