@@ -77,7 +77,7 @@ class Job(object):
             test_module = imp.load_module(url, f, p, d)
             f.close()
             test_class = getattr(test_module, url)
-            test_instance = test_class(name=url, base_logdir=self.debugdir)
+            test_instance = test_class(base_logdir=self.debugdir)
         return test_instance
 
     def run_test(self, url):
@@ -85,7 +85,7 @@ class Job(object):
         Run a single test URL.
         """
         test_instance = self._load_test_instance(url)
-        test_instance.runTest()
+        test_instance.run_avocado()
         return test_instance
 
     def _make_test_result(self, urls):
