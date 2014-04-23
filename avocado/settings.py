@@ -8,11 +8,9 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-#
 # This code was inspired in the autotest project,
-# client/shared/settings.py, author: Travis Miller <raphtee@google.com>
+# client/shared/settings.py
+# Author: Travis Miller <raphtee@google.com>
 
 """
 Reads the avocado settings from a .ini file (from python ConfigParser).

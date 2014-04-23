@@ -8,8 +8,10 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# This code was inspired in the autotest project,
+# client/shared/utils.py
+# Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
+
 
 """
 Methods to download URLs and regular files.
