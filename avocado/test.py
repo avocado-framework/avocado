@@ -8,8 +8,9 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# This code was inspired in the autotest project,
+# client/shared/test.py
+# Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
 
 """
 Contains the base test implementation, used as a base for the actual
