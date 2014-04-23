@@ -8,8 +8,9 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# This code was inspired in the autotest project,
+# client/profilers
+# Authors: Martin J Bligh <mbligh@google.com>, John Admanski <jadmanski@google.com>
 
 """
 Profilers are programs that run on background, that aim to measure some system
