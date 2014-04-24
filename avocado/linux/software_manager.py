@@ -11,7 +11,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
+# Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Higor Vieira Alves <halves@br.ibm.com>
 # Author: Ramon de Carvalho Valle <rcvalle@br.ibm.com>

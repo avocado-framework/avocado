@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
+# Copyright: Red Hat Inc. 2013-2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
 """Plugin Managers."""
