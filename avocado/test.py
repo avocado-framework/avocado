@@ -142,6 +142,7 @@ class Test(unittest.TestCase):
             tag += 1
             tagged_name = "%s.%s" % (name, tag)
             test_logdir = os.path.join(logdir, tagged_name)
+        self.tag = str(tag)
         return tagged_name
 
     def setup(self):
@@ -215,15 +216,15 @@ class Test(unittest.TestCase):
                                                  exc_traceback.tb_next)
             self.traceback = "".join(tb_info)
         except Exception, detail:
+            self.status = 'FAIL'
+            self.fail_class = detail.__class__.__name__
+            self.fail_reason = detail
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             self.traceback = "".join(tb_info)
             for e_line in tb_info:
                 self.log.error(e_line)
-            self.status = 'FAIL'
-            self.fail_reason = detail
-            self.fail_class = detail.__class__.__name__
         finally:
             end_time = time.time()
             self.time_elapsed = end_time - start_time
