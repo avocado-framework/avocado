@@ -100,6 +100,7 @@ class Test(unittest.TestCase):
         self.resultsdir = None
         self.status = None
         self.fail_reason = None
+        self.fail_class = None
         self.traceback = None
 
         self.time_elapsed = None
@@ -198,12 +199,14 @@ class Test(unittest.TestCase):
             self.runTest(result)
         except exceptions.TestBaseException, detail:
             self.status = detail.status
+            self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.traceback = traceback.print_exception(exc_type, exc_value,
                                                        exc_traceback.tb_next)
         except AssertionError, detail:
             self.status = 'FAIL'
+            self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.traceback = traceback.print_exception(exc_type, exc_value,
@@ -217,6 +220,7 @@ class Test(unittest.TestCase):
                 self.log.error(e_line)
             self.status = 'FAIL'
             self.fail_reason = detail
+            self.fail_class = detail.__class__.__name__
         finally:
             end_time = time.time()
             self.time_elapsed = end_time - start_time
