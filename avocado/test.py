@@ -86,8 +86,7 @@ class Test(unittest.TestCase):
             os.makedirs(self.srcdir)
         if base_logdir is None:
             base_logdir = os.path.expanduser('~/avocado')
-        self.tagged_name = self.get_tagged_name(base_logdir, self.name,
-                                                self.tag)
+        self.tagged_name = self.get_tagged_name(base_logdir)
         self.logdir = os.path.join(base_logdir, self.tagged_name)
         if not os.path.isdir(self.logdir):
             os.makedirs(self.logdir)
@@ -142,7 +141,7 @@ class Test(unittest.TestCase):
         """
         self.log.removeHandler(self.file_handler)
 
-    def get_tagged_name(self, logdir, name, tag):
+    def get_tagged_name(self, logdir):
         """
         Get a test tagged name.
 
@@ -151,19 +150,17 @@ class Test(unittest.TestCase):
         clashes in the results directory).
 
         :param logdir: Log directory being in use for result storage.
-        :param name: Test Name.
-        :param tag: Test Tag.
 
         :return: String `test.tag`.
         """
-        if tag is not None:
+        if self.tag is not None:
             return "%s.%s" % (self.name, self.tag)
         tag = 1
-        tagged_name = "%s.%s" % (name, tag)
+        tagged_name = "%s.%s" % (self.name, tag)
         test_logdir = os.path.join(logdir, tagged_name)
         while os.path.isdir(test_logdir):
             tag += 1
-            tagged_name = "%s.%s" % (name, tag)
+            tagged_name = "%s.%s" % (self.name, tag)
             test_logdir = os.path.join(logdir, tagged_name)
         self.tag = str(tag)
         return tagged_name
