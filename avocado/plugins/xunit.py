@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: 2014 Red Hat
+# Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
 """xUnit module."""
