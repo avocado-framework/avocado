@@ -86,8 +86,7 @@ class Test(unittest.TestCase):
             os.makedirs(self.srcdir)
         if base_logdir is None:
             base_logdir = os.path.expanduser('~/avocado')
-        self.tagged_name = self.get_tagged_name(base_logdir, self.name,
-                                                self.tag)
+        self.tagged_name = self.get_tagged_name(base_logdir)
         self.logdir = os.path.join(base_logdir, self.tagged_name)
         if not os.path.isdir(self.logdir):
             os.makedirs(self.logdir)
@@ -114,6 +113,13 @@ class Test(unittest.TestCase):
         return "Test(%r)" % self.tagged_name
 
     def get_deps_path(self, basename):
+        """
+        Find a test dependency path inside the test depsdir.
+
+        :param basename: Basename of the dep file. Ex: ``testsuite.tar.bz2``.
+
+        :return: Path where dependency is supposed to be found.
+        """
         return os.path.join(self.depsdir, basename)
 
     def start_logging(self):
@@ -130,17 +136,31 @@ class Test(unittest.TestCase):
         self.log.addHandler(self.file_handler)
 
     def stop_logging(self):
+        """
+        Stop the logging activity of the test by cleaning the logger handlers.
+        """
         self.log.removeHandler(self.file_handler)
 
-    def get_tagged_name(self, logdir, name, tag):
-        if tag is not None:
+    def get_tagged_name(self, logdir):
+        """
+        Get a test tagged name.
+
+        If a test tag is defined, just return name.tag. If tag is absent,
+        it'll try to find a tag that is not already taken (so there are no
+        clashes in the results directory).
+
+        :param logdir: Log directory being in use for result storage.
+
+        :return: String `test.tag`.
+        """
+        if self.tag is not None:
             return "%s.%s" % (self.name, self.tag)
         tag = 1
-        tagged_name = "%s.%s" % (name, tag)
+        tagged_name = "%s.%s" % (self.name, tag)
         test_logdir = os.path.join(logdir, tagged_name)
         while os.path.isdir(test_logdir):
             tag += 1
-            tagged_name = "%s.%s" % (name, tag)
+            tagged_name = "%s.%s" % (self.name, tag)
             test_logdir = os.path.join(logdir, tagged_name)
         self.tag = str(tag)
         return tagged_name
@@ -180,6 +200,8 @@ class Test(unittest.TestCase):
     def runTest(self, result=None):
         """
         Run test method, for compatibility with unittest.TestCase.
+
+        :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
         sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
         self.start_logging()
@@ -195,6 +217,8 @@ class Test(unittest.TestCase):
     def run_avocado(self, result=None):
         """
         Wraps the runTest metod, for execution inside the avocado runner.
+
+        :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
         start_time = time.time()
         try:
@@ -234,6 +258,9 @@ class Test(unittest.TestCase):
             self.stop_logging()
 
     def report(self):
+        """
+        Report result to the logging system.
+        """
         if self.fail_reason is not None:
             self.log.error("%s %s -> %s: %s", self.status,
                            self.tagged_name,
@@ -259,11 +286,19 @@ class DropinTest(Test):
                                          tag=tag)
 
     def _log_detailed_cmd_info(self, result):
+        """
+        Log detailed command information.
+
+        :param result: :class:`avocado.utils.process.CmdResult` instance.
+        """
         run_info = str(result)
         for line in run_info.splitlines():
             self.log.info(line)
 
     def action(self):
+        """
+        Run the executable, and log its detailed execution.
+        """
         try:
             result = process.run(self.path, verbose=True)
             self._log_detailed_cmd_info(result)
