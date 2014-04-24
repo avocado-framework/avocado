@@ -102,6 +102,7 @@ class Test(unittest.TestCase):
         self.fail_reason = None
         self.fail_class = None
         self.traceback = None
+        self.text_output = None
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self)
@@ -225,6 +226,8 @@ class Test(unittest.TestCase):
             end_time = time.time()
             self.time_elapsed = end_time - start_time
             self.report()
+            with open(self.logfile, 'r') as log_file_obj:
+                self.text_output = log_file_obj.read()
             self.stop_logging()
 
     def report(self):
