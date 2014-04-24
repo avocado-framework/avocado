@@ -15,6 +15,8 @@ Contents:
    Introduction
    GetStartedGuide
    WritingTests
+   Plugins
+   OutputPlugins
    api/modules
 
 Indices and tables
