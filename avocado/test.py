@@ -203,15 +203,17 @@ class Test(unittest.TestCase):
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.traceback = traceback.print_exception(exc_type, exc_value,
-                                                       exc_traceback.tb_next)
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            self.traceback = "".join(tb_info)
         except AssertionError, detail:
             self.status = 'FAIL'
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.traceback = traceback.print_exception(exc_type, exc_value,
-                                                       exc_traceback.tb_next)
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            self.traceback = "".join(tb_info)
         except Exception, detail:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb_info = traceback.format_exception(exc_type, exc_value,
