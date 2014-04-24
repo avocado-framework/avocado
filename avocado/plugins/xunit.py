@@ -16,6 +16,7 @@
 
 import sys
 import datetime
+from xml.sax.saxutils import quoteattr
 
 from avocado.plugins import plugin
 from avocado.result import TestResult
@@ -29,6 +30,9 @@ class XmlResult(object):
 
     def __init__(self):
         self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+
+    def _escape_attr(self, attrib):
+        return quoteattr(attrib)
 
     def _escape_cdata(self, cdata):
         return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
@@ -81,9 +85,9 @@ class XmlResult(object):
 
         :param test: an instance of :class:`avocado.test.Test`.
         """
-        tc = '\t<testcase classname="{class}" name="{name}" time="{time}"/>'
-        values = {'class': test.__class__.__name__,
-                  'name': test.tagged_name,
+        tc = '\t<testcase classname={class} name={name} time="{time}"/>'
+        values = {'class': self._escape_attr(test.__class__.__name__),
+                  'name': self._escape_attr(test.tagged_name),
                   'time': test.time_elapsed}
         self.testcases.append(tc.format(**values))
 
@@ -93,11 +97,11 @@ class XmlResult(object):
 
         :param test: an instance of :class:`avocado.test.Test`.
         """
-        tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
+        tc = '''\t<testcase classname={class} name={name} time="{time}">
 \t\t<skipped />
 \t</testcase>'''
-        values = {'class': test.__class__.__name__,
-                  'name': test.tagged_name,
+        values = {'class': self._escape_attr(test.__class__.__name__),
+                  'name': self._escape_attr(test.tagged_name),
                   'time': test.time_elapsed}
         self.testcases.append(tc.format(**values))
 
@@ -107,13 +111,17 @@ class XmlResult(object):
 
         :param test: an instance of :class:`avocado.test.Test`.
         """
-        tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
-\t\t<failure><![CDATA[{reason}]]></failure>
+        tc = '''\t<testcase classname={class} name={name} time="{time}">
+\t\t<failure type={type} message={reason}><![CDATA[{traceback}]]></failure>
+\t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
-        values = {'class': test.__class__.__name__,
-                  'name': test.tagged_name,
+        values = {'class': self._escape_attr(test.__class__.__name__),
+                  'name': self._escape_attr(test.tagged_name),
                   'time': test.time_elapsed,
-                  'reason': self._escape_cdata(str(test.fail_reason))}
+                  'type': self._escape_attr(test.fail_class),
+                  'traceback': self._escape_cdata(test.traceback),
+                  'systemout': self._escape_cdata(test.text_output),
+                  'reason': self._escape_attr(str(test.fail_reason))}
         self.testcases.append(tc.format(**values))
 
     def add_error(self, test):
@@ -123,12 +131,16 @@ class XmlResult(object):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
-\t\t<error><![CDATA[{reason}]]></error>
+\t\t<error type="{type}" message={reason}><![CDATA[{traceback}]]></error>
+\t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
-        values = {'class': test.__class__.__name__,
-                  'name': test.tagged_name,
+        values = {'class': self._escape_attr(test.__class__.__name__),
+                  'name': self._escape_attr(test.tagged_name),
                   'time': test.time_elapsed,
-                  'reason': self._escape_cdata(str(test.fail_reason))}
+                  'type': self._escape_attr(test.fail_class),
+                  'traceback': self._escape_cdata(test.traceback),
+                  'systemout': self._escape_cdata(test.text_output),
+                  'reason': self._escape_attr(str(test.fail_reason))}
         self.testcases.append(tc.format(**values))
 
 
