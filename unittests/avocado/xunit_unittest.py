@@ -11,7 +11,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2014
+# Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
 import unittest
