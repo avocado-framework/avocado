@@ -8,6 +8,16 @@ to perform automated testing.
 
 Avocado is composed by:
 
-* Programs that let you run tests. Those tests can be either written on your language of choice, or use the python API available. In both cases, you get facilities such as automated log and system information collection.
+* Programs that let you run tests. Those tests can be either written on your
+  language of choice, or use the python API available. In both cases, you get
+  facilities such as automated log and system information collection.
 
 * APIs that help you write tests in a concise, yet expressive way.
+
+Avocado tries as much as possible to comply with standard python testing
+technology. Tests written using the avocado API are derived from the unittest
+class, while other methods suited to functional and performance testing were
+added. The test runner is designed to help people to run their tests while
+providing an assortment of system and logging facilities, with no effort,
+and if you want more features, then you can start using the API features
+progressively.
