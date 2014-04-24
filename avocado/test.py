@@ -100,6 +100,7 @@ class Test(unittest.TestCase):
         self.resultsdir = None
         self.status = None
         self.fail_reason = None
+        self.traceback = None
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self)
@@ -198,15 +199,21 @@ class Test(unittest.TestCase):
         except exceptions.TestBaseException, detail:
             self.status = detail.status
             self.fail_reason = detail
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.traceback = traceback.print_exception(exc_type, exc_value,
+                                                       exc_traceback.tb_next)
         except AssertionError, detail:
             self.status = 'FAIL'
             self.fail_reason = detail
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.traceback = traceback.print_exception(exc_type, exc_value,
+                                                       exc_traceback.tb_next)
         except Exception, detail:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
-            tb_info = "".join(tb_info)
-            for e_line in tb_info.splitlines():
+            self.traceback = "".join(tb_info)
+            for e_line in tb_info:
                 self.log.error(e_line)
             self.status = 'FAIL'
             self.fail_reason = detail
