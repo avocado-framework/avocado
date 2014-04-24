@@ -34,7 +34,8 @@ class XmlResult(object):
         return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
 
     def save(self, filename):
-        """Save the XML document to a file or standard output.
+        """
+        Save the XML document to a file or standard output.
 
         :param filename: File name to save. Use '-' for standard output.
         """
@@ -46,7 +47,8 @@ class XmlResult(object):
                 fresult.write(xml)
 
     def start_testsuite(self, timestamp):
-        """Start a new testsuite node.
+        """
+        Start a new testsuite node.
 
         :param timestamp: Timestamp string in date/time format.
         """
@@ -54,7 +56,8 @@ class XmlResult(object):
         self.testcases = []
 
     def end_testsuite(self, tests, errors, failures, skip, total_time):
-        """End of testsuite node.
+        """
+        End of testsuite node.
 
         :param tests: Number of tests.
         :param errors: Number of test errors.
@@ -73,9 +76,10 @@ class XmlResult(object):
         self.xml.append('</testsuite>')
 
     def add_success(self, test):
-        """Add a testcase node of kind succeed.
+        """
+        Add a testcase node of kind succeed.
 
-        :param test: an instance of :class:`Test`.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         tc = '\t<testcase classname="{class}" name="{name}" time="{time}"/>'
         values = {'class': test.__class__.__name__,
@@ -84,9 +88,10 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
     def add_skip(self, test):
-        """Add a testcase node of kind skipped.
+        """
+        Add a testcase node of kind skipped.
 
-        :param test: an instance of :class:`Test`.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
 \t\t<skipped />
@@ -97,9 +102,10 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
     def add_failure(self, test):
-        """Add a testcase node of kind failed.
+        """
+        Add a testcase node of kind failed.
 
-        :param test: an instance of :class:`Test`.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
 \t\t<failure><![CDATA[{reason}]]></failure>
@@ -111,9 +117,10 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
     def add_error(self, test):
-        """Add a testcase node of kind error.
+        """
+        Add a testcase node of kind error.
 
-        :param test: an instance of :class:`Test`.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
 \t\t<error><![CDATA[{reason}]]></error>
