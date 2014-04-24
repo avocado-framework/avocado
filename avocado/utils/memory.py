@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
+# Copyright: Red Hat Inc. 2013-2014
 # Author: Yiqiao Pu <ypu@redhat.com>
 #
 # This code was inspired in the autotest project,

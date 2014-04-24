@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: RedHat 2013-2014
+# Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 """
