@@ -23,7 +23,8 @@ Builtins = [('avocado.plugins.runner', 'TestLister'),
             ('avocado.plugins.runner', 'TestRunner'),
             ('avocado.plugins.xunit', 'XUnit'),
             ('avocado.plugins.lister', 'PluginsList'),
-            ('avocado.plugins.journal', 'Journal'), ]
+            ('avocado.plugins.journal', 'Journal'),
+            ('avocado.plugins.datadir', 'DataDirList')]
 
 
 def load_builtins(set_globals=True):
