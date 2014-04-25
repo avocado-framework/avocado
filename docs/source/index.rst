@@ -14,6 +14,7 @@ Contents:
 
    Introduction
    GetStartedGuide
+   DataDir
    WritingTests
    Plugins
    OutputPlugins
