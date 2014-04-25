@@ -30,6 +30,13 @@ log = logging.getLogger('avocado.test')
 
 class CmdNotFoundError(Exception):
 
+    """
+    Indicates that the command was not found in the system after a search.
+
+    :param cmd: String with the command.
+    :param paths: List of paths where we looked after.
+    """
+
     def __init__(self, cmd, paths):
         super(CmdNotFoundError, self)
         self.cmd = cmd
@@ -45,7 +52,8 @@ def find_command(cmd):
     Try to find a command in the PATH, paranoid version.
 
     :param cmd: Command to be found.
-    :raise: ValueError in case the command was not found.
+    :raise: :class:`avocado.utils.process.CmdNotFoundError` in case the
+            command was not found.
     """
     common_bin_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
                         "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
@@ -68,11 +76,11 @@ class CmdResult(object):
     """
     Command execution result.
 
-    command:     String containing the command line itself
-    exit_status: Integer exit code of the process
-    stdout:      String containing stdout of the process
-    stderr:      String containing stderr of the process
-    duration:    Elapsed wall clock time running the process
+    :param command: String containing the command line itself
+    :param exit_status: Integer exit code of the process
+    :param stdout: String containing stdout of the process
+    :param stderr: String containing stderr of the process
+    :param duration: Elapsed wall clock time running the process
     """
 
     def __init__(self, command="", stdout="", stderr="",
@@ -93,6 +101,19 @@ class CmdResult(object):
 
 
 def run(cmd, verbose=True, ignore_status=False):
+    """
+    Run a subprocess.
+
+    This is a light, yet compatible implementation of
+    :mod:`autotest.client.shared.utils.run`, so we can run commands in tests and
+    other avocado programs, if need to be.
+
+    :param verbose: Wether to print the command run.
+    :param ignore_status: Wether to raise an exception when command returns
+                          =! 0 (False), or not (True).
+    :return: An :class:`avocado.utils.process.CmdResult` object.
+    :raise: :class:`avocado.utils.process.CmdResult`, if ``ignore_status=False``.
+    """
     if verbose:
         log.info("Running '%s'", cmd)
     args = shlex.split(cmd)
@@ -113,10 +134,36 @@ def run(cmd, verbose=True, ignore_status=False):
 
 
 def system(cmd, verbose=True, ignore_status=False):
+    """
+    Run a subprocess, returning its exit code.
+
+    This is a light, yet compatible implementation of
+    :mod:`autotest.client.shared.utils.run`, so we can run commands in tests and
+    other avocado programs, if need to be.
+
+    :param verbose: Wether to print the command run.
+    :param ignore_status: Wether to raise an exception when command returns
+                          =! 0 (False), or not (True).
+    :return: An exit code.
+    :raise: :class:`avocado.utils.process.CmdResult`, if ``ignore_status=False``.
+    """
     cmd_result = run(cmd, verbose, ignore_status)
     return cmd_result.exit_status
 
 
 def system_output(cmd, verbose=True, ignore_status=False):
+    """
+    Run a subprocess, returning its output.
+
+    This is a light, yet compatible implementation of
+    :mod:`autotest.client.shared.utils.run`, so we can run commands in tests and
+    other avocado programs, if need to be.
+
+    :param verbose: Wether to print the command run.
+    :param ignore_status: Wether to raise an exception when command returns
+                          =! 0 (False), or not (True).
+    :return: A string with the process output.
+    :raise: :class:`avocado.utils.process.CmdResult`, if ``ignore_status=False``.
+    """
     cmd_result = run(cmd, verbose, ignore_status)
     return cmd_result.stdout
