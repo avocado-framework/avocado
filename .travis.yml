@@ -7,7 +7,7 @@ branches:
         - master
 
 install:
-    - pip install sphinx tox simplejson MySQL-python pylint autopep8
+    - pip install sphinx tox pylint autopep8 flexmock
     - pip install inspektor
     - pip install -r requirements.txt
 
