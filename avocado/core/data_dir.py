@@ -16,61 +16,153 @@
 
 """
 Library used to let avocado tests find important paths in the system.
+
+The general reasoning to find paths is:
+
+* When running in tree, don't honor settings.ini. Also, we get to
+  run/display the example tests shipped in tree.
+* When settings.ini is in /etc/avocado, or ~/.config/avocado, then honor
+  the values there as much as possible. If they point to a location where
+  we can't write to, use the next best location available.
+* The next best location is the default system wide one.
+* The next best location is the default user specific one.
 """
 import os
 import sys
-import glob
 import shutil
+import tempfile
 
 from avocado.settings import settings
 
-_ROOT_PATH = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
-IN_TREE_ROOT_DIR = os.path.abspath(_ROOT_PATH)
-IN_TREE_TMP_DIR = os.path.join(IN_TREE_ROOT_DIR, 'tmp')
+_BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
+_BASE_DIR = os.path.abspath(_BASE_DIR)
+_IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'tests')
+
+SETTINGS_BASE_DIR = settings.get_value('runner', 'base_dir')
+SETTINGS_TEST_DIR = settings.get_value('runner', 'test_dir')
+SETTINGS_DATA_DIR = settings.get_value('runner', 'data_dir')
+SETTINGS_LOG_DIR = settings.get_value('runner', 'logs_dir')
+SETTINGS_TMP_DIR = settings.get_value('runner', 'tmp_dir')
+
+SYSTEM_BASE_DIR = '/var/lib/avocado'
+SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
+SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
+SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'logs')
+SYSTEM_TMP_DIR = '/tmp/avocado'
+
+USER_BASE_DIR = '~/avocado'
+USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
+USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
+USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'logs')
+USER_TMP_DIR = '/tmp/avocado'
 
 
-def get_root_dir():
-    if settings.intree:
-        return IN_TREE_ROOT_DIR
+def _is_usable_dir(directory):
+    """
+    Verify wether we can use this dir.
+
+    Checks for appropriate permissions, and creates missing dirs as needed.
+
+    :param directory: Directory
+    """
+    if os.path.isdir(directory):
+        try:
+            fd, path = tempfile.mkstemp(dir=directory)
+            os.close(fd)
+            os.unlink(path)
+            return True
+        except OSError:
+            pass
     else:
-        return settings.get_value('runner', 'root_dir')
+        try:
+            os.makedirs(directory)
+            return True
+        except OSError:
+            pass
+
+    return False
+
+
+def _get_dir(settings_location, system_location, user_location):
+    if not settings.intree:
+        if _is_usable_dir(settings_location):
+            return settings_location
+
+    if _is_usable_dir(system_location):
+        return system_location
+
+    user_location = os.path.expanduser(user_location)
+    if _is_usable_dir(user_location):
+        return user_location
+
+
+def get_base_dir():
+    """
+    Get the most appropriate base dir.
+
+    The base dir is the parent location for most of the avocado other
+    important directories.
+
+    Examples:
+        * Log directory
+        * Data directory
+        * Tests directory
+    """
+    return _get_dir(SETTINGS_BASE_DIR, SYSTEM_BASE_DIR, USER_BASE_DIR)
 
 
 def get_test_dir():
+    """
+    Get the most appropriate test location.
+
+    The test location is where we store tests written with the avocado API.
+    """
     if settings.intree:
-        return os.path.join(get_root_dir(), 'tests')
-    else:
-        return settings.get_value('runner', 'test_dir')
+        return _IN_TREE_TESTS_DIR
+    return _get_dir(SETTINGS_TEST_DIR, SYSTEM_TEST_DIR, USER_TEST_DIR)
+
+
+def get_data_dir():
+    """
+    Get the most appropriate data dir location.
+
+    The data dir is the location where any data necessary to job and test
+    operations are located.
+
+    Examples:
+        * ISO files
+        * GPG files
+        * VM images
+        * Reference bitmaps
+    """
+    return _get_dir(SETTINGS_DATA_DIR, SYSTEM_DATA_DIR, USER_DATA_DIR)
 
 
 def get_logs_dir():
-    if settings.intree:
-        return os.path.join(get_root_dir(), 'logs')
-    else:
-        return os.path.expanduser(settings.get_value('runner', 'logs_dir'))
+    """
+    Get the most appropriate log dir location.
+
+    The log dir is where we store job/test logs in general.
+    """
+    return _get_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
 
 
 def get_tmp_dir():
-    if settings.intree:
-        if not os.path.isdir(IN_TREE_TMP_DIR):
-            os.makedirs(IN_TREE_TMP_DIR)
-        return IN_TREE_TMP_DIR
-    else:
-        return settings.get_value('runner', 'tmp_dir')
+    """
+    Get the most appropriate tmp dir location.
+
+    The tmp dir is where artifacts produced by the test are kept.
+
+    Examples:
+        * Copies of a test suite source code
+        * Compiled test suite source code
+    """
+    return _get_dir(SETTINGS_TMP_DIR, SYSTEM_TMP_DIR, USER_TMP_DIR)
 
 
 def clean_tmp_files():
     tmp_dir = get_tmp_dir()
-    if os.path.isdir(tmp_dir):
-        hidden_paths = glob.glob(os.path.join(tmp_dir, ".??*"))
-        paths = glob.glob(os.path.join(tmp_dir, "*"))
-        for path in paths + hidden_paths:
-            try:
-                shutil.rmtree(path, ignore_errors=True)
-            except OSError:
-                pass
-
-
-if __name__ == '__main__':
-    print "root dir:         " + get_root_dir()
-    print "tmp dir:          " + get_tmp_dir()
+    try:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+    except OSError:
+        pass
