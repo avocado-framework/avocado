@@ -161,6 +161,12 @@ def get_tmp_dir():
 
 
 def clean_tmp_files():
+    """
+    Try to clean the tmp directory by removing it.
+
+    This is a useful function for avocado entry points looking to clean after
+    tests/jobs are done. If OSError is raised, silently ignore the error.
+    """
     tmp_dir = get_tmp_dir()
     try:
         shutil.rmtree(tmp_dir, ignore_errors=True)
