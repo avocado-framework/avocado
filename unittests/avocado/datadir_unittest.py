@@ -33,13 +33,12 @@ from avocado import settings
 
 
 def _get_bogus_settings(args):
-    bogus_settings = '[runner]\n'
-    bogus_settings += 'base_dir = %s\n' % args['base_dir']
-    bogus_settings += 'test_dir = %s\n' % args['test_dir']
-    bogus_settings += 'data_dir = %s\n' % args['data_dir']
-    bogus_settings += 'logs_dir = %s\n' % args['logs_dir']
-    bogus_settings += 'tmp_dir = %s\n' % args['tmp_dir']
-    return bogus_settings
+    return ('[runner]\n'
+            'base_dir = %(base_dir)s\n'
+            'test_dir = %(test_dir)s\n'
+            'data_dir = %(data_dir)s\n'
+            'logs_dir = %(logs_dir)s\n'
+            'tmp_dir = %(tmp_dir)s\n') % args
 
 
 class DataDirTest(unittest.TestCase):
