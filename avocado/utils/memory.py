@@ -28,20 +28,36 @@ from avocado.utils import process
 
 
 def read_from_meminfo(key):
+    """
+    Retrieve key from meminfo.
+
+    :param key: Key name, such as ``MemTotal``.
+    """
     cmd_result = process.run('grep %s /proc/meminfo' % key, verbose=False)
     meminfo = cmd_result.stdout
     return int(re.search(r'\d+', meminfo).group(0))
 
 
 def memtotal():
+    """
+    Read ``Memtotal`` from meminfo.
+    """
     return read_from_meminfo('MemTotal')
 
 
 def freememtotal():
+    """
+    Read ``MemFree`` from meminfo.
+    """
     return read_from_meminfo('MemFree')
 
 
 def rounded_memtotal():
+    """
+    Get memtotal, properly rounded.
+
+    :return: Total memory, KB.
+    """
     # Get total of all physical mem, in kbytes
     usable_kbytes = memtotal()
     # usable_kbytes is system's usable DRAM in kbytes,
@@ -73,32 +89,59 @@ def rounded_memtotal():
 
 
 def numa_nodes():
+    """
+    Get a list of NUMA nodes present on the system.
+
+    :return: List with nodes.
+    """
     node_paths = glob.glob('/sys/devices/system/node/node*')
     nodes = [int(re.sub(r'.*node(\d+)', r'\1', x)) for x in node_paths]
     return (sorted(nodes))
 
 
 def node_size():
+    """
+    Return node size.
+
+    :return: Node size.
+    """
     nodes = max(len(numa_nodes()), 1)
     return ((memtotal() * 1024) / nodes)
 
 
 def get_huge_page_size():
+    """
+    Get size of the huge pages for this system.
+
+    :return: Huge pages size (KB).
+    """
     output = process.system_output('grep Hugepagesize /proc/meminfo')
     return int(output.split()[1])  # Assumes units always in kB. :(
 
 
 def get_num_huge_pages():
+    """
+    Get number of huge pages for this system.
+
+    :return: Number of huge pages.
+    """
     raw_hugepages = process.system_output('/sbin/sysctl vm.nr_hugepages')
     return int(raw_hugepages.split()[2])
 
 
 def set_num_huge_pages(num):
+    """
+    Set number of huge pages.
+
+    :param num: Target number of huge pages.
+    """
     process.system('/sbin/sysctl vm.nr_hugepages=%d' % num)
 
 
 def drop_caches():
-    """Writes back all dirty pages to disk and clears all the caches."""
+    """
+    Writes back all dirty pages to disk and clears all the caches.
+    """
     process.run("sync", verbose=False)
     # We ignore failures here as this will fail on 2.6.11 kernels.
     process.run("echo 3 > /proc/sys/vm/drop_caches", ignore_status=True,
