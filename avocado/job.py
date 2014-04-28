@@ -116,6 +116,9 @@ class Job(object):
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
+        # Let's clean up test artifacts
+        if not self.args.keep_tmp_files:
+            data_dir.clean_tmp_files()
         # Let's assess the overall status:
         job_status = status.mapping[self.status]
         tests_status = not bool(failures)
