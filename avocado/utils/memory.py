@@ -211,16 +211,21 @@ def read_from_numa_maps(pid, key):
 
 def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     """
-    Get the fragement status of the host. It use the same method
-    to get the page size in buddyinfo.
-    2^chunk_size * page_size
+    Get the fragement status of the host.
+
+    It uses the same method to get the page size in buddyinfo. The expression
+    to evaluate it is::
+
+        2^chunk_size * page_size
+
     The chunk_sizes can be string make up by all orders that you want to check
-    splited with blank or a mathematical expression with '>', '<' or '='.
+    splited with blank or a mathematical expression with ``>``, ``<`` or ``=``.
+
     For example:
-    The input of chunk_size could be: "0 2 4"
-    And the return  will be: {'0': 3, '2': 286, '4': 687}
-    if you are using expression: ">=9"
-    the return will be: {'9': 63, '10': 225}
+        * The input of chunk_size could be: ``0 2 4``, and the return  will be
+          ``{'0': 3, '2': 286, '4': 687}``
+        * If you are using expression: ``>=9`` the return will be
+          ``{'9': 63, '10': 225}``
 
     :param chunk_size: The order number shows in buddyinfo. This is not
                        the real page size.
