@@ -53,7 +53,11 @@ class PluginManager(object):
     def activate(self, app_args):
         for plugin in self.plugins:
             if plugin.configured:
-                plugin.activate(app_args)
+                try:
+                    plugin.activate(app_args)
+                except Exception as err:
+                    log.error("Could not activate plugin '%s': %s",
+                              plugin.name, err)
 
 
 class BuiltinPluginManager(PluginManager):
