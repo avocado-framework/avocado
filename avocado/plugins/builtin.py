@@ -37,7 +37,7 @@ def load_builtins(set_globals=True):
         try:
             plugin_mod = import_module(module)
         except ImportError as err:
-            log.error("Could not import pluging '': %s", klass, err)
+            log.error("Could not import plugin '%s': %s", klass, err)
             continue
         except SyntaxError as err:
             log.error("Plugin '%s' with syntax error: %s", klass, err)
