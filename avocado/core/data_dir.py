@@ -30,6 +30,7 @@ The general reasoning to find paths is:
 import os
 import sys
 import shutil
+import time
 import tempfile
 
 from avocado.settings import settings
@@ -145,6 +146,33 @@ def get_logs_dir():
     The log dir is where we store job/test logs in general.
     """
     return _get_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
+
+
+def get_job_logs_dir(args=None):
+    """
+    Create a log directory for a job, or a stand alone execution of a test.
+
+    Also, symlink the created dir with [avocado-logs-dir]/latest.
+
+    :param args: :class:`argparse.Namespace` instance with cmdline arguments
+                 (optional).
+    """
+    start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
+    if args is not None:
+        logdir = args.logdir or get_logs_dir()
+    else:
+        logdir = get_logs_dir()
+    debugbase = 'run-%s' % start_time
+    debugdir = os.path.join(logdir, debugbase)
+    if not os.path.isdir(debugdir):
+        os.makedirs(debugdir)
+    latestdir = os.path.join(logdir, "latest")
+    try:
+        os.unlink(latestdir)
+    except OSError:
+        pass
+    os.symlink(debugbase, latestdir)
+    return debugdir
 
 
 def get_tmp_dir():
