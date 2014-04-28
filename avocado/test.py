@@ -70,7 +70,8 @@ class Test(unittest.TestCase):
                      with the avocado API, this should not be set, this is
                      reserved for running random executables as tests.
         :param base_logdir: Directory where test logs should go. If None
-                            provided, it'll use ~/avocado.
+                            provided, it'll use
+                            :func:`avocado.core.data_dir.get_job_logs_dir`.
         :param tag: Tag that differentiates 2 executions of the same test name.
                     Example: 'long', 'short', so we can differentiate
                     'sleeptest.long' and 'sleeptest.short'.
@@ -92,7 +93,7 @@ class Test(unittest.TestCase):
         if not os.path.isdir(self.srcdir):
             os.makedirs(self.srcdir)
         if base_logdir is None:
-            base_logdir = os.path.expanduser('~/avocado')
+            base_logdir = data_dir.get_job_logs_dir()
         self.tagged_name = self.get_tagged_name(base_logdir)
         self.logdir = os.path.join(base_logdir, self.tagged_name)
         if not os.path.isdir(self.logdir):
