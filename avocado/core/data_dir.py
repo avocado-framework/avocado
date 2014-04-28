@@ -49,13 +49,13 @@ SYSTEM_BASE_DIR = '/var/lib/avocado'
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
 SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
 SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'logs')
-SYSTEM_TMP_DIR = '/tmp/avocado'
+SYSTEM_TMP_DIR = '/var/tmp/avocado'
 
 USER_BASE_DIR = '~/avocado'
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'logs')
-USER_TMP_DIR = '/tmp/avocado'
+USER_TMP_DIR = '/var/tmp/avocado'
 
 
 def _is_usable_dir(directory):
