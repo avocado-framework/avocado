@@ -34,6 +34,8 @@ def ask(question, auto=False):
 def read_file(filename):
     """
     Read the entire contents of file.
+
+    :param filename: Path to the file.
     """
     with open(filename, 'r') as file_obj:
         contents = file_obj.read()
@@ -49,6 +51,8 @@ def read_file(filename):
 def read_one_line(filename):
     """
     Read the first line of filename.
+
+    :param filename: Path to the file.
     """
     with open(filename, 'r') as file_obj:
         line = file_obj.readline().rstrip('\n')
@@ -56,10 +60,22 @@ def read_one_line(filename):
 
 
 def write_one_line(filename, line):
+    """
+    Write one line of text to filename.
+
+    :param filename: Path to the file.
+    :param line: Line to be written.
+    """
     write_file(filename, line.rstrip('\n') + '\n')
 
 
 def write_file(filename, data):
+    """
+    Write data to a file.
+
+    :param filename: Path to the file.
+    :param line: Line to be written.
+    """
     with open(filename, 'w') as file_obj:
         file_obj.write(data)
 
