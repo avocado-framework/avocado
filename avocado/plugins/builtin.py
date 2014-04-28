@@ -14,7 +14,10 @@
 
 """Builtin plugins."""
 
+import logging
 from importlib import import_module
+
+log = logging.getLogger("avocado.plugins")
 
 __all__ = ['load_builtins']
 
@@ -33,7 +36,11 @@ def load_builtins(set_globals=True):
     for module, klass in Builtins:
         try:
             plugin_mod = import_module(module)
-        except ImportError:
+        except ImportError as err:
+            log.error("Could not import pluging '': %s", klass, err)
+            continue
+        except SyntaxError as err:
+            log.error("Plugin '%s' with syntax error: %s", klass, err)
             continue
         if hasattr(plugin_mod, klass):
             plugin = getattr(plugin_mod, klass)
