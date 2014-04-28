@@ -93,6 +93,11 @@ class Loggable(object):
         self.logf = logf
 
     def readline(self, logdir):
+        """
+        Read one line of the loggable object.
+
+        :param logdir: Path to a log directory.
+        """
         path = os.path.join(logdir, self.logf)
         if os.path.exists(path):
             return utils.misc.read_one_line(path)
@@ -101,6 +106,13 @@ class Loggable(object):
 
 
 class Logfile(Loggable):
+
+    """
+    Loggable system file.
+
+    :param path: Path to the log file.
+    :param logf: Basename of the file where output is logged (optional).
+    """
 
     def __init__(self, path, logf=None):
         if not logf:
@@ -130,6 +142,11 @@ class Logfile(Loggable):
         return hash((self.path, self.logf))
 
     def run(self, logdir):
+        """
+        Copy the log file to the appropriate log dir.
+
+        :param logdir: Log directory which the file is going to be copied to.
+        """
         if os.path.exists(self.path):
             try:
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
@@ -138,6 +155,14 @@ class Logfile(Loggable):
 
 
 class Command(Loggable):
+
+    """
+    Loggable command.
+
+    :param cmd: String with the command.
+    :param logf: Basename of the file where output is logged (optional).
+    :param compress_logf: Wether to compress the output of the command.
+    """
 
     def __init__(self, cmd, logf=None, compress_log=False):
         if not logf:
@@ -168,6 +193,11 @@ class Command(Loggable):
         return hash((self.cmd, self.logf))
 
     def run(self, logdir):
+        """
+        Execute the command as a subprocess and log its output in logdir.
+
+        :param logdir: Path to a log directory.
+        """
         env = os.environ.copy()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
@@ -195,6 +225,9 @@ class LogWatcher(Loggable):
     This object is normally used to track contents of the system log
     (/var/log/messages), and the outputs are gzipped since they can be
     potentially large, helping to save space.
+
+    :param path: Path to the log file.
+    :param logf: Basename of the file where output is logged (optional).
     """
 
     def __init__(self, path, logf=None):
@@ -293,7 +326,7 @@ class SysInfo(object):
 
         :param basedir: Base log dir where sysinfo files will be located.
         :param log_packages: Whether to log system packages (optional because
-                logging packages is a costly operation).
+                             logging packages is a costly operation).
         """
         if basedir is None:
             basedir = os.path.join(os.getcwd(), 'sysinfo')
@@ -388,14 +421,35 @@ class SysInfo(object):
         return loggables
 
     def add_cmd(self, cmd, hook):
+        """
+        Add a command loggable.
+
+        :param cmd: Command to log.
+        :param hook: In which hook this cmd should be logged (start job, end
+                     job, start iteration, end iteration).
+        """
         loggables = self._get_loggables(hook)
         loggables.add(Command(cmd))
 
     def add_file(self, filename, hook):
+        """
+        Add a system file loggable.
+
+        :param filename: Path to the file to be logged.
+        :param hook: In which hook this file should be logged (start job, end
+                     job, start iteration, end iteration).
+        """
         loggables = self._get_loggables(hook)
         loggables.add(Logfile(filename))
 
     def add_watcher(self, filename, hook):
+        """
+        Add a system file watcher loggable.
+
+        :param filename: Path to the file to be logged.
+        :param hook: In which hook this watcher should be logged (start job, end
+                     job, start iteration, end iteration).
+        """
         loggables = self._get_loggables(hook)
         loggables.add(LogWatcher(filename))
 
@@ -471,6 +525,8 @@ class SysInfo(object):
 def collect_sysinfo(args):
     """
     Collect sysinfo to a base directory.
+
+    :param args: :class:`argparse.Namespace` object with command line params.
     """
     output.add_console_handler(log)
 
