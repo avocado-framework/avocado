@@ -15,6 +15,6 @@ script:
     - ./unittests/runtests.py -c .nose.cfg
     - inspekt lint
     - inspekt style
-    - make -C docs html
+    - make -C docs html 2>&1 | grep -E '(ERROR|WARNING)' || test $? -eq 1
     - ./scripts/avocado run "sleeptest sleeptest"
     - ./scripts/avocado run "sleeptest failtest sleeptest" || test $? -eq 1
