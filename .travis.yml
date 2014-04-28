@@ -15,3 +15,5 @@ script:
     - ./unittests/runtests.py -c .nose.cfg
     - inspekt lint
     - inspekt style
+    - ./scripts/avocado run "sleeptest sleeptest"
+    - ./scripts/avocado run "sleeptest failtest sleeptest" || test $? -eq 1
