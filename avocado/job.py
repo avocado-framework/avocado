@@ -18,7 +18,6 @@ Class that describes a sequence of automated operations.
 import imp
 import logging
 import os
-import time
 import uuid
 
 from avocado.core import data_dir
@@ -40,22 +39,7 @@ class Job(object):
     def __init__(self, args=None):
         self.args = args
         self.unique_id = args.unique_id or str(uuid.uuid4())
-        start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
-        if self.args is not None:
-            logdir = args.logdir or data_dir.get_logs_dir()
-        else:
-            logdir = data_dir.get_logs_dir()
-        debugbase = 'run-%s' % start_time
-        self.debugdir = os.path.join(logdir, debugbase)
-        if not os.path.isdir(self.debugdir):
-            os.makedirs(self.debugdir)
-        latestdir = os.path.join(logdir, "latest")
-        try:
-            os.unlink(latestdir)
-        except OSError:
-            pass
-        os.symlink(debugbase, latestdir)
-
+        self.debugdir = data_dir.get_job_logs_dir(self.args)
         self.debuglog = os.path.join(self.debugdir, "debug.log")
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
@@ -132,6 +116,9 @@ class Job(object):
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
+        # Let's clean up test artifacts
+        if not self.args.keep_tmp_files:
+            data_dir.clean_tmp_files()
         # Let's assess the overall status:
         job_status = status.mapping[self.status]
         tests_status = not bool(failures)
