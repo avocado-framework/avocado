@@ -30,6 +30,8 @@ from avocado.core import error_codes
 from avocado import test
 from avocado import result
 
+_NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
+
 
 class Job(object):
 
@@ -147,17 +149,25 @@ class Job(object):
             return self._run(urls)
         except exceptions.JobBaseException, details:
             self.status = details.status
-            fail_class = details.__class__.name
-            self.output_manager.error('Avocado job failed: %s: %s' %
-                                      (fail_class, details))
+            fail_class = details.__class__.__name__
+            self.output_manager.log_fail_header('Avocado job failed: %s: %s' %
+                                                (fail_class, details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except Exception, details:
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
+            fail_class = details.__class__.__name__
+            self.output_manager.log_fail_header('Avocado crashed: %s: %s' %
+                                                (fail_class, details))
             for line in tb_info:
                 self.output_manager.error(line)
+            self.output_manager.log_fail_header('Please include the traceback '
+                                                'info and command line used on '
+                                                'your bug report')
+            self.output_manager.log_fail_header('Report bugs visiting %s' %
+                                                _NEW_ISSUE_LINK)
             return error_codes.numeric_status['AVOCADO_CRASH']
 
 
