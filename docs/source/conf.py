@@ -33,6 +33,13 @@ import os
 root_path = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, root_path)
 
+# Auto generate API documentation
+from avocado.utils import process
+_sphinx_apidoc = process.find_command('sphinx-apidoc')
+_output_dir = os.path.join(root_path, 'docs', 'source', 'api')
+_api_dir = os.path.join(root_path, 'avocado')
+process.run("%s -o %s %s" % (_sphinx_apidoc, _output_dir, _api_dir))
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
