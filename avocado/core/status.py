@@ -16,7 +16,7 @@ This is used by methods and functions to return a cut and dry answer to wether
 a test or a job in avocado PASSed or FAILed.
 """
 
-mapping = {"TEST_NA": False,
+mapping = {"TEST_NA": True,
            "ABORT": False,
            "ERROR": False,
            "FAIL": False,
