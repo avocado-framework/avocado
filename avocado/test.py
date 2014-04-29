@@ -294,3 +294,20 @@ class DropinTest(Test):
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
+
+
+class MissingTest(Test):
+
+    """
+    Handle when there is no such test module in the test directory.
+    """
+
+    def __init__(self, name=None, base_logdir=None, tag=None, job=None):
+        super(MissingTest, self).__init__(name=name,
+                                          base_logdir=base_logdir,
+                                          tag=tag, job=job)
+
+    def action(self):
+        raise exceptions.TestError('Test %s could not be found in the test '
+                                   'dir %s' %
+                                   (self.name, data_dir.get_test_dir()))

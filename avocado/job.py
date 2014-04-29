@@ -18,11 +18,15 @@ Class that describes a sequence of automated operations.
 import imp
 import logging
 import os
+import sys
+import traceback
 import uuid
 
 from avocado.core import data_dir
 from avocado.core import output
 from avocado.core import status
+from avocado.core import exceptions
+from avocado.core import error_codes
 from avocado import test
 from avocado import result
 
@@ -59,14 +63,18 @@ class Job(object):
                                        base_logdir=self.debugdir,
                                        job=self)
         else:
-            test_module_dir = os.path.join(self.test_dir, url)
-            f, p, d = imp.find_module(url, [test_module_dir])
-            test_module = imp.load_module(url, f, p, d)
-            f.close()
-            test_class = getattr(test_module, url)
-            test_instance = test_class(name=url,
-                                       base_logdir=self.debugdir,
-                                       job=self)
+            try:
+                test_module_dir = os.path.join(self.test_dir, url)
+                f, p, d = imp.find_module(url, [test_module_dir])
+                test_module = imp.load_module(url, f, p, d)
+                f.close()
+                test_class = getattr(test_module, url)
+            except ImportError:
+                test_class = test.MissingTest
+            finally:
+                test_instance = test_class(name=url,
+                                           base_logdir=self.debugdir,
+                                           job=self)
         return test_instance
 
     def run_test(self, url):
@@ -89,16 +97,17 @@ class Job(object):
                                         self.args)
         return test_result
 
-    def run(self, urls=None):
+    def _run(self, urls=None):
         """
-        Main job method. Runs a list of test URLs to its completion.
+        Unhandled job method. Runs a list of test URLs to its completion.
 
         :param urls: String with tests to run.
 
-        :return: Integer with overall job status
-                 0 - Job passed, all tests passed
-                 1 - Job passed, some/all tests failed
-                 2 - Job failed
+        :return: Integer with overall job status. See
+                 :mod:`avocado.core.error_codes` for more information.
+        :raise: Any exception (avocado crashed), or
+                :class:`avocado.core.exceptions.JobBaseException` errors,
+                that configure a job failure.
         """
         failures = []
         if urls is None:
@@ -119,16 +128,37 @@ class Job(object):
         # Let's clean up test artifacts
         if not self.args.keep_tmp_files:
             data_dir.clean_tmp_files()
-        # Let's assess the overall status:
-        job_status = status.mapping[self.status]
         tests_status = not bool(failures)
-        if job_status:
-            if tests_status:
-                return 0
-            else:
-                return 1
+        if tests_status:
+            return error_codes.numeric_status['AVOCADO_ALL_OK']
         else:
-            return 2
+            return error_codes.numeric_status['AVOCADO_TESTS_FAIL']
+
+    def run(self, urls=None):
+        """
+        Handled main job method. Runs a list of test URLs to its completion.
+
+        :param urls: String with tests to run.
+
+        :return: Integer with overall job status. See
+                 :mod:`avocado.core.error_codes` for more information.
+        """
+        try:
+            return self._run(urls)
+        except exceptions.JobBaseException, details:
+            self.status = details.status
+            fail_class = details.__class__.name
+            self.output_manager.error('Avocado job failed: %s: %s' %
+                                      (fail_class, details))
+            return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+        except Exception, details:
+            self.status = "ERROR"
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb_info = traceback.format_exception(exc_type, exc_value,
+                                                 exc_traceback.tb_next)
+            for line in tb_info:
+                self.output_manager.error(line)
+            return error_codes.numeric_status['AVOCADO_CRASH']
 
 
 class TestModuleRunner(object):

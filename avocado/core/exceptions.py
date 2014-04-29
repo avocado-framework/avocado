@@ -17,6 +17,22 @@ Exception classes, useful for tests, and other parts of the framework code.
 """
 
 
+class JobBaseException(Exception):
+
+    """
+    The parent of all job exceptions.
+    """
+    status = "NEVER_RAISE_THIS"
+
+
+class JobError(Exception):
+
+    """
+    A generic error happened during a job execution.
+    """
+    status = "ERROR"
+
+
 class TestBaseException(Exception):
 
     """
