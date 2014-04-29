@@ -152,6 +152,13 @@ class xUnitTestResult(TestResult):
 
     def __init__(self, stream=None, debuglog=None, loglevel=None,
                  tests_total=0, args=None):
+        """
+        :param stream: Stream where to write output, such as :attr:`sys.stdout`.
+        :param debuglog: Debug log file path.
+        :param loglevel: Log level in the :mod:`logging` module.
+        :param tests_total: Total of tests executed
+        :param args: :class:`argparse.Namespace` with cmdline arguments.
+        """
         TestResult.__init__(self, stream, debuglog, loglevel, tests_total, args)
         if hasattr(self.args, 'xunit_output'):
             self.filename = self.args.xunit_output
@@ -160,13 +167,22 @@ class xUnitTestResult(TestResult):
         self.xml = XmlResult()
 
     def start_tests(self):
+        """
+        Record a start tests event.
+        """
         TestResult.start_tests(self)
         self.xml.start_testsuite(datetime.datetime.now())
 
     def start_test(self, test):
+        """
+        Record a start test event.
+        """
         TestResult.start_test(self, test)
 
     def end_test(self, test):
+        """
+        Record an end test event, accord to the given test status.
+        """
         TestResult.end_test(self, test)
         if test.status == 'PASS':
             self.xml.add_success(test)
@@ -178,6 +194,9 @@ class xUnitTestResult(TestResult):
             self.xml.add_error(test)
 
     def end_tests(self):
+        """
+        Record an end tests event.
+        """
         TestResult.end_tests(self)
         values = {'tests': self.tests_total,
                   'errors': len(self.errors),

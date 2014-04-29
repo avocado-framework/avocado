@@ -37,25 +37,6 @@ class Test(unittest.TestCase):
 
     You'll inherit from this to write your own tests. Tipically you'll want
     to implement setup(), action() and cleanup() methods on your own tests.
-
-    Test Attributes:
-
-    basedir:
-        Where the test .py file is located (root dir).
-    depsdir:
-        If this is an existing test suite wrapper, it'll contain the
-        test suite sources and other auxiliary files. Usually inside
-        basedir, 'deps' subdirectory.
-    workdir:
-        Place where temporary copies of the source code, binaries,
-        image files will be created and modified.
-    base_logdir:
-        Base log directory, where logs from all tests go to.
-    tag:
-        A name that can differentiate between 2 executions of the same test
-        name.
-    job:
-        The job that this test is part of.
     """
 
     def __init__(self, methodName='runTest', name=None, base_logdir=None,

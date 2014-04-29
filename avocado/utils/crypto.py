@@ -89,13 +89,14 @@ def hash_file(filename, size=None, algorithm="md5"):
 
     If size is not None, limit to first size bytes.
     Throw exception if something is wrong with filename.
-    Can be also implemented with bash one-liner (assuming size%1024==0):
-    dd if=filename bs=1024 count=size/1024 | sha1sum -
+    Can be also implemented with bash one-liner (assuming ``size%1024==0``)::
+
+        dd if=filename bs=1024 count=size/1024 | sha1sum -
 
     :param filename: Path of the file that will have its hash calculated.
     :param method: Method used to calculate the hash. Supported methods:
-            - md5
-            - sha1
+                   * md5
+                   * sha1
     :param size: If provided, hash only the first size bytes of the file.
     :return: Hash of the file, if something goes wrong, return None.
     """
