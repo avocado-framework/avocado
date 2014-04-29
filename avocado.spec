@@ -1,10 +1,10 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.0.1
+Version: %{avocadoversion}
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
-URL: https://github.com/lmr/avocado
+URL: http://avocado-framework.readthedocs.org/
 Source: avocado-%{version}.tar.gz
 BuildRequires: python2-devel
 BuildArch: noarch
