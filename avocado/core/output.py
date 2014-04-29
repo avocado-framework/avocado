@@ -103,6 +103,14 @@ class TermColors(object):
         """
         return self.HEADER + sr + self.ENDC
 
+    def fail_header_str(self, sr):
+        """
+        Print a fail header string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.FAIL + sr + self.ENDC
+
     def pass_str(self):
         """
         Print a pass string (green colored).
@@ -220,6 +228,14 @@ class OutputManager(object):
         :param sr: String to write.
         """
         self.info(colors.header_str(sr))
+
+    def log_fail_header(self, sr):
+        """
+        Log a fail header message (red, for critical errors).
+
+        :param sr: String to write.
+        """
+        self.info(colors.fail_header_str(sr))
 
     def log_pass(self, label, t_elapsed):
         """
