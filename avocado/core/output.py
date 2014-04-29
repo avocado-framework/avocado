@@ -232,6 +232,17 @@ class OutputManager(object):
                            " (%.2f s)" % t_elapsed)
         self.info(normal_pass_msg)
 
+    def log_error(self, label, t_elapsed):
+        """
+        Log a test ERROR message.
+
+        :param label: Label for the FAIL message (test name + index).
+        :param t_elapsed: Time it took for test to complete.
+        """
+        normal_error_msg = (label + " " + colors.error_str() +
+                            " (%.2f s)" % t_elapsed)
+        self.error(normal_error_msg)
+
     def log_fail(self, label, t_elapsed):
         """
         Log a test FAIL message.
