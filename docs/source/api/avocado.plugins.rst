@@ -17,6 +17,22 @@ plugins Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`datadir` Module
+---------------------
+
+.. automodule:: avocado.plugins.datadir
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`journal` Module
+---------------------
+
+.. automodule:: avocado.plugins.journal
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`lister` Module
 --------------------
 
