@@ -184,7 +184,7 @@ class HumanTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_error(self, test)
-        self.stream.log_pass(self.test_label, test.time_elapsed)
+        self.stream.log_error(self.test_label, test.time_elapsed)
 
     def add_fail(self, test):
         """
