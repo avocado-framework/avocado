@@ -17,6 +17,14 @@ core Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`error_codes` Module
+-------------------------
+
+.. automodule:: avocado.core.error_codes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`exceptions` Module
 ------------------------
 
@@ -29,6 +37,14 @@ core Package
 --------------------
 
 .. automodule:: avocado.core.output
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`status` Module
+--------------------
+
+.. automodule:: avocado.core.status
     :members:
     :undoc-members:
     :show-inheritance:
