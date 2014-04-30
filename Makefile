@@ -14,7 +14,7 @@ all:
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:
-	$(PYTHON) setup.py sdist $(COMPILE)
+	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=SOURCES --prune
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -40,8 +40,6 @@ build-deb-all: prepare-source
 
 build-rpm-all: source
 	rpmbuild --define '_topdir %{getenv:PWD}' \
-		 --define '_sourcedir %{_topdir}/dist/' \
-		 --define "avocadoversion $(VERSION)" \
 		 -ba avocado.spec
 
 clean:
