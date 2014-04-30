@@ -4,3 +4,4 @@ nosexcover==1.0.8
 tox==1.5.0
 virtualenv==1.9.1
 mysql-python==1.2.3
+requests==1.2.3
