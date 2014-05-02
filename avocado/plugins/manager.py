@@ -68,7 +68,15 @@ class BuiltinPluginManager(PluginManager):
 
     def load_plugins(self):
         for plugin in load_builtins():
-            self.add_plugin(plugin())
+            try:
+                self.add_plugin(plugin())
+            except Exception as err:
+                if hasattr(plugin, 'name'):
+                    name = plugin.name
+                else:
+                    name = str(plugin)
+                log.error("Could not activate builtin plugin '%s': %s",
+                          name, err)
 
 
 class ExternalPluginManager(PluginManager):
