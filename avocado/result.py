@@ -23,11 +23,12 @@ class TestResult(object):
     """
 
     def __init__(self, stream=None, debuglog=None, loglevel=None,
-                 tests_total=0, args=None):
+                 urls=[], args=None):
+        self.urls = urls
         self.stream = stream
         self.debuglog = debuglog
         self.loglevel = loglevel
-        self.tests_total = tests_total
+        self.tests_total = len(self.urls)
         self.args = args
         self.tests_run = 0
         self.total_time = 0.0
@@ -36,6 +37,26 @@ class TestResult(object):
         self.failed = []
         self.skipped = []
         self.warned = []
+
+    def setup(self):
+        """
+        Setup test environment before any tests are executed.
+
+        Optional, skip in most of the cases.
+
+        :raise: :class:`avocado.core.exceptions.TestSetupFail` when it fails.
+        """
+        pass
+
+    def tear_down(self):
+        """
+        Tear down test environment.
+
+        Optional, skip in most of the cases.
+
+        :raise: :class:`avocado.core.exceptions.TestTearDownFail` when it fails.
+        """
+        pass
 
     def start_tests(self):
         """
