@@ -1,14 +1,14 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: %{avocadoversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.readthedocs.org/
 Source: avocado-%{version}.tar.gz
 BuildRequires: python2-devel
 BuildArch: noarch
-Requires: python
+Requires: python, python-requests
 
 %description
 Avocado is an experimental test framework that is built on the experience with
@@ -35,5 +35,8 @@ shortcomings.
 %{_datadir}/avocado
 
 %changelog
+* Wed Apr 30 2014 Cleber Rosa <cleber@redhat.com> - 0.0.1-2
+- Added new requirements reflecting new upstream deps
+
 * Wed Apr  2 2014 Ruda Moura <rmoura@redhat.com> - 0.0.1-1
 - Created initial spec file
