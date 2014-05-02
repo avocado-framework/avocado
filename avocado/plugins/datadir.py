@@ -21,8 +21,6 @@ class DataDirList(plugin.Plugin):
 
     """
     Implements the avocado 'datadir' functionality.
-
-    The datadir functionality lists currently used directories used by avocado.
     """
 
     name = 'datadir'
