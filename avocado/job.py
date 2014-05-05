@@ -44,7 +44,10 @@ class Job(object):
 
     def __init__(self, args=None):
         self.args = args
-        self.unique_id = args.unique_id or str(uuid.uuid4())
+        if args is not None:
+            self.unique_id = args.unique_id or str(uuid.uuid4())
+        else:
+            self.unique_id = str(uuid.uuid4())
         self.debugdir = data_dir.get_job_logs_dir(self.args)
         self.debuglog = os.path.join(self.debugdir, "debug.log")
         if self.args is not None:
@@ -128,7 +131,7 @@ class Job(object):
         if self.status == 'RUNNING':
             self.status = 'PASS'
         # Let's clean up test artifacts
-        if not self.args.keep_tmp_files:
+        if self.args is not None and not self.args.keep_tmp_files:
             data_dir.clean_tmp_files()
         tests_status = not bool(failures)
         if tests_status:
