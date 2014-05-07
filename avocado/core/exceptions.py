@@ -46,7 +46,7 @@ class TestSetupFail(TestBaseException):
     """
     Indicates an error during a setup procedure.
     """
-    status = "FAIL"
+    status = "ERROR"
 
 
 class TestError(TestBaseException):
