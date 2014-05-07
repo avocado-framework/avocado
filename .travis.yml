@@ -21,4 +21,7 @@ script:
     - ./scripts/avocado run "bogustest" || test $? -ne 3
     - export PYTHONPATH=$PYTHONPATH:.
     - ./tests/sleeptest/sleeptest.py
+    - ./tests/skiptest/skiptest.py
     - ./tests/failtest/failtest.py || test $? -eq 1
+    - ./tests/errortest/errortest.py || test $? -eq 1
+    - ./tests/warntest/warntest.py || test $? -eq 1
