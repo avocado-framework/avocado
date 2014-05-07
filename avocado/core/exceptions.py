@@ -21,8 +21,11 @@ class JobBaseException(Exception):
 
     """
     The parent of all job exceptions.
+
+    You should be never raising this, but just in case, we'll set its
+    status' as FAIL.
     """
-    status = "NEVER_RAISE_THIS"
+    status = "FAIL"
 
 
 class JobError(Exception):
@@ -37,16 +40,19 @@ class TestBaseException(Exception):
 
     """
     The parent of all test exceptions.
+
+    You should be never raising this, but just in case, we'll set its
+    status' as FAIL.
     """
-    status = "NEVER_RAISE_THIS"
+    status = "FAIL"
 
 
 class TestSetupFail(TestBaseException):
 
     """
-    Indicates an error during a setup procedure.
+    Indicates an error during a setup or cleanup procedure.
     """
-    status = "FAIL"
+    status = "ERROR"
 
 
 class TestError(TestBaseException):
