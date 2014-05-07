@@ -58,9 +58,9 @@ USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'logs')
 USER_TMP_DIR = '/var/tmp/avocado'
 
 
-def _is_usable_dir(directory):
+def _usable_rw_dir(directory):
     """
-    Verify wether we can use this dir.
+    Verify wether we can use this dir (read/write).
 
     Checks for appropriate permissions, and creates missing dirs as needed.
 
@@ -84,16 +84,56 @@ def _is_usable_dir(directory):
     return False
 
 
-def _get_dir(settings_location, system_location, user_location):
+def _usable_ro_dir(directory):
+    """
+    Verify whether dir exists and we can access its contents.
+
+    If a usable RO is there, use it no questions asked. If not, let's at
+    least try to create one.
+
+    :param directory: Directory
+    """
+    cwd = os.getcwd()
+    if os.path.isdir(directory):
+        try:
+            os.chdir(directory)
+            os.chdir(cwd)
+            return True
+        except OSError:
+            pass
+    else:
+        try:
+            os.makedirs(directory)
+            return True
+        except OSError:
+            pass
+
+    return False
+
+
+def _get_rw_dir(settings_location, system_location, user_location):
     if not settings.intree:
-        if _is_usable_dir(settings_location):
+        if _usable_rw_dir(settings_location):
             return settings_location
 
-    if _is_usable_dir(system_location):
+    if _usable_rw_dir(system_location):
         return system_location
 
     user_location = os.path.expanduser(user_location)
-    if _is_usable_dir(user_location):
+    if _usable_rw_dir(user_location):
+        return user_location
+
+
+def _get_ro_dir(settings_location, system_location, user_location):
+    if not settings.intree:
+        if _usable_ro_dir(settings_location):
+            return settings_location
+
+    if _usable_ro_dir(system_location):
+        return system_location
+
+    user_location = os.path.expanduser(user_location)
+    if _usable_ro_dir(user_location):
         return user_location
 
 
@@ -109,7 +149,7 @@ def get_base_dir():
         * Data directory
         * Tests directory
     """
-    return _get_dir(SETTINGS_BASE_DIR, SYSTEM_BASE_DIR, USER_BASE_DIR)
+    return _get_rw_dir(SETTINGS_BASE_DIR, SYSTEM_BASE_DIR, USER_BASE_DIR)
 
 
 def get_test_dir():
@@ -120,7 +160,7 @@ def get_test_dir():
     """
     if settings.intree:
         return _IN_TREE_TESTS_DIR
-    return _get_dir(SETTINGS_TEST_DIR, SYSTEM_TEST_DIR, USER_TEST_DIR)
+    return _get_ro_dir(SETTINGS_TEST_DIR, SYSTEM_TEST_DIR, USER_TEST_DIR)
 
 
 def get_data_dir():
@@ -136,7 +176,7 @@ def get_data_dir():
         * VM images
         * Reference bitmaps
     """
-    return _get_dir(SETTINGS_DATA_DIR, SYSTEM_DATA_DIR, USER_DATA_DIR)
+    return _get_rw_dir(SETTINGS_DATA_DIR, SYSTEM_DATA_DIR, USER_DATA_DIR)
 
 
 def get_logs_dir():
@@ -145,7 +185,7 @@ def get_logs_dir():
 
     The log dir is where we store job/test logs in general.
     """
-    return _get_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
+    return _get_rw_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
 
 
 def get_job_logs_dir(args=None):
@@ -185,7 +225,7 @@ def get_tmp_dir():
         * Copies of a test suite source code
         * Compiled test suite source code
     """
-    return _get_dir(SETTINGS_TMP_DIR, SYSTEM_TMP_DIR, USER_TMP_DIR)
+    return _get_rw_dir(SETTINGS_TMP_DIR, SYSTEM_TMP_DIR, USER_TMP_DIR)
 
 
 def clean_tmp_files():
