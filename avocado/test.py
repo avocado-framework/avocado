@@ -200,7 +200,10 @@ class Test(unittest.TestCase):
         except Exception, details:
             raise exceptions.TestSetupFail(details)
         self.action()
-        self.cleanup()
+        try:
+            self.cleanup()
+        except Exception, details:
+            raise exceptions.TestSetupFail(details)
         self.status = 'PASS'
 
     def run_avocado(self, result=None):
