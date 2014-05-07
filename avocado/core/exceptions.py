@@ -44,7 +44,7 @@ class TestBaseException(Exception):
 class TestSetupFail(TestBaseException):
 
     """
-    Indicates an error during a setup procedure.
+    Indicates an error during a setup or cleanup procedure.
     """
     status = "ERROR"
 
