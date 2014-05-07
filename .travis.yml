@@ -19,3 +19,6 @@ script:
     - ./scripts/avocado run "sleeptest sleeptest"
     - ./scripts/avocado run "sleeptest failtest sleeptest" || test $? -eq 1
     - ./scripts/avocado run "bogustest" || test $? -ne 3
+    - export PYTHONPATH=$PYTHONPATH:.
+    - ./tests/sleeptest/sleeptest.py
+    - ./tests/failtest/failtest.py || test $? -eq 1

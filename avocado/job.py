@@ -187,15 +187,16 @@ class TestModuleRunner(object):
                 self.module = getattr(self.module, part)
         else:
             self.module = module
-        url = None
+        self.url = None
         for key, value in self.module.__dict__.iteritems():
             try:
                 if issubclass(value, test.Test):
-                    url = key
+                    self.url = key
             except TypeError:
                 pass
         self.job = Job()
-        if url is not None:
-            self.job.run(urls=[url])
+        if self.url is not None:
+            sys.exit(self.job.run(urls=[self.url]))
+        sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
 
 main = TestModuleRunner
