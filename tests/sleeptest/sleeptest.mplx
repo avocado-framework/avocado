@@ -1,0 +1,9 @@
+variants:
+    - sleeptest:
+        variants:
+            - short:
+                sleep_length = 0.5
+            - medium:
+                sleep_length = 1
+            - long:
+                sleep_length = 5
