@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: %{avocadoversion}
-Release: 2%{?dist}
+Version: 0.4.0
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.readthedocs.org/
@@ -11,10 +11,8 @@ BuildArch: noarch
 Requires: python, python-requests
 
 %description
-Avocado is an experimental test framework that is built on the experience with
-the autotest framework. It aims to implement the good concepts that make
-autotest a good test suite, while trying to streamline and reduce some of its
-shortcomings.
+Avocado is a set of tools and libraries (what people call
+these days a framework) to perform automated testing.
 
 %prep
 %setup -q
@@ -35,6 +33,9 @@ shortcomings.
 %{_datadir}/avocado
 
 %changelog
+* Thu May  8 2014 Ruda Moura <rmoura@redhat.com> - 0.4.0-1
+- Bumped version to Avocado 0.4.0
+
 * Wed Apr 30 2014 Cleber Rosa <cleber@redhat.com> - 0.0.1-2
 - Added new requirements reflecting new upstream deps
 
