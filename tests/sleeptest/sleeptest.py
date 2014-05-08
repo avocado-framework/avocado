@@ -27,10 +27,11 @@ class sleeptest(test.Test):
     Example test for avocado.
     """
 
-    def action(self, length=1):
+    def action(self):
         """
         Sleep for length seconds.
         """
+        length = float(self.params.get('sleep_length', 1))
         self.log.debug("Sleeping for %d seconds", length)
         time.sleep(length)
 
