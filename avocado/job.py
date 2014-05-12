@@ -84,11 +84,37 @@ class Job(object):
 
     def run_test(self, url):
         """
-        Run a single test URL.
+        Run a single test.
+
+        :param url: test URL.
+        :return: an instance of :class:`avocado.test.Test`.
         """
         test_instance = self._load_test_instance(url)
         test_instance.run_avocado()
         return test_instance
+
+    def test_runner(self, urls, test_result):
+        """
+        Run one or more tests and report with test result.
+
+        :param urls: a list of tests URLs.
+        :param test_result: An instance of :class:`avocado.result.TestResult`.
+        :return: a list of test failures.
+        """
+        failures = []
+        for url in urls:
+            test_instance = self.run_test(url)
+            test_result.check_test(test_instance)
+            if not status.mapping[test_instance.status]:
+                failures.append(test_instance.name)
+        return failures
+
+    def _make_test_runner(self):
+        if hasattr(self.args, 'test_runner'):
+            test_runner = self.args.test_runner
+        else:
+            test_runner = self.test_runner
+        return test_runner
 
     def _make_test_result(self, urls):
         if hasattr(self.args, 'test_result'):
@@ -114,18 +140,14 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        failures = []
         if urls is None:
             urls = self.args.url.split()
 
+        test_runner = self._make_test_runner()
         test_result = self._make_test_result(urls)
 
         test_result.start_tests()
-        for url in urls:
-            test_instance = self.run_test(url)
-            test_result.check_test(test_instance)
-            if not status.mapping[test_instance.status]:
-                failures.append(test_instance.name)
+        failures = test_runner(urls, test_result)
         test_result.end_tests()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
