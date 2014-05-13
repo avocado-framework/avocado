@@ -1,5 +1,6 @@
 variants:
     - sleeptest:
+        sleep_length_type = float
         variants:
             - short:
                 sleep_length = 0.5
