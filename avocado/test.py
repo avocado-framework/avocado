@@ -63,6 +63,7 @@ class Test(unittest.TestCase):
             self.name = name
         else:
             self.name = self.__class__.__name__
+
         if params is None:
             params = {}
         self.params = Params(params)
@@ -93,6 +94,13 @@ class Test(unittest.TestCase):
         self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
 
         self.log = logging.getLogger("avocado.test")
+
+        self.log.info('START %s', self.tagged_name)
+        self.log.debug('')
+        self.log.debug('Test parameters:')
+        for key in sorted(self.params.keys()):
+            self.log.debug('    %s = %s', key, self.params.get(key))
+        self.log.debug('')
 
         self.debugdir = None
         self.resultsdir = None
@@ -255,6 +263,7 @@ class Test(unittest.TestCase):
             end_time = time.time()
             self.time_elapsed = end_time - start_time
             self.report()
+            self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
                 self.text_output = log_file_obj.read()
             self.stop_logging()
