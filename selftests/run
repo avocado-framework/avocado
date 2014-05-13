@@ -42,7 +42,7 @@ class AvocadoTestSelector(Selector):
         return True
 
     def wantFile(self, filename):
-        if not filename.endswith('_unittest.py'):
+        if not filename.endswith('.py'):
             return False
 
         skip_tests = []
@@ -82,17 +82,8 @@ class AvocadoTestRunner(Plugin):
     def prepareTestLoader(self, loader):
         loader.selector = AvocadoTestSelector(loader.config)
 
-
-def run_test():
+if __name__ == '__main__':
     nose.main(addplugins=[AvocadoTestRunner(),
                           AttributeSelector(),
                           Xunit(),
                           Coverage()])
-
-
-def main():
-    run_test()
-
-
-if __name__ == '__main__':
-    main()

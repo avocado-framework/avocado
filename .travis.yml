@@ -12,21 +12,8 @@ install:
     - pip install -r requirements.txt
 
 script:
-    - ./unittests/runtests.py -c .nose.cfg
     - inspekt lint
     - inspekt style
-    - make -C docs html 2>&1 | grep -E '(ERROR|WARNING)' || test $? -eq 1
-    - ./scripts/avocado run "sleeptest sleeptest"
-    - ./scripts/avocado run "sleeptest failtest sleeptest" || test $? -eq 1
-    - ./scripts/avocado run "bogustest" || test $? -ne 3
-    - export PYTHONPATH=$PYTHONPATH:.
-    - ./tests/sleeptest/sleeptest.py
-    - ./tests/skiptest/skiptest.py
-    - ./tests/failtest/failtest.py || test $? -eq 1
-    - ./tests/errortest/errortest.py || test $? -eq 1
-    - ./tests/warntest/warntest.py || test $? -eq 1
-    - ./scripts/avocado run --multiplex tests/sleeptest/sleeptest.mplx
-    - ./scripts/avocado run "sleeptest sleeptest" --multiplex tests/sleeptest/sleeptest.mplx
-    - ./scripts/avocado run "sleeptest failtest" --multiplex tests/sleeptest/sleeptest.mplx || test $? -eq 1
-    - ./scripts/avocado multiplex tests/sleeptest/sleeptest.mplx
-    - ./scripts/avocado multiplex nonexist || test $? -eq 2
+    - ./selftests/run -v selftests/all/doc
+    - ./selftests/run -v selftests/all/functional
+    - ./selftests/run selftests/all/unit -c selftests/.nose.cfg
