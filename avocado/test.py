@@ -98,8 +98,10 @@ class Test(unittest.TestCase):
         self.log.info('START %s', self.tagged_name)
         self.log.debug('')
         self.log.debug('Test parameters:')
+        setattr(self.params, 'set_default', self._set_default)
         for key in sorted(self.params.keys()):
             self.log.debug('    %s = %s', key, self.params.get(key))
+            setattr(self.params, key, self.params.get(key))
         self.log.debug('')
 
         self.debugdir = None
@@ -118,6 +120,13 @@ class Test(unittest.TestCase):
 
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
+
+    def _set_default(self, key, default):
+        try:
+            self.params[key]
+        except Exception:
+            self.params[key] = default
+            setattr(self.params, key, default)
 
     def get_deps_path(self, basename):
         """

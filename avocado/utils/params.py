@@ -8,8 +8,10 @@ from avocado import settings
 class ParamNotFound(exceptions.TestError):
     pass
 
+
 class ParamInvalidType(exceptions.TestError):
     pass
+
 
 class Params(UserDict.IterableUserDict):
 
