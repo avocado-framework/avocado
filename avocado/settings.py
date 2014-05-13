@@ -61,6 +61,7 @@ class ConfigFileNotFound(SettingsError):
         return ("Could not find the avocado config file after looking in: %s" %
                 self.path_list)
 
+
 def convert_value_type(value, value_type):
     """
     Convert a string value to a given value type.
@@ -123,6 +124,7 @@ def convert_value_type(value, value_type):
 
     conv_val = value_type(sval)
     return conv_val
+
 
 class Settings(object):
 
