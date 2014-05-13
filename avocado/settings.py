@@ -61,13 +61,40 @@ class ConfigFileNotFound(SettingsError):
         return ("Could not find the avocado config file after looking in: %s" %
                 self.path_list)
 
-
-def convert_value_type(key, section, value, value_type):
+def convert_value_type(value, value_type):
     """
-    Convert a string to another data type.
+    Convert a string value to a given value type.
+
+    :param value: Value we want to convert.
+    :type value: str.
+    :param value_type: Type of the value we want to convert.
+    :type value_type: str or type.
+
+    :return: Converted value type.
+    :rtype: Dependent on value_type.
+
+    :raise: TypeError, in case it was not possible to convert values.
     """
     # strip off leading and trailing white space
-    sval = value.strip()
+    try:
+        sval = value.strip()
+    except:
+        sval = value
+
+    if isinstance(value_type, str):
+        if value_type == 'str':
+            value_type = str
+        elif value_type == 'bool':
+            value_type = bool
+        elif value_type == 'int':
+            value_type = int
+        elif value_type == 'float':
+            value_type = float
+        elif value_type == 'list':
+            value_type = list
+
+    if value_type is None:
+        value_type = str
 
     # if length of string is zero then return None
     if len(sval) == 0:
@@ -94,14 +121,8 @@ def convert_value_type(key, section, value, value_type):
         # Split the string using ',' and return a list
         return [val.strip() for val in sval.split(',')]
 
-    try:
-        conv_val = value_type(sval)
-        return conv_val
-    except Exception:
-        msg = ("Could not convert %s value %r in section %s to type %s" %
-               (key, sval, section, value_type))
-        raise SettingsValueError(msg)
-
+    conv_val = value_type(sval)
+    return conv_val
 
 class Settings(object):
 
@@ -183,7 +204,12 @@ class Settings(object):
         if not val.strip() and not allow_blank:
             return self._handle_no_value(section, key, default)
 
-        return convert_value_type(key, section, val, key_type)
+        try:
+            return convert_value_type(val, key_type)
+        except Exception, details:
+            raise SettingsValueError("Could not convert value %r to type %s "
+                                     "(settings key %s, section %s): %s" %
+                                     (val, key_type, key, section, details))
 
 
 settings = Settings()
