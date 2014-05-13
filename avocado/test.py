@@ -39,6 +39,7 @@ class Test(unittest.TestCase):
     You'll inherit from this to write your own tests. Tipically you'll want
     to implement setup(), action() and cleanup() methods on your own tests.
     """
+    default_params = {}
 
     def __init__(self, methodName='runTest', name=None, params=None,
                  base_logdir=None, tag=None, job=None):
@@ -97,11 +98,24 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.tagged_name)
         self.log.debug('')
-        self.log.debug('Test parameters:')
+        self.log.debug('Test instance parameters:')
+
+        # Set the helper set_default to the params object
         setattr(self.params, 'set_default', self._set_default)
+
+        # Apply what comes from the params dict
         for key in sorted(self.params.keys()):
             self.log.debug('    %s = %s', key, self.params.get(key))
             setattr(self.params, key, self.params.get(key))
+        self.log.debug('')
+
+        # Apply what comes from the default_params dict
+        self.log.debug('Default parameters:')
+        for key in sorted(self.default_params.keys()):
+            self.log.debug('    %s = %s', key, self.default_params.get(key))
+            self.params.set_default(key, self.default_params[key])
+        self.log.debug('')
+        self.log.debug('Test instance params override defaults whenever available')
         self.log.debug('')
 
         self.debugdir = None

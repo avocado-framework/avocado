@@ -26,12 +26,7 @@ class sleeptest(test.Test):
     """
     Example test for avocado.
     """
-
-    def setup(self):
-        """
-        If no config was provided, give self.params.sleep_length a default.
-        """
-        self.params.set_default('sleep_length', 1.0)
+    default_params = {'sleep_length': 1.0}
 
     def action(self):
         """
