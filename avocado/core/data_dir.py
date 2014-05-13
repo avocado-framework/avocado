@@ -196,7 +196,7 @@ def get_job_logs_dir(args=None):
 
     :param args: :class:`argparse.Namespace` instance with cmdline arguments
                  (optional).
-    :rtype : basestring
+    :rtype: basestring
     """
     start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
     if args is not None:
