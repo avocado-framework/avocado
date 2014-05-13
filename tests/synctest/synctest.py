@@ -30,16 +30,28 @@ class synctest(test.Test):
     Execute the synctest test suite.
     """
 
-    def setup(self, tarball='synctest.tar.bz2'):
+    def setup(self):
+        """
+        Set default params and build the synctest suite.
+        """
+        # Set all params with default values
+        self.params.set_default('sync_tarball', 'synctest.tar.bz2')
+        self.params.set_default('sync_length', 100)
+        self.params.set_default('sync_loop', 10)
+        # Build the synctest suite
         self.cwd = os.getcwd()
-        tarball_path = self.get_deps_path(tarball)
+        tarball_path = self.get_deps_path(self.params.sync_tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         build.make(self.srcdir)
 
-    def action(self, length=100, loop=10):
+    def action(self):
+        """
+        Execute synctest with the appropriate params.
+        """
         os.chdir(self.srcdir)
-        cmd = './synctest %s %s' % (length, loop)
+        cmd = ('./synctest %s %s' %
+               (self.params.sync_length, self.params.sync_loop))
         process.system(cmd)
         os.chdir(self.cwd)
 
