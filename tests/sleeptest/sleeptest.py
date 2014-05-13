@@ -31,8 +31,8 @@ class sleeptest(test.Test):
         """
         Sleep for length seconds.
         """
-        length = float(self.params.get('sleep_length', 1))
-        self.log.debug("Sleeping for %d seconds", length)
+        length = self.params.get('sleep_length', 1.0)
+        self.log.debug("Sleeping for %.2f seconds", length)
         time.sleep(length)
 
 
