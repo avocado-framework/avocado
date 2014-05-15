@@ -27,6 +27,7 @@ from avocado.core import output
 from avocado.core import status
 from avocado.core import exceptions
 from avocado.core import error_codes
+from avocado import multiplex_config
 from avocado import test
 from avocado import result
 
@@ -52,15 +53,24 @@ class Job(object):
         self.debuglog = os.path.join(self.debugdir, "debug.log")
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
+            self.multiplex_file = args.multiplex_file
         else:
             self.loglevel = logging.DEBUG
+            self.multiplex_file = None
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
 
         self.output_manager = output.OutputManager()
 
-    def _load_test_instance(self, url):
+    def _load_test_instance(self, params):
+        """
+        Find the test url from the first component of the test shortname, and load the url.
+
+        :param params: Dictionary with test params.
+        """
+        shortname = params.get('shortname')
+        url = shortname.split('.')[0]
         path_attempt = os.path.abspath(url)
         if os.path.exists(path_attempt):
             test_class = test.DropinTest
@@ -79,31 +89,33 @@ class Job(object):
             finally:
                 test_instance = test_class(name=url,
                                            base_logdir=self.debugdir,
+                                           params=params,
                                            job=self)
         return test_instance
 
-    def run_test(self, url):
+    def run_test(self, params):
         """
         Run a single test.
 
-        :param url: test URL.
+        :param params: Dictionary with test params.
+        :type params: dict
         :return: an instance of :class:`avocado.test.Test`.
         """
-        test_instance = self._load_test_instance(url)
+        test_instance = self._load_test_instance(params)
         test_instance.run_avocado()
         return test_instance
 
-    def test_runner(self, urls, test_result):
+    def test_runner(self, params_list, test_result):
         """
         Run one or more tests and report with test result.
 
-        :param urls: a list of tests URLs.
+        :param params_list: a list of param dicts.
         :param test_result: An instance of :class:`avocado.result.TestResult`.
         :return: a list of test failures.
         """
         failures = []
-        for url in urls:
-            test_instance = self.run_test(url)
+        for params in params_list:
+            test_instance = self.run_test(params)
             test_result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
@@ -128,11 +140,12 @@ class Job(object):
                                         self.args)
         return test_result
 
-    def _run(self, urls=None):
+    def _run(self, urls=None, multiplex_file=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
         :param urls: String with tests to run.
+        :param multiplex_file: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
                  :mod:`avocado.core.error_codes` for more information.
@@ -140,14 +153,45 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
+        params_list = []
         if urls is None:
-            urls = self.args.url.split()
+            if self.args and self.args.url is not None:
+                urls = self.args.url.split()
+        else:
+            if isinstance(urls, str):
+                urls = urls.split()
 
-        test_runner = self._make_test_runner()
-        test_result = self._make_test_result(urls)
+        if urls is not None:
+            for url in urls:
+                params_list.append({'shortname': url})
+
+        if multiplex_file is None:
+            if self.args and self.args.multiplex_file is not None:
+                multiplex_file = os.path.abspath(self.args.multiplex_file)
+        else:
+            multiplex_file = os.path.abspath(multiplex_file)
+
+        if multiplex_file is not None:
+            params_list = []
+            if urls is not None:
+                for url in urls:
+                    parser = multiplex_config.Parser(multiplex_file)
+                    parser.only_filter(url)
+                    dcts = [d for d in parser.get_dicts()]
+                    if dcts:
+                        for dct in dcts:
+                            params_list.append(dct)
+                    else:
+                        params_list.append({'shortname': url})
+            else:
+                parser = multiplex_config.Parser(multiplex_file)
+                for dct in parser.get_dicts():
+                    params_list.append(dct)
+
+        test_result = self._make_test_result(params_list)
 
         test_result.start_tests()
-        failures = test_runner(urls, test_result)
+        failures = self.test_runner(params_list, test_result)
         test_result.end_tests()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
@@ -161,17 +205,26 @@ class Job(object):
         else:
             return error_codes.numeric_status['AVOCADO_TESTS_FAIL']
 
-    def run(self, urls=None):
+    def run(self, urls=None, multiplex_file=None):
         """
         Handled main job method. Runs a list of test URLs to its completion.
 
+        Note that the behavior is as follows:
+        * If urls is provided alone, just make a simple list with no specific params (all tests use default params).
+        * If urls and multiplex_file are provided, multiplex provides params and variants to all tests it can.
+        * If multiplex_file is provided alone, just use the matrix produced by the file
+
+        The test runner figures out which tests need to be run on an empty urls list by assuming the first component
+        of the shortname is the test url.
+
         :param urls: String with tests to run.
+        :param multiplex_file: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
                  :mod:`avocado.core.error_codes` for more information.
         """
         try:
-            return self._run(urls)
+            return self._run(urls, multiplex_file)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__

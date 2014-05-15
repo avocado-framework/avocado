@@ -92,3 +92,6 @@ native tests and dropin tests::
     TOTAL SKIPPED: 0
     TOTAL WARNED: 0
     ELAPSED TIME: 5.67 s
+
+Some more involved functionalities for the avocado runner are discussed as appropriate, during
+the introduction of important concepts.

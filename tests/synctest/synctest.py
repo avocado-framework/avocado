@@ -14,7 +14,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-
 import os
 
 from avocado import test
@@ -29,17 +28,27 @@ class synctest(test.Test):
     """
     Execute the synctest test suite.
     """
+    default_params = {'sync_tarball': 'synctest.tar.bz2',
+                      'sync_length': 100,
+                      'sync_loop': 10}
 
-    def setup(self, tarball='synctest.tar.bz2'):
+    def setup(self):
+        """
+        Build the synctest suite.
+        """
         self.cwd = os.getcwd()
-        tarball_path = self.get_deps_path(tarball)
+        tarball_path = self.get_deps_path(self.params.sync_tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         build.make(self.srcdir)
 
-    def action(self, length=100, loop=10):
+    def action(self):
+        """
+        Execute synctest with the appropriate params.
+        """
         os.chdir(self.srcdir)
-        cmd = './synctest %s %s' % (length, loop)
+        cmd = ('./synctest %s %s' %
+               (self.params.sync_length, self.params.sync_loop))
         process.system(cmd)
         os.chdir(self.cwd)
 
