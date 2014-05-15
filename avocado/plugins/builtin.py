@@ -28,6 +28,7 @@ Builtins = [('avocado.plugins.runner', 'TestLister'),
             ('avocado.plugins.lister', 'PluginsList'),
             ('avocado.plugins.journal', 'Journal'),
             ('avocado.plugins.datadir', 'DataDirList'),
+            ('avocado.plugins.collector', 'Collector'),
             ('avocado.plugins.multiplexer', 'Multiplexer')]
 
 
