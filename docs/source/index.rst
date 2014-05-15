@@ -16,6 +16,8 @@ Contents:
    GetStartedGuide
    DataDir
    WritingTests
+   MultiplexConfig
+   MultiplexConfigAdvanced
    Plugins
    OutputPlugins
    api/modules

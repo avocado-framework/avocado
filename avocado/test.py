@@ -27,6 +27,7 @@ import unittest
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import process
+from avocado.utils.params import Params
 from avocado import sysinfo
 
 
@@ -38,9 +39,10 @@ class Test(unittest.TestCase):
     You'll inherit from this to write your own tests. Tipically you'll want
     to implement setup(), action() and cleanup() methods on your own tests.
     """
+    default_params = {}
 
-    def __init__(self, methodName='runTest', name=None, base_logdir=None,
-                 tag=None, job=None):
+    def __init__(self, methodName='runTest', name=None, params=None,
+                 base_logdir=None, tag=None, job=None):
         """
         Initializes the test.
 
@@ -63,7 +65,17 @@ class Test(unittest.TestCase):
         else:
             self.name = self.__class__.__name__
 
-        self.tag = tag
+        if params is None:
+            params = {}
+        self.params = Params(params)
+
+        shortname = self.params.get('shortname')
+        s_tag = None
+        if shortname:
+            split_shortname = shortname.split('.')
+            if len(split_shortname) > 1:
+                s_tag = ".".join(split_shortname[1:])
+        self.tag = tag or s_tag
         self.job = job
         self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
         self.depsdir = os.path.join(self.basedir, 'deps')
@@ -84,6 +96,28 @@ class Test(unittest.TestCase):
 
         self.log = logging.getLogger("avocado.test")
 
+        self.log.info('START %s', self.tagged_name)
+        self.log.debug('')
+        self.log.debug('Test instance parameters:')
+
+        # Set the helper set_default to the params object
+        setattr(self.params, 'set_default', self._set_default)
+
+        # Apply what comes from the params dict
+        for key in sorted(self.params.keys()):
+            self.log.debug('    %s = %s', key, self.params.get(key))
+            setattr(self.params, key, self.params.get(key))
+        self.log.debug('')
+
+        # Apply what comes from the default_params dict
+        self.log.debug('Default parameters:')
+        for key in sorted(self.default_params.keys()):
+            self.log.debug('    %s = %s', key, self.default_params.get(key))
+            self.params.set_default(key, self.default_params[key])
+        self.log.debug('')
+        self.log.debug('Test instance params override defaults whenever available')
+        self.log.debug('')
+
         self.debugdir = None
         self.resultsdir = None
         self.status = None
@@ -100,6 +134,13 @@ class Test(unittest.TestCase):
 
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
+
+    def _set_default(self, key, default):
+        try:
+            self.params[key]
+        except Exception:
+            self.params[key] = default
+            setattr(self.params, key, default)
 
     def get_deps_path(self, basename):
         """
@@ -245,6 +286,7 @@ class Test(unittest.TestCase):
             end_time = time.time()
             self.time_elapsed = end_time - start_time
             self.report()
+            self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
                 self.text_output = log_file_obj.read()
             self.stop_logging()
@@ -270,12 +312,12 @@ class DropinTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
-    def __init__(self, path, base_logdir, tag=None, job=None):
+    def __init__(self, path, params=None, base_logdir=None, tag=None, job=None):
         basename = os.path.basename(path)
         name = basename.split(".")[0]
         self.path = os.path.abspath(path)
         super(DropinTest, self).__init__(name=name, base_logdir=base_logdir,
-                                         tag=tag, job=job)
+                                         params=params, tag=tag, job=job)
 
     def _log_detailed_cmd_info(self, result):
         """
@@ -305,7 +347,8 @@ class MissingTest(Test):
     Handle when there is no such test module in the test directory.
     """
 
-    def __init__(self, name=None, base_logdir=None, tag=None, job=None):
+    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
+                 job=None):
         super(MissingTest, self).__init__(name=name,
                                           base_logdir=base_logdir,
                                           tag=tag, job=job)

@@ -1,0 +1,10 @@
+variants:
+    - sleeptest:
+        sleep_length_type = float
+        variants:
+            - short:
+                sleep_length = 0.5
+            - medium:
+                sleep_length = 1
+            - long:
+                sleep_length = 5
