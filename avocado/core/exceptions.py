@@ -54,6 +54,12 @@ class TestSetupFail(TestBaseException):
     """
     status = "ERROR"
 
+class TestTearDownFail(TestBaseException):
+
+    """
+    Indicates an error during a tear down procedure.
+    """
+    status = "FAIL"
 
 class TestError(TestBaseException):
 

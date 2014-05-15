@@ -151,7 +151,7 @@ class xUnitTestResult(TestResult):
     """
 
     def __init__(self, stream=None, debuglog=None, loglevel=None,
-                 tests_total=0, args=None):
+                 urls=[], args=None):
         """
         :param stream: Stream where to write output, such as :attr:`sys.stdout`.
         :param debuglog: Debug log file path.
@@ -159,7 +159,7 @@ class xUnitTestResult(TestResult):
         :param tests_total: Total of tests executed
         :param args: :class:`argparse.Namespace` with cmdline arguments.
         """
-        TestResult.__init__(self, stream, debuglog, loglevel, tests_total, args)
+        TestResult.__init__(self, stream, debuglog, loglevel, urls, args)
         if hasattr(self.args, 'xunit_output'):
             self.filename = self.args.xunit_output
         else:

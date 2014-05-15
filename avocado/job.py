@@ -43,6 +43,13 @@ class Job(object):
     """
 
     def __init__(self, args=None):
+
+        """
+        Creates a Job instance.
+
+        :param args: :class:`argparse.Namespace` with cmdline arguments.
+        """
+
         self.args = args
         if args is not None:
             self.unique_id = args.unique_id or str(uuid.uuid4())
@@ -124,7 +131,7 @@ class Job(object):
         test_result = test_result_class(self.output_manager,
                                         self.debuglog,
                                         self.loglevel,
-                                        len(urls),
+                                        urls,
                                         self.args)
         return test_result
 
@@ -145,7 +152,10 @@ class Job(object):
 
         test_runner = self._make_test_runner()
         test_result = self._make_test_result(urls)
-
+        try:
+            test_result.setup()
+        except exceptions.TestSetupFail:
+            return error_codes.numeric_status['AVOCADO_TESTS_FAIL']
         test_result.start_tests()
         failures = test_runner(urls, test_result)
         test_result.end_tests()
