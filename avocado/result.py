@@ -22,13 +22,16 @@ class TestResult(object):
     Test result class, holder for test result information.
     """
 
-    def __init__(self, stream=None, debuglog=None, loglevel=None,
-                 tests_total=0, args=None):
+    def __init__(self, stream, args):
+        """
+        Creates an instance of TestResult.
+
+        :param stream: an instance of :class:`avocado.core.output.OutputManager`.
+        :param args: an instance of :class:`argparse.Namespace`.
+        """
         self.stream = stream
-        self.debuglog = debuglog
-        self.loglevel = loglevel
-        self.tests_total = tests_total
         self.args = args
+        self.tests_total = getattr(args, 'test_result_total', 1)
         self.tests_run = 0
         self.total_time = 0.0
         self.passed = []
@@ -41,6 +44,7 @@ class TestResult(object):
         """
         Called once before any tests are executed.
         """
+
         self.tests_run += 1
 
     def end_tests(self):
@@ -53,7 +57,7 @@ class TestResult(object):
         """
         Called when the given test is about to run.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         pass
 
@@ -61,7 +65,7 @@ class TestResult(object):
         """
         Called when the given test has been run.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.tests_run += 1
         self.total_time += test.time_elapsed
@@ -70,7 +74,7 @@ class TestResult(object):
         """
         Called when a test succeeded.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.passed.append(test)
 
@@ -78,7 +82,7 @@ class TestResult(object):
         """
         Called when a test had a setup error.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.errors.append(test)
 
@@ -86,7 +90,7 @@ class TestResult(object):
         """
         Called when a test fails.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.failed.append(test)
 
@@ -94,7 +98,7 @@ class TestResult(object):
         """
         Called when a test is skipped.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.skipped.append(test)
 
@@ -102,7 +106,7 @@ class TestResult(object):
         """
         Called when a test had a warning.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.warned.append(test)
 
@@ -110,7 +114,7 @@ class TestResult(object):
         """
         Called once for a test to check status and report.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.start_test(test)
         status_map = {'PASS': self.add_pass,
@@ -134,8 +138,10 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.start_file_logging(self.debuglog, self.loglevel)
-        self.stream.log_header("DEBUG LOG: %s" % self.debuglog)
+        if hasattr(self.args, 'test_result_debuglog'):
+            self.stream.start_file_logging(self.args.test_result_debuglog,
+                                           self.args.test_result_loglevel)
+            self.stream.log_header("DEBUG LOG: %s" % self.args.test_result_debuglog)
         self.stream.log_header("TOTAL TESTS: %s" % self.tests_total)
 
     def end_tests(self):
@@ -148,13 +154,14 @@ class HumanTestResult(TestResult):
         self.stream.log_header("TOTAL SKIPPED: %d" % len(self.skipped))
         self.stream.log_header("TOTAL WARNED: %d" % len(self.warned))
         self.stream.log_header("ELAPSED TIME: %.2f s" % self.total_time)
-        self.stream.stop_file_logging()
+        if hasattr(self.args, 'test_result_debuglog'):
+            self.stream.stop_file_logging()
 
     def start_test(self, test):
         """
         Called when the given test is about to run.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         self.test_label = '(%s/%s) %s: ' % (self.tests_run,
                                             self.tests_total,
@@ -164,7 +171,7 @@ class HumanTestResult(TestResult):
         """
         Called when the given test has been run.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.end_test(self, test)
 
@@ -172,7 +179,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test succeeded.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_pass(self, test)
         self.stream.log_pass(self.test_label, test.time_elapsed)
@@ -181,7 +188,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test had a setup error.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_error(self, test)
         self.stream.log_error(self.test_label, test.time_elapsed)
@@ -190,7 +197,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test fails.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_fail(self, test)
         self.stream.log_fail(self.test_label, test.time_elapsed)
@@ -199,7 +206,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test is skipped.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_skip(self, test)
         self.stream.log_skip(self.test_label, test.time_elapsed)
@@ -208,7 +215,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test had a warning.
 
-        :param test: :class:`avocado.test.Test` instance.
+        :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_warn(self, test)
         self.stream.log_warn(self.test_label, test.time_elapsed)

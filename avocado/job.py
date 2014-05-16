@@ -44,6 +44,12 @@ class Job(object):
     """
 
     def __init__(self, args=None):
+        """
+        Creates a Job instance.
+
+        :param args: an instance of :class:`argparse.Namespace`.
+        """
+
         self.args = args
         if args is not None:
             self.unique_id = args.unique_id or str(uuid.uuid4())
@@ -114,11 +120,13 @@ class Job(object):
         :return: a list of test failures.
         """
         failures = []
+        test_result.start_tests()
         for params in params_list:
             test_instance = self.run_test(params)
             test_result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
+        test_result.end_tests()
         return failures
 
     def _make_test_runner(self):
@@ -133,11 +141,11 @@ class Job(object):
             test_result_class = self.args.test_result
         else:
             test_result_class = result.HumanTestResult
-        test_result = test_result_class(self.output_manager,
-                                        self.debuglog,
-                                        self.loglevel,
-                                        len(urls),
-                                        self.args)
+        if self.args is not None:
+            self.args.test_result_debuglog = self.debuglog
+            self.args.test_result_loglevel = self.loglevel
+            self.args.test_result_total = len(urls)
+        test_result = test_result_class(self.output_manager, self.args)
         return test_result
 
     def _run(self, urls=None, multiplex_file=None):
@@ -189,10 +197,9 @@ class Job(object):
                     params_list.append(dct)
 
         test_result = self._make_test_result(params_list)
+        test_runner = self._make_test_runner()
 
-        test_result.start_tests()
-        failures = self.test_runner(params_list, test_result)
-        test_result.end_tests()
+        failures = test_runner(params_list, test_result)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
