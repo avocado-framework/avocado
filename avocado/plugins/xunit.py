@@ -150,20 +150,15 @@ class xUnitTestResult(TestResult):
     xUnit Test Result class.
     """
 
-    def __init__(self, stream=None, debuglog=None, loglevel=None,
-                 tests_total=0, args=None):
+    def __init__(self, stream=None, args=None):
         """
-        :param stream: Stream where to write output, such as :attr:`sys.stdout`.
-        :param debuglog: Debug log file path.
-        :param loglevel: Log level in the :mod:`logging` module.
-        :param tests_total: Total of tests executed
-        :param args: :class:`argparse.Namespace` with cmdline arguments.
+        Creates an instance of xUnitTestResult.
+
+        :param stream: an instance of :class:`avocado.core.output.OutputManager`.
+        :param args: an instance of :class:`argparse.Namespace`.
         """
-        TestResult.__init__(self, stream, debuglog, loglevel, tests_total, args)
-        if hasattr(self.args, 'xunit_output'):
-            self.filename = self.args.xunit_output
-        else:
-            self.filename = '-'
+        TestResult.__init__(self, stream, args)
+        self.filename = getattr(self.args, 'xunit_output', '-')
         self.xml = XmlResult()
 
     def start_tests(self):

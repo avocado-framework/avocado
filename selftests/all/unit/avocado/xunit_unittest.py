@@ -34,7 +34,7 @@ class xUnitSucceedTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpfile = mkstemp()
-        self.test_result = xunit.xUnitTestResult(tests_total=1)
+        self.test_result = xunit.xUnitTestResult()
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()
         self.test1 = test.Test()
