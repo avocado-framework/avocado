@@ -10,11 +10,13 @@
 # See LICENSE for more details.
 #
 # Copyright: Red Hat Inc. 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
+#          Ruda Moura <rmoura@redhat.com>
 
 """
-Class that describes a sequence of automated operations.
+Module that describes a sequence of automated test operations.
 """
+
 import imp
 import logging
 import os
@@ -34,6 +36,85 @@ from avocado import result
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
 
+class TestRunner(object):
+
+    """
+    A test runner class that displays tests results.
+    """
+
+    def __init__(self, job, test_result):
+        """
+        Creates an instance of TestRunner class.
+
+        :param job: an instance of :class:`avocado.job.Job`.
+        :param test_result: an instance of :class:`avocado.result.TestResult`.
+        """
+        self.job = job
+        self.result = test_result
+
+    def _load_test_instance(self, params):
+        """
+        Find the test url from the first component of the test shortname, and load the url.
+
+        :param params: Dictionary with test params.
+        :type params: dict
+        :return: an instance of :class:`avocado.test.Test`.
+        """
+        shortname = params.get('shortname')
+        url = shortname.split('.')[0]
+        path_attempt = os.path.abspath(url)
+        if os.path.exists(path_attempt):
+            test_class = test.DropinTest
+            test_instance = test_class(path=path_attempt,
+                                       base_logdir=self.job.debugdir,
+                                       job=self.job)
+        else:
+            try:
+                test_module_dir = os.path.join(self.job.test_dir, url)
+                f, p, d = imp.find_module(url, [test_module_dir])
+                test_module = imp.load_module(url, f, p, d)
+                f.close()
+                test_class = getattr(test_module, url)
+            except ImportError:
+                test_class = test.MissingTest
+            finally:
+                test_instance = test_class(name=url,
+                                           base_logdir=self.job.debugdir,
+                                           params=params,
+                                           job=self.job)
+        return test_instance
+
+    def run_test(self, params):
+        """
+        Run a single test.
+
+        :param params: Dictionary with test params.
+        :type params: dict
+        :return: an instance of :class:`avocado.test.Test`.
+        """
+        test_instance = self._load_test_instance(params)
+        test_instance.run_avocado()
+        return test_instance
+
+    def run(self, params_list):
+        """
+        Run one or more tests and report with test result.
+
+        :param params_list: a list of param dicts.
+
+        :return: a list of test failures.
+        """
+        failures = []
+        self.result.start_tests()
+        for params in params_list:
+            test_instance = self.run_test(params)
+            self.result.check_test(test_instance)
+            if not status.mapping[test_instance.status]:
+                failures.append(test_instance.name)
+        self.result.end_tests()
+        return failures
+
+
 class Job(object):
 
     """
@@ -45,7 +126,7 @@ class Job(object):
 
     def __init__(self, args=None):
         """
-        Creates a Job instance.
+        Creates an instance of Job class.
 
         :param args: an instance of :class:`argparse.Namespace`.
         """
@@ -69,71 +150,13 @@ class Job(object):
 
         self.output_manager = output.OutputManager()
 
-    def _load_test_instance(self, params):
-        """
-        Find the test url from the first component of the test shortname, and load the url.
-
-        :param params: Dictionary with test params.
-        """
-        shortname = params.get('shortname')
-        url = shortname.split('.')[0]
-        path_attempt = os.path.abspath(url)
-        if os.path.exists(path_attempt):
-            test_class = test.DropinTest
-            test_instance = test_class(path=path_attempt,
-                                       base_logdir=self.debugdir,
-                                       job=self)
-        else:
-            try:
-                test_module_dir = os.path.join(self.test_dir, url)
-                f, p, d = imp.find_module(url, [test_module_dir])
-                test_module = imp.load_module(url, f, p, d)
-                f.close()
-                test_class = getattr(test_module, url)
-            except ImportError:
-                test_class = test.MissingTest
-            finally:
-                test_instance = test_class(name=url,
-                                           base_logdir=self.debugdir,
-                                           params=params,
-                                           job=self)
-        return test_instance
-
-    def run_test(self, params):
-        """
-        Run a single test.
-
-        :param params: Dictionary with test params.
-        :type params: dict
-        :return: an instance of :class:`avocado.test.Test`.
-        """
-        test_instance = self._load_test_instance(params)
-        test_instance.run_avocado()
-        return test_instance
-
-    def test_runner(self, params_list, test_result):
-        """
-        Run one or more tests and report with test result.
-
-        :param params_list: a list of param dicts.
-        :param test_result: An instance of :class:`avocado.result.TestResult`.
-        :return: a list of test failures.
-        """
-        failures = []
-        test_result.start_tests()
-        for params in params_list:
-            test_instance = self.run_test(params)
-            test_result.check_test(test_instance)
-            if not status.mapping[test_instance.status]:
-                failures.append(test_instance.name)
-        test_result.end_tests()
-        return failures
-
-    def _make_test_runner(self):
+    def _make_test_runner(self, test_result):
         if hasattr(self.args, 'test_runner'):
-            test_runner = self.args.test_runner
+            test_runner_class = self.args.test_runner
         else:
-            test_runner = self.test_runner
+            test_runner_class = TestRunner
+        test_runner = test_runner_class(job=self,
+                                        test_result=test_result)
         return test_runner
 
     def _make_test_result(self, urls):
@@ -197,9 +220,9 @@ class Job(object):
                     params_list.append(dct)
 
         test_result = self._make_test_result(params_list)
-        test_runner = self._make_test_runner()
+        self.test_runner = self._make_test_runner(test_result)
 
-        failures = test_runner(params_list, test_result)
+        failures = self.test_runner.run(params_list)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -217,6 +240,7 @@ class Job(object):
         Handled main job method. Runs a list of test URLs to its completion.
 
         Note that the behavior is as follows:
+
         * If urls is provided alone, just make a simple list with no specific params (all tests use default params).
         * If urls and multiplex_file are provided, multiplex provides params and variants to all tests it can.
         * If multiplex_file is provided alone, just use the matrix produced by the file
