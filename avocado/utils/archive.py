@@ -226,3 +226,33 @@ extension_map = {
     '.tz2': TarArchive,
     '.zip': ZipArchive,
 }
+
+# Handy functions for ZIP files
+
+
+def create_zip(name, path):
+    """
+    Create a ZIP archive from a directory.
+
+    :param name: the name of the zip file. The .zip suffix is optional.
+    :param path: the directory with files to compress.
+    """
+    if name.endswith('.zip') is False:
+        name += '.zip'
+    with zipfile.ZipFile(name, 'w') as zf:
+        for root, dirs, files in os.walk(path):
+            for f in files:
+                newroot = root.replace(path, '')
+                zf.write(os.path.join(root, f),
+                         os.path.join(newroot, f), zipfile.ZIP_DEFLATED)
+
+
+def uncompress_zip(name, path):
+    """
+    Uncompress a ZIP archive under a directory.
+
+    :param name: the name of the zip file. The .zip suffix is optional.
+    :param path: the directory to uncompress de files.
+    """
+    with zipfile.ZipFile(name) as zf:
+        zf.extractall(path)
