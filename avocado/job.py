@@ -29,6 +29,7 @@ from avocado.core import output
 from avocado.core import status
 from avocado.core import exceptions
 from avocado.core import error_codes
+from avocado.utils import archive
 from avocado import multiplex_config
 from avocado import test
 from avocado import result
@@ -227,8 +228,12 @@ class Job(object):
         if self.status == 'RUNNING':
             self.status = 'PASS'
         # Let's clean up test artifacts
-        if self.args is not None and not self.args.keep_tmp_files:
-            data_dir.clean_tmp_files()
+        if self.args is not None:
+            if not self.args.keep_tmp_files:
+                data_dir.clean_tmp_files()
+            if self.args.archive:
+                name = os.path.basename(self.debugdir)
+                archive.create_zip(name, self.debugdir)
         tests_status = not bool(failures)
         if tests_status:
             return error_codes.numeric_status['AVOCADO_ALL_OK']
