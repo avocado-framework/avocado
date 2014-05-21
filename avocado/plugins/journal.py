@@ -44,9 +44,14 @@ class TestResultJournal(TestResult):
     feedback to users from a central place.
     """
 
-    def __init__(self, stream=None, debuglog=None, loglevel=None,
-                 tests_total=0, args=None):
-        TestResult.__init__(self, stream, debuglog, loglevel, tests_total, args)
+    def __init__(self, stream=None, args=None):
+        """
+        Creates an instance of TestResultJournal.
+
+        :param stream: an instance of :class:`avocado.core.output.OutputManager`.
+        :param args: an instance of :class:`argparse.Namespace`.
+        """
+        TestResult.__init__(self, stream, args)
         self.journal_initialized = False
 
     def _init_journal(self, logdir):
