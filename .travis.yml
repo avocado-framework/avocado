@@ -6,6 +6,12 @@ branches:
     only:
         - master
 
+virtualenv:
+    system_site_packages: true
+
+before_script:
+    - sudo apt-get -y --force-yes install python-libvirt
+
 install:
     - pip install sphinx tox pylint autopep8 flexmock
     - pip install inspektor
