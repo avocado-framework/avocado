@@ -49,6 +49,7 @@ def test_build_docs():
                  len(failure_lines))
         for (index, failure_line) in enumerate(failure_lines):
             e_msg += "%s) %s\n" % (index + 1, failure_line)
+        e_msg += ('Full output: %s\n' % '\n'.join(output_lines))
         e_msg += 'Please check the output and fix your docstrings/.rst docs'
         raise DocBuildError(e_msg)
 
