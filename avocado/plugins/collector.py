@@ -48,6 +48,7 @@ class CollectorTestResult(TestResult):
 
     def end_tests(self):
         TestResult.end_tests(self)
+        self.stream.stop_file_logging()
         self.json.update({
             'total': self.tests_total,
             'pass': len(self.passed),
