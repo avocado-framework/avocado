@@ -131,10 +131,11 @@ class VMTestResult(TestResult):
             self.stream.error("Could not start VM '%s'" % self.args.vm_domain)
             raise exceptions.TestSetupFail()
         assert self.vm.domain.isActive() is not False
-        self.vm.create_snapshot()
-        if self.vm.snapshot is None:
-            self.stream.error("Could not create snapshot on VM '%s'" % self.args.vm_domain)
-            raise exceptions.TestSetupFail()
+        if self.args.vm_cleanup is True:
+            self.vm.create_snapshot()
+            if self.vm.snapshot is None:
+                self.stream.error("Could not create snapshot on VM '%s'" % self.args.vm_domain)
+                raise exceptions.TestSetupFail()
         try:
             self.vm.setup_login(self.args.vm_hostname,
                                 self.args.vm_username,
@@ -151,7 +152,7 @@ class VMTestResult(TestResult):
         self._copy_tests()
 
     def tear_down(self):
-        if self.vm.snapshot is not None:
+        if self.args.vm_cleanup is True and self.vm.snapshot is not None:
             self.vm.restore_snapshot()
 
     def start_tests(self):
@@ -249,7 +250,8 @@ class RunVM(plugin.Plugin):
     def configure(self, app_parser, cmd_parser):
         username = getpass.getuser()
         self.parser = app_parser
-        app_parser.add_argument('--vm', action='store_true')
+        app_parser.add_argument('--vm', action='store_true', default=False,
+                                help='Run tests on Virtual Machine')
         app_parser.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
                                 default='qemu:///system',
                                 help='Specify hypervisor URI driver connection')
@@ -263,6 +265,9 @@ class RunVM(plugin.Plugin):
         app_parser.add_argument('--vm-password', dest='vm_password',
                                 default=None,
                                 help='Specify the password to login on VM')
+        app_parser.add_argument('--vm-cleanup', dest='vm_cleanup', action='store_true',
+                                default=False,
+                                help='Restore VM to a previous state, before running the tests')
         self.configured = True
 
     def activate(self, app_args):
