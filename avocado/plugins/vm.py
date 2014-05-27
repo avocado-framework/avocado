@@ -78,7 +78,7 @@ class VMTestRunner(TestRunner):
             if not status.mapping[test.status]:
                 failures.append(test.tagged_name)
         self.result.end_tests()
-        local_log_dir = os.path.dirname(self.result.args.test_result_debuglog)
+        local_log_dir = os.path.dirname(self.result.stream.debuglog)
         zip_filename = os.path.basename(remote_log_dir) + '.zip'
         zip_path_filename = os.path.join(local_log_dir, zip_filename)
         self.result.vm.remote.receive_files(local_log_dir, zip_filename)
@@ -172,7 +172,7 @@ class VMTestResult(TestResult):
         self.stream.log_header("TOTAL SKIPPED: %d" % len(self.skipped))
         self.stream.log_header("TOTAL WARNED: %d" % len(self.warned))
         self.stream.log_header("ELAPSED TIME: %.2f s" % self.total_time)
-        self.stream.log_header("DEBUG LOG: %s" % self.args.test_result_debuglog)
+        self.stream.log_header("DEBUG LOG: %s" % self.stream.debuglog)
 
     def start_test(self, test):
         """
