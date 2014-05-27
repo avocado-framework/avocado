@@ -33,7 +33,7 @@ class JSONTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.json = {'debuglog': self.args.test_result_debuglog,
+        self.json = {'debuglog': self.stream.debuglog,
                      'tests': []}
 
     def end_test(self, test):
