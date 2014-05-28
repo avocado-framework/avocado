@@ -28,16 +28,16 @@ class synctest(test.Test):
     """
     Execute the synctest test suite.
     """
-    default_params = {'sync_tarball': 'synctest.tar.bz2',
-                      'sync_length': 100,
-                      'sync_loop': 10}
+    default_params = {'tarball': 'synctest.tar.bz2',
+                      'length': 100,
+                      'loop': 10}
 
     def setup(self):
         """
         Build the synctest suite.
         """
         self.cwd = os.getcwd()
-        tarball_path = self.get_deps_path(self.params.sync_tarball)
+        tarball_path = self.get_deps_path(self.params.tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         build.make(self.srcdir)
@@ -48,7 +48,7 @@ class synctest(test.Test):
         """
         os.chdir(self.srcdir)
         cmd = ('./synctest %s %s' %
-               (self.params.sync_length, self.params.sync_loop))
+               (self.params.length, self.params.loop))
         process.system(cmd)
         os.chdir(self.cwd)
 
