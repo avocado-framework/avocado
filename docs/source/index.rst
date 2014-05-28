@@ -20,6 +20,7 @@ Contents:
    MultiplexConfigAdvanced
    Plugins
    OutputPlugins
+   ExportTestResults
    api/modules
 
 Indices and tables
