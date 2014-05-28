@@ -48,9 +48,9 @@ class _Stream(object):
 class VMResultTest(unittest.TestCase):
 
     def setUp(self):
-        args = argparse.Namespace(test_result_debuglog='debuglog',
-                                  test_result_loglevel='loglevel')
+        args = argparse.Namespace()
         stream = _Stream()
+        stream.debuglog = 'debuglog'
         self.test_result = vm.VMTestResult(stream, args)
         j = '''{"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.23}],
                 "debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.37/debug.log",

@@ -47,10 +47,9 @@ class JSONResultTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpfile = mkstemp()
-        args = argparse.Namespace(json_output=self.tmpfile[1],
-                                  test_result_debuglog='debuglog',
-                                  test_result_loglevel='loglevel')
+        args = argparse.Namespace(json_output=self.tmpfile[1])
         stream = _Stream()
+        stream.debuglog = 'debuglog'
         self.test_result = jsonresult.JSONTestResult(stream, args)
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()
