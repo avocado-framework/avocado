@@ -33,9 +33,7 @@ class JSONTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.start_file_logging(self.args.test_result_debuglog,
-                                       self.args.test_result_loglevel)
-        self.json = {'debuglog': self.args.test_result_debuglog,
+        self.json = {'debuglog': self.stream.debuglog,
                      'tests': []}
 
     def end_test(self, test):
@@ -62,7 +60,6 @@ class JSONTestResult(TestResult):
         Called once after all tests are executed.
         """
         TestResult.end_tests(self)
-        self.stream.stop_file_logging()
         self.json.update({
             'total': self.tests_total,
             'pass': len(self.passed),

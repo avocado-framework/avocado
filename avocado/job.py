@@ -166,8 +166,6 @@ class Job(object):
         else:
             test_result_class = result.HumanTestResult
         if self.args is not None:
-            self.args.test_result_debuglog = self.debuglog
-            self.args.test_result_loglevel = self.loglevel
             self.args.test_result_total = len(urls)
         test_result = test_result_class(self.output_manager, self.args)
         return test_result
@@ -223,7 +221,12 @@ class Job(object):
         test_result = self._make_test_result(params_list)
         self.test_runner = self._make_test_runner(test_result)
 
+        self.output_manager.start_file_logging(self.debuglog,
+                                               self.loglevel)
+        self.output_manager.debuglog = self.debuglog
         failures = self.test_runner.run(params_list)
+        self.output_manager.stop_file_logging()
+
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -234,6 +237,7 @@ class Job(object):
             if self.args.archive:
                 name = os.path.basename(self.debugdir)
                 archive.create_zip(name, self.debugdir)
+
         tests_status = not bool(failures)
         if tests_status:
             return error_codes.numeric_status['AVOCADO_ALL_OK']

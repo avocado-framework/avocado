@@ -138,10 +138,7 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        if hasattr(self.args, 'test_result_debuglog'):
-            self.stream.start_file_logging(self.args.test_result_debuglog,
-                                           self.args.test_result_loglevel)
-            self.stream.log_header("DEBUG LOG: %s" % self.args.test_result_debuglog)
+        self.stream.log_header("DEBUG LOG: %s" % self.stream.debuglog)
         self.stream.log_header("TOTAL TESTS: %s" % self.tests_total)
 
     def end_tests(self):
@@ -154,8 +151,6 @@ class HumanTestResult(TestResult):
         self.stream.log_header("TOTAL SKIPPED: %d" % len(self.skipped))
         self.stream.log_header("TOTAL WARNED: %d" % len(self.warned))
         self.stream.log_header("ELAPSED TIME: %.2f s" % self.total_time)
-        if hasattr(self.args, 'test_result_debuglog'):
-            self.stream.stop_file_logging()
 
     def start_test(self, test):
         """
