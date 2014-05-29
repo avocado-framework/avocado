@@ -16,6 +16,7 @@
 JSON output module.
 """
 
+import os
 import json
 
 from avocado.plugins import plugin
@@ -69,6 +70,9 @@ class JSONTestResult(TestResult):
             'time': self.total_time
         })
         self.json = json.dumps(self.json)
+        if self.args.json_output == '*debuglog*':
+            dirname = os.path.dirname(self.stream.debuglog)
+            self.args.json_output = os.path.join(dirname, 'avocado.json')
         if self.args.json_output == '-':
             print self.json
         else:
