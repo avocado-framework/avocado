@@ -53,9 +53,9 @@ class TestRunner(object):
         self.job = job
         self.result = test_result
 
-    def _load_test_instance(self, params):
+    def load_test(self, params):
         """
-        Find the test url from the first component of the test shortname, and load the url.
+        Resolve and load the test url from the the test shortname.
 
         :param params: Dictionary with test params.
         :type params: dict
@@ -85,18 +85,6 @@ class TestRunner(object):
                                            job=self.job)
         return test_instance
 
-    def run_test(self, params):
-        """
-        Run a single test.
-
-        :param params: Dictionary with test params.
-        :type params: dict
-        :return: an instance of :class:`avocado.test.Test`.
-        """
-        test_instance = self._load_test_instance(params)
-        test_instance.run_avocado()
-        return test_instance
-
     def run(self, params_list):
         """
         Run one or more tests and report with test result.
@@ -108,7 +96,9 @@ class TestRunner(object):
         failures = []
         self.result.start_tests()
         for params in params_list:
-            test_instance = self.run_test(params)
+            test_instance = self.load_test(params)
+            self.result.start_test(test_instance)
+            test_instance.run_avocado()
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
