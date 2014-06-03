@@ -184,6 +184,8 @@ class VMTestResult(TestResult):
                                             self.tests_total,
                                             test.tagged_name)
 
+        self.stream.info(msg=self.test_label, skip_newline=True)
+
     def end_test(self, test):
         """
         Called when the given test has been run.
@@ -199,7 +201,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_pass(self, test)
-        self.stream.log_pass(self.test_label, test.time_elapsed)
+        self.stream.log_pass(test.time_elapsed)
 
     def add_error(self, test):
         """
@@ -208,7 +210,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_error(self, test)
-        self.stream.log_error(self.test_label, test.time_elapsed)
+        self.stream.log_error(test.time_elapsed)
 
     def add_fail(self, test):
         """
@@ -217,7 +219,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_fail(self, test)
-        self.stream.log_fail(self.test_label, test.time_elapsed)
+        self.stream.log_fail(test.time_elapsed)
 
     def add_skip(self, test):
         """
@@ -226,7 +228,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_skip(self, test)
-        self.stream.log_skip(self.test_label, test.time_elapsed)
+        self.stream.log_skip(test.time_elapsed)
 
     def add_warn(self, test):
         """
@@ -235,7 +237,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_warn(self, test)
-        self.stream.log_warn(self.test_label, test.time_elapsed)
+        self.stream.log_warn(test.time_elapsed)
 
 
 class RunVM(plugin.Plugin):

@@ -22,6 +22,29 @@ import sys
 from avocado.utils import process
 
 
+class ProgressStreamHandler(logging.StreamHandler):
+
+    """
+    Handler class that allows users to skip new lines on each emission.
+    """
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            stream = self.stream
+            skip_newline = False
+            if hasattr(record, 'skip_newline'):
+                skip_newline = record.skip_newline
+            stream.write(msg)
+            if not skip_newline:
+                stream.write('\n')
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
+
+
 def get_paginator():
     """
     Get a pipe. If we can't do that, return stdout.
@@ -95,21 +118,21 @@ class TermColors(object):
         self.WARN = ''
         self.ENDC = ''
 
-    def header_str(self, sr):
+    def header_str(self, msg):
         """
         Print a header string (blue colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.HEADER + sr + self.ENDC
+        return self.HEADER + msg + self.ENDC
 
-    def fail_header_str(self, sr):
+    def fail_header_str(self, msg):
         """
         Print a fail header string (red colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.FAIL + sr + self.ENDC
+        return self.FAIL + msg + self.ENDC
 
     def pass_str(self):
         """
@@ -164,13 +187,15 @@ class OutputManager(object):
     def __init__(self, logger_name='avocado.app'):
         self.console_log = logging.getLogger('avocado.app')
 
-    def _log(self, sr, level=logging.INFO):
+    def _log(self, msg, level=logging.INFO, skip_newline=False):
         """
         Write a message to the avocado.app logger.
 
-        :param sr: String to write.
+        :param msg: Message to write
+        :type msg: string
         """
-        self.console_log.log(level, sr)
+        extra = {'skip_newline': skip_newline}
+        self.console_log.log(level=level, msg=msg, extra=extra)
 
     def start_file_logging(self, logfile, level):
         """
@@ -205,88 +230,79 @@ class OutputManager(object):
         linux_logger.removeHandler(self.file_handler)
         self.file_handler.close()
 
-    def info(self, sr):
+    def info(self, msg, skip_newline=False):
         """
         Log a :mod:`logging.INFO` message.
 
-        :param sr: String to write.
+        :param msg: Message to write.
         """
-        self._log(sr, level=logging.INFO)
+        self._log(msg, level=logging.INFO, skip_newline=skip_newline)
 
-    def error(self, sr):
+    def error(self, msg):
         """
         Log a :mod:`logging.INFO` message.
 
-        :param sr: String to write.
+        :param msg: Message to write.
         """
-        self._log(sr, level=logging.ERROR)
+        self._log(msg, level=logging.ERROR)
 
-    def log_header(self, sr):
+    def log_header(self, msg):
         """
         Log a header message.
 
-        :param sr: String to write.
+        :param msg: Message to write.
         """
-        self.info(colors.header_str(sr))
+        self.info(colors.header_str(msg))
 
-    def log_fail_header(self, sr):
+    def log_fail_header(self, msg):
         """
         Log a fail header message (red, for critical errors).
 
-        :param sr: String to write.
+        :param msg: Message to write.
         """
-        self.info(colors.fail_header_str(sr))
+        self.info(colors.fail_header_str(msg))
 
-    def log_pass(self, label, t_elapsed):
+    def log_pass(self, t_elapsed):
         """
-        Log a test PASS message.
+        Log a PASS message.
 
-        :param label: Label for the PASS message (test name + index).
-        :param t_elapsed: Time it took for test to complete.
+        :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_pass_msg = (label + " " + colors.pass_str() +
-                           " (%.2f s)" % t_elapsed)
+        normal_pass_msg = colors.pass_str() + " (%.2f s)" % t_elapsed
         self.info(normal_pass_msg)
 
-    def log_error(self, label, t_elapsed):
+    def log_error(self, t_elapsed):
         """
-        Log a test ERROR message.
+        Log an ERROR message.
 
-        :param label: Label for the FAIL message (test name + index).
-        :param t_elapsed: Time it took for test to complete.
+        :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_error_msg = (label + " " + colors.error_str() +
-                            " (%.2f s)" % t_elapsed)
+        normal_error_msg = colors.error_str() + " (%.2f s)" % t_elapsed
         self.error(normal_error_msg)
 
-    def log_fail(self, label, t_elapsed):
+    def log_fail(self, t_elapsed):
         """
-        Log a test FAIL message.
+        Log a FAIL message.
 
-        :param label: Label for the FAIL message (test name + index).
-        :param t_elapsed: Time it took for test to complete.
+        :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_fail_msg = (label + " " + colors.fail_str() +
-                           " (%.2f s)" % t_elapsed)
+        normal_fail_msg = colors.fail_str() + " (%.2f s)" % t_elapsed
         self.error(normal_fail_msg)
 
-    def log_skip(self, label, t_elapsed):
+    def log_skip(self, t_elapsed):
         """
-        Log a test SKIP message.
+        Log a SKIP message.
 
-        :param label: Label for the SKIP message (test name + index).
-        :param t_elapsed: Time it took for test to complete.
+        :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_skip_msg = (label + " " + colors.skip_str())
+        normal_skip_msg = colors.skip_str()
         self.info(normal_skip_msg)
 
-    def log_warn(self, label, t_elapsed):
+    def log_warn(self, t_elapsed):
         """
-        Log a test WARN message.
+        Log a WARN message.
 
-        :param label: Label for the WARN message (test name + index).
-        :param t_elapsed: Time it took for test to complete.
+        :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_warn_msg = (label + " " + colors.warn_str() +
-                           " (%.2f s)" % t_elapsed)
+        normal_warn_msg = colors.warn_str() + " (%.2f s)" % t_elapsed
         self.error(normal_warn_msg)

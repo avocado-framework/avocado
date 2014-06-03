@@ -13,7 +13,12 @@
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 #          Ruda Moura <rmoura@redhat.com>
 
-"""Test result module."""
+"""
+Contains the definition of the TestResult class, used for output in avocado.
+
+It also contains the most basic test result class, HumanTestResult,
+used by the test runner.
+"""
 
 
 class TestResult(object):
@@ -116,7 +121,6 @@ class TestResult(object):
 
         :param test: an instance of :class:`avocado.test.Test`.
         """
-        self.start_test(test)
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
                       'FAIL': self.add_fail,
@@ -161,6 +165,7 @@ class HumanTestResult(TestResult):
         self.test_label = '(%s/%s) %s: ' % (self.tests_run,
                                             self.tests_total,
                                             test.tagged_name)
+        self.stream.info(msg=self.test_label, skip_newline=True)
 
     def end_test(self, test):
         """
@@ -177,7 +182,7 @@ class HumanTestResult(TestResult):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_pass(self, test)
-        self.stream.log_pass(self.test_label, test.time_elapsed)
+        self.stream.log_pass(test.time_elapsed)
 
     def add_error(self, test):
         """
@@ -186,7 +191,7 @@ class HumanTestResult(TestResult):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_error(self, test)
-        self.stream.log_error(self.test_label, test.time_elapsed)
+        self.stream.log_error(test.time_elapsed)
 
     def add_fail(self, test):
         """
@@ -195,7 +200,7 @@ class HumanTestResult(TestResult):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_fail(self, test)
-        self.stream.log_fail(self.test_label, test.time_elapsed)
+        self.stream.log_fail(test.time_elapsed)
 
     def add_skip(self, test):
         """
@@ -204,7 +209,7 @@ class HumanTestResult(TestResult):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_skip(self, test)
-        self.stream.log_skip(self.test_label, test.time_elapsed)
+        self.stream.log_skip(test.time_elapsed)
 
     def add_warn(self, test):
         """
@@ -213,4 +218,4 @@ class HumanTestResult(TestResult):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.add_warn(self, test)
-        self.stream.log_warn(self.test_label, test.time_elapsed)
+        self.stream.log_warn(test.time_elapsed)

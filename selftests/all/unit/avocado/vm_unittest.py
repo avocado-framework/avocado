@@ -35,13 +35,16 @@ class _Stream(object):
     def start_file_logging(self, param1, param2):
         pass
 
+    def info(self, msg, skip_newline=False):
+        pass
+
     def log_header(self, param):
         pass
 
     def stop_file_logging(self):
         pass
 
-    def log_pass(self, param1, param2):
+    def log_pass(self, param1):
         pass
 
 
@@ -65,6 +68,7 @@ class VMResultTest(unittest.TestCase):
             test = vm.Test(name=tst['test'],
                            time=tst['time'],
                            status=tst['status'])
+            self.test_result.start_test(test)
             self.test_result.check_test(test)
             if not status.mapping[test.status]:
                 failures.append(test.tagged_name)
