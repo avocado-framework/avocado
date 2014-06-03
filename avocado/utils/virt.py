@@ -13,7 +13,7 @@
 # Author: Ruda Moura <rmoura@redhat.com>
 
 """
-Module to provide classes for virtualization.
+Module to provide classes for Virtual Machines.
 """
 
 import libvirt
@@ -37,14 +37,19 @@ class Hypervisor(object):
         self.uri = uri
         self.connection = None
         self.connected = False
-        self.domains = []
 
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__,
                            self.uri)
 
-    def _get_domains(self):
-        self.domains = self.connection.listAllDomains()
+    @property
+    def domains(self):
+        """
+        Property to get the list of all domains.
+
+        :return: a list of instances of :class:`libvirt.virDomain`.
+        """
+        return self.connection.listAllDomains()
 
     def connect(self):
         """
@@ -58,7 +63,6 @@ class Hypervisor(object):
                 return None
             else:
                 self.connected = True
-        self._get_domains()
         return self.connection
 
     def find_domain_by_name(self, name):
@@ -68,15 +72,15 @@ class Hypervisor(object):
         :param domain: the domain name.
         :return: an instance of :class:`libvirt.virDomain`.
         """
-        self._get_domains()
         for domain in self.domains:
             if name == domain.name():
                 return domain
         return None
 
-    def start_domain(self, xml):
+    def start_domain_with_xml(self, xml):
         """
-        Start domain.
+        Start/create domain with XML description.
+
         :param xml: the XML description.
         :return: an instance of :class:`libvirt.virDomain`.
         """
@@ -111,21 +115,91 @@ class VM(object):
                                    self.hypervisor.uri,
                                    self.domain.name())
 
+    @property
+    def is_active(self):
+        """
+        Property to check if VM is active.
+
+        :return: if VM is active.
+        :rtype: Boolean
+        """
+        return bool(self.domain.isActive())
+
+    @property
+    def name(self):
+        """
+        Property with the name of VM.
+
+        :return: the name of VM.
+        """
+        return self.domain.name()
+
+    @property
+    def state(self):
+        """
+        Property with the state of VM.
+
+        :return: current state name.
+        """
+        states = ['No state',
+                  'Running',
+                  'Blocked',
+                  'Paused',
+                  'Shutting down',
+                  'Shutoff',
+                  'Crashed']
+        return states[self.domain.info()[0]]
+
     def start(self):
         """
         Start VM.
         """
-        if self.domain.isActive():
-            return True
-        xml = self.domain.XMLDesc()
-        dom = self.hypervisor.start_domain(xml)
-        if dom:
-            self.domain = dom
-            return True
-        else:
-            return False
+        if self.is_active is False:
+            self.domain.create()
 
-    def _create_snapshot_xml(self, name=None, description=None):
+    def suspend(self):
+        """
+        Suspend VM.
+        """
+        if self.is_active:
+            self.domain.suspend()
+
+    def resume(self):
+        """
+        Resume VM.
+        """
+        if self.is_active:
+            self.domain.resume()
+
+    def reboot(self):
+        """
+        Reboot VM.
+        """
+        if self.is_active:
+            self.domain.reboot()
+
+    def shutdown(self):
+        """
+        Shutdown VM.
+        """
+        if self.is_active:
+            self.domain.shutdown()
+
+    def reset(self):
+        """
+        Reset VM.
+        """
+        if self.is_active:
+            self.domain.reset()
+
+    def stop(self):
+        """
+        Stop VM.
+        """
+        if self.is_active:
+            self.domain.destroy()
+
+    def _system_checkpoint_xml(self, name=None, description=None):
         def create_element(doc, tag, text):
             el = doc.createElement(tag)
             txt = doc.createTextNode(text)
@@ -141,11 +215,15 @@ class VM(object):
         root.appendChild(create_element(doc, 'description', description))
         return doc.toxml()
 
+    @property
+    def snapshots(self):
+        return self.domain.snapshotListNames()
+
     def create_snapshot(self, name=None):
         """
-        Create a snapshot point.
+        Creates a snapshot of kind 'system checkpoint'.
         """
-        xml = self._create_snapshot_xml(name)
+        xml = self._system_checkpoint_xml(name)
         self.snapshot = self.domain.snapshotCreateXML(xml)
         return self.snapshot
 
