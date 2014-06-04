@@ -153,7 +153,7 @@ class SubProcess(object):
             output_file = self.stdout_file
             lock = self.stdout_lock
         elif input_pipe == self.sp.stderr:
-            prefix = '[stdout] %s'
+            prefix = '[stderr] %s'
             output_file = self.stderr_file
             lock = self.stderr_lock
 
