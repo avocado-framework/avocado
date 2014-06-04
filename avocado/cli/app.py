@@ -16,6 +16,8 @@
 The core Avocado application.
 """
 
+import os
+
 from argparse import ArgumentParser
 
 from avocado.plugins.manager import get_plugin_manager
@@ -29,6 +31,8 @@ class AvocadoApp(object):
     """
 
     def __init__(self, external_plugins=None):
+        # Catch all libc runtime errors to STDERR
+        os.environ['LIBC_FATAL_STDERR_'] = '1'
         self.external_plugins = external_plugins
         self.plugin_manager = None
         self.app_parser = ArgumentParser(prog='avocado',
