@@ -30,6 +30,40 @@ from avocado.utils import process
 from avocado.utils.params import Params
 from avocado import sysinfo
 
+log = logging.getLogger("avocado.test")
+
+
+def tb_info(exc_info):
+    """
+    Prepare traceback info.
+
+    :param exc_info: Exception info produced by sys.exc_info()
+    """
+    exc_type, exc_value, exc_traceback = exc_info
+    tb_info = traceback.format_exception(exc_type, exc_value,
+                                         exc_traceback.tb_next)
+    return tb_info
+
+
+def log_exc_info(exc_info):
+    """
+    Log exception info.
+
+    :param exc_info: Exception info produced by sys.exc_info()
+    """
+    for line in tb_info(exc_info):
+        for l in line.splitlines():
+            log.error(l)
+
+
+def prepare_exc_info(exc_info):
+    """
+    Prepare traceback info.
+
+    :param exc_info: Exception info produced by sys.exc_info()
+    """
+    return "".join(tb_info(exc_info))
+
 
 class Test(unittest.TestCase):
 
@@ -239,11 +273,13 @@ class Test(unittest.TestCase):
         try:
             self.setup()
         except Exception, details:
+            log_exc_info(sys.exc_info())
             raise exceptions.TestSetupFail(details)
         self.action()
         try:
             self.cleanup()
         except Exception, details:
+            log_exc_info(sys.exc_info())
             raise exceptions.TestSetupFail(details)
         self.status = 'PASS'
 
@@ -260,18 +296,12 @@ class Test(unittest.TestCase):
             self.status = detail.status
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            tb_info = traceback.format_exception(exc_type, exc_value,
-                                                 exc_traceback.tb_next)
-            self.traceback = "".join(tb_info)
+            self.traceback = prepare_exc_info(sys.exc_info())
         except AssertionError, detail:
             self.status = 'FAIL'
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            tb_info = traceback.format_exception(exc_type, exc_value,
-                                                 exc_traceback.tb_next)
-            self.traceback = "".join(tb_info)
+            self.traceback = prepare_exc_info(sys.exc_info())
         except Exception, detail:
             self.status = 'FAIL'
             self.fail_class = detail.__class__.__name__

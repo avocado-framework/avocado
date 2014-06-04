@@ -36,13 +36,18 @@ DEFAULT_LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'brief',
         },
+        'app': {
+            'level': 'INFO',
+            'class': 'avocado.core.output.ProgressStreamHandler',
+            'formatter': 'brief',
+        },
     },
     'loggers': {
         'avocado': {
             'handlers': ['console'],
         },
         'avocado.app': {
-            'handlers': ['console'],
+            'handlers': ['app'],
             'level': 'INFO',
             'propagate': False,
         },
