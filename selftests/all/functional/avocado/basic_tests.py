@@ -16,7 +16,9 @@
 
 import unittest
 import os
+import shutil
 import sys
+import tempfile
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -25,6 +27,14 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
+
+PASS_SCRIPT_CONTENTS = """#!/bin/sh
+true
+"""
+
+FAIL_SCRIPT_CONTENTS = """#!/bin/sh
+false
+"""
 
 
 class RunnerOperationTest(unittest.TestCase):
@@ -52,6 +62,65 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
+
+class RunnerDropinTest(unittest.TestCase):
+
+    def setUp(self):
+        self.base_logdir = tempfile.mkdtemp(prefix='avocado_dropin_functional')
+        self.pass_script = os.path.join(self.base_logdir, 'avocado_pass.sh')
+        with open(self.pass_script, 'w') as pass_script_obj:
+            pass_script_obj.write(PASS_SCRIPT_CONTENTS)
+        os.chmod(self.pass_script, 0775)
+
+        self.fail_script = os.path.join(self.base_logdir, 'avocado_fail.sh')
+        with open(self.fail_script, 'w') as fail_script_obj:
+            fail_script_obj.write(FAIL_SCRIPT_CONTENTS)
+        os.chmod(self.fail_script, 0775)
+
+    def test_dropin_pass(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run %s' % self.pass_script
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+    def test_dropin_fail(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run %s' % self.fail_script
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+    def tearDown(self):
+        if os.path.isdir(self.base_logdir):
+            shutil.rmtree(self.base_logdir, ignore_errors=True)
+
+
+class PluginsOperationTest(unittest.TestCase):
+
+    def setUp(self):
+        self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
+
+    def test_sysinfo_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado sysinfo %s' % self.base_outputdir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        sysinfo_files = os.listdir(self.base_outputdir)
+        self.assertGreater(len(sysinfo_files), 0, "Empty sysinfo files dir")
+
+    def tearDown(self):
+        if os.path.isdir(self.base_outputdir):
+            shutil.rmtree(self.base_outputdir, ignore_errors=True)
+
 
 if __name__ == '__main__':
     unittest.main()
