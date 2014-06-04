@@ -26,10 +26,13 @@
 """
 Library used to transparently uncompress compressed files.
 """
+import logging
 import os
 import shutil
 import tarfile
 import zipfile
+
+log = logging.getLogger('avocado.test')
 
 
 class ArchiveException(Exception):
@@ -172,14 +175,19 @@ class TarArchive(BaseArchive):
                 except (KeyError, AttributeError) as exc:
                     # Some corrupt tar files seem to produce this
                     # (specifically bad symlinks)
-                    print("In the tar file %s the member %s is invalid: %s" %
-                          (name, member.name, exc))
+                    log.error("In the tar file %s the member %s is "
+                              "invalid: %s" % (name, member.name, exc))
                 else:
                     dirname = os.path.dirname(filename)
                     if dirname and not os.path.exists(dirname):
                         os.makedirs(dirname)
                     with open(filename, 'wb') as outfile:
-                        shutil.copyfileobj(extracted, outfile)
+                        if extracted is not None:
+                            shutil.copyfileobj(extracted, outfile)
+                        else:
+                            log.error("Member correspondent to file %s does "
+                                      "not seem to be a regular file or a link",
+                                      filename)
                 finally:
                     if extracted:
                         extracted.close()
