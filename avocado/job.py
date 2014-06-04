@@ -63,7 +63,7 @@ class TestRunner(object):
         """
         shortname = params.get('shortname')
         url = shortname.split('.')[0]
-        path_attempt = os.path.abspath(url)
+        path_attempt = os.path.abspath(shortname)
         if os.path.exists(path_attempt):
             test_class = test.DropinTest
             test_instance = test_class(path=path_attempt,
