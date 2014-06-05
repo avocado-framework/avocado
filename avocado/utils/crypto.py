@@ -48,7 +48,7 @@ def get_random_string(length, ignore_str=string.punctuation,
             tmp = "\\%s" % tmp
         result += tmp
         length -= 1
-    return str
+    return result
 
 
 def hash_wrapper(algorithm='md5', data=None):
