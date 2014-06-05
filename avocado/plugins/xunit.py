@@ -130,8 +130,8 @@ class XmlResult(object):
 
         :param test: an instance of :class:`avocado.test.Test`.
         """
-        tc = '''\t<testcase classname="{class}" name="{name}" time="{time}">
-\t\t<error type="{type}" message={reason}><![CDATA[{traceback}]]></error>
+        tc = '''\t<testcase classname={class} name={name} time="{time}">
+\t\t<error type={type} message={reason}><![CDATA[{traceback}]]></error>
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
         values = {'class': self._escape_attr(test.__class__.__name__),
