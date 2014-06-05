@@ -19,6 +19,7 @@ import os
 import shutil
 import sys
 import tempfile
+import xml.dom.minidom
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -101,7 +102,7 @@ class RunnerDropinTest(unittest.TestCase):
             shutil.rmtree(self.base_logdir, ignore_errors=True)
 
 
-class PluginsOperationTest(unittest.TestCase):
+class PluginsSysinfoTest(unittest.TestCase):
 
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
@@ -121,6 +122,71 @@ class PluginsOperationTest(unittest.TestCase):
         if os.path.isdir(self.base_outputdir):
             shutil.rmtree(self.base_outputdir, ignore_errors=True)
 
+
+class ParseXMLError(Exception):
+    pass
+
+
+class PluginsXunitTest(PluginsSysinfoTest):
+
+    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
+                      e_nfailures, e_nskip):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --xunit run %s' % testname
+        result = process.run(cmd_line, ignore_status=True)
+        xml_output = result.stdout
+        self.assertEqual(result.exit_status, e_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (e_rc, result))
+        try:
+            xunit_doc = xml.dom.minidom.parseString(xml_output)
+        except Exception, detail:
+            raise ParseXMLError("Failed to parse content: %s\n%s" %
+                                (detail, xml_output))
+
+        testsuite_list = xunit_doc.getElementsByTagName('testsuite')
+        self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
+
+        testsuite_tag = testsuite_list[0]
+        self.assertEqual(len(testsuite_tag.attributes), 7,
+                         'Less than 7 attributes in the testsuite tag. '
+                         'XML:\n%s' % xml_output)
+
+        n_tests = int(testsuite_tag.attributes['tests'].value)
+        self.assertEqual(n_tests, e_ntests,
+                         "Unexpected number of executed tests, "
+                         "XML:\n%s" % xml_output)
+
+        n_errors = int(testsuite_tag.attributes['errors'].value)
+        self.assertEqual(n_errors, e_nerrors,
+                         "Unexpected number of test errors, "
+                         "XML:\n%s" % xml_output)
+
+        n_failures = int(testsuite_tag.attributes['failures'].value)
+        self.assertEqual(n_failures, e_nfailures,
+                         "Unexpected number of test failures, "
+                         "XML:\n%s" % xml_output)
+
+        n_skip = int(testsuite_tag.attributes['skip'].value)
+        self.assertEqual(n_skip, e_nskip,
+                         "Unexpected number of test skips, "
+                         "XML:\n%s" % xml_output)
+
+    def test_xunit_plugin_sleeptest(self):
+        self.run_and_check('sleeptest', 0, 1, 0, 0, 0)
+
+    def test_xunit_plugin_failtest(self):
+        self.run_and_check('failtest', 1, 1, 0, 1, 0)
+
+    def test_xunit_plugin_skiptest(self):
+        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
+
+    def test_xunit_plugin_errortest(self):
+        self.run_and_check('errortest', 1, 1, 1, 0, 0)
+
+    def test_xunit_plugin_mixedtest(self):
+        self.run_and_check('"sleeptest failtest skiptest errortest"',
+                           1, 4, 1, 1, 1)
 
 if __name__ == '__main__':
     unittest.main()
