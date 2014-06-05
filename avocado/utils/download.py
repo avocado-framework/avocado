@@ -29,7 +29,10 @@ log = logging.getLogger('avocado.test')
 
 def is_url(path):
     """
-    Return true if path looks like a URL
+    Return `True` if path looks like an URL.
+
+    :param path: path to check.
+    :rtype: Boolean.
     """
     url_parts = urlparse.urlparse(path)
     return (url_parts[0] in ('http', 'https', 'ftp', 'git'))
@@ -37,7 +40,13 @@ def is_url(path):
 
 def url_open(url, data=None, timeout=5):
     """
-    Wrapper to urllib2.urlopen with timeout addition.
+    Wrapper to :func:`urllib2.urlopen` with timeout addition.
+
+    :param url: URL to open.
+    :param data: (optional) data to post.
+    :param timeout: (optional) default timeout in seconds.
+    :return: file-like object.
+    :raises: `URLError`.
     """
     # Save old timeout
     old_timeout = socket.getdefaulttimeout()
@@ -51,6 +60,12 @@ def url_open(url, data=None, timeout=5):
 def url_download(url, filename, data=None, timeout=300):
     """
     Retrieve a file from given url.
+
+    :param url: source URL.
+    :param filename: destination path.
+    :param data: (optional) data to post.
+    :param timeout: (optional) default timeout in seconds.
+    :return: `None`.
     """
     log.info('Fetching %s -> %s', url, filename)
 
@@ -69,9 +84,10 @@ def get_file(src, dst, permissions=None):
     """
     Get a file from src and put it in dest, returning dest path.
 
-    :param src: Source path or URL. May be local or a remote file.
-    :param dst: Destination path.
-    :returns: Destination path.
+    :param src: source path or URL. May be local or a remote file.
+    :param dst: destination path.
+    :param permissions: (optional) set access permissions.
+    :return: destination path.
     """
     if src == dst:
         return
