@@ -270,17 +270,30 @@ class Test(unittest.TestCase):
         sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
         self.start_logging()
         sysinfo_logger.start_job_hook()
+        action_exception = None
+        cleanup_exception = None
         try:
             self.setup()
         except Exception, details:
             log_exc_info(sys.exc_info())
             raise exceptions.TestSetupFail(details)
-        self.action()
         try:
-            self.cleanup()
+            self.action()
         except Exception, details:
             log_exc_info(sys.exc_info())
-            raise exceptions.TestSetupFail(details)
+            action_exception = details
+        finally:
+            try:
+                self.cleanup()
+            except Exception, details:
+                log_exc_info(sys.exc_info())
+                cleanup_exception = details
+        # pylint: disable=E0702
+        if action_exception is not None:
+            raise action_exception
+        elif cleanup_exception is not None:
+            raise exceptions.TestSetupFail(cleanup_exception)
+
         self.status = 'PASS'
 
     def run_avocado(self, result=None):
