@@ -10,7 +10,7 @@ virtualenv:
     system_site_packages: true
 
 before_script:
-    - sudo apt-get -y --force-yes install python-libvirt
+    - sudo apt-get -y --force-yes install python-libvirt build-essential
 
 install:
     - pip install sphinx tox pylint autopep8 flexmock
