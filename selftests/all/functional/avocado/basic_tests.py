@@ -64,6 +64,23 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    def test_runner_doublefail(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --xunit run doublefail'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 1
+        unexpected_rc = 3
+        self.assertNotEqual(result.exit_status, unexpected_rc,
+                            "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.assertIn("TestError: Failing during cleanup. Yay!", output,
+                      "Cleanup exception not printed to log output")
+        self.assertIn("FAIL doublefail.1 -> TestFail: This test is supposed to fail",
+                      output,
+                      "Test did not fail with action exception")
+
 
 class RunnerDropinTest(unittest.TestCase):
 
