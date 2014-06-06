@@ -74,6 +74,7 @@ class VMTestRunner(TestRunner):
             test = Test(name=tst['test'],
                         time=tst['time'],
                         status=tst['status'])
+            self.result.start_test(test)
             self.result.check_test(test)
             if not status.mapping[test.status]:
                 failures.append(test.tagged_name)
