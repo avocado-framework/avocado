@@ -56,7 +56,7 @@ def get_paginator():
     try:
         less_cmd = process.find_command('less')
         return os.popen('%s -FRSX' % less_cmd, 'w')
-    except ValueError:
+    except process.CmdNotFoundError:
         return sys.stdout
 
 
