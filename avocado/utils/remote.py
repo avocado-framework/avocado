@@ -18,8 +18,13 @@ Module to provide remote operations.
 
 import getpass
 
-import fabric.api
-import fabric.operations
+try:
+    import fabric.api
+    import fabric.operations
+except ImportError:
+    remote_capable = False
+else:
+    remote_capable = True
 
 
 class Remote(object):
@@ -28,13 +33,16 @@ class Remote(object):
     Performs remote operations.
     """
 
-    def __init__(self, hostname, username=None, password=None, quiet=True):
+    def __init__(self, hostname, username=None, password=None,
+                 timeout=60, attempts=3, quiet=True):
         """
-        Creates an instance of Remote.
+        Creates an instance of :class:`Remote`.
 
         :param hostname: the hostname.
         :param username: the username. Default: autodetect.
         :param password: the password. Default: try to use public key.
+        :param timeout: remote command timeout, in seconds. Default: 60.
+        :param attempts: number of attempts to connect. Default: 3.
         :param quiet: performs quiet operations. Default: True.
         """
         self.hostname = hostname
@@ -46,18 +54,21 @@ class Remote(object):
         self.quiet = quiet
         self._setup_environment(host_string=hostname,
                                 user=username,
-                                password=password)
+                                password=password,
+                                connection_timeout=timeout,
+                                connection_attempts=attempts)
 
     def _setup_environment(self, **kwargs):
         fabric.api.env.update(kwargs)
 
     def run(self, command):
         """
-        Run an remote command.
+        Run a remote command.
 
         :param command: the command string to execute.
 
-        :returns: the result of the remote program's output.
+        :return: the result of the remote program's output.
+        :rtype: :class:`fabric.operations._AttributeString`.
         """
         return fabric.operations.run(command,
                                      quiet=self.quiet,
