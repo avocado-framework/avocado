@@ -115,13 +115,19 @@ class VMTestResult(TestResult):
 
     def setup(self):
         if self.args.vm_domain is None:
-            self.stream.error('Please, set Virtual Machine Domain with option --vm-domain.')
-            raise exceptions.TestSetupFail()
+            e_msg = ('Please set Virtual Machine Domain with option '
+                     '--vm-domain.')
+            self.stream.error(e_msg)
+            raise exceptions.TestSetupFail(e_msg)
         if self.args.vm_hostname is None:
-            self.stream.error('Please, set Virtual Machine hostname with option --vm-hostname.')
-            raise exceptions.TestSetupFail()
-        self.stream.log_header("REMOTE TESTS: Virtual Machine Domain '%s'" % self.args.vm_domain)
-        self.stream.log_header("REMOTE TESTS: Host login '%s@%s'" % (self.args.vm_username, self.args.vm_hostname))
+            e_msg = ('Please set Virtual Machine hostname with option '
+                     '--vm-hostname.')
+            self.stream.error(e_msg)
+            raise exceptions.TestSetupFail(e_msg)
+        self.stream.log_header("REMOTE TESTS: Virtual Machine Domain '%s'" %
+                               self.args.vm_domain)
+        self.stream.log_header("REMOTE TESTS: Host login '%s@%s'" %
+                               (self.args.vm_username, self.args.vm_hostname))
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
         if self.vm is None:
