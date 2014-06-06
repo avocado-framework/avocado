@@ -395,8 +395,8 @@ class SysInfo(object):
         # we have to probe and find out the correct path.
         try:
             self.end_test_loggables.add(self._get_syslog_watcher())
-        except ValueError:
-            pass
+        except ValueError, details:
+            log.info(details)
 
         for filename in _DEFAULT_FILES_START_TEST:
             self.start_test_loggables.add(Logfile(filename))
