@@ -393,7 +393,10 @@ class SysInfo(object):
 
         # As the system log path is not standardized between distros,
         # we have to probe and find out the correct path.
-        self.end_test_loggables.add(self._get_syslog_watcher())
+        try:
+            self.end_test_loggables.add(self._get_syslog_watcher())
+        except ValueError:
+            pass
 
         for filename in _DEFAULT_FILES_START_TEST:
             self.start_test_loggables.add(Logfile(filename))
