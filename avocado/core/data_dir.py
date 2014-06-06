@@ -39,11 +39,11 @@ _BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
 _BASE_DIR = os.path.abspath(_BASE_DIR)
 _IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'tests')
 
-SETTINGS_BASE_DIR = settings.get_value('runner', 'base_dir')
-SETTINGS_TEST_DIR = settings.get_value('runner', 'test_dir')
-SETTINGS_DATA_DIR = settings.get_value('runner', 'data_dir')
-SETTINGS_LOG_DIR = settings.get_value('runner', 'logs_dir')
-SETTINGS_TMP_DIR = settings.get_value('runner', 'tmp_dir')
+SETTINGS_BASE_DIR = os.path.expanduser(settings.get_value('runner', 'base_dir'))
+SETTINGS_TEST_DIR = os.path.expanduser(settings.get_value('runner', 'test_dir'))
+SETTINGS_DATA_DIR = os.path.expanduser(settings.get_value('runner', 'data_dir'))
+SETTINGS_LOG_DIR = os.path.expanduser(settings.get_value('runner', 'logs_dir'))
+SETTINGS_TMP_DIR = os.path.expanduser(settings.get_value('runner', 'tmp_dir'))
 
 SYSTEM_BASE_DIR = '/var/lib/avocado'
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
@@ -51,7 +51,7 @@ SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
 SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'logs')
 SYSTEM_TMP_DIR = '/var/tmp/avocado'
 
-USER_BASE_DIR = '~/avocado'
+USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'logs')
