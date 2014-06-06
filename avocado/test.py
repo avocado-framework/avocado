@@ -295,6 +295,7 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail(cleanup_exception)
 
         self.status = 'PASS'
+        sysinfo_logger.end_test_hook()
 
     def run_avocado(self, result=None):
         """
