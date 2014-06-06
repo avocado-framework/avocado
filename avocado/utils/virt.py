@@ -16,7 +16,12 @@
 Module to provide classes for Virtual Machines.
 """
 
-import libvirt
+try:
+    import libvirt
+except ImportError:
+    virt_capable = False
+else:
+    virt_capable = True
 
 from xml.dom import minidom
 from avocado.utils import remote
