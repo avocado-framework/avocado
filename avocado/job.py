@@ -223,8 +223,7 @@ class Job(object):
         # Let's clean up test artifacts
         if self.args is not None:
             if self.args.archive:
-                name = os.path.basename(self.debugdir)
-                archive.create_zip(name, self.debugdir)
+                archive.create_zip(self.debugdir, self.debugdir)
             if not self.args.keep_tmp_files:
                 data_dir.clean_tmp_files()
 
