@@ -52,7 +52,12 @@ class VMTestRunner(TestRunner):
         """
         avocado_cmd = 'avocado --json run --archive "%s"' % urls
         stdout = self.result.vm.remote.run(avocado_cmd)
-        results = json.loads(stdout)
+        try:
+            results = json.loads(stdout)
+        except Exception, details:
+            raise ValueError('Error loading JSON '
+                             '(full output below): %s\n"""\n%s\n"""' %
+                             (details, stdout))
         return results
 
     def run(self, params_list):
