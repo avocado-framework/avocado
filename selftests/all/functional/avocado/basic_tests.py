@@ -14,6 +14,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import json
 import unittest
 import os
 import shutil
@@ -202,6 +203,59 @@ class PluginsXunitTest(PluginsSysinfoTest):
         self.run_and_check('errortest', 1, 1, 1, 0, 0)
 
     def test_xunit_plugin_mixedtest(self):
+        self.run_and_check('"sleeptest failtest skiptest errortest"',
+                           1, 4, 1, 1, 1)
+
+
+class ParseJSONError(Exception):
+    pass
+
+
+class PluginsJSONTest(PluginsSysinfoTest):
+
+    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
+                      e_nfailures, e_nskip):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --json run --archive %s' % testname
+        result = process.run(cmd_line, ignore_status=True)
+        json_output = result.stdout
+        self.assertEqual(result.exit_status, e_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (e_rc, result))
+        try:
+            json_data = json.loads(json_output)
+        except Exception, detail:
+            raise ParseJSONError("Failed to parse content: %s\n%s" %
+                                 (detail, json_output))
+        self.assertTrue(json_data, "Empty JSON result:\n%s" % json_output)
+        self.assertIsInstance(json_data['tests'], list,
+                              "JSON result lacks 'tests' list")
+        n_tests = len(json_data['tests'])
+        self.assertEqual(n_tests, e_ntests,
+                         "Different number of expected tests")
+        n_errors = json_data['errors']
+        self.assertEqual(n_errors, e_nerrors,
+                         "Different number of expected tests")
+        n_failures = json_data['failures']
+        self.assertEqual(n_failures, e_nfailures,
+                         "Different number of expected tests")
+        n_skip = json_data['skip']
+        self.assertEqual(n_skip, e_nskip,
+                         "Different number of skipped tests")
+
+    def test_json_plugin_sleeptest(self):
+        self.run_and_check('sleeptest', 0, 1, 0, 0, 0)
+
+    def test_json_plugin_failtest(self):
+        self.run_and_check('failtest', 1, 1, 0, 1, 0)
+
+    def test_json_plugin_skiptest(self):
+        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
+
+    def test_json_plugin_errortest(self):
+        self.run_and_check('errortest', 1, 1, 1, 0, 0)
+
+    def test_json_plugin_mixedtest(self):
         self.run_and_check('"sleeptest failtest skiptest errortest"',
                            1, 4, 1, 1, 1)
 
