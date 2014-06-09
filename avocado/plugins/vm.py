@@ -250,6 +250,9 @@ class RunVM(plugin.Plugin):
     enabled = True
 
     def configure(self, app_parser, cmd_parser):
+        if virt.virt_capable is False:
+            self.enabled = False
+            return
         username = getpass.getuser()
         self.parser = app_parser
         app_parser.add_argument('--vm', action='store_true', default=False,
