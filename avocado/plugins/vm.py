@@ -52,7 +52,12 @@ class VMTestRunner(TestRunner):
         """
         avocado_cmd = 'avocado --json run --archive "%s"' % urls
         stdout = self.result.vm.remote.run(avocado_cmd)
-        results = json.loads(stdout)
+        try:
+            results = json.loads(stdout)
+        except Exception, details:
+            raise ValueError('Error loading JSON '
+                             '(full output below): %s\n"""\n%s\n"""' %
+                             (details, stdout))
         return results
 
     def run(self, params_list):
@@ -74,13 +79,14 @@ class VMTestRunner(TestRunner):
             test = Test(name=tst['test'],
                         time=tst['time'],
                         status=tst['status'])
+            self.result.start_test(test)
             self.result.check_test(test)
             if not status.mapping[test.status]:
                 failures.append(test.tagged_name)
         self.result.end_tests()
         local_log_dir = os.path.dirname(self.result.stream.debuglog)
-        zip_filename = os.path.basename(remote_log_dir) + '.zip'
-        zip_path_filename = os.path.join(local_log_dir, zip_filename)
+        zip_filename = remote_log_dir + '.zip'
+        zip_path_filename = os.path.join(local_log_dir, os.path.basename(zip_filename))
         self.result.vm.remote.receive_files(local_log_dir, zip_filename)
         archive.uncompress_zip(zip_path_filename,
                                local_log_dir)
@@ -115,13 +121,19 @@ class VMTestResult(TestResult):
 
     def setup(self):
         if self.args.vm_domain is None:
-            self.stream.error('Please, set Virtual Machine Domain with option --vm-domain.')
-            raise exceptions.TestSetupFail()
+            e_msg = ('Please set Virtual Machine Domain with option '
+                     '--vm-domain.')
+            self.stream.error(e_msg)
+            raise exceptions.TestSetupFail(e_msg)
         if self.args.vm_hostname is None:
-            self.stream.error('Please, set Virtual Machine hostname with option --vm-hostname.')
-            raise exceptions.TestSetupFail()
-        self.stream.log_header("REMOTE TESTS: Virtual Machine Domain '%s'" % self.args.vm_domain)
-        self.stream.log_header("REMOTE TESTS: Host login '%s@%s'" % (self.args.vm_username, self.args.vm_hostname))
+            e_msg = ('Please set Virtual Machine hostname with option '
+                     '--vm-hostname.')
+            self.stream.error(e_msg)
+            raise exceptions.TestSetupFail(e_msg)
+        self.stream.log_header("REMOTE TESTS: Virtual Machine Domain '%s'" %
+                               self.args.vm_domain)
+        self.stream.log_header("REMOTE TESTS: Host login '%s@%s'" %
+                               (self.args.vm_username, self.args.vm_hostname))
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
         if self.vm is None:
