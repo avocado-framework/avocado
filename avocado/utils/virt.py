@@ -63,7 +63,7 @@ class Hypervisor(object):
         if self.connected is False:
             try:
                 self.connection = libvirt.open(self.uri)
-            except libvirt.libvirtError as err:
+            except libvirt.libvirtError:
                 self.connected = False
                 return None
             else:

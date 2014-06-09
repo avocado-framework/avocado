@@ -248,7 +248,7 @@ def create_zip(name, path):
     if name.endswith('.zip') is False:
         name += '.zip'
     with zipfile.ZipFile(name, 'w') as zf:
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             for f in files:
                 newroot = root.replace(path, '')
                 zf.write(os.path.join(root, f),
