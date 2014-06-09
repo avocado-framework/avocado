@@ -222,11 +222,11 @@ class Job(object):
             self.status = 'PASS'
         # Let's clean up test artifacts
         if self.args is not None:
-            if not self.args.keep_tmp_files:
-                data_dir.clean_tmp_files()
             if self.args.archive:
                 name = os.path.basename(self.debugdir)
                 archive.create_zip(name, self.debugdir)
+            if not self.args.keep_tmp_files:
+                data_dir.clean_tmp_files()
 
         tests_status = not bool(failures)
         if tests_status:
