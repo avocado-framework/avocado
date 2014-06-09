@@ -85,8 +85,8 @@ class VMTestRunner(TestRunner):
                 failures.append(test.tagged_name)
         self.result.end_tests()
         local_log_dir = os.path.dirname(self.result.stream.debuglog)
-        zip_filename = os.path.basename(remote_log_dir) + '.zip'
-        zip_path_filename = os.path.join(local_log_dir, zip_filename)
+        zip_filename = remote_log_dir + '.zip'
+        zip_path_filename = os.path.join(local_log_dir, os.path.basename(zip_filename))
         self.result.vm.remote.receive_files(local_log_dir, zip_filename)
         archive.uncompress_zip(zip_path_filename,
                                local_log_dir)
