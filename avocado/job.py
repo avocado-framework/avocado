@@ -19,6 +19,7 @@ Module that describes a sequence of automated test operations.
 
 import imp
 import logging
+import multiprocessing
 import os
 import sys
 import traceback
@@ -85,6 +86,10 @@ class TestRunner(object):
                                            job=self.job)
         return test_instance
 
+    def run_test(self, instance, queue):
+        instance.run_avocado()
+        queue.put(instance)
+
     def run(self, params_list):
         """
         Run one or more tests and report with test result.
@@ -95,10 +100,15 @@ class TestRunner(object):
         """
         failures = []
         self.result.start_tests()
+        q = multiprocessing.Queue()
         for params in params_list:
             test_instance = self.load_test(params)
             self.result.start_test(test_instance)
-            test_instance.run_avocado()
+            p = multiprocessing.Process(target=self.run_test,
+                                        args=(test_instance, q,))
+            p.start()
+            p.join(params.get('timeout'))
+            test_instance = q.get()
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
@@ -138,27 +148,32 @@ class Job(object):
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
+        self.result_proxy = result.TestResultProxy()
 
         self.output_manager = output.OutputManager()
 
-    def _make_test_runner(self, test_result):
+    def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
             test_runner_class = self.args.test_runner
         else:
             test_runner_class = TestRunner
-        test_runner = test_runner_class(job=self,
-                                        test_result=test_result)
-        return test_runner
 
-    def _make_test_result(self, urls):
-        if hasattr(self.args, 'test_result'):
-            test_result_class = self.args.test_result
-        else:
-            test_result_class = result.HumanTestResult
-        if self.args is not None:
-            self.args.test_result_total = len(urls)
-        test_result = test_result_class(self.output_manager, self.args)
-        return test_result
+        self.test_runner = test_runner_class(job=self,
+                                             test_result=self.result_proxy)
+
+    def _make_test_result(self):
+        if self.args:
+            for key in self.args.__dict__:
+                if key.endswith('_result'):
+                    result_class = getattr(self.args, key)
+                    if issubclass(result_class, result.TestResult):
+                        result_plugin = result_class(self.output_manager,
+                                                     self.args)
+                        self.result_proxy.add_output_plugin(result_plugin)
+
+        if not self.result_proxy.output_plugins:
+            default_plugin = result.HumanTestResult(self.output_manager, self.args)
+            self.result_proxy.add_output_plugin(default_plugin)
 
     def _run(self, urls=None, multiplex_file=None):
         """
@@ -208,8 +223,11 @@ class Job(object):
                 for dct in parser.get_dicts():
                     params_list.append(dct)
 
-        test_result = self._make_test_result(params_list)
-        self.test_runner = self._make_test_runner(test_result)
+        if self.args is not None:
+            self.args.test_result_total = len(params_list)
+
+        self._make_test_result()
+        self._make_test_runner()
 
         self.output_manager.start_file_logging(self.debuglog,
                                                self.loglevel)

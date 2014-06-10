@@ -121,4 +121,4 @@ class Journal(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.journal:
-            self.parser.set_defaults(test_result=TestResultJournal)
+            self.parser.set_defaults(journal_result=TestResultJournal)

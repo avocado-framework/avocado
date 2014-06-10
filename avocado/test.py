@@ -102,6 +102,7 @@ class Test(unittest.TestCase):
         if params is None:
             params = {}
         self.params = Params(params)
+        self._raw_params = params
 
         shortname = self.params.get('shortname')
         s_tag = None
@@ -168,6 +169,26 @@ class Test(unittest.TestCase):
 
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
+
+    def __getstate__(self):
+        """
+        Pickle only selected attributes of the class for serialization.
+
+        The fact we serialize the class means you'll have to modify this
+        class if you intend to make significant changes to its structure.
+        """
+        orig = dict(self.__dict__)
+        d = {}
+        preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_class',
+                         'fail_reason', 'logdir', 'logfile', 'name',
+                         'resultsdir', 'srcdir', 'status', 'sysinfodir',
+                         'tag', 'tagged_name', 'text_output', 'time_elapsed',
+                         'traceback', 'workdir']
+        for key in sorted(orig):
+            if key in preserve_attr:
+                d[key] = orig[key]
+        d['params'] = orig['_raw_params']
+        return d
 
     def _set_default(self, key, default):
         try:
