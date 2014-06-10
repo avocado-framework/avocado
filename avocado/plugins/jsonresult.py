@@ -94,4 +94,4 @@ class JSON(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.json:
-            self.parser.set_defaults(test_result=JSONTestResult)
+            self.parser.set_defaults(json_result=JSONTestResult)
