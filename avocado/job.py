@@ -19,6 +19,7 @@ Module that describes a sequence of automated test operations.
 
 import imp
 import logging
+import multiprocessing
 import os
 import sys
 import traceback
@@ -85,6 +86,10 @@ class TestRunner(object):
                                            job=self.job)
         return test_instance
 
+    def run_test(self, instance, queue):
+        instance.run_avocado()
+        queue.put(instance)
+
     def run(self, params_list):
         """
         Run one or more tests and report with test result.
@@ -95,10 +100,15 @@ class TestRunner(object):
         """
         failures = []
         self.result.start_tests()
+        q = multiprocessing.Queue()
         for params in params_list:
             test_instance = self.load_test(params)
             self.result.start_test(test_instance)
-            test_instance.run_avocado()
+            p = multiprocessing.Process(target=self.run_test,
+                                        args=(test_instance, q,))
+            p.start()
+            p.join(params.get('timeout'))
+            test_instance = q.get()
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
