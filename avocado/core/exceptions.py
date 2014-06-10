@@ -58,7 +58,19 @@ class TestSetupFail(TestBaseException):
 class TestError(TestBaseException):
 
     """
-    Indicates that something went wrong with the test harness itself.
+    Indicates that the test was not fully executed and an error happened.
+
+    This is the sort of exception you raise if the test was partially
+    executed and could not complete due to a setup, configuration,
+    or another fatal condition.
+    """
+    status = "ERROR"
+
+
+class TestTimeoutError(TestBaseException):
+
+    """
+    Indicates that the test did not finish before the timeout specified.
     """
     status = "ERROR"
 
