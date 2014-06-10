@@ -120,6 +120,7 @@ class VMTestResult(TestResult):
             self.vm.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
+        self.urls = self.args.url.split()
         if self.args.vm_domain is None:
             e_msg = ('Please set Virtual Machine Domain with option '
                      '--vm-domain.')
@@ -289,5 +290,5 @@ class RunVM(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.vm:
-            self.parser.set_defaults(test_result=VMTestResult,
+            self.parser.set_defaults(vm_result=VMTestResult,
                                      test_runner=VMTestRunner)
