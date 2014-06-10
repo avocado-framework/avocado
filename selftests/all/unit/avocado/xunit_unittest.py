@@ -14,6 +14,7 @@
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
+import argparse
 import unittest
 import os
 import sys
@@ -30,12 +31,17 @@ from avocado.plugins import xunit
 from avocado import test
 
 
+class ParseXMLError(Exception):
+    pass
+
+
 class xUnitSucceedTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpfile = mkstemp()
-        self.test_result = xunit.xUnitTestResult()
-        self.test_result.filename = self.tmpfile[1]
+        args = argparse.Namespace()
+        args.xunit_output = self.tmpfile[1]
+        self.test_result = xunit.xUnitTestResult(args=args)
         self.test_result.start_tests()
         self.test1 = test.Test()
         self.test1.status = 'PASS'
@@ -50,9 +56,12 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_test(self.test1)
         self.test_result.end_tests()
         self.assertTrue(self.test_result.xml)
-        with open(self.test_result.filename) as fp:
+        with open(self.test_result.output) as fp:
             xml = fp.read()
-        dom = minidom.parseString(xml)
+        try:
+            dom = minidom.parseString(xml)
+        except Exception, details:
+            raise ParseXMLError("Error parsing XML: '%s'.\nXML Contents:\n%s" % (details, xml))
         self.assertTrue(dom)
         els = dom.getElementsByTagName('testcase')
         self.assertEqual(len(els), 1)

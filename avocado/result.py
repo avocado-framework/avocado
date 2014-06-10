@@ -108,6 +108,33 @@ class TestResult(object):
         self.failed = []
         self.skipped = []
         self.warned = []
+        # The convention is that a dash denotes stdout.
+        self.output = '-'
+        self.set_output()
+        self.output_option = None
+        self.set_output_option()
+
+    def set_output(self):
+        """
+        Set the value of the output attribute.
+
+        By default, output is the stream (stdout), denoted by '-'.
+
+        Must be implemented by plugins, so avocado knows where the plugin wants
+        to output to, avoiding clashes among different plugins that want to
+        use the stream at the same time.
+        """
+        pass
+
+    def set_output_option(self):
+        """
+        Set the value of the output option (command line).
+
+        Must be implemented by plugins, so avocado prints a friendly
+        message to users who are using more than one plugin to print results
+        to stdout.
+        """
+        pass
 
     def start_tests(self):
         """

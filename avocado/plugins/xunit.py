@@ -28,8 +28,9 @@ class XmlResult(object):
     Handles the XML details for xUnit output.
     """
 
-    def __init__(self):
+    def __init__(self, output):
         self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+        self.output = output
 
     def _escape_attr(self, attrib):
         return quoteattr(attrib)
@@ -37,12 +38,14 @@ class XmlResult(object):
     def _escape_cdata(self, cdata):
         return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
 
-    def save(self, filename):
+    def save(self, filename=None):
         """
         Save the XML document to a file or standard output.
 
         :param filename: File name to save. Use '-' for standard output.
         """
+        if filename is None:
+            filename = self.output
         xml = '\n'.join(self.xml)
         if filename == '-':
             sys.stdout.write(xml)
@@ -158,8 +161,13 @@ class xUnitTestResult(TestResult):
         :param args: an instance of :class:`argparse.Namespace`.
         """
         TestResult.__init__(self, stream, args)
-        self.filename = getattr(self.args, 'xunit_output', '-')
-        self.xml = XmlResult()
+        self.xml = XmlResult(self.output)
+
+    def set_output(self):
+        self.output = getattr(self.args, 'xunit_output', '-')
+
+    def set_output_option(self):
+        self.output_option = '--xunit'
 
     def start_tests(self):
         """
@@ -199,7 +207,7 @@ class xUnitTestResult(TestResult):
                   'skip': len(self.skipped),
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
-        self.xml.save(self.filename)
+        self.xml.save()
 
 
 class XUnit(plugin.Plugin):

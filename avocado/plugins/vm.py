@@ -168,6 +168,12 @@ class VMTestResult(TestResult):
         if self.args.vm_cleanup is True and self.vm.snapshot is not None:
             self.vm.restore_snapshot()
 
+    def set_output(self):
+        self.output = '-'
+
+    def set_output_option(self):
+        self.output_option = "--vm"
+
     def start_tests(self):
         """
         Called once before any tests are executed.
