@@ -222,4 +222,4 @@ class XUnit(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.xunit:
-            self.parser.set_defaults(test_result=xUnitTestResult)
+            self.parser.set_defaults(xunit_result=xUnitTestResult)
