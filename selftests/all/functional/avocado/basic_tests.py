@@ -82,6 +82,21 @@ class RunnerOperationTest(unittest.TestCase):
                       output,
                       "Test did not fail with action exception")
 
+    def test_runner_timeout(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --xunit run timeouttest'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 1
+        unexpected_rc = 3
+        self.assertNotEqual(result.exit_status, unexpected_rc,
+                            "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.assertIn("ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end",
+                      output,
+                      "Test did not fail with timeout exception")
+
 
 class RunnerDropinTest(unittest.TestCase):
 

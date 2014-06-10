@@ -19,7 +19,9 @@ Module that describes a sequence of automated test operations.
 
 import imp
 import logging
+import multiprocessing
 import os
+import signal
 import sys
 import traceback
 import uuid
@@ -85,6 +87,25 @@ class TestRunner(object):
                                            job=self.job)
         return test_instance
 
+    def run_test(self, instance, queue):
+        """
+        Run a test instance in a subprocess.
+
+        :param instance: Test instance.
+        :type instance: :class:`avocado.test.Test` instance.
+        :param queue: Multiprocess queue.
+        :type queue: :class`multiprocessing.Queue` instance.
+        """
+        def timeout_handler(signum, frame):
+            e_msg = "Timeout reached waiting for %s to end" % instance
+            raise exceptions.TestTimeoutError(e_msg)
+
+        signal.signal(signal.SIGTERM, timeout_handler)
+        try:
+            instance.run_avocado()
+        finally:
+            queue.put(instance)
+
     def run(self, params_list):
         """
         Run one or more tests and report with test result.
@@ -95,10 +116,29 @@ class TestRunner(object):
         """
         failures = []
         self.result.start_tests()
+        q = multiprocessing.Queue()
         for params in params_list:
             test_instance = self.load_test(params)
             self.result.start_test(test_instance)
-            test_instance.run_avocado()
+            p = multiprocessing.Process(target=self.run_test,
+                                        args=(test_instance, q,))
+            p.start()
+            # The test timeout can come from:
+            # 1) Test params dict (params)
+            # 2) Test default params dict (test_instance.params.timeout)
+            timeout = params.get('timeout')
+            if timeout is None:
+                if hasattr(test_instance.params, 'timeout'):
+                    timeout = test_instance.params.timeout
+            if timeout is not None:
+                timeout = float(timeout)
+            # Wait for the test to end for [timeout] s
+            p.join(timeout)
+            # If there's no exit code, the test is still running.
+            # It must be terminated.
+            if p.exitcode is None:
+                p.terminate()
+            test_instance = q.get()
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
