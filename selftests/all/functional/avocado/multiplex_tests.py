@@ -17,6 +17,7 @@
 import unittest
 import os
 import sys
+import tempfile
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -25,6 +26,15 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
+
+timeout_multiplex = """
+variants:
+    - sleeptest:
+        sleep_length = 5
+        sleep_length_type = float
+        timeout = 3
+        timeout_type = float
+"""
 
 
 class MultiplexTests(unittest.TestCase):
@@ -60,6 +70,18 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = './scripts/avocado run "sleeptest failtest" --multiplex tests/sleeptest/sleeptest.mplx'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
+
+    def test_run_mplex_timeout(self):
+        with tempfile.NamedTemporaryFile(delete=False) as multiplex_file:
+            multiplex_file.write(timeout_multiplex)
+            multiplex_file.close()
+            cmd_line = ('./scripts/avocado run "sleeptest" --multiplex %s' %
+                        multiplex_file.name)
+            expected_rc = 1
+            try:
+                self.run_and_check(cmd_line, expected_rc)
+            finally:
+                os.unlink(multiplex_file.name)
 
 if __name__ == '__main__':
     unittest.main()
