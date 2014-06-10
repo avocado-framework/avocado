@@ -58,7 +58,19 @@ class TestSetupFail(TestBaseException):
 class TestError(TestBaseException):
 
     """
-    Indicates that something went wrong with the test harness itself.
+    Indicates that the test was not fully executed and an error happened.
+
+    This is the sort of exception you raise if the test was partially
+    executed and could not complete due to a setup, configuration,
+    or another fatal condition.
+    """
+    status = "ERROR"
+
+
+class TestTimeoutError(TestBaseException):
+
+    """
+    Indicates that the test did not finish before the timeout specified.
     """
     status = "ERROR"
 
@@ -94,15 +106,18 @@ class TestWarn(TestBaseException):
 
 class CmdError(Exception):
 
-    def __init__(self, command, result):
+    def __init__(self, command=None, result=None):
         self.command = command
         self.result = result
 
     def __str__(self):
-        if self.result.exit_status is None:
-            msg = "Command '%s' failed and is not responding to signals"
-            msg %= self.command
+        if self.result is not None:
+            if self.result.exit_status is None:
+                msg = "Command '%s' failed and is not responding to signals"
+                msg %= self.command
+            else:
+                msg = "Command '%s' failed (rc=%d)"
+                msg %= (self.command, self.result.exit_status)
+            return msg
         else:
-            msg = "Command '%s' failed (rc=%d)"
-            msg %= (self.command, self.result.exit_status)
-        return msg
+            return "CmdError"

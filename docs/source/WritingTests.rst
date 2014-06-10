@@ -250,6 +250,164 @@ The ``action`` method just gets into the base directory of the compiled suite
 and executes the ``./synctest`` command, with appropriate parameters, using
 :func:`avocado.utils.process.system`.
 
+Avocado Tests run on a separate process
+=======================================
+
+In order to avoid tests to mess around the environment used by the main
+avocado runner process, tests are run on a forked subprocess. This allows
+for more robustness (tests are not easily able to mess/break avocado) and
+some nifty features, such as setting test timeouts.
+
+Setting a Test Timeout
+======================
+
+Sometimes your test suite/test might get stuck forever, and this might
+impact your test grid. You can account for that possibility and set up a
+``timeout`` parameter for your test. The test timeout can be set through
+2 means, in the following order of precedence:
+
+* Multiplex variable parameters. You may just set the timeout parameter, like
+  in the following simplistic example:
+
+::
+
+    variants:
+        - sleeptest:
+            sleep_length = 5
+            sleep_length_type = float
+            timeout = 3
+            timeout_type = float
+
+::
+
+    avocado run sleeptest --multiplex /tmp/sleeptest-example.mplx
+    DEBUG LOG: /home/lmr/avocado/logs/run-2014-06-10-16.13.33/debug.log
+    TOTAL TESTS: 1
+    (1/1) sleeptest.1: ERROR (3.00 s)
+    TOTAL PASSED: 0
+    TOTAL ERROR: 1
+    TOTAL FAILED: 0
+    TOTAL SKIPPED: 0
+    TOTAL WARNED: 0
+    ELAPSED TIME: 3.00 s
+
+::
+
+    $ cat /home/lmr/avocado/logs/run-2014-06-10-16.13.33/debug.log
+    16:13:33 test       L0136 INFO | START sleeptest.1
+    16:13:33 test       L0137 DEBUG|
+    16:13:33 test       L0138 DEBUG| Test instance parameters:
+    16:13:33 test       L0145 DEBUG|     _name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
+    16:13:33 test       L0145 DEBUG|     _short_name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
+    16:13:33 test       L0145 DEBUG|     dep =
+    16:13:33 test       L0145 DEBUG|     name = sleeptest
+    16:13:33 test       L0145 DEBUG|     shortname = sleeptest
+    16:13:33 test       L0145 DEBUG|     sleep_length = 5.0
+    16:13:33 test       L0145 DEBUG|     sleep_length_type = float
+    16:13:33 test       L0145 DEBUG|     timeout = 3.0
+    16:13:33 test       L0145 DEBUG|     timeout_type = float
+    16:13:33 test       L0147 DEBUG|
+    16:13:33 test       L0150 DEBUG| Default parameters:
+    16:13:33 test       L0152 DEBUG|     sleep_length = 1.0
+    16:13:33 test       L0154 DEBUG|
+    16:13:33 test       L0155 DEBUG| Test instance params override defaults whenever available
+    16:13:33 test       L0156 DEBUG|
+    16:13:33 test       L0162 INFO | Test timeout set. Will wait 3.00 s for PID 23953 to end
+    16:13:33 test       L0163 INFO |
+    16:13:33 sysinfo    L0154 DEBUG| Not logging /proc/slabinfo (lack of permissions)
+    16:13:33 sleeptest  L0035 DEBUG| Sleeping for 5.00 seconds
+    16:13:36 test       L0054 ERROR|
+    16:13:36 test       L0057 ERROR| Traceback (most recent call last):
+    16:13:36 test       L0057 ERROR|   File "/home/lmr/Code/avocado/tests/sleeptest/sleeptest.py", line 36, in action
+    16:13:36 test       L0057 ERROR|     time.sleep(self.params.sleep_length)
+    16:13:36 test       L0057 ERROR|   File "/home/lmr/Code/avocado/avocado/job.py", line 101, in timeout_handler
+    16:13:36 test       L0057 ERROR|     raise exceptions.TestTimeoutError(e_msg)
+    16:13:36 test       L0057 ERROR| TestTimeoutError: Timeout reached waiting for sleeptest to end
+    16:13:36 test       L0058 ERROR|
+    16:13:36 test       L0376 ERROR| ERROR sleeptest.1 -> TestTimeoutError: Timeout reached waiting for sleeptest to end
+    16:13:36 test       L0363 INFO |
+
+
+If you pass that multiplex file to the runner multiplexer, this will register
+a timeout of 3 seconds before avocado ends the test forcefully by sending a
+:class:`signal.SIGTERM` to the test, making it raise a
+:class:`avocado.core.exceptions.TestTimeoutError`.
+
+* Default params attribute. Consider the following example:
+
+::
+
+    import time
+
+    from avocado import test
+    from avocado import job
+
+
+    class timeouttest(test.Test):
+
+        """
+        Functional test for avocado. Throw a TestTimeoutError.
+        """
+        default_params = {'timeout': 3.0,
+                          'sleep_time': 5.0}
+
+        def action(self):
+            """
+            This should throw a TestTimeoutError.
+            """
+            self.log.info('Sleeping for %.2f seconds (2 more than the timeout)',
+                          self.params.sleep_time)
+            time.sleep(self.params.sleep_time)
+
+
+    if __name__ == "__main__":
+        job.main()
+
+This accomplishes a similar effect to the multiplex setup defined in there.
+
+::
+
+    $ scripts/avocado run timeouttest
+    DEBUG LOG: /home/lmr/avocado/logs/run-2014-06-10-16.14.19/debug.log
+    TOTAL TESTS: 1
+    (1/1) timeouttest.1: ERROR (3.00 s)
+    TOTAL PASSED: 0
+    TOTAL ERROR: 1
+    TOTAL FAILED: 0
+    TOTAL SKIPPED: 0
+    TOTAL WARNED: 0
+    ELAPSED TIME: 3.00 s
+
+::
+
+    $ cat /home/lmr/avocado/logs/run-2014-06-10-16.14.19/debug.log
+    16:14:19 test       L0136 INFO | START timeouttest.1
+    16:14:19 test       L0137 DEBUG|
+    16:14:19 test       L0138 DEBUG| Test instance parameters:
+    16:14:19 test       L0145 DEBUG|     shortname = timeouttest
+    16:14:19 test       L0147 DEBUG|
+    16:14:19 test       L0150 DEBUG| Default parameters:
+    16:14:19 test       L0152 DEBUG|     sleep_time = 5.0
+    16:14:19 test       L0152 DEBUG|     timeout = 3.0
+    16:14:19 test       L0154 DEBUG|
+    16:14:19 test       L0155 DEBUG| Test instance params override defaults whenever available
+    16:14:19 test       L0156 DEBUG|
+    16:14:19 test       L0162 INFO | Test timeout set. Will wait 3.00 s for PID 24008 to end
+    16:14:19 test       L0163 INFO |
+    16:14:19 sysinfo    L0154 DEBUG| Not logging /proc/slabinfo (lack of permissions)
+    16:14:20 timeouttes L0036 INFO | Sleeping for 5.00 seconds (2 more than the timeout)
+    16:14:22 test       L0054 ERROR|
+    16:14:22 test       L0057 ERROR| Traceback (most recent call last):
+    16:14:22 test       L0057 ERROR|   File "/home/lmr/Code/avocado/tests/timeouttest/timeouttest.py", line 37, in action
+    16:14:22 test       L0057 ERROR|     time.sleep(self.params.sleep_time)
+    16:14:22 test       L0057 ERROR|   File "/home/lmr/Code/avocado/avocado/job.py", line 101, in timeout_handler
+    16:14:22 test       L0057 ERROR|     raise exceptions.TestTimeoutError(e_msg)
+    16:14:22 test       L0057 ERROR| TestTimeoutError: Timeout reached waiting for timeouttest to end
+    16:14:22 test       L0058 ERROR|
+    16:14:22 test       L0376 ERROR| ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end
+    16:14:22 test       L0363 INFO |
+
+
 Wrap Up
 =======
 
