@@ -184,6 +184,8 @@ class TarArchive(BaseArchive):
                     with open(filename, 'wb') as outfile:
                         if extracted is not None:
                             shutil.copyfileobj(extracted, outfile)
+                            if not member.issym():
+                                os.chmod(filename, member.mode)
                         else:
                             log.error("Member correspondent to file %s does "
                                       "not seem to be a regular file or a link",
