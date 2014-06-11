@@ -49,6 +49,16 @@ class OutputTest(unittest.TestCase):
 
 class OutputPluginTest(unittest.TestCase):
 
+    def check_output_files(self, debug_log):
+        base_dir = os.path.dirname(debug_log)
+        json_output = os.path.join(base_dir, 'results.json')
+        self.assertTrue(os.path.isfile(json_output))
+        with open(json_output, 'r') as fp:
+            json.load(fp)
+        xunit_output = os.path.join(base_dir, 'results.xml')
+        self.assertTrue(os.path.isfile(json_output))
+        minidom.parse(xunit_output)
+
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado --xunit --json run sleeptest'
@@ -108,7 +118,9 @@ class OutputPluginTest(unittest.TestCase):
                              (expected_rc, result))
             # Check if we are producing valid outputs
             with open(tmpfile, 'r') as fp:
-                json.load(fp)
+                json_results = json.load(fp)
+                debug_log = json_results['debuglog']
+                self.check_output_files(debug_log)
             minidom.parseString(output)
         finally:
             try:
@@ -132,7 +144,9 @@ class OutputPluginTest(unittest.TestCase):
                              "Output is not empty as expected:\n%s" % output)
             # Check if we are producing valid outputs
             with open(tmpfile2, 'r') as fp:
-                json.load(fp)
+                json_results = json.load(fp)
+                debug_log = json_results['debuglog']
+                self.check_output_files(debug_log)
             minidom.parse(tmpfile)
         finally:
             try:
@@ -140,6 +154,20 @@ class OutputPluginTest(unittest.TestCase):
                 os.remove(tmpfile2)
             except OSError:
                 pass
+
+    def test_default_enabled_plugins(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptest'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout + result.stderr
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        output_lines = output.splitlines()
+        first_line = output_lines[0]
+        debug_log = first_line.split()[-1]
+        self.check_output_files(debug_log)
 
 
 if __name__ == '__main__':
