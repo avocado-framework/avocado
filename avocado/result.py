@@ -21,6 +21,70 @@ used by the test runner.
 """
 
 
+class InvalidOutputPlugin(Exception):
+    pass
+
+
+class TestResultProxy(object):
+
+    def __init__(self):
+        self.output_plugins = []
+        self.console_plugin = None
+
+    def __getattr__(self, attr):
+        for output_plugin in self.output_plugins:
+            if hasattr(output_plugin, attr):
+                return getattr(output_plugin, attr)
+            else:
+                return None
+
+    def add_output_plugin(self, plugin):
+        if not isinstance(plugin, TestResult):
+            raise InvalidOutputPlugin("Object %s is not an instance of "
+                                      "TestResult" % plugin)
+        self.output_plugins.append(plugin)
+
+    def start_tests(self):
+        for output_plugin in self.output_plugins:
+            output_plugin.start_tests()
+
+    def end_tests(self):
+        for output_plugin in self.output_plugins:
+            output_plugin.end_tests()
+
+    def start_test(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.start_test(test)
+
+    def end_test(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.end_test(test)
+
+    def add_pass(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.add_pass(test)
+
+    def add_error(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.add_error(test)
+
+    def add_fail(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.add_fail(test)
+
+    def add_skip(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.add_skip(test)
+
+    def add_warn(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.add_warn(test)
+
+    def check_test(self, test):
+        for output_plugin in self.output_plugins:
+            output_plugin.check_test(test)
+
+
 class TestResult(object):
 
     """
@@ -44,6 +108,33 @@ class TestResult(object):
         self.failed = []
         self.skipped = []
         self.warned = []
+        # The convention is that a dash denotes stdout.
+        self.output = '-'
+        self.set_output()
+        self.output_option = None
+        self.set_output_option()
+
+    def set_output(self):
+        """
+        Set the value of the output attribute.
+
+        By default, output is the stream (stdout), denoted by '-'.
+
+        Must be implemented by plugins, so avocado knows where the plugin wants
+        to output to, avoiding clashes among different plugins that want to
+        use the stream at the same time.
+        """
+        pass
+
+    def set_output_option(self):
+        """
+        Set the value of the output option (command line).
+
+        Must be implemented by plugins, so avocado prints a friendly
+        message to users who are using more than one plugin to print results
+        to stdout.
+        """
+        pass
 
     def start_tests(self):
         """

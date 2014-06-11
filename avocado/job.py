@@ -17,6 +17,7 @@
 Module that describes a sequence of automated test operations.
 """
 
+import argparse
 import imp
 import logging
 import multiprocessing
@@ -35,6 +36,8 @@ from avocado.utils import archive
 from avocado import multiplex_config
 from avocado import test
 from avocado import result
+from avocado.plugins import xunit
+from avocado.plugins import jsonresult
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
@@ -178,27 +181,76 @@ class Job(object):
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
+        self.result_proxy = result.TestResultProxy()
 
         self.output_manager = output.OutputManager()
 
-    def _make_test_runner(self, test_result):
+    def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
             test_runner_class = self.args.test_runner
         else:
             test_runner_class = TestRunner
-        test_runner = test_runner_class(job=self,
-                                        test_result=test_result)
-        return test_runner
 
-    def _make_test_result(self, urls):
-        if hasattr(self.args, 'test_result'):
-            test_result_class = self.args.test_result
-        else:
-            test_result_class = result.HumanTestResult
-        if self.args is not None:
-            self.args.test_result_total = len(urls)
-        test_result = test_result_class(self.output_manager, self.args)
-        return test_result
+        self.test_runner = test_runner_class(job=self,
+                                             test_result=self.result_proxy)
+
+    def _set_output_plugins(self):
+        plugin_using_stdout = None
+        e_msg = ("Avocado could not set %s and %s both to output to stdout. ")
+        e_msg_2 = ("Please set the output flag of one of them to a file "
+                   "to avoid conflicts.")
+        for key in self.args.__dict__:
+            if key.endswith('_result'):
+                result_class = getattr(self.args, key)
+                if issubclass(result_class, result.TestResult):
+                    result_plugin = result_class(self.output_manager,
+                                                 self.args)
+                    if result_plugin.output == '-':
+                        if plugin_using_stdout is not None:
+                            e_msg %= (plugin_using_stdout.output_option,
+                                      result_plugin.output_option)
+                            self.output_manager.log_fail_header(e_msg)
+                            self.output_manager.log_fail_header(e_msg_2)
+                            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+                        else:
+                            plugin_using_stdout = result_plugin
+                    self.result_proxy.add_output_plugin(result_plugin)
+
+    def _make_test_result(self):
+        """
+        Set up output plugins.
+
+        The basic idea behind the output plugins is:
+
+        * If there are any active output plugins, use them
+        * Always add Xunit and JSON plugins outputting to files inside the
+          results dir
+        * If at the end we only have 2 output plugins (Xunit and JSON), we can
+          add the human output plugin.
+        """
+        if self.args:
+            # If there are any active output plugins, let's use them
+            self._set_output_plugins()
+
+        # Setup the xunit plugin to output to the debug directory
+        xunit_file = os.path.join(self.debugdir, 'results.xml')
+        args = argparse.Namespace()
+        args.xunit_output = xunit_file
+        xunit_plugin = xunit.xUnitTestResult(self.output_manager, args)
+        self.result_proxy.add_output_plugin(xunit_plugin)
+
+        # Setup the json plugin to output to the debug directory
+        json_file = os.path.join(self.debugdir, 'results.json')
+        args = argparse.Namespace()
+        args.json_output = json_file
+        json_plugin = jsonresult.JSONTestResult(self.output_manager, args)
+        self.result_proxy.add_output_plugin(json_plugin)
+
+        # If there are no active output plugins besides xunit and json,
+        # set up the human output.
+        if len(self.result_proxy.output_plugins) == 2:
+            human_plugin = result.HumanTestResult(self.output_manager, self.args)
+            self.result_proxy.add_output_plugin(human_plugin)
 
     def _run(self, urls=None, multiplex_file=None):
         """
@@ -248,8 +300,11 @@ class Job(object):
                 for dct in parser.get_dicts():
                     params_list.append(dct)
 
-        test_result = self._make_test_result(params_list)
-        self.test_runner = self._make_test_runner(test_result)
+        if self.args is not None:
+            self.args.test_result_total = len(params_list)
+
+        self._make_test_result()
+        self._make_test_runner()
 
         self.output_manager.start_file_logging(self.debuglog,
                                                self.loglevel)
