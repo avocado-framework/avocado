@@ -36,6 +36,7 @@ class Test(object):
     """
 
     def __init__(self, name, status, time):
+        self.name = name
         self.tagged_name = name
         self.status = status
         self.time_elapsed = time
