@@ -36,9 +36,15 @@ class Test(object):
     """
 
     def __init__(self, name, status, time):
+        note = "Not supported yet"
+        self.name = name
         self.tagged_name = name
         self.status = status
         self.time_elapsed = time
+        self.fail_class = note
+        self.traceback = note
+        self.text_output = note
+        self.fail_reason = note
 
 
 class VMTestRunner(TestRunner):
@@ -120,6 +126,7 @@ class VMTestResult(TestResult):
             self.vm.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
+        self.urls = self.args.url.split()
         if self.args.vm_domain is None:
             e_msg = ('Please set Virtual Machine Domain with option '
                      '--vm-domain.')
@@ -166,6 +173,12 @@ class VMTestResult(TestResult):
     def tear_down(self):
         if self.args.vm_cleanup is True and self.vm.snapshot is not None:
             self.vm.restore_snapshot()
+
+    def set_output(self):
+        self.output = '-'
+
+    def set_output_option(self):
+        self.output_option = "--vm"
 
     def start_tests(self):
         """
@@ -289,5 +302,5 @@ class RunVM(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.vm:
-            self.parser.set_defaults(test_result=VMTestResult,
+            self.parser.set_defaults(vm_result=VMTestResult,
                                      test_runner=VMTestRunner)

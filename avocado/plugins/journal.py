@@ -86,6 +86,14 @@ class TestResultJournal(TestResult):
                                      status))
         self.journal.commit()
 
+    def set_output(self):
+        # Journal does not output to stdout
+        self.output = None
+
+    def set_output_option(self):
+        # Journal does not need an output option
+        self.output_option = None
+
     def start_test(self, test):
         # lazy init because we need the toplevel logdir for the job
         if not self.journal_initialized:
@@ -121,4 +129,4 @@ class Journal(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.journal:
-            self.parser.set_defaults(test_result=TestResultJournal)
+            self.parser.set_defaults(journal_result=TestResultJournal)

@@ -28,6 +28,12 @@ class JSONTestResult(TestResult):
     JSON Test Result class.
     """
 
+    def set_output(self):
+        self.output = getattr(self.args, 'json_output', '-')
+
+    def set_output_option(self):
+        self.output_option = '--json'
+
     def start_tests(self):
         """
         Called once before any tests are executed.
@@ -94,4 +100,4 @@ class JSON(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.json:
-            self.parser.set_defaults(test_result=JSONTestResult)
+            self.parser.set_defaults(json_result=JSONTestResult)
