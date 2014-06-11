@@ -88,7 +88,7 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit --xunit-output %s --json run sleeptest' % tmpfile
+        cmd_line = './scripts/avocado --journal --xunit --xunit-output %s --json run sleeptest' % tmpfile
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
