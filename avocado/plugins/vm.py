@@ -36,10 +36,15 @@ class Test(object):
     """
 
     def __init__(self, name, status, time):
+        note = "Not supported yet"
         self.name = name
         self.tagged_name = name
         self.status = status
         self.time_elapsed = time
+        self.fail_class = note
+        self.traceback = note
+        self.text_output = note
+        self.fail_reason = note
 
 
 class VMTestRunner(TestRunner):
