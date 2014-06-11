@@ -26,6 +26,9 @@ else:
 from xml.dom import minidom
 from avocado.utils import remote
 
+if remote.remote_capable is False:
+    virt_capable = False
+
 
 class Hypervisor(object):
 
