@@ -17,12 +17,16 @@ Module to provide remote operations.
 """
 
 import getpass
+import logging
+
+log = logging.getLogger('avocado.test')
 
 try:
     import fabric.api
     import fabric.operations
 except ImportError:
     remote_capable = False
+    log.info('Remote module is disabled: could not import fabric')
 else:
     remote_capable = True
 
