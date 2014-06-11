@@ -16,10 +16,15 @@
 Module to provide classes for Virtual Machines.
 """
 
+import logging
+
+log = logging.getLogger('avocado.test')
+
 try:
     import libvirt
 except ImportError:
     virt_capable = False
+    log.info('Virt module is disabled: could not import libvirt')
 else:
     virt_capable = True
 
@@ -28,6 +33,7 @@ from avocado.utils import remote
 
 if remote.remote_capable is False:
     virt_capable = False
+    log.info('Virt module is disabled: remote module is disabled')
 
 
 class Hypervisor(object):
