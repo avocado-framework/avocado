@@ -64,7 +64,6 @@ class trinity(test.Test):
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'trinity-1.4')
         os.chdir(self.srcdir)
-        process.run('chmod +x configure.sh')
         process.run('./configure.sh')
         build.make(self.srcdir)
         self.populate_dir()
