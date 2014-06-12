@@ -42,13 +42,10 @@ class fiotest(test.Test):
         """
         Build 'fio'.
         """
-        self.cwd = os.getcwd()
         tarball_path = self.get_deps_path(self.params.fio_tarball)
         archive.extract(tarball_path, self.srcdir)
         fio_version = self.params.fio_tarball.split('.tar.')[0]
         self.srcdir = os.path.join(self.srcdir, fio_version)
-        cmd = ('chmod +x %s' % os.path.join(self.srcdir, 'configure'))
-        process.system(cmd)
         build.make(self.srcdir)
 
     def action(self):
@@ -58,7 +55,6 @@ class fiotest(test.Test):
         os.chdir(self.srcdir)
         cmd = ('./fio %s' % self.get_deps_path(self.params.fio_job))
         process.system(cmd)
-        os.chdir(self.cwd)
 
 
 if __name__ == "__main__":
