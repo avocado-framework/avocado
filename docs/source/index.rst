@@ -16,6 +16,7 @@ Contents:
    GetStartedGuide
    DataDir
    WritingTests
+   ResultsSpecification
    MultiplexConfig
    MultiplexConfigAdvanced
    Plugins
