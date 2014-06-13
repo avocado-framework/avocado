@@ -462,18 +462,18 @@ class SysInfo(object):
         self._installed_pkgs = installed_pkgs
         return installed_pkgs
 
-    def _log_installed_packages(self):
-        installed_path = os.path.join(self.basedir, "installed_packages")
+    def _log_installed_packages(self, path):
+        installed_path = os.path.join(path, "installed_packages")
         installed_packages = "\n".join(self._get_installed_packages()) + "\n"
         utils.misc.write_file(installed_path, installed_packages)
 
-    def _log_modified_packages(self):
+    def _log_modified_packages(self, path):
         """
         Log any changes to installed packages.
         """
         old_packages = set(self._installed_packages)
         new_packages = set(self._get_installed_packages())
-        added_path = os.path.join(self.basedir, "added_packages")
+        added_path = os.path.join(path, "added_packages")
         added_packages = "\n".join(new_packages - old_packages) + "\n"
         utils.misc.write_file(added_path, added_packages)
         removed_path = os.path.join(self.basedir, "removed_packages")
@@ -484,45 +484,74 @@ class SysInfo(object):
         """
         Logging hook called whenever a job starts, and again after reboot.
         """
+        pre_dir = os.path.join(self.basedir, 'pre')
+        if not os.path.isdir(pre_dir):
+            os.makedirs(pre_dir)
         for log in self.start_job_loggables:
-            log.run(self.basedir)
+            log.run(pre_dir)
 
         if self.log_packages:
-            self._log_installed_packages()
+            self._log_installed_packages(pre_dir)
+
+    def end_job_hook(self):
+        """
+        Logging hook called whenever a job starts, and again after reboot.
+        """
+        post_dir = os.path.join(self.basedir, 'post')
+        if not os.path.isdir(post_dir):
+            os.makedirs(post_dir)
+        for log in self.start_job_loggables:
+            log.run(post_dir)
+
+        if self.log_packages:
+            self._log_modified_packages(post_dir)
 
     def start_test_hook(self):
         """
         Logging hook called before a test starts.
         """
+        pre_dir = os.path.join(self.basedir, 'pre')
+        if not os.path.isdir(pre_dir):
+            os.makedirs(pre_dir)
         for log in self.start_test_loggables:
-            log.run(self.basedir)
+            log.run(pre_dir)
 
         if self.log_packages:
-            self._log_installed_packages()
+            self._log_installed_packages(pre_dir)
 
     def end_test_hook(self):
         """
         Logging hook called after a test finishes.
         """
+        post_dir = os.path.join(self.basedir, 'post')
+        if not os.path.isdir(post_dir):
+            os.makedirs(post_dir)
         for log in self.end_test_loggables:
-            log.run(self.basedir)
+            log.run(post_dir)
 
         if self.log_packages:
-            self._log_modified_packages()
+            self._log_modified_packages(post_dir)
 
     def start_iteration_hook(self):
         """
         Logging hook called before a test iteration
         """
+        pre_dir = os.path.join(self.basedir, 'pre')
+        if not os.path.isdir(pre_dir):
+            os.makedirs(pre_dir)
         for log in self.start_iteration_loggables:
-            log.run(self.basedir)
+            log.run(pre_dir)
 
     def end_iteration_hook(self, test, iteration=None):
         """
         Logging hook called after a test iteration
         """
+        post_dir = os.path.join(self.basedir, 'post')
+        if not os.path.isdir(post_dir):
+            os.makedirs(post_dir)
+        post_dir = os.path.join(self.basedir, 'post')
         for log in self.end_iteration_loggables:
-            log.run(self.basedir)
+            log.run(post_dir)
 
 
 def collect_sysinfo(args):
