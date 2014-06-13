@@ -1,6 +1,6 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.4.0
+Version: 0.6.0
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -33,6 +33,9 @@ these days a framework) to perform automated testing.
 %{_datadir}/avocado
 
 %changelog
+* Fri Jun 13 2014 Ruda Moura <rmoura@redhat.com> - 0.6.0-1
+- Bumped version to Avocado 0.6.0
+
 * Thu May  8 2014 Ruda Moura <rmoura@redhat.com> - 0.4.0-1
 - Bumped version to Avocado 0.4.0
 
