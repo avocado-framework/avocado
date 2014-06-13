@@ -24,6 +24,7 @@ import multiprocessing
 import os
 import signal
 import sys
+import time
 import traceback
 import uuid
 
@@ -103,7 +104,7 @@ class TestRunner(object):
             e_msg = "Timeout reached waiting for %s to end" % instance
             raise exceptions.TestTimeoutError(e_msg)
 
-        signal.signal(signal.SIGTERM, timeout_handler)
+        signal.signal(signal.SIGUSR1, timeout_handler)
         try:
             instance.run_avocado()
         finally:
@@ -117,6 +118,11 @@ class TestRunner(object):
 
         :return: a list of test failures.
         """
+        def send_signal(p, sig):
+            if p.exitcode is None:
+                os.kill(p.pid, sig)
+                time.sleep(0.1)
+
         failures = []
         self.result.start_tests()
         q = multiprocessing.Queue()
@@ -136,12 +142,14 @@ class TestRunner(object):
             if timeout is not None:
                 timeout = float(timeout)
             # Wait for the test to end for [timeout] s
-            p.join(timeout)
-            # If there's no exit code, the test is still running.
-            # It must be terminated.
-            if p.exitcode is None:
-                p.terminate()
-            test_instance = q.get()
+            try:
+                test_instance = q.get(timeout=timeout)
+            except Exception:
+                # If there's nothing inside the queue after timeout, the process
+                # must be terminated.
+                send_signal(p, signal.SIGUSR1)
+                test_instance = q.get(timeout=0.1)
+
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
