@@ -386,7 +386,7 @@ class SysInfo(object):
             self.end_job_loggables.add(Logfile(filename))
 
         for cmd in _DEFAULT_COMMANDS_START_TEST:
-            self.start_job_loggables.add(Command(cmd))
+            self.start_test_loggables.add(Command(cmd))
 
         for cmd in _DEFAULT_COMMANDS_END_TEST:
             self.end_test_loggables.add(Command(cmd))
