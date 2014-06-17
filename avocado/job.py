@@ -37,6 +37,7 @@ from avocado.utils import archive
 from avocado import multiplex_config
 from avocado import test
 from avocado import result
+from avocado import sysinfo
 from avocado.plugins import xunit
 from avocado.plugins import jsonresult
 
@@ -190,7 +191,10 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-
+        self.sysinfo_dir = os.path.join(self.debugdir, 'sysinfo')
+        if not os.path.isdir(self.sysinfo_dir):
+            os.makedirs(self.sysinfo_dir)
+        self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
         self.output_manager = output.OutputManager()
 
     def _make_test_runner(self):
@@ -273,6 +277,7 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
+        self.sysinfo_logger.start_job_hook()
         params_list = []
         if urls is None:
             if self.args and self.args.url is not None:
@@ -319,7 +324,7 @@ class Job(object):
         self.output_manager.debuglog = self.debuglog
         failures = self.test_runner.run(params_list)
         self.output_manager.stop_file_logging()
-
+        self.sysinfo_logger.end_job_hook()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
