@@ -130,6 +130,7 @@ class Test(unittest.TestCase):
             os.makedirs(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
+        self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")
 
@@ -297,9 +298,8 @@ class Test(unittest.TestCase):
 
         :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
-        sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
         self.start_logging()
-        sysinfo_logger.start_job_hook()
+        self.sysinfo_logger.start_test_hook()
         action_exception = None
         cleanup_exception = None
         try:
@@ -325,7 +325,7 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail(cleanup_exception)
 
         self.status = 'PASS'
-        sysinfo_logger.end_test_hook()
+        self.sysinfo_logger.end_test_hook()
 
     def run_avocado(self, result=None):
         """
