@@ -16,7 +16,6 @@
 
 from avocado import test
 from avocado import job
-from avocado.utils import download, archive, build
 from avocado.linux import kernel_build
 
 
