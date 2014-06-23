@@ -109,7 +109,7 @@ class Remote(object):
             try:
                 fabric.operations.put(local_path,
                                       remote_path)
-            except ValueError as err:
+            except ValueError:
                 return False
         return True
 
@@ -124,6 +124,6 @@ class Remote(object):
             try:
                 fabric.operations.get(remote_path,
                                       local_path)
-            except ValueError as err:
+            except ValueError:
                 return False
         return True
