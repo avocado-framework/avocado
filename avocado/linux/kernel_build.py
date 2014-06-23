@@ -18,8 +18,6 @@ import os
 import logging
 import shutil
 
-from avocado import test
-from avocado import job
 from avocado.utils import download, archive, build
 
 log = logging.getLogger('avocado.test')
