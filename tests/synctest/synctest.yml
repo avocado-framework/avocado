@@ -1,0 +1,15 @@
+---
+name: synctest
+desc: Runs the synctest test suite
+maintainer: Lucas Meneghel Rodrigues <lmr@redhat.com>
+
+tests:
+    synctest:
+        loop:
+            - 10
+            - 50
+            - 100
+        sync:
+            - 100
+            - 500
+            - 1000

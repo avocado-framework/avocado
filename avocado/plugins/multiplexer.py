@@ -56,7 +56,7 @@ class Multiplexer(plugin.Plugin):
 
         try:
             parser = multiplex_config.Parser(filename=multiplex_file)
-        except multiplex_config.ParserError, details:
+        except Exception, details:
             fail_class = details.__class__.__name__
             pipe.write(bcolors.fail_header_str("Multiplex file '%s' has a syntax error\n" % multiplex_file))
             pipe.write('%s: %s\n' % (fail_class, details))

@@ -1,0 +1,11 @@
+---
+name: sleeptest
+desc: Functional test for avocado. Sleeps the machine for a number of seconds.
+maintainer: Lucas Meneghel Rodrigues <lmr@redhat.com>
+
+tests:
+   sleeptest:
+        length:
+            - 0.5
+            - 1
+            - 5

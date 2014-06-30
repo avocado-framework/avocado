@@ -23,17 +23,11 @@ class Params(UserDict.IterableUserDict):
     def __getitem__(self, key):
         """ overrides the error messages of missing params[$key] """
         try:
-            value = UserDict.IterableUserDict.__getitem__(self, key)
-            vtype = UserDict.IterableUserDict.get(self, "%s_type" % key)
-            return settings.convert_value_type(value, vtype)
+            return UserDict.IterableUserDict.__getitem__(self, key)
         except KeyError:
             raise ParamNotFound("Mandatory parameter '%s' is missing. "
                                 "Check your cfg files for typos/mistakes" %
                                 key)
-        except Exception, details:
-            raise ParamInvalidType("Parameter '%s' value '%r' failed to "
-                                   "convert to %s: %s" %
-                                   (key, value, vtype, details))
 
     def objects(self, key):
         """
