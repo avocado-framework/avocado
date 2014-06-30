@@ -3,8 +3,8 @@ name: synctest
 desc: Runs the synctest test suite
 maintainer: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-input:
-    args:
+tests:
+    synctest:
         loop:
             - 10
             - 50

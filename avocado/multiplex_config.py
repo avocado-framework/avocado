@@ -1,47 +1,52 @@
-import yaml
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2013-2014
+# Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
+#          Ruda Moura <rmoura@redhat.com>
+
 import os
 import re
 
-
-def cartesian_product(iterable):
-    """
-    Produces the cartesian product of an iterable.
-    """
-    if not iterable:
-        yield ()
-    else:
-        for a in iterable[0]:
-            for prod in cartesian_product(iterable[1:]):
-                yield (a,) + prod
-
+from avocado import multiplex, multiplex_parser
 
 class Parser(object):
 
     def __init__(self, filename):
         config_path = os.path.abspath(filename)
         with open(config_path, 'r') as config_file_obj:
-            contents = config_file_obj.read()
-        self.data_structure = yaml.load(contents)
+            self.data_structure = multiplex_parser.read_yaml(config_file_obj)
 
-    def get_dicts(self, only_filter=None):
-        args_dict = self.data_structure['input']['args']
-        variables = sorted(args_dict.keys())
-        iterable = []
-        test_name = self.data_structure['name']
+    def _get_leaves(self):
+        for x in multiplex_parser.walk(self.data_structure):
+            if isinstance(x[1], dict):
+                continue
+            path = '/%s/%s' % ('/'.join(x[0]), x[1])
+            yield path, x[1]
 
-        for variable in variables:
-            iterable.append(args_dict[variable])
+    def create_variants(self, filter_only=None):
+        leaves = self._get_leaves()
+        self.variants = multiplex.multiplex(leaves, filter_only=filter_only)
 
-        for combination in cartesian_product(iterable):
-            p_dict = {}
-            shortname = test_name
-            for p_name, p_value in zip(variables, combination):
-                shortname += ".%s_%s" % (p_name, p_value)
-                p_dict[p_name] = p_value
-            if only_filter is not None:
-                if re.search(only_filter, shortname):
-                    p_dict['shortname'] = shortname
-                    yield p_dict
-            else:
-                p_dict['shortname'] = shortname
-                yield p_dict
+    def get_variants_with_parameters(self, test_url):
+        filter_url = '/tests/%s/' % test_url
+        self.create_variants(filter_only=[filter_url])
+        for variant in self.variants:
+            res = {}
+            keys = []
+            for arg in variant:
+                key = arg[0][len(filter_url):]
+                keys.append(key.replace('/', '_'))
+                key = multiplex.parent(key)
+                res[key] = arg[1]
+            shortname = '%s.%s' % (test_url, '.'.join(keys))
+            res['shortname'] = shortname
+            yield res

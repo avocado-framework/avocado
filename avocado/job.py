@@ -301,7 +301,7 @@ class Job(object):
             if urls is not None:
                 for url in urls:
                     parser = multiplex_config.Parser(multiplex_file)
-                    dcts = [d for d in parser.get_dicts(only_filter=url)]
+                    dcts = parser.get_variants_with_parameters(url)
                     if dcts:
                         for dct in dcts:
                             params_list.append(dct)
