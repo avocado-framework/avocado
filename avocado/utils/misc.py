@@ -12,109 +12,12 @@
 # client/shared/utils.py
 # Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
 
+import re
+import time
+
 import logging
-import os
 
 log = logging.getLogger('avocado.test')
-
-
-def ask(question, auto=False):
-    """
-    Raw input with a prompt.
-
-    :param question: Question to be asked
-    :param auto: Whether to return "y" instead of asking the question
-    """
-    if auto:
-        log.info("%s (y/n) y" % question)
-        return "y"
-    return raw_input("%s (y/n) " % question)
-
-
-def read_file(filename):
-    """
-    Read the entire contents of file.
-
-    :param filename: Path to the file.
-    """
-    with open(filename, 'r') as file_obj:
-        contents = file_obj.read()
-    return contents
-
-    f = open(filename)
-    try:
-        return f.read()
-    finally:
-        f.close()
-
-
-def read_one_line(filename):
-    """
-    Read the first line of filename.
-
-    :param filename: Path to the file.
-    """
-    with open(filename, 'r') as file_obj:
-        line = file_obj.readline().rstrip('\n')
-    return line
-
-
-def write_one_line(filename, line):
-    """
-    Write one line of text to filename.
-
-    :param filename: Path to the file.
-    :param line: Line to be written.
-    """
-    write_file(filename, line.rstrip('\n') + '\n')
-
-
-def write_file(filename, data):
-    """
-    Write data to a file.
-
-    :param filename: Path to the file.
-    :param line: Line to be written.
-    """
-    with open(filename, 'w') as file_obj:
-        file_obj.write(data)
-
-
-def get_relative_path(path, reference):
-    """
-    Given 2 absolute paths "path" and "reference", compute the path of
-    "path" as relative to the directory "reference".
-
-    :param path: The absolute path to convert to a relative path.
-    :param reference: An absolute directory path to which the relative
-                      path will be computed.
-    """
-    # normalize the paths (remove double slashes, etc)
-    assert(os.path.isabs(path))
-    assert(os.path.isabs(reference))
-
-    path = os.path.normpath(path)
-    reference = os.path.normpath(reference)
-
-    # we could use os.path.split() but it splits from the end
-    path_list = path.split(os.path.sep)[1:]
-    ref_list = reference.split(os.path.sep)[1:]
-
-    # find the longest leading common path
-    for i in xrange(min(len(path_list), len(ref_list))):
-        if path_list[i] != ref_list[i]:
-            # decrement i so when exiting this loop either by no match or by
-            # end of range we are one step behind
-            i -= 1
-            break
-    i += 1
-    # drop the common part of the paths, not interested in that anymore
-    del path_list[:i]
-
-    # for each uncommon component in the reference prepend a ".."
-    path_list[:0] = ['..'] * (len(ref_list) - i)
-
-    return os.path.join(*path_list)
 
 
 def unique(lst):
@@ -125,3 +28,105 @@ def unique(lst):
     :return: List with non duplicate elements.
     """
     return list(set(lst))
+
+
+def convert_data_size(size, default_sufix='B'):
+    '''
+    Convert data size from human readable units to an int of arbitrary size.
+
+    :param size: Human readable data size representation (string).
+    :param default_sufix: Default sufix used to represent data.
+    :return: Int with data size in the appropriate order of magnitude.
+    '''
+    orders = {'B': 1,
+              'K': 1024,
+              'M': 1024 * 1024,
+              'G': 1024 * 1024 * 1024,
+              'T': 1024 * 1024 * 1024 * 1024,
+              }
+
+    order = re.findall("([BbKkMmGgTt])", size[-1])
+    if not order:
+        size += default_sufix
+        order = [default_sufix]
+
+    return int(float(size[0:-1]) * orders[order[0].upper()])
+
+
+def normalize_data_size(value_str, order_magnitude="M", factor="1024"):
+    """
+    Normalize a data size in one order of magnitude to another (MB to GB,
+    for example).
+
+    :param value_str: a string include the data and unit
+    :param order_magnitude: the magnitude order of result
+    :param factor: the factor between two relative order of magnitude.
+                   Normally could be 1024 or 1000
+    """
+    def _get_magnitude_index(magnitude_list, magnitude_value):
+        for i in magnitude_list:
+            order_magnitude = re.findall("[\s\d](%s)" % i,
+                                         str(magnitude_value), re.I)
+            if order_magnitude:
+                return magnitude_list.index(order_magnitude[0].upper())
+        return -1
+
+    magnitude_list = ['B', 'K', 'M', 'G', 'T']
+    try:
+        data = float(re.findall("[\d\.]+", value_str)[0])
+    except IndexError:
+        logging.error("Incorrect data size format. Please check %s"
+                      " has both data and unit." % value_str)
+        return ""
+
+    magnitude_index = _get_magnitude_index(magnitude_list, value_str)
+    order_magnitude_index = _get_magnitude_index(magnitude_list,
+                                                 " %s" % order_magnitude)
+
+    if data == 0:
+        return 0
+    elif magnitude_index < 0 or order_magnitude_index < 0:
+        logging.error("Unknown input order of magnitude. Please check your"
+                      "value '%s' and desired order of magnitude"
+                      " '%s'." % (value_str, order_magnitude))
+        return ""
+
+    if magnitude_index > order_magnitude_index:
+        multiple = float(factor)
+    else:
+        multiple = float(factor) ** -1
+
+    for _ in range(abs(magnitude_index - order_magnitude_index)):
+        data *= multiple
+
+    return str(data)
+
+
+def wait_for(func, timeout, first=0.0, step=1.0, text=None):
+    """
+    Wait until func() evaluates to True.
+
+    If func() evaluates to True before timeout expires, return the
+    value of func(). Otherwise return None.
+
+    :param timeout: Timeout in seconds
+    :param first: Time to sleep before first attempt
+    :param steps: Time to sleep between attempts in seconds
+    :param text: Text to print while waiting, for debug purposes
+    """
+    start_time = time.time()
+    end_time = time.time() + timeout
+
+    time.sleep(first)
+
+    while time.time() < end_time:
+        if text:
+            log.debug("%s (%f secs)", text, (time.time() - start_time))
+
+        output = func()
+        if output:
+            return output
+
+        time.sleep(step)
+
+    return None
