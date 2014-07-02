@@ -18,7 +18,7 @@ from avocado.core import data_dir
 from avocado.utils import process
 from avocado.linux import arch
 from avocado.virt import storage
-import avocado.virt.exceptions as v_exceptions
+from avocado.virt import exceptions as v_exceptions
 
 from exceptions import (DeviceError, DeviceHotplugError, DeviceInsertError,
                         DeviceRemoveError, DeviceUnplugError, none_or_int)
