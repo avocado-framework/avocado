@@ -134,12 +134,13 @@ class QemuCmdLine(object):
                         name_prefix=None, index=None, extra_params=""):
         """
         Appends virtio_serialport or virtio_console device to cmdline.
+
         :param help: qemu -h output
         :param name: Name of the port
         :param bus: Which virtio-serial-pci device use
         :param filename: Path to chardev filename
-        :param porttype: Type of the port (*serialport, console)
-        :param chardev: Which chardev to use (*socket, spicevmc)
+        :param porttype: Type of the port (serialport, console)
+        :param chardev: Which chardev to use (socket, spicevmc)
         :param name_prefix: Custom name prefix (port index is appended)
         :param index: Index of the current virtio_port
         :param extra_params: Space sepparated chardev params
@@ -461,9 +462,10 @@ class QemuCmdLine(object):
                   tls_port_range=(3200, 3399)):
         """
         processes spice parameters
-        :param port_range - tuple with port range, default: (3000, 3199)
-        :param tls_port_range - tuple with tls port range,
-                                default: (3200, 3399)
+
+        :param port_range: tuple with port range, default: (3000, 3199)
+        :param tls_port_range: tuple with tls port range,
+                               default: (3200, 3399)
         """
         spice_opts = []
         tmp = None
