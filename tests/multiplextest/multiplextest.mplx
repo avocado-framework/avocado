@@ -1,0 +1,89 @@
+variants:
+    -multiplextest:
+        variants:
+            - env:
+                variants:
+                    - production:
+                       malloc_perturb = no
+                       gcc_flags = -O3
+                    - debug:
+                       malloc_perturb = yes
+                       gcc_flags = -g
+
+        variants:
+            - host:
+                variants:
+                    - kernel_config:
+                        variants:
+                            - huge_pages:
+                                huge_pages = yes
+                            - numa_ballance_aggressive:
+                                numa_balancing = 1
+                                numa_balancing_migrate_deferred = 32
+                                numa_balancing_scan_size_mb = 512
+                            - numa_ballance_light:
+                                numa_balancing = 1
+                                numa_balancing_migrate_deferred = 8
+                                numa_balancing_scan_size_mb = 32
+        
+        variants:
+            - guest:
+                variants:
+                    - os:
+                        variants:
+                            - windows:
+                                os_type = windows
+                                variants:
+                                    - xp:
+                                        win = xp
+                                    - 2k12:
+                                        win = 2k12
+                                    - 7:
+                                        win = 7
+                            - linux:
+                                os_type = linux
+                                variants:
+                                    - fedora:
+                                        distro = fedora
+                                    - ubuntu:
+                                        distro = ubuntu
+        
+        variants:
+            - hardware:
+                variants:
+                    - disks:
+                        variants:
+                            - ide:
+                                drive_format = ide
+                            - scsi:
+                                drive_format = scsi
+                    - network:
+                        variants:
+                            - rtl_8139:
+                                nic_model = rtl8139
+                            - e1000:
+                                nic_model = e1000
+                            - virtio_net:
+                                nic_model = virtio
+                                enable_msix_vectors = yes
+        
+        variants:
+            - tests:
+                variants:
+                    - sync_test:
+                        variants:
+                            - standard:
+                                sync_timeout = 30
+                                sync_tries = 10
+                            - aggressive:
+                                sync_timeout = 10
+                                sync_tries = 20
+                    - ping_test:
+                        variants:
+                            - standard:
+                                ping_tries = 10
+                                ping_timeout = 20
+                            - aggressive:
+                                ping_flags = -f
+                                ping_tries = 100
+                                ping_timeout = 5
