@@ -40,7 +40,7 @@ class Params(UserDict.IterableUserDict):
 
     def __getattr__(self, attr):
         try:
-            return UserDict.IterableUserDict.__getattr__(self, attr)
+            return UserDict.IterableUserDict.__getattr__(self, attr)  # @UndefinedVariable
         except AttributeError:
             try:
                 return self.__getitem__(attr)
