@@ -129,6 +129,9 @@ class Test(unittest.TestCase):
         if not os.path.isdir(self.logdir):
             os.makedirs(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
+        self.datadir = os.path.join(self.logdir, 'data')
+        if not os.path.isdir(self.datadir):
+            os.makedirs(self.datadir)
         self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
