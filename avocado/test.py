@@ -144,7 +144,6 @@ class Test(unittest.TestCase):
         # Apply what comes from the params dict
         for key in sorted(self.params.keys()):
             self.log.debug('    %s = %s', key, self.params.get(key))
-            setattr(self.params, key, self.params.get(key))
         self.log.debug('')
 
         # Apply what comes from the default_params dict
@@ -157,7 +156,7 @@ class Test(unittest.TestCase):
         self.log.debug('')
 
         # If there's a timeout set, log a timeout reminder
-        if hasattr(self.params, 'timeout'):
+        if self.params.timeout:
             self.log.info('Test timeout set. Will wait %.2f s for '
                           'PID %s to end',
                           float(self.params.timeout), os.getpid())
@@ -205,7 +204,6 @@ class Test(unittest.TestCase):
             self.params[key]
         except Exception:
             self.params[key] = default
-            setattr(self.params, key, default)
 
     def get_deps_path(self, basename):
         """

@@ -25,7 +25,10 @@ class Params(UserDict.IterableUserDict):
         try:
             value = UserDict.IterableUserDict.__getitem__(self, key)
             vtype = UserDict.IterableUserDict.get(self, "%s_type" % key)
-            return settings.convert_value_type(value, vtype)
+            if vtype is not None:
+                return settings.convert_value_type(value, vtype)
+            else:
+                return value
         except KeyError:
             raise ParamNotFound("Mandatory parameter '%s' is missing. "
                                 "Check your cfg files for typos/mistakes" %
@@ -34,6 +37,15 @@ class Params(UserDict.IterableUserDict):
             raise ParamInvalidType("Parameter '%s' value '%r' failed to "
                                    "convert to %s: %s" %
                                    (key, value, vtype, details))
+
+    def __getattr__(self, attr):
+        try:
+            return UserDict.IterableUserDict.__getattr__(self, attr)  # @UndefinedVariable
+        except AttributeError:
+            try:
+                return self.__getitem__(attr)
+            except ParamNotFound:
+                return None
 
     def objects(self, key):
         """
@@ -59,7 +71,7 @@ class Params(UserDict.IterableUserDict):
         """
         suffix = "_" + obj_name
         self.lock.acquire()
-        new_dict = self.copy()
+        new_dict = self.data.copy()
         self.lock.release()
         for key in new_dict.keys():
             if key.endswith(suffix):
