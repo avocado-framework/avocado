@@ -39,9 +39,22 @@ variants:
 
 class MultiplexTests(unittest.TestCase):
 
-    def run_and_check(self, cmd_line, expected_rc):
+    def run_and_check(self, cmd_line, expected_rc, expected_lines=None):
         os.chdir(basedir)
         result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout + result.stderr
+        if expected_lines is not None:
+            for line in output.splitlines():
+                if 'DEBUG LOG:' in line:
+                    debug_log = line.split()[-1]
+                    debug_log_obj = open(debug_log, 'r')
+                    job_log_lines = debug_log_obj.readlines()
+                    lines_output = len(job_log_lines)
+                    debug_log_obj.close()
+            self.assertGreaterEqual(lines_output, expected_lines,
+                                    'The multiplexed job log output has less '
+                                    'lines than expected\n%s' %
+                                    "".join(job_log_lines))
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
@@ -59,7 +72,11 @@ class MultiplexTests(unittest.TestCase):
     def test_run_mplex_sleeptest(self):
         cmd_line = './scripts/avocado run sleeptest --multiplex tests/sleeptest/sleeptest.mplx'
         expected_rc = 0
-        self.run_and_check(cmd_line, expected_rc)
+        # A typical sleeptest has about 14 lines of output,
+        # so we expect the full job log has at least 3 times
+        # this value. If that is not the case, something is wrong with
+        # the output.
+        self.run_and_check(cmd_line, expected_rc, 14*3)
 
     def test_run_mplex_doublesleep(self):
         cmd_line = './scripts/avocado run "sleeptest sleeptest" --multiplex tests/sleeptest/sleeptest.mplx'

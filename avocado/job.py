@@ -74,7 +74,7 @@ class TestRunner(object):
         if os.path.exists(path_attempt):
             test_class = test.DropinTest
             test_instance = test_class(path=path_attempt,
-                                       base_logdir=self.job.debugdir,
+                                       base_logdir=self.job.logdir,
                                        job=self.job)
         else:
             try:
@@ -87,7 +87,7 @@ class TestRunner(object):
                 test_class = test.MissingTest
             finally:
                 test_instance = test_class(name=url,
-                                           base_logdir=self.job.debugdir,
+                                           base_logdir=self.job.logdir,
                                            params=params,
                                            job=self.job)
         return test_instance
@@ -179,8 +179,8 @@ class Job(object):
             self.unique_id = args.unique_id or str(uuid.uuid4())
         else:
             self.unique_id = str(uuid.uuid4())
-        self.debugdir = data_dir.get_job_logs_dir(self.args)
-        self.debuglog = os.path.join(self.debugdir, "debug.log")
+        self.logdir = data_dir.get_job_logs_dir(self.args)
+        self.logfile = os.path.join(self.logdir, "debug.log")
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
             self.multiplex_file = args.multiplex_file
@@ -191,7 +191,7 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-        self.sysinfo_dir = os.path.join(self.debugdir, 'sysinfo')
+        self.sysinfo_dir = os.path.join(self.logdir, 'sysinfo')
         if not os.path.isdir(self.sysinfo_dir):
             os.makedirs(self.sysinfo_dir)
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
@@ -245,14 +245,14 @@ class Job(object):
             self._set_output_plugins()
 
         # Setup the xunit plugin to output to the debug directory
-        xunit_file = os.path.join(self.debugdir, 'results.xml')
+        xunit_file = os.path.join(self.logdir, 'results.xml')
         args = argparse.Namespace()
         args.xunit_output = xunit_file
         xunit_plugin = xunit.xUnitTestResult(self.output_manager, args)
         self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
-        json_file = os.path.join(self.debugdir, 'results.json')
+        json_file = os.path.join(self.logdir, 'results.json')
         args = argparse.Namespace()
         args.json_output = json_file
         json_plugin = jsonresult.JSONTestResult(self.output_manager, args)
@@ -319,9 +319,9 @@ class Job(object):
         self._make_test_result()
         self._make_test_runner()
 
-        self.output_manager.start_file_logging(self.debuglog,
+        self.output_manager.start_file_logging(self.logfile,
                                                self.loglevel)
-        self.output_manager.debuglog = self.debuglog
+        self.output_manager.logfile = self.logfile
         failures = self.test_runner.run(params_list)
         self.output_manager.stop_file_logging()
         self.sysinfo_logger.end_job_hook()
@@ -331,8 +331,8 @@ class Job(object):
         # Let's clean up test artifacts
         if self.args is not None:
             if self.args.archive:
-                filename = self.debugdir + '.zip'
-                archive.create(filename, self.debugdir)
+                filename = self.logdir + '.zip'
+                archive.create(filename, self.logdir)
             if not self.args.keep_tmp_files:
                 data_dir.clean_tmp_files()
 
@@ -348,12 +348,15 @@ class Job(object):
 
         Note that the behavior is as follows:
 
-        * If urls is provided alone, just make a simple list with no specific params (all tests use default params).
-        * If urls and multiplex_file are provided, multiplex provides params and variants to all tests it can.
-        * If multiplex_file is provided alone, just use the matrix produced by the file
+        * If urls is provided alone, just make a simple list with no specific
+          params (all tests use default params).
+        * If urls and multiplex_file are provided, multiplex provides params
+          and variants to all tests it can.
+        * If multiplex_file is provided alone, just use the matrix produced by
+          the file
 
-        The test runner figures out which tests need to be run on an empty urls list by assuming the first component
-        of the shortname is the test url.
+        The test runner figures out which tests need to be run on an empty urls
+        list by assuming the first component of the shortname is the test url.
 
         :param urls: String with tests to run.
         :param multiplex_file: File that multiplexes a given test url.
