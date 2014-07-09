@@ -49,7 +49,7 @@ class JSONResultTest(unittest.TestCase):
         self.tmpfile = mkstemp()
         args = argparse.Namespace(json_output=self.tmpfile[1])
         stream = _Stream()
-        stream.debuglog = 'debuglog'
+        stream.logfile = 'debug.log'
         self.test_result = jsonresult.JSONTestResult(stream, args)
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()

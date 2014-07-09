@@ -197,15 +197,15 @@ class OutputManager(object):
         extra = {'skip_newline': skip_newline}
         self.console_log.log(level=level, msg=msg, extra=extra)
 
-    def start_file_logging(self, logfile, level):
+    def start_file_logging(self, logfile, loglevel):
         """
         Start the main file logging.
 
         :param logfile: Path to file that will receive logging.
-        :param level: Level of the logger. Example: :mod:`logging.DEBUG`.
+        :param loglevel: Level of the logger. Example: :mod:`logging.DEBUG`.
         """
         self.file_handler = logging.FileHandler(filename=logfile)
-        self.file_handler.setLevel(level)
+        self.file_handler.setLevel(loglevel)
 
         fmt = '%(asctime)s %(module)-10.10s L%(lineno)-.4d %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')

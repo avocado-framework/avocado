@@ -233,7 +233,7 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.log_header("DEBUG LOG: %s" % self.stream.debuglog)
+        self.stream.log_header("DEBUG LOG: %s" % self.stream.logfile)
         self.stream.log_header("TOTAL TESTS: %s" % self.tests_total)
 
     def end_tests(self):
