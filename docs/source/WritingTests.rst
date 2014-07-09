@@ -51,6 +51,32 @@ we call a `multiplex file`, which is a configuration file that not only allows y
 to provide params to your test, but also easily create a validation matrix in a
 concise way. You can find more about the multiplex file format on :doc:`MultiplexConfig`.
 
+Saving test generated (custom) data
+===================================
+
+Each test instance provides a so called ``whiteboard``. It that can be accessed
+through ``self.whiteboard``. This whiteboard (see :class:`avocado.whiteboard.WhiteBoard`)
+is a simple file-like object that is ready for you to use.
+
+Building on the previously demonstrated sleeptest, supose that you want to save the
+sleep length to be used by some other script or data analysis tool::
+
+        def action(self):
+            """
+            Sleep for length seconds.
+            """
+            self.log.debug("Sleeping for %.2f seconds", self.params.sleep_length)
+            time.sleep(self.params.sleep_length)
+            self.whiteboard.write(self.params.sleep_length)
+
+The output path is always a file named ``whiteboard`` in the test instance
+``data directory``. This ``data directory`` itself is at the most obvious place,
+right along your ``debug.log`` file and ``sysinfo`` directory.
+
+The whiteboard file is always created, even if empty. This may sound like an inode
+waste, but can help debugging and asserts the whiteboard never had data written to.
+
+
 Accessing test parameters
 =========================
 
