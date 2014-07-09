@@ -49,7 +49,6 @@ class JSONTestResult(TestResult):
         :param test: an instance of :class:`avocado.test.Test`.
         """
         TestResult.end_test(self, test)
-        self.stream.stop_file_logging()
         t = {'test': test.tagged_name,
              'url': test.name,
              'time': test.time_elapsed,
