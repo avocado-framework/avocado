@@ -348,12 +348,15 @@ class Job(object):
 
         Note that the behavior is as follows:
 
-        * If urls is provided alone, just make a simple list with no specific params (all tests use default params).
-        * If urls and multiplex_file are provided, multiplex provides params and variants to all tests it can.
-        * If multiplex_file is provided alone, just use the matrix produced by the file
+        * If urls is provided alone, just make a simple list with no specific
+          params (all tests use default params).
+        * If urls and multiplex_file are provided, multiplex provides params
+          and variants to all tests it can.
+        * If multiplex_file is provided alone, just use the matrix produced by
+          the file
 
-        The test runner figures out which tests need to be run on an empty urls list by assuming the first component
-        of the shortname is the test url.
+        The test runner figures out which tests need to be run on an empty urls
+        list by assuming the first component of the shortname is the test url.
 
         :param urls: String with tests to run.
         :param multiplex_file: File that multiplexes a given test url.
