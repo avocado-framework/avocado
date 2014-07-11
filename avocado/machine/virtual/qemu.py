@@ -13,48 +13,11 @@ from avocado.machine.virtual.base import VirtualMachine
 
 class QemuVirtualMachine(VirtualMachine):
 
-    migration_protos = ['rdma', 'x-rdma', 'tcp', 'unix', 'exec', 'fd']
-    close_session_timeout = 30
-    create_timeout = 20
-
-    def __init__(self, name, params, state=None):
-        if state:
-            self.__dict__ = state
-        else:
-            self.process = None
-            self.serial_ports = []
-            self.serial_console = None
-            self.redirs = {}
-            self.spice_options = {}
-            self.vnc_port = 5900
-            self.monitors = []
-            self.virtio_ports = []
-            self.uuid = None
-            self.vcpu_threads = []
-            self.vhost_threads = []
-            self.devices = None
-            self.logs = {}
-            self.remote_sessions = []
-            self.logsessions = {}
-
-        self.name = name
+    def __init__(self, params):
         self.params = params
-        self.ip_version = self.params.get("ip_version", "ipv4")
-        self.index_in_use = {}
-        self.usb_dev_dict = {}
-        self.driver_type = 'qemu'
-        self.params['driver_type_' + self.name] = self.driver_type
-        super(QemuVirtualMachine, self).__init__(name, params)
-        if state:
-            self.instance = state['instance']
-        self.qemu_command = ''
-        self.start_time = 0.0
-        self.start_monotonic_time = 0.0
-        self.last_boot_index = 0
-        self.last_driver_index = 0
-
-    def create(self, params=None):
-        pass
+        # init value by default.
+        # PCI addr 0,1,2 are taken by PCI/ISA/IDE bridge and the GPU.
+        self.pci_addr_list = [0, 1, 2]
 
 
 def create_from_cmdline(cmdline):

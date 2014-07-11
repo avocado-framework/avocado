@@ -41,6 +41,11 @@ class QemuCmdLine(object):
         self.devices = None
         self.vm = vm
         self.qemu_binary = vm.qemu_binary
+        # Start constructing devices representation
+        self.devices = qcontainer.DevContainer(self.qemu_binary, self.name,
+                                               self.params.get('strict_mode'),
+                                               self.params.get('workaround_qemu_qmp_crash'),
+                                               self.params.get('allow_hotplugged_vm'))
 
     def add_flag(self, option, value, option_type=None, first=False):
         """
@@ -72,19 +77,19 @@ class QemuCmdLine(object):
             return fmt % (option, str(value))
         return ""
 
-    def add_name(self, devices, name):
+    def add_name(self, name):
         return " -name '%s'" % name
 
-    def process_sandbox(self, devices, action):
+    def process_sandbox(self, action):
         if action == "add":
-            if devices.has_option("sandbox"):
+            if self.devices.has_option("sandbox"):
                 return " -sandbox on "
         elif action == "rem":
-            if devices.has_option("sandbox"):
+            if self.devices.has_option("sandbox"):
                 return " -sandbox off "
 
-    def add_human_monitor(self, devices, monitor_name, filename):
-        if not devices.has_option("chardev"):
+    def add_human_monitor(self, monitor_name, filename):
+        if not self.devices.has_option("chardev"):
             return " -monitor unix:'%s',server,nowait" % filename
 
         monitor_id = "hmp_id_%s" % monitor_name
@@ -97,13 +102,13 @@ class QemuCmdLine(object):
         cmd += self.add_flag("mode", "readline")
         return cmd
 
-    def add_qmp_monitor(self, devices, monitor_name, filename):
-        if not devices.has_option("qmp"):
+    def add_qmp_monitor(self, monitor_name, filename):
+        if not self.devices.has_option("qmp"):
             logging.warn("Falling back to human monitor since qmp is "
                          "unsupported")
-            return self.add_human_monitor(devices, monitor_name, filename)
+            return self.add_human_monitor(monitor_name, filename)
 
-        if not devices.has_option("chardev"):
+        if not self.devices.has_option("chardev"):
             return " -qmp unix:'%s',server,nowait" % filename
 
         monitor_id = "qmp_id_%s" % monitor_name
@@ -116,8 +121,8 @@ class QemuCmdLine(object):
         cmd += self.add_flag("mode", "control")
         return cmd
 
-    def add_serial(self, devices, name, filename):
-        if not devices.has_option("chardev"):
+    def add_serial(self, name, filename):
+        if not self.devices.has_option("chardev"):
             return " -serial unix:'%s',server,nowait" % filename
 
         serial_id = "serial_id_%s" % name
@@ -130,7 +135,7 @@ class QemuCmdLine(object):
         cmd += self.add_flag("chardev", serial_id)
         return cmd
 
-    def add_virtio_port(self, devices, name, bus, filename, porttype, chardev,
+    def add_virtio_port(self, name, bus, filename, porttype, chardev,
                         name_prefix=None, index=None, extra_params=""):
         """
         Appends virtio_serialport or virtio_console device to cmdline.
@@ -170,8 +175,8 @@ class QemuCmdLine(object):
         cmd += _params
         return cmd
 
-    def add_log_seabios(self, devices):
-        if not devices.has_device("isa-debugcon"):
+    def add_log_seabios(self):
+        if not self.devices.has_device("isa-debugcon"):
             return ""
 
         default_id = "seabioslog_id_%s" % self.instance
@@ -187,7 +192,7 @@ class QemuCmdLine(object):
         cmd += self.add_flag("iobase", "0x402")
         return cmd
 
-    def add_log_anaconda(self, devices, pci_bus='pci.0'):
+    def add_log_anaconda(self, pci_bus='pci.0'):
         chardev_id = "anacondalog_chardev_%s" % self.instance
         vioser_id = "anacondalog_vioser_%s" % self.instance
         filename = "/tmp/anaconda-%s" % self.instance
@@ -198,35 +203,35 @@ class QemuCmdLine(object):
         dev.set_param("path", filename)
         dev.set_param("server", 'NO_EQUAL_STRING')
         dev.set_param("nowait", 'NO_EQUAL_STRING')
-        devices.insert(dev)
+        self.devices.insert(dev)
         dev = qdevices.QDevice('virtio-serial-pci', parent_bus=pci_bus)
         dev.set_param("id", vioser_id)
-        devices.insert(dev)
+        self.devices.insert(dev)
         dev = qdevices.QDevice('virtserialport')
         dev.set_param("bus", "%s.0" % vioser_id)
         dev.set_param("chardev", chardev_id)
         dev.set_param("name", "org.fedoraproject.anaconda.log.0")
-        devices.insert(dev)
+        self.devices.insert(dev)
 
-    def add_mem(self, devices, mem):
+    def add_mem(self, mem):
         return " -m %s" % mem
 
-    def add_smp(self, devices):
+    def add_smp(self):
         smp_str = " -smp %d" % self.cpuinfo.smp
         smp_pattern = "smp .*n\[,maxcpus=cpus\].*"
-        if devices.has_option(smp_pattern):
+        if self.devices.has_option(smp_pattern):
             smp_str += ",maxcpus=%d" % self.cpuinfo.maxcpus
         smp_str += ",cores=%d" % self.cpuinfo.cores
         smp_str += ",threads=%d" % self.cpuinfo.threads
         smp_str += ",sockets=%d" % self.cpuinfo.sockets
         return smp_str
 
-    def add_nic(self, devices, vlan, model=None, mac=None, device_id=None,
+    def add_nic(self, vlan, model=None, mac=None, device_id=None,
                 netdev_id=None, nic_extra_params=None, pci_addr=None,
                 bootindex=None, queues=1, vectors=None, pci_bus='pci.0'):
         if model == 'none':
             return
-        if devices.has_option("device"):
+        if self.devices.has_option("device"):
             if not model:
                 model = "rtl8139"
             elif model == "virtio":
@@ -253,13 +258,13 @@ class QemuCmdLine(object):
                 dev.set_param('mq', 'on')
             if vectors:
                 dev.set_param('vectors', vectors)
-        if devices.has_option("netdev"):
+        if self.devices.has_option("netdev"):
             dev.set_param('netdev', netdev_id)
         else:
             dev.set_param('vlan', vlan)
-        devices.insert(dev)
+        self.devices.insert(dev)
 
-    def add_net(self, devices, vlan, nettype, ifname=None, tftp=None,
+    def add_net(self, vlan, nettype, ifname=None, tftp=None,
                 bootfile=None, hostfwd=[], netdev_id=None,
                 netdev_extra_params=None, tapfds=None, script=None,
                 downscript=None, vhost=None, queues=None, vhostfds=None,
@@ -274,7 +279,7 @@ class QemuCmdLine(object):
             logging.warning("Unknown/unsupported nettype %s" % nettype)
             return ''
 
-        if devices.has_option("netdev"):
+        if self.devices.has_option("netdev"):
             cmd = " -netdev %s,id=%s" % (mode, netdev_id)
             cmd_nd = cmd
             if vhost:
@@ -285,7 +290,7 @@ class QemuCmdLine(object):
                 cmd_nd = cmd
                 if vhostfds:
                     if (int(queues) > 1 and
-                            'vhostfds=' in devices.get_help_text()):
+                            'vhostfds=' in self.devices.get_help_text()):
                         cmd += ",vhostfds=%(vhostfds)s"
                         cmd_nd += ",vhostfds=DYN"
                     else:
@@ -293,7 +298,7 @@ class QemuCmdLine(object):
                         if int(queues) > 1:
                             txt = "qemu do not support vhost multiqueue,"
                             txt += " Fall back to single queue."
-                        if 'vhostfd=' in devices.get_help_text():
+                        if 'vhostfd=' in self.devices.get_help_text():
                             cmd += ",vhostfd=%(vhostfd)s"
                             cmd_nd += ",vhostfd=DYN"
                         else:
@@ -320,7 +325,7 @@ class QemuCmdLine(object):
                     cmd_nd = cmd
             elif tapfds:
                 if (int(queues) > 1 and
-                        ',fds=' in devices.get_help_text()):
+                        ',fds=' in self.devices.get_help_text()):
                     cmd += ",fds=%(tapfds)s"
                     cmd_nd += ",fds=DYN"
                 else:
@@ -331,13 +336,13 @@ class QemuCmdLine(object):
                     cmd += ",fd=%(tapfd)s"
                     cmd_nd += ",fd=%(tapfd)s"
         elif mode == "user":
-            if tftp and "[,tftp=" in devices.get_help_text():
+            if tftp and "[,tftp=" in self.devices.get_help_text():
                 cmd += ",tftp='%s'" % tftp
                 cmd_nd = cmd
-            if bootfile and "[,bootfile=" in devices.get_help_text():
+            if bootfile and "[,bootfile=" in self.devices.get_help_text():
                 cmd += ",bootfile='%s'" % bootfile
                 cmd_nd = cmd
-            if "[,hostfwd=" in devices.get_help_text():
+            if "[,hostfwd=" in self.devices.get_help_text():
                 for i in xrange(len(hostfwd)):
                     cmd += (",hostfwd=tcp::%%(host_port%d)s"
                             "-:%%(guest_port%d)s" % (i, i))
@@ -353,32 +358,32 @@ class QemuCmdLine(object):
 
         return cmd, cmd_nd
 
-    def add_floppy(self, devices, filename, index):
+    def add_floppy(self, filename, index):
         cmd_list = [" -fda '%s'", " -fdb '%s'"]
         return cmd_list[index] % filename
 
-    def add_tftp(self, devices, filename):
+    def add_tftp(self, filename):
         # If the new syntax is supported, don't add -tftp
-        if "[,tftp=" in devices.get_help_text():
+        if "[,tftp=" in self.devices.get_help_text():
             return ""
         else:
             return " -tftp '%s'" % filename
 
-    def add_bootp(self, devices, filename):
+    def add_bootp(self, filename):
         # If the new syntax is supported, don't add -bootp
-        if "[,bootfile=" in devices.get_help_text():
+        if "[,bootfile=" in self.devices.get_help_text():
             return ""
         else:
             return " -bootp '%s'" % filename
 
-    def add_tcp_redir(self, devices, host_port, guest_port):
+    def add_tcp_redir(self, host_port, guest_port):
         # If the new syntax is supported, don't add -redir
-        if "[,hostfwd=" in devices.get_help_text():
+        if "[,hostfwd=" in self.devices.get_help_text():
             return ""
         else:
             return " -redir tcp:%s::%s" % (host_port, guest_port)
 
-    def add_vnc(self, devices, vnc_port, vnc_password='no', extra_params=None):
+    def add_vnc(self, vnc_port, vnc_password='no', extra_params=None):
         vnc_cmd = " -vnc :%d" % (vnc_port - 5900)
         if vnc_password == "yes":
             vnc_cmd += ",password"
@@ -386,21 +391,21 @@ class QemuCmdLine(object):
             vnc_cmd += ",%s" % extra_params
         return vnc_cmd
 
-    def add_sdl(self, devices):
-        if devices.has_option("sdl"):
+    def add_sdl(self):
+        if self.devices.has_option("sdl"):
             return " -sdl"
         else:
             return ""
 
-    def add_nographic(self, devices):
+    def add_nographic(self):
         return " -nographic"
 
-    def add_uuid(self, devices, uuid):
+    def add_uuid(self, uuid):
         return " -uuid '%s'" % uuid
 
-    def add_pcidevice(self, devices, host, params, device_driver="pci-assign",
+    def add_pcidevice(self, host, params, device_driver="pci-assign",
                       pci_bus='pci.0'):
-        if devices.has_device(device_driver):
+        if self.devices.has_device(device_driver):
             dev = qdevices.QDevice(device_driver, parent_bus=pci_bus)
         else:
             dev = qdevices.QCustomDevice('pcidevice', parent_bus=pci_bus)
@@ -421,9 +426,9 @@ class QemuCmdLine(object):
                    " It only support following parameter:\n %s" %
                    (", ".join(fail_param), pcidevice_help))
             logging.warn(msg)
-        devices.insert(dev)
+        self.devices.insert(dev)
 
-    def add_spice_rhel5(self, devices, spice_params, port_range=(3100, 3199)):
+    def add_spice_rhel5(self, spice_params, port_range=(3100, 3199)):
         """
         processes spice parameters on rhel5 host.
 
@@ -431,12 +436,12 @@ class QemuCmdLine(object):
         :param port_range - tuple with port range, default: (3000, 3199)
         """
 
-        if devices.has_option("spice"):
+        if self.devices.has_option("spice"):
             cmd = " -spice"
         else:
             return ""
         spice_help = ""
-        if devices.has_option("spice-help"):
+        if self.devices.has_option("spice-help"):
             spice_help = commands.getoutput("%s -device \\?" % self.qemu_binary)
         s_port = str(network.find_free_port(*port_range))
         self.spice_options['spice_port'] = s_port
@@ -453,7 +458,7 @@ class QemuCmdLine(object):
                     logging.warn(msg)
             else:
                 cmd += ",%s" % param
-        if devices.has_option("qxl"):
+        if self.devices.has_option("qxl"):
             qxl_dev_nr = self.params.get("qxl_dev_nr", 1)
             cmd += " -qxl %s" % qxl_dev_nr
         return cmd
@@ -610,53 +615,53 @@ class QemuCmdLine(object):
     def add_vga(self, vga):
         return " -vga %s" % vga
 
-    def add_kernel(self, devices, filename):
+    def add_kernel(self, filename):
         return " -kernel '%s'" % filename
 
-    def add_initrd(self, devices, filename):
+    def add_initrd(self, filename):
         return " -initrd '%s'" % filename
 
-    def add_rtc(self, devices):
+    def add_rtc(self):
         # Pay attention that rtc-td-hack is for early version
         # if "rtc " in help:
-        if devices.has_option("rtc"):
+        if self.devices.has_option("rtc"):
             cmd = " -rtc base=%s" % self.params.get("rtc_base", "utc")
             cmd += self.add_flag("clock", self.params.get("rtc_clock", "host"))
             cmd += self.add_flag("driftfix", self.params.get("rtc_drift", "none"))
             return cmd
-        elif devices.has_option("rtc-td-hack"):
+        elif self.devices.has_option("rtc-td-hack"):
             return " -rtc-td-hack"
         else:
             return ""
 
-    def add_kernel_cmdline(self, devices, cmdline):
+    def add_kernel_cmdline(self, cmdline):
         return " -append '%s'" % cmdline
 
-    def add_testdev(self, devices, filename=None):
-        if devices.has_device("testdev"):
+    def add_testdev(self, filename=None):
+        if self.devices.has_device("testdev"):
             return (" -chardev file,id=testlog,path=%s"
                     " -device testdev,chardev=testlog" % filename)
-        elif devices.has_device("pc-testdev"):
+        elif self.devices.has_device("pc-testdev"):
             return " -device pc-testdev"
         else:
             return ""
 
-    def add_isa_debug_exit(self, devices, iobase=0xf4, iosize=0x04):
-        if devices.has_device("isa-debug-exit"):
+    def add_isa_debug_exit(self, iobase=0xf4, iosize=0x04):
+        if self.devices.has_device("isa-debug-exit"):
             return (" -device isa-debug-exit,iobase=%s,iosize=%s" %
                     (iobase, iosize))
         else:
             return ""
 
-    def add_no_hpet(self, devices):
-        if devices.has_option("no-hpet"):
+    def add_no_hpet(self):
+        if self.devices.has_option("no-hpet"):
             return " -no-hpet"
         else:
             return ""
 
-    def add_cpu_flags(self, devices, cpu_model, flags=None, vendor_id=None,
+    def add_cpu_flags(self, cpu_model, flags=None, vendor_id=None,
                       family=None):
-        if devices.has_option('cpu'):
+        if self.devices.has_option('cpu'):
             cmd = " -cpu '%s'" % cpu_model
 
             if vendor_id:
@@ -671,12 +676,12 @@ class QemuCmdLine(object):
         else:
             return ""
 
-    def add_boot(self, devices, boot_order, boot_once, boot_menu):
+    def add_boot(self, boot_order, boot_once, boot_menu):
         cmd = " -boot"
         pattern = "boot \[order=drives\]\[,once=drives\]\[,menu=on\|off\]"
-        if devices.has_option("boot \[a\|c\|d\|n\]"):
+        if self.devices.has_option("boot \[a\|c\|d\|n\]"):
             cmd += " %s" % boot_once
-        elif devices.has_option(pattern):
+        elif self.devices.has_option(pattern):
             cmd += (" order=%s,once=%s,menu=%s" %
                     (boot_order, boot_once, boot_menu))
         else:
@@ -688,28 +693,28 @@ class QemuCmdLine(object):
             index += 1
         return index
 
-    def add_sga(self, devices):
-        if not devices.has_option("device"):
+    def add_sga(self):
+        if not self.devices.has_option("device"):
             return ""
 
         return " -device sga"
 
-    def add_watchdog(self, devices, device_type=None, action="reset"):
+    def add_watchdog(self, device_type=None, action="reset"):
         watchdog_cmd = ""
-        if devices.has_option("watchdog"):
+        if self.devices.has_option("watchdog"):
             if device_type:
                 watchdog_cmd += " -watchdog %s" % device_type
             watchdog_cmd += " -watchdog-action %s" % action
 
         return watchdog_cmd
 
-    def add_option_rom(self, devices, opt_rom):
-        if not devices.has_option("option-rom"):
+    def add_option_rom(self, opt_rom):
+        if not self.devices.has_option("option-rom"):
             return ""
 
         return " -option-rom %s" % opt_rom
 
-    def add_smartcard(self, devices, sc_chardev, sc_id):
+    def add_smartcard(self, sc_chardev, sc_id):
         sc_cmd = " -device usb-ccid,id=ccid0"
         sc_cmd += " -chardev " + sc_chardev
         sc_cmd += ",id=" + sc_id + ",name=smartcard"
@@ -717,11 +722,11 @@ class QemuCmdLine(object):
 
         return sc_cmd
 
-    def add_numa_node(self, devices, mem=None, cpus=None, nodeid=None):
+    def add_numa_node(self, mem=None, cpus=None, nodeid=None):
         """
         This function used to add numa node to guest command line
         """
-        if not devices.has_option("numa"):
+        if not self.devices.has_option("numa"):
             return ""
         numa_cmd = " -numa node"
         if mem is not None:
@@ -732,20 +737,14 @@ class QemuCmdLine(object):
             numa_cmd += ",nodeid=%s" % nodeid
         return numa_cmd
 
-    def assemble(self, name=None, params=None):
-        if name is None:
-            name = self.name
-        if params is None:
-            params = self.params
+    def assemble(self, vm):
+        """
+        Assemble the qemu command line.
+        """
+        name = self.vm.name
+        params = self.vm.params
 
         pci_bus = {'aobject': params.get('pci_bus', 'pci.0')}
-
-        # init value by default.
-        # PCI addr 0,1,2 are taken by PCI/ISA/IDE bridge and the GPU.
-        self.pci_addr_list = [0, 1, 2]
-
-        # Clone this VM using the new params
-        vm = self.vm.clone(name, params, copy_state=True)
 
         self.last_boot_index = 0
         if params.get("kernel"):
@@ -787,104 +786,97 @@ class QemuCmdLine(object):
                 n = numa_node - 1
                 cmd += "numactl -m %s " % n
 
-        # Start constructing devices representation
-        devices = qcontainer.DevContainer(qemu_binary, self.name,
-                                          params.get('strict_mode'),
-                                          params.get('workaround_qemu_qmp_crash'),
-                                          params.get('allow_hotplugged_vm'))
-        StrDev = qdevices.QStringDevice
-        QDevice = qdevices.QDevice
-
-        devices.insert(StrDev('PREFIX', cmdline=cmd))
+        self.devices.insert(qdevices.QStringDevice('PREFIX', cmdline=cmd))
         # Add the qemu binary
-        devices.insert(StrDev('qemu', cmdline=qemu_binary))
-        devices.insert(StrDev('-S', cmdline="-S"))
+        self.devices.insert(qdevices.QStringDevice('qemu', cmdline=qemu_binary))
+        self.devices.insert(qdevices.QStringDevice('-S', cmdline="-S"))
         # Add the VM's name
-        devices.insert(StrDev('vmname', cmdline=self.add_name(devices, name)))
+        self.devices.insert(qdevices.QStringDevice('vmname', cmdline=self.add_name(name)))
 
         if params.get("qemu_sandbox", "on") == "on":
-            devices.insert(StrDev('sandbox', cmdline=self.process_sandbox(devices, "add")))
+            self.devices.insert(qdevices.QStringDevice('sandbox',
+                                                       cmdline=self.process_sandbox("add")))
         elif params.get("sandbox", "off") == "off":
-            devices.insert(StrDev('qemu_sandbox', cmdline=self.process_sandbox(devices, "rem")))
+            self.devices.insert(qdevices.QStringDevice('qemu_sandbox',
+                                                       cmdline=self.process_sandbox("rem")))
 
-        devs = devices.machine_by_params(params)
+        devs = self.devices.machine_by_params(params)
         for dev in devs:
-            devices.insert(dev)
+            self.devices.insert(dev)
 
-        # no automagic devices please
+        # no automagic self.devices please
         defaults = params.get("defaults", "no")
-        if devices.has_option("nodefaults") and defaults != "yes":
-            devices.insert(StrDev('nodefaults', cmdline=" -nodefaults"))
+        if self.devices.has_option("nodefaults") and defaults != "yes":
+            self.devices.insert(qdevices.QStringDevice('nodefaults', cmdline=" -nodefaults"))
 
         vga = params.get("vga")
         if vga:
             if vga != 'none':
-                devices.insert(StrDev('VGA-%s' % vga,
-                                      cmdline=self.add_vga(vga),
-                                      parent_bus={'aobject': 'pci.0'}))
+                self.devices.insert(qdevices.QStringDevice('VGA-%s' % vga,
+                                                           cmdline=self.add_vga(vga),
+                                                           parent_bus={'aobject': 'pci.0'}))
             else:
-                devices.insert(StrDev('VGA-none', cmdline=self.add_vga(vga)))
+                self.devices.insert(qdevices.QStringDevice('VGA-none', cmdline=self.add_vga(vga)))
 
             if vga == "qxl":
                 qxl_dev_memory = int(params.get("qxl_dev_memory", 0))
                 qxl_dev_nr = int(params.get("qxl_dev_nr", 1))
-                devices.insert(StrDev('qxl',
-                                      cmdline=self.add_qxl(qxl_dev_nr, qxl_dev_memory)))
+                self.devices.insert(qdevices.QStringDevice('qxl',
+                                                           cmdline=self.add_qxl(qxl_dev_nr, qxl_dev_memory)))
         elif params.get('defaults', 'no') != 'no':  # by default add cirrus
-            devices.insert(StrDev('VGA-cirrus',
-                                  cmdline=self.add_vga(vga),
-                                  parent_bus={'aobject': 'pci.0'}))
+            self.devices.insert(qdevices.QStringDevice('VGA-cirrus',
+                                                       cmdline=self.add_vga(vga),
+                                                       parent_bus={'aobject': 'pci.0'}))
 
         # When old scsi fmt is used, new device with lowest pci_addr is created
-        devices.hook_fill_scsi_hbas(params)
+        self.devices.hook_fill_scsi_hbas(params)
 
         # Additional PCI RC/switch/bridges
         for pcic in params.objects("pci_controllers"):
-            devs = devices.pcic_by_params(pcic, params.object_params(pcic))
-            devices.insert(devs)
+            devs = self.devices.pcic_by_params(pcic, params.object_params(pcic))
+            self.devices.insert(devs)
 
         # -soundhw addresses are always the lowest after scsi
         soundhw = params.get("soundcards")
         if soundhw:
-            if not devices.has_option('device') or soundhw == "all":
+            if not self.devices.has_option('device') or soundhw == "all":
                 for sndcard in ('AC97', 'ES1370', 'intel-hda'):
-                    # Add all dummy PCI devices and the actuall command below
-                    devices.insert(StrDev("SND-%s" % sndcard,
-                                          parent_bus=pci_bus))
-                devices.insert(StrDev('SoundHW',
-                                      cmdline="-soundhw %s" % soundhw))
+                    # Add all dummy PCI self.devices and the actuall command below
+                    self.devices.insert(qdevices.QStringDevice("SND-%s" % sndcard,
+                                                               parent_bus=pci_bus))
+                self.devices.insert(qdevices.QStringDevice('SoundHW',
+                                                           cmdline="-soundhw %s" % soundhw))
             else:
-                # TODO: Use QDevices for this and set the addresses properly
+                # TODO: Use qdevices.QDevices for this and set the addresses properly
                 for sound_device in soundhw.split(","):
                     if "hda" in sound_device:
-                        devices.insert(QDevice('intel-hda',
-                                               parent_bus=pci_bus))
-                        devices.insert(QDevice('hda-duplex'))
+                        self.devices.insert(qdevices.QDevice('intel-hda',
+                                                             parent_bus=pci_bus))
+                        self.devices.insert(qdevices.QDevice('hda-duplex'))
                     elif sound_device in ["es1370", "ac97"]:
-                        devices.insert(QDevice(sound_device.upper(),
-                                               parent_bus=pci_bus))
+                        self.devices.insert(qdevices.QDevice(sound_device.upper(),
+                                                             parent_bus=pci_bus))
                     else:
-                        devices.insert(QDevice(sound_device,
-                                               parent_bus=pci_bus))
+                        self.devices.insert(qdevices.QDevice(sound_device,
+                                                             parent_bus=pci_bus))
 
         # Add monitors
         for monitor_name in params.objects("monitors"):
             monitor_params = params.object_params(monitor_name)
             monitor_filename = monitor.get_monitor_filename(vm, monitor_name)
             if monitor_params.get("monitor_type") == "qmp":
-                cmd = self.add_qmp_monitor(devices, monitor_name,
+                cmd = self.add_qmp_monitor(self.devices, monitor_name,
                                            monitor_filename)
-                devices.insert(StrDev('QMP-%s' % monitor_name, cmdline=cmd))
+                self.devices.insert(qdevices.QStringDevice('QMP-%s' % monitor_name, cmdline=cmd))
             else:
-                cmd = self.add_human_monitor(devices, monitor_name,
-                                             monitor_filename)
-                devices.insert(StrDev('HMP-%s' % monitor_name, cmdline=cmd))
+                cmd = self.add_human_monitor(monitor_name, monitor_filename)
+                self.devices.insert(qdevices.QStringDevice('HMP-%s' % monitor_name, cmdline=cmd))
 
         # Add serial console redirection
         for serial in params.objects("isa_serials"):
             serial_filename = vm.get_serial_console_filename(serial)
-            cmd = self.add_serial(devices, serial, serial_filename)
-            devices.insert(StrDev('SER-%s' % serial, cmdline=cmd))
+            cmd = self.add_serial(serial, serial_filename)
+            self.devices.insert(qdevices.QStringDevice('SER-%s' % serial, cmdline=cmd))
 
         # Add virtio_serial ports
         no_virtio_serial_pcis = 0
@@ -906,51 +898,51 @@ class QemuCmdLine(object):
                 if bus < 0:     # First bus
                     bus = 0
             # Add virtio_serial_pcis
-            # Multiple virtio console devices can't share a
+            # Multiple virtio console self.devices can't share a
             # single virtio-serial-pci bus. So add a virtio-serial-pci bus
             # when the port is a virtio console.
             if (port_params.get('virtio_port_type') == 'console'
                     and params.get('virtio_port_bus') is None):
-                dev = QDevice('virtio-serial-pci', parent_bus=pci_bus)
+                dev = qdevices.QDevice('virtio-serial-pci', parent_bus=pci_bus)
                 dev.set_param('id',
                               'virtio_serial_pci%d' % no_virtio_serial_pcis)
-                devices.insert(dev)
+                self.devices.insert(dev)
                 no_virtio_serial_pcis += 1
             for i in range(no_virtio_serial_pcis, bus + 1):
-                dev = QDevice('virtio-serial-pci', parent_bus=pci_bus)
+                dev = qdevices.QDevice('virtio-serial-pci', parent_bus=pci_bus)
                 dev.set_param('id', 'virtio_serial_pci%d' % i)
-                devices.insert(dev)
+                self.devices.insert(dev)
                 no_virtio_serial_pcis += 1
             if bus is not False:
                 bus = "virtio_serial_pci%d.0" % bus
             # Add actual ports
-            cmd = self.add_virtio_port(devices, port_name, bus,
+            cmd = self.add_virtio_port(port_name, bus,
                                        self.get_virtio_port_filename(port_name),
                                        port_params.get('virtio_port_type'),
                                        port_params.get('virtio_port_chardev'),
                                        port_params.get('virtio_port_name_prefix'),
                                        no_virtio_ports,
                                        port_params.get('virtio_port_params', ''))
-            devices.insert(StrDev('VIO-%s' % port_name, cmdline=cmd))
+            self.devices.insert(qdevices.QStringDevice('VIO-%s' % port_name, cmdline=cmd))
             no_virtio_ports += 1
 
         # Add logging
-        devices.insert(StrDev('isa-log', cmdline=self.add_log_seabios(devices)))
+        self.devices.insert(qdevices.QStringDevice('isa-log', cmdline=self.add_log_seabios()))
         if params.get("anaconda_log", "no") == "yes":
-            self.add_log_anaconda(devices, pci_bus)
+            self.add_log_anaconda(pci_bus)
 
         # Add USB controllers
         usbs = params.objects("usbs")
-        if not devices.has_option("device"):
+        if not self.devices.has_option("device"):
             usbs = ("oldusb",)  # Old qemu, add only one controller '-usb'
         for usb_name in usbs:
             usb_params = params.object_params(usb_name)
-            for dev in devices.usbc_by_params(usb_name, usb_params):
-                devices.insert(dev)
+            for dev in self.devices.usbc_by_params(usb_name, usb_params):
+                self.devices.insert(dev)
 
         # Add images (harddrives)
         for image_name in params.objects("images"):
-            # FIXME: Use qemu_devices for handling indexes
+            # FIXME: Use qemu_self.devices for handling indexes
             image_params = params.object_params(image_name)
             if image_params.get("boot_drive") == "no":
                 continue
@@ -966,7 +958,7 @@ class QemuCmdLine(object):
                 index = None
             image_bootindex = None
             image_boot = image_params.get("image_boot")
-            if not re.search("boot=on\|off", devices.get_help_text(),
+            if not re.search("boot=on\|off", self.devices.get_help_text(),
                              re.MULTILINE):
                 if image_boot in ['yes', 'on', True]:
                     image_bootindex = str(self.last_boot_index)
@@ -982,11 +974,11 @@ class QemuCmdLine(object):
             image_params = params.object_params(image_name)
             if image_params.get("boot_drive") == "no":
                 continue
-            devs = devices.images_define_by_params(image_name, image_params,
-                                                   'disk', index, image_boot,
-                                                   image_bootindex)
+            devs = self.devices.images_define_by_params(image_name, image_params,
+                                                        'disk', index, image_boot,
+                                                        image_bootindex)
             for _ in devs:
-                devices.insert(_)
+                self.devices.insert(_)
 
         # Networking
         redirs = []
@@ -1073,13 +1065,13 @@ class QemuCmdLine(object):
                             tapfds = ":".join(tapfd_list[:tapfds_len])
 
                 # Handle the '-net nic' part
-                self.add_nic(devices, vlan, nic_model, mac,
+                self.add_nic(vlan, nic_model, mac,
                              device_id, netdev_id, nic_extra,
                              nic_params.get("nic_pci_addr"),
                              bootindex, queues, vectors, pci_bus)
 
                 # Handle the '-net tap' or '-net user' or '-netdev' part
-                cmd, cmd_nd = self.add_net(devices, vlan, nettype, ifname, tftp,
+                cmd, cmd_nd = self.add_net(vlan, nettype, ifname, tftp,
                                            bootp, redirs, netdev_id, netdev_extra,
                                            tapfds, script, downscript, vhost,
                                            queues, vhostfds, add_queues, helper,
@@ -1104,20 +1096,20 @@ class QemuCmdLine(object):
                     net_params["guest_port%d" % i] = guest_port
 
                 # TODO: Is every NIC a PCI device?
-                devices.insert(StrDev("NET-%s" % nettype, cmdline=cmd,
-                                      params=net_params, cmdline_nd=cmd_nd))
+                self.devices.insert(qdevices.QStringDevice("NET-%s" % nettype, cmdline=cmd,
+                                                           params=net_params, cmdline_nd=cmd_nd))
             else:
                 device_driver = nic_params.get("device_driver", "pci-assign")
                 pci_id = vm.pa_pci_ids[iov]
                 pci_id = ":".join(pci_id.split(":")[1:])
-                self.add_pci_device(devices, pci_id, params=nic_params,
+                self.add_pci_device(self.devices, pci_id, params=nic_params,
                                     device_driver=device_driver,
                                     pci_bus=pci_bus)
                 iov += 1
 
         mem = params.get("mem")
         if mem:
-            devices.insert(StrDev('mem', cmdline=self.add_mem(devices, mem)))
+            self.devices.insert(qdevices.QStringDevice('mem', cmdline=self.add_mem(mem)))
 
         smp = int(params.get("smp", 0))
         vcpu_maxcpus = int(params.get("vcpu_maxcpus", 0))
@@ -1156,7 +1148,7 @@ class QemuCmdLine(object):
         self.cpuinfo.cores = vcpu_cores
         self.cpuinfo.threads = vcpu_threads
         self.cpuinfo.sockets = vcpu_sockets
-        devices.insert(StrDev('smp', cmdline=self.add_smp(devices)))
+        self.devices.insert(qdevices.QStringDevice('smp', cmdline=self.add_smp()))
 
         numa_total_cpus = 0
         numa_total_mem = 0
@@ -1168,7 +1160,7 @@ class QemuCmdLine(object):
                 numa_total_mem += int(numa_mem)
             if numa_cpus is not None:
                 numa_total_cpus += len(memory.cpu_str_to_list(numa_cpus))
-            devices.insert(StrDev('numa', cmdline=self.add_numa_node(devices)))
+            self.devices.insert(qdevices.QStringDevice('numa', cmdline=self.add_numa_node()))
 
         if params.get("numa_consistency_check_cpu_mem", "no") == "yes":
             if (numa_total_cpus > int(smp) or numa_total_mem > int(mem)
@@ -1207,13 +1199,13 @@ class QemuCmdLine(object):
             self.cpuinfo.vendor = vendor
             self.cpuinfo.flags = flags
             self.cpuinfo.family = family
-            cmd = self.add_cpu_flags(devices, cpu_model, flags, vendor, family)
-            devices.insert(StrDev('cpu', cmdline=cmd))
+            cmd = self.add_cpu_flags(cpu_model, flags, vendor, family)
+            self.devices.insert(qdevices.QStringDevice('cpu', cmdline=cmd))
 
         # Add cdroms
         for cdrom in params.objects("cdroms"):
             image_params = params.object_params(cdrom)
-            # FIXME: Use qemu_devices for handling indexes
+            # FIXME: Use qemu_self.devices for handling indexes
             if image_params.get("boot_drive") == "no":
                 continue
             if params.get("index_enable") == "yes":
@@ -1228,7 +1220,7 @@ class QemuCmdLine(object):
                 index = None
             image_bootindex = None
             image_boot = image_params.get("image_boot")
-            if not re.search("boot=on\|off", devices.get_help_text(),
+            if not re.search("boot=on\|off", self.devices.get_help_text(),
                              re.MULTILINE):
                 if image_boot in ['yes', 'on', True]:
                     image_bootindex = str(self.last_boot_index)
@@ -1243,12 +1235,12 @@ class QemuCmdLine(object):
                     self.last_boot_index += 1
             iso = image_params.get("cdrom")
             if iso or image_params.get("cdrom_without_file") == "yes":
-                devs = devices.cdroms_define_by_params(cdrom, image_params,
-                                                       'cdrom', index,
-                                                       image_boot,
-                                                       image_bootindex)
+                devs = self.devices.cdroms_define_by_params(cdrom, image_params,
+                                                            'cdrom', index,
+                                                            image_boot,
+                                                            image_bootindex)
                 for _ in devs:
-                    devices.insert(_)
+                    self.devices.insert(_)
 
         # We may want to add {floppy_otps} parameter for -fda, -fdb
         # {fat:floppy:}/path/. However vvfat is not usually recommended.
@@ -1265,61 +1257,61 @@ class QemuCmdLine(object):
                 data_dir.get_data_dir(),
                 image_params["floppy_name"])
             image_params['image_format'] = None
-            devs = devices.images_define_by_params(floppy_name, image_params,
-                                                   media='')
+            devs = self.devices.images_define_by_params(floppy_name, image_params,
+                                                        media='')
             for _ in devs:
-                devices.insert(_)
+                self.devices.insert(_)
 
-        # Add usb devices
+        # Add usb self.devices
         for usb_dev in params.objects("usb_devices"):
             usb_dev_params = params.object_params(usb_dev)
-            devices.insert(devices.usb_by_params(usb_dev, usb_dev_params))
+            self.devices.insert(self.devices.usb_by_params(usb_dev, usb_dev_params))
 
         tftp = params.get("tftp")
         if tftp:
             tftp = path.get_path(data_dir.get_data_dir(), tftp)
-            devices.insert(StrDev('tftp', cmdline=self.add_tftp(devices, tftp)))
+            self.devices.insert(qdevices.QStringDevice('tftp', cmdline=self.add_tftp(tftp)))
 
         bootp = params.get("bootp")
         if bootp:
-            devices.insert(StrDev('bootp',
-                                  cmdline=self.add_bootp(devices, bootp)))
+            self.devices.insert(qdevices.QStringDevice('bootp',
+                                                       cmdline=self.add_bootp(bootp)))
 
         kernel = params.get("kernel")
         if kernel:
             kernel = path.get_path(data_dir.get_data_dir(), kernel)
-            devices.insert(StrDev('kernel',
-                                  cmdline=self.add_kernel(devices, kernel)))
+            self.devices.insert(qdevices.QStringDevice('kernel',
+                                                       cmdline=self.add_kernel(kernel)))
 
         kernel_params = params.get("kernel_params")
         if kernel_params:
-            cmd = self.add_kernel_cmdline(devices, kernel_params)
-            devices.insert(StrDev('kernel-params', cmdline=cmd))
+            cmd = self.add_kernel_cmdline(kernel_params)
+            self.devices.insert(qdevices.QStringDevice('kernel-params', cmdline=cmd))
 
         initrd = params.get("initrd")
         if initrd:
             initrd = path.get_path(data_dir.get_data_dir(), initrd)
-            devices.insert(StrDev('initrd',
-                                  cmdline=self.add_initrd(devices, initrd)))
+            self.devices.insert(qdevices.QStringDevice('initrd',
+                                                       cmdline=self.add_initrd(initrd)))
 
         for host_port, guest_port in redirs:
-            cmd = self.add_tcp_redir(devices, host_port, guest_port)
-            devices.insert(StrDev('tcp-redir', cmdline=cmd))
+            cmd = self.add_tcp_redir(host_port, guest_port)
+            self.devices.insert(qdevices.QStringDevice('tcp-redir', cmdline=cmd))
 
         cmd = ""
         if params.get("display") == "vnc":
             vnc_extra_params = params.get("vnc_extra_params")
             vnc_password = params.get("vnc_password", "no")
-            cmd += self.add_vnc(devices, self.vnc_port, vnc_password,
+            cmd += self.add_vnc(self.vnc_port, vnc_password,
                                 vnc_extra_params)
         elif params.get("display") == "sdl":
-            cmd += self.add_sdl(devices)
+            cmd += self.add_sdl()
         elif params.get("display") == "nographic":
-            cmd += self.add_nographic(devices)
+            cmd += self.add_nographic()
         elif params.get("display") == "spice":
             if params.get("rhel5_spice"):
                 spice_params = params.get("spice_params")
-                cmd += self.add_spice_rhel5(devices, spice_params)
+                cmd += self.add_spice_rhel5(self.devices, spice_params)
             else:
                 spice_keys = (
                     "spice_port", "spice_password", "spice_addr", "spice_ssl",
@@ -1344,36 +1336,36 @@ class QemuCmdLine(object):
 
                 cmd += self.add_spice()
         if cmd:
-            devices.insert(StrDev('display', cmdline=cmd))
+            self.devices.insert(qdevices.QStringDevice('display', cmdline=cmd))
 
         if params.get("uuid") == "random":
-            cmd = self.add_uuid(devices, vm.uuid)
-            devices.insert(StrDev('uuid', cmdline=cmd))
+            cmd = self.add_uuid(vm.uuid)
+            self.devices.insert(qdevices.QStringDevice('uuid', cmdline=cmd))
         elif params.get("uuid"):
-            cmd = self.add_uuid(devices, params.get("uuid"))
-            devices.insert(StrDev('uuid', cmdline=cmd))
+            cmd = self.add_uuid(params.get("uuid"))
+            self.devices.insert(qdevices.QStringDevice('uuid', cmdline=cmd))
 
         if params.get("testdev") == "yes":
-            cmd = self.add_testdev(devices, vm.get_testlog_filename())
-            devices.insert(StrDev('testdev', cmdline=cmd))
+            cmd = self.add_testdev(vm.get_testlog_filename())
+            self.devices.insert(qdevices.QStringDevice('testdev', cmdline=cmd))
 
         if params.get("isa_debugexit") == "yes":
             iobase = params.get("isa_debugexit_iobase")
             iosize = params.get("isa_debugexit_iosize")
-            cmd = self.add_isa_debug_exit(devices, iobase, iosize)
-            devices.insert(StrDev('isa_debugexit', cmdline=cmd))
+            cmd = self.add_isa_debug_exit(iobase, iosize)
+            self.devices.insert(qdevices.QStringDevice('isa_debugexit', cmdline=cmd))
 
         if params.get("disable_hpet") == "yes":
-            devices.insert(StrDev('nohpet', cmdline=self.add_no_hpet(devices)))
+            self.devices.insert(qdevices.QStringDevice('nohpet', cmdline=self.add_no_hpet()))
 
-        devices.insert(StrDev('rtc', cmdline=self.add_rtc(devices)))
+        self.devices.insert(qdevices.QStringDevice('rtc', cmdline=self.add_rtc()))
 
-        if devices.has_option("boot"):
+        if self.devices.has_option("boot"):
             boot_order = params.get("boot_order", "cdn")
             boot_once = params.get("boot_once", "c")
             boot_menu = params.get("boot_menu", "off")
-            cmd = self.add_boot(devices, boot_order, boot_once, boot_menu)
-            devices.insert(StrDev('bootmenu', cmdline=cmd))
+            cmd = self.add_boot(boot_order, boot_once, boot_menu)
+            self.devices.insert(qdevices.QStringDevice('bootmenu', cmdline=cmd))
 
         p9_export_dir = params.get("9p_export_dir")
         if p9_export_dir:
@@ -1408,69 +1400,68 @@ class QemuCmdLine(object):
             if p9_readonly == "yes":
                 cmd += ",readonly"
 
-            devices.insert(StrDev('fsdev', cmdline=cmd))
+            self.devices.insert(qdevices.QStringDevice('fsdev', cmdline=cmd))
 
-            dev = QDevice('virtio-9p-pci', parent_bus=pci_bus)
+            dev = qdevices.QDevice('virtio-9p-pci', parent_bus=pci_bus)
             dev.set_param('fsdev', 'local1')
             dev.set_param('mount_tag', 'autotest_tag')
-            devices.insert(dev)
+            self.devices.insert(dev)
 
         extra_params = params.get("extra_params")
         if extra_params:
-            devices.insert(StrDev('extra', cmdline=extra_params))
+            self.devices.insert(qdevices.QStringDevice('extra', cmdline=extra_params))
 
         bios_path = params.get("bios_path")
         if bios_path:
-            devices.insert(StrDev('bios', cmdline="-bios %s" % bios_path))
+            self.devices.insert(qdevices.QStringDevice('bios', cmdline="-bios %s" % bios_path))
 
         disable_kvm_option = ""
-        if (devices.has_option("no-kvm")):
+        if (self.devices.has_option("no-kvm")):
             disable_kvm_option = "-no-kvm"
 
         enable_kvm_option = ""
-        if (devices.has_option("enable-kvm")):
+        if (self.devices.has_option("enable-kvm")):
             enable_kvm_option = "-enable-kvm"
 
         if (params.get("disable_kvm", "no") == "yes"):
             params["enable_kvm"] = "no"
 
         if (params.get("enable_kvm", "yes") == "no"):
-            devices.insert(StrDev('nokvm', cmdline=disable_kvm_option))
+            self.devices.insert(qdevices.QStringDevice('nokvm', cmdline=disable_kvm_option))
             logging.debug("qemu will run in TCG mode")
         else:
-            devices.insert(StrDev('kvm', cmdline=enable_kvm_option))
+            self.devices.insert(qdevices.QStringDevice('kvm', cmdline=enable_kvm_option))
             logging.debug("qemu will run in KVM mode")
 
-        self.no_shutdown = (devices.has_option("no-shutdown") and
+        self.no_shutdown = (self.devices.has_option("no-shutdown") and
                             params.get("disable_shutdown", "no") == "yes")
         if self.no_shutdown:
-            devices.insert(StrDev('noshutdown', cmdline="-no-shutdown"))
+            self.devices.insert(qdevices.QStringDevice('noshutdown', cmdline="-no-shutdown"))
 
         user_runas = params.get("user_runas")
-        if devices.has_option("runas") and user_runas:
-            devices.insert(StrDev('runas', cmdline="-runas %s" % user_runas))
+        if self.devices.has_option("runas") and user_runas:
+            self.devices.insert(qdevices.QStringDevice('runas', cmdline="-runas %s" % user_runas))
 
         if params.get("enable_sga") == "yes":
-            devices.insert(StrDev('sga', cmdline=self.add_sga(devices)))
+            self.devices.insert(qdevices.QStringDevice('sga', cmdline=self.add_sga()))
 
         if params.get("smartcard", "no") == "yes":
             sc_chardev = params.get("smartcard_chardev")
             sc_id = params.get("smartcard_id")
-            devices.insert(StrDev('smartcard',
-                                  cmdline=self.add_smartcard(devices, sc_chardev, sc_id)))
+            self.devices.insert(qdevices.QStringDevice('smartcard',
+                                                       cmdline=self.add_smartcard(sc_chardev, sc_id)))
 
         if params.get("enable_watchdog", "no") == "yes":
-            cmd = self.add_watchdog(devices,
-                                    params.get("watchdog_device_type", None),
+            cmd = self.add_watchdog(params.get("watchdog_device_type", None),
                                     params.get("watchdog_action", "reset"))
-            devices.insert(StrDev('watchdog', cmdline=cmd))
+            self.devices.insert(qdevices.QStringDevice('watchdog', cmdline=cmd))
 
         option_roms = params.get("option_roms")
         if option_roms:
             cmd = ""
             for opt_rom in option_roms.split():
-                cmd += self.add_option_rom(devices, opt_rom)
+                cmd += self.add_option_rom(opt_rom)
             if cmd:
-                devices.insert(StrDev('ROM', cmdline=cmd))
+                self.devices.insert(qdevices.QStringDevice('ROM', cmdline=cmd))
 
-        return devices
+        return self.devices
