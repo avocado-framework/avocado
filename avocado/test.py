@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
         self.tag = tag or s_tag
         self.job = job
         self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
-        self.depsdir = os.path.join(self.basedir, 'deps')
+        self.datadir = os.path.join(self.basedir, 'data')
         self.workdir = os.path.join(data_dir.get_tmp_dir(), self.name)
         if not os.path.isdir(self.workdir):
             os.makedirs(self.workdir)
@@ -130,9 +130,9 @@ class Test(unittest.TestCase):
         if not os.path.isdir(self.logdir):
             os.makedirs(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
-        self.datadir = os.path.join(self.logdir, 'data')
-        if not os.path.isdir(self.datadir):
-            os.makedirs(self.datadir)
+        self.outputdir = os.path.join(self.logdir, 'data')
+        if not os.path.isdir(self.outputdir):
+            os.makedirs(self.outputdir)
         self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
@@ -174,7 +174,7 @@ class Test(unittest.TestCase):
         self.traceback = None
         self.text_output = None
 
-        whiteboard_path = os.path.join(self.datadir, 'whiteboard')
+        whiteboard_path = os.path.join(self.outputdir, 'whiteboard')
         self.whiteboard = whiteboard.WhiteBoard(self, whiteboard_path)
 
         self.time_elapsed = None
@@ -220,7 +220,7 @@ class Test(unittest.TestCase):
 
         :return: Path where dependency is supposed to be found.
         """
-        return os.path.join(self.depsdir, basename)
+        return os.path.join(self.datadir, basename)
 
     def start_logging(self):
         """
