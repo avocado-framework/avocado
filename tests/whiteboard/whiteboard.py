@@ -17,6 +17,8 @@
 from avocado import test
 from avocado import job
 
+import base64
+
 
 class whiteboard(test.Test):
 
@@ -40,8 +42,11 @@ class whiteboard(test.Test):
             data = self.params.whiteboard_data_text[0:offset]
 
         iterations = int(self.params.whiteboard_writes)
+
+        result = ''
         for i in xrange(0, iterations):
-            self.whiteboard.write(data)
+            result += data
+        self.whiteboard = base64.encodestring(result)
 
 if __name__ == "__main__":
     job.main()
