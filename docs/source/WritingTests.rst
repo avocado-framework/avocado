@@ -55,8 +55,10 @@ Saving test generated (custom) data
 ===================================
 
 Each test instance provides a so called ``whiteboard``. It that can be accessed
-through ``self.whiteboard``. This whiteboard (see :class:`avocado.whiteboard.WhiteBoard`)
-is a simple file-like object that is ready for you to use.
+through ``self.whiteboard``. This whiteboard is simply a string that will be
+automatically saved to test results (as long as the output format supports it).
+If you choose to save binary data to the whiteboard, it's your responsitibility to
+encoded it first (base64 is the obvious choice).
 
 Building on the previously demonstrated sleeptest, supose that you want to save the
 sleep length to be used by some other script or data analysis tool::
@@ -67,14 +69,10 @@ sleep length to be used by some other script or data analysis tool::
             """
             self.log.debug("Sleeping for %.2f seconds", self.params.sleep_length)
             time.sleep(self.params.sleep_length)
-            self.whiteboard.write(self.params.sleep_length)
+            self.whiteboard = "%.2f" % self.params.sleep_length
 
-The output path is always a file named ``whiteboard`` in the test instance
-``data directory``. This ``data directory`` itself is at the most obvious place,
-right along your ``debug.log`` file and ``sysinfo`` directory.
-
-The whiteboard file is always created, even if empty. This may sound like an inode
-waste, but can help debugging and asserts the whiteboard never had data written to.
+The output path is always a file named ``whiteboard`` in the test result directory,
+the same directory where your ``debug.log`` file and ``sysinfo`` directory are located.
 
 
 Accessing test parameters
