@@ -42,7 +42,7 @@ class fiotest(test.Test):
         """
         Build 'fio'.
         """
-        tarball_path = self.get_deps_path(self.params.fio_tarball)
+        tarball_path = self.get_data_path(self.params.fio_tarball)
         archive.extract(tarball_path, self.srcdir)
         fio_version = self.params.fio_tarball.split('.tar.')[0]
         self.srcdir = os.path.join(self.srcdir, fio_version)
@@ -53,7 +53,7 @@ class fiotest(test.Test):
         Execute 'fio' with appropriate parameters.
         """
         os.chdir(self.srcdir)
-        cmd = ('./fio %s' % self.get_deps_path(self.params.fio_job))
+        cmd = ('./fio %s' % self.get_data_path(self.params.fio_job))
         process.system(cmd)
 
 

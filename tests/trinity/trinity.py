@@ -60,7 +60,7 @@ class trinity(test.Test):
         Build trinity.
         """
         self.cwd = os.getcwd()
-        tarball_path = self.get_deps_path(self.params.tarball)
+        tarball_path = self.get_data_path(self.params.tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'trinity-1.4')
         os.chdir(self.srcdir)
