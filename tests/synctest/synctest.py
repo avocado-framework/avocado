@@ -37,7 +37,7 @@ class synctest(test.Test):
         Build the synctest suite.
         """
         self.cwd = os.getcwd()
-        tarball_path = self.get_deps_path(self.params.sync_tarball)
+        tarball_path = self.get_data_path(self.params.sync_tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         build.make(self.srcdir)

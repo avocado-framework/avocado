@@ -212,9 +212,12 @@ class Test(unittest.TestCase):
         except Exception:
             self.params[key] = default
 
-    def get_deps_path(self, basename):
+    def get_data_path(self, basename):
         """
-        Find a test dependency path inside the test depsdir.
+        Find a test dependency path inside the test data dir.
+
+        This is a short hand for an operation that will be commonly
+        used on avocado tests, so we feel it deserves its own API.
 
         :param basename: Basename of the dep file. Ex: ``testsuite.tar.bz2``.
 
