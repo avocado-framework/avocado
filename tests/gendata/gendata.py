@@ -34,7 +34,7 @@ class gendata(test.Test):
             return
 
         text = ["DREADED BLUE SCREEN OF DEATH"]
-        dmesg_path = os.path.join(self.job.debugdir, "sysinfo", "pre", "dmesg_-c")
+        dmesg_path = os.path.join(self.job.logdir, "sysinfo", "pre", "dmesg_-c")
         self.log.info("dmesg_path: %s", dmesg_path)
         if os.path.exists(dmesg_path):
             dmesg = open(dmesg_path)
@@ -46,13 +46,13 @@ class gendata(test.Test):
         for line in text:
             draw.text((2, y), line)
             y += 12
-        bsod.save(os.path.join(self.datadir, "bsod.png"))
+        bsod.save(os.path.join(self.outputdir, "bsod.png"))
 
     def generate_json(self):
         import json
-        output_path = os.path.join(self.datadir, "test.json")
+        output_path = os.path.join(self.outputdir, "test.json")
         output = {"basedir": self.basedir,
-                  "datadir": self.datadir}
+                  "outputdir": self.outputdir}
         json.dump(output, open(output_path, "w"))
 
     def action(self):
