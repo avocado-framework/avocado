@@ -29,7 +29,7 @@ class linuxbuild(test.Test):
 
     def setup(self):
         kernel_version = self.params.linux_version
-        config_path = self.get_deps_path('config')
+        config_path = self.get_data_path('config')
         self.linux_build = kernel_build.KernelBuild(kernel_version,
                                                     config_path,
                                                     self.srcdir)

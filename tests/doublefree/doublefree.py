@@ -35,7 +35,7 @@ class doublefree(test.Test):
         Build 'doublefree'.
         """
         self.cwd = os.getcwd()
-        c_file = self.get_deps_path(self.params.source)
+        c_file = self.get_data_path(self.params.source)
         self.srcdir = os.path.dirname(c_file)
         build.make(self.srcdir, extra_args='doublefree')
 
