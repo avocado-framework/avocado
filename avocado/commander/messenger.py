@@ -295,7 +295,7 @@ class Messenger(object):
             logging.error("ERROR data:%s rdata:%s" % (data, rdata))
             try:
                 self.write_msg(interface.MessengerError("Communication "
-                                                               "failed.%s" % (e)))
+                                                        "failed.%s" % (e)))
             except OSError:
                 pass
             self.flush_stdin()

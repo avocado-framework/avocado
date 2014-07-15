@@ -207,7 +207,7 @@ class CommanderMaster(messenger.Messenger):
         succ, msg = self.read_msg()
         if not succ or msg != "Started":
             raise interface.CommanderError("Remote commander"
-                                                  " not started.")
+                                           " not started.")
 
     def close(self):
         try:
