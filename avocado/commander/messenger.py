@@ -11,7 +11,7 @@ import logging
 import select
 import cPickle
 import time
-import remote_interface
+import interface
 import cStringIO
 import base64
 
@@ -177,8 +177,8 @@ class MessengerError(Exception):
 
 
 def _map_path(mod_name, kls_name):
-    if mod_name.endswith('remote_interface'):  # catch all old module names
-        mod = remote_interface
+    if mod_name.endswith('interface'):  # catch all old module names
+        mod = interface
         return getattr(mod, kls_name)
     else:
         mod = __import__(mod_name)
@@ -294,13 +294,13 @@ class Messenger(object):
         except Exception, e:
             logging.error("ERROR data:%s rdata:%s" % (data, rdata))
             try:
-                self.write_msg(remote_interface.MessengerError("Communication "
+                self.write_msg(interface.MessengerError("Communication "
                                                                "failed.%s" % (e)))
             except OSError:
                 pass
             self.flush_stdin()
             raise
         # Debugging commands.
-        # if (isinstance(data, remote_interface.BaseCmd)):
+        # if (isinstance(data, interface.BaseCmd)):
         #    print data.func
         return (True, data)

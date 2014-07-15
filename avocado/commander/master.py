@@ -8,7 +8,7 @@ Created on Dec 6, 2013
 import sys
 import time
 import inspect
-import remote_interface
+import interface
 import messenger
 
 
@@ -41,7 +41,7 @@ class CmdMaster(object):
         :type args: []
         :params kargs: {}
         """
-        self._basecmd = remote_interface.BaseCmd(name, *args, **kargs)
+        self._basecmd = interface.BaseCmd(name, *args, **kargs)
         self.commander = commander
         self._stdout = ""
         self._stderr = ""
@@ -135,7 +135,7 @@ class CmdMaster(object):
         if self not in commander.cmds:
             commander.cmds[self.cmd_id] = self
         self.commander.manage.register_cmd(self.basecmd,
-                                           remote_interface.BaseCmd.single_cmd_id)
+                                           interface.BaseCmd.single_cmd_id)
 
 
 class CmdEncapsulation(object):
@@ -163,7 +163,7 @@ class CmdEncapsulation(object):
         return self.master.cmd(self.cmd)
 
 
-class CmdTimeout(remote_interface.MessengerError):
+class CmdTimeout(interface.MessengerError):
 
     """
     Raised when waiting for cmd exceeds time define by timeout.
@@ -206,7 +206,7 @@ class CommanderMaster(messenger.Messenger):
         self.write_msg("start")
         succ, msg = self.read_msg()
         if not succ or msg != "Started":
-            raise remote_interface.CommanderError("Remote commander"
+            raise interface.CommanderError("Remote commander"
                                                   " not started.")
 
     def close(self):
@@ -236,33 +236,33 @@ class CommanderMaster(messenger.Messenger):
         """
         Listen on all streams included in Commander commands.
         """
-        if isinstance(cmd, remote_interface.StdStream):
+        if isinstance(cmd, interface.StdStream):
             if (self.debug):
                 print cmd.msg
             if cmd.isCmdMsg():
-                if isinstance(cmd, remote_interface.StdOut):
+                if isinstance(cmd, interface.StdOut):
                     self.cmds[cmd.cmd_id].stdout += cmd.msg
-                elif isinstance(cmd, remote_interface.StdErr):
+                elif isinstance(cmd, interface.StdErr):
                     self.cmds[cmd.cmd_id].stderr += cmd.msg
             else:
-                if isinstance(cmd, remote_interface.StdOut):
+                if isinstance(cmd, interface.StdOut):
                     sys.stdout.write(cmd.msg)
-                elif isinstance(cmd, remote_interface.StdErr):
+                elif isinstance(cmd, interface.StdErr):
                     sys.stderr.write(cmd.msg)
 
     def listen_errors(self, cmd):
         """
         Listen for errors raised from slave part of commander.
         """
-        if isinstance(cmd, (Exception, remote_interface.CommanderError,
-                            remote_interface.MessengerError)):
+        if isinstance(cmd, (Exception, interface.CommanderError,
+                            interface.MessengerError)):
             raise cmd
 
     def listen_cmds(self, cmd):
         """
         Manage basecmds from slave side.
         """
-        if isinstance(cmd, remote_interface.BaseCmd):
+        if isinstance(cmd, interface.BaseCmd):
             if (self.debug):
                 print cmd.func, cmd.results, cmd._finished
 
@@ -280,7 +280,7 @@ class CommanderMaster(messenger.Messenger):
         if succ is None:
             return r_cmd
         if not succ:
-            raise remote_interface.CommanderError("Remote process died.")
+            raise interface.CommanderError("Remote process died.")
 
         self.listen_errors(r_cmd)
         self.listen_streams(r_cmd)
@@ -320,7 +320,7 @@ class CommanderMaster(messenger.Messenger):
         w = wait_timeout(timeout)
         for _ in w:
             r_cmd = self.listen_messenger(time_step)
-            if isinstance(r_cmd, remote_interface.BaseCmd):
+            if isinstance(r_cmd, interface.BaseCmd):
                 if (self.debug):
                     print m_cmd._stdout
                 if r_cmd is not None and r_cmd == m_cmd.basecmd:
