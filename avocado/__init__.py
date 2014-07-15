@@ -21,6 +21,8 @@ import version
 import linux
 import machine
 import virt
+import aexpect
+import env
 
 import logging.config
 
