@@ -12,10 +12,13 @@
 # client/shared/utils.py
 # Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
 
+import getpass
+import os
 import re
 import time
-
 import logging
+
+from avocado.core import exceptions
 
 log = logging.getLogger('avocado.test')
 
@@ -130,3 +133,79 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None):
         time.sleep(step)
 
     return None
+
+
+def format_str_msg(sr):
+    """
+    Format str so that it can be appended to a message.
+    If str consists of one line, prefix it with a space.
+    If str consists of multiple lines, prefix it with a newline.
+
+    :param str: string that will be formatted.
+    """
+    lines = str.splitlines()
+    num_lines = len(lines)
+    sr = "\n".join(lines)
+    if num_lines == 0:
+        return ""
+    elif num_lines == 1:
+        return " " + sr
+    else:
+        return "\n" + sr
+
+
+def strip_console_codes(output):
+    """
+    Remove the Linux console escape and control sequences from the console
+    output. Make the output readable and can be used for result check. Now
+    only remove some basic console codes using during boot up.
+
+    :param output: The output from Linux console
+    :type output: string
+    :return: the string wihout any special codes
+    :rtype: string
+    """
+    if "\x1b" not in output:
+        return output
+
+    old_word = ""
+    return_str = ""
+    index = 0
+    output = "\x1b[m%s" % output
+    console_codes = "%G|\[m|\[[\d;]+[HJnrm]"
+    while index < len(output):
+        tmp_index = 0
+        tmp_word = ""
+        while (len(re.findall("\x1b", tmp_word)) < 2
+               and index + tmp_index < len(output)):
+            tmp_word += output[index + tmp_index]
+            tmp_index += 1
+
+        tmp_word = re.sub("\x1b", "", tmp_word)
+        index += len(tmp_word) + 1
+        if tmp_word == old_word:
+            continue
+        try:
+            special_code = re.findall(console_codes, tmp_word)[0]
+        except IndexError:
+            if index + tmp_index < len(output):
+                raise ValueError("%s is not included in the known console "
+                                 "codes list %s" % (tmp_word, console_codes))
+            continue
+        if special_code == tmp_word:
+            continue
+        old_word = tmp_word
+        return_str += tmp_word[len(special_code):]
+    return return_str
+
+
+def verify_running_as_root():
+    """
+    Verifies whether we're running under UID 0 (root).
+
+    :raise: error.TestNAError
+    """
+    if os.getuid() != 0:
+        raise exceptions.TestNAError("This test requires root privileges "
+                                     "(currently running with user %s)" %
+                                     getpass.getuser())
