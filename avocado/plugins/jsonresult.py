@@ -53,6 +53,7 @@ class JSONTestResult(TestResult):
              'url': test.name,
              'time': test.time_elapsed,
              'status': test.status,
+             'whiteboard': test.whiteboard,
              }
         self.json['tests'].append(t)
 

@@ -29,7 +29,6 @@ from avocado.core import exceptions
 from avocado.utils import process
 from avocado.utils.params import Params
 from avocado import sysinfo
-from avocado import whiteboard
 
 log = logging.getLogger("avocado.test")
 
@@ -174,8 +173,7 @@ class Test(unittest.TestCase):
         self.traceback = None
         self.text_output = None
 
-        whiteboard_path = os.path.join(self.outputdir, 'whiteboard')
-        self.whiteboard = whiteboard.WhiteBoard(self, whiteboard_path)
+        self.whiteboard = ''
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self)
@@ -199,7 +197,7 @@ class Test(unittest.TestCase):
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
-                         'traceback', 'workdir']
+                         'traceback', 'workdir', 'whiteboard']
         for key in sorted(orig):
             if key in preserve_attr:
                 d[key] = orig[key]
@@ -321,7 +319,6 @@ class Test(unittest.TestCase):
             log_exc_info(sys.exc_info())
             action_exception = details
         finally:
-            self.whiteboard.close()
             try:
                 self.cleanup()
             except Exception, details:
