@@ -7,7 +7,6 @@ import glob
 import os
 import re
 import shutil
-import sys
 import logging
 import time
 import threading
@@ -24,6 +23,7 @@ except ImportError:
 
 from avocado import env
 from avocado import aexpect
+from avocado import machine
 from avocado.core import data_dir
 from avocado.utils import misc
 from avocado.utils import crypto
@@ -41,8 +41,10 @@ from avocado.virt.qemu import storage as qemu_storage
 
 class Env(env.Env):
 
-    def __init__(self, filename=None, version=0):
-        super(Env, self).__init__(filename, version)
+    def __init__(self, filename=None, version=0, params=None, test=None):
+        env.Env.__init__(self, filename, version)
+        self.params = params
+        self.test = test
         self.address_cache = address_cache.AddressCache(env=self)
         self.screendump_thread = None
         self.screendump_thread_termination = None
@@ -53,15 +55,15 @@ class Env(env.Env):
     def get_all_vms(self):
         return self.get_all_objects("vm")
 
-    def _take_screendumps(self, test, params):
-        temp_dir = test.debugdir
+    def _take_screendumps(self):
+        temp_dir = self.test.logdir
 
         temp_filename = os.path.join(temp_dir, "scrdump-%s.ppm" %
                                      crypto.get_random_string(6))
-        delay = float(params.get("screendump_delay", 5))
-        quality = int(params.get("screendump_quality", 30))
-        inactivity_treshold = float(params.get("inactivity_treshold", 1800))
-        inactivity_watcher = params.get("inactivity_watcher", "log")
+        delay = float(self.params.get("screendump_delay", 5))
+        quality = int(self.params.get("screendump_quality", 30))
+        inactivity_treshold = float(self.params.get("inactivity_treshold", 1800))
+        inactivity_watcher = self.params.get("inactivity_watcher", "log")
 
         cache = {}
         counter = {}
@@ -93,7 +95,7 @@ class Env(env.Env):
                              vm.name)
                     os.unlink(temp_filename)
                     continue
-                screendump_dir = os.path.join(test.debugdir,
+                screendump_dir = os.path.join(self.test.debugdir,
                                               "screendumps_%s_%s" % (vm.name,
                                                                      vm_pid))
                 try:
@@ -119,7 +121,7 @@ class Env(env.Env):
                                 log.error(msg)
                                 # Let's reset the counter
                                 inactivity[vm.instance] = time.time()
-                                test.background_errors.put(sys.exc_info())
+                                #self.test.background_errors.put(sys.exc_info())
                         elif inactivity_watcher == 'log':
                             log.debug(msg)
                     try:
@@ -150,13 +152,12 @@ class Env(env.Env):
                 break
             self.screendump_thread_termination.wait(delay)
 
-    def pre_process(self, test, params):
-        if params.get('requires_root', 'no') == 'yes':
+    def pre_process(self):
+        if self.params.get('requires_root', 'no') == 'yes':
             misc.verify_running_as_root()
+        self.address_cache.start(self.params)
 
-        self.address_cache.start(params)
-
-        requested_vms = params.objects("vms")
+        requested_vms = self.params.objects("vms")
         for key in self.get_all_vms():
             vm = self[key]
             if vm.name not in requested_vms:
@@ -164,13 +165,12 @@ class Env(env.Env):
                 del self[key]
 
         # Preprocess all VMs and images
-        if not params.get("skip_preprocess", "yes") == "yes":
-            self.process(test, params)
+        if not self.params.get("skip_preprocess", "yes") == "yes":
+            self.process()
 
         # Start screendump thread
         self.screendump_thread = threading.Thread(target=self._take_screendumps,
-                                                  name='Screendump',
-                                                  args=(test, params))
+                                                  name='Screendump')
         self.screendump_thread.start()
         self.screendump_thread_termination = threading.Event()
 
@@ -217,9 +217,10 @@ class Env(env.Env):
         :param env: The environment (a dict-like object).
         :param name: The name of the VM object.
         """
+        print name
         vm = self.get_vm(name)
-        vm_type = params.get('vm_type')
-        target = params.get('target')
+        vm_type = self.params.get('vm_type')
+        target = self.params.get('target')
 
         create_vm = False
         if not vm:
@@ -227,7 +228,7 @@ class Env(env.Env):
         else:
             pass
         if create_vm:
-            vm = self.create_vm(vm_type, target, name, params, test.bindir)
+            vm = self.create_vm(vm_type, target, name, self.params, test.workdir)
 
         old_vm = copy.copy(vm)
 
@@ -249,9 +250,7 @@ class Env(env.Env):
             if not vm.is_alive():
                 start_vm = True
             if params.get("check_vm_needs_restart", "yes") == "yes":
-                if vm.needs_restart(name=name,
-                                    params=params,
-                                    basedir=test.bindir):
+                if vm.needs_restart():
                     vm.devices = None
                     start_vm = True
                     old_vm.destroy(gracefully=gracefully_kill)
@@ -263,14 +262,9 @@ class Env(env.Env):
                 vm.virtnet = network.VirtNet(params, name, vm.instance)
             # Start the VM (or restart it if it's already up)
             if params.get("reuse_previous_config", "no") == "no":
-                vm.create(name, params, test.bindir,
-                          migration_mode=params.get("migration_mode"),
-                          migration_fd=params.get("migration_fd"),
-                          migration_exec_cmd=params.get("migration_exec_cmd_dst"))
+                vm.create()
             else:
-                vm.create(migration_mode=params.get("migration_mode"),
-                          migration_fd=params.get("migration_fd"),
-                          migration_exec_cmd=params.get("migration_exec_cmd_dst"))
+                vm.create()
 
         elif not vm.is_alive():  # VM is dead and won't be started, update params
             vm.devices = None
@@ -326,6 +320,19 @@ class Env(env.Env):
                         vm.resume()
         else:
             self.process_images(self.pre_process_image, test, params)
+
+    def create_vm(self, vm_type, target, name, params, bindir):
+        """
+        Create and register a VM in this Env object
+        """
+        vm_class = machine.mapping[params.get('vm_type')]
+        if vm_class is not None:
+            vm = vm_class(params, name)
+            self.register_vm(name, vm)
+            return vm
+
+    def register_vm(self, name, vm):
+        self.register_object('vm', name, vm)
 
     def process(self, test, params, vm_first):
         """

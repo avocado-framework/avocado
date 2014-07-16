@@ -18,6 +18,7 @@ from avocado.linux import arch
 from avocado.utils import crypto
 from avocado.utils import io
 from avocado.utils import process
+from avocado.utils import params as my_params
 from avocado.virt.openvswitch import base as openvswitch_base
 
 CTYPES_SUPPORT = True
@@ -1882,6 +1883,7 @@ class ParamsNet(VMNet):
 
     def __init__(self, params, vm_name):
         self.subclass_pre_init(params, vm_name)
+        self.params = my_params.Params(self.params)
         # use temporary list to initialize
         result_list = []
         nic_name_list = self.params.objects('nics')

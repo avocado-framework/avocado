@@ -16,6 +16,8 @@ import threading
 
 ENV_VERSION = 1
 
+log = logging.getLogger("avocado.test")
+
 
 def get_env_version():
     return ENV_VERSION
@@ -78,22 +80,22 @@ class Env(UserDict.IterableUserDict):
                     if env.get("version", 0) >= version:
                         self.data = env
                     else:
-                        logging.warn(
+                        log.warn(
                             "Incompatible env file found. Not using it.")
                         self.data = empty
                 else:
                     # No previous env file found, proceed...
-                    logging.warn("Creating new, empty env file")
+                    log.warn("Creating new, empty env file")
                     self.data = empty
             # Almost any exception can be raised during unpickling, so let's
             # catch them all
             except Exception, e:
-                logging.warn("Exception thrown while loading env")
-                logging.warn(e)
-                logging.warn("Creating new, empty env file")
+                log.warn("Exception thrown while loading env")
+                log.warn(e)
+                log.warn("Creating new, empty env file")
                 self.data = empty
         else:
-            logging.warn("Creating new, empty env file")
+            log.warn("Creating new, empty env file")
             self.data = empty
 
     def save(self, filename=None):
@@ -115,7 +117,10 @@ class Env(UserDict.IterableUserDict):
             self.save_lock.release()
 
     def get_object(self, obj_type, name):
-        return self.data["%s__%s" % (obj_type, name)]
+        try:
+            return self.data["%s__%s" % (obj_type, name)]
+        except KeyError:
+            return None
 
     def get_all_objects(self, obj_type):
         """

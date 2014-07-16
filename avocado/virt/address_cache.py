@@ -23,7 +23,7 @@ class AddressCache(object):
         self._env = env
         self._tcpdump = None
         self._tcpdump_log = 'tcpdump.log'
-        self.mapping = self._env.data['address_cache']
+        self.mapping = {}
 
     def _update(self, line):
         if re.search("Your.IP", line, re.IGNORECASE):
@@ -142,18 +142,20 @@ class AddressCache(object):
         if params:
             self.params = params
 
-        if "address_cache" not in self._env.data:
-            self._env.data["address_cache"] = {}
+        if self.params.get('run_tcpdump', 'no') == 'yes':
+            if "address_cache" not in self._env.data:
+                self._env.data["address_cache"] = {}
 
-        if self._tcpdump is None:
-            self._start_tcpdump()
-        else:
-            if not self._tcpdump.is_alive():
-                del self._tcpdump
-                self._start_tcpdump()
+            if self._tcpdump is None:
+                self._start()
+            else:
+                if not self._tcpdump.is_alive():
+                    del self._tcpdump
+                    self._start()
 
     def stop(self):
-        if self._tcpdump is not None:
-            self._tcpdump.close()
-            del self._tcpdump
-            self._tcpdump = None
+        if self.params.get('run_tcpdump', 'no') == 'yes':
+            if self._tcpdump is not None:
+                self._tcpdump.close()
+                del self._tcpdump
+                self._tcpdump = None

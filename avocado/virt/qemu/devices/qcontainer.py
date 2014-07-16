@@ -839,7 +839,7 @@ class DevContainer(object):
             return devices
 
         machine_type = params.get('machine_type')
-        if machine_type:
+        if machine_type is not None:
             m_types = []
             for _ in self.__machine_types.splitlines()[1:]:
                 m_types.append(_.split()[0])
@@ -863,6 +863,7 @@ class DevContainer(object):
                 raise exceptions.TestNAError("Unsupported machine type %s." %
                                              (machine_type))
         else:
+            machine_type = []
             devices = None
             for _ in self.__machine_types.splitlines()[1:]:
                 if 'default' in _:

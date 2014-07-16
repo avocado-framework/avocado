@@ -40,9 +40,9 @@ class QemuCmdLine(object):
         self.params = params
         self.devices = None
         self.vm = vm
-        self.qemu_binary = vm.qemu_binary
+        self.qemu_binary = q_path.get_qemu_binary(params)
         # Start constructing devices representation
-        self.devices = qcontainer.DevContainer(self.qemu_binary, self.name,
+        self.devices = qcontainer.DevContainer(self.qemu_binary, self.vm.name,
                                                self.params.get('strict_mode'),
                                                self.params.get('workaround_qemu_qmp_crash'),
                                                self.params.get('allow_hotplugged_vm'))
@@ -217,13 +217,13 @@ class QemuCmdLine(object):
         return " -m %s" % mem
 
     def add_smp(self):
-        smp_str = " -smp %d" % self.cpuinfo.smp
+        smp_str = " -smp %d" % self.vm.cpuinfo.smp
         smp_pattern = "smp .*n\[,maxcpus=cpus\].*"
         if self.devices.has_option(smp_pattern):
-            smp_str += ",maxcpus=%d" % self.cpuinfo.maxcpus
-        smp_str += ",cores=%d" % self.cpuinfo.cores
-        smp_str += ",threads=%d" % self.cpuinfo.threads
-        smp_str += ",sockets=%d" % self.cpuinfo.sockets
+            smp_str += ",maxcpus=%d" % self.vm.cpuinfo.maxcpus
+        smp_str += ",cores=%d" % self.vm.cpuinfo.cores
+        smp_str += ",threads=%d" % self.vm.cpuinfo.threads
+        smp_str += ",sockets=%d" % self.vm.cpuinfo.sockets
         return smp_str
 
     def add_nic(self, vlan, model=None, mac=None, device_id=None,
@@ -737,7 +737,7 @@ class QemuCmdLine(object):
             numa_cmd += ",nodeid=%s" % nodeid
         return numa_cmd
 
-    def assemble(self, vm):
+    def assemble(self):
         """
         Assemble the qemu command line.
         """
@@ -863,7 +863,7 @@ class QemuCmdLine(object):
         # Add monitors
         for monitor_name in params.objects("monitors"):
             monitor_params = params.object_params(monitor_name)
-            monitor_filename = monitor.get_monitor_filename(vm, monitor_name)
+            monitor_filename = monitor.get_monitor_filename(self.vm, monitor_name)
             if monitor_params.get("monitor_type") == "qmp":
                 cmd = self.add_qmp_monitor(monitor_name, monitor_filename)
                 self.devices.insert(qdevices.QStringDevice('QMP-%s' % monitor_name, cmdline=cmd))
@@ -873,7 +873,7 @@ class QemuCmdLine(object):
 
         # Add serial console redirection
         for serial in params.objects("isa_serials"):
-            serial_filename = vm.get_serial_console_filename(serial)
+            serial_filename = self.vm.get_serial_console_filename(serial)
             cmd = self.add_serial(serial, serial_filename)
             self.devices.insert(qdevices.QStringDevice('SER-%s' % serial, cmdline=cmd))
 
@@ -984,11 +984,11 @@ class QemuCmdLine(object):
         for redir_name in params.objects("redirs"):
             redir_params = params.object_params(redir_name)
             guest_port = int(redir_params.get("guest_port"))
-            host_port = vm.redirs.get(guest_port)
+            host_port = self.vm.redirs.get(guest_port)
             redirs += [(host_port, guest_port)]
 
         iov = 0
-        for nic in vm.virtnet:
+        for nic in self.vm.virtnet:
             nic_params = params.object_params(nic.nic_name)
             if nic_params.get('pci_assignable') == "no":
                 script = nic_params.get("nic_script")
@@ -1001,7 +1001,7 @@ class QemuCmdLine(object):
                     downscript = path.get_path(script_dir, downscript)
                 # setup nic parameters as needed
                 # add_netdev if netdev_id not set
-                nic = vm.add_nic(**dict(nic))
+                nic = self.vm.add_nic(**dict(nic))
                 # gather set values or None if unset
                 vlan = int(nic.get('vlan'))
                 netdev_id = nic.get('netdev_id')
@@ -1099,7 +1099,7 @@ class QemuCmdLine(object):
                                                            params=net_params, cmdline_nd=cmd_nd))
             else:
                 device_driver = nic_params.get("device_driver", "pci-assign")
-                pci_id = vm.pa_pci_ids[iov]
+                pci_id = self.vm.pa_pci_ids[iov]
                 pci_id = ":".join(pci_id.split(":")[1:])
                 self.add_pci_device(self.devices, pci_id, params=nic_params,
                                     device_driver=device_driver,
@@ -1142,11 +1142,11 @@ class QemuCmdLine(object):
             else:
                 vcpu_threads = int(smp / (vcpu_cores * vcpu_sockets)) or 1
 
-        self.cpuinfo.smp = smp
-        self.cpuinfo.maxcpus = vcpu_maxcpus or smp
-        self.cpuinfo.cores = vcpu_cores
-        self.cpuinfo.threads = vcpu_threads
-        self.cpuinfo.sockets = vcpu_sockets
+        self.vm.cpuinfo.smp = smp
+        self.vm.cpuinfo.maxcpus = vcpu_maxcpus or smp
+        self.vm.cpuinfo.cores = vcpu_cores
+        self.vm.cpuinfo.threads = vcpu_threads
+        self.vm.cpuinfo.sockets = vcpu_sockets
         self.devices.insert(qdevices.QStringDevice('smp', cmdline=self.add_smp()))
 
         numa_total_cpus = 0
@@ -1194,10 +1194,10 @@ class QemuCmdLine(object):
             vendor = params.get("cpu_model_vendor")
             flags = params.get("cpu_model_flags")
             family = params.get("cpu_family")
-            self.cpuinfo.model = cpu_model
-            self.cpuinfo.vendor = vendor
-            self.cpuinfo.flags = flags
-            self.cpuinfo.family = family
+            self.vm.cpuinfo.model = cpu_model
+            self.vm.cpuinfo.vendor = vendor
+            self.vm.cpuinfo.flags = flags
+            self.vm.cpuinfo.family = family
             cmd = self.add_cpu_flags(cpu_model, flags, vendor, family)
             self.devices.insert(qdevices.QStringDevice('cpu', cmdline=cmd))
 
@@ -1301,7 +1301,7 @@ class QemuCmdLine(object):
         if params.get("display") == "vnc":
             vnc_extra_params = params.get("vnc_extra_params")
             vnc_password = params.get("vnc_password", "no")
-            cmd += self.add_vnc(self.vnc_port, vnc_password,
+            cmd += self.add_vnc(self.vm.vnc_port, vnc_password,
                                 vnc_extra_params)
         elif params.get("display") == "sdl":
             cmd += self.add_sdl()
@@ -1338,14 +1338,14 @@ class QemuCmdLine(object):
             self.devices.insert(qdevices.QStringDevice('display', cmdline=cmd))
 
         if params.get("uuid") == "random":
-            cmd = self.add_uuid(vm.uuid)
+            cmd = self.add_uuid(self.vm.uuid)
             self.devices.insert(qdevices.QStringDevice('uuid', cmdline=cmd))
         elif params.get("uuid"):
             cmd = self.add_uuid(params.get("uuid"))
             self.devices.insert(qdevices.QStringDevice('uuid', cmdline=cmd))
 
         if params.get("testdev") == "yes":
-            cmd = self.add_testdev(vm.get_testlog_filename())
+            cmd = self.add_testdev(self.vm.get_testlog_filename())
             self.devices.insert(qdevices.QStringDevice('testdev', cmdline=cmd))
 
         if params.get("isa_debugexit") == "yes":
