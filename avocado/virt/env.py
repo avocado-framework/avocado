@@ -217,7 +217,6 @@ class Env(env.Env):
         :param env: The environment (a dict-like object).
         :param name: The name of the VM object.
         """
-        print name
         vm = self.get_vm(name)
         vm_type = self.params.get('vm_type')
         target = self.params.get('target')

@@ -173,6 +173,7 @@ class Monitor:
         """
         self.vm = vm
         self.name = name
+        print 'initializing monitor %s' % name
         self.filename = filename
         self._lock = threading.RLock()
         self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

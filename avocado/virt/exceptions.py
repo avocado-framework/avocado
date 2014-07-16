@@ -406,3 +406,21 @@ class VMScreenInactiveError(VMError):
         msg = ("%s screen is inactive for %d s (%d min)" %
                (self.vm.name, self.inactive_time, self.inactive_time / 60))
         return msg
+
+
+class VMMigrateProtoUnsupportedError(VMMigrateProtoUnknownError):
+
+    """
+    When QEMU tells us it doesn't know about a given migration protocol.
+
+    This usually happens when we're testing older QEMU. It makes sense to
+    skip the test in this situation.
+    """
+
+    def __init__(self, protocol, output):
+        self.protocol = protocol
+        self.output = output
+
+    def __str__(self):
+        return ("QEMU reports it doesn't know migration protocol '%s'. "
+                "QEMU output: %s" % (self.protocol, self.output))

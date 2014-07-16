@@ -1,6 +1,6 @@
 variants:
     - qemu:
-        t_type = unittest
+        t_type = ut
         vms = unittest_vm
         vm_type = virtual-qemu
         main_vm = unittest_vm
