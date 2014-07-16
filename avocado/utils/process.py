@@ -26,7 +26,9 @@ import time
 import threading
 
 from avocado.core import exceptions
-from avocado.utils import misc
+import misc
+import io
+
 
 log = logging.getLogger('avocado.test')
 
@@ -147,6 +149,75 @@ def is_zombie(ppid):
             defunct = True
             break
     return defunct
+
+
+def pid_is_alive(pid):
+    """
+    True if process pid exists and is not yet stuck in Zombie state.
+    Zombies are impossible to move between cgroups, etc.
+    pid can be integer, or text of integer.
+    """
+    path = '/proc/%s/stat' % pid
+
+    try:
+        stat = io.read_one_line(path)
+    except IOError:
+        if not os.path.exists(path):
+            # file went away
+            return False
+        raise
+
+    return stat.split()[2] != 'Z'
+
+
+def get_pid_path(program_name, pid_files_dir=None):
+    if not pid_files_dir:
+        base_dir = os.path.dirname(__file__)
+        pid_path = os.path.abspath(os.path.join(base_dir, "..", "..",
+                                                "%s.pid" % program_name))
+    else:
+        pid_path = os.path.join(pid_files_dir, "%s.pid" % program_name)
+
+    return pid_path
+
+
+def get_pid_from_file(program_name, pid_files_dir=None):
+    """
+    Reads the pid from <program_name>.pid in the autotest directory.
+
+    :param program_name the name of the program
+    :return: the pid if the file exists, None otherwise.
+    """
+    pidfile_path = get_pid_path(program_name, pid_files_dir)
+    if not os.path.exists(pidfile_path):
+        return None
+
+    pidfile = open(get_pid_path(program_name, pid_files_dir), 'r')
+
+    try:
+        try:
+            pid = int(pidfile.readline())
+        except IOError:
+            if not os.path.exists(pidfile_path):
+                return None
+            raise
+    finally:
+        pidfile.close()
+
+    return pid
+
+
+def is_alive(program_name, pid_files_dir=None):
+    """
+    Checks if the process is alive and not in Zombie state.
+
+    :param program_name the name of the program
+    :return: True if still alive, False otherwise
+    """
+    pid = get_pid_from_file(program_name, pid_files_dir)
+    if pid is None:
+        return False
+    return pid_is_alive(pid)
 
 
 class CmdResult(object):

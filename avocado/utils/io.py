@@ -1,3 +1,4 @@
+import fcntl
 import os
 import time
 
@@ -5,6 +6,17 @@ from avocado.utils import path
 
 _open_log_files = {}
 _log_file_dir = "/tmp"
+
+
+def lock_file(filename, mode=fcntl.LOCK_EX):
+    lockfile = open(filename, "w")
+    fcntl.lockf(lockfile, mode)
+    return lockfile
+
+
+def unlock_file(lockfile):
+    fcntl.lockf(lockfile, fcntl.LOCK_UN)
+    lockfile.close()
 
 
 def read_file(filename):

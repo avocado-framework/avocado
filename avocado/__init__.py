@@ -23,6 +23,7 @@ import machine
 import virt
 import aexpect
 import env
+import settings
 
 import logging.config
 

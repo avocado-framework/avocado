@@ -54,6 +54,13 @@ def get_random_string(length, ignore_str=string.punctuation,
     return result
 
 
+def get_random_id():
+    """
+    Return a random string suitable for use as a qemu id.
+    """
+    return "id" + get_random_string(6)
+
+
 def hash_wrapper(algorithm='md5', data=None):
     """
     Returns an hash object of data using md5 or sha1.

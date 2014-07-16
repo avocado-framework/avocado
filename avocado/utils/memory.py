@@ -23,8 +23,8 @@ import glob
 import math
 import logging
 
-from avocado.utils import process
-from avocado.utils import path
+import process
+import path
 
 log = logging.getLogger("avocado.test")
 

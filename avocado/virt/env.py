@@ -3,7 +3,10 @@ Base avocado Environment class enhanced with methods used by virt tests.
 """
 
 import copy
+import glob
 import os
+import re
+import shutil
 import sys
 import logging
 import time
@@ -20,15 +23,18 @@ except ImportError:
                 'distro.')
 
 from avocado import env
+from avocado import aexpect
 from avocado.core import data_dir
-from avocado.core import exceptions
 from avocado.utils import misc
 from avocado.utils import crypto
+from avocado.utils import remote
 
 from avocado.virt import ppm_utils
 from avocado.virt import address_cache
 from avocado.virt import exceptions as virt_exceptions
 from avocado.virt import storage
+from avocado.virt import video_maker
+from avocado.virt.utils import network
 from avocado.virt.qemu import monitor
 from avocado.virt.qemu import storage as qemu_storage
 
@@ -139,13 +145,10 @@ class Env(env.Env):
                         pass
                 os.unlink(temp_filename)
 
-            if self._screendump_thread_termination is not None:
-                if self._screendump_thread_termination.isSet():
-                    self._screendump_thread_termination = None
-                    break
-                self._screendump_thread_termination.wait(delay)
-            else:
+            if self.screendump_thread_termination.isSet():
+                self.screendump_thread_termination = None
                 break
+            self.screendump_thread_termination.wait(delay)
 
     def pre_process(self, test, params):
         if params.get('requires_root', 'no') == 'yes':
@@ -169,6 +172,7 @@ class Env(env.Env):
                                                   name='Screendump',
                                                   args=(test, params))
         self.screendump_thread.start()
+        self.screendump_thread_termination = threading.Event()
 
     def pre_process_image(self, test, params, image_name):
         """
@@ -240,51 +244,41 @@ class Env(env.Env):
 
         if params.get("migration_mode"):
             start_vm = True
+
         elif params.get("start_vm") == "yes":
-            # need to deal with libvirt VM differently than qemu
-            if vm_type == 'libvirt' or vm_type == 'v2v':
-                if not vm.is_alive():
+            if not vm.is_alive():
+                start_vm = True
+            if params.get("check_vm_needs_restart", "yes") == "yes":
+                if vm.needs_restart(name=name,
+                                    params=params,
+                                    basedir=test.bindir):
+                    vm.devices = None
                     start_vm = True
-            else:
-                if not vm.is_alive():
-                    start_vm = True
-                if params.get("check_vm_needs_restart", "yes") == "yes":
-                    if vm.needs_restart(name=name,
-                                        params=params,
-                                        basedir=test.bindir):
-                        vm.devices = None
-                        start_vm = True
-                        old_vm.destroy(gracefully=gracefully_kill)
-                        update_virtnet = True
+                    old_vm.destroy(gracefully=gracefully_kill)
+                    update_virtnet = True
 
         if start_vm:
-            if vm_type == "libvirt" and params.get("type") != "unattended_install":
-                vm.params = params
-                vm.start()
-            elif vm_type == "v2v":
-                vm.params = params
-                vm.start()
+            if update_virtnet:
+                vm.update_vm_id()
+                vm.virtnet = network.VirtNet(params, name, vm.instance)
+            # Start the VM (or restart it if it's already up)
+            if params.get("reuse_previous_config", "no") == "no":
+                vm.create(name, params, test.bindir,
+                          migration_mode=params.get("migration_mode"),
+                          migration_fd=params.get("migration_fd"),
+                          migration_exec_cmd=params.get("migration_exec_cmd_dst"))
             else:
-                if update_virtnet:
-                    vm.update_vm_id()
-                    vm.virtnet = utils_net.VirtNet(params, name, vm.instance)
-                # Start the VM (or restart it if it's already up)
-                if params.get("reuse_previous_config", "no") == "no":
-                    vm.create(name, params, test.bindir,
-                              migration_mode=params.get("migration_mode"),
-                              migration_fd=params.get("migration_fd"),
-                              migration_exec_cmd=params.get("migration_exec_cmd_dst"))
-                else:
-                    vm.create(migration_mode=params.get("migration_mode"),
-                              migration_fd=params.get("migration_fd"),
-                              migration_exec_cmd=params.get("migration_exec_cmd_dst"))
-        elif not vm.is_alive():    # VM is dead and won't be started, update params
+                vm.create(migration_mode=params.get("migration_mode"),
+                          migration_fd=params.get("migration_fd"),
+                          migration_exec_cmd=params.get("migration_exec_cmd_dst"))
+
+        elif not vm.is_alive():  # VM is dead and won't be started, update params
             vm.devices = None
             vm.params = params
         else:
             # Only work when parameter 'start_vm' is no and VM is alive
-            if params.get("kill_vm_before_test") == "yes" and\
-               params.get("start_vm") == "no":
+            if (params.get("kill_vm_before_test") == "yes" and
+                    params.get("start_vm") == "no"):
                 old_vm.destroy(gracefully=gracefully_kill)
             else:
                 # VM is alive and we just need to open the serial console
@@ -301,11 +295,43 @@ class Env(env.Env):
         if pause_vm:
             vm.pause()
 
-    def process(self, test, params):
+    def _call_vm_func(self, test, params):
+        for vm_name in params.objects("vms"):
+            vm_params = params.object_params(vm_name)
+            self.pre_process_vm(test, vm_params, vm_name)
+
+    def _call_image_func(self, test, params):
+        if params.get("skip_image_processing") == "yes":
+            return
+
+        if params.objects("vms"):
+            for vm_name in params.objects("vms"):
+                vm_params = params.object_params(vm_name)
+                vm = self.get_vm(vm_name)
+                unpause_vm = False
+                if vm is None or vm.is_dead():
+                    vm_process_status = 'dead'
+                else:
+                    vm_process_status = 'running'
+                if vm is not None and vm.is_alive() and not vm.is_paused():
+                    vm.pause()
+                    unpause_vm = True
+                    vm_params['skip_cluster_leak_warn'] = "yes"
+                try:
+                    self.process_images(self.pre_process_image, test,
+                                        vm_params,
+                                        vm_process_status)
+                finally:
+                    if unpause_vm:
+                        vm.resume()
+        else:
+            self.process_images(self.pre_process_image, test, params)
+
+    def process(self, test, params, vm_first):
         """
         Pre- or post-process VMs and images according to the instructions in params.
         Call image_func for each image listed in params and vm_func for each VM.
-    
+
         :param test: An Autotest test object.
         :param params: A dict containing all VM and image parameters.
         :param env: The environment (a dict-like object).
@@ -313,44 +339,136 @@ class Env(env.Env):
         :param vm_func: A function to call for each VM.
         :param vm_first: Call vm_func first or not.
         """
-        def _call_vm_func():
-            for vm_name in params.objects("vms"):
-                vm_params = params.object_params(vm_name)
-                vm_func(test, vm_params, env, vm_name)
-
-        def _call_image_func():
-            if params.get("skip_image_processing") == "yes":
-                return
-
-            if params.objects("vms"):
-                for vm_name in params.objects("vms"):
-                    vm_params = params.object_params(vm_name)
-                    vm = self.get_vm(vm_name)
-                    unpause_vm = False
-                    if vm is None or vm.is_dead():
-                        vm_process_status = 'dead'
-                    else:
-                        vm_process_status = 'running'
-                    if vm is not None and vm.is_alive() and not vm.is_paused():
-                        vm.pause()
-                        unpause_vm = True
-                        vm_params['skip_cluster_leak_warn'] = "yes"
-                    try:
-                        self.process_images(image_func, test, vm_params,
-                                            vm_process_status)
-                    finally:
-                        if unpause_vm:
-                            vm.resume()
-            else:
-                process_images(image_func, test, params)
-
         if not vm_first:
-            _call_image_func()
+            self._call_image_func(test, params)
 
-        _call_vm_func()
+        self._call_vm_func(test, params)
 
         if vm_first:
-            _call_image_func()
+            self._call_image_func(test, params)
 
     def post_process(self, test, params):
-        pass
+        """
+        Postprocess all VMs and images according to the instructions in params.
+
+        :param test: An Autotest test object.
+        :param params: Dict containing all VM and image parameters.
+        """
+        err = ""
+
+        # Postprocess all VMs and images
+        try:
+            self.process(test, params, vm_first=True)
+        except Exception, details:
+            err += "\nPostprocess: %s" % str(details).replace('\\n', '\n  ')
+            logging.error(details)
+
+        # Terminate the screendump thread
+        self.screendump_thread_termination_event.set()
+        self.screendump_thread.join(10)
+
+        # Encode an HTML 5 compatible video from the screenshots produced
+
+        dirs = re.findall("(screendump\S*_[0-9]+)", str(os.listdir(test.debugdir)))
+        for _ in dirs:
+            screendump_dir = os.path.join(test.debugdir, dir)
+            if (params.get("encode_video_files", "yes") == "yes" and
+                    glob.glob("%s/*" % screendump_dir)):
+                try:
+                    video = video_maker.GstPythonVideoMaker()
+                    if (video.has_element('vp8enc') and video.has_element('webmmux')):
+                        video_file = os.path.join(test.debugdir, "%s-%s.webm" %
+                                                  (screendump_dir, test.iteration))
+                    else:
+                        video_file = os.path.join(test.debugdir, "%s-%s.ogg" %
+                                                  (screendump_dir, test.iteration))
+                    logging.debug("Encoding video file %s", video_file)
+                    video.start(screendump_dir, video_file)
+
+                except Exception, detail:
+                    logging.info(
+                        "Video creation failed for %s: %s", screendump_dir, detail)
+
+        # Warn about corrupt PPM files
+        for f in glob.glob(os.path.join(test.debugdir, "*.ppm")):
+            if not ppm_utils.image_verify_ppm_file(f):
+                logging.warn("Found corrupt PPM file: %s", f)
+
+        # Should we convert PPM files to PNG format?
+        if params.get("convert_ppm_files_to_png", "no") == "yes":
+            try:
+                for f in glob.glob(os.path.join(test.debugdir, "*.ppm")):
+                    if ppm_utils.image_verify_ppm_file(f):
+                        new_path = f.replace(".ppm", ".png")
+                        image = PIL.Image.open(f)
+                        image.save(new_path, format='PNG')
+            except NameError:
+                pass
+
+        # Should we keep the PPM files?
+        if params.get("keep_ppm_files", "no") != "yes":
+            for f in glob.glob(os.path.join(test.debugdir, '*.ppm')):
+                os.unlink(f)
+
+        # Should we keep the screendump dirs?
+        if params.get("keep_screendumps", "no") != "yes":
+            for d in glob.glob(os.path.join(test.debugdir, "screendumps_*")):
+                if os.path.isdir(d) and not os.path.islink(d):
+                    shutil.rmtree(d, ignore_errors=True)
+
+        # Should we keep the video files?
+        if params.get("keep_video_files", "yes") != "yes":
+            for f in (glob.glob(os.path.join(test.debugdir, '*.ogg')) +
+                      glob.glob(os.path.join(test.debugdir, '*.webm'))):
+                os.unlink(f)
+
+        # Kill all unresponsive VMs
+        if params.get("kill_unresponsive_vms") == "yes":
+            for vm in self.get_all_vms():
+                if vm.is_dead() or vm.is_paused():
+                    continue
+                try:
+                    # Test may be fast, guest could still be booting
+                    if len(vm.virtnet) > 0:
+                        session = vm.wait_for_login(timeout=vm.LOGIN_WAIT_TIMEOUT)
+                        session.close()
+                    else:
+                        session = vm.wait_for_serial_login(
+                            timeout=vm.LOGIN_WAIT_TIMEOUT)
+                        session.close()
+                except (remote.LoginError, virt_exceptions.VMError, IndexError), e:
+                    logging.warn(e)
+                    vm.destroy(gracefully=False)
+
+        # Kill VMs with deleted disks
+        for vm in self.get_all_vms():
+            destroy = False
+            vm_params = params.object_params(vm.name)
+            for image in vm_params.objects('images'):
+                if params.object_params(image).get('remove_image') == 'yes':
+                    destroy = True
+            if destroy and not vm.is_dead():
+                logging.debug('Image of VM %s was removed, destroing it.', vm.name)
+                vm.destroy()
+
+        # Terminate address cache process
+        self.address_cache.stop()
+
+        # Kill all aexpect tail threads
+        aexpect.kill_tail_threads()
+
+        living_vms = [vm for vm in self.get_all_vms() if vm.is_alive()]
+        # Close all monitor socket connections of living vm.
+        for vm in living_vms:
+            if hasattr(vm, "monitors"):
+                for m in vm.monitors:
+                    try:
+                        m.close()
+                    except Exception:
+                        pass
+            # Close the serial console session, as it'll help
+            # keeping the number of filedescriptors used by virt-test honest.
+            vm.cleanup_serial_console()
+
+        if err:
+            raise virt_exceptions.VMError("Failures occurred while postprocess:%s" % err)

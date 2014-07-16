@@ -865,8 +865,7 @@ class QemuCmdLine(object):
             monitor_params = params.object_params(monitor_name)
             monitor_filename = monitor.get_monitor_filename(vm, monitor_name)
             if monitor_params.get("monitor_type") == "qmp":
-                cmd = self.add_qmp_monitor(self.devices, monitor_name,
-                                           monitor_filename)
+                cmd = self.add_qmp_monitor(monitor_name, monitor_filename)
                 self.devices.insert(qdevices.QStringDevice('QMP-%s' % monitor_name, cmdline=cmd))
             else:
                 cmd = self.add_human_monitor(monitor_name, monitor_filename)
