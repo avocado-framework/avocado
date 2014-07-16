@@ -1,0 +1,19 @@
+Supported machines are:
+none                 empty machine
+pc                   Standard PC (i440FX + PIIX, 1996) (alias of pc-i440fx-1.5)
+pc-i440fx-1.5        Standard PC (i440FX + PIIX, 1996) (default)
+pc-i440fx-1.4        Standard PC (i440FX + PIIX, 1996)
+pc-1.3               Standard PC
+pc-1.2               Standard PC
+pc-1.1               Standard PC
+pc-1.0               Standard PC
+pc-0.15              Standard PC
+pc-0.14              Standard PC
+pc-0.13              Standard PC
+pc-0.12              Standard PC
+pc-0.11              Standard PC, qemu 0.11
+pc-0.10              Standard PC, qemu 0.10
+isapc                ISA-only PC
+q35                  Standard PC (Q35 + ICH9, 2009) (alias of pc-q35-1.5)
+pc-q35-1.5           Standard PC (Q35 + ICH9, 2009)
+pc-q35-1.4           Standard PC (Q35 + ICH9, 2009)

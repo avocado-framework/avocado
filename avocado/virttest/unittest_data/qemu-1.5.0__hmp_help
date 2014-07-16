@@ -1,0 +1,90 @@
+help
+acl_add aclname match allow|deny [index] -- add a match rule to the access control list
+acl_policy aclname allow|deny -- set default access control list policy
+acl_remove aclname match -- remove a match rule from the access control list
+acl_reset aclname -- reset the access control list
+acl_show aclname -- list rules in the access control list
+balloon target -- request VM to change its memory allocation (in MB)
+block_job_cancel [-f] device -- stop an active background block operation (use -f
+                         if the operation is currently paused)
+block_job_complete device -- stop an active background block operation
+block_job_pause device -- pause an active background block operation
+block_job_resume device -- resume a paused background block operation
+block_job_set_speed device speed -- set maximum speed for a background block operation
+block_passwd block_passwd device password -- set the password of encrypted block devices
+block_resize device size -- resize a block image
+block_set_io_throttle device bps bps_rd bps_wr iops iops_rd iops_wr -- change I/O throttle limits for a block drive
+block_stream device [speed [base]] -- copy data from a backing file into a block device
+boot_set bootdevice -- define new values for the boot device list
+change device filename [format] -- change a removable medium, optional format
+chardev-add args -- add chardev
+chardev-remove id -- remove chardev
+client_migrate_info protocol hostname port tls-port cert-subject -- send migration info to spice/vnc client
+closefd closefd name -- close a file descriptor previously passed via SCM rights
+commit device|all -- commit changes to the disk images (if -snapshot is used) or backing files
+cpu index -- set the default CPU
+c|cont  -- resume emulation
+delvm tag|id -- delete a VM snapshot from its tag or id
+device_add driver[,prop=value][,...] -- add device, like -device on the command line
+device_del device -- remove device
+drive_add [[<domain>:]<bus>:]<slot>
+[file=file][,if=type][,bus=n]
+[,unit=m][,media=d][,index=i]
+[,cyls=c,heads=h,secs=s[,trans=t]]
+[,snapshot=on|off][,cache=on|off]
+[,readonly=on|off][,copy-on-read=on|off] -- add drive to PCI storage controller
+drive_del device -- remove host block device
+drive_mirror [-n] [-f] device target [format] -- initiates live storage
+                        migration for a device. The device's contents are
+                        copied to the new image file, including data that
+                        is written after the command is started.
+                        The -n flag requests QEMU to reuse the image found
+                        in new-image-file, instead of recreating it from scratch.
+                        The -f flag requests QEMU to copy the whole disk,
+                        so that the result does not need a backing file.
+
+dump-guest-memory [-p] filename [begin] [length] -- dump guest memory to file
+                         begin(optional): the starting physical address
+                         length(optional): the memory size, in bytes
+eject [-f] device -- eject a removable medium (use -f to force it)
+expire_password protocol time -- set spice/vnc password expire-time
+gdbserver [device] -- start gdbserver on given device (default 'tcp::1234'), stop with 'none'
+getfd getfd name -- receive a file descriptor via SCM rights and assign it a name
+help|? [cmd] -- show the help
+host_net_add tap|user|socket|vde|dump [options] -- add host VLAN client
+host_net_remove vlan_id name -- remove host VLAN client
+hostfwd_add [vlan_id name] [tcp|udp]:[hostaddr]:hostport-[guestaddr]:guestport -- redirect TCP or UDP connections from host to guest (requires -net user)
+hostfwd_remove [vlan_id name] [tcp|udp]:[hostaddr]:hostport -- remove host-to-guest TCP or UDP redirection
+i /fmt addr -- I/O port read
+info [subcommand] -- show various information about the system state
+loadvm tag|id -- restore a VM snapshot from its tag or id
+log item1[,...] -- activate logging of the specified items
+logfile filename -- output logs to 'filename'
+mce [-b] cpu bank status mcgstatus addr misc -- inject a MCE on the given CPU [and broadcast to other CPUs with -b option]
+memsave addr size file -- save to disk virtual memory dump starting at 'addr' of size 'size'
+migrate [-d] [-b] [-i] uri -- migrate to URI (using -d to not wait for completion)
+                         -b for migration without shared storage with full copy of disk
+                         -i for migration without shared storage with incremental copy of disk (base image shared between src and destination)
+migrate_cancel  -- cancel the current VM migration
+migrate_set_cache_size value -- set cache size (in bytes) for XBZRLE migrations,the cache size will be rounded down to the nearest power of 2.
+The cache size affects the number of cache misses.In case of a high cache miss ratio you need to increase the cache size
+migrate_set_capability capability state -- Enable/Disable the usage of a capability for migration
+migrate_set_downtime value -- set maximum tolerated downtime (in seconds) for migrations
+migrate_set_speed value -- set maximum speed (in bytes) for migrations. Defaults to MB if no size suffix is specified, ie. B/K/M/G/T
+mouse_button state -- change mouse button state (1=L, 2=M, 4=R)
+mouse_move dx dy [dz] -- send mouse move events
+mouse_set index -- set which mouse device receives events
+nbd_server_add nbd_server_add [-w] device -- export a block device via NBD
+nbd_server_start nbd_server_start [-a] [-w] host:port -- serve block devices on the given host and port
+nbd_server_stop nbd_server_stop -- stop serving block devices using the NBD protocol
+netdev_add [user|tap|socket|hubport],id=str[,prop=value][,...] -- add host network device
+netdev_del id -- remove host network device
+nmi  -- inject an NMI on all guest's CPUs
+o /fmt addr value -- I/O port write
+pci_add auto|[[<domain>:]<bus>:]<slot> nic|storage [[vlan=n][,macaddr=addr][,model=type]] [file=file][,if=type][,bus=nr]... -- hot-add PCI device
+pci_del [[<domain>:]<bus>:]<slot> -- hot remove PCI device
+pcie_aer_inject_error [-a] [-c] id <error_status> [<tlp header> [<tlp header prefix>]] -- inject pcie aer error
+                         -a for advisory non fatal error
+                         -c for correctable error
+                        <id> = qdev device id
+                        <error_status> = error string or 32bit
