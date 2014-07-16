@@ -1,0 +1,21 @@
+variants:
+    - qemu:
+        t_type = unittest
+        vms = unittest_vm
+        vm_type = virtual-qemu
+        main_vm = unittest_vm
+        start_vm = yes
+        kill_vm = yes
+        kill_vm_gracefully = no
+        monitors = hmp1
+        main_monitor = hmp1
+        monitor_type = human
+        isa_serials = "serial0"
+        take_regular_screendumps = no
+        qemu_binary = qemu
+        qemu_img_binary = qemu-img
+        mem = 512
+        display = vnc
+        used_cpus = 1
+        used_mem = 512
+        run_tcpdump = no
