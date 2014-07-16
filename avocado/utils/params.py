@@ -38,14 +38,14 @@ class Params(UserDict.IterableUserDict):
                                    "convert to %s: %s" %
                                    (key, value, vtype, details))
 
-    def __getattr__(self, attr):
-        try:
-            return UserDict.IterableUserDict.__getattr__(self, attr)  # @UndefinedVariable
-        except AttributeError:
-            try:
-                return self.__getitem__(attr)
-            except ParamNotFound:
-                return None
+    #def __getattr__(self, attr):
+    #    try:
+    #        return UserDict.IterableUserDict.__getattr__(self, attr)  # @UndefinedVariable
+    #    except AttributeError:
+    #        try:
+    #            return self.__getitem__(attr)
+    #        except ParamNotFound:
+    #            return None
 
     def objects(self, key):
         """

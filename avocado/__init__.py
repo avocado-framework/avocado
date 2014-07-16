@@ -19,6 +19,11 @@ import job
 import test
 import version
 import linux
+import machine
+import virt
+import aexpect
+import env
+import settings
 
 import logging.config
 

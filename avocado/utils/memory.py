@@ -17,14 +17,286 @@
 # Authors: Yiqiao Pu <ypu@redhat.com>
 
 
+import os
 import re
 import glob
 import math
 import logging
 
-from avocado.utils import process
+import process
+import path
 
-# Returns total memory in kb
+log = logging.getLogger("avocado.test")
+
+
+def cpu_str_to_list(origin_str):
+    """
+    Convert the cpu string to a list. The string may include comma and
+    hyphen.
+
+    :param origin_str: the cpu info string read from system
+    :type origin_str: string
+    :return: A list of the cpu ids
+    :rtype: list
+    """
+    if isinstance(origin_str, str):
+        cpu_list = []
+        for cpu in origin_str.strip().split(","):
+            if "-" in cpu:
+                start, end = cpu.split("-")
+                for cpu_id in range(int(start), int(end) + 1):
+                    cpu_list.append(cpu_id)
+            else:
+                try:
+                    cpu_id = int(cpu)
+                    cpu_list.append(cpu_id)
+                except ValueError:
+                    logging.error("Illegimate string in cpu "
+                                  "informations: %s" % cpu)
+                    cpu_list = []
+                    break
+        cpu_list.sort()
+        return cpu_list
+
+
+class NumaInfo(object):
+
+    """
+    Numa topology for host. Also provide the function for check the memory status
+    of the node.
+    """
+
+    def __init__(self, all_nodes_path=None, online_nodes_path=None):
+        """
+        :param all_nodes_path: Alternative path to
+                /sys/devices/system/node/possible. Useful for unittesting.
+        :param all_nodes_path: Alternative path to
+                /sys/devices/system/node/online. Useful for unittesting.
+        """
+        self.numa_sys_path = "/sys/devices/system/node"
+        self.all_nodes = self.get_all_nodes(all_nodes_path)
+        self.online_nodes = self.get_online_nodes(online_nodes_path)
+        self.nodes = {}
+        self.distances = {}
+        for node_id in self.online_nodes:
+            self.nodes[node_id] = NumaNode(node_id + 1)
+            self.distances[node_id] = self.get_node_distance(node_id)
+
+    def get_all_nodes(self, all_nodes_path=None):
+        """
+        Get all node ids in host.
+
+        :return: All node ids in host
+        :rtype: list
+        """
+        if all_nodes_path is None:
+            all_nodes = path.get_path(self.numa_sys_path, "possible")
+        else:
+            all_nodes = all_nodes_path
+        all_nodes_file = open(all_nodes, "r")
+        nodes_info = all_nodes_file.read()
+        all_nodes_file.close()
+
+        return cpu_str_to_list(nodes_info)
+
+    def get_online_nodes(self, online_nodes_path=None):
+        """
+        Get node ids online in host
+
+        :return: The ids of node which is online
+        :rtype: list
+        """
+        if online_nodes_path is None:
+            online_nodes = path.get_path(self.numa_sys_path, "online")
+        else:
+            online_nodes = online_nodes_path
+        online_nodes_file = open(online_nodes, "r")
+        nodes_info = online_nodes_file.read()
+        online_nodes_file.close()
+
+        return cpu_str_to_list(nodes_info)
+
+    def get_node_distance(self, node_id):
+        """
+        Get the distance from the give node to other nodes include itself.
+
+        :param node_id: Node that you want to check
+        :type node_id: string
+        :return: A list in of distance for the node in positive-sequence
+        :rtype: list
+        """
+        cmd = process.run("numactl --hardware")
+        try:
+            node_distances = cmd.stdout.split("node distances:")[-1].strip()
+            node_distance = re.findall("%s:" % node_id, node_distances)[0]
+            node_distance = node_distance.split(":")[-1]
+        except Exception:
+            logging.warn("Get unexpect information from numctl")
+            numa_sys_path = self.numa_sys_path
+            distance_path = path.get_path(numa_sys_path,
+                                          "node%s/distance" % node_id)
+            if not os.path.isfile(distance_path):
+                logging.error("Can not get distance information for"
+                              " node %s" % node_id)
+                return []
+            node_distance_file = open(distance_path, 'r')
+            node_distance = node_distance_file.read()
+            node_distance_file.close()
+
+        return node_distance.strip().split()
+
+    def read_from_node_meminfo(self, node_id, key):
+        """
+        Get specific value of a given node from memoinfo file
+
+        :param node_id: The node you want to check
+        :type node_id: string
+        :param key: The value you want to check such as MemTotal etc.
+        :type key: string
+        :return: The value in KB
+        :rtype: string
+        """
+        memory_path = os.path.join(self.numa_sys_path,
+                                   "node%s/meminfo" % node_id)
+        memory_file = open(memory_path, "r")
+        memory_info = memory_file.read()
+        memory_file.close()
+
+        return re.findall("%s:\s+(\d+)" % key, memory_info)[0]
+
+
+class NumaNode(object):
+
+    """
+    Numa node to control processes and shared memory.
+    """
+
+    def __init__(self, i=-1, all_nodes_path=None, online_nodes_path=None):
+        """
+        :param all_nodes_path: Alternative path to
+                /sys/devices/system/node/possible. Useful for unittesting.
+        :param all_nodes_path: Alternative path to
+                /sys/devices/system/node/online. Useful for unittesting.
+        """
+        self.extra_cpus = []
+        if i < 0:
+            host_numa_info = NumaInfo(all_nodes_path, online_nodes_path)
+            available_nodes = host_numa_info.nodes.keys()
+            self.cpus = self.get_node_cpus(available_nodes[-1]).split()
+            if len(available_nodes) > 1:
+                self.extra_cpus = self.get_node_cpus(
+                    available_nodes[-2]).split()
+            self.node_id = available_nodes[-1]
+        else:
+            self.cpus = self.get_node_cpus(i - 1).split()
+            self.extra_cpus = self.get_node_cpus(i).split()
+            self.node_id = i - 1
+        self.dict = {}
+        for i in self.cpus:
+            self.dict[i] = []
+        for i in self.extra_cpus:
+            self.dict[i] = []
+
+    def get_node_cpus(self, i):
+        """
+        Get cpus of a specific node
+
+        :param i: Index of the CPU inside the node.
+        """
+        cmd = process.run("numactl --hardware")
+        cpus = re.findall("node %s cpus: (.*)" % i, cmd.stdout)
+        if cpus:
+            cpus = cpus[0]
+        else:
+            break_flag = False
+            cpulist_path = "/sys/devices/system/node/node%s/cpulist" % i
+            try:
+                cpulist_file = open(cpulist_path, 'r')
+                cpus = cpulist_file.read()
+                cpulist_file.close()
+            except IOError:
+                logging.warn("Can not find the cpu list information from both"
+                             "numactl and sysfs. Please check your system.")
+                break_flag = True
+            if not break_flag:
+                # Try to expand the numbers with '-' to a string of numbers
+                # separated by blank. There number of '-' in the list depends
+                # on the physical architecture of the hardware.
+                try:
+                    convert_list = re.findall("\d+-\d+", cpus)
+                    for cstr in convert_list:
+                        _ = " "
+                        start = min(int(cstr.split("-")[0]),
+                                    int(cstr.split("-")[1]))
+                        end = max(int(cstr.split("-")[0]),
+                                  int(cstr.split("-")[1]))
+                        for n in range(start, end + 1, 1):
+                            _ += "%s " % str(n)
+                        cpus = re.sub(cstr, _, cpus)
+                except (IndexError, ValueError):
+                    logging.warn("The format of cpu list is not the same as"
+                                 " expected.")
+                    break_flag = False
+            if break_flag:
+                cpus = ""
+
+        return cpus
+
+    def free_cpu(self, i, thread=None):
+        """
+        Release pin of one node.
+
+        :param i: Index of the node.
+        :param thread: Thread ID, remove all threads if thread ID isn't set
+        """
+        if not thread:
+            self.dict[i] = []
+        else:
+            self.dict[i].remove(thread)
+
+    def _flush_pin(self):
+        """
+        Flush pin dict, remove the record of exited process.
+        """
+        cmd = process.run("ps -eLf | awk '{print $4}'")
+        all_pids = cmd.stdout
+        for i in self.cpus:
+            for j in self.dict[i]:
+                if str(j) not in all_pids:
+                    self.free_cpu(i, j)
+
+    def pin_cpu(self, process, cpu=None, extra=False):
+        """
+        Pin one process to a single cpu.
+
+        :param process: Process ID.
+        :param cpu: CPU ID, pin thread to free CPU if cpu ID isn't set
+        """
+        self._flush_pin()
+        if cpu:
+            log.info("Pinning process %s to the CPU(%s)" % (process, cpu))
+        else:
+            log.info("Pinning process %s to the available CPU" % (process))
+
+        cpus = self.cpus
+        if extra:
+            cpus = self.extra_cpus
+
+        for i in cpus:
+            if (cpu is not None and cpu == i) or (cpu is None and not self.dict[i]):
+                self.dict[i].append(process)
+                cmd = "taskset -p %s %s" % (hex(2 ** int(i)), process)
+                logging.debug("NumaNode (%s): " % i + cmd)
+                process.run(cmd)
+                return i
+
+    def show(self):
+        """
+        Display the record dict in a convenient way.
+        """
+        logging.info("Numa Node record dict:")
+        for i in self.cpus:
+            logging.info("    %s: %s" % (i, self.dict[i]))
 
 
 def read_from_meminfo(key):
@@ -107,6 +379,17 @@ def node_size():
     """
     nodes = max(len(numa_nodes()), 1)
     return ((memtotal() * 1024) / nodes)
+
+
+def get_node_cpus(i=0):
+    """
+    Get cpu ids of one node
+
+    :return: the cpu lists
+    :rtype: list
+    """
+    cmd = process.run("numactl --hardware")
+    return re.findall("node %s cpus: (.*)" % i, cmd.stdout)[0].split()
 
 
 def get_huge_page_size():

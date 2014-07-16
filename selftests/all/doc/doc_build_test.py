@@ -24,7 +24,7 @@ def test_build_docs():
     """
     Build avocado HTML docs, reporting failures
     """
-    ignore_list = []
+    ignore_list = ["avocado.utils.passfd", ]
     failure_lines = []
     doc_dir = os.path.join(basedir, 'docs')
     process.run('make -C %s clean' % doc_dir)
