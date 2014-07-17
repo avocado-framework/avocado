@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import os
+import signal
 
 from avocado.core import exceptions
 from avocado.core import error_codes
@@ -81,7 +82,11 @@ class VirtJob(job.Job):
         self.output_manager.start_file_logging(self.logfile,
                                                self.loglevel)
         self.output_manager.logfile = self.logfile
-        failures = standalone_test.run_tests(parser, self.args)
+        try:
+            failures = standalone_test.run_tests(parser, self.args)
+        except KeyboardInterrupt:
+            pid = os.getpid()
+            os.kill(pid, signal.SIGTERM)
         self.output_manager.stop_file_logging()
         self.sysinfo_logger.end_job_hook()
         # If it's all good so far, set job status to 'PASS'
