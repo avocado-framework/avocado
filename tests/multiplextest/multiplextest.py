@@ -23,6 +23,18 @@ class multiplextest(test.Test):
     """
     Execute the Linux Build test.
     """
+    default_params = {'os_type': 'linux',
+                      'gcc_flags': '-O2',
+                      'huge_pages': 'yes',
+                      'numa_balancing': 'yes',
+                      'numa_balancing_migrate_deferred': 'no',
+                      'drive_format': 'virtio_blk',
+                      'nic_model': 'virtio_net',
+                      'enable_msx_vectors': 'yes',
+                      'sync_timeout': 12,
+                      'sync_tries': 3,
+                      'ping_timeout': 10,
+                      'ping_tries': 5}
 
     def setup(self):
         self.compile_code()
@@ -57,7 +69,7 @@ class multiplextest(test.Test):
         if self.params.nic_model:
             self.log.info('NIC model: %s', self.params.nic_model)
         if self.params.enable_msx_vectors == 'yes':
-            self.log.info('Enabling msx models')
+            self.log.info('Enabling msx vectors')
 
     def action(self):
         self.log.info('Executing synctest...')
