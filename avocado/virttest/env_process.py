@@ -1122,7 +1122,7 @@ def store_vm_register(vm, log_filename, append=False):
     try:
         output = vm.monitor.info('registers', debug=False)
         timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    except qemu_monitor.MonitorError, e:
+    except (qemu_monitor.MonitorError, AttributeError), e:
         logging.warn(e)
         return False
 
