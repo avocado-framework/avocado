@@ -42,7 +42,7 @@ class gendata(test.Test):
 
         bsod = Image.new("RGB", (640, 480), "blue")
         draw = ImageDraw.Draw(bsod)
-        x = y = 2
+        y = 2
         for line in text:
             draw.text((2, y), line)
             y += 12
