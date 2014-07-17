@@ -5,8 +5,6 @@ import sys
 import time
 import traceback
 import Queue
-import glob
-import shutil
 from autotest.client.shared import error
 from autotest.client import utils
 import aexpect
@@ -817,13 +815,12 @@ def run_tests(parser, options):
         os.makedirs(debugdir)
     try:
         os.unlink(latestdir)
-    except OSError, detail:
+    except OSError:
         pass
     os.symlink(debugbase, latestdir)
 
     debuglog = os.path.join(debugdir, "debug.log")
-    loglevel = options.log_level
-    #configure_file_logging(debuglog, loglevel)
+    configure_file_logging(debuglog)
 
     print_stdout(bcolors.HEADER +
                  "DATA DIR: %s" % data_dir.get_backing_data_dir() +
