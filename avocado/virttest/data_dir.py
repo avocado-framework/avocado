@@ -9,8 +9,9 @@ import tempfile
 import glob
 import shutil
 
-_ROOT_PATH = os.path.join(sys.modules[__name__].__file__, "..", "..")
-ROOT_DIR = os.path.abspath(_ROOT_PATH)
+_ROOT_PATH = os.path.join(sys.modules[__name__].__file__, '..', '..', '..')
+ROOT_DIR = os.path.join(os.path.abspath(_ROOT_PATH), 'tests', 'virt')
+print ROOT_DIR
 BASE_BACKEND_DIR = os.path.join(ROOT_DIR, 'backends')
 DATA_DIR = os.path.join(ROOT_DIR, 'shared', 'data')
 DEPS_DIR = os.path.join(ROOT_DIR, 'shared', 'deps')
