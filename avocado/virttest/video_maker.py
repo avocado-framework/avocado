@@ -23,7 +23,7 @@ __all__ = ['GstPythonVideoMaker', 'video_maker']
 #
 # Gstreamer python bindings are our first choice
 try:
-    import gst
+    from gi.repository import Gst as gst
     GST_PYTHON_INSTALLED = True
 except ImportError:
     GST_PYTHON_INSTALLED = False
