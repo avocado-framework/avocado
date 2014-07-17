@@ -30,7 +30,8 @@ Builtins = [('avocado.plugins.runner', 'TestLister'),
             ('avocado.plugins.datadir', 'DataDirList'),
             ('avocado.plugins.multiplexer', 'Multiplexer'),
             ('avocado.plugins.jsonresult', 'JSON'),
-            ('avocado.plugins.vm', 'RunVM')]
+            ('avocado.plugins.vm', 'RunVM'),
+            ('avocado.plugins.virt_runner', 'VirtTestRunner'), ]
 
 
 def load_builtins(set_globals=True):
