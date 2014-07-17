@@ -4,8 +4,8 @@ tcp-ipv6 protocl support class(es)
 http://libvirt.org/formatnwfilter.html#nwfelemsRulesProtoTCP-ipv6
 """
 
-from virttest.libvirt_xml import accessors, xcepts
-from virttest.libvirt_xml.nwfilter_protocols import base
+from avocado.virttest.libvirt_xml import accessors, xcepts
+from avocado.virttest.libvirt_xml.nwfilter_protocols import base
 
 
 class Tcp_ipv6(base.TypedDeviceBase):

@@ -12,7 +12,7 @@ import re
 import commands
 from autotest.client.shared import error
 from autotest.client import utils
-from virttest.qemu_devices import qdevices, qcontainer
+from avocado.virttest.qemu_devices import qdevices, qcontainer
 import utils_misc
 import virt_vm
 import test_setup

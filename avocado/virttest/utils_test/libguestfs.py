@@ -3,11 +3,11 @@ import os
 import logging
 import commands
 from autotest.client.shared import error, utils
-from virttest import virsh, virt_vm, libvirt_vm, data_dir
-from virttest import utils_net, xml_utils
-from virttest.libvirt_xml import vm_xml, xcepts
-from virttest import utils_libguestfs as lgf
-from virttest import qemu_storage
+from avocado.virttest import virsh, virt_vm, libvirt_vm, data_dir
+from avocado.virttest import utils_net, xml_utils
+from avocado.virttest.libvirt_xml import vm_xml, xcepts
+from avocado.virttest import utils_libguestfs as lgf
+from avocado.virttest import qemu_storage
 
 
 class VTError(Exception):

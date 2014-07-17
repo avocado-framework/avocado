@@ -3,7 +3,7 @@ Module simplifying manipulation of XML described at
 http://libvirt.org/formatstorage.html#StorageVol
 """
 
-from virttest.libvirt_xml import base, accessors
+from avocado.virttest.libvirt_xml import base, accessors
 
 
 class VolXMLBase(base.LibvirtXMLBase):

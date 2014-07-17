@@ -44,7 +44,7 @@ import StringIO
 import logging
 from xml.parsers import expat
 # We *have* to use our ElementTree fork :(
-from virttest import element_tree as ElementTree
+from avocado.virttest import element_tree as ElementTree
 
 # Also used by unittests
 TMPPFX = 'xml_utils_temp_'

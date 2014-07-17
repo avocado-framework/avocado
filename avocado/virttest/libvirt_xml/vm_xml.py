@@ -5,9 +5,9 @@ http://libvirt.org/formatdomain.html
 
 import logging
 from autotest.client.shared import error
-from virttest import xml_utils
-from virttest.libvirt_xml import base, accessors, xcepts
-from virttest.libvirt_xml.devices import librarian
+from avocado.virttest import xml_utils
+from avocado.virttest.libvirt_xml import base, accessors, xcepts
+from avocado.virttest.libvirt_xml.devices import librarian
 
 
 class VMXMLDevices(list):

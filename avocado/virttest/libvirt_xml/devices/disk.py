@@ -4,8 +4,8 @@ disk device support class(es)
 http://libvirt.org/formatdomain.html#elementsDisks
 """
 
-from virttest.libvirt_xml import accessors, xcepts
-from virttest.libvirt_xml.devices import base, librarian
+from avocado.virttest.libvirt_xml import accessors, xcepts
+from avocado.virttest.libvirt_xml.devices import base, librarian
 
 
 class Disk(base.TypedDeviceBase):

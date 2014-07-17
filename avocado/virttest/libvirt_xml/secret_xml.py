@@ -3,7 +3,7 @@ Module simplifying manipulation of XML described at
 http://libvirt.org/formatsecret.html
 """
 
-from virttest.libvirt_xml import base, accessors
+from avocado.virttest.libvirt_xml import base, accessors
 
 
 class SecretXMLBase(base.LibvirtXMLBase):

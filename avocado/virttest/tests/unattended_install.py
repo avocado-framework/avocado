@@ -9,10 +9,10 @@ import shutil
 import xml.dom.minidom
 from autotest.client.shared import error, iso9660
 from autotest.client import utils
-from virttest import virt_vm, utils_misc, utils_disk
-from virttest import qemu_monitor, remote, syslog_server
-from virttest import http_server, data_dir, utils_net, utils_test
-from virttest import funcatexit
+from avocado.virttest import virt_vm, utils_misc, utils_disk
+from avocado.virttest import qemu_monitor, remote, syslog_server
+from avocado.virttest import http_server, data_dir, utils_net, utils_test
+from avocado.virttest import funcatexit
 
 
 # Whether to print all shell commands called
@@ -997,7 +997,7 @@ def run(test, params, env):
                 vm.monitor.quit()
             except Exception, e:
                 logging.warn(e)
-            from virttest import utils_test
+            from avocado.virttest import utils_test
             error.context("Copy image from NFS Server")
             utils_test.run_image_copy(test, params, env)
 

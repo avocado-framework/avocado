@@ -823,7 +823,7 @@ def run_tests(parser, options):
 
     debuglog = os.path.join(debugdir, "debug.log")
     loglevel = options.log_level
-    configure_file_logging(debuglog, loglevel)
+    #configure_file_logging(debuglog, loglevel)
 
     print_stdout(bcolors.HEADER +
                  "DATA DIR: %s" % data_dir.get_backing_data_dir() +

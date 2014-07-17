@@ -3,7 +3,7 @@ Module to hide underlying filter protocol xml handler class implementation
 """
 
 import os
-from virttest.libvirt_xml import base
+from avocado.virttest.libvirt_xml import base
 
 # Avoid accidental names like __init__, librarian, and/or other support modules
 FILTER_TYPES = ['mac', 'vlan', 'stp', 'arp', 'rarp', 'ip', 'ipv6',

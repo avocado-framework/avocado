@@ -4,7 +4,7 @@ memballoon device support class(es)
 http://libvirt.org/formatdomain.html#elementsMemBalloon
 """
 
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Memballoon(base.UntypedDeviceBase):

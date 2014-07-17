@@ -5,11 +5,11 @@ Specializations of base.AccessorBase for particular XML manipulation types
 import logging
 import re
 import sys
-from virttest import xml_utils
-from virttest.propcan import PropCanBase
-from virttest.libvirt_xml import xcepts, base
+from avocado.virttest import xml_utils
+from avocado.virttest.propcan import PropCanBase
+from avocado.virttest.libvirt_xml import xcepts, base
 # The backports module will take care of picking the builtin if available
-from virttest.staging.backports import bin
+from avocado.virttest.staging.backports import bin
 
 
 def type_check(name, thing, expected):

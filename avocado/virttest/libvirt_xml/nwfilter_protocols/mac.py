@@ -4,8 +4,8 @@ mac protocl support class(es)
 http://libvirt.org/formatnwfilter.html#nwfelemsRulesProtoMAC
 """
 
-from virttest.libvirt_xml import accessors, xcepts
-from virttest.libvirt_xml.nwfilter_protocols import base
+from avocado.virttest.libvirt_xml import accessors, xcepts
+from avocado.virttest.libvirt_xml.nwfilter_protocols import base
 
 
 class Mac(base.TypedDeviceBase):

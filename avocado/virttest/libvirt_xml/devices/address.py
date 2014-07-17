@@ -4,8 +4,8 @@ Address device / device descriptor class
 http://libvirt.org/formatdomain.html#elementsAddress
 """
 
-from virttest.libvirt_xml import accessors, xcepts
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml import accessors, xcepts
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Address(base.TypedDeviceBase):

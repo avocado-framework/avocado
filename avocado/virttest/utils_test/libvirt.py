@@ -22,27 +22,27 @@ import logging
 import shutil
 import threading
 import time
-from virttest import virsh
-from virttest import xml_utils
-from virttest import iscsi
-from virttest import nfs
-from virttest import data_dir
-from virttest import aexpect
-from virttest import utils_misc
-from virttest import utils_selinux
-from virttest import libvirt_storage
-from virttest import utils_net
-from virttest import gluster
+from avocado.virttest import virsh
+from avocado.virttest import xml_utils
+from avocado.virttest import iscsi
+from avocado.virttest import nfs
+from avocado.virttest import data_dir
+from avocado.virttest import aexpect
+from avocado.virttest import utils_misc
+from avocado.virttest import utils_selinux
+from avocado.virttest import libvirt_storage
+from avocado.virttest import utils_net
+from avocado.virttest import gluster
 from autotest.client import utils
 from autotest.client.shared import error
-from virttest.libvirt_xml import vm_xml
-from virttest.libvirt_xml import xcepts
-from virttest.libvirt_xml.devices import disk
+from avocado.virttest.libvirt_xml import vm_xml
+from avocado.virttest.libvirt_xml import xcepts
+from avocado.virttest.libvirt_xml.devices import disk
 from __init__ import ping
 try:
     from autotest.client import lv_utils
 except ImportError:
-    from virttest.staging import lv_utils
+    from avocado.virttest.staging import lv_utils
 
 
 def cpus_parser(cpulist):

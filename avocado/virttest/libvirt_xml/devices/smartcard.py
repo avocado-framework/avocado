@@ -4,7 +4,7 @@ smartcard device support class(es)
 http://libvirt.org/formatdomain.html#elementsSmartcard
 """
 
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Smartcard(base.UntypedDeviceBase):

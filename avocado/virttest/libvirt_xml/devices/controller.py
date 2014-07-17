@@ -4,8 +4,8 @@ controller device support class(es)
 http://libvirt.org/formatdomain.html#elementsControllers
 """
 
-from virttest.libvirt_xml import accessors
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml import accessors
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Controller(base.TypedDeviceBase):

@@ -3,8 +3,8 @@ Module simplifying manipulation of XML described at
 http://libvirt.org/formatcaps.html
 """
 
-from virttest import xml_utils
-from virttest.libvirt_xml import base, accessors, xcepts
+from avocado.virttest import xml_utils
+from avocado.virttest.libvirt_xml import base, accessors, xcepts
 
 
 class CapabilityXML(base.LibvirtXMLBase):

@@ -36,18 +36,18 @@ within this module should raise LibvirtXMLError or a subclass.
 # These are the objects considered for common use:
 
 # all exceptions are siblings of LibvirtXMLError
-from virttest.libvirt_xml.xcepts import LibvirtXMLError
+from avocado.virttest.libvirt_xml.xcepts import LibvirtXMLError
 
-from virttest.libvirt_xml.capability_xml import CapabilityXML
+from avocado.virttest.libvirt_xml.capability_xml import CapabilityXML
 
-from virttest.libvirt_xml.network_xml import RangeList, IPXML, NetworkXML
+from avocado.virttest.libvirt_xml.network_xml import RangeList, IPXML, NetworkXML
 
-from virttest.libvirt_xml.vm_xml import VMXML
+from avocado.virttest.libvirt_xml.vm_xml import VMXML
 
-from virttest.libvirt_xml.pool_xml import SourceXML, PoolXML
+from avocado.virttest.libvirt_xml.pool_xml import SourceXML, PoolXML
 
-from virttest.libvirt_xml.vol_xml import VolXML
+from avocado.virttest.libvirt_xml.vol_xml import VolXML
 
-from virttest.libvirt_xml.nwfilter_xml import NwfilterXML
+from avocado.virttest.libvirt_xml.nwfilter_xml import NwfilterXML
 
-from virttest.libvirt_xml.sysinfo_xml import SysinfoXML
+from avocado.virttest.libvirt_xml.sysinfo_xml import SysinfoXML

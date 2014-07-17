@@ -7,10 +7,10 @@ from autotest.client.shared.test_utils import mock
 from autotest.client import os_dep
 from autotest.client.shared import utils
 
-from virttest import nfs
-from virttest import utils_misc
+from avocado.virttest import nfs
+from avocado.virttest import utils_misc
 
-from virttest.staging import service
+from avocado.virttest.staging import service
 
 
 class FakeService(object):

@@ -4,8 +4,8 @@ input device support class(es)
 http://libvirt.org/formatdomain.html#elementsInput
 """
 
-from virttest.libvirt_xml import accessors
-from virttest.libvirt_xml.devices import base, librarian
+from avocado.virttest.libvirt_xml import accessors
+from avocado.virttest.libvirt_xml.devices import base, librarian
 
 
 class Input(base.TypedDeviceBase):

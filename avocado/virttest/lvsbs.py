@@ -4,7 +4,7 @@ Higher order classes for Libvirt Sandbox Service (lxc) service container testing
 
 from autotest.client import utils
 from autotest.client.shared.service import COMMANDS
-from virttest.staging import service
+from avocado.virttest.staging import service
 import lvsb_base
 import virsh
 

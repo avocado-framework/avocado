@@ -4,8 +4,8 @@ Classes to support XML for serial devices
 http://libvirt.org/formatdomain.html#elementCharSerial
 """
 
-from virttest.libvirt_xml import base, accessors
-from virttest.libvirt_xml.devices.character import CharacterBase
+from avocado.virttest.libvirt_xml import base, accessors
+from avocado.virttest.libvirt_xml.devices.character import CharacterBase
 
 
 class Serial(CharacterBase):

@@ -11,7 +11,7 @@ import shutil
 import re
 from autotest.client import utils
 try:
-    from virttest import iscsi
+    from avocado.virttest import iscsi
 except ImportError:
     from autotest.client.shared import iscsi
 

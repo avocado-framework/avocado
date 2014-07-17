@@ -2,7 +2,7 @@
 Module simplifying manipulation of sysinfo XML
 """
 
-from virttest.libvirt_xml import base
+from avocado.virttest.libvirt_xml import base
 
 
 class SysinfoXML(base.LibvirtXMLBase):

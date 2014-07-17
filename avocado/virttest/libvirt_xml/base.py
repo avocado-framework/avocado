@@ -2,8 +2,8 @@ import logging
 import imp
 
 from autotest.client import utils
-from virttest import propcan, xml_utils, virsh
-from virttest.libvirt_xml import xcepts
+from avocado.virttest import propcan, xml_utils, virsh
+from avocado.virttest.libvirt_xml import xcepts
 
 
 class LibvirtXMLBase(propcan.PropCanBase):

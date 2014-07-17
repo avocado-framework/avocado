@@ -4,8 +4,8 @@ http://libvirt.org/formatnetwork.html
 """
 
 import logging
-from virttest import xml_utils
-from virttest.libvirt_xml import base, xcepts, accessors
+from avocado.virttest import xml_utils
+from avocado.virttest.libvirt_xml import base, xcepts, accessors
 
 
 class RangeList(list):

@@ -4,8 +4,8 @@ graphics framebuffer device support class(es)
 http://libvirt.org/formatdomain.html#elementsGraphics
 """
 
-from virttest.libvirt_xml import accessors, vm_xml
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml import accessors, vm_xml
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Graphics(base.TypedDeviceBase):

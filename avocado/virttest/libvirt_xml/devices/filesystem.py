@@ -4,7 +4,7 @@ filesystem device support class(es)
 http://libvirt.org/formatdomain.html#elementsFilesystems
 """
 
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Filesystem(base.TypedDeviceBase):

@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 from autotest.client.shared import error, utils
-from virttest import utils_net
+from avocado.virttest import utils_net
 
 
 class Machine(object):

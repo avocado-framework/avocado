@@ -4,7 +4,7 @@ watchdog device support class(es)
 http://libvirt.org/formatdomain.html#elementsWatchdog
 """
 
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Watchdog(base.UntypedDeviceBase):

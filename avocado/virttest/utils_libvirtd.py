@@ -3,9 +3,9 @@ Module to control libvirtd service.
 """
 import logging
 
-from virttest import remote, utils_misc
+from avocado.virttest import remote, utils_misc
 from autotest.client import utils, os_dep
-from virttest.staging import service
+from avocado.virttest.staging import service
 
 
 try:

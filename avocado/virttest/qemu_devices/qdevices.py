@@ -12,8 +12,8 @@ import re
 
 # Autotest imports
 from utils import DeviceError
-from virttest import qemu_monitor
-from virttest import utils_misc
+from avocado.virttest import qemu_monitor
+from avocado.virttest import utils_misc
 import qbuses
 import traceback
 
@@ -21,7 +21,7 @@ try:
     # pylint: disable=E0611
     from collections import OrderedDict
 except ImportError:
-    from virttest.staging.backports.collections import OrderedDict
+    from avocado.virttest.staging.backports.collections import OrderedDict
 
 
 def _convert_args(arg_dict):

@@ -13,7 +13,7 @@ import re
 
 # Autotest imports
 from autotest.client.shared import utils, error
-from virttest import arch, storage, data_dir, virt_vm
+from avocado.virttest import arch, storage, data_dir, virt_vm
 from utils import (DeviceError, DeviceHotplugError, DeviceInsertError,
                    DeviceRemoveError, DeviceUnplugError, none_or_int)
 import os

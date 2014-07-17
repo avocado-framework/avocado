@@ -6,8 +6,8 @@ import os
 import logging
 import tempfile
 from autotest.client.shared import error
-from virttest import libvirt_storage
-from virttest.libvirt_xml import base, xcepts, accessors
+from avocado.virttest import libvirt_storage
+from avocado.virttest.libvirt_xml import base, xcepts, accessors
 
 
 class SourceXML(base.LibvirtXMLBase):

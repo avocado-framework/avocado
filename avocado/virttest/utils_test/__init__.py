@@ -33,8 +33,8 @@ import subprocess
 from autotest.client import utils, os_dep
 from autotest.client.shared import error
 from autotest.client.tools import scan_results
-from virttest import aexpect, remote, utils_misc, virt_vm, data_dir, utils_net
-from virttest import storage, asset, bootstrap, remote
+from avocado.virttest import aexpect, remote, utils_misc, virt_vm, data_dir, utils_net
+from avocado.virttest import storage, asset, bootstrap, remote
 import virttest
 
 import libvirt
@@ -42,13 +42,13 @@ import qemu
 import libguestfs
 
 try:
-    from virttest.staging import utils_cgroup
+    from avocado.virttest.staging import utils_cgroup
 except ImportError:
     # TODO: Obsoleted path used prior autotest-0.15.2/virttest-2013.06.24
     from autotest.client.shared import utils_cgroup
 
 try:
-    from virttest.staging import utils_memory
+    from avocado.virttest.staging import utils_memory
 except ImportError:
     from autotest.client.shared import utils_memory
 

@@ -8,8 +8,8 @@ import shutil
 import tempfile
 
 from autotest.client import utils, os_dep
-from virttest import propcan, remote, utils_libvirtd
-from virttest import data_dir, aexpect
+from avocado.virttest import propcan, remote, utils_libvirtd
+from avocado.virttest import data_dir, aexpect
 
 
 class ConnectionError(Exception):

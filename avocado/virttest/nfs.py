@@ -7,9 +7,9 @@ import os
 import logging
 from autotest.client import os_dep
 from autotest.client.shared import utils, error
-from virttest import utils_misc
+from avocado.virttest import utils_misc
 
-from virttest.staging import service
+from avocado.virttest.staging import service
 
 
 def nfs_exported():

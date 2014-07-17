@@ -4,8 +4,8 @@ Parallel device support class(es)
 http://libvirt.org/formatdomain.html#elementCharSerial
 """
 
-from virttest.libvirt_xml import base
-from virttest.libvirt_xml.devices.character import CharacterBase
+from avocado.virttest.libvirt_xml import base
+from avocado.virttest.libvirt_xml.devices.character import CharacterBase
 
 
 class Parallel(CharacterBase):

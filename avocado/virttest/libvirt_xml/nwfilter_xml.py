@@ -3,8 +3,8 @@ Module simplifying manipulation of XML described at
 http://libvirt.org/formatnwfilter.html
 """
 
-from virttest.libvirt_xml import base, xcepts, accessors
-from virttest.libvirt_xml.nwfilter_protocols import librarian
+from avocado.virttest.libvirt_xml import base, xcepts, accessors
+from avocado.virttest.libvirt_xml.nwfilter_protocols import librarian
 
 
 class NwfilterRulesProtocol(list):

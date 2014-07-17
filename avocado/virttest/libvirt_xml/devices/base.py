@@ -4,9 +4,9 @@ Common base classes for devices
 
 import logging
 from StringIO import StringIO
-from virttest import xml_utils
-from virttest.libvirt_xml import base, xcepts, accessors
-from virttest.xml_utils import ElementTree
+from avocado.virttest import xml_utils
+from avocado.virttest.libvirt_xml import base, xcepts, accessors
+from avocado.virttest.xml_utils import ElementTree
 
 
 class UntypedDeviceBase(base.LibvirtXMLBase):

@@ -8,7 +8,7 @@ import time
 import sys
 from autotest.client.shared import error
 from aexpect import ShellCmdError, ShellStatusError
-from virttest import utils_net, utils_misc
+from avocado.virttest import utils_net, utils_misc
 
 
 class RVConnectError(Exception):

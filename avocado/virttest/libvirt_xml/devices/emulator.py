@@ -4,8 +4,8 @@ Support for the pseudo 'emulator' device XML
 http://libvirt.org/formatdomain.html#elementsDevices
 """
 
-from virttest.libvirt_xml import accessors
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml import accessors
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Emulator(base.UntypedDeviceBase):

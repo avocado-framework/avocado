@@ -31,10 +31,10 @@ from autotest.client import utils
 from autotest.client.shared import error
 from autotest.client.shared.syncdata import SyncData, SyncListenServer
 
-from virttest import env_process, remote, storage, utils_misc
+from avocado.virttest import env_process, remote, storage, utils_misc
 
 try:
-    from virttest.staging import utils_memory
+    from avocado.virttest.staging import utils_memory
 except ImportError:
     from autotest.client.shared import utils_memory
 

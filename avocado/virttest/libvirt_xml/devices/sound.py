@@ -4,7 +4,7 @@ sound device support class(es)
 http://libvirt.org/formatdomain.html#elementsSound
 """
 
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class Sound(base.UntypedDeviceBase):

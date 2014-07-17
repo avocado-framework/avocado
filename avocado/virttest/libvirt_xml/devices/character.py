@@ -4,7 +4,7 @@ Generic character device support for serial, parallel, channel, and console
 http://libvirt.org/formatdomain.html#elementCharSerial
 """
 
-from virttest.libvirt_xml.devices import base
+from avocado.virttest.libvirt_xml.devices import base
 
 
 class CharacterBase(base.TypedDeviceBase):

@@ -1,4 +1,4 @@
-from virttest import utils_misc
+from avocado.virttest import utils_misc
 
 
 class Des(object):

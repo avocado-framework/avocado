@@ -32,9 +32,9 @@ import utils_misc
 from autotest.client import utils
 from autotest.client import os_dep
 from autotest.client.shared import error
-from virttest import aexpect
-from virttest import propcan
-from virttest import remote
+from avocado.virttest import aexpect
+from avocado.virttest import propcan
+from avocado.virttest import remote
 
 # list of symbol names NOT to wrap as Virsh class methods
 # Everything else from globals() will become a method of Virsh class

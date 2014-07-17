@@ -6,15 +6,15 @@ import shutil
 import logging
 
 import common
-from virttest import xml_utils, utils_misc, data_dir
-from virttest.virsh_unittest import FakeVirshFactory
+from avocado.virttest import xml_utils, utils_misc, data_dir
+from avocado.virttest.virsh_unittest import FakeVirshFactory
 from autotest.client import utils
 from autotest.client.shared import error
-from virttest.libvirt_xml import accessors, vm_xml, xcepts, network_xml, base
-from virttest.libvirt_xml import nodedev_xml
-from virttest.libvirt_xml.devices import librarian
-from virttest.libvirt_xml.devices import base as devices_base
-from virttest.libvirt_xml import capability_xml
+from avocado.virttest.libvirt_xml import accessors, vm_xml, xcepts, network_xml, base
+from avocado.virttest.libvirt_xml import nodedev_xml
+from avocado.virttest.libvirt_xml.devices import librarian
+from avocado.virttest.libvirt_xml.devices import base as devices_base
+from avocado.virttest.libvirt_xml import capability_xml
 
 # save a copy
 ORIGINAL_DEVICE_TYPES = list(librarian.DEVICE_TYPES)

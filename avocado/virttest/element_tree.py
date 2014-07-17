@@ -125,7 +125,7 @@ try:
     # pylint: disable=E0611
     import autotest.client.shared.ElementPath as ElementPath
 except ImportError:
-    from virttest import element_path as ElementPath
+    from avocado.virttest import element_path as ElementPath
 
 # TODO: add support for custom namespace resolvers/default namespaces
 # TODO: add improved support for incremental parsing
