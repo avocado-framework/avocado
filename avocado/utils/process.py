@@ -26,7 +26,6 @@ import time
 import threading
 
 from avocado.core import exceptions
-from avocado.utils import misc
 
 log = logging.getLogger('avocado.test')
 

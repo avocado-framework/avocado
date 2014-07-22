@@ -12,6 +12,10 @@
 # client/shared/utils.py
 # Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
 
+"""
+Avocado generic IO related functions.
+"""
+
 import logging
 
 log = logging.getLogger('avocado.test')
