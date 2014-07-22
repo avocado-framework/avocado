@@ -19,10 +19,15 @@ log = logging.getLogger('avocado.test')
 
 def ask(question, auto=False):
     """
-    Raw input with a prompt.
+    Prompt the user with a (y/n) question.
 
     :param question: Question to be asked
+    :type question: str
     :param auto: Whether to return "y" instead of asking the question
+    :type auto: bool
+
+    :return: User answer
+    :rtype: str
     """
     if auto:
         log.info("%s (y/n) y" % question)
@@ -35,6 +40,10 @@ def read_file(filename):
     Read the entire contents of file.
 
     :param filename: Path to the file.
+    :type filename: str
+
+    :return: File contents
+    :rtype: str
     """
     with open(filename, 'r') as file_obj:
         contents = file_obj.read()
@@ -46,20 +55,14 @@ def read_one_line(filename):
     Read the first line of filename.
 
     :param filename: Path to the file.
+    :type filename: str
+
+    :return: First line contents
+    :rtype: str
     """
     with open(filename, 'r') as file_obj:
         line = file_obj.readline().rstrip('\n')
     return line
-
-
-def write_one_line(filename, line):
-    """
-    Write one line of text to filename.
-
-    :param filename: Path to the file.
-    :param line: Line to be written.
-    """
-    write_file(filename, line.rstrip('\n') + '\n')
 
 
 def write_file(filename, data):
@@ -67,7 +70,21 @@ def write_file(filename, data):
     Write data to a file.
 
     :param filename: Path to the file.
+    :type filename: str
     :param line: Line to be written.
+    :type line: str
     """
     with open(filename, 'w') as file_obj:
         file_obj.write(data)
+
+
+def write_one_line(filename, line):
+    """
+    Write one line of text to filename.
+
+    :param filename: Path to the file.
+    :type filename: str
+    :param line: Line to be written.
+    :type line: str
+    """
+    write_file(filename, line.rstrip('\n') + '\n')
