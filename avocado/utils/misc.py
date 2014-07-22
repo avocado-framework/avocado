@@ -40,12 +40,6 @@ def read_file(filename):
         contents = file_obj.read()
     return contents
 
-    f = open(filename)
-    try:
-        return f.read()
-    finally:
-        f.close()
-
 
 def read_one_line(filename):
     """
