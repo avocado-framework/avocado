@@ -133,6 +133,7 @@ class TestRunner(object):
             p = multiprocessing.Process(target=self.run_test,
                                         args=(test_instance, q,))
             p.start()
+            start_time = time.time()
             # The test timeout can come from:
             # 1) Test params dict (params)
             # 2) Test default params dict (test_instance.params.timeout)
@@ -149,8 +150,15 @@ class TestRunner(object):
                 # If there's nothing inside the queue after timeout, the process
                 # must be terminated.
                 send_signal(p, signal.SIGUSR1)
-                test_instance = q.get(timeout=0.1)
-
+                try:
+                    test_instance = q.get(timeout=0.1)
+                except multiprocessing.queues.Empty:
+                    pass
+            end_time = time.time()
+            if test_instance.time_elapsed is None:
+                test_instance.time_elapsed = end_time - start_time
+            if test_instance.status is None:
+                test_instance.log.error('Abnormal test status after test execution')
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
