@@ -115,13 +115,3 @@ def get_relative_path(path, reference):
     path_list[:0] = ['..'] * (len(ref_list) - i)
 
     return os.path.join(*path_list)
-
-
-def unique(lst):
-    """
-    Return a list of the elements in list, but without duplicates.
-
-    :param lst: List with values.
-    :return: List with non duplicate elements.
-    """
-    return list(set(lst))
