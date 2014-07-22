@@ -25,4 +25,5 @@ mapping = {"TEST_NA": True,
            "START": True,
            "ALERT": False,
            "RUNNING": False,
-           "NOSTATUS": False}
+           "NOSTATUS": False,
+           None: False}

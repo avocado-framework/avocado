@@ -216,7 +216,8 @@ class TestResult(object):
                       'ERROR': self.add_error,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
-                      'WARN': self.add_warn}
+                      'WARN': self.add_warn,
+                      None: self.add_fail}
         add = status_map[test.status]
         add(test)
         self.end_test(test)
