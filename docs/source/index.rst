@@ -21,6 +21,7 @@ Contents:
    MultiplexConfigAdvanced
    Plugins
    OutputPlugins
+   RuntimeConfiguration
    api/modules
 
 Indices and tables
