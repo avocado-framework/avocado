@@ -25,7 +25,10 @@ import subprocess
 import time
 import threading
 
+from avocado import gdbmi
+from avocado import runtime
 from avocado.core import exceptions
+from avocado.utils import network
 
 log = logging.getLogger('avocado.test')
 
@@ -121,9 +124,11 @@ class SubProcess(object):
         self.verbose = verbose
         if self.verbose:
             log.info("Running '%s'", cmd)
+
         self.sp = subprocess.Popen(args,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
+
         self.start_time = time.time()
         self.result = CmdResult(cmd)
         self.stdout_file = StringIO.StringIO()
@@ -283,6 +288,114 @@ class SubProcess(object):
         self.result.stderr = self.get_stderr()
 
 
+class GDBSubProcess(object):
+
+    """
+    Run a subprocess inside the GNU Debugger collecting stdout/stderr streams.
+    """
+
+    SEGV_SNIPPET = ['python',
+                    'import gdb',
+                    'def sigsegv_handler(event):',
+                    '    print "event type: stop"',
+                    '    print "dir(event): %s" % str(dir(event))',
+                    '    print event.stop_signal',
+                    '    if event.stop_signal == "SIGSEGV":',
+                    '        gdb.execute("gcore /tmp/core")',
+                    'gdb.events.stop.connect(sigsegv_handler)',
+                    'end']
+
+    #: The default arguments used when starting the GDB process
+    GDB_ARGS = ['/usr/bin/gdb',
+                '--interpreter=mi',
+                '--quiet']
+
+    #: The range from which a port to GDB server will try to be allocated from
+    GDB_SERVER_PORT_RANGE = (20000, 20999)
+
+    #: The default arguments used when starting the GDB server process
+    GDB_SERVER_ARGS = ['/usr/bin/gdbserver',
+                       '--multi']
+
+    def __init__(self):
+
+        log.info('Running "%s" sub-process inside the GNU Debugger', args[0])
+        self.gdb_server_port = network.find_free_port(*self.GDB_SERVER_PORT_RANGE)
+        log.info('GDB server port: %s', self.gdb_server_port)
+
+        gdb_server_args = self.GDB_SERVER_ARGS
+        gdb_server_args.append(":%s" % self.gdb_server_port)
+        log.info('GDB server args: %s', gdb_server_args)
+
+        self.gdb_server_sp = subprocess.Popen(gdb_server_args,
+                                              stdin=subprocess.PIPE,
+                                              stdout=subprocess.PIPE,
+                                              stderr=subprocess.PIPE,
+                                              close_fds=True)
+
+        self.gdb_sp = subprocess.Popen(self.GDB_ARGS,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       close_fds=True)
+        self.sp = self.gdb_sp
+
+        this_cmd = 'target extended-remote :%s' % self.gdb_server_port
+        self._send_gdb_cmd(self.gdb_sp, this_cmd)
+        log.info('GDB attach to gdb server command: %s', this_cmd)
+
+        this_cmd = 'file %s' % args[0]
+        self._send_gdb_cmd(self.gdb_sp, this_cmd)
+        log.info('GDB local file command: %s', this_cmd)
+
+        this_cmd = 'set remote exec-file %s' % args[0]
+        self._send_gdb_cmd(self.gdb_sp, this_cmd)
+        log.info('GDB remote file to exec command: %s', this_cmd)
+
+        for this_cmd in self.SEGV_SNIPPET:
+            self._send_gdb_cmd(self.gdb_sp, this_cmd)
+            log.info('GDB python mode command: %s', this_cmd)
+
+        this_cmd = 'run %s' % ' '.join(args[1:])
+        self._send_gdb_cmd(self.gdb_sp, this_cmd)
+        log.info('GDB run command: %s', this_cmd)
+
+    @staticmethod
+    def _send_gdb_cmd(gdb_sp, cmd):
+        encoded_cmd = "%s\n" % gdbmi.encode_cli_command(cmd)
+        gdb_sp.stdin.write(encoded_cmd)
+
+
+def process_inside_gdb(cmd):
+    '''
+    Wether the given command should be run inside the GNU debugger
+
+    :param cmd: the command arguments, from where we extract the binary name
+    '''
+    if not runtime.PROCESS_DEBUG_GDB:
+        return False
+
+    comm = os.path.basename(cmd[0])
+    if comm in runtime.PROCESS_DEBUG_COMM_NAMES:
+        return True
+
+    return False
+
+
+def get_sub_process_klass(cmd):
+    '''
+    Which sub process implementation should be used
+
+    Either the regular one, or the GNU Debugger version
+
+    :param cmd: the command arguments, from where we extract the binary name
+    '''
+    if process_inside_gdb(args):
+        return GDBSubProcess
+    else:
+        return SubProcess
+
+
 def run(cmd, timeout=None, verbose=True, ignore_status=False):
     """
     Run a subprocess, returning a CmdResult object.
@@ -302,7 +415,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False):
     :return: An :class:`avocado.utils.process.CmdResult` object.
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
-    sp = SubProcess(cmd=cmd, verbose=verbose)
+    klass = get_subprocess_klass(cmd)
+    sp = klass(cmd=cmd, verbose=verbose)
     cmd_result = sp.wait(timeout=timeout)
     if cmd_result.exit_status != 0 and not ignore_status:
         raise exceptions.CmdError(cmd, sp.result)
