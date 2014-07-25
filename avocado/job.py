@@ -150,7 +150,7 @@ class TestRunner(object):
                 # If there's nothing inside the queue after timeout, the process
                 # must be terminated.
                 send_signal(p, signal.SIGUSR1)
-                test_instance = q.get(timeout=0.1)
+                test_instance = q.get()
 
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
