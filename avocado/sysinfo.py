@@ -100,7 +100,7 @@ class Loggable(object):
         """
         path = os.path.join(logdir, self.logf)
         if os.path.exists(path):
-            return utils.misc.read_one_line(path)
+            return utils.io.read_one_line(path)
         else:
             return ""
 
@@ -329,10 +329,7 @@ class SysInfo(object):
                              logging packages is a costly operation).
         """
         if basedir is None:
-            basedir = os.path.join(os.getcwd(), 'sysinfo')
-
-        if not os.path.isdir(basedir):
-            os.makedirs(basedir)
+            basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
 
         self.basedir = basedir
         self.log_packages = log_packages
@@ -465,7 +462,7 @@ class SysInfo(object):
     def _log_installed_packages(self, path):
         installed_path = os.path.join(path, "installed_packages")
         installed_packages = "\n".join(self._get_installed_packages()) + "\n"
-        utils.misc.write_file(installed_path, installed_packages)
+        utils.io.write_file(installed_path, installed_packages)
 
     def _log_modified_packages(self, path):
         """
@@ -475,18 +472,16 @@ class SysInfo(object):
         new_packages = set(self._get_installed_packages())
         added_path = os.path.join(path, "added_packages")
         added_packages = "\n".join(new_packages - old_packages) + "\n"
-        utils.misc.write_file(added_path, added_packages)
+        utils.io.write_file(added_path, added_packages)
         removed_path = os.path.join(self.basedir, "removed_packages")
         removed_packages = "\n".join(old_packages - new_packages) + "\n"
-        utils.misc.write_file(removed_path, removed_packages)
+        utils.io.write_file(removed_path, removed_packages)
 
     def start_job_hook(self):
         """
         Logging hook called whenever a job starts, and again after reboot.
         """
-        pre_dir = os.path.join(self.basedir, 'pre')
-        if not os.path.isdir(pre_dir):
-            os.makedirs(pre_dir)
+        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_job_loggables:
             log.run(pre_dir)
 
@@ -497,9 +492,7 @@ class SysInfo(object):
         """
         Logging hook called whenever a job starts, and again after reboot.
         """
-        post_dir = os.path.join(self.basedir, 'post')
-        if not os.path.isdir(post_dir):
-            os.makedirs(post_dir)
+        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.start_job_loggables:
             log.run(post_dir)
 
@@ -510,9 +503,7 @@ class SysInfo(object):
         """
         Logging hook called before a test starts.
         """
-        pre_dir = os.path.join(self.basedir, 'pre')
-        if not os.path.isdir(pre_dir):
-            os.makedirs(pre_dir)
+        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_test_loggables:
             log.run(pre_dir)
 
@@ -523,9 +514,7 @@ class SysInfo(object):
         """
         Logging hook called after a test finishes.
         """
-        post_dir = os.path.join(self.basedir, 'post')
-        if not os.path.isdir(post_dir):
-            os.makedirs(post_dir)
+        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.end_test_loggables:
             log.run(post_dir)
 
@@ -536,9 +525,7 @@ class SysInfo(object):
         """
         Logging hook called before a test iteration
         """
-        pre_dir = os.path.join(self.basedir, 'pre')
-        if not os.path.isdir(pre_dir):
-            os.makedirs(pre_dir)
+        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_iteration_loggables:
             log.run(pre_dir)
 
@@ -546,10 +533,7 @@ class SysInfo(object):
         """
         Logging hook called after a test iteration
         """
-        post_dir = os.path.join(self.basedir, 'post')
-        if not os.path.isdir(post_dir):
-            os.makedirs(post_dir)
-        post_dir = os.path.join(self.basedir, 'post')
+        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.end_iteration_loggables:
             log.run(post_dir)
 

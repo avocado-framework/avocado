@@ -26,6 +26,7 @@ import unittest
 
 from avocado.core import data_dir
 from avocado.core import exceptions
+from avocado.utils import path
 from avocado.utils import process
 from avocado.utils.params import Params
 from avocado import sysinfo
@@ -116,23 +117,15 @@ class Test(unittest.TestCase):
         self.job = job
         self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
         self.datadir = os.path.join(self.basedir, 'data')
-        self.workdir = os.path.join(data_dir.get_tmp_dir(), self.name)
-        if not os.path.isdir(self.workdir):
-            os.makedirs(self.workdir)
-        self.srcdir = os.path.join(self.workdir, 'src')
-        if not os.path.isdir(self.srcdir):
-            os.makedirs(self.srcdir)
+        self.workdir = path.init_dir(data_dir.get_tmp_dir(), self.name)
+        self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.get_job_logs_dir()
         self.tagged_name = self.get_tagged_name(base_logdir)
-        self.logdir = os.path.join(base_logdir, self.tagged_name)
-        if not os.path.isdir(self.logdir):
-            os.makedirs(self.logdir)
+        self.logdir = path.init_dir(base_logdir, self.tagged_name)
         self.logfile = os.path.join(self.logdir, 'debug.log')
-        self.outputdir = os.path.join(self.logdir, 'data')
-        if not os.path.isdir(self.outputdir):
-            os.makedirs(self.outputdir)
-        self.sysinfodir = os.path.join(self.logdir, 'sysinfo')
+        self.outputdir = path.init_dir(self.logdir, 'data')
+        self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")

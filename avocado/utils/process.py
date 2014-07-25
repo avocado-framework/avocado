@@ -26,7 +26,6 @@ import time
 import threading
 
 from avocado.core import exceptions
-from avocado.utils import misc
 
 log = logging.getLogger('avocado.test')
 
@@ -64,7 +63,7 @@ def find_command(cmd):
         path_paths = os.environ['PATH'].split(":")
     except IndexError:
         path_paths = []
-    path_paths = misc.unique(common_bin_paths + path_paths)
+    path_paths = list(set(common_bin_paths + path_paths))
 
     for dir_path in path_paths:
         cmd_path = os.path.join(dir_path, cmd)

@@ -34,6 +34,7 @@ from avocado.core import status
 from avocado.core import exceptions
 from avocado.core import error_codes
 from avocado.utils import archive
+from avocado.utils import path
 from avocado import multiplex_config
 from avocado import test
 from avocado import result
@@ -149,7 +150,7 @@ class TestRunner(object):
                 # If there's nothing inside the queue after timeout, the process
                 # must be terminated.
                 send_signal(p, signal.SIGUSR1)
-                test_instance = q.get(timeout=0.1)
+                test_instance = q.get()
 
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
@@ -191,9 +192,7 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-        self.sysinfo_dir = os.path.join(self.logdir, 'sysinfo')
-        if not os.path.isdir(self.sysinfo_dir):
-            os.makedirs(self.sysinfo_dir)
+        self.sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
         self.output_manager = output.OutputManager()
 
