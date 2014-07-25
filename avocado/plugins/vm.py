@@ -26,7 +26,6 @@ from avocado.result import TestResult
 from avocado.plugins import plugin
 from avocado.utils import virt
 from avocado.utils import archive
-from avocado.utils.misc import unique
 
 
 class Test(object):
@@ -119,7 +118,7 @@ class VMTestResult(TestResult):
 
     def _copy_tests(self):
         self.vm.remote.makedir(self.remote_test_dir)
-        uniq_urls = unique(self.urls)
+        uniq_urls = list(set(self.urls))
         for url in uniq_urls:
             test_path = os.path.join(self.test_dir, url)
             self.vm.remote.send_files(test_path, self.remote_test_dir)

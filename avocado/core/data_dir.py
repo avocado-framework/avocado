@@ -33,6 +33,7 @@ import shutil
 import time
 import tempfile
 
+from avocado.utils import path
 from avocado.settings import settings
 
 _BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
@@ -204,9 +205,7 @@ def get_job_logs_dir(args=None):
     else:
         logdir = get_logs_dir()
     debugbase = 'run-%s' % start_time
-    debugdir = os.path.join(logdir, debugbase)
-    if not os.path.isdir(debugdir):
-        os.makedirs(debugdir)
+    debugdir = path.init_dir(logdir, debugbase)
     latestdir = os.path.join(logdir, "latest")
     try:
         os.unlink(latestdir)

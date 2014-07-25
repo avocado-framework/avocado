@@ -10,16 +10,25 @@
 # See LICENSE for more details.
 #
 # Copyright: Red Hat Inc. 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Author: Yiqiao Pu <ypu@redhat.com>
 
-import archive
-import build
-import crypto
-import download
-import io
-import memory
-import network
-import params
-import process
-import remote
-import virt
+"""
+Avocado path related functions.
+"""
+
+import os
+
+
+def init_dir(*args):
+    """
+    Wrapper around os.path.join that creates dirs based on the final path.
+
+    :param args: List of dir arguments that will be os.path.joined.
+    :type directory: list
+    :return: directory.
+    :rtype: str
+    """
+    directory = os.path.join(*args)
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
+    return directory
