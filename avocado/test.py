@@ -17,6 +17,7 @@ Contains the base test implementation, used as a base for the actual
 framework tests.
 """
 
+import inspect
 import logging
 import os
 import sys
@@ -115,8 +116,8 @@ class Test(unittest.TestCase):
                 s_tag = ".".join(split_shortname[1:])
         self.tag = tag or s_tag
         self.job = job
-        self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
-        self.datadir = os.path.join(self.basedir, 'data')
+        self.basedir = os.path.dirname(inspect.getfile(self.__class__))
+        self.datadir = os.path.join(self.basedir, '%s.data' % self.name)
         self.workdir = path.init_dir(data_dir.get_tmp_dir(), self.name)
         self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
