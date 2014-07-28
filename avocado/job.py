@@ -326,7 +326,8 @@ class Job(object):
                     else:
                         params_list.append({'id': url})
             else:
-                raise ValueError('A test path must be provided')
+                e_msg = "Empty test ID. A test path or alias must be provided"
+                raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
             self.args.test_result_total = len(params_list)
@@ -387,6 +388,10 @@ class Job(object):
             self.output_manager.log_fail_header('Avocado job failed: %s: %s' %
                                                 (fail_class, details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+        except exceptions.OptionValidationError, details:
+            self.output_manager.log_fail_header(str(details))
+            return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+
         except Exception, details:
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
