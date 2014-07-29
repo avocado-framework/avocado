@@ -65,6 +65,8 @@ class TestRunner(object):
         """
         Resolve and load the test url from the the test shortname.
 
+        This method should now be called by the test runner process.
+
         :param params: Dictionary with test params.
         :type params: dict
         :return: an instance of :class:`avocado.test.Test`.
@@ -109,7 +111,7 @@ class TestRunner(object):
 
         return test_instance
 
-    def run_test(self, instance, queue):
+    def run_test(self, params, queue):
         """
         Run a test instance in a subprocess.
 
@@ -123,10 +125,13 @@ class TestRunner(object):
             raise exceptions.TestTimeoutError(e_msg)
 
         signal.signal(signal.SIGUSR1, timeout_handler)
+
+        instance = self.load_test(params)
+        self.result.start_test(instance.get_state())
         try:
             instance.run_avocado()
         finally:
-            queue.put(instance)
+            queue.put(instance.get_state())
 
     def run(self, params_list):
         """
@@ -145,32 +150,25 @@ class TestRunner(object):
         self.result.start_tests()
         q = multiprocessing.Queue()
         for params in params_list:
-            test_instance = self.load_test(params)
-            self.result.start_test(test_instance)
             p = multiprocessing.Process(target=self.run_test,
-                                        args=(test_instance, q,))
+                                        args=(params, q,))
             p.start()
-            # The test timeout can come from:
-            # 1) Test params dict (params)
-            # 2) Test default params dict (test_instance.params.timeout)
+            # Change in behaviour: timeout now comes *only* from test params
             timeout = params.get('timeout')
-            if timeout is None:
-                if hasattr(test_instance.params, 'timeout'):
-                    timeout = test_instance.params.timeout
             if timeout is not None:
                 timeout = float(timeout)
             # Wait for the test to end for [timeout] s
             try:
-                test_instance = q.get(timeout=timeout)
+                test_state = q.get(timeout=timeout)
             except Exception:
                 # If there's nothing inside the queue after timeout, the process
                 # must be terminated.
                 send_signal(p, signal.SIGUSR1)
-                test_instance = q.get()
+                test_state = q.get()
 
-            self.result.check_test(test_instance)
-            if not status.mapping[test_instance.status]:
-                failures.append(test_instance.name)
+            self.result.check_test(test_state)
+            if not status.mapping[test_state['status']]:
+                failures.append(test_state['name'])
         self.result.end_tests()
         return failures
 
