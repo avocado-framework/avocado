@@ -42,18 +42,19 @@ class JSONTestResult(TestResult):
         self.json = {'debuglog': self.stream.logfile,
                      'tests': []}
 
-    def end_test(self, test):
+    def end_test(self, state):
         """
         Called when the given test has been run.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.end_test(self, test)
-        t = {'test': test.tagged_name,
-             'url': test.name,
-             'time': test.time_elapsed,
-             'status': test.status,
-             'whiteboard': test.whiteboard,
+        TestResult.end_test(self, state)
+        t = {'test': state['tagged_name'],
+             'url': state['name'],
+             'time': state['time_elapsed'],
+             'status': state['status'],
+             'whiteboard': state['whiteboard'],
              }
         self.json['tests'].append(t)
 
