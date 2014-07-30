@@ -206,6 +206,7 @@ class Test(unittest.TestCase):
                 d[key] = orig[key]
         d['params'] = orig['_raw_params']
         d['class_name'] = self.__class__.__name__
+        d['job_unique_id'] = self.job.unique_id
         return d
 
     def _set_default(self, key, default):
