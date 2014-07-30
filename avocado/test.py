@@ -161,7 +161,7 @@ class Test(unittest.TestCase):
         self.log.debug('')
 
         # If there's a timeout set, log a timeout reminder
-        if self.params.timeout:
+        if self.params.get('timeout', None) is not None:
             self.log.info('Test timeout set. Will wait %.2f s for '
                           'PID %s to end',
                           float(self.params.timeout), os.getpid())
