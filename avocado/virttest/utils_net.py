@@ -16,6 +16,7 @@ import propcan
 import utils_misc
 import arch
 import aexpect
+import utils_params
 from versionable_class import factory
 
 CTYPES_SUPPORT = True
@@ -1883,6 +1884,7 @@ class ParamsNet(VMNet):
         self.subclass_pre_init(params, vm_name)
         # use temporary list to initialize
         result_list = []
+        self.params = utils_params.Params(self.params)
         nic_name_list = self.params.objects('nics')
         for nic_name in nic_name_list:
             # nic name is only in params scope
