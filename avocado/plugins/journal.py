@@ -23,16 +23,13 @@ from avocado.result import TestResult
 
 JOURNAL_FILENAME = ".journal.sqlite"
 
-JOB_INFO_SCHEMA = ("CREATE TABLE job_info ("
-                   "unique_id TEXT)")
-
-TEST_JOURNAL_SCHEMA = ("CREATE TABLE test_journal ("
-                       "tag TEXT, "
-                       "time TEXT, "
-                       "action TEXT, "
-                       "status TEXT, "
-                       "flushed BOOLEAN DEFAULT 0)")
-
+SCHEMA = {'job_info': 'CREATE TABLE job_info (unique_id TEXT UNIQUE)',
+          'test_journal': ("CREATE TABLE test_journal ("
+                           "tag TEXT, "
+                           "time TEXT, "
+                           "action TEXT, "
+                           "status TEXT, "
+                           "flushed BOOLEAN DEFAULT 0)")}
 
 class TestResultJournal(TestResult):
 
@@ -58,17 +55,28 @@ class TestResultJournal(TestResult):
         self.journal_path = os.path.join(logdir, JOURNAL_FILENAME)
         self.journal = sqlite3.connect(self.journal_path)
         self.journal_cursor = self.journal.cursor()
-        self.journal_cursor.execute(JOB_INFO_SCHEMA)
-        self.journal_cursor.execute(TEST_JOURNAL_SCHEMA)
+        for table in SCHEMA:
+            res = self.journal_cursor.execute("PRAGMA table_info('%s')" % table)
+            if res.fetchone() is None:
+                self.journal_cursor.execute(SCHEMA[table])
         self.journal.commit()
+
+    def lazy_init_journal(self, state):
+        # lazy init because we need the toplevel logdir for the job
+        if not self.journal_initialized:
+            self._init_journal(os.path.dirname(state['logdir']))
+            self._record_job_info(state)
+            self.journal_initialized = True
 
     def _shutdown_journal(self):
         self.journal.close()
 
     def _record_job_info(self, state):
-        sql = "INSERT INTO job_info (unique_id) VALUES (?)"
-        self.journal_cursor.execute(sql, (state['job_unique_id'], ))
-        self.journal.commit()
+        res = self.journal_cursor.execute("SELECT unique_id FROM job_info")
+        if res.fetchone() is None:
+            sql = "INSERT INTO job_info (unique_id) VALUES (?)"
+            self.journal_cursor.execute(sql, (state['job_unique_id'], ))
+            self.journal.commit()
 
     def _record_status(self, state, action):
         sql = "INSERT INTO test_journal (tag, time, action, status) VALUES (?, ?, ?, ?)"
@@ -95,16 +103,12 @@ class TestResultJournal(TestResult):
         self.output_option = None
 
     def start_test(self, state):
-        # lazy init because we need the toplevel logdir for the job
-        if not self.journal_initialized:
-            self._init_journal(os.path.dirname(state['logdir']))
-            self._record_job_info(state)
-            self.journal_initialized = True
-
+        self.lazy_init_journal(state)
         TestResult.start_test(self, state)
         self._record_status(state, "STARTED")
 
     def end_test(self, state):
+        self.lazy_init_journal(state)
         TestResult.end_test(self, state)
         self._record_status(state, "ENDED")
 
