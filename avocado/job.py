@@ -80,7 +80,7 @@ class TestRunner(object):
                 path_analyzer = path.PathInspector(test_path)
             else:
                 test_class = test.MissingTest
-                test_instance = test_class(name=module_name,
+                test_instance = test_class(name=t_id,
                                            base_logdir=self.job.logdir,
                                            params=params,
                                            job=self.job)
@@ -96,7 +96,7 @@ class TestRunner(object):
             except ImportError:
                 test_class = test.MissingTest
             finally:
-                test_instance = test_class(name=module_name,
+                test_instance = test_class(name=t_id,
                                            base_logdir=self.job.logdir,
                                            params=params,
                                            job=self.job)
