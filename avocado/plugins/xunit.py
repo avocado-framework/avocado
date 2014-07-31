@@ -47,6 +47,7 @@ class XmlResult(object):
         if filename is None:
             filename = self.output
         xml = '\n'.join(self.xml)
+        xml += '\n'
         if filename == '-':
             sys.stdout.write(xml)
         else:
