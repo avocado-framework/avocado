@@ -48,6 +48,11 @@ class Multiplexer(plugin.Plugin):
     def multiplex(self, args):
         bcolors = output.colors
         pipe = output.get_paginator()
+
+        if not args.multiplex_file:
+            pipe.write(bcolors.fail_header_str('A multiplex file is required, aborting...'))
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+
         multiplex_file = os.path.abspath(args.multiplex_file)
 
         if not os.path.isfile(multiplex_file):
