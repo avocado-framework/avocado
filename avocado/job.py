@@ -22,11 +22,11 @@ import imp
 import logging
 import multiprocessing
 import os
-import signal
 import sys
 import time
 import traceback
 import uuid
+import Queue
 
 from avocado.core import data_dir
 from avocado.core import output
@@ -120,12 +120,6 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
-        def timeout_handler(signum, frame):
-            e_msg = "Timeout reached waiting for %s to end" % instance
-            raise exceptions.TestTimeoutError(e_msg)
-
-        signal.signal(signal.SIGUSR1, timeout_handler)
-
         instance = self.load_test(params)
         self.result.start_test(instance.get_state())
         try:
@@ -141,30 +135,71 @@ class TestRunner(object):
 
         :return: a list of test failures.
         """
-        def send_signal(p, sig):
-            if p.exitcode is None:
-                os.kill(p.pid, sig)
-                time.sleep(0.1)
-
         failures = []
         self.result.start_tests()
         q = multiprocessing.Queue()
         for params in params_list:
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
-            p.start()
+
+
             # Change in behaviour: timeout now comes *only* from test params
             timeout = params.get('timeout')
             if timeout is not None:
                 timeout = float(timeout)
-            # Wait for the test to end for [timeout] s
-            try:
-                test_state = q.get(timeout=timeout)
-            except Exception:
-                # If there's nothing inside the queue after timeout, the process
-                # must be terminated.
-                send_signal(p, signal.SIGUSR1)
-                test_state = q.get()
+            else:
+                # fallback timeout is really long. less of a problem now since
+                # we give feedback on the test process being alive
+                timeout = 60 * 60 * 24
+
+            cycle_timeout = 1
+            time_started = time.time()
+            time_deadline = time_started + timeout - cycle_timeout
+            should_quit = False
+            test_state = None
+
+            p.start()
+
+            while not should_quit:
+                try:
+                    if time.time() >= time_deadline:
+                        should_quit = True
+                    test_state = q.get(timeout=cycle_timeout)
+                except Queue.Empty:
+                    if p.is_alive():
+                        self.job.output_manager.throbber_progress()
+                    else:
+                        should_quit = True
+
+                if should_quit:
+                    p.terminate()
+
+            if test_state is None:
+                # Fake test state, for means of compatibility only. Correct
+                # implementation should keep the last test_state received
+                # before a crash or test process termination
+                test_state = {}
+                test_state['fail_reason'] = 'test timeout reached'
+                test_state['status'] = 'ERROR'
+                test_state['time_elapsed'] = time.time() - time_started
+                test_state['name'] = params.get('id')
+                test_state['class_name'] = params.get('id')
+                test_state['tagged_name'] = params.get('id')
+                test_state['fail_class'] = params.get('id')
+                test_state['debugdir'] = None
+                test_state['resultsdir'] = None
+                test_state['srcdir'] = ''
+                test_state['basedir'] = ''
+                test_state['logdir'] = None
+                test_state['logfile'] = None
+                test_state['whiteboard'] = ''
+                test_state['workdir'] = None
+                test_state['tag'] = ''
+                test_state['params'] = {}
+                test_state['job_unique_id'] = ''
+                test_state['sysinfodir'] = ''
+                test_state['traceback'] = ''
+                test_state['text_output'] = ''
 
             self.result.check_test(test_state)
             if not status.mapping[test_state['status']]:
