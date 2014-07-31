@@ -17,6 +17,7 @@ Contains the base test implementation, used as a base for the actual
 framework tests.
 """
 
+import inspect
 import logging
 import os
 import sys
@@ -115,14 +116,22 @@ class Test(unittest.TestCase):
                 s_tag = ".".join(split_shortname[1:])
         self.tag = tag or s_tag
         self.job = job
-        self.basedir = os.path.join(data_dir.get_test_dir(), self.name)
-        self.datadir = os.path.join(self.basedir, 'data')
-        self.workdir = path.init_dir(data_dir.get_tmp_dir(), self.name)
+
+        basename = os.path.basename(self.name)
+
+        self.basedir = os.path.dirname(inspect.getfile(self.__class__))
+        self.datadir = os.path.join(self.basedir, '%s.data' % basename)
+        self.workdir = path.init_dir(data_dir.get_tmp_dir(), basename)
         self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.get_job_logs_dir()
         self.tagged_name = self.get_tagged_name(base_logdir)
-        self.logdir = path.init_dir(base_logdir, self.tagged_name)
+        # We need log directory names to be unique
+        tagged_name = self.tagged_name.replace('/', '.')
+        if tagged_name.startswith('.'):
+            tagged_name = tagged_name[1:]
+
+        self.logdir = path.init_dir(base_logdir, tagged_name)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
@@ -386,10 +395,8 @@ class DropinTest(Test):
     """
 
     def __init__(self, path, params=None, base_logdir=None, tag=None, job=None):
-        basename = os.path.basename(path)
-        name = basename.split(".")[0]
         self.path = os.path.abspath(path)
-        super(DropinTest, self).__init__(name=name, base_logdir=base_logdir,
+        super(DropinTest, self).__init__(name=path, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
 
     def _log_detailed_cmd_info(self, result):

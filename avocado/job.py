@@ -69,28 +69,44 @@ class TestRunner(object):
         :type params: dict
         :return: an instance of :class:`avocado.test.Test`.
         """
-        shortname = params.get('shortname')
-        url = shortname.split('.')[0]
-        path_attempt = os.path.abspath(shortname)
-        if os.path.exists(path_attempt):
-            test_class = test.DropinTest
-            test_instance = test_class(path=path_attempt,
-                                       base_logdir=self.job.logdir,
-                                       job=self.job)
-        else:
-            try:
-                test_module_dir = os.path.join(self.job.test_dir, url)
-                f, p, d = imp.find_module(url, [test_module_dir])
-                test_module = imp.load_module(url, f, p, d)
-                f.close()
-                test_class = getattr(test_module, url)
-            except ImportError:
+        t_id = params.get('id')
+        test_path = os.path.abspath(t_id)
+        path_analyzer = path.PathInspector(test_path)
+        module_name = os.path.basename(test_path).split('.')[0]
+        if not os.path.exists(test_path):
+            # Try to resolve test ID (keep compatibility)
+            test_path = os.path.join(data_dir.get_test_dir(), '%s.py' % t_id)
+            if os.path.exists(test_path):
+                path_analyzer = path.PathInspector(test_path)
+            else:
                 test_class = test.MissingTest
-            finally:
-                test_instance = test_class(name=url,
+                test_instance = test_class(name=t_id,
                                            base_logdir=self.job.logdir,
                                            params=params,
                                            job=self.job)
+                return test_instance
+
+        if path_analyzer.is_python():
+            try:
+                test_module_dir = os.path.dirname(test_path)
+                f, p, d = imp.find_module(module_name, [test_module_dir])
+                test_module = imp.load_module(module_name, f, p, d)
+                f.close()
+                test_class = getattr(test_module, module_name)
+            except ImportError:
+                test_class = test.MissingTest
+            finally:
+                test_instance = test_class(name=t_id,
+                                           base_logdir=self.job.logdir,
+                                           params=params,
+                                           job=self.job)
+
+        else:
+            test_class = test.DropinTest
+            test_instance = test_class(path=test_path,
+                                       base_logdir=self.job.logdir,
+                                       job=self.job)
+
         return test_instance
 
     def run_test(self, instance, queue):
@@ -287,7 +303,7 @@ class Job(object):
 
         if urls is not None:
             for url in urls:
-                params_list.append({'shortname': url})
+                params_list.append({'id': url})
 
         if multiplex_file is None:
             if self.args and self.args.multiplex_file is not None:
@@ -299,18 +315,19 @@ class Job(object):
             params_list = []
             if urls is not None:
                 for url in urls:
+                    test_module = os.path.basename(url).split('.')[0]
                     parser = multiplex_config.Parser(multiplex_file)
-                    parser.only_filter(url)
+                    parser.only_filter(test_module)
                     dcts = [d for d in parser.get_dicts()]
                     if dcts:
                         for dct in dcts:
+                            dct['id'] = url
                             params_list.append(dct)
                     else:
-                        params_list.append({'shortname': url})
+                        params_list.append({'id': url})
             else:
-                parser = multiplex_config.Parser(multiplex_file)
-                for dct in parser.get_dicts():
-                    params_list.append(dct)
+                e_msg = "Empty test ID. A test path or alias must be provided"
+                raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
             self.args.test_result_total = len(params_list)
@@ -371,6 +388,10 @@ class Job(object):
             self.output_manager.log_fail_header('Avocado job failed: %s: %s' %
                                                 (fail_class, details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+        except exceptions.OptionValidationError, details:
+            self.output_manager.log_fail_header(str(details))
+            return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+
         except Exception, details:
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()

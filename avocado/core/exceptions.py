@@ -36,6 +36,14 @@ class JobError(Exception):
     status = "ERROR"
 
 
+class OptionValidationError(Exception):
+
+    """
+    An invalid option was passed to the test runner
+    """
+    status = "ERROR"
+
+
 class TestBaseException(Exception):
 
     """
