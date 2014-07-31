@@ -65,22 +65,22 @@ class TestResultJournal(TestResult):
     def _shutdown_journal(self):
         self.journal.close()
 
-    def _record_job_info(self, test):
+    def _record_job_info(self, state):
         sql = "INSERT INTO job_info (unique_id) VALUES (?)"
-        self.journal_cursor.execute(sql, (test.job.unique_id, ))
+        self.journal_cursor.execute(sql, (state['job_unique_id'], ))
         self.journal.commit()
 
-    def _record_status(self, test, action):
+    def _record_status(self, state, action):
         sql = "INSERT INTO test_journal (tag, time, action, status) VALUES (?, ?, ?, ?)"
 
         # This shouldn't be required
         if action == "ENDED":
-            status = test.status
+            status = state['status']
         else:
             status = None
 
         self.journal_cursor.execute(sql,
-                                    (test.tagged_name,
+                                    (state['tagged_name'],
                                      datetime.datetime(1, 1, 1).now().isoformat(),
                                      action,
                                      status))
@@ -94,19 +94,19 @@ class TestResultJournal(TestResult):
         # Journal does not need an output option
         self.output_option = None
 
-    def start_test(self, test):
+    def start_test(self, state):
         # lazy init because we need the toplevel logdir for the job
         if not self.journal_initialized:
-            self._init_journal(os.path.dirname(test.logdir))
-            self._record_job_info(test)
+            self._init_journal(os.path.dirname(state['logdir']))
+            self._record_job_info(state)
             self.journal_initialized = True
 
-        TestResult.start_test(self, test)
-        self._record_status(test, "STARTED")
+        TestResult.start_test(self, state)
+        self._record_status(state, "STARTED")
 
-    def end_test(self, test):
-        TestResult.end_test(self, test)
-        self._record_status(test, "ENDED")
+    def end_test(self, state):
+        TestResult.end_test(self, state)
+        self._record_status(state, "ENDED")
 
     def end_tests(self):
         self._shutdown_journal()
