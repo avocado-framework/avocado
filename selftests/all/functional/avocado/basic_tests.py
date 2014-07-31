@@ -46,6 +46,11 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run "sleeptest sleeptest"'
         process.run(cmd_line)
 
+    def test_runner_noalias(self):
+        os.chdir(basedir)
+        cmd_line = "./scripts/avocado run 'tests/sleeptest.py tests/sleeptest.py'"
+        process.run(cmd_line)
+
     def test_runner_tests_fail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run "sleeptest failtest sleeptest"'

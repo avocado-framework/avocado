@@ -21,6 +21,7 @@ import os
 from avocado.plugins import plugin
 from avocado.core import data_dir
 from avocado.core import output
+from avocado.utils import path
 from avocado import sysinfo
 from avocado import job
 
@@ -53,7 +54,12 @@ class TestLister(plugin.Plugin):
         """
         bcolors = output.colors
         pipe = output.get_paginator()
-        test_dirs = os.listdir(data_dir.get_test_dir())
+        test_files = os.listdir(data_dir.get_test_dir())
+        test_dirs = []
+        for t in test_files:
+            inspector = path.PathInspector(path=t)
+            if inspector.is_python():
+                test_dirs.append(t.split('.')[0])
         pipe.write(bcolors.header_str('Tests available:'))
         pipe.write("\n")
         for test_dir in test_dirs:
