@@ -260,9 +260,9 @@ class HumanTestResult(TestResult):
         :param state: result of :class:`avocado.test.Test.get_state`.
         :type state: dict
         """
-        self.test_label = '(%s/%s) %s: ' % (self.tests_run,
-                                            self.tests_total,
-                                            state['tagged_name'])
+        self.test_label = '(%s/%s) %s:  ' % (self.tests_run,
+                                             self.tests_total,
+                                             state['tagged_name'])
         self.stream.info(msg=self.test_label, skip_newline=True)
 
     def end_test(self, state):
