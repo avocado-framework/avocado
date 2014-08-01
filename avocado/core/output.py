@@ -72,7 +72,17 @@ def add_console_handler(logger):
     logger.addHandler(console_handler)
 
 
-class TermColors(object):
+class TermSupport(object):
+
+    COLOR_BLUE = '\033[94m'
+    COLOR_GREEN = '\033[92m'
+    COLOR_YELLOW = '\033[93m'
+    COLOR_RED = '\033[91m'
+
+    CONTROL_END = '\033[0m'
+
+    MOVE_BACK = '\033[1D'
+    MOVE_FORWARD = '\033[1C'
 
     """
     Class to help applications to colorize their outputs for terminals.
@@ -85,18 +95,13 @@ class TermColors(object):
                      'screen-256color']
 
     def __init__(self):
-        self.blue = '\033[94m'
-        self.green = '\033[92m'
-        self.yellow = '\033[93m'
-        self.red = '\033[91m'
-        self.end = '\033[0m'
-        self.HEADER = self.blue
-        self.PASS = self.green
-        self.SKIP = self.yellow
-        self.FAIL = self.red
-        self.ERROR = self.red
-        self.WARN = self.yellow
-        self.ENDC = self.end
+        self.HEADER = self.COLOR_BLUE
+        self.PASS = self.COLOR_GREEN
+        self.SKIP = self.COLOR_YELLOW
+        self.FAIL = self.COLOR_RED
+        self.ERROR = self.COLOR_RED
+        self.WARN = self.COLOR_YELLOW
+        self.ENDC = self.CONTROL_END
         term = os.environ.get("TERM")
         if (not os.isatty(1)) or (term not in self.allowed_terms):
             self.disable()
@@ -105,11 +110,6 @@ class TermColors(object):
         """
         Disable colors from the strings output by this class.
         """
-        self.blue = ''
-        self.green = ''
-        self.yellow = ''
-        self.red = ''
-        self.end = ''
         self.HEADER = ''
         self.PASS = ''
         self.SKIP = ''
@@ -134,13 +134,21 @@ class TermColors(object):
         """
         return self.FAIL + msg + self.ENDC
 
+    def healthy_str(self, msg):
+        """
+        Print a healthy string (green colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.PASS + msg + self.ENDC
+
     def pass_str(self):
         """
         Print a pass string (green colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.PASS + 'PASS' + self.ENDC
+        return self.MOVE_BACK + self.PASS + 'PASS' + self.ENDC
 
     def skip_str(self):
         """
@@ -148,7 +156,7 @@ class TermColors(object):
 
         If the output does not support colors, just return the original string.
         """
-        return self.SKIP + 'SKIP' + self.ENDC
+        return self.MOVE_BACK + self.SKIP + 'SKIP' + self.ENDC
 
     def fail_str(self):
         """
@@ -156,7 +164,7 @@ class TermColors(object):
 
         If the output does not support colors, just return the original string.
         """
-        return self.FAIL + 'FAIL' + self.ENDC
+        return self.MOVE_BACK + self.FAIL + 'FAIL' + self.ENDC
 
     def error_str(self):
         """
@@ -164,7 +172,7 @@ class TermColors(object):
 
         If the output does not support colors, just return the original string.
         """
-        return self.ERROR + 'ERROR' + self.ENDC
+        return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
 
     def warn_str(self):
         """
@@ -172,10 +180,10 @@ class TermColors(object):
 
         If the output does not support colors, just return the original string.
         """
-        return self.WARN + 'WARN' + self.ENDC
+        return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
 
 
-colors = TermColors()
+term_support = TermSupport()
 
 
 class OutputManager(object):
@@ -184,8 +192,22 @@ class OutputManager(object):
     Takes care of both disk logs and stdout/err logs.
     """
 
+    THROBBER_STEPS = ['-', '\\', '|', '/']
+    THROBBER_MOVES = [term_support.MOVE_BACK + THROBBER_STEPS[0],
+                      term_support.MOVE_BACK + THROBBER_STEPS[1],
+                      term_support.MOVE_BACK + THROBBER_STEPS[2],
+                      term_support.MOVE_BACK + THROBBER_STEPS[3]]
+
     def __init__(self, logger_name='avocado.app'):
         self.console_log = logging.getLogger('avocado.app')
+        self.throbber_pos = 0
+
+    def throbber_progress(self):
+        self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+        if self.throbber_pos == (len(self.THROBBER_MOVES)-1):
+            self.throbber_pos = 0
+        else:
+            self.throbber_pos += 1
 
     def _log(self, msg, level=logging.INFO, skip_newline=False):
         """
@@ -246,13 +268,21 @@ class OutputManager(object):
         """
         self._log(msg, level=logging.ERROR)
 
+    def log_healthy(self, msg, skip_newline=False):
+        """
+        Log a message that indicates something healthy is going on
+
+        :param msg: Message to write.
+        """
+        self.info(term_support.healthy_str(msg), skip_newline)
+
     def log_header(self, msg):
         """
         Log a header message.
 
         :param msg: Message to write.
         """
-        self.info(colors.header_str(msg))
+        self.info(term_support.header_str(msg))
 
     def log_fail_header(self, msg):
         """
@@ -260,7 +290,7 @@ class OutputManager(object):
 
         :param msg: Message to write.
         """
-        self.info(colors.fail_header_str(msg))
+        self.info(term_support.fail_header_str(msg))
 
     def log_pass(self, t_elapsed):
         """
@@ -268,7 +298,7 @@ class OutputManager(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_pass_msg = colors.pass_str() + " (%.2f s)" % t_elapsed
+        normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
         self.info(normal_pass_msg)
 
     def log_error(self, t_elapsed):
@@ -277,7 +307,7 @@ class OutputManager(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_error_msg = colors.error_str() + " (%.2f s)" % t_elapsed
+        normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
         self.error(normal_error_msg)
 
     def log_fail(self, t_elapsed):
@@ -286,7 +316,7 @@ class OutputManager(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_fail_msg = colors.fail_str() + " (%.2f s)" % t_elapsed
+        normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
         self.error(normal_fail_msg)
 
     def log_skip(self, t_elapsed):
@@ -295,7 +325,7 @@ class OutputManager(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_skip_msg = colors.skip_str()
+        normal_skip_msg = term_support.skip_str()
         self.info(normal_skip_msg)
 
     def log_warn(self, t_elapsed):
@@ -304,5 +334,5 @@ class OutputManager(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_warn_msg = colors.warn_str() + " (%.2f s)" % t_elapsed
+        normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
         self.error(normal_warn_msg)
