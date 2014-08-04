@@ -44,6 +44,7 @@ class Test(object):
         self.traceback = note
         self.text_output = note
         self.fail_reason = note
+        self.whiteboard = ''
 
 
 class VMTestRunner(TestRunner):

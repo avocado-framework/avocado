@@ -10,6 +10,7 @@ virtualenv:
     system_site_packages: true
 
 before_script:
+    - sudo apt-get update
     - sudo apt-get -y --force-yes install python-libvirt build-essential
 
 install:

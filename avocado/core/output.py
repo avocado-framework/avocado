@@ -204,6 +204,7 @@ class OutputManager(object):
         :param logfile: Path to file that will receive logging.
         :param loglevel: Level of the logger. Example: :mod:`logging.DEBUG`.
         """
+        self.debuglog = logfile
         self.file_handler = logging.FileHandler(filename=logfile)
         self.file_handler.setLevel(loglevel)
 
