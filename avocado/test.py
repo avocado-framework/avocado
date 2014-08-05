@@ -31,6 +31,7 @@ from avocado.utils import path
 from avocado.utils import process
 from avocado.utils.params import Params
 from avocado import sysinfo
+from avocado.version import VERSION
 
 log = logging.getLogger("avocado.test")
 
@@ -335,12 +336,24 @@ class Test(unittest.TestCase):
         self.status = 'PASS'
         self.sysinfo_logger.end_test_hook()
 
+    def _setup_environment_variables(self):
+        os.environ['AVOCADO_VERSION'] = VERSION
+        os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
+        os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
+        os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
+        os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
+        os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
+        os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
+        os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
+        os.environ['AVOCADO_TEST_SYSINFODIR'] = self.sysinfodir
+
     def run_avocado(self, result=None):
         """
         Wraps the runTest metod, for execution inside the avocado runner.
 
         :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
+        self._setup_environment_variables()
         start_time = time.time()
         try:
             self.runTest(result)
