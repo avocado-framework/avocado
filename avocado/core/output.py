@@ -212,9 +212,12 @@ class OutputManager(object):
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
         self.file_handler.setFormatter(formatter)
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.DEBUG)
         test_logger = logging.getLogger('avocado.test')
         utils_logger = logging.getLogger('avocado.utils')
         linux_logger = logging.getLogger('avocado.linux')
+        root_logger.addHandler(self.file_handler)
         test_logger.addHandler(self.file_handler)
         utils_logger.addHandler(self.file_handler)
         linux_logger.addHandler(self.file_handler)

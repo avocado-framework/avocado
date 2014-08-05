@@ -19,6 +19,7 @@ import job
 import test
 import version
 import linux
+import virttest
 
 import logging.config
 

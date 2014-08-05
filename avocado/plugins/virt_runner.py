@@ -1,0 +1,189 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2013-2014
+# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+
+import os
+import signal
+
+from avocado.core import exceptions
+from avocado.core import error_codes
+from avocado import job
+from avocado import multiplex_config
+from avocado.utils import archive
+from avocado.plugins import runner
+from avocado.virttest import data_dir
+from avocado.virttest import standalone_test
+
+
+class VirtJob(job.Job):
+
+    def update_extra_params(self):
+        if self.args.qemu_bin:
+            if not os.path.isfile(self.args.qemu_bin):
+                raise exceptions.JobError("QEMU binary path %s does not exist" %
+                                          self.args.qemu_bin)
+            self.extra_params['qemu_bin'] = self.args.qemu_bin
+
+    def run_unhandled(self, urls=None, multiplex_file=None):
+        """
+        Runs a list of test URLs to its completion without exception handling.
+
+        :param urls: String with tests to run.
+        :param multiplex_file: File that multiplexes a given test url.
+
+        :return: Integer with overall job status. See
+                 :mod:`avocado.core.error_codes` for more information.
+        :raise: Any exception (avocado crashed), or
+                :class:`avocado.core.exceptions.JobBaseException` errors,
+                that configure a job failure.
+        """
+        self.update_extra_params()
+        self.sysinfo_logger.start_job_hook()
+        params_list = []
+        if urls is None:
+            if self.args and self.args.url is not None:
+                urls = self.args.url.split()
+        else:
+            if isinstance(urls, str):
+                urls = urls.split()
+
+        if urls is not None:
+            for url in urls:
+                dct = {'shortname': url}
+                if self.extra_params:
+                    dct.update(self.extra_params)
+                params_list.append(dct)
+
+        if multiplex_file is None:
+            if self.args and self.args.multiplex_file is not None:
+                multiplex_file = os.path.abspath(self.args.multiplex_file)
+        else:
+            multiplex_file = os.path.abspath(multiplex_file)
+
+        if multiplex_file is not None:
+            parser = multiplex_config.Parser(multiplex_file)
+
+        if self.args is not None:
+            self.args.test_result_total = len(params_list)
+
+        self._make_test_result()
+        self._make_test_runner()
+
+        self.output_manager.start_file_logging(self.logfile,
+                                               self.loglevel)
+        self.output_manager.logfile = self.logfile
+        try:
+            failures = standalone_test.run_tests(parser, self.args)
+        except KeyboardInterrupt:
+            pid = os.getpid()
+            os.kill(pid, signal.SIGTERM)
+        self.output_manager.stop_file_logging()
+        self.sysinfo_logger.end_job_hook()
+        # If it's all good so far, set job status to 'PASS'
+        if self.status == 'RUNNING':
+            self.status = 'PASS'
+        # Let's clean up test artifacts
+        if self.args is not None:
+            if self.args.archive:
+                filename = self.logdir + '.zip'
+                archive.create(filename, self.logdir)
+            if not self.args.keep_tmp_files:
+                data_dir.clean_tmp_files()
+
+        tests_status = not bool(failures)
+        if tests_status:
+            return error_codes.numeric_status['AVOCADO_ALL_OK']
+        else:
+            return error_codes.numeric_status['AVOCADO_TESTS_FAIL']
+
+
+class VirtTestRunner(runner.TestRunner):
+
+    """
+    Implements the avocado 'run-virt' functionality.
+    """
+
+    name = 'virt_test_runner'
+    enabled = True
+
+    def configure(self, app_parser, cmd_parser):
+        """
+        Add the subparser for the run-virt action.
+
+        :param parser: Main test runner parser.
+        """
+        myparser = cmd_parser.add_parser('run-virt', help=('Run a list of test modules '
+                                                           'or dropin tests '
+                                                           '(space separated)'))
+
+        myparser.add_argument('url', type=str,
+                              help=('Test module names or paths to dropin tests '
+                                    '(space separated)'),
+                              nargs='?', default=None)
+
+        myparser.add_argument('-z', '--archive', action='store_true', default=False,
+                              help='Archive (ZIP) files generated by tests.')
+
+        myparser.add_argument('-m', '--multiplex-file', type=str,
+                              help=('Path to an avocado multiplex '
+                                    '(.mplex) file '),
+                              nargs='?', default=None)
+
+        myparser.add_argument('-c', '--config', type=str,
+                              help=('Path to an avocado multiplex '
+                                    '(.mplex) file '),
+                              nargs='?', default=None)
+
+        myparser.add_argument('-t', '--type', type=str,
+                              help=('Test type'),
+                              nargs='?', default='qemu')
+
+        myparser.add_argument('--qemu-bin', type=str,
+                              help=('Path to a qemu binary '),
+                              nargs='?', default=None)
+
+        myparser.add_argument('--uri', type=str,
+                              help=('URI '),
+                              nargs='?', default=None)
+
+        myparser.add_argument('--show-open-fd', type=str,
+                              help=('Show open FD '),
+                              nargs='?', default=None)
+
+        myparser.add_argument('--keep-image-between-tests', action='store_true', default=False,
+                              help='Keep image between tests')
+
+        myparser.add_argument('--keep-tmp-files', action='store_true',
+                              help=('Keep temporary files generated by tests. '
+                                    'Default: %(defaults)'), default=False)
+
+        myparser.add_argument('--no-cleanup', action='store_true',
+                              help=('Keep temporary files generated by tests. '
+                                    'Default: %(defaults)'), default=False)
+
+        myparser.add_argument('--unique-id', type=str, default=None,
+                              help=('Unique Job id. Used by a server when job '
+                                    'was created at the server and run on a '
+                                    'different test machine'))
+
+        myparser.set_defaults(func=self.run_tests)
+        self.configured = True
+
+    def run_tests(self, args):
+        """
+        Run test modules or dropin tests.
+
+        :param args: Command line args received from the run subparser.
+        """
+        job_instance = VirtJob(args)
+        return job_instance.run()

@@ -211,6 +211,19 @@ class Job(object):
         self.sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
         self.output_manager = output.OutputManager()
+        # Let plugins populate this. In case there's data here, it is
+        # going to be passed to every test's params.
+        self.extra_params = {}
+
+    def update_extra_params(self):
+        """
+        Populate with options from your test runner plugin.
+
+        Runner plugins may override this method. It will populate the extra
+        params dict with data passed directly from the plugin options. Those
+        options are going to be passed to each new test.
+        """
+        pass
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -279,9 +292,9 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.output_manager, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
-    def _run(self, urls=None, multiplex_file=None):
+    def run_unhandled(self, urls=None, multiplex_file=None):
         """
-        Unhandled job method. Runs a list of test URLs to its completion.
+        Runs a list of test URLs to its completion without exception handling.
 
         :param urls: String with tests to run.
         :param multiplex_file: File that multiplexes a given test url.
@@ -292,6 +305,7 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
+        self.update_extra_params()
         self.sysinfo_logger.start_job_hook()
         params_list = []
         if urls is None:
@@ -303,7 +317,10 @@ class Job(object):
 
         if urls is not None:
             for url in urls:
-                params_list.append({'id': url})
+                dct = {'id': url}
+                if self.extra_params:
+                    dct.update(self.extra_params)
+                params_list.append(dct)
 
         if multiplex_file is None:
             if self.args and self.args.multiplex_file is not None:
@@ -322,6 +339,8 @@ class Job(object):
                     if dcts:
                         for dct in dcts:
                             dct['id'] = url
+                            if self.extra_params:
+                                dct.update(self.extra_params)
                             params_list.append(dct)
                     else:
                         params_list.append({'id': url})
@@ -381,7 +400,7 @@ class Job(object):
                  :mod:`avocado.core.error_codes` for more information.
         """
         try:
-            return self._run(urls, multiplex_file)
+            return self.run_unhandled(urls, multiplex_file)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
