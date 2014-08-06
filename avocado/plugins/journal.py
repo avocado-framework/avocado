@@ -31,6 +31,7 @@ SCHEMA = {'job_info': 'CREATE TABLE job_info (unique_id TEXT UNIQUE)',
                            "status TEXT, "
                            "flushed BOOLEAN DEFAULT 0)")}
 
+
 class TestResultJournal(TestResult):
 
     """
