@@ -38,6 +38,11 @@ class TestResultProxy(object):
             else:
                 return None
 
+    def throbber_progress(self):
+        for output_plugin in self.output_plugins:
+            if hasattr(output_plugin, 'throbber_progress'):
+                output_plugin.throbber_progress()
+
     def add_output_plugin(self, plugin):
         if not isinstance(plugin, TestResult):
             raise InvalidOutputPlugin("Object %s is not an instance of "
@@ -323,3 +328,6 @@ class HumanTestResult(TestResult):
         """
         TestResult.add_warn(self, state)
         self.stream.log_warn(state['time_elapsed'])
+
+    def throbber_progress(self):
+        self.stream.throbber_progress()

@@ -184,7 +184,7 @@ class TestRunner(object):
                     test_state = q.get(timeout=cycle_timeout)
                 except Queue.Empty:
                     if p.is_alive():
-                        self.job.output_manager.throbber_progress()
+                        self.job.result_proxy.throbber_progress()
                     else:
                         should_quit = True
 
