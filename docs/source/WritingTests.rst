@@ -57,10 +57,10 @@ Saving test generated (custom) data
 Each test instance provides a so called ``whiteboard``. It that can be accessed
 through ``self.whiteboard``. This whiteboard is simply a string that will be
 automatically saved to test results (as long as the output format supports it).
-If you choose to save binary data to the whiteboard, it's your responsitibility to
+If you choose to save binary data to the whiteboard, it's your responsibility to
 encoded it first (base64 is the obvious choice).
 
-Building on the previously demonstrated sleeptest, supose that you want to save the
+Building on the previously demonstrated sleeptest, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
 
         def action(self):
@@ -430,6 +430,36 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     16:14:22 test       L0376 ERROR| ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end
     16:14:22 test       L0363 INFO |
 
+Environment Variables for Dropin Tests
+======================================
+
+Avocado exports some environment variables to the running test. Those variables are interesting
+to drop-in tests, because they can not make use of Avocado API directly with Python,
+like the native tests can do.
+
+Here is the current variables that Avocado exports to the tests:
+
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| Environemnt Variable    | Meaning                               | Example                                                               |
++=========================+=======================================+=======================================================================+
+| AVOCADO_VERSION         | Version of Avocado test runner        | 0.8.0                                                                 |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_BASEDIR    | Base directory of Avocado tests       | $HOME/Downloads/avocado-source/avocado                                |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_DATADIR    | Data directory for the test           | $AVOCADO_TEST_BASEDIR/my_test.sh.data                                 |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_WORKDIR    | Work directory for the test           | /var/tmp/avocado/my_test.sh                                           |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_SRCDIR     | Source directory for the test         | /var/tmp/avocado/my-test.sh/src                                       |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_LOGDIR     | Log directory for the test            | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1           |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_LOGFILE    | Log file for the test                 | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1/debug.log |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_OUTPUTDIR  | Output directory for the test         | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1/data      |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
+| AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1/sysinfo   |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------+
 
 Wrap Up
 =======
