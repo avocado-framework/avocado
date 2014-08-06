@@ -187,12 +187,12 @@ class Test(unittest.TestCase):
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
 
-    def __getstate__(self):
+    def get_state(self):
         """
-        Pickle only selected attributes of the class for serialization.
+        Serialize selected attributes representing the test state
 
-        The fact we serialize the class means you'll have to modify this
-        class if you intend to make significant changes to its structure.
+        :returns: a dictionary containing relevant test state data
+        :rtype: dict
         """
         orig = dict(self.__dict__)
         d = {}
@@ -205,6 +205,8 @@ class Test(unittest.TestCase):
             if key in preserve_attr:
                 d[key] = orig[key]
         d['params'] = orig['_raw_params']
+        d['class_name'] = self.__class__.__name__
+        d['job_unique_id'] = self.job.unique_id
         return d
 
     def _set_default(self, key, default):
