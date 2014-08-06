@@ -121,11 +121,28 @@ class TestRunner(object):
         :type queue: :class`multiprocessing.Queue` instance.
         """
         instance = self.load_test(params)
+        queue.put(instance.get_state())
         self.result.start_test(instance.get_state())
         try:
             instance.run_avocado()
         finally:
             queue.put(instance.get_state())
+
+    def _fill_aborted_test_state(self, test_state):
+        """
+        Fill details necessary to process aborted tests.
+
+        :param test_state: Test state.
+        :type test_state: dict
+        :param time_started: When the test started
+        """
+        test_state['fail_reason'] = 'Test process aborted'
+        test_state['status'] = exceptions.TestAbortError.status
+        test_state['fail_class'] = exceptions.TestAbortError.__class__.__name__
+        test_state['traceback'] = 'Traceback not available'
+        with open(test_state['logfile'], 'r') as log_file_obj:
+            test_state['text_output'] = log_file_obj.read()
+        return test_state
 
     def run(self, params_list):
         """
@@ -141,7 +158,6 @@ class TestRunner(object):
         for params in params_list:
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
-
 
             # Change in behaviour: timeout now comes *only* from test params
             timeout = params.get('timeout')
@@ -160,6 +176,8 @@ class TestRunner(object):
 
             p.start()
 
+            early_state = q.get()
+
             while not should_quit:
                 try:
                     if time.time() >= time_deadline:
@@ -174,32 +192,13 @@ class TestRunner(object):
                 if should_quit:
                     p.terminate()
 
+            # If test_state is None, the test was aborted before it ended.
             if test_state is None:
-                # Fake test state, for means of compatibility only. Correct
-                # implementation should keep the last test_state received
-                # before a crash or test process termination
-                test_state = {}
-                test_state['fail_reason'] = 'test timeout reached'
-                test_state['status'] = 'ERROR'
-                test_state['time_elapsed'] = time.time() - time_started
-                test_state['name'] = params.get('id')
-                test_state['class_name'] = params.get('id')
-                test_state['tagged_name'] = params.get('id')
-                test_state['fail_class'] = params.get('id')
-                test_state['debugdir'] = None
-                test_state['resultsdir'] = None
-                test_state['srcdir'] = ''
-                test_state['basedir'] = ''
-                test_state['logdir'] = None
-                test_state['logfile'] = None
-                test_state['whiteboard'] = ''
-                test_state['workdir'] = None
-                test_state['tag'] = ''
-                test_state['params'] = {}
-                test_state['job_unique_id'] = ''
-                test_state['sysinfodir'] = ''
-                test_state['traceback'] = ''
-                test_state['text_output'] = ''
+                early_state['time_elapsed'] = time.time() - time_started
+                test_state = self._fill_aborted_test_state(early_state)
+                test_log = logging.getLogger('avocado.test')
+                test_log.error('Test %s aborted unexpectedly',
+                               test_state['name'])
 
             self.result.check_test(test_state)
             if not status.mapping[test_state['status']]:
