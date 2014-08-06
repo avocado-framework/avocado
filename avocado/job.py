@@ -50,6 +50,7 @@ class TestRunner(object):
     """
     A test runner class that displays tests results.
     """
+    DEFAULT_TIMEOUT = 60 * 60 * 24
 
     def __init__(self, job, test_result):
         """
@@ -159,24 +160,22 @@ class TestRunner(object):
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
 
-            # Change in behaviour: timeout now comes *only* from test params
-            timeout = params.get('timeout')
-            if timeout is not None:
-                timeout = float(timeout)
-            else:
-                # fallback timeout is really long. less of a problem now since
-                # we give feedback on the test process being alive
-                timeout = 60 * 60 * 24
-
             cycle_timeout = 1
             time_started = time.time()
-            time_deadline = time_started + timeout - cycle_timeout
             should_quit = False
             test_state = None
 
             p.start()
 
             early_state = q.get()
+            # At this point, the test is already initialized and we know
+            # for sure if there's a timeout set.
+            if 'timeout' in early_state['params'].keys():
+                timeout = float(early_state['params']['timeout'])
+            else:
+                timeout = self.DEFAULT_TIMEOUT
+
+            time_deadline = time_started + timeout - cycle_timeout
 
             while not should_quit:
                 try:
