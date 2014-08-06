@@ -83,6 +83,14 @@ class TestTimeoutError(TestBaseException):
     status = "ERROR"
 
 
+class TestAbortError(TestBaseException):
+
+    """
+    Indicates that the test was prematurely aborted.
+    """
+    status = "ERROR"
+
+
 class TestNAError(TestBaseException):
 
     """
