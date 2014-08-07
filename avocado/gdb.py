@@ -223,4 +223,3 @@ class GDB(object):
             elif ((parsed_msg.class_ == 'stopped') and
                   (parsed_msg.result.reason == "exited")):
                 return int(parsed_msg.result.exit_code)
-
