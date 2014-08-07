@@ -221,7 +221,7 @@ class TestResult(object):
         """
         Called once for a test to check status and report.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param test: A dict with test internal state
         """
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
