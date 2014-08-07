@@ -40,6 +40,7 @@ from avocado import multiplexer
 from avocado import test
 from avocado import result
 from avocado import sysinfo
+from avocado import runtime
 from avocado.plugins import xunit
 from avocado.plugins import jsonresult
 
@@ -128,7 +129,9 @@ class TestRunner(object):
         :type queue: :class`multiprocessing.Queue` instance.
         """
         instance = self.load_test(params, queue)
-        queue.put(instance.get_state())
+        runtime.CURRENT_TEST = instance
+        early_state = instance.get_state()
+        queue.put(early_state)
 
         def timeout_handler(signum, frame):
             e_msg = "Timeout reached waiting for %s to end" % instance
@@ -141,7 +144,7 @@ class TestRunner(object):
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
 
-        self.result.start_test(instance.get_state())
+        self.result.start_test(early_state)
         try:
             instance.run_avocado()
         finally:
@@ -266,6 +269,7 @@ class TestRunner(object):
             self.result.check_test(test_state)
             if not status.mapping[test_state['status']]:
                 failures.append(test_state['name'])
+        runtime.CURRENT_TEST = None
         self.result.end_tests()
         return failures
 
