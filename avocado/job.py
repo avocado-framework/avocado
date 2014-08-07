@@ -39,6 +39,7 @@ from avocado import multiplex_config
 from avocado import test
 from avocado import result
 from avocado import sysinfo
+from avocado import runtime
 from avocado.plugins import xunit
 from avocado.plugins import jsonresult
 
@@ -147,6 +148,7 @@ class TestRunner(object):
         for params in params_list:
             test_instance = self.load_test(params)
             self.result.start_test(test_instance)
+            runtime.CURRENT_TEST = test_instance
             p = multiprocessing.Process(target=self.run_test,
                                         args=(test_instance, q,))
             p.start()
@@ -171,6 +173,7 @@ class TestRunner(object):
             self.result.check_test(test_instance)
             if not status.mapping[test_instance.status]:
                 failures.append(test_instance.name)
+        runtime.CURRENT_TEST = None
         self.result.end_tests()
         return failures
 

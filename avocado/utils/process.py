@@ -25,6 +25,8 @@ import subprocess
 import time
 import threading
 
+from avocado import gdb
+from avocado import runtime
 from avocado.core import exceptions
 
 log = logging.getLogger('avocado.test')
@@ -283,6 +285,53 @@ class SubProcess(object):
         self.result.stderr = self.get_stderr()
 
 
+class GDBSubProcess(object):
+
+    '''
+    Runs a subprocess inside the GNU Debugger
+    '''
+
+    def __init__(self, cmd, verbose=True):
+        self.result = CmdResult(cmd)
+        self.args = shlex.split(cmd)
+        binary = os.path.abspath(self.args[0])
+        self.gdb = gdb.GDB()
+        self.gdb.set_file(binary)
+
+    def wait(self, timeout=None):
+        result = self.gdb.run(self.args[1:])
+        if type(result) == int:
+            self.result.exit_status = result
+        return self.result
+
+
+def should_run_inside_gdb(cmd):
+    '''
+    Wether the given command should be run inside the GNU debugger
+
+    :param cmd: the command arguments, from where we extract the binary name
+    '''
+    args = shlex.split(cmd)
+    binary_name = os.path.basename(args[0])
+    if binary_name in runtime.GDB_RUN_BINARY_NAMES:
+        return True
+    return False
+
+
+def get_sub_process_klass(cmd):
+    '''
+    Which sub process implementation should be used
+
+    Either the regular one, or the GNU Debugger version
+
+    :param cmd: the command arguments, from where we extract the binary name
+    '''
+    if should_run_inside_gdb(cmd):
+        return GDBSubProcess
+    else:
+        return SubProcess
+
+
 def run(cmd, timeout=None, verbose=True, ignore_status=False):
     """
     Run a subprocess, returning a CmdResult object.
@@ -302,7 +351,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False):
     :return: An :class:`avocado.utils.process.CmdResult` object.
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
-    sp = SubProcess(cmd=cmd, verbose=verbose)
+    klass = get_sub_process_klass(cmd)
+    sp = klass(cmd=cmd, verbose=verbose)
     cmd_result = sp.wait(timeout=timeout)
     if cmd_result.exit_status != 0 and not ignore_status:
         raise exceptions.CmdError(cmd, sp.result)
