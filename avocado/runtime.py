@@ -16,6 +16,15 @@
 Module that contains runtime configuration
 """
 
+#: Contains a list of binary names that should be run via the GNU debugger
+#: and be stopped at a given point. That means that a breakpoint will be set
+#: using the given expression
+GDB_RUN_BINARY_NAMES_EXPR = []
+
+#: Wether to disable the automatic generation of core dumps for applications
+#: that are run inside the GNU debugger
+GDB_DISABLE_CORE = False
+
 #: Sometimes it's useful for the framework and API to know about the test that
 #: is currently running, if one exists
 CURRENT_TEST = None
