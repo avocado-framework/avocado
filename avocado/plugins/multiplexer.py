@@ -46,7 +46,7 @@ class Multiplexer(plugin.Plugin):
         self.configured = True
 
     def multiplex(self, args):
-        bcolors = output.colors
+        bcolors = output.term_support
         pipe = output.get_paginator()
 
         if not args.multiplex_file:

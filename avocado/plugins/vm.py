@@ -45,6 +45,18 @@ class Test(object):
         self.text_output = note
         self.fail_reason = note
         self.whiteboard = ''
+        self.job_unique_id = ''
+
+    def get_state(self):
+        """
+        Serialize selected attributes representing the test state
+
+        :returns: a dictionary containing relevant test state data
+        :rtype: dict
+        """
+        d = self.__dict__
+        d['class_name'] = self.__class__.__name__
+        return d
 
 
 class VMTestRunner(TestRunner):
@@ -75,7 +87,7 @@ class VMTestRunner(TestRunner):
         :return: a list of test failures.
         """
         failures = []
-        urls = [x['shortname'] for x in params_list]
+        urls = [x['id'] for x in params_list]
         self.result.urls = urls
         self.result.setup()
         results = self.run_test(' '.join(urls))
@@ -86,7 +98,7 @@ class VMTestRunner(TestRunner):
                         time=tst['time'],
                         status=tst['status'])
             self.result.start_test(test)
-            self.result.check_test(test)
+            self.result.check_test(test.get_state())
             if not status.mapping[test.status]:
                 failures.append(test.tagged_name)
         self.result.end_tests()
@@ -225,7 +237,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_pass(self, test)
-        self.stream.log_pass(test.time_elapsed)
+        self.stream.log_pass(test['time_elapsed'])
 
     def add_error(self, test):
         """
