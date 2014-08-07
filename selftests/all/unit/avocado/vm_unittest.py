@@ -69,7 +69,7 @@ class VMResultTest(unittest.TestCase):
                            time=tst['time'],
                            status=tst['status'])
             self.test_result.start_test(test)
-            self.test_result.check_test(test)
+            self.test_result.check_test(test.get_state())
             if not status.mapping[test.status]:
                 failures.append(test.tagged_name)
         self.test_result.end_tests()

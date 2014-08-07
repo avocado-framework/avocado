@@ -22,11 +22,12 @@ import imp
 import logging
 import multiprocessing
 import os
-import signal
 import sys
+import signal
 import time
 import traceback
 import uuid
+import Queue
 
 from avocado.core import data_dir
 from avocado.core import output
@@ -50,6 +51,7 @@ class TestRunner(object):
     """
     A test runner class that displays tests results.
     """
+    DEFAULT_TIMEOUT = 60 * 60 * 24
 
     def __init__(self, job, test_result):
         """
@@ -64,6 +66,8 @@ class TestRunner(object):
     def load_test(self, params):
         """
         Resolve and load the test url from the the test shortname.
+
+        This method should now be called by the test runner process.
 
         :param params: Dictionary with test params.
         :type params: dict
@@ -109,7 +113,7 @@ class TestRunner(object):
 
         return test_instance
 
-    def run_test(self, instance, queue):
+    def run_test(self, params, queue):
         """
         Run a test instance in a subprocess.
 
@@ -122,11 +126,32 @@ class TestRunner(object):
             e_msg = "Timeout reached waiting for %s to end" % instance
             raise exceptions.TestTimeoutError(e_msg)
 
+        instance = self.load_test(params)
+        queue.put(instance.get_state())
+
         signal.signal(signal.SIGUSR1, timeout_handler)
+
+        self.result.start_test(instance.get_state())
         try:
             instance.run_avocado()
         finally:
-            queue.put(instance)
+            queue.put(instance.get_state())
+
+    def _fill_aborted_test_state(self, test_state):
+        """
+        Fill details necessary to process aborted tests.
+
+        :param test_state: Test state.
+        :type test_state: dict
+        :param time_started: When the test started
+        """
+        test_state['fail_reason'] = 'Test process aborted'
+        test_state['status'] = exceptions.TestAbortError.status
+        test_state['fail_class'] = exceptions.TestAbortError.__class__.__name__
+        test_state['traceback'] = 'Traceback not available'
+        with open(test_state['logfile'], 'r') as log_file_obj:
+            test_state['text_output'] = log_file_obj.read()
+        return test_state
 
     def run(self, params_list):
         """
@@ -136,41 +161,56 @@ class TestRunner(object):
 
         :return: a list of test failures.
         """
-        def send_signal(p, sig):
-            if p.exitcode is None:
-                os.kill(p.pid, sig)
-                time.sleep(0.1)
-
         failures = []
         self.result.start_tests()
         q = multiprocessing.Queue()
         for params in params_list:
-            test_instance = self.load_test(params)
-            self.result.start_test(test_instance)
             p = multiprocessing.Process(target=self.run_test,
-                                        args=(test_instance, q,))
-            p.start()
-            # The test timeout can come from:
-            # 1) Test params dict (params)
-            # 2) Test default params dict (test_instance.params.timeout)
-            timeout = params.get('timeout')
-            if timeout is None:
-                if hasattr(test_instance.params, 'timeout'):
-                    timeout = test_instance.params.timeout
-            if timeout is not None:
-                timeout = float(timeout)
-            # Wait for the test to end for [timeout] s
-            try:
-                test_instance = q.get(timeout=timeout)
-            except Exception:
-                # If there's nothing inside the queue after timeout, the process
-                # must be terminated.
-                send_signal(p, signal.SIGUSR1)
-                test_instance = q.get()
+                                        args=(params, q,))
 
-            self.result.check_test(test_instance)
-            if not status.mapping[test_instance.status]:
-                failures.append(test_instance.name)
+            cycle_timeout = 1
+            time_started = time.time()
+            should_quit = False
+            test_state = None
+
+            p.start()
+
+            early_state = q.get()
+            # At this point, the test is already initialized and we know
+            # for sure if there's a timeout set.
+            if 'timeout' in early_state['params'].keys():
+                timeout = float(early_state['params']['timeout'])
+            else:
+                timeout = self.DEFAULT_TIMEOUT
+
+            time_deadline = time_started + timeout - cycle_timeout
+
+            while not should_quit:
+                try:
+                    if time.time() >= time_deadline:
+                        os.kill(p.pid, signal.SIGUSR1)
+                        should_quit = True
+                    test_state = q.get(timeout=cycle_timeout)
+                except Queue.Empty:
+                    if p.is_alive():
+                        self.job.result_proxy.throbber_progress()
+                    else:
+                        should_quit = True
+
+                if should_quit:
+                    p.terminate()
+
+            # If test_state is None, the test was aborted before it ended.
+            if test_state is None:
+                early_state['time_elapsed'] = time.time() - time_started
+                test_state = self._fill_aborted_test_state(early_state)
+                test_log = logging.getLogger('avocado.test')
+                test_log.error('ERROR %s -> TestAbortedError: '
+                               'Test aborted unexpectedly', test_state['name'])
+
+            self.result.check_test(test_state)
+            if not status.mapping[test_state['status']]:
+                failures.append(test_state['name'])
         self.result.end_tests()
         return failures
 

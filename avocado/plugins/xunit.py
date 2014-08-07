@@ -83,68 +83,72 @@ class XmlResult(object):
             self.xml.append(tc)
         self.xml.append('</testsuite>')
 
-    def add_success(self, test):
+    def add_success(self, state):
         """
         Add a testcase node of kind succeed.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
         tc = '\t<testcase classname={class} name={name} time="{time}"/>'
-        values = {'class': self._escape_attr(test.__class__.__name__),
-                  'name': self._escape_attr(test.tagged_name),
-                  'time': test.time_elapsed}
+        values = {'class': self._escape_attr(state['class_name']),
+                  'name': self._escape_attr(state['tagged_name']),
+                  'time': state['time_elapsed']}
         self.testcases.append(tc.format(**values))
 
-    def add_skip(self, test):
+    def add_skip(self, state):
         """
         Add a testcase node of kind skipped.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
         tc = '''\t<testcase classname={class} name={name} time="{time}">
 \t\t<skipped />
 \t</testcase>'''
-        values = {'class': self._escape_attr(test.__class__.__name__),
-                  'name': self._escape_attr(test.tagged_name),
-                  'time': test.time_elapsed}
+        values = {'class': self._escape_attr(state['class_name']),
+                  'name': self._escape_attr(state['tagged_name']),
+                  'time': state['time_elapsed']}
         self.testcases.append(tc.format(**values))
 
-    def add_failure(self, test):
+    def add_failure(self, state):
         """
         Add a testcase node of kind failed.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
         tc = '''\t<testcase classname={class} name={name} time="{time}">
 \t\t<failure type={type} message={reason}><![CDATA[{traceback}]]></failure>
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
-        values = {'class': self._escape_attr(test.__class__.__name__),
-                  'name': self._escape_attr(test.tagged_name),
-                  'time': test.time_elapsed,
-                  'type': self._escape_attr(test.fail_class),
-                  'traceback': self._escape_cdata(test.traceback),
-                  'systemout': self._escape_cdata(test.text_output),
-                  'reason': self._escape_attr(str(test.fail_reason))}
+        values = {'class': self._escape_attr(state['class_name']),
+                  'name': self._escape_attr(state['tagged_name']),
+                  'time': state['time_elapsed'],
+                  'type': self._escape_attr(state['fail_class']),
+                  'traceback': self._escape_cdata(state['traceback']),
+                  'systemout': self._escape_cdata(state['text_output']),
+                  'reason': self._escape_attr(str(state['fail_reason']))}
         self.testcases.append(tc.format(**values))
 
-    def add_error(self, test):
+    def add_error(self, state):
         """
         Add a testcase node of kind error.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
         tc = '''\t<testcase classname={class} name={name} time="{time}">
 \t\t<error type={type} message={reason}><![CDATA[{traceback}]]></error>
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
-        values = {'class': self._escape_attr(test.__class__.__name__),
-                  'name': self._escape_attr(test.tagged_name),
-                  'time': test.time_elapsed,
-                  'type': self._escape_attr(test.fail_class),
-                  'traceback': self._escape_cdata(test.traceback),
-                  'systemout': self._escape_cdata(test.text_output),
-                  'reason': self._escape_attr(str(test.fail_reason))}
+        values = {'class': self._escape_attr(state['class_name']),
+                  'name': self._escape_attr(state['tagged_name']),
+                  'time': state['time_elapsed'],
+                  'type': self._escape_attr(state['fail_class']),
+                  'traceback': self._escape_cdata(state['traceback']),
+                  'systemout': self._escape_cdata(state['text_output']),
+                  'reason': self._escape_attr(str(state['fail_reason']))}
         self.testcases.append(tc.format(**values))
 
 
@@ -183,19 +187,22 @@ class xUnitTestResult(TestResult):
         """
         TestResult.start_test(self, test)
 
-    def end_test(self, test):
+    def end_test(self, state):
         """
         Record an end test event, accord to the given test status.
+
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.end_test(self, test)
-        if test.status == 'PASS':
-            self.xml.add_success(test)
-        if test.status == 'TEST_NA':
-            self.xml.add_skip(test)
-        if test.status == 'FAIL':
-            self.xml.add_failure(test)
-        if test.status == 'ERROR':
-            self.xml.add_error(test)
+        TestResult.end_test(self, state)
+        if state['status'] == 'PASS':
+            self.xml.add_success(state)
+        elif state['status'] == 'TEST_NA':
+            self.xml.add_skip(state)
+        elif state['status'] == 'FAIL':
+            self.xml.add_failure(state)
+        elif state['status'] == 'ERROR':
+            self.xml.add_error(state)
 
     def end_tests(self):
         """

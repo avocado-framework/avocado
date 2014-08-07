@@ -38,6 +38,11 @@ class TestResultProxy(object):
             else:
                 return None
 
+    def throbber_progress(self):
+        for output_plugin in self.output_plugins:
+            if hasattr(output_plugin, 'throbber_progress'):
+                output_plugin.throbber_progress()
+
     def add_output_plugin(self, plugin):
         if not isinstance(plugin, TestResult):
             raise InvalidOutputPlugin("Object %s is not an instance of "
@@ -52,37 +57,37 @@ class TestResultProxy(object):
         for output_plugin in self.output_plugins:
             output_plugin.end_tests()
 
-    def start_test(self, test):
+    def start_test(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.start_test(test)
+            output_plugin.start_test(state)
 
-    def end_test(self, test):
+    def end_test(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.end_test(test)
+            output_plugin.end_test(state)
 
-    def add_pass(self, test):
+    def add_pass(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.add_pass(test)
+            output_plugin.add_pass(state)
 
-    def add_error(self, test):
+    def add_error(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.add_error(test)
+            output_plugin.add_error(state)
 
-    def add_fail(self, test):
+    def add_fail(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.add_fail(test)
+            output_plugin.add_fail(state)
 
-    def add_skip(self, test):
+    def add_skip(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.add_skip(test)
+            output_plugin.add_skip(state)
 
-    def add_warn(self, test):
+    def add_warn(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.add_warn(test)
+            output_plugin.add_warn(state)
 
-    def check_test(self, test):
+    def check_test(self, state):
         for output_plugin in self.output_plugins:
-            output_plugin.check_test(test)
+            output_plugin.check_test(state)
 
 
 class TestResult(object):
@@ -149,77 +154,83 @@ class TestResult(object):
         """
         pass
 
-    def start_test(self, test):
+    def start_test(self, state):
         """
         Called when the given test is about to run.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
         pass
 
-    def end_test(self, test):
+    def end_test(self, state):
         """
         Called when the given test has been run.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
         self.tests_run += 1
-        self.total_time += test.time_elapsed
+        self.total_time += state['time_elapsed']
 
-    def add_pass(self, test):
+    def add_pass(self, state):
         """
         Called when a test succeeded.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        self.passed.append(test)
+        self.passed.append(state)
 
-    def add_error(self, test):
+    def add_error(self, state):
         """
         Called when a test had a setup error.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        self.errors.append(test)
+        self.errors.append(state)
 
-    def add_fail(self, test):
+    def add_fail(self, state):
         """
         Called when a test fails.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        self.failed.append(test)
+        self.failed.append(state)
 
-    def add_skip(self, test):
+    def add_skip(self, state):
         """
         Called when a test is skipped.
 
         :param test: an instance of :class:`avocado.test.Test`.
         """
-        self.skipped.append(test)
+        self.skipped.append(state)
 
-    def add_warn(self, test):
+    def add_warn(self, state):
         """
         Called when a test had a warning.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        self.warned.append(test)
+        self.warned.append(state)
 
-    def check_test(self, test):
+    def check_test(self, state):
         """
         Called once for a test to check status and report.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param test: A dict with test internal state
         """
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn}
-        add = status_map[test.status]
-        add(test)
-        self.end_test(test)
+        add = status_map[state['status']]
+        add(state)
+        self.end_test(state)
 
 
 class HumanTestResult(TestResult):
@@ -247,66 +258,76 @@ class HumanTestResult(TestResult):
         self.stream.log_header("TOTAL WARNED: %d" % len(self.warned))
         self.stream.log_header("ELAPSED TIME: %.2f s" % self.total_time)
 
-    def start_test(self, test):
+    def start_test(self, state):
         """
         Called when the given test is about to run.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        self.test_label = '(%s/%s) %s: ' % (self.tests_run,
-                                            self.tests_total,
-                                            test.tagged_name)
+        self.test_label = '(%s/%s) %s:  ' % (self.tests_run,
+                                             self.tests_total,
+                                             state['tagged_name'])
         self.stream.info(msg=self.test_label, skip_newline=True)
 
-    def end_test(self, test):
+    def end_test(self, state):
         """
         Called when the given test has been run.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.end_test(self, test)
+        TestResult.end_test(self, state)
 
-    def add_pass(self, test):
+    def add_pass(self, state):
         """
         Called when a test succeeded.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.add_pass(self, test)
-        self.stream.log_pass(test.time_elapsed)
+        TestResult.add_pass(self, state)
+        self.stream.log_pass(state['time_elapsed'])
 
-    def add_error(self, test):
+    def add_error(self, state):
         """
         Called when a test had a setup error.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.add_error(self, test)
-        self.stream.log_error(test.time_elapsed)
+        TestResult.add_error(self, state)
+        self.stream.log_error(state['time_elapsed'])
 
-    def add_fail(self, test):
+    def add_fail(self, state):
         """
         Called when a test fails.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.add_fail(self, test)
-        self.stream.log_fail(test.time_elapsed)
+        TestResult.add_fail(self, state)
+        self.stream.log_fail(state['time_elapsed'])
 
-    def add_skip(self, test):
+    def add_skip(self, state):
         """
         Called when a test is skipped.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.add_skip(self, test)
-        self.stream.log_skip(test.time_elapsed)
+        TestResult.add_skip(self, state)
+        self.stream.log_skip(state['time_elapsed'])
 
-    def add_warn(self, test):
+    def add_warn(self, state):
         """
         Called when a test had a warning.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
         """
-        TestResult.add_warn(self, test)
-        self.stream.log_warn(test.time_elapsed)
+        TestResult.add_warn(self, state)
+        self.stream.log_warn(state['time_elapsed'])
+
+    def throbber_progress(self):
+        self.stream.throbber_progress()
