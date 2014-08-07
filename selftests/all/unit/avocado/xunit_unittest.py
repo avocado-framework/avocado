@@ -29,6 +29,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado.plugins import xunit
 from avocado import test
+from avocado import job
 
 
 class ParseXMLError(Exception):
@@ -43,7 +44,7 @@ class xUnitSucceedTest(unittest.TestCase):
         args.xunit_output = self.tmpfile[1]
         self.test_result = xunit.xUnitTestResult(args=args)
         self.test_result.start_tests()
-        self.test1 = test.Test()
+        self.test1 = test.Test(job=job.Job())
         self.test1.status = 'PASS'
         self.test1.time_elapsed = 1.23
 
@@ -53,7 +54,7 @@ class xUnitSucceedTest(unittest.TestCase):
 
     def testAddSuccess(self):
         self.test_result.start_test(self.test1)
-        self.test_result.end_test(self.test1)
+        self.test_result.end_test(self.test1.get_state())
         self.test_result.end_tests()
         self.assertTrue(self.test_result.xml)
         with open(self.test_result.output) as fp:
