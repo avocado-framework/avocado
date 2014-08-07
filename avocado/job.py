@@ -23,6 +23,7 @@ import logging
 import multiprocessing
 import os
 import sys
+import signal
 import time
 import traceback
 import uuid
@@ -121,8 +122,15 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
+        def timeout_handler(signum, frame):
+            e_msg = "Timeout reached waiting for %s to end" % instance
+            raise exceptions.TestTimeoutError(e_msg)
+
         instance = self.load_test(params)
         queue.put(instance.get_state())
+
+        signal.signal(signal.SIGUSR1, timeout_handler)
+
         self.result.start_test(instance.get_state())
         try:
             instance.run_avocado()
@@ -180,6 +188,7 @@ class TestRunner(object):
             while not should_quit:
                 try:
                     if time.time() >= time_deadline:
+                        os.kill(p.pid, signal.SIGUSR1)
                         should_quit = True
                     test_state = q.get(timeout=cycle_timeout)
                 except Queue.Empty:
