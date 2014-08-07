@@ -204,7 +204,7 @@ class Test(unittest.TestCase):
         for key in sorted(orig):
             if key in preserve_attr:
                 d[key] = orig[key]
-        d['params'] = orig['_raw_params']
+        d['params'] = dict(orig['params'])
         d['class_name'] = self.__class__.__name__
         d['job_unique_id'] = self.job.unique_id
         return d
