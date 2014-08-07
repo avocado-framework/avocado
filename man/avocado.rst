@@ -160,6 +160,46 @@ And the output should look like::
  (4/4) sleeptest.py.3: PASS (10.01 s)
  ...
 
+DEBUGGING BINARIES RUN AS PART OF A TEST
+========================================
+
+One interesting avocado feature is the ability to automatically and
+transparently run binaries that are used on a given test inside the
+GNU debugger.
+
+Suppose you are running a test that uses an external, compiled, image
+converter. Now suppose you're feeding it with different types of images,
+including broken image files, and it fails at a given point. You wish
+you could connect to the debugger at that given source location while
+your test is running. This is how to do just that with avocado::
+
+ $ avocado run --gdb-run-bin=convert:convert_ppm_to_raw converttest
+
+The job starts running just as usual, and so does your test::
+
+ JOB ID    : <id>
+ JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+ TESTS     : 1
+ (1/1) converttest.py: /
+
+The `convert` binary though, automatically runs inside GDB. Avocado will
+stop when the given breakpoint is reached::
+
+ TEST PAUSED because of debugger breakpoint. To DEBUG your application run:
+ /home/<user>/avocado/job-results/job-<date>-<shortid>/test-results/converttest.py/data/convert.gdb.sh
+
+ NOTE: please use *disconnect* command in gdb before exiting, or else the debugged process will be KILLED
+
+From this point, you can run the generated script (`convert.gdb.sh`) to
+debug you application.
+
+As noted, it is strongly recommended that you *disconnect* from gdb while
+your binary is still running. That is, if the binary finished running
+while you are debugging it, avocado has no way to know about its status.
+
+Avocado will automatically send a `continue` command to the debugger
+when you disconnect from and exit gdb.
+
 FILES
 =====
 
