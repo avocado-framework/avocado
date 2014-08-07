@@ -1,0 +1,226 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2014
+# Authors: Cleber Rosa <cleber@redhat.com>
+
+"""
+Module that provides communication with GDB via its GDB/MI interpreter
+"""
+
+import os
+import time
+import fcntl
+import subprocess
+
+from avocado import runtime
+from avocado.external import gdbmi_parser
+
+GDB_PROMPT = '(gdb)'
+GDB_EXIT = '^exit'
+GDB_BREAK_CONTITIONS = [GDB_PROMPT, GDB_EXIT]
+
+
+class UnexpectedResponseError(Exception):
+
+    '''
+    A response different from the one expected was received from GDB
+    '''
+    pass
+
+
+def parse_mi(line):
+    '''
+    Parse a GDB/MI line
+
+    :param line: a string supposedely comming from GDB using MI language
+    :type line: str
+    :returns: a parsed GDB/MI response
+    '''
+    if not line.endswith('\n'):
+        line = "%s\n" % line
+    return gdbmi_parser.process(line)
+
+
+def encode_mi_cli(command):
+    """
+    Encodes a regular (CLI) command into the proper MI form
+
+    :param command: the regular cli command to send
+    :type command: str
+    :returns: the encoded (escaped) MI command
+    :rtype: str
+    """
+    return '-interpreter-exec console "%s"' % command
+
+
+class GDB(object):
+
+    """
+    Wraps a GDB subprocess for easier manipulation
+    """
+
+    GDB_PATH = '/usr/bin/gdb'
+
+    GDB_ARGS = [GDB_PATH,
+                '--interpreter=mi',
+                '--quiet']
+
+    def __init__(self):
+        self.process = subprocess.Popen(self.GDB_ARGS,
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        close_fds=True)
+
+        # we should not block because of the
+        fcntl.fcntl(self.process.stdout.fileno(),
+                    fcntl.F_SETFL, os.O_NONBLOCK)
+        self.read_until_break()
+
+        # whatever comes from the app that is not a GDB MI message
+        self.output_messages = []
+
+        # any GDB MI async messages
+        self.async_messages = []
+
+        # the name of the file to be loaded and run
+        self.binary_name = None
+
+    def read_gdb_response(self, timeout=0.01, max_tries=100):
+        '''
+        Read raw reponses from GDB
+
+        :param timeout: the amount of time to way between read attemps
+        :type timeout: float
+        :param max_tries: the maximum number of cycles to try to read until
+                          a response is obtained
+        :type max_tries: int
+        :returns: a string containing a raw response from GDB
+        :rtype: str
+        '''
+        current_try = 0
+        while current_try < max_tries:
+            try:
+                line = self.process.stdout.readline()
+                line = line.strip()
+                if line:
+                    return line
+            except IOError:
+                current_try += 1
+            if current_try >= max_tries:
+                raise ValueError("Could not read GDB response")
+            else:
+                time.sleep(timeout)
+
+    def read_until_break(self, max_lines=100):
+        '''
+        Read lines from GDB until a break condition is reached
+
+        :param max_lines: the maximum number of lines to read
+        :type max_lines: int
+        :returns: a list of messages read
+        :rtype: list of str
+        '''
+        result = []
+        while True:
+            line = self.read_gdb_response()
+            if line in GDB_BREAK_CONTITIONS:
+                break
+            if len(result) >= max_lines:
+                break
+            result.append(line)
+        return result
+
+    def send_gdb_command(self, command):
+        '''
+        Send a raw command to the GNU debugger input
+
+        :param command: the GDB command, hopefully in MI language
+        :type command: str
+        :returns: None
+        '''
+        if not command.endswith('\n'):
+            command = "%s\n" % command
+        self.process.stdin.write(command)
+
+    def cmd(self, command):
+        """
+        Sends a command and parses all lines until prompt is received
+
+        :param command: the GDB command, hopefully in MI language
+        :type command: str
+        :returns: the parsed GDB result response or None
+        :rtype: parsed GDB result response or None
+        """
+        self.send_gdb_command(command)
+        responses = self.read_until_break()
+        result_response = None
+
+        for line in responses:
+            # If the line can not be properly parsed, it is *most likely*
+            # generated by the application being run inside the debugger
+            try:
+                parsed_response = parse_mi(line)
+            except:
+                self.output_messages.append(line)
+                continue
+
+            if parsed_response.type == 'result':
+                if result_response is not None:
+                    # raise an exception here, because no two result
+                    # responses should come from a single command AFAIK
+                    raise Exception("Many result responses to a single cmd")
+                result_response = parsed_response
+            else:
+                self.async_messages.append(parsed_response)
+
+        return result_response
+
+    def set_file(self, path):
+        self.binary_name = os.path.basename(path)
+        cmd = "-file-exec-and-symbols %s" % path
+        r = self.cmd(cmd)
+        if not r.class_ == 'done':
+            raise UnexpectedResponseError
+
+    def run(self, args):
+        args_text = ' '.join(args)
+        cmd = '-exec-run %s' % args_text
+        r = self.cmd(cmd)
+        if not r.class_ == 'running':
+            raise UnexpectedResponseError
+
+        other_messages = self.read_until_break()
+        for msg in other_messages:
+            parsed_msg = parse_mi(msg)
+
+            if ((parsed_msg.class_ == 'stopped') and
+                    (parsed_msg.result.signal_name == 'SIGSEGV')):
+
+                if ((runtime.CURRENT_TEST is not None) and
+                        (not runtime.GDB_DISABLE_CORE)):
+                    core_name = "%s.core" % self.binary_name
+                    core_path = os.path.join(runtime.CURRENT_TEST.outputdir,
+                                             core_name)
+                    gcore_cmd = 'gcore %s' % core_path
+                    gcore_cmd = encode_mi_cli(gcore_cmd)
+                    r = self.cmd(gcore_cmd)
+                    if not r.class_ == 'done':
+                        raise UnexpectedResponseError
+
+                # Constant returned by SIGSEGV handler
+                return 139
+
+            elif ((parsed_msg.class_ == 'stopped') and
+                  (parsed_msg.result.reason == "exited")):
+                return int(parsed_msg.result.exit_code)
+
