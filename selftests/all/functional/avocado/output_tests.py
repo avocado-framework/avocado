@@ -61,7 +61,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit --json run sleeptest'
+        cmd_line = './scripts/avocado --xunit - --json - run sleeptest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
@@ -74,7 +74,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --vm --json run sleeptest'
+        cmd_line = './scripts/avocado --vm --json - run sleeptest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
@@ -88,7 +88,7 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --journal --xunit --xunit-output %s --json run sleeptest' % tmpfile
+        cmd_line = './scripts/avocado --journal --xunit %s --json - run sleeptest' % tmpfile
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -108,7 +108,7 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit --json --json-output %s run sleeptest' % tmpfile
+        cmd_line = './scripts/avocado --xunit - --json %s run sleeptest' % tmpfile
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -132,7 +132,7 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit --xunit-output %s --json --json-output %s run sleeptest' % (tmpfile, tmpfile2)
+        cmd_line = './scripts/avocado --xunit %s --json %s run sleeptest' % (tmpfile, tmpfile2)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
