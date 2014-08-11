@@ -134,6 +134,8 @@ class TestRunner(object):
         self.result.start_test(instance.get_state())
         try:
             instance.run_avocado()
+        except KeyboardInterrupt:
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
         finally:
             queue.put(instance.get_state())
 
@@ -431,6 +433,9 @@ class Job(object):
         except exceptions.OptionValidationError, details:
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+        except KeyboardInterrupt:
+            self.output_manager.log_header('\n')
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         except Exception, details:
             self.status = "ERROR"
