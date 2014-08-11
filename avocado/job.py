@@ -441,6 +441,7 @@ class Job(object):
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except KeyboardInterrupt:
             self.output_manager.log_header('\n')
+            self.output_manager.log_header('Interrupted by user request')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         except Exception, details:
