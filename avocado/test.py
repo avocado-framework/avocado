@@ -399,6 +399,8 @@ class Test(unittest.TestCase):
                            self.fail_reason)
 
         else:
+            if self.status is None:
+                self.status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
                           self.tagged_name)
 
