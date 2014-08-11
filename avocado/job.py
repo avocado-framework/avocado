@@ -173,7 +173,7 @@ class TestRunner(object):
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
 
-            cycle_timeout = 1
+            cycle_timeout = 0.01
             time_started = time.time()
             should_quit = False
             test_state = None
