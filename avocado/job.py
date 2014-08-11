@@ -26,7 +26,6 @@ import sys
 import signal
 import time
 import traceback
-import uuid
 import Queue
 
 from avocado.core import data_dir
@@ -34,6 +33,7 @@ from avocado.core import output
 from avocado.core import status
 from avocado.core import exceptions
 from avocado.core import error_codes
+from avocado.core import job_id
 from avocado.utils import archive
 from avocado.utils import path
 from avocado import multiplex_config
@@ -232,12 +232,11 @@ class Job(object):
 
         :param args: an instance of :class:`argparse.Namespace`.
         """
-
         self.args = args
         if args is not None:
-            self.unique_id = args.unique_id or str(uuid.uuid4())
+            self.unique_id = args.unique_id or job_id.get_job_id()
         else:
-            self.unique_id = str(uuid.uuid4())
+            self.unique_id = job_id.get_job_id()
         self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
         self.logfile = os.path.join(self.logdir, "job.log")
         self.idfile = os.path.join(self.logdir, "id")

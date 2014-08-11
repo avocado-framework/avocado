@@ -34,6 +34,7 @@ import time
 import tempfile
 import uuid
 
+from avocado.core import job_id
 from avocado.utils import path
 from avocado.settings import settings
 
@@ -207,7 +208,7 @@ def get_job_logs_dir(args=None, unique_id=None):
         logdir = get_logs_dir()
     # Stand alone tests handling
     if unique_id is None:
-        unique_id = str(uuid.uuid4())
+        unique_id = job_id.get_job_id()
 
     debugbase = 'job-%s-%s' % (start_time, unique_id[:8])
     debugdir = path.init_dir(logdir, debugbase)
