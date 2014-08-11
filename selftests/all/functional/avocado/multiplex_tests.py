@@ -45,7 +45,7 @@ class MultiplexTests(unittest.TestCase):
         output = result.stdout + result.stderr
         if expected_lines is not None:
             for line in output.splitlines():
-                if 'DEBUG LOG:' in line:
+                if 'JOB LOG:' in line:
                     debug_log = line.split()[-1]
                     debug_log_obj = open(debug_log, 'r')
                     job_log_lines = debug_log_obj.readlines()
@@ -71,7 +71,6 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_noid(self):
         cmd_line = './scripts/avocado run --multiplex tests/sleeptest.py.data/sleeptest.mplx'
-        expected_rc = 0
         self.run_and_check(cmd_line, 2)
 
     def test_run_mplex_sleeptest(self):
