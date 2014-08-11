@@ -240,6 +240,11 @@ class Job(object):
             self.unique_id = str(uuid.uuid4())
         self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
         self.logfile = os.path.join(self.logdir, "job.log")
+        self.idfile = os.path.join(self.logdir, "id")
+
+        with open(self.idfile, 'w') as id_file_obj:
+            id_file_obj.write("%s\n" % self.unique_id)
+
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
             self.multiplex_file = args.multiplex_file
@@ -378,7 +383,8 @@ class Job(object):
         self._make_test_runner()
 
         self.output_manager.start_file_logging(self.logfile,
-                                               self.loglevel)
+                                               self.loglevel,
+                                               self.unique_id)
         self.output_manager.logfile = self.logfile
         failures = self.test_runner.run(params_list)
         self.output_manager.stop_file_logging()

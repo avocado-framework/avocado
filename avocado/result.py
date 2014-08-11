@@ -244,8 +244,9 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
+        self.stream.log_header("JOB ID : %s" % self.stream.job_unique_id)
         self.stream.log_header("JOB LOG: %s" % self.stream.logfile)
-        self.stream.log_header("TESTS: %s" % self.tests_total)
+        self.stream.log_header("TESTS  : %s" % self.tests_total)
 
     def end_tests(self):
         """
