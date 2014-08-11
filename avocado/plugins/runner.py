@@ -52,7 +52,7 @@ class TestLister(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        bcolors = output.colors
+        bcolors = output.term_support
         pipe = output.get_paginator()
         test_files = os.listdir(data_dir.get_test_dir())
         test_dirs = []

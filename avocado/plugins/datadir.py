@@ -33,7 +33,7 @@ class DataDirList(plugin.Plugin):
         self.configured = True
 
     def list_data_dirs(self, args):
-        bcolors = output.colors
+        bcolors = output.term_support
         pipe = output.get_paginator()
         pipe.write(bcolors.header_str('Avocado Data Directories:'))
         pipe.write('\n    base dir:        ' + data_dir.get_base_dir())
