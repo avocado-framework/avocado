@@ -208,7 +208,7 @@ class VMTestResult(TestResult):
         self.stream.log_header("SKIP : %d" % len(self.skipped))
         self.stream.log_header("WARN : %d" % len(self.warned))
         self.stream.log_header("TIME : %.2f s" % self.total_time)
-        self.stream.log_header("DEBUG LOG: %s" % self.stream.logfile)
+        self.stream.log_header("JOB LOG: %s" % self.stream.logfile)
 
     def start_test(self, test):
         """
