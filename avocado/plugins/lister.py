@@ -33,7 +33,7 @@ class PluginsList(plugin.Plugin):
         self.configured = True
 
     def list_plugins(self, args):
-        bcolors = output.colors
+        bcolors = output.term_support
         pipe = output.get_paginator()
         pm = get_plugin_manager()
         pipe.write(bcolors.header_str('Plugins loaded:'))
