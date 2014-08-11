@@ -242,7 +242,7 @@ class Job(object):
         else:
             self.unique_id = str(uuid.uuid4())
         self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
-        self.logfile = os.path.join(self.logdir, "debug.log")
+        self.logfile = os.path.join(self.logdir, "job.log")
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
             self.multiplex_file = args.multiplex_file
