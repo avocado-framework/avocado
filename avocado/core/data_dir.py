@@ -200,7 +200,7 @@ def get_job_logs_dir(args=None, unique_id=None):
                  (optional).
     :rtype: basestring
     """
-    start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
+    start_time = time.strftime('%Y-%m-%dT%H.%M')
     if args is not None:
         logdir = args.logdir or get_logs_dir()
     else:
@@ -209,7 +209,7 @@ def get_job_logs_dir(args=None, unique_id=None):
     if unique_id is None:
         unique_id = str(uuid.uuid4())
 
-    debugbase = 'job-%s-%s' % (unique_id[:8], start_time)
+    debugbase = 'job-%s-%s' % (start_time, unique_id[:8])
     debugdir = path.init_dir(logdir, debugbase)
     latestdir = os.path.join(logdir, "latest")
     try:
