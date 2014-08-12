@@ -133,7 +133,7 @@ class Test(unittest.TestCase):
             tagged_name = tagged_name[1:]
 
         self.logdir = path.init_dir(base_logdir, tagged_name)
-        self.logfile = os.path.join(self.logdir, 'debug.log')
+        self.logfile = os.path.join(self.logdir, 'test.log')
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
@@ -142,6 +142,7 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.tagged_name)
         self.log.debug('')
+        self.log.debug('Test log: %s', self.logfile)
         self.log.debug('Test instance parameters:')
 
         # Set the helper set_default to the params object
@@ -399,6 +400,8 @@ class Test(unittest.TestCase):
                            self.fail_reason)
 
         else:
+            if self.status is None:
+                self.status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
                           self.tagged_name)
 

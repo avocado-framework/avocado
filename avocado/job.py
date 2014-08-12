@@ -26,7 +26,6 @@ import sys
 import signal
 import time
 import traceback
-import uuid
 import Queue
 
 from avocado.core import data_dir
@@ -34,6 +33,7 @@ from avocado.core import output
 from avocado.core import status
 from avocado.core import exceptions
 from avocado.core import error_codes
+from avocado.core import job_id
 from avocado.utils import archive
 from avocado.utils import path
 from avocado import multiplex_config
@@ -134,6 +134,8 @@ class TestRunner(object):
         self.result.start_test(instance.get_state())
         try:
             instance.run_avocado()
+        except KeyboardInterrupt:
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
         finally:
             queue.put(instance.get_state())
 
@@ -168,7 +170,7 @@ class TestRunner(object):
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
 
-            cycle_timeout = 1
+            cycle_timeout = 0.01
             time_started = time.time()
             should_quit = False
             test_state = None
@@ -230,14 +232,18 @@ class Job(object):
 
         :param args: an instance of :class:`argparse.Namespace`.
         """
-
         self.args = args
         if args is not None:
-            self.unique_id = args.unique_id or str(uuid.uuid4())
+            self.unique_id = args.unique_id or job_id.get_job_id()
         else:
-            self.unique_id = str(uuid.uuid4())
-        self.logdir = data_dir.get_job_logs_dir(self.args)
-        self.logfile = os.path.join(self.logdir, "debug.log")
+            self.unique_id = job_id.get_job_id()
+        self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
+        self.logfile = os.path.join(self.logdir, "job.log")
+        self.idfile = os.path.join(self.logdir, "id")
+
+        with open(self.idfile, 'w') as id_file_obj:
+            id_file_obj.write("%s\n" % self.unique_id)
+
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
             self.multiplex_file = args.multiplex_file
@@ -376,7 +382,8 @@ class Job(object):
         self._make_test_runner()
 
         self.output_manager.start_file_logging(self.logfile,
-                                               self.loglevel)
+                                               self.loglevel,
+                                               self.unique_id)
         self.output_manager.logfile = self.logfile
         failures = self.test_runner.run(params_list)
         self.output_manager.stop_file_logging()
@@ -431,6 +438,10 @@ class Job(object):
         except exceptions.OptionValidationError, details:
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+        except KeyboardInterrupt:
+            self.output_manager.log_header('\n')
+            self.output_manager.log_header('Interrupted by user request')
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         except Exception, details:
             self.status = "ERROR"
