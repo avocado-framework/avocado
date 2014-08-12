@@ -20,7 +20,7 @@ Installing avocado - Fedora
 
 You can install the rpm package by performing the following commands::
 
-    sudo curl http://copr.fedoraproject.org/coprs/lmr/Autotest/repo/fedora-20-i386/ -o /etc/yum.repos.d/autotest.repo
+    sudo curl http://copr.fedoraproject.org/coprs/lmr/Autotest/repo/fedora-20/lmr-Autotest-fedora-20.repo -o /etc/yum.repos.d/autotest.repo
     sudo yum update
     sudo yum install avocado
 
@@ -29,8 +29,8 @@ Installing avocado - Ubuntu
 
 You need to add the following lines::
 
-    deb http://ppa.launchpad.net/lmr/autotest/ubuntu saucy main
-    deb-src http://ppa.launchpad.net/lmr/autotest/ubuntu saucy main
+    deb http://ppa.launchpad.net/lmr/autotest/ubuntu trusty main
+    deb-src http://ppa.launchpad.net/lmr/autotest/ubuntu trusty main
 
 To the file ``/etc/apt/sources.list``. After that you can install avocado by
 performing the following commands::
