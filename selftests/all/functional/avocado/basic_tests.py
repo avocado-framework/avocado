@@ -84,7 +84,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
         self.assertIn("TestError: Failing during cleanup. Yay!", output,
                       "Cleanup exception not printed to log output")
-        self.assertIn("FAIL doublefail.1 -> TestFail: This test is supposed to fail",
+        self.assertIn("FAIL doublefail -> TestFail: This test is supposed to fail",
                       output,
                       "Test did not fail with action exception")
 
@@ -99,7 +99,7 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end",
+        self.assertIn("ERROR timeouttest -> TestTimeoutError: Timeout reached waiting for timeouttest to end",
                       output,
                       "Test did not fail with timeout exception")
 
