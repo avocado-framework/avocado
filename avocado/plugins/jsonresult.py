@@ -93,12 +93,12 @@ class JSON(plugin.Plugin):
 
     def configure(self, app_parser, cmd_parser):
         self.parser = app_parser
-        self.parser.add_argument('--json', action='store_true', default=False)
-        self.parser.add_argument('--json-output', default='-', type=str,
+        self.parser.add_argument('--json', type=str,
                                  dest='json_output',
-                                 help='the file where the result should be written')
+                                 help='Enable JSON output to the file where the result should be written.'
+                                      "Use '-' to redirect to the standard output.")
         self.configured = True
 
     def activate(self, app_args):
-        if app_args.json:
+        if app_args.json_output:
             self.parser.set_defaults(json_result=JSONTestResult)
