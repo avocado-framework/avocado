@@ -83,6 +83,14 @@ class TestTimeoutError(TestBaseException):
     status = "ERROR"
 
 
+class TestInterruptedError(TestBaseException):
+
+    """
+    Indicates that the test was interrupted by the user (Ctrl+C)
+    """
+    status = "INTERRUPTED"
+
+
 class TestAbortError(TestBaseException):
 
     """
