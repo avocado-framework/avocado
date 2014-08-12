@@ -61,37 +61,50 @@ key. You can list tests by::
 
 You can run them using the subcommand ``run``::
 
-    $ scripts/avocado run sleeptest
-    DEBUG LOG: /home/lmr/Code/avocado/logs/run-2014-04-23-19.06.39/debug.log
-    TOTAL TESTS: 1
-    (1/1) sleeptest.1:  PASS (1.09 s)
-    TOTAL PASSED: 1
-    TOTAL ERROR: 0
-    TOTAL FAILED: 0
-    TOTAL SKIPPED: 0
-    TOTAL WARNED: 0
-    ELAPSED TIME: 1.09 s
+    $ avocado run sleeptest
+    JOB ID : 381b849a62784228d2fd208d929cc49f310412dc
+    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
+    TESTS  : 1
+    (1/1) sleeptest.1: PASS (1.01 s)
+    PASS : 1
+    ERROR: 0
+    FAIL : 0
+    SKIP : 0
+    WARN : 0
+    TIME : 1.01 s
+
+The Job ID is a SHA1 string that has some information encoded:
+
+* Hostname
+* ISO timestamp
+* 64 bit integer
+
+The idea is to have a unique identifier that can be used for job data, for
+the purposes of joining on a single database results obtained by jobs run
+on different systems.
 
 You can run any number of test in an arbitrary order, as well as mix and match
 native tests and dropin tests::
 
     $ echo '#!/bin/bash' > /tmp/script_that_passes.sh
     $ echo 'true' >> /tmp/script_that_passes.sh
-    $ scripts/avocado run "failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh"
-    DEBUG LOG: /home/lmr/Code/avocado/logs/run-2014-04-23-19.16.46/debug.log
-    TOTAL TESTS: 6
-    (1/6) failtest.1:  FAIL (0.09 s)
-    (2/6) sleeptest.1:  PASS (1.09 s)
-    (3/6) synctest.1:  PASS (2.33 s)
-    (4/6) failtest.2:  FAIL (0.10 s)
-    (5/6) synctest.2:  PASS (1.94 s)
-    (6/6) script_that_passes.1:  PASS (0.11 s)
-    TOTAL PASSED: 4
-    TOTAL ERROR: 0
-    TOTAL FAILED: 2
-    TOTAL SKIPPED: 0
-    TOTAL WARNED: 0
-    ELAPSED TIME: 5.67 s
+    $ chmod +x /tmp/script_that_passes.sh
+    $ avocado run "failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh"
+    JOB ID : 86911e49b5f2c36caeea41307cee4fecdcdfa121
+    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
+    TESTS  : 6
+    (1/6) failtest.1: FAIL (0.00 s)
+    (2/6) sleeptest.1: PASS (1.00 s)
+    (3/6) synctest.1: ERROR (0.01 s)
+    (4/6) failtest.2: FAIL (0.00 s)
+    (5/6) synctest.2: ERROR (0.01 s)
+    (6/6) /tmp/script_that_passes.sh.1: PASS (0.02 s)
+    PASS : 2
+    ERROR: 2
+    FAIL : 2
+    SKIP : 0
+    WARN : 0
+    TIME : 1.04 s
 
 Some more involved functionalities for the avocado runner are discussed as appropriate, during
 the introduction of important concepts.
