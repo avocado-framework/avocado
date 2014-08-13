@@ -49,12 +49,12 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_datadir_alias(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run synctest'
+        cmd_line = './scripts/avocado run datadir'
         process.run(cmd_line)
 
     def test_datadir_noalias(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run "tests/synctest.py tests/synctest.py"'
+        cmd_line = './scripts/avocado run "tests/datadir.py tests/datadir.py"'
         process.run(cmd_line)
 
     def test_runner_noalias(self):
