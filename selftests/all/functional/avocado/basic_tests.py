@@ -197,6 +197,17 @@ class PluginsSysinfoTest(unittest.TestCase):
         sysinfo_files = os.listdir(self.base_outputdir)
         self.assertGreater(len(sysinfo_files), 0, "Empty sysinfo files dir")
 
+    def test_list_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado list'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('No tests were found on current tests dir', output)
+
     def tearDown(self):
         if os.path.isdir(self.base_outputdir):
             shutil.rmtree(self.base_outputdir, ignore_errors=True)
