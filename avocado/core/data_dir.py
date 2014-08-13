@@ -32,7 +32,6 @@ import sys
 import shutil
 import time
 import tempfile
-import uuid
 
 from avocado.core import job_id
 from avocado.utils import path
