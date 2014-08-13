@@ -176,6 +176,8 @@ class TestRunner(object):
                                         args=(params, q,))
 
             cycle_timeout = 0.01
+            ui_progress_cycle = 0.25
+            ui_progress_count = 0
             time_started = time.time()
             should_quit = False
             test_state = None
@@ -200,7 +202,10 @@ class TestRunner(object):
                     test_state = q.get(timeout=cycle_timeout)
                 except Queue.Empty:
                     if p.is_alive():
-                        self.job.result_proxy.throbber_progress()
+                        ui_progress_count += cycle_timeout
+                        if ui_progress_count >= ui_progress_cycle:
+                            self.job.result_proxy.throbber_progress()
+                            ui_progress_count = 0
                     else:
                         should_quit = True
 
