@@ -126,6 +126,7 @@ class Test(unittest.TestCase):
         self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.get_job_logs_dir()
+        base_logdir = os.path.join(base_logdir, 'test-results')
         self.tagged_name = self.get_tagged_name(base_logdir)
 
         self.logdir = path.init_dir(base_logdir, self.tagged_name)
