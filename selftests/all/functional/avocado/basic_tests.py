@@ -208,6 +208,17 @@ class PluginsSysinfoTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('No tests were found on current tests dir', output)
 
+    def test_plugin_list(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado plugins'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('Disabled', output)
+
     def tearDown(self):
         if os.path.isdir(self.base_outputdir):
             shutil.rmtree(self.base_outputdir, ignore_errors=True)
