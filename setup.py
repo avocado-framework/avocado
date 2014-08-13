@@ -13,10 +13,39 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import glob
+import os
 # pylint: disable=E0611
 from distutils.core import setup
 
 import avocado.version
+
+
+def get_settings_dir():
+    settings_system_wide = os.path.join('/etc', 'avocado')
+    settings_local_install = os.path.join('etc', 'avocado')
+    if 'VIRTUAL_ENV' in os.environ:
+        return settings_local_install
+    else:
+        return settings_system_wide
+
+
+def get_tests_dir():
+    settings_system_wide = os.path.join('/usr', 'share', 'avocado', 'tests')
+    settings_local_install = os.path.join('tests')
+    if 'VIRTUAL_ENV' in os.environ:
+        return settings_local_install
+    else:
+        return settings_system_wide
+
+
+def get_data_files():
+    data_files = [(get_settings_dir(), ['etc/settings.ini'])]
+    data_files += [(get_tests_dir(), glob.glob('tests/*.py'))]
+    for data_dir in glob.glob('tests/*.data'):
+        fmt_str = '%s/*' % data_dir
+        data_files += [(os.path.join(get_tests_dir(), os.path.basename(data_dir)), [glob.glob(fmt_str)[0]])]
+    return data_files
+
 
 setup(name='avocado',
       version=avocado.version.VERSION,
@@ -30,7 +59,5 @@ setup(name='avocado',
                 'avocado.linux',
                 'avocado.utils',
                 'avocado.plugins'],
-      data_files=[('/etc/avocado', ['etc/settings.ini']),
-                  ('/usr/share/avocado/tests/',
-                   glob.glob('tests/*/*'))],
+      data_files=get_data_files(),
       scripts=['scripts/avocado'])
