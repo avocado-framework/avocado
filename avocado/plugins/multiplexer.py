@@ -24,10 +24,10 @@ from avocado import multiplex_config
 class Multiplexer(plugin.Plugin):
 
     """
-    Implements the avocado 'multiplex' functionality.
+    Implements the avocado 'multiplex' subcommand
     """
 
-    name = 'plugins_list'
+    name = 'multiplexer'
     enabled = True
 
     def configure(self, app_parser, cmd_parser):

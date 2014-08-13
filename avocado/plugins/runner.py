@@ -29,7 +29,7 @@ from avocado import job
 class TestLister(plugin.Plugin):
 
     """
-    Implements the avocado 'list' functionality.
+    Implements the avocado 'list' subcommand
     """
 
     name = 'test_lister'
@@ -79,7 +79,7 @@ class TestLister(plugin.Plugin):
 class TestRunner(plugin.Plugin):
 
     """
-    Implements the avocado 'run' functionality.
+    Implements the avocado 'run' subcommand
     """
 
     name = 'test_runner'
@@ -133,7 +133,7 @@ class TestRunner(plugin.Plugin):
 class SystemInformation(plugin.Plugin):
 
     """
-    Collect system information and log.
+    Collect system information
     """
 
     name = 'sysinfo'

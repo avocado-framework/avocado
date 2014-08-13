@@ -279,7 +279,7 @@ class VMTestResult(TestResult):
 class RunVM(plugin.Plugin):
 
     """
-    Run tests on Virtual Machine plugin.
+    Run tests on a Virtual Machine
     """
 
     name = 'run_vm'
