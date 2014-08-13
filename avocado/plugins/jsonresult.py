@@ -87,7 +87,7 @@ class JSONTestResult(TestResult):
 class JSON(plugin.Plugin):
 
     """
-    JSON output plugin.
+    JSON output
     """
 
     name = 'json'

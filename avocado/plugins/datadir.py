@@ -20,7 +20,7 @@ from avocado.core import data_dir
 class DataDirList(plugin.Plugin):
 
     """
-    Implements the avocado 'datadir' functionality.
+    Implements the avocado 'datadir' subcommand
     """
 
     name = 'datadir'

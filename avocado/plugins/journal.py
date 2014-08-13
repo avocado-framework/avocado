@@ -120,7 +120,7 @@ class TestResultJournal(TestResult):
 class Journal(plugin.Plugin):
 
     """
-    Test journal plugin
+    Test journal
     """
 
     name = 'journal'
