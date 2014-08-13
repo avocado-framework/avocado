@@ -453,7 +453,7 @@ class Job(object):
                 os.kill(child.pid, signal.SIGINT)
             self.output_manager.log_header('\n')
             self.output_manager.log_header('Interrupted by user request')
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
 
         except Exception, details:
             self.status = "ERROR"

@@ -133,7 +133,7 @@ class RunnerOperationTest(unittest.TestCase):
         sp.wait(timeout=3, sig=signal.SIGINT)
         result = sp.result
         output = result.stdout + result.stderr
-        expected_rc = 2
+        expected_rc = 4
         unexpected_rc = 3
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
