@@ -22,9 +22,13 @@ The current return codes are:
         :class:`avocado.core.exceptions.JobError` exception.
     * AVOCADO_CRASH
         Something else went wrong and avocado plain crashed.
+    * AVOCADO_JOB_INTERRUPTED
+        The job was explicitly interrupted. Usually this means that a user
+        hit CTRL+C while the job was still running.
 """
 
 numeric_status = {"AVOCADO_ALL_OK": 0,
                   "AVOCADO_TESTS_FAIL": 1,
                   "AVOCADO_JOB_FAIL": 2,
-                  "AVOCADO_CRASH": 3}
+                  "AVOCADO_CRASH": 3,
+                  "AVOCADO_JOB_INTERRUPTED": 4}
