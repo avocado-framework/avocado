@@ -19,8 +19,12 @@ import ConfigParser
 import os
 import sys
 
+if 'VIRTUAL_ENV' in os.environ:
+    CFG_DIR = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
+else:
+    CFG_DIR = '/etc'
 
-_config_dir_system = os.path.join('/etc', 'avocado')
+_config_dir_system = os.path.join(CFG_DIR, 'avocado')
 _config_dir_local = os.path.join(os.path.expanduser("~"), '.config', 'avocado')
 _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..")
 _config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc')
