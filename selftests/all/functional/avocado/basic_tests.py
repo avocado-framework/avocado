@@ -181,7 +181,7 @@ class RunnerDropinTest(unittest.TestCase):
             shutil.rmtree(self.base_logdir, ignore_errors=True)
 
 
-class PluginsSysinfoTest(unittest.TestCase):
+class PluginsTest(unittest.TestCase):
 
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
@@ -219,6 +219,17 @@ class PluginsSysinfoTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('Disabled', output)
 
+    def test_datadir_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado datadir'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('Disabled', output)
+
     def tearDown(self):
         if os.path.isdir(self.base_outputdir):
             shutil.rmtree(self.base_outputdir, ignore_errors=True)
@@ -228,7 +239,7 @@ class ParseXMLError(Exception):
     pass
 
 
-class PluginsXunitTest(PluginsSysinfoTest):
+class PluginsXunitTest(PluginsTest):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
@@ -294,7 +305,7 @@ class ParseJSONError(Exception):
     pass
 
 
-class PluginsJSONTest(PluginsSysinfoTest):
+class PluginsJSONTest(PluginsTest):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
