@@ -126,13 +126,10 @@ class Test(unittest.TestCase):
         self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.get_job_logs_dir()
+        base_logdir = os.path.join(base_logdir, 'test-results')
         self.tagged_name = self.get_tagged_name(base_logdir)
-        # We need log directory names to be unique
-        tagged_name = self.tagged_name.replace('/', '.')
-        if tagged_name.startswith('.'):
-            tagged_name = tagged_name[1:]
 
-        self.logdir = path.init_dir(base_logdir, tagged_name)
+        self.logdir = path.init_dir(base_logdir, self.tagged_name)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
@@ -259,16 +256,23 @@ class Test(unittest.TestCase):
 
         :return: String `test.tag`.
         """
+        if self.name.startswith('/'):
+            self.name = self.name[1:]
         if self.tag is not None:
             return "%s.%s" % (self.name, self.tag)
-        tag = 1
-        tagged_name = "%s.%s" % (self.name, tag)
+
+        tag = 0
+        if tag == 0:
+            tagged_name = self.name
+        else:
+            tagged_name = "%s.%s" % (self.name, tag)
         test_logdir = os.path.join(logdir, tagged_name)
         while os.path.isdir(test_logdir):
             tag += 1
             tagged_name = "%s.%s" % (self.name, tag)
             test_logdir = os.path.join(logdir, tagged_name)
         self.tag = str(tag)
+
         return tagged_name
 
     def setup(self):
@@ -399,6 +403,8 @@ class Test(unittest.TestCase):
                            self.fail_reason)
 
         else:
+            if self.status is None:
+                self.status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
                           self.tagged_name)
 

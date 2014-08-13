@@ -244,19 +244,20 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.log_header("DEBUG LOG: %s" % self.stream.logfile)
-        self.stream.log_header("TOTAL TESTS: %s" % self.tests_total)
+        self.stream.log_header("JOB ID : %s" % self.stream.job_unique_id)
+        self.stream.log_header("JOB LOG: %s" % self.stream.logfile)
+        self.stream.log_header("TESTS  : %s" % self.tests_total)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
-        self.stream.log_header("TOTAL PASSED: %d" % len(self.passed))
-        self.stream.log_header("TOTAL ERROR: %d" % len(self.errors))
-        self.stream.log_header("TOTAL FAILED: %d" % len(self.failed))
-        self.stream.log_header("TOTAL SKIPPED: %d" % len(self.skipped))
-        self.stream.log_header("TOTAL WARNED: %d" % len(self.warned))
-        self.stream.log_header("ELAPSED TIME: %.2f s" % self.total_time)
+        self.stream.log_header("PASS : %d" % len(self.passed))
+        self.stream.log_header("ERROR: %d" % len(self.errors))
+        self.stream.log_header("FAIL : %d" % len(self.failed))
+        self.stream.log_header("SKIP : %d" % len(self.skipped))
+        self.stream.log_header("WARN : %d" % len(self.warned))
+        self.stream.log_header("TIME : %.2f s" % self.total_time)
 
     def start_test(self, state):
         """

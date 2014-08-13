@@ -221,7 +221,7 @@ class xUnitTestResult(TestResult):
 class XUnit(plugin.Plugin):
 
     """
-    xUnit output plugin.
+    xUnit output
     """
 
     name = 'xunit'

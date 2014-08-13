@@ -20,7 +20,7 @@ from avocado.core import output
 class PluginsList(plugin.Plugin):
 
     """
-    Implements the avocado 'plugins' functionality.
+    Implements the avocado 'plugins' subcommand
     """
 
     name = 'plugins_list'
@@ -38,7 +38,17 @@ class PluginsList(plugin.Plugin):
         pm = get_plugin_manager()
         pipe.write(bcolors.header_str('Plugins loaded:'))
         pipe.write('\n')
+        blength = 0
         for plug in pm.plugins:
-            status = "Enabled" if plug.enabled else "Disabled"
-            pipe.write('    %s - %s (%s)\n' % (plug.name, plug.__doc__.strip(),
-                                               status))
+            clength = len(plug.name)
+            if clength > blength:
+                blength = clength
+
+        format_str = "    %-" + str(blength) + "s - %s (%s)\n"
+        for plug in sorted(pm.plugins):
+            if plug.enabled:
+                status = bcolors.healthy_str("Enabled")
+            else:
+                status = bcolors.fail_header_str("Disabled")
+            pipe.write(format_str % (bcolors.header_str(plug.name), plug.__doc__.strip(),
+                                     status))

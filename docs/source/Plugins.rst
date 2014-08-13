@@ -14,7 +14,7 @@ List available plugins
 Avocado has a builtin ``plugins`` command that lets you list available
 plugins::
 
-    $ scripts/avocado plugins
+    $ avocado plugins
     Plugins loaded:
         test_lister - Implements the avocado 'list' functionality. (Enabled)
         sysinfo - Collect system information and log. (Enabled)
@@ -68,7 +68,7 @@ location that contains plugins, that will be automatically loaded. In the
 avocado source tree, the ``avocado_hello.py`` example is available under
 ``examples/plugins``. So, in order to enable the hello plugin, you can do a::
 
-    $ scripts/avocado --plugins examples/plugins/ plugins
+    $ avocado --plugins examples/plugins/ plugins
     Plugins loaded:
         test_lister - Implements the avocado 'list' functionality. (Enabled)
         sysinfo - Collect system information and log. (Enabled)
@@ -82,7 +82,7 @@ Run it
 
 To run it, you can simply call the newly registered runner command ``hello``::
 
-    $ scripts/avocado --plugins examples/plugins/ hello
+    $ avocado --plugins examples/plugins/ hello
         The classical Hello World! plugin example.
 
 Wrap Up

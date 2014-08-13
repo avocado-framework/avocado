@@ -203,21 +203,23 @@ class SubProcess(object):
         """
         Send a :attr:`signal.SIGTERM` to the process.
         """
-        try:
-            os.kill(self.sp.pid, signal.SIGTERM)
-        except:
-            pass
+        self.send_signal(signal.SIGTERM)
 
     def kill(self):
         """
         Send a :attr:`signal.SIGKILL` to the process.
         """
-        try:
-            os.kill(self.sp.pid, signal.SIGKILL)
-        except:
-            pass
+        self.send_signal(signal.SIGKILL)
 
-    def wait(self, timeout=None):
+    def send_signal(self, sig):
+        """
+        Send the specified signal to the process.
+
+        :param sig: Signal to send.
+        """
+        self.sp.send_signal(sig)
+
+    def wait(self, timeout=None, sig=signal.SIGTERM):
         """
         Wait for the process to end, filling and returning the result attr.
 
@@ -243,7 +245,7 @@ class SubProcess(object):
             timeout = 1
 
         if self.result.exit_status is None:
-            self.terminate()
+            self.send_signal(sig)
             # Timeout here should be 1 second (see comment above)
             stop_time = time.time() + timeout
             while time.time() < stop_time:

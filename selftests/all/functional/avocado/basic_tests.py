@@ -17,6 +17,7 @@
 import json
 import unittest
 import os
+import signal
 import shutil
 import sys
 import tempfile
@@ -44,6 +45,16 @@ class RunnerOperationTest(unittest.TestCase):
     def test_runner_all_ok(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run "sleeptest sleeptest"'
+        process.run(cmd_line)
+
+    def test_datadir_alias(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run datadir'
+        process.run(cmd_line)
+
+    def test_datadir_noalias(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run "tests/datadir.py tests/datadir.py"'
         process.run(cmd_line)
 
     def test_runner_noalias(self):
@@ -83,9 +94,9 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
         self.assertIn("TestError: Failing during cleanup. Yay!", output,
                       "Cleanup exception not printed to log output")
-        self.assertIn("FAIL doublefail.1 -> TestFail: This test is supposed to fail",
+        self.assertIn("TestFail: This test is supposed to fail",
                       output,
-                      "Test did not fail with action exception")
+                      "Test did not fail with action exception:\n%s" % output)
 
     def test_runner_timeout(self):
         os.chdir(basedir)
@@ -98,9 +109,9 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end",
+        self.assertIn("TestTimeoutError: Timeout reached waiting for",
                       output,
-                      "Test did not fail with timeout exception")
+                      "Test did not fail with timeout exception:\n%s" % output)
 
     def test_runner_abort(self):
         os.chdir(basedir)
@@ -112,6 +123,25 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
+    def test_runner_ctrl_c(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptenmin'
+        sp = process.SubProcess(cmd_line)
+        # Let it run for 3 seconds, then send a SIGINT
+        # (translates to KeyboardInterrupt)
+        sp.wait(timeout=3, sig=signal.SIGINT)
+        result = sp.result
+        output = result.stdout + result.stderr
+        expected_rc = 4
+        unexpected_rc = 3
+        self.assertNotEqual(result.exit_status, unexpected_rc,
+                            "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.assertIn("Interrupted by user request", output,
+                      "Avocado did not display interruption message. "
+                      "Output:\n%s" % output)
 
 
 class RunnerDropinTest(unittest.TestCase):
@@ -151,7 +181,7 @@ class RunnerDropinTest(unittest.TestCase):
             shutil.rmtree(self.base_logdir, ignore_errors=True)
 
 
-class PluginsSysinfoTest(unittest.TestCase):
+class PluginsTest(unittest.TestCase):
 
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
@@ -167,6 +197,39 @@ class PluginsSysinfoTest(unittest.TestCase):
         sysinfo_files = os.listdir(self.base_outputdir)
         self.assertGreater(len(sysinfo_files), 0, "Empty sysinfo files dir")
 
+    def test_list_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado list'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('No tests were found on current tests dir', output)
+
+    def test_plugin_list(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado plugins'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('Disabled', output)
+
+    def test_datadir_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado datadir'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('Disabled', output)
+
     def tearDown(self):
         if os.path.isdir(self.base_outputdir):
             shutil.rmtree(self.base_outputdir, ignore_errors=True)
@@ -176,7 +239,7 @@ class ParseXMLError(Exception):
     pass
 
 
-class PluginsXunitTest(PluginsSysinfoTest):
+class PluginsXunitTest(PluginsTest):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
@@ -242,7 +305,7 @@ class ParseJSONError(Exception):
     pass
 
 
-class PluginsJSONTest(PluginsSysinfoTest):
+class PluginsJSONTest(PluginsTest):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):

@@ -50,6 +50,8 @@ class JSONTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
+        if 'job_id' not in self.json:
+            self.json['job_id'] = state['job_unique_id']
         t = {'test': state['tagged_name'],
              'url': state['name'],
              'time': state['time_elapsed'],
@@ -85,7 +87,7 @@ class JSONTestResult(TestResult):
 class JSON(plugin.Plugin):
 
     """
-    JSON output plugin.
+    JSON output
     """
 
     name = 'json'
