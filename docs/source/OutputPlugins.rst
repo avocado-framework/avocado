@@ -27,18 +27,19 @@ print while executing tests::
 
 Or the more verbose avocado output::
 
-    $ scripts/avocado run "sleeptest failtest synctest"
-    DEBUG LOG: /home/lmr/Code/avocado/logs/run-2014-04-24-18.17.52/debug.log
-    TOTAL TESTS: 3
-    (1/3) sleeptest.1:  PASS (1.09 s)
-    (2/3) failtest.1:  FAIL (0.10 s)
-    (3/3) synctest.1:  PASS (1.98 s)
-    TOTAL PASSED: 2
-    TOTAL ERROR: 0
-    TOTAL FAILED: 1
-    TOTAL SKIPPED: 0
-    TOTAL WARNED: 0
-    ELAPSED TIME: 3.17 s
+    $ avocado run "sleeptest failtest synctest"
+    JOB ID : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
+    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
+    TESTS  : 3
+    (1/3) sleeptest.1: PASS (1.01 s)
+    (2/3) failtest.1: FAIL (0.00 s)
+    (3/3) synctest.1: PASS (1.98 s)
+    PASS : 1
+    ERROR: 1
+    FAIL : 1
+    SKIP : 0
+    WARN : 0
+    TIME : 3.17 s
 
 The most important thing is to remember that programs should never need to parse
 human output to figure out what happened with your test run.

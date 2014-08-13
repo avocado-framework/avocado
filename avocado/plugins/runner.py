@@ -29,7 +29,7 @@ from avocado import job
 class TestLister(plugin.Plugin):
 
     """
-    Implements the avocado 'list' functionality.
+    Implements the avocado 'list' subcommand
     """
 
     name = 'test_lister'
@@ -54,22 +54,32 @@ class TestLister(plugin.Plugin):
         """
         bcolors = output.term_support
         pipe = output.get_paginator()
-        test_files = os.listdir(data_dir.get_test_dir())
+        base_test_dir = data_dir.get_test_dir()
+        test_files = os.listdir(base_test_dir)
         test_dirs = []
+        blength = 0
         for t in test_files:
             inspector = path.PathInspector(path=t)
             if inspector.is_python():
-                test_dirs.append(t.split('.')[0])
-        pipe.write(bcolors.header_str('Tests available:'))
-        pipe.write("\n")
-        for test_dir in test_dirs:
-            pipe.write("    %s\n" % test_dir)
+                clength = len((t.split('.')[0]))
+                if clength > blength:
+                    blength = clength
+                test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
+        format_string = "    %-" + str(blength) + "s %s\n"
+        pipe.write(bcolors.header_str('Tests dir: %s\n' % base_test_dir))
+        if len(test_dirs) > 0:
+            pipe.write(bcolors.header_str(format_string % ('Alias', 'Path')))
+            for test_dir in test_dirs:
+                pipe.write(format_string % test_dir)
+        else:
+            pipe.write(bcolors.header_str('No tests were found on current '
+                                          'tests dir'))
 
 
 class TestRunner(plugin.Plugin):
 
     """
-    Implements the avocado 'run' functionality.
+    Implements the avocado 'run' subcommand
     """
 
     name = 'test_runner'
@@ -123,7 +133,7 @@ class TestRunner(plugin.Plugin):
 class SystemInformation(plugin.Plugin):
 
     """
-    Collect system information and log.
+    Collect system information
     """
 
     name = 'sysinfo'

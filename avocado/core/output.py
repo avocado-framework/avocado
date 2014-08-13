@@ -219,13 +219,15 @@ class OutputManager(object):
         extra = {'skip_newline': skip_newline}
         self.console_log.log(level=level, msg=msg, extra=extra)
 
-    def start_file_logging(self, logfile, loglevel):
+    def start_file_logging(self, logfile, loglevel, unique_id):
         """
         Start the main file logging.
 
         :param logfile: Path to file that will receive logging.
         :param loglevel: Level of the logger. Example: :mod:`logging.DEBUG`.
+        :param unique_id: job.Job() unique id attribute.
         """
+        self.job_unique_id = unique_id
         self.debuglog = logfile
         self.file_handler = logging.FileHandler(filename=logfile)
         self.file_handler.setLevel(loglevel)

@@ -165,8 +165,8 @@ class OutputPluginTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         output_lines = output.splitlines()
-        first_line = output_lines[0]
-        debug_log = first_line.split()[-1]
+        second_line = output_lines[1]
+        debug_log = second_line.split()[-1]
         self.check_output_files(debug_log)
 
 

@@ -86,10 +86,10 @@ class TestClassTest(unittest.TestCase):
         self.assertIsInstance(self.tst_instance_pass.time_elapsed, float)
 
     def testClassAttributesTag(self):
-        self.assertEqual(self.tst_instance_pass.tag, "1")
+        self.assertEqual(self.tst_instance_pass.tag, "0")
 
     def testClassAttributesTaggedName(self):
-        self.assertEqual(self.tst_instance_pass.tagged_name, "AvocadoPass.1")
+        self.assertEqual(self.tst_instance_pass.tagged_name, "AvocadoPass")
 
     def testTaggedNameNewTests(self):
         """
@@ -97,8 +97,8 @@ class TestClassTest(unittest.TestCase):
         """
         new_tst_instance = AvocadoPass(base_logdir=self.base_logdir)
         new_tst_instance.run_avocado()
-        self.assertEqual(new_tst_instance.tagged_name, "AvocadoPass.2")
-        self.assertEqual(new_tst_instance.tag, "2")
+        self.assertEqual(new_tst_instance.tagged_name, "AvocadoPass.1")
+        self.assertEqual(new_tst_instance.tag, "1")
 
     def tearDown(self):
         if os.path.isdir(self.base_logdir):

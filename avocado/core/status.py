@@ -25,7 +25,8 @@ mapping = {"TEST_NA": True,
            "START": True,
            "ALERT": False,
            "RUNNING": False,
-           "NOSTATUS": False}
+           "NOSTATUS": False,
+           "INTERRUPTED": False}
 
 feedback = {
     # Test did not advertise current status, but process running the test is

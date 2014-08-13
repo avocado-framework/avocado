@@ -33,6 +33,7 @@ import shutil
 import time
 import tempfile
 
+from avocado.core import job_id
 from avocado.utils import path
 from avocado.settings import settings
 
@@ -49,13 +50,13 @@ SETTINGS_TMP_DIR = os.path.expanduser(settings.get_value('runner', 'tmp_dir'))
 SYSTEM_BASE_DIR = '/var/lib/avocado'
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
 SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
-SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'logs')
+SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'job-results')
 SYSTEM_TMP_DIR = '/var/tmp/avocado'
 
 USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
-USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'logs')
+USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
 USER_TMP_DIR = '/var/tmp/avocado'
 
 
@@ -189,7 +190,7 @@ def get_logs_dir():
     return _get_rw_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
 
 
-def get_job_logs_dir(args=None):
+def get_job_logs_dir(args=None, unique_id=None):
     """
     Create a log directory for a job, or a stand alone execution of a test.
 
@@ -199,12 +200,16 @@ def get_job_logs_dir(args=None):
                  (optional).
     :rtype: basestring
     """
-    start_time = time.strftime('%Y-%m-%d-%H.%M.%S')
+    start_time = time.strftime('%Y-%m-%dT%H.%M')
     if args is not None:
         logdir = args.logdir or get_logs_dir()
     else:
         logdir = get_logs_dir()
-    debugbase = 'run-%s' % start_time
+    # Stand alone tests handling
+    if unique_id is None:
+        unique_id = job_id.get_job_id()
+
+    debugbase = 'job-%s-%s' % (start_time, unique_id[:7])
     debugdir = path.init_dir(logdir, debugbase)
     latestdir = os.path.join(logdir, "latest")
     try:
