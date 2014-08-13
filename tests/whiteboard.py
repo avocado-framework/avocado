@@ -44,7 +44,7 @@ class whiteboard(test.Test):
         iterations = int(self.params.whiteboard_writes)
 
         result = ''
-        for i in xrange(0, iterations):
+        for _ in xrange(0, iterations):
             result += data
         self.whiteboard = base64.encodestring(result)
 
