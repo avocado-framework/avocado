@@ -79,9 +79,11 @@ class TestRunner(object):
         module_name = os.path.basename(test_path).split('.')[0]
         if not os.path.exists(test_path):
             # Try to resolve test ID (keep compatibility)
-            test_path = os.path.join(data_dir.get_test_dir(), '%s.py' % t_id)
+            rel_path = '%s.py' % t_id
+            test_path = os.path.join(data_dir.get_test_dir(), rel_path)
             if os.path.exists(test_path):
                 path_analyzer = path.PathInspector(test_path)
+                t_id = rel_path
             else:
                 test_class = test.MissingTest
                 test_instance = test_class(name=t_id,
