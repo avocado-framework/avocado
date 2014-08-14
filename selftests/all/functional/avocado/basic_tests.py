@@ -144,6 +144,16 @@ class RunnerOperationTest(unittest.TestCase):
                       "Avocado did not display interruption message. "
                       "Output:\n%s" % output)
 
+    def test_silent_output(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --silent run sleeptest'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        expected_output = ''
+        print repr(result.stdout)
+        self.assertEqual(result.exit_status, expected_rc)
+        self.assertEqual(result.stderr, expected_output)
+
 
 class RunnerDropinTest(unittest.TestCase):
 
