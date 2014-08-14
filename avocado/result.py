@@ -73,6 +73,10 @@ class TestResultProxy(object):
         for output_plugin in self.output_plugins:
             output_plugin.add_error(state)
 
+    def add_not_found(self, state):
+        for output_plugin in self.output_plugins:
+            output_plugin.add_not_found(state)
+
     def add_fail(self, state):
         for output_plugin in self.output_plugins:
             output_plugin.add_fail(state)
@@ -110,6 +114,7 @@ class TestResult(object):
         self.total_time = 0.0
         self.passed = []
         self.errors = []
+        self.not_found = []
         self.failed = []
         self.skipped = []
         self.warned = []
@@ -191,6 +196,17 @@ class TestResult(object):
         """
         self.errors.append(state)
 
+    def add_not_found(self, state):
+        """
+        Called when a test was not found.
+
+        Causes: non existing path or could not resolve alias.
+
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
+        """
+        self.not_found.append(state)
+
     def add_fail(self, state):
         """
         Called when a test fails.
@@ -225,6 +241,7 @@ class TestResult(object):
         """
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
+                      'NOT_FOUND': self.add_not_found,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn}
@@ -244,20 +261,21 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.log_header("JOB ID : %s" % self.stream.job_unique_id)
-        self.stream.log_header("JOB LOG: %s" % self.stream.logfile)
-        self.stream.log_header("TESTS  : %s" % self.tests_total)
+        self.stream.log_header("JOB ID    : %s" % self.stream.job_unique_id)
+        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
+        self.stream.log_header("TESTS     : %s" % self.tests_total)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
-        self.stream.log_header("PASS : %d" % len(self.passed))
-        self.stream.log_header("ERROR: %d" % len(self.errors))
-        self.stream.log_header("FAIL : %d" % len(self.failed))
-        self.stream.log_header("SKIP : %d" % len(self.skipped))
-        self.stream.log_header("WARN : %d" % len(self.warned))
-        self.stream.log_header("TIME : %.2f s" % self.total_time)
+        self.stream.log_header("PASS      : %d" % len(self.passed))
+        self.stream.log_header("ERROR     : %d" % len(self.errors))
+        self.stream.log_header("FAIL      : %d" % len(self.failed))
+        self.stream.log_header("SKIP      : %d" % len(self.skipped))
+        self.stream.log_header("WARN      : %d" % len(self.warned))
+        self.stream.log_header("NOT FOUND : %d" % len(self.not_found))
+        self.stream.log_header("TIME      : %.2f s" % self.total_time)
 
     def start_test(self, state):
         """
@@ -299,6 +317,16 @@ class HumanTestResult(TestResult):
         """
         TestResult.add_error(self, state)
         self.stream.log_error(state['time_elapsed'])
+
+    def add_not_found(self, state):
+        """
+        Called when a test was not found.
+
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
+        """
+        TestResult.add_not_found(self, state)
+        self.stream.log_not_found(state['time_elapsed'])
 
     def add_fail(self, state):
         """
