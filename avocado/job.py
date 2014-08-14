@@ -459,6 +459,11 @@ class Job(object):
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except KeyboardInterrupt:
+            # Sometimes, the children won't stop right away and a second
+            # Ctrl+C will trigger an error in exit functions of the
+            # multiprocess module. We'll have to be merciless and send -9
+            for child in multiprocessing.active_children():
+                os.kill(child.pid, signal.SIGKILL)
             self.output_manager.log_header('\n')
             self.output_manager.log_header('Interrupted by user request')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
