@@ -109,9 +109,10 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("TestTimeoutError: Timeout reached waiting for",
-                      output,
+        self.assertIn("TestTimeoutError: Timeout reached waiting for", output,
                       "Test did not fail with timeout exception:\n%s" % output)
+        # Ensure no test aborted error messages show up
+        self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
 
     def test_runner_abort(self):
         os.chdir(basedir)
