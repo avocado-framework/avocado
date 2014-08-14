@@ -150,9 +150,17 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         expected_output = ''
-        print repr(result.stdout)
         self.assertEqual(result.exit_status, expected_rc)
         self.assertEqual(result.stderr, expected_output)
+
+    def test_empty_test_list(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 2
+        expected_output = 'Empty test ID. A test path or alias must be provided'
+        self.assertEqual(result.exit_status, expected_rc)
+        self.assertIn(expected_output, result.stderr)
 
 
 class RunnerDropinTest(unittest.TestCase):

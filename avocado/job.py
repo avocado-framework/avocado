@@ -399,6 +399,10 @@ class Job(object):
                 e_msg = "Empty test ID. A test path or alias must be provided"
                 raise exceptions.OptionValidationError(e_msg)
 
+        if not params_list:
+            e_msg = "Empty test ID. A test path or alias must be provided"
+            raise exceptions.OptionValidationError(e_msg)
+
         if self.args is not None:
             self.args.test_result_total = len(params_list)
 
