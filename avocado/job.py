@@ -129,8 +129,14 @@ class TestRunner(object):
             raise exceptions.TestTimeoutError(e_msg)
 
         def interrupt_handler(signum, frame):
-            e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestInterruptedError(e_msg)
+            instance.status = exceptions.TestInterruptedError.status
+            instance.fail_class = exceptions.TestInterruptedError.__class__.__name__
+            e_msg = 'Interrupted by user'
+            instance.fail_reason = exceptions.TestInterruptedError(e_msg)
+            instance.traceback = 'Traceback not available'
+            with open(instance.logfile, 'r') as log_file_obj:
+                instance.text_output = log_file_obj.read()
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
 
         instance = self.load_test(params)
         queue.put(instance.get_state())
