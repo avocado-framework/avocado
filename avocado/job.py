@@ -181,7 +181,7 @@ class TestRunner(object):
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
 
-            cycle_timeout = 0.01
+            cycle_timeout = 1
             time_started = time.time()
             should_quit = False
             test_state = None
@@ -196,22 +196,26 @@ class TestRunner(object):
             else:
                 timeout = self.DEFAULT_TIMEOUT
 
-            time_deadline = time_started + timeout - cycle_timeout
+            time_deadline = time_started + timeout
 
             while not should_quit:
                 try:
                     if time.time() >= time_deadline:
                         os.kill(p.pid, signal.SIGUSR1)
                         should_quit = True
+                        continue
+
                     test_state = q.get(timeout=cycle_timeout)
+                    if test_state is not None:
+                        should_quit = True
+                        continue
+
                 except Queue.Empty:
                     if p.is_alive():
                         self.job.result_proxy.throbber_progress()
                     else:
                         should_quit = True
-
-                if should_quit:
-                    p.terminate()
+                        continue
 
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
