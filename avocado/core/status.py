@@ -19,6 +19,7 @@ a test or a job in avocado PASSed or FAILed.
 mapping = {"TEST_NA": True,
            "ABORT": False,
            "ERROR": False,
+           "NOT_FOUND": False,
            "FAIL": False,
            "WARN": False,
            "PASS": True,

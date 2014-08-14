@@ -196,19 +196,20 @@ class VMTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.log_header("TESTS: %s" % self.tests_total)
+        self.stream.log_header("TESTS     : %s" % self.tests_total)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
-        self.stream.log_header("PASS : %d" % len(self.passed))
-        self.stream.log_header("ERROR: %d" % len(self.errors))
-        self.stream.log_header("FAIL : %d" % len(self.failed))
-        self.stream.log_header("SKIP : %d" % len(self.skipped))
-        self.stream.log_header("WARN : %d" % len(self.warned))
-        self.stream.log_header("TIME : %.2f s" % self.total_time)
-        self.stream.log_header("DEBUG LOG: %s" % self.stream.logfile)
+        self.stream.log_header("PASS      : %d" % len(self.passed))
+        self.stream.log_header("ERROR     : %d" % len(self.errors))
+        self.stream.log_header("NOT FOUND : %d" % len(self.not_found))
+        self.stream.log_header("FAIL      : %d" % len(self.failed))
+        self.stream.log_header("SKIP      : %d" % len(self.skipped))
+        self.stream.log_header("WARN      : %d" % len(self.warned))
+        self.stream.log_header("TIME      : %.2f s" % self.total_time)
+        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
 
     def start_test(self, test):
         """
@@ -247,6 +248,15 @@ class VMTestResult(TestResult):
         """
         TestResult.add_error(self, test)
         self.stream.log_error(test.time_elapsed)
+
+    def add_not_found(self, test):
+        """
+        Called when a test had a setup error.
+
+        :param test: :class:`avocado.test.Test` instance.
+        """
+        TestResult.add_not_found(self, test)
+        self.stream.log_not_found(test.time_elapsed)
 
     def add_fail(self, test):
         """

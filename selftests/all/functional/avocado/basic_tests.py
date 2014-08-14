@@ -162,6 +162,15 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
 
+    def test_not_found(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sbrubles'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc)
+        self.assertIn('NOT_FOUND', result.stderr)
+        self.assertIn('NOT FOUND : 1', result.stderr)
+
 
 class RunnerDropinTest(unittest.TestCase):
 
