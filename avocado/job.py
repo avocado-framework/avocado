@@ -220,8 +220,12 @@ class TestRunner(object):
 
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
-                early_state['time_elapsed'] = time.time() - time_started
-                test_state = self._fill_aborted_test_state(early_state)
+                try:
+                    test_state = q.get(timeout=cycle_timeout)
+                except Queue.Empty:
+                    early_state['time_elapsed'] = time.time() - time_started
+                    test_state = self._fill_aborted_test_state(early_state)
+
                 test_log = logging.getLogger('avocado.test')
                 test_log.error('ERROR %s -> TestAbortedError: '
                                'Test aborted unexpectedly', test_state['name'])
