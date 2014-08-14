@@ -48,6 +48,8 @@ SETTINGS_LOG_DIR = os.path.expanduser(settings.get_value('runner', 'logs_dir'))
 SETTINGS_TMP_DIR = os.path.expanduser(settings.get_value('runner', 'tmp_dir'))
 
 SYSTEM_BASE_DIR = '/var/lib/avocado'
+if 'VIRTUAL_ENV' in os.environ:
+    SYSTEM_BASE_DIR = os.environ['VIRTUAL_ENV']
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
 SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
 SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'job-results')

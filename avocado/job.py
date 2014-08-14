@@ -449,8 +449,6 @@ class Job(object):
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except KeyboardInterrupt:
-            for child in multiprocessing.active_children():
-                os.kill(child.pid, signal.SIGINT)
             self.output_manager.log_header('\n')
             self.output_manager.log_header('Interrupted by user request')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
