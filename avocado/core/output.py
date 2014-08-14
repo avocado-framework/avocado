@@ -100,6 +100,7 @@ class TermSupport(object):
         self.SKIP = self.COLOR_YELLOW
         self.FAIL = self.COLOR_RED
         self.ERROR = self.COLOR_RED
+        self.NOT_FOUND = self.COLOR_YELLOW
         self.WARN = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
         term = os.environ.get("TERM")
@@ -115,6 +116,7 @@ class TermSupport(object):
         self.SKIP = ''
         self.FAIL = ''
         self.ERROR = ''
+        self.NOT_FOUND = ''
         self.WARN = ''
         self.ENDC = ''
 
@@ -168,11 +170,19 @@ class TermSupport(object):
 
     def error_str(self):
         """
-        Print an error string (red colored).
+        Print a not found string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
         return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
+
+    def not_found_str(self):
+        """
+        Print an error string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.NOT_FOUND + 'NOT_FOUND' + self.ENDC
 
     def warn_str(self):
         """
@@ -311,6 +321,15 @@ class OutputManager(object):
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
+        self.error(normal_error_msg)
+
+    def log_not_found(self, t_elapsed):
+        """
+        Log a NOT_FOUND message.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
         self.error(normal_error_msg)
 
     def log_fail(self, t_elapsed):

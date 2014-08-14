@@ -45,7 +45,7 @@ class MultiplexTests(unittest.TestCase):
         output = result.stdout + result.stderr
         if expected_lines is not None:
             for line in output.splitlines():
-                if 'JOB LOG:' in line:
+                if 'JOB LOG   :' in line:
                     debug_log = line.split()[-1]
                     debug_log_obj = open(debug_log, 'r')
                     job_log_lines = debug_log_obj.readlines()
