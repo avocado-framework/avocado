@@ -79,6 +79,19 @@ plugin::
 Note the dash `-` in the option `--json`, it means that the output
 goes through the standard output.
 
+Silent output
+-------------
+
+If you are not interested in output, you can suppress it by using
+the command line option `--silent`. The tests will be performed as expected,
+with logs being created, but the human output will not be displayed.
+
+Example::
+
+    $ scripts/avocado --silent run failtest
+    $ echo $?
+    1
+
 Multiple output plugins
 -----------------------
 
