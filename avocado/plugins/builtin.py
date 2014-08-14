@@ -24,6 +24,7 @@ __all__ = ['load_builtins']
 Builtins = [('avocado.plugins.runner', 'TestLister'),
             ('avocado.plugins.runner', 'SystemInformation'),
             ('avocado.plugins.runner', 'TestRunner'),
+            ('avocado.plugins.silentresult', 'Silent'),
             ('avocado.plugins.xunit', 'XUnit'),
             ('avocado.plugins.lister', 'PluginsList'),
             ('avocado.plugins.journal', 'Journal'),
