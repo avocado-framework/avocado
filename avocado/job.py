@@ -129,8 +129,14 @@ class TestRunner(object):
             raise exceptions.TestTimeoutError(e_msg)
 
         def interrupt_handler(signum, frame):
-            e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestInterruptedError(e_msg)
+            instance.status = exceptions.TestInterruptedError.status
+            instance.fail_class = exceptions.TestInterruptedError.__class__.__name__
+            e_msg = 'Interrupted by user'
+            instance.fail_reason = exceptions.TestInterruptedError(e_msg)
+            instance.traceback = 'Traceback not available'
+            with open(instance.logfile, 'r') as log_file_obj:
+                instance.text_output = log_file_obj.read()
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
 
         instance = self.load_test(params)
         queue.put(instance.get_state())
@@ -214,8 +220,12 @@ class TestRunner(object):
 
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
-                early_state['time_elapsed'] = time.time() - time_started
-                test_state = self._fill_aborted_test_state(early_state)
+                try:
+                    test_state = q.get(timeout=cycle_timeout)
+                except Queue.Empty:
+                    early_state['time_elapsed'] = time.time() - time_started
+                    test_state = self._fill_aborted_test_state(early_state)
+
                 test_log = logging.getLogger('avocado.test')
                 test_log.error('ERROR %s -> TestAbortedError: '
                                'Test aborted unexpectedly', test_state['name'])
@@ -449,6 +459,11 @@ class Job(object):
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except KeyboardInterrupt:
+            # Sometimes, the children won't stop right away and a second
+            # Ctrl+C will trigger an error in exit functions of the
+            # multiprocess module. We'll have to be merciless and send -9
+            for child in multiprocessing.active_children():
+                os.kill(child.pid, signal.SIGKILL)
             self.output_manager.log_header('\n')
             self.output_manager.log_header('Interrupted by user request')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
