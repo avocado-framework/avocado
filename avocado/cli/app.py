@@ -31,12 +31,15 @@ class AvocadoApp(object):
     """
 
     def __init__(self, external_plugins=None):
+
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
+
         self.external_plugins = external_plugins
         self.plugin_manager = None
         self.app_parser = ArgumentParser(prog='avocado',
                                          version=VERSION,
+                                         add_help=False,  # see parent parse
                                          description='Avocado Test Runner')
         self.app_parser.add_argument('-V', '--verbose', action='store_true',
                                      help='print extra debug messages',
@@ -50,12 +53,16 @@ class AvocadoApp(object):
         self.app_parser.add_argument('--plugins', action='store',
                                      help='Load extra plugins from directory',
                                      dest='plugins_dir', default='')
-
         args, _ = self.app_parser.parse_known_args()
-        self.cmd_parser = self.app_parser.add_subparsers(title='subcommands',
-                                                         description='valid subcommands',
-                                                         help='subcommand help')
 
+        # Use parent parsing to avoid break output of --help option
+        self.app_parser = ArgumentParser(parents=[self.app_parser])
+
+        # Subparsers where Avocado subcommands are plugged
+        self.cmd_parser = self.app_parser.add_subparsers(
+            title='subcommands',
+            description='valid subcommands',
+            help='subcommand help')
         self.load_plugin_manager(args.plugins_dir)
         args, _ = self.app_parser.parse_known_args()
         self.plugin_manager.activate(args)
