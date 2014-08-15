@@ -27,9 +27,10 @@ class DataDirList(plugin.Plugin):
     enabled = True
 
     def configure(self, app_parser, cmd_parser):
-        myparser = cmd_parser.add_parser('datadir',
-                                         help='List all relevant dirs used by avocado')
-        myparser.set_defaults(func=self.list_data_dirs)
+        parser = cmd_parser.add_parser(
+            'datadir',
+            help='List all relevant directories used by avocado')
+        parser.set_defaults(func=self.list_data_dirs)
         self.configured = True
 
     def list_data_dirs(self, args):

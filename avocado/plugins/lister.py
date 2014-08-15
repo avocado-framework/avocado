@@ -27,9 +27,9 @@ class PluginsList(plugin.Plugin):
     enabled = True
 
     def configure(self, app_parser, cmd_parser):
-        myparser = cmd_parser.add_parser('plugins',
-                                         help='List all plugins loaded')
-        myparser.set_defaults(func=self.list_plugins)
+        parser = cmd_parser.add_parser('plugins',
+                                       help='List all plugins loaded')
+        parser.set_defaults(func=self.list_plugins)
         self.configured = True
 
     def list_plugins(self, args):
