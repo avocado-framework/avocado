@@ -31,6 +31,8 @@ class Silent(plugin.Plugin):
     enabled = True
 
     def configure(self, app_parser, cmd_parser):
-        self.parser = app_parser
-        self.parser.add_argument('--silent', action='store_true', default=False)
+        parser = app_parser
+        parser.add_argument(
+            '--silent', action='store_true', default=False,
+            help='Silent output, do not display results.')
         self.configured = True

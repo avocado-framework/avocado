@@ -229,10 +229,10 @@ class XUnit(plugin.Plugin):
 
     def configure(self, app_parser, cmd_parser):
         self.parser = app_parser
-        app_parser.add_argument('--xunit', type=str,
-                                dest='xunit_output',
-                                help=('Enable xUnit output to the file where the result should be written.'
-                                      "Use '-' to redirect to the standard output."))
+        app_parser.add_argument(
+            '--xunit', type=str, dest='xunit_output',
+            help=('Enable xUnit output to the file where the result should be written.'
+                  "Use '-' to redirect to the standard output."))
         self.configured = True
 
     def activate(self, app_args):
