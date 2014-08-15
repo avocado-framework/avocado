@@ -19,6 +19,7 @@ import unittest
 import os
 import signal
 import shutil
+import time
 import sys
 import tempfile
 import xml.dom.minidom
@@ -203,6 +204,41 @@ class RunnerDropinTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
+
+    def test_runner_onehundred_fail_timing(self):
+        """
+        We can be pretty sure that a failtest should return immediattely. Let's
+        run 100 of them and assure they not take more than 2 seconds to run.
+
+        Notice: on a current machine this takes about 0.12s, so 2 second is
+        pretty safe here.
+        """
+        os.chdir(basedir)
+        one_hundred = 'failtest ' * 100
+        cmd_line = './scripts/avocado run "%s"' % one_hundred
+        initial_time = time.time()
+        result = process.run(cmd_line, ignore_status=True)
+        actual_time = time.time() - initial_time
+        self.assertLess(actual_time, 2.0)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
+    def test_runner_sleep_fail_sleep_timing(self):
+        """
+        Sleeptest is supposed to take 1 second, let's make a sandwich of
+        100 failtests and check the test runner timing.
+        """
+        os.chdir(basedir)
+        sleep_fail_sleep = 'sleeptest ' + 'failtest ' * 100 + 'sleeptest'
+        cmd_line = './scripts/avocado run "%s"' % sleep_fail_sleep
+        initial_time = time.time()
+        result = process.run(cmd_line, ignore_status=True)
+        actual_time = time.time() - initial_time
+        self.assertLess(actual_time, 4.0)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def tearDown(self):
         if os.path.isdir(self.base_logdir):
