@@ -183,7 +183,6 @@ class TestRunner(object):
 
             cycle_timeout = 1
             time_started = time.time()
-            should_quit = False
             test_state = None
 
             p.start()
@@ -198,24 +197,21 @@ class TestRunner(object):
 
             time_deadline = time_started + timeout
 
-            while not should_quit:
+            while True:
                 try:
                     if time.time() >= time_deadline:
                         os.kill(p.pid, signal.SIGUSR1)
-                        should_quit = True
-                        continue
+                        break
 
                     test_state = q.get(timeout=cycle_timeout)
                     if test_state is not None:
-                        should_quit = True
-                        continue
+                        break
 
                 except Queue.Empty:
                     if p.is_alive():
                         self.job.result_proxy.throbber_progress()
                     else:
-                        should_quit = True
-                        continue
+                        break
 
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
