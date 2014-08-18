@@ -28,12 +28,9 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 from avocado.utils import process
 
 timeout_multiplex = """
-variants:
-    - sleeptest:
-        sleep_length = 5
-        sleep_length_type = float
-        timeout = 3
-        timeout_type = float
+sleeptest:
+    sleep_length: 5.0
+    timeout: 3
 """
 
 
@@ -45,7 +42,7 @@ class MultiplexTests(unittest.TestCase):
         output = result.stdout + result.stderr
         if expected_lines is not None:
             for line in output.splitlines():
-                if 'JOB LOG   :' in line:
+                if 'JOB LOG' in line:
                     debug_log = line.split()[-1]
                     debug_log_obj = open(debug_log, 'r')
                     job_log_lines = debug_log_obj.readlines()
@@ -60,7 +57,7 @@ class MultiplexTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
 
     def test_mplex_plugin(self):
-        cmd_line = './scripts/avocado multiplex tests/sleeptest.py.data/sleeptest.mplx'
+        cmd_line = './scripts/avocado multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc)
 
@@ -70,11 +67,12 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_noid(self):
-        cmd_line = './scripts/avocado run --multiplex tests/sleeptest.py.data/sleeptest.mplx'
+        cmd_line = './scripts/avocado run --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        expected_rc = 0
         self.run_and_check(cmd_line, 2)
 
     def test_run_mplex_sleeptest(self):
-        cmd_line = './scripts/avocado run sleeptest --multiplex tests/sleeptest.py.data/sleeptest.mplx'
+        cmd_line = './scripts/avocado run sleeptest --multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         # A typical sleeptest has about 14 lines of output,
         # so we expect the full job log has at least 3 times
@@ -83,7 +81,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14*3)
 
     def test_run_mplex_noalias_sleeptest(self):
-        cmd_line = './scripts/avocado run tests/sleeptest.py --multiplex tests/sleeptest.py.data/sleeptest.mplx'
+        cmd_line = './scripts/avocado run tests/sleeptest.py --multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         # A typical sleeptest has about 14 lines of output,
         # so we expect the full job log has at least 3 times
@@ -92,12 +90,12 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14*3)
 
     def test_run_mplex_doublesleep(self):
-        cmd_line = './scripts/avocado run "sleeptest sleeptest" --multiplex tests/sleeptest.py.data/sleeptest.mplx'
+        cmd_line = './scripts/avocado run "sleeptest sleeptest" --multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_failtest(self):
-        cmd_line = './scripts/avocado run "sleeptest failtest" --multiplex tests/sleeptest.py.data/sleeptest.mplx'
+        cmd_line = './scripts/avocado run "sleeptest failtest" --multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 

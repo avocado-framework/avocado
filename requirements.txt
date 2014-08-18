@@ -6,3 +6,4 @@ virtualenv==1.9.1
 mysql-python==1.2.3
 requests==1.2.3
 fabric==1.7.0
+PyYAML==3.10
