@@ -66,8 +66,8 @@ class BuiltinPluginManager(PluginManager):
     Builtins plugin manager.
     """
 
-    def load_plugins(self):
-        for plugin in load_builtins():
+    def load_plugins(self, builtin_plugins_skipped=[]):
+        for plugin in load_builtins(True, builtin_plugins_skipped):
             try:
                 self.add_plugin(plugin())
             except Exception as err:
@@ -121,8 +121,8 @@ class AvocadoPluginManager(BuiltinPluginManager, ExternalPluginManager):
         BuiltinPluginManager.__init__(self)
         ExternalPluginManager.__init__(self)
 
-    def load_plugins(self, path=None):
-        BuiltinPluginManager.load_plugins(self)
+    def load_plugins(self, path=None, builtin_plugins_skipped=[]):
+        BuiltinPluginManager.load_plugins(self, builtin_plugins_skipped)
         ExternalPluginManager.load_plugins(self, path)
 
 
