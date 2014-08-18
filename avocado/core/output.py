@@ -102,6 +102,7 @@ class TermSupport(object):
         self.ERROR = self.COLOR_RED
         self.NOT_FOUND = self.COLOR_YELLOW
         self.WARN = self.COLOR_YELLOW
+        self.PARTIAL = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
         term = os.environ.get("TERM")
         if (not os.isatty(1)) or (term not in self.allowed_terms):
@@ -118,6 +119,7 @@ class TermSupport(object):
         self.ERROR = ''
         self.NOT_FOUND = ''
         self.WARN = ''
+        self.PARTIAL = ''
         self.ENDC = ''
 
     def header_str(self, msg):
@@ -143,6 +145,14 @@ class TermSupport(object):
         If the output does not support colors, just return the original string.
         """
         return self.PASS + msg + self.ENDC
+
+    def partial_str(self, msg):
+        """
+        Print a string that denotes partial progress (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.PARTIAL + msg + self.ENDC
 
     def pass_str(self):
         """
@@ -288,6 +298,14 @@ class OutputManager(object):
         :param msg: Message to write.
         """
         self.info(term_support.healthy_str(msg), skip_newline)
+
+    def log_partial(self, msg, skip_newline=False):
+        """
+        Log a message that indicates something (at least) partially OK
+
+        :param msg: Message to write.
+        """
+        self.info(term_support.partial_str(msg), skip_newline)
 
     def log_header(self, msg):
         """
