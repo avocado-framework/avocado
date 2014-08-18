@@ -222,8 +222,22 @@ class OutputManager(object):
         self.console_log = logging.getLogger('avocado.app')
         self.throbber_pos = 0
 
-    def throbber_progress(self):
-        self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+    def throbber_progress(self, progress_from_test=False):
+        """
+        Give an interactive indicator of the test progress
+
+        :param progress_from_test: if indication of progress came explicitly
+                                   from the test. If false, it means the test
+                                   process is running, but not communicating
+                                   test specific progress.
+        :type progress_from_test: bool
+        :rtype: None
+        """
+        if progress_from_test:
+            self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+        else:
+            self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
+
         if self.throbber_pos == (len(self.THROBBER_MOVES)-1):
             self.throbber_pos = 0
         else:

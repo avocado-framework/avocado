@@ -38,10 +38,10 @@ class TestResultProxy(object):
             else:
                 return None
 
-    def throbber_progress(self):
+    def throbber_progress(self, progress_from_test=False):
         for output_plugin in self.output_plugins:
             if hasattr(output_plugin, 'throbber_progress'):
-                output_plugin.throbber_progress()
+                output_plugin.throbber_progress(progress_from_test)
 
     def add_output_plugin(self, plugin):
         if not isinstance(plugin, TestResult):
@@ -358,5 +358,5 @@ class HumanTestResult(TestResult):
         TestResult.add_warn(self, state)
         self.stream.log_warn(state['time_elapsed'])
 
-    def throbber_progress(self):
-        self.stream.throbber_progress()
+    def throbber_progress(self, progress_from_test=False):
+        self.stream.throbber_progress(progress_from_test)
