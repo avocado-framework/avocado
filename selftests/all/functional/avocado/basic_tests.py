@@ -306,7 +306,7 @@ class ParseXMLError(Exception):
 class PluginsXunitTest(PluginsTest):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nfailures, e_nskip):
+                      e_nnotfound, e_nfailures, e_nskip):
         os.chdir(basedir)
         cmd_line = './scripts/avocado --xunit - run %s' % testname
         result = process.run(cmd_line, ignore_status=True)
@@ -324,8 +324,8 @@ class PluginsXunitTest(PluginsTest):
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
 
         testsuite_tag = testsuite_list[0]
-        self.assertEqual(len(testsuite_tag.attributes), 7,
-                         'Less than 7 attributes in the testsuite tag. '
+        self.assertEqual(len(testsuite_tag.attributes), 8,
+                         'The testsuite tag does not have 8 attributes. '
                          'XML:\n%s' % xml_output)
 
         n_tests = int(testsuite_tag.attributes['tests'].value)
@@ -336,6 +336,11 @@ class PluginsXunitTest(PluginsTest):
         n_errors = int(testsuite_tag.attributes['errors'].value)
         self.assertEqual(n_errors, e_nerrors,
                          "Unexpected number of test errors, "
+                         "XML:\n%s" % xml_output)
+
+        n_not_found = int(testsuite_tag.attributes['not_found'].value)
+        self.assertEqual(n_not_found, e_nnotfound,
+                         "Unexpected number of test not found, "
                          "XML:\n%s" % xml_output)
 
         n_failures = int(testsuite_tag.attributes['failures'].value)
@@ -349,20 +354,23 @@ class PluginsXunitTest(PluginsTest):
                          "XML:\n%s" % xml_output)
 
     def test_xunit_plugin_sleeptest(self):
-        self.run_and_check('sleeptest', 0, 1, 0, 0, 0)
+        self.run_and_check('sleeptest', 0, 1, 0, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 1, 0)
+        self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
 
     def test_xunit_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
+        self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
 
     def test_xunit_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0)
+        self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
+
+    def test_xunit_plugin_notfoundtest(self):
+        self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
 
     def test_xunit_plugin_mixedtest(self):
-        self.run_and_check('"sleeptest failtest skiptest errortest"',
-                           1, 4, 1, 1, 1)
+        self.run_and_check('"sleeptest failtest skiptest errortest sbrubles"',
+                           1, 5, 1, 1, 1, 1)
 
 
 class ParseJSONError(Exception):
@@ -371,7 +379,7 @@ class ParseJSONError(Exception):
 
 class PluginsJSONTest(PluginsTest):
 
-    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
+    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors, e_nnotfound,
                       e_nfailures, e_nskip):
         os.chdir(basedir)
         cmd_line = './scripts/avocado --json - run --archive %s' % testname
@@ -394,6 +402,9 @@ class PluginsJSONTest(PluginsTest):
         n_errors = json_data['errors']
         self.assertEqual(n_errors, e_nerrors,
                          "Different number of expected tests")
+        n_not_found = json_data['not_found']
+        self.assertEqual(n_not_found, e_nnotfound,
+                         "Different number of not found tests")
         n_failures = json_data['failures']
         self.assertEqual(n_failures, e_nfailures,
                          "Different number of expected tests")
@@ -402,20 +413,23 @@ class PluginsJSONTest(PluginsTest):
                          "Different number of skipped tests")
 
     def test_json_plugin_sleeptest(self):
-        self.run_and_check('sleeptest', 0, 1, 0, 0, 0)
+        self.run_and_check('sleeptest', 0, 1, 0, 0, 0, 0)
 
     def test_json_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 1, 0)
+        self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
 
     def test_json_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
+        self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0)
+        self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
+
+    def test_json_plugin_notfoundtest(self):
+        self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
 
     def test_json_plugin_mixedtest(self):
-        self.run_and_check('"sleeptest failtest skiptest errortest"',
-                           1, 4, 1, 1, 1)
+        self.run_and_check('"sleeptest failtest skiptest errortest sbrubles"',
+                           1, 5, 1, 1, 1, 1)
 
 if __name__ == '__main__':
     unittest.main()

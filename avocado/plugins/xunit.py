@@ -60,10 +60,10 @@ class XmlResult(object):
 
         :param timestamp: Timestamp string in date/time format.
         """
-        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" not_found="{not_found}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
-    def end_testsuite(self, tests, errors, failures, skip, total_time):
+    def end_testsuite(self, tests, errors, not_found, failures, skip, total_time):
         """
         End of testsuite node.
 
@@ -75,6 +75,7 @@ class XmlResult(object):
         """
         values = {'tests': tests,
                   'errors': errors,
+                  'not_found': not_found,
                   'failures': failures,
                   'skip': skip,
                   'total_time': total_time}
@@ -201,6 +202,8 @@ class xUnitTestResult(TestResult):
             self.xml.add_skip(state)
         elif state['status'] == 'FAIL':
             self.xml.add_failure(state)
+        elif state['status'] == 'NOT_FOUND':
+            self.xml.add_error(state)
         elif state['status'] == 'ERROR':
             self.xml.add_error(state)
 
@@ -213,6 +216,7 @@ class xUnitTestResult(TestResult):
                   'errors': len(self.errors),
                   'failures': len(self.failed),
                   'skip': len(self.skipped),
+                  'not_found': len(self.not_found),
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
         self.xml.save()
