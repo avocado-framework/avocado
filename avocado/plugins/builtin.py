@@ -14,41 +14,43 @@
 
 """Builtin plugins."""
 
+import os
 import logging
 from importlib import import_module
+
+from avocado.plugins.plugin import Plugin
 
 log = logging.getLogger("avocado.plugins")
 
 __all__ = ['load_builtins']
 
-Builtins = [('avocado.plugins.runner', 'TestLister'),
-            ('avocado.plugins.runner', 'SystemInformation'),
-            ('avocado.plugins.runner', 'TestRunner'),
-            ('avocado.plugins.silentresult', 'Silent'),
-            ('avocado.plugins.xunit', 'XUnit'),
-            ('avocado.plugins.lister', 'PluginsList'),
-            ('avocado.plugins.journal', 'Journal'),
-            ('avocado.plugins.datadir', 'DataDirList'),
-            ('avocado.plugins.multiplexer', 'Multiplexer'),
-            ('avocado.plugins.jsonresult', 'JSON'),
-            ('avocado.plugins.vm', 'RunVM')]
+Modules = ['avocado.plugins.' + x.rstrip('.py')
+           for x in os.listdir(os.path.dirname(__file__))
+           if x.endswith('.py')]
+
+Exclude = ['avocado.plugins.__init__',
+           'avocado.plugins.builtin',
+           'avocado.plugins.plugin',
+           'avocado.plugins.manager']
+
+Builtins = [x for x in Modules if x not in Exclude]
 
 
-def load_builtins(set_globals=True):
+def load_builtins():
     """Load builtin plugins."""
     plugins = []
-    for module, klass in Builtins:
+    for module in Builtins:
         try:
             plugin_mod = import_module(module)
         except ImportError as err:
-            log.error("Could not import plugin '%s': %s", klass, err)
+            log.error("Could not import module plugin '%s': %s", module, err)
             continue
-        except SyntaxError as err:
-            log.error("Plugin '%s' with syntax error: %s", klass, err)
+        except Exception as err:
+            log.error("Module plugin '%s' with error: %s", module, err)
             continue
-        if hasattr(plugin_mod, klass):
-            plugin = getattr(plugin_mod, klass)
-            plugins.append(plugin)
-            if set_globals is True:
-                globals()[klass] = plugin
+        for name in plugin_mod.__dict__:
+            obj = getattr(plugin_mod, name)
+            if isinstance(obj, type) and issubclass(obj, Plugin):
+                plugin = getattr(plugin_mod, name)
+                plugins.append(plugin)
     return plugins
