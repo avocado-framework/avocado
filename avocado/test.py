@@ -455,7 +455,7 @@ class MissingTest(Test):
                                           tag=tag, job=job)
 
     def action(self):
-        e_msg = ('Test %s could not be found in the test dir %s'
+        e_msg = ('Test %s could not be found in the test dir %s '
                  '(or test path does not exist)' %
                  (self.name, data_dir.get_test_dir()))
         raise exceptions.TestNotFoundError(e_msg)
