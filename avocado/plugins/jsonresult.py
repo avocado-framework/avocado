@@ -73,6 +73,7 @@ class JSONTestResult(TestResult):
             'total': self.tests_total,
             'pass': len(self.passed),
             'errors': len(self.errors),
+            'not_found': len(self.not_found),
             'failures': len(self.failed),
             'skip': len(self.skipped),
             'time': self.total_time
