@@ -208,18 +208,19 @@ class RunnerDropinTest(unittest.TestCase):
     def test_runner_onehundred_fail_timing(self):
         """
         We can be pretty sure that a failtest should return immediattely. Let's
-        run 100 of them and assure they not take more than 30 seconds to run.
+        run 100 of them and assure they not take more than 3 seconds to run.
 
-        Notice: on a current machine this takes about 0.12s, so 30 seconds is
+        Notice: on a current machine this takes about 0.12s, so 3 seconds is
         considered to be pretty safe here.
         """
         os.chdir(basedir)
         one_hundred = 'failtest ' * 100
-        cmd_line = './scripts/avocado run "%s"' % one_hundred
+        cmd_line = ('./scripts/avocado --skip-builtin-plugin=SystemInformation'
+                    ' run "%s"' % one_hundred)
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
-        self.assertLess(actual_time, 30.0)
+        self.assertLess(actual_time, 3.0)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
@@ -231,11 +232,12 @@ class RunnerDropinTest(unittest.TestCase):
         """
         os.chdir(basedir)
         sleep_fail_sleep = 'sleeptest ' + 'failtest ' * 100 + 'sleeptest'
-        cmd_line = './scripts/avocado run "%s"' % sleep_fail_sleep
+        cmd_line = ('./scripts/avocado --skip-builtin-plugin=SystemInformation'
+                    ' run "%s"' % sleep_fail_sleep)
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
-        self.assertLess(actual_time, 33.0)
+        self.assertLess(actual_time, 5.0)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))

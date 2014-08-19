@@ -34,10 +34,13 @@ Builtins = [('avocado.plugins.runner', 'TestLister'),
             ('avocado.plugins.vm', 'RunVM')]
 
 
-def load_builtins(set_globals=True):
+def load_builtins(set_globals=True, builtin_plugins_skipped=[]):
     """Load builtin plugins."""
     plugins = []
     for module, klass in Builtins:
+        if klass in builtin_plugins_skipped:
+            log.debug("Not loading builtin plugin '%s'", klass)
+            continue
         try:
             plugin_mod = import_module(module)
         except ImportError as err:

@@ -53,6 +53,12 @@ class AvocadoApp(object):
         self.app_parser.add_argument('--plugins', action='store',
                                      help='Load extra plugins from directory',
                                      dest='plugins_dir', default='')
+        self.app_parser.add_argument('--skip-builtin-plugin', action='append',
+                                     help=('Prevent builtin plugins from begin'
+                                           ' loaded, configured and activated'),
+                                     dest='builtin_plugins_skipped',
+                                     default=[], metavar='PLUGIN_CLASS_NAME')
+
         args, _ = self.app_parser.parse_known_args()
 
         # Use parent parsing to avoid break output of --help option
@@ -63,18 +69,22 @@ class AvocadoApp(object):
             title='subcommands',
             description='valid subcommands',
             help='subcommand help')
-        self.load_plugin_manager(args.plugins_dir)
+
+        self.load_plugin_manager(args.plugins_dir,
+                                 args.builtin_plugins_skipped)
         args, _ = self.app_parser.parse_known_args()
         self.plugin_manager.activate(args)
         self.args = self.app_parser.parse_args()
 
-    def load_plugin_manager(self, plugins_dir):
+    def load_plugin_manager(self, plugins_dir, builtin_plugins_skipped=[]):
         """Load Plugin Manager.
 
         :param plugins_dir: Extra plugins directory.
+        :param builtin_plugins_skipped: Builtin plugins to skip loading.
         """
         self.plugin_manager = get_plugin_manager()
-        self.plugin_manager.load_plugins(plugins_dir)
+        self.plugin_manager.load_plugins(plugins_dir,
+                                         builtin_plugins_skipped)
         if self.external_plugins:
             self.plugin_manager.add_plugins(self.external_plugins)
         self.plugin_manager.configure(self.app_parser, self.cmd_parser)
