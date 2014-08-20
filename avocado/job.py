@@ -210,6 +210,9 @@ class TestRunner(object):
                     if test_state is not None:
                         if not test_state['running']:
                             break
+                        else:
+                            if test_state['progress']:
+                                self.job.result_proxy.throbber_progress(True)
 
                 except Queue.Empty:
                     if p.is_alive():
