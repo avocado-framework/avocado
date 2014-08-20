@@ -17,7 +17,6 @@
 import json
 import unittest
 import os
-import signal
 import shutil
 import time
 import sys
