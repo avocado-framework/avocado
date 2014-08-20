@@ -20,7 +20,6 @@ import logging
 import os
 import StringIO
 import signal
-import shlex
 import subprocess
 import time
 import threading
@@ -117,13 +116,13 @@ class SubProcess(object):
         :param verbose: Whether to log the command run and stdout/stderr.
         :type verbose: bool
         """
-        args = shlex.split(cmd)
         self.verbose = verbose
         if self.verbose:
             log.info("Running '%s'", cmd)
-        self.sp = subprocess.Popen(args,
+        self.sp = subprocess.Popen(cmd,
                                    stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+                                   stderr=subprocess.PIPE,
+                                   shell=True)
         self.start_time = time.time()
         self.result = CmdResult(cmd)
         self.stdout_file = StringIO.StringIO()
