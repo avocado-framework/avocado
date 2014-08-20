@@ -97,7 +97,7 @@ class ExternalPluginManager(PluginManager):
                 try:
                     mod = imp.load_module(candidate[0], *candidate[1])
                 except Exception as err:
-                    log.error("Could not load plugin '%s': %s", mod, err)
+                    log.error("Could not load plugin '%s': %s", candidate[0], err)
                 else:
                     for name in mod.__dict__:
                         x = getattr(mod, name)
