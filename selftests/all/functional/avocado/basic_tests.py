@@ -154,6 +154,15 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc)
         self.assertEqual(result.stderr, expected_output)
 
+    def test_empty_args_list(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        unexpected_output = 'too few arguments'
+        self.assertEqual(result.exit_status, expected_rc)
+        self.assertNotIn(unexpected_output, result.stdout)
+
     def test_empty_test_list(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run'
