@@ -476,7 +476,6 @@ class Job(object):
             time_elapsed = 0
             ignore_window = 2.0
             self.output_manager.log_header('\n')
-            self.output_manager.log_header('Interrupted by user request')
             start_time = time.time()
             while multiprocessing.active_children():
                 time_elapsed = time.time() - start_time
