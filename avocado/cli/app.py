@@ -17,6 +17,7 @@ The core Avocado application.
 """
 
 import os
+import sys
 
 from argparse import ArgumentParser
 
@@ -64,7 +65,12 @@ class AvocadoApp(object):
             description='valid subcommands',
             help='subcommand help')
         self.load_plugin_manager(args.plugins_dir)
-        args, _ = self.app_parser.parse_known_args()
+
+        default_args = None
+        if not sys.argv[1:]:
+            default_args = ['--help']
+        args, _ = self.app_parser.parse_known_args(args=default_args)
+
         self.plugin_manager.activate(args)
         self.args = self.app_parser.parse_args()
 
