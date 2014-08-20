@@ -81,7 +81,7 @@ class Test(unittest.TestCase):
     default_params = {}
 
     def __init__(self, methodName='runTest', name=None, params=None,
-                 base_logdir=None, tag=None, job=None):
+                 base_logdir=None, tag=None, job=None, runner_queue=None):
         """
         Initializes the test.
 
@@ -178,6 +178,8 @@ class Test(unittest.TestCase):
         self.running = False
         self.time_start = None
         self.time_end = None
+
+        self.runner_queue = runner_queue
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self)

@@ -63,7 +63,7 @@ class TestRunner(object):
         self.job = job
         self.result = test_result
 
-    def load_test(self, params):
+    def load_test(self, params, queue):
         """
         Resolve and load the test url from the the test shortname.
 
@@ -71,6 +71,8 @@ class TestRunner(object):
 
         :param params: Dictionary with test params.
         :type params: dict
+        :param queue: a Queue for communicating with the test runner
+        :type queue: an instance of :class:`multiprocessing.Queue`.
         :return: an instance of :class:`avocado.test.Test`.
         """
         t_id = params.get('id')
@@ -105,7 +107,8 @@ class TestRunner(object):
                 test_instance = test_class(name=t_id,
                                            base_logdir=self.job.logdir,
                                            params=params,
-                                           job=self.job)
+                                           job=self.job,
+                                           runner_queue=queue)
 
         else:
             test_class = test.DropinTest
@@ -124,9 +127,8 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
-        instance = self.load_test(params)
+        instance = self.load_test(params, queue)
         queue.put(instance.get_state())
-
 
         def timeout_handler(signum, frame):
             e_msg = "Timeout reached waiting for %s to end" % instance
