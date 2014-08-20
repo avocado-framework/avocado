@@ -462,13 +462,30 @@ class Job(object):
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except KeyboardInterrupt:
-            # Sometimes, the children won't stop right away and a second
-            # Ctrl+C will trigger an error in exit functions of the
-            # multiprocess module. We'll have to be merciless and send -9
-            for child in multiprocessing.active_children():
-                os.kill(child.pid, signal.SIGKILL)
+            kill_prompt_displayed = False
+            time_elapsed = 0
+            ignore_window = 2.0
             self.output_manager.log_header('\n')
             self.output_manager.log_header('Interrupted by user request')
+            start_time = time.time()
+            while multiprocessing.active_children():
+                time_elapsed = time.time() - start_time
+                try:
+                    time.sleep(0.1)
+                except KeyboardInterrupt:
+                    if not kill_prompt_displayed:
+                        k_msg = ('Waiting for tests to end. Ignoring Ctrl+C '
+                                 'for %d seconds' % ignore_window)
+                        self.output_manager.log_header(k_msg)
+                        k_msg = ('After that, a new Ctrl+C will send a SIGKILL '
+                                 'to them')
+                        self.output_manager.log_header(k_msg)
+                        kill_prompt_displayed = True
+                    if time_elapsed < ignore_window:
+                        continue
+                    else:
+                        for child in multiprocessing.active_children():
+                            os.kill(child.pid, signal.SIGKILL)
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
 
         except Exception, details:

@@ -126,25 +126,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    def test_runner_interrupt(self):
-        os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptenmin'
-        sp = process.SubProcess(cmd_line)
-        # Let it run for 3 seconds, then send a SIGINT
-        # (translates to KeyboardInterrupt, that should kill any sp lying around)
-        sp.wait(timeout=3, sig=signal.SIGINT)
-        result = sp.result
-        output = result.stdout + result.stderr
-        expected_rc = 4
-        unexpected_rc = 3
-        self.assertNotEqual(result.exit_status, unexpected_rc,
-                            "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("Interrupted by user request", output,
-                      "Avocado did not display interruption message. "
-                      "Output:\n%s" % output)
-
     def test_silent_output(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado --silent run sleeptest'
