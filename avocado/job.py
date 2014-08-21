@@ -129,20 +129,14 @@ class TestRunner(object):
             raise exceptions.TestTimeoutError(e_msg)
 
         def interrupt_handler(signum, frame):
-            instance.status = exceptions.TestInterruptedError.status
-            instance.fail_class = exceptions.TestInterruptedError.__class__.__name__
-            e_msg = 'Interrupted by user'
-            instance.fail_reason = exceptions.TestInterruptedError(e_msg)
-            instance.traceback = 'Traceback not available'
-            with open(instance.logfile, 'r') as log_file_obj:
-                instance.text_output = log_file_obj.read()
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
-
-        instance = self.load_test(params)
-        queue.put(instance.get_state())
+            e_msg = "Test %s interrupted by user" % instance
+            raise exceptions.TestTimeoutError(e_msg)
 
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
+
+        instance = self.load_test(params)
+        queue.put(instance.get_state())
 
         self.result.start_test(instance.get_state())
         try:
@@ -211,6 +205,11 @@ class TestRunner(object):
                     if p.is_alive():
                         self.job.result_proxy.throbber_progress()
                     else:
+                        break
+
+                except KeyboardInterrupt:
+                    test_state = q.get()
+                    if test_state is not None:
                         break
 
             # If test_state is None, the test was aborted before it ended.
@@ -480,12 +479,15 @@ class Job(object):
                                  'to them')
                         self.output_manager.log_header(k_msg)
                         kill_prompt_displayed = True
+                        start_time = time.time()
+                        time_elapsed = 0
+                        continue
                     if time_elapsed < ignore_window:
                         continue
                     else:
                         for child in multiprocessing.active_children():
                             os.kill(child.pid, signal.SIGKILL)
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED'])
+            return error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED']
 
         except Exception, details:
             self.status = "ERROR"
