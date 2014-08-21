@@ -116,6 +116,7 @@ class SubProcess(object):
         :param verbose: Whether to log the command run and stdout/stderr.
         :type verbose: bool
         """
+        self.cmd = cmd
         self.verbose = verbose
         if self.verbose:
             log.info("Running '%s'", cmd)
@@ -143,6 +144,13 @@ class SubProcess(object):
         def signal_handler(signum, frame):
             self.wait()
         signal.signal(signal.SIGINT, signal_handler)
+
+    def __str__(self):
+        if self.result.exit_status is None:
+            rc = '(still running)'
+        else:
+            rc = self.result.exit_status
+        return 'SubProcess(cmd="%s", rc="%s")' % (self.cmd, rc)
 
     def _fd_drainer(self, input_pipe):
         """
