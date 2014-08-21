@@ -140,6 +140,10 @@ class SubProcess(object):
         self.stdout_thread.start()
         self.stderr_thread.start()
 
+        def signal_handler(signum, frame):
+            self.wait()
+        signal.signal(signal.SIGINT, signal_handler)
+
     def _fd_drainer(self, input_pipe):
         """
         Read from input_pipe, storing and logging output.
@@ -173,6 +177,25 @@ class SubProcess(object):
                         bfr = ''
             finally:
                 lock.release()
+
+    def _fill_results(self, rc):
+        self.result.exit_status = rc
+        if self.result.duration == 0:
+            self.result.duration = time.time() - self.start_time
+        self._fill_streams()
+
+    def _fill_streams(self):
+        """
+        Close subprocess stdout and stderr, and put values into result obj.
+        """
+        # Cleaning up threads
+        self.stdout_thread.join()
+        self.stderr_thread.join()
+        # Clean subprocess pipes and populate stdout/err
+        self.sp.stdout.close()
+        self.sp.stderr.close()
+        self.result.stdout = self.get_stdout()
+        self.result.stderr = self.get_stderr()
 
     def get_stdout(self):
         """
@@ -218,7 +241,25 @@ class SubProcess(object):
         """
         self.sp.send_signal(sig)
 
-    def wait(self, timeout=None, sig=signal.SIGTERM):
+    def poll(self):
+        """
+        Call the subprocess poll() method, fill results if rc is not None.
+        """
+        rc = self.sp.poll()
+        if rc is not None:
+            self._fill_results(rc)
+        return rc
+
+    def wait(self):
+        """
+        Call the subprocess poll() method, fill results if rc is not None.
+        """
+        rc = self.sp.wait()
+        if rc is not None:
+            self._fill_results(rc)
+        return rc
+
+    def run(self, timeout=None, sig=signal.SIGTERM):
         """
         Wait for the process to end, filling and returning the result attr.
 
@@ -229,59 +270,34 @@ class SubProcess(object):
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
-        if timeout is None:
-            self.sp.wait()
-            self.result.exit_status = self.sp.returncode
+        start_time = time.time()
 
-        if timeout > 0:
-            start_time = time.time()
+        if timeout is None:
+            self.wait()
+
+        if timeout > 0.0:
             while time.time() - start_time < timeout:
-                self.result.exit_status = self.sp.poll()
+                self.poll()
                 if self.result.exit_status is not None:
                     break
-        else:
-            # Give one second to check if we can successfully kill the process
-            timeout = 1
 
         if self.result.exit_status is None:
+            internal_timeout = 1.0
             self.send_signal(sig)
-            # Timeout here should be 1 second (see comment above)
-            stop_time = time.time() + timeout
+            stop_time = time.time() + internal_timeout
             while time.time() < stop_time:
-                self.result.exit_status = self.sp.poll()
+                self.poll()
                 if self.result.exit_status is not None:
                     break
             else:
                 self.kill()
-                self.result.exit_status = self.sp.poll()
+                self.poll()
 
-        duration = time.time() - self.start_time
-        self.result.duration = duration
-
-        self.cleanup()
-
-        return self.result
-
-    def cleanup(self):
-        """
-        Close subprocess stdout and stderr, and put values into result obj.
-        """
-        # Cleaning up threads
-        self.stdout_thread.join(1)
-        self.stderr_thread.join(1)
-        # Last sanity check
-        e_msg = 'Stdout thread for %s is still alive' % self.sp.pid
-        assert not self.stdout_thread.isAlive(), e_msg
-        e_msg = 'Stderr thread for %s is still alive' % self.sp.pid
-        assert not self.stderr_thread.isAlive(), e_msg
-        # If this fails, we're dealing with a zombie process
+        # If all this work fails, we're dealing with a zombie process.
         e_msg = 'Zombie Process %s' % self.sp.pid
         assert self.result.exit_status is not None, e_msg
-        # Clean subprocess pipes and populate stdout/err
-        self.sp.stdout.close()
-        self.sp.stderr.close()
-        self.result.stdout = self.get_stdout()
-        self.result.stderr = self.get_stderr()
+
+        return self.result
 
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False):
@@ -304,7 +320,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False):
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     sp = SubProcess(cmd=cmd, verbose=verbose)
-    cmd_result = sp.wait(timeout=timeout)
+    cmd_result = sp.run(timeout=timeout)
     if cmd_result.exit_status != 0 and not ignore_status:
         raise exceptions.CmdError(cmd, sp.result)
     return cmd_result
