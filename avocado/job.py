@@ -191,6 +191,10 @@ class TestRunner(object):
 
             time_deadline = time_started + timeout
 
+            ctrl_c_count = 0
+            ignore_window = 2.0
+            ignore_time_started = time.time()
+
             while True:
                 try:
                     if time.time() >= time_deadline:
@@ -203,14 +207,32 @@ class TestRunner(object):
 
                 except Queue.Empty:
                     if p.is_alive():
-                        self.job.result_proxy.throbber_progress()
+                        if ctrl_c_count == 0:
+                            self.job.result_proxy.throbber_progress()
                     else:
                         break
 
                 except KeyboardInterrupt:
-                    test_state = q.get()
-                    if test_state is not None:
-                        break
+                    time_elapsed = time.time() - ignore_time_started
+                    ctrl_c_count += 1
+                    if ctrl_c_count == 2:
+                        k_msg_1 = ("SIGINT sent to tests, waiting for their "
+                                   "reaction")
+                        k_msg_2 = ("Ignoring Ctrl+C during the next "
+                                   "%d seconds so they can try to finish" %
+                                   ignore_window)
+                        k_msg_3 = ("A new Ctrl+C sent after that will send a "
+                                   "SIGKILL to them")
+                        self.job.output_manager.log_header("\n")
+                        self.job.output_manager.log_header(k_msg_1)
+                        self.job.output_manager.log_header(k_msg_2)
+                        self.job.output_manager.log_header(k_msg_3)
+                        ignore_time_started = time.time()
+                    if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
+                        k_msg_1 = ("Ctrl+C received after the ignore window. "
+                                   "Killing all active tests")
+                        self.job.output_manager.log_header(k_msg_1)
+                        os.kill(p.pid, signal.SIGKILL)
 
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
@@ -460,36 +482,6 @@ class Job(object):
         except exceptions.OptionValidationError, details:
             self.output_manager.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
-        except KeyboardInterrupt:
-            kill_prompt_displayed = False
-            time_elapsed = 0
-            ignore_window = 2.0
-            self.output_manager.log_header('\n')
-            start_time = time.time()
-            while multiprocessing.active_children():
-                time_elapsed = time.time() - start_time
-                try:
-                    time.sleep(0.1)
-                except KeyboardInterrupt:
-                    if not kill_prompt_displayed:
-                        k_msg = ('Waiting for tests to end. Ignoring Ctrl+C '
-                                 'for %d seconds' % ignore_window)
-                        self.output_manager.log_header(k_msg)
-                        k_msg = ('After that, a new Ctrl+C will send a SIGKILL '
-                                 'to them')
-                        self.output_manager.log_header(k_msg)
-                        kill_prompt_displayed = True
-                        start_time = time.time()
-                        time_elapsed = 0
-                        continue
-                    if time_elapsed < ignore_window:
-                        continue
-                    else:
-                        k_msg = ('Sending Ctrl+C. Killing all active tests')
-                        self.output_manager.log_header(k_msg)
-                        for child in multiprocessing.active_children():
-                            os.kill(child.pid, signal.SIGKILL)
-            return error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED']
 
         except Exception, details:
             self.status = "ERROR"
