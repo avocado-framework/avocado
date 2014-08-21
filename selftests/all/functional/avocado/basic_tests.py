@@ -164,6 +164,42 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('NOT_FOUND', result.stderr)
         self.assertIn('NOT FOUND : 1', result.stderr)
 
+    def test_interrupt_behavior(self):
+        class TimeoutError(Exception):
+            pass
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptenmin'
+        sp = process.SubProcess(cmd_line)
+        # Wait a couple of seconds before firing the first Ctrl+C
+        time.sleep(2)
+        sp.send_signal(signal.SIGINT)
+        # Shortly afterwards, another Ctrl+C, which will prompt
+        # The 'Waiting for tests to end' message
+        time.sleep(0.1)
+        sp.send_signal(signal.SIGINT)
+        # Then let's send 1 Ctrl+C every 1 second, waiting for
+        # avocado to end. The tolerance is 20 seconds.
+        timeout = 20.0
+        start_time = time.time()
+        while True:
+            if (time.time() - start_time) > timeout:
+                raise TimeoutError('Process %s took too long to terminate' %
+                                   cmd_line)
+            rc = sp.poll()
+            time.sleep(1)
+            if rc is not None:
+                break
+            else:
+                sp.send_signal(signal.SIGINT)
+        # Avocado should return rc=4 and the appropriate message
+        # should appear on stderr
+        result = sp.result
+        expected_rc = 4
+        self.assertEqual(result.exit_status, expected_rc)
+        expected_output = ('Waiting for tests to end. '
+                           'Ignoring Ctrl+C for 2 seconds')
+        self.assertIn(expected_output, result.stderr)
+
 
 class RunnerDropinTest(unittest.TestCase):
 
