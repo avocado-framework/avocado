@@ -485,6 +485,8 @@ class Job(object):
                     if time_elapsed < ignore_window:
                         continue
                     else:
+                        k_msg = ('Sending Ctrl+C. Killing all active tests')
+                        self.output_manager.log_header(k_msg)
                         for child in multiprocessing.active_children():
                             os.kill(child.pid, signal.SIGKILL)
             return error_codes.numeric_status['AVOCADO_JOB_INTERRUPTED']
