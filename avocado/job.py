@@ -219,10 +219,10 @@ class TestRunner(object):
                 except Queue.Empty:
                     early_state['time_elapsed'] = time.time() - time_started
                     test_state = self._fill_aborted_test_state(early_state)
-
-                test_log = logging.getLogger('avocado.test')
-                test_log.error('ERROR %s -> TestAbortedError: '
-                               'Test aborted unexpectedly', test_state['name'])
+                    test_log = logging.getLogger('avocado.test')
+                    test_log.error('ERROR %s -> TestAbortedError: '
+                                   'Test aborted unexpectedly',
+                                   test_state['name'])
 
             self.result.check_test(test_state)
             if not status.mapping[test_state['status']]:
