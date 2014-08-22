@@ -81,7 +81,7 @@ class Test(unittest.TestCase):
     default_params = {}
 
     def __init__(self, methodName='runTest', name=None, params=None,
-                 base_logdir=None, tag=None, job=None):
+                 base_logdir=None, tag=None, job=None, runner_queue=None):
         """
         Initializes the test.
 
@@ -175,6 +175,13 @@ class Test(unittest.TestCase):
 
         self.whiteboard = ''
 
+        self.running = False
+        self.progress = False
+        self.time_start = None
+        self.time_end = None
+
+        self.runner_queue = runner_queue
+
         self.time_elapsed = None
         unittest.TestCase.__init__(self)
 
@@ -184,6 +191,58 @@ class Test(unittest.TestCase):
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
 
+    def tag_start(self):
+        self.running = True
+        self.time_start = time.time()
+
+    def tag_end(self):
+        self.running = False
+        self.time_end = time.time()
+        # for consistency sake, always use the same stupid method
+        self.update_time_elapsed(self.time_end)
+
+    def update_time_elapsed(self, current_time=None):
+        if current_time is None:
+            current_time = time.time()
+        self.time_elapsed = current_time - self.time_start
+
+    def check_progress(self):
+        """
+        Check test specific logic for test progress
+
+        If a test writer wants to notify test runners about a real (from
+        the test point of view) progress, he/she should override this method.
+
+        By default it returns `False`, since the framework can not make guesses
+        about the test specific logic.
+
+        :returns: whether there has been test specific, measurable progress
+        :rtype: bool
+        """
+        return False
+
+    def communicate_state(self, progress=None):
+        """
+        Send the current test state to the test runner process
+
+        By default :meth:`check_progress` is called to check for test
+        specific progress. Users of this method can also skip calling
+        :meth:`check_progress` by supplying a `True` or `False` value.
+
+        :param progress: whether from the test own perspective, there has been
+                         progress that the user should know about it
+        :type progress: None or bool
+        """
+        if self.runner_queue is not None:
+            if progress is None:
+                self.progress = self.check_progress()
+            else:
+                self.progress = progress
+            self.runner_queue.put(self.get_state())
+
+        # reset test progress indication
+        self.progress = False
+
     def get_state(self):
         """
         Serialize selected attributes representing the test state
@@ -191,13 +250,17 @@ class Test(unittest.TestCase):
         :returns: a dictionary containing relevant test state data
         :rtype: dict
         """
+        if self.running and self.time_start:
+            self.update_time_elapsed()
+
         orig = dict(self.__dict__)
         d = {}
         preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_class',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
-                         'traceback', 'workdir', 'whiteboard']
+                         'traceback', 'workdir', 'whiteboard', 'time_start',
+                         'time_end', 'running', 'progress']
         for key in sorted(orig):
             if key in preserve_attr:
                 d[key] = orig[key]
@@ -360,8 +423,8 @@ class Test(unittest.TestCase):
         :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
         self._setup_environment_variables()
-        start_time = time.time()
         try:
+            self.tag_start()
             self.runTest(result)
         except exceptions.TestBaseException, detail:
             self.status = detail.status
@@ -384,8 +447,7 @@ class Test(unittest.TestCase):
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
-            end_time = time.time()
-            self.time_elapsed = end_time - start_time
+            self.tag_end()
             self.report()
             self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
