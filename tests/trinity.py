@@ -82,9 +82,7 @@ class trinity(test.Test):
             cmd += " -V " + self.params.victims_path
         else:
             cmd += " -V " + self.victims_path
-        cmd_result = process.run(cmd)
-        self.log.info(cmd_result)
-        os.chdir(self.cwd)
+        process.run(cmd)
 
 
 if __name__ == "__main__":
