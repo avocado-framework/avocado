@@ -36,7 +36,7 @@ from avocado.core import error_codes
 from avocado.core import job_id
 from avocado.utils import archive
 from avocado.utils import path
-from avocado import multiplex_config
+from avocado import multiplexer
 from avocado import test
 from avocado import result
 from avocado import sysinfo
@@ -381,13 +381,16 @@ class Job(object):
             if urls is not None:
                 for url in urls:
                     test_module = os.path.basename(url).split('.')[0]
-                    parser = multiplex_config.Parser(multiplex_file)
-                    parser.only_filter(test_module)
-                    dcts = [d for d in parser.get_dicts()]
-                    if dcts:
-                        for dct in dcts:
-                            dct['id'] = url
-                            params_list.append(dct)
+                    try:
+                        variants = multiplexer.create_variants_from_yaml(open(multiplex_file))
+                    except SyntaxError:
+                        variants = None
+                    if variants:
+                        for variant in variants:
+                            var = variant[0]
+                            if not var.value.has_key('id'):
+                                var.value.update({'id': url})
+                            params_list.append(var.environment)
                     else:
                         params_list.append({'id': url})
             else:
