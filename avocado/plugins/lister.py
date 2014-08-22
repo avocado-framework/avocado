@@ -50,5 +50,6 @@ class PluginsList(plugin.Plugin):
                 status = bcolors.healthy_str("Enabled")
             else:
                 status = bcolors.fail_header_str("Disabled")
-            pipe.write(format_str % (bcolors.header_str(plug.name), plug.__doc__.strip(),
+            pipe.write(format_str % (bcolors.header_str(plug.name),
+                                     plug.description,
                                      status))
