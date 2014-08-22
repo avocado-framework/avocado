@@ -91,18 +91,26 @@ class ExternalPluginManager(PluginManager):
         import imp
         if path:
             candidates = glob(os.path.join(path, pattern))
-            candidates = [(os.path.splitext(os.path.basename(x))[0], path) for x in candidates]
-            candidates = [(x[0], imp.find_module(x[0], [path])) for x in candidates]
+            candidates = [(os.path.splitext(os.path.basename(x))[0], path)
+                          for x in candidates]
+            candidates = [(x[0], imp.find_module(x[0], [path]))
+                          for x in candidates]
             for candidate in candidates:
                 try:
                     mod = imp.load_module(candidate[0], *candidate[1])
                 except Exception as err:
-                    log.error("Could not load plugin '%s': %s", candidate[0], err)
+                    log.error("Could not load module plugin '%s': %s",
+                              candidate[0], err)
                 else:
+                    any_plugin = False
                     for name in mod.__dict__:
                         x = getattr(mod, name)
                         if isinstance(x, type) and issubclass(x, Plugin):
                             self.add_plugin(x())
+                            any_plugin = True
+                    if not any_plugin:
+                        log.error("Could not find any plugin in module '%s'",
+                                  candidate[0])
 
     def add_plugins(self, plugins):
         for plugin in plugins:
