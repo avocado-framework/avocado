@@ -102,6 +102,7 @@ class TermSupport(object):
         self.ERROR = self.COLOR_RED
         self.NOT_FOUND = self.COLOR_YELLOW
         self.WARN = self.COLOR_YELLOW
+        self.PARTIAL = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
         term = os.environ.get("TERM")
         if (not os.isatty(1)) or (term not in self.allowed_terms):
@@ -118,6 +119,7 @@ class TermSupport(object):
         self.ERROR = ''
         self.NOT_FOUND = ''
         self.WARN = ''
+        self.PARTIAL = ''
         self.ENDC = ''
 
     def header_str(self, msg):
@@ -143,6 +145,14 @@ class TermSupport(object):
         If the output does not support colors, just return the original string.
         """
         return self.PASS + msg + self.ENDC
+
+    def partial_str(self, msg):
+        """
+        Print a string that denotes partial progress (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.PARTIAL + msg + self.ENDC
 
     def pass_str(self):
         """
@@ -212,8 +222,22 @@ class OutputManager(object):
         self.console_log = logging.getLogger('avocado.app')
         self.throbber_pos = 0
 
-    def throbber_progress(self):
-        self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+    def throbber_progress(self, progress_from_test=False):
+        """
+        Give an interactive indicator of the test progress
+
+        :param progress_from_test: if indication of progress came explicitly
+                                   from the test. If false, it means the test
+                                   process is running, but not communicating
+                                   test specific progress.
+        :type progress_from_test: bool
+        :rtype: None
+        """
+        if progress_from_test:
+            self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+        else:
+            self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
+
         if self.throbber_pos == (len(self.THROBBER_MOVES)-1):
             self.throbber_pos = 0
         else:
@@ -288,6 +312,14 @@ class OutputManager(object):
         :param msg: Message to write.
         """
         self.info(term_support.healthy_str(msg), skip_newline)
+
+    def log_partial(self, msg, skip_newline=False):
+        """
+        Log a message that indicates something (at least) partially OK
+
+        :param msg: Message to write.
+        """
+        self.info(term_support.partial_str(msg), skip_newline)
 
     def log_header(self, msg):
         """

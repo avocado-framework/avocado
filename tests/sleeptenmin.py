@@ -15,6 +15,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
+import os
 import time
 
 from avocado import job
@@ -26,15 +27,30 @@ class sleeptenmin(test.Test):
     """
     Sleeps for 10 minutes
     """
-    default_params = {'sleep_length': 600}
+    default_params = {'sleep_length': 600,
+                      'sleep_cycles': 1,
+                      'sleep_method': 'builtin'}
+
+    def check_progress(self):
+        """
+        We do nothing besides sleeping, so anything can be considered progress
+        """
+        return True
 
     def action(self):
         """
         Sleep for length seconds.
         """
-        self.log.debug("Sleeping for %.2f seconds", self.params.sleep_length)
-        time.sleep(self.params.sleep_length)
+        cycles = int(self.params.sleep_cycles)
+        length = int(self.params.sleep_length)
 
+        for cycle in xrange(0, cycles):
+            self.log.debug("Sleeping for %.2f seconds", length)
+            if self.params.sleep_method == 'builtin':
+                time.sleep(length)
+            elif self.params.sleep_method == 'shell':
+                os.system("sleep %s" % length)
+            self.communicate_state()
 
 if __name__ == "__main__":
     job.main()
