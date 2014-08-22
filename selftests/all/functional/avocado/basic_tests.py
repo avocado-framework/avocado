@@ -40,6 +40,17 @@ FAIL_SCRIPT_CONTENTS = """#!/bin/sh
 false
 """
 
+VOID_PLUGIN_CONTENTS = """#!/usr/bin/env python
+from avocado.plugins.plugin import Plugin
+class VoidPlugin(Plugin):
+    pass
+"""
+
+SYNTAX_ERROR_PLUGIN_CONTENTS = """#!/usr/bin/env python
+from avocado.plugins.plugin import Plugin
+class VoidPlugin(Plugin)
+"""
+
 
 class RunnerOperationTest(unittest.TestCase):
 
@@ -241,6 +252,29 @@ class PluginsTest(unittest.TestCase):
 
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
+        self.base_sourcedir = tempfile.mkdtemp(prefix='avocado_source_plugins')
+        self.void_plugin = os.path.join(self.base_sourcedir, 'avocado_void.py')
+        with open(self.void_plugin, 'w') as void:
+            void.write(VOID_PLUGIN_CONTENTS)
+            os.chmod(self.void_plugin, 0775)
+        self.syntax_err_plugin = os.path.join(self.base_sourcedir, 'avocado_syntax_err.py')
+        with open(self.syntax_err_plugin, 'w') as synerr:
+            synerr.write(SYNTAX_ERROR_PLUGIN_CONTENTS)
+            os.chmod(self.syntax_err_plugin, 0775)
+
+    def test_void_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --plugins %s' % self.base_sourcedir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_output = 'Plugins must implement the method configure'
+        self.assertIn(expected_output, result.stderr)
+
+    def test_syntax_error_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado --plugins %s' % self.base_sourcedir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_output = 'invalid syntax'
+        self.assertIn(expected_output, result.stderr)
 
     def test_sysinfo_plugin(self):
         os.chdir(basedir)
@@ -289,6 +323,8 @@ class PluginsTest(unittest.TestCase):
     def tearDown(self):
         if os.path.isdir(self.base_outputdir):
             shutil.rmtree(self.base_outputdir, ignore_errors=True)
+        if os.path.isdir(self.base_sourcedir):
+            shutil.rmtree(self.base_sourcedir, ignore_errors=True)
 
 
 class ParseXMLError(Exception):
