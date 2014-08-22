@@ -13,9 +13,23 @@
 #
 # Authors: Ruda Moura <rmoura@redhat.com>
 #          Lucas Meneghel Rodrigues <lmr@redhat.com>
+#          Jaime Huerta-Cepas <jhcepas@gmail.com>
+#
 
 """
 Tree data strucure with nodes.
+
+This tree structure (Tree drawing code) was inspired in the base tree data
+structure of the ETE 2 project:
+
+http://pythonhosted.org/ete2/
+
+A library for analysis of phylogenetics trees.
+
+Explicit permission has been given by the copyright owner of ETE 2
+Jaime Huerta-Cepas <jhcepas@gmail.com> to take ideas/use snippets from his
+original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
+(used in some avocado files) are incompatible.
 """
 
 import collections
