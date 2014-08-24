@@ -146,6 +146,8 @@ class CmdError(Exception):
 
     def __str__(self):
         if self.result is not None:
+            if self.result.interrupted:
+                return "Command %s interrupted by user (Ctrl+C)" % self.command
             if self.result.exit_status is None:
                 msg = "Command '%s' failed and is not responding to signals"
                 msg %= self.command

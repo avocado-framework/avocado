@@ -68,7 +68,7 @@ class VMTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
-        avocado_cmd = 'avocado --json run --archive "%s"' % urls
+        avocado_cmd = 'avocado --json - run --archive "%s"' % urls
         stdout = self.result.vm.remote.run(avocado_cmd)
         try:
             results = json.loads(stdout)
