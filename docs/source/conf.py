@@ -37,7 +37,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage']
 
 master_doc = 'index'
-project = u'avocado'
+project = u'Avocado'
 copyright = u'2014, Red Hat'
 
 version = avocado.version.VERSION
