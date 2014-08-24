@@ -91,14 +91,18 @@ class CmdResult(object):
         self.stdout = stdout
         self.stderr = stderr
         self.duration = duration
+        self.interrupted = False
 
     def __repr__(self):
-        return ("Command: %s\n"
-                "Exit status: %s\n"
-                "Duration: %s\n"
-                "Stdout:\n%s\n"
-                "Stderr:\n%s\n" % (self.command, self.exit_status,
-                                   self.duration, self.stdout, self.stderr))
+        cmd_rep = ("Command: %s\n"
+                   "Exit status: %s\n"
+                   "Duration: %s\n"
+                   "Stdout:\n%s\n"
+                   "Stderr:\n%s\n" % (self.command, self.exit_status,
+                                      self.duration, self.stdout, self.stderr))
+        if self.interrupted:
+            cmd_rep += "Command interrupted by user (Ctrl+C)\n"
+        return cmd_rep
 
 
 class SubProcess(object):
@@ -142,7 +146,9 @@ class SubProcess(object):
         self.stderr_thread.start()
 
         def signal_handler(signum, frame):
+            self.result.interrupted = True
             self.wait()
+
         signal.signal(signal.SIGINT, signal_handler)
 
     def __str__(self):
@@ -329,7 +335,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False):
     """
     sp = SubProcess(cmd=cmd, verbose=verbose)
     cmd_result = sp.run(timeout=timeout)
-    if cmd_result.exit_status != 0 and not ignore_status:
+    fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
+    if fail_condition and not ignore_status:
         raise exceptions.CmdError(cmd, sp.result)
     return cmd_result
 
