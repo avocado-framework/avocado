@@ -23,14 +23,27 @@ class Plugin(object):
     You'll inherit from this to write you own plugins.
     """
 
-    name = 'plugin'
-    enabled = True
+    name = 'noname'
+    enabled = False
 
-    def __init__(self):
-        """Creates a new plugin instance."""
-        self.name = self.__class__.name
-        self.enabled = self.__class__.enabled
+    def __init__(self, name=None, enabled=None):
+        """Creates a new plugin instance.
+
+        :param name: plugin short name.
+        :param enabled: plugin status: enabled or not.
+        """
+        if name is not None:
+            self.name = name
+        if enabled is not None:
+            self.enabled = enabled
+        if self.__doc__ is not None:
+            self.description = self.__doc__.strip()
+        else:
+            self.description = 'There is no description for this plugin'
         self.configured = False
+
+    def __repr__(self):
+        return "%s(name='%s')" % (self.__class__.__name__, self.name)
 
     def configure(self, app_parser, cmd_parser):
         """Configuration and argument parsing.
