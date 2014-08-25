@@ -10,6 +10,7 @@
 # See LICENSE for more details.
 #
 # Copyright: Red Hat Inc. 2014
+# Copyright: Jaime Huerta-Cepas <jhcepas@gmail.com> 2009
 #
 # Authors: Ruda Moura <rmoura@redhat.com>
 #          Lucas Meneghel Rodrigues <lmr@redhat.com>
