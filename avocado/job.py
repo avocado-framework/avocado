@@ -394,8 +394,8 @@ class Job(object):
         self.sysinfo_logger.start_job_hook()
         params_list = []
         if urls is None:
-            if self.args and self.args.url is not None:
-                urls = self.args.url.split()
+            if self.args and self.args.url:
+                urls = self.args.url
         else:
             if isinstance(urls, str):
                 urls = urls.split()
