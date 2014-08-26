@@ -67,7 +67,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_all_ok(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run "sleeptest sleeptest"'
+        cmd_line = './scripts/avocado run sleeptest sleeptest'
         process.run(cmd_line)
 
     def test_datadir_alias(self):
@@ -77,17 +77,17 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_datadir_noalias(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run "tests/datadir.py tests/datadir.py"'
+        cmd_line = './scripts/avocado run tests/datadir.py tests/datadir.py'
         process.run(cmd_line)
 
     def test_runner_noalias(self):
         os.chdir(basedir)
-        cmd_line = "./scripts/avocado run 'tests/sleeptest.py tests/sleeptest.py'"
+        cmd_line = "./scripts/avocado run tests/sleeptest.py tests/sleeptest.py"
         process.run(cmd_line)
 
     def test_runner_tests_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run "sleeptest failtest sleeptest"'
+        cmd_line = './scripts/avocado run sleeptest failtest sleeptest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -150,7 +150,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_silent_output(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --silent sleeptest'
+        cmd_line = './scripts/avocado run sleeptest --silent'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         expected_output = ''
@@ -229,7 +229,7 @@ class RunnerDropinTest(unittest.TestCase):
         """
         os.chdir(basedir)
         one_hundred = 'failtest ' * 100
-        cmd_line = './scripts/avocado run "%s"' % one_hundred
+        cmd_line = './scripts/avocado run %s' % one_hundred
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
@@ -245,7 +245,7 @@ class RunnerDropinTest(unittest.TestCase):
         """
         os.chdir(basedir)
         sleep_fail_sleep = 'sleeptest ' + 'failtest ' * 100 + 'sleeptest'
-        cmd_line = './scripts/avocado run "%s"' % sleep_fail_sleep
+        cmd_line = './scripts/avocado run %s' % sleep_fail_sleep
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
@@ -423,7 +423,7 @@ class PluginsXunitTest(PluginsTest):
         self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
 
     def test_xunit_plugin_mixedtest(self):
-        self.run_and_check('"sleeptest failtest skiptest errortest sbrubles"',
+        self.run_and_check('sleeptest failtest skiptest errortest sbrubles',
                            1, 5, 1, 1, 1, 1)
 
 
@@ -482,7 +482,7 @@ class PluginsJSONTest(PluginsTest):
         self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
 
     def test_json_plugin_mixedtest(self):
-        self.run_and_check('"sleeptest failtest skiptest errortest sbrubles"',
+        self.run_and_check('sleeptest failtest skiptest errortest sbrubles',
                            1, 5, 1, 1, 1, 1)
 
 if __name__ == '__main__':
