@@ -7,10 +7,10 @@ Getting started guide - users
 If you want to simply use avocado as a test runner/test API, you can install a
 distro package. For Fedora, you can look
 at `lmr's autotest COPR`_, while for Ubuntu, you can look
-at `lmr's autotest PPA`_.
+at `lmr's avocado PPA`_.
 
 .. _lmr's autotest COPR: http://copr.fedoraproject.org/coprs/lmr/Autotest
-.. _lmr's autotest PPA: https://launchpad.net/~lmr/+archive/autotest
+.. _lmr's avocado PPA: https://launchpad.net/~lmr/+archive/avocado
 
 Avocado is primarily being developed on Fedora boxes, but we are making
 reasonable efforts that Ubuntu users can use and develop avocado well.
@@ -29,8 +29,7 @@ Installing avocado - Ubuntu
 
 You need to add the following lines::
 
-    deb http://ppa.launchpad.net/lmr/autotest/ubuntu trusty main
-    deb-src http://ppa.launchpad.net/lmr/autotest/ubuntu trusty main
+    deb http://ppa.launchpad.net/lmr/avocado/ubuntu trusty main
 
 To the file ``/etc/apt/sources.list``. After that you can install avocado by
 performing the following commands::
