@@ -26,14 +26,13 @@ class DataDirList(plugin.Plugin):
     name = 'datadir'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        parser = cmd_parser.add_parser(
+    def configure(self, parser):
+        self.parser = parser.subcommands.add_parser(
             'datadir',
             help='List all relevant directories used by avocado')
-        parser.set_defaults(func=self.list_data_dirs)
-        self.configured = True
+        super(DataDirList, self).configure(self.parser)
 
-    def list_data_dirs(self, args):
+    def run(self, args):
         bcolors = output.term_support
         pipe = output.get_paginator()
         pipe.write(bcolors.header_str('Avocado Data Directories:'))

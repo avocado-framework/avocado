@@ -45,7 +45,7 @@ class PluginManager(object):
         for plugin in self.plugins:
             if plugin.enabled:
                 try:
-                    plugin.configure(parser.app_parser, parser.cmd_parser)
+                    plugin.configure(parser)
                 except Exception as err:
                     log.error("Could not configure plugin '%s': %s",
                               plugin.name, err)

@@ -26,13 +26,13 @@ class PluginsList(plugin.Plugin):
     name = 'plugins_list'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        parser = cmd_parser.add_parser('plugins',
-                                       help='List all plugins loaded')
-        parser.set_defaults(func=self.list_plugins)
-        self.configured = True
+    def configure(self, parser):
+        self.parser = parser.subcommands.add_parser(
+            'plugins',
+            help='List all plugins loaded')
+        super(PluginsList, self).configure(self.parser)
 
-    def list_plugins(self, args):
+    def run(self, args):
         bcolors = output.term_support
         pipe = output.get_paginator()
         pm = get_plugin_manager()

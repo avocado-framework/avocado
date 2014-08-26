@@ -55,11 +55,10 @@ from avocado.plugins.plugin import Plugin
 class HelloWorld(Plugin):
     name = 'hello'
     enabled = True
-    def configure(self, app_parser, cmd_parser):
-        parser = cmd_parser.add_parser('hello')
-        parser.set_defaults(func=self.hello)
-        self.configured = True
-    def hello(self, args):
+    def configure(self, parser):
+        self.parser = parser.subcommands.add_parser('hello')
+        super(HelloWorld, self).configure(self.parser)
+    def run(self, args):
         print 'Hello World!'
 """
 
