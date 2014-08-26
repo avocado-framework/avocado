@@ -1,3 +1,9 @@
+avocado (0.11.1) trusty; urgency=medium
+
+  * Add new upstream version 0.11.1.
+
+ -- Lucas Meneghel Rodrigues (lmr) <lookkas@gmail.com>  Mon, 25 Aug 2014 10:14:34 -0300
+
 avocado (0.0.1ubuntu4) saucy; urgency=medium
 
   * Automated (make builddeb) build.
