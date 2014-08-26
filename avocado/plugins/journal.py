@@ -126,12 +126,13 @@ class Journal(plugin.Plugin):
     name = 'journal'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        self.parser = app_parser
-        app_parser.add_argument('--journal', action='store_true',
-                                help='Records test status changes')
+    def configure(self, parser):
+        self.parser = parser
+        self.parser.application.add_argument(
+            '--journal', action='store_true',
+            help='Records test status changes')
         self.configured = True
 
-    def activate(self, app_args):
-        if app_args.journal:
-            self.parser.set_defaults(journal_result=TestResultJournal)
+    def activate(self, args):
+        if args.journal:
+            self.parser.application.set_defaults(journal_result=TestResultJournal)

@@ -16,8 +16,6 @@
 Silent output module.
 """
 
-import json
-
 from avocado.plugins import plugin
 
 
@@ -30,9 +28,8 @@ class Silent(plugin.Plugin):
     name = 'silent_output'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        parser = app_parser
-        parser.add_argument(
+    def configure(self, parser):
+        self.parser = parser.application.add_argument(
             '--silent', action='store_true', default=False,
             help='Silent output, do not display results.')
         self.configured = True
