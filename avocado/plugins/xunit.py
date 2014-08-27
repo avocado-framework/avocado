@@ -225,15 +225,15 @@ class xUnitTestResult(TestResult):
 class XUnit(plugin.Plugin):
 
     """
-    xUnit output
+    xUnit output.
     """
 
     name = 'xunit'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        self.parser = app_parser
-        app_parser.add_argument(
+    def configure(self, parser):
+        self.parser = parser
+        self.parser.application.add_argument(
             '--xunit', type=str, dest='xunit_output',
             help=('Enable xUnit output to the file where the result should be written.'
                   "Use '-' to redirect to the standard output."))
@@ -241,4 +241,4 @@ class XUnit(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.xunit_output:
-            self.parser.set_defaults(xunit_result=xUnitTestResult)
+            self.parser.application.set_defaults(xunit_result=xUnitTestResult)

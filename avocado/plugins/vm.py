@@ -295,30 +295,30 @@ class RunVM(plugin.Plugin):
     name = 'run_vm'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
+    def configure(self, parser):
         if virt.virt_capable is False:
             self.enabled = False
             return
         username = getpass.getuser()
-        self.parser = app_parser
-        app_parser.add_argument('--vm', action='store_true', default=False,
-                                help='Run tests on Virtual Machine')
-        app_parser.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
-                                default='qemu:///system',
-                                help='Specify hypervisor URI driver connection')
-        app_parser.add_argument('--vm-domain', dest='vm_domain',
-                                help='Specify domain name (Virtual Machine name)')
-        app_parser.add_argument('--vm-hostname', dest='vm_hostname',
-                                help='Specify VM hostname to login')
-        app_parser.add_argument('--vm-username', dest='vm_username',
-                                default=username,
-                                help='Specify the username to login on VM')
-        app_parser.add_argument('--vm-password', dest='vm_password',
-                                default=None,
-                                help='Specify the password to login on VM')
-        app_parser.add_argument('--vm-cleanup', dest='vm_cleanup', action='store_true',
-                                default=False,
-                                help='Restore VM to a previous state, before running the tests')
+        self.parser = parser.application
+        self.parser.add_argument('--vm', action='store_true', default=False,
+                                 help='Run tests on Virtual Machine')
+        self.parser.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
+                                 default='qemu:///system',
+                                 help='Specify hypervisor URI driver connection')
+        self.parser.add_argument('--vm-domain', dest='vm_domain',
+                                 help='Specify domain name (Virtual Machine name)')
+        self.parser.add_argument('--vm-hostname', dest='vm_hostname',
+                                 help='Specify VM hostname to login')
+        self.parser.add_argument('--vm-username', dest='vm_username',
+                                 default=username,
+                                 help='Specify the username to login on VM')
+        self.parser.add_argument('--vm-password', dest='vm_password',
+                                 default=None,
+                                 help='Specify the password to login on VM')
+        self.parser.add_argument('--vm-cleanup', dest='vm_cleanup', action='store_true',
+                                 default=False,
+                                 help='Restore VM to a previous state, before running the tests')
         self.configured = True
 
     def activate(self, app_args):

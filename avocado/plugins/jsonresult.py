@@ -94,9 +94,9 @@ class JSON(plugin.Plugin):
     name = 'json'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        self.parser = app_parser
-        self.parser.add_argument(
+    def configure(self, parser):
+        self.parser = parser
+        self.parser.application.add_argument(
             '--json', type=str,
             dest='json_output',
             help='Enable JSON output to the file where the result should be written.'
@@ -105,4 +105,4 @@ class JSON(plugin.Plugin):
 
     def activate(self, app_args):
         if app_args.json_output:
-            self.parser.set_defaults(json_result=JSONTestResult)
+            self.parser.application.set_defaults(json_result=JSONTestResult)

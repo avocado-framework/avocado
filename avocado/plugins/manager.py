@@ -41,11 +41,11 @@ class PluginManager(object):
     def load_plugins(self):
         raise NotImplementedError('Managers must implement the method load_plugins')
 
-    def configure(self, app_parser, cmd_parser):
+    def configure(self, parser):
         for plugin in self.plugins:
             if plugin.enabled:
                 try:
-                    plugin.configure(app_parser, cmd_parser)
+                    plugin.configure(parser)
                 except Exception as err:
                     log.error("Could not configure plugin '%s': %s",
                               plugin.name, err)
