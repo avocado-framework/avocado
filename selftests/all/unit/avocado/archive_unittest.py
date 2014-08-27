@@ -28,8 +28,9 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.utils import crypto
 from avocado.utils import archive
+from avocado.utils import crypto
+from avocado.utils import data_factory
 
 
 class ArchiveTest(unittest.TestCase):
@@ -49,7 +50,7 @@ class ArchiveTest(unittest.TestCase):
                 compressdir = self.compressdir
             str_length = self.sys_random.randint(30, 50)
             fd, filename = tempfile.mkstemp(dir=compressdir, text=True)
-            os.write(fd, crypto.get_random_string(str_length))
+            os.write(fd, data_factory.generate_random_string(str_length))
             relative_path = filename.replace(self.compressdir, '')
             hash_map_1[relative_path] = crypto.hash_file(filename)
 
@@ -69,7 +70,7 @@ class ArchiveTest(unittest.TestCase):
     def compress_and_check_file(self, extension):
         str_length = self.sys_random.randint(30, 50)
         fd, filename = tempfile.mkstemp(dir=self.basedir, text=True)
-        os.write(fd, crypto.get_random_string(str_length))
+        os.write(fd, data_factory.generate_random_string(str_length))
         original_hash = crypto.hash_file(filename)
         dstfile = filename + extension
         archive_filename = os.path.join(self.basedir, dstfile)
