@@ -22,20 +22,10 @@ import os
 import socket
 import shutil
 import urllib2
-import urlparse
+
+from avocado.utils import aurl
 
 log = logging.getLogger('avocado.test')
-
-
-def is_url(path):
-    """
-    Return `True` if path looks like an URL.
-
-    :param path: path to check.
-    :rtype: Boolean.
-    """
-    url_parts = urlparse.urlparse(path)
-    return (url_parts[0] in ('http', 'https', 'ftp', 'git'))
 
 
 def url_open(url, data=None, timeout=5):
@@ -92,7 +82,7 @@ def get_file(src, dst, permissions=None):
     if src == dst:
         return
 
-    if is_url(src):
+    if aurl.is_url(src):
         url_download(src, dst)
     else:
         shutil.copyfile(src, dst)
