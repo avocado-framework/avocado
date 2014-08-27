@@ -47,7 +47,7 @@ except ImportError:
     pass
 
 from avocado.utils import process
-from avocado.utils import crypto
+from avocado.utils import data_factory
 from avocado.linux import distro
 from avocado.core import exceptions
 
@@ -420,7 +420,7 @@ class YumBackend(RpmBackend):
         # Didn't find it, let's set it up
         while True:
             section_name = 'software_manager' + '_'
-            section_name += crypto.get_random_string(4)
+            section_name += data_factory.generate_random_string(4)
             if not self.cfgparser.has_section(section_name):
                 break
         self.cfgparser.add_section(section_name)
