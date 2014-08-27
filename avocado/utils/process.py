@@ -72,6 +72,96 @@ def find_command(cmd):
     raise CmdNotFoundError(cmd, path_paths)
 
 
+def pid_exists(pid):
+    """
+    Return True if a given PID exists.
+
+    :param pid: Process ID number.
+    """
+    try:
+        os.kill(pid, 0)
+        return True
+    except Exception:
+        return False
+
+
+def safe_kill(pid, signal):
+    """
+    Attempt to send a signal to a given process that may or may not exist.
+
+    :param signal: Signal number.
+    """
+    try:
+        os.kill(pid, signal)
+        return True
+    except Exception:
+        return False
+
+
+def kill_process_tree(pid, sig=signal.SIGKILL):
+    """
+    Signal a process and all of its children.
+
+    If the process does not exist -- return.
+
+    :param pid: The pid of the process to signal.
+    :param sig: The signal to send to the processes.
+    """
+    if not safe_kill(pid, signal.SIGSTOP):
+        return
+    children = system_output("ps --ppid=%d -o pid=" % pid).split()
+    for child in children:
+        kill_process_tree(int(child), sig)
+    safe_kill(pid, sig)
+    safe_kill(pid, signal.SIGCONT)
+
+
+def kill_process_by_pattern(pattern):
+    """
+    Send SIGTERM signal to a process with matched pattern.
+
+    :param pattern: normally only matched against the process name
+    """
+    cmd = "pkill -f %s" % pattern
+    result = run(cmd, ignore_status=True)
+    if result.exit_status:
+        logging.error("Failed to run '%s': %s", cmd, result)
+    else:
+        logging.info("Succeed to run '%s'.", cmd)
+
+
+def process_in_ptree_is_defunct(ppid):
+    """
+    Verify if any processes deriving from PPID are in the defunct state.
+
+    Attempt to verify if parent process and any children from PPID is defunct
+    (zombie) or not.
+
+    :param ppid: The parent PID of the process to verify.
+    """
+    defunct = False
+    try:
+        pids = get_children_pids(ppid)
+    except exceptions.CmdError:  # Process doesn't exist
+        return True
+    for pid in pids:
+        cmd = "ps --no-headers -o cmd %d" % int(pid)
+        proc_name = system_output(cmd, ignore_status=True)
+        if '<defunct>' in proc_name:
+            defunct = True
+            break
+    return defunct
+
+
+def get_children_pids(ppid):
+    """
+    Get all PIDs of children/threads of parent ppid
+    param ppid: parent PID
+    return: list of PIDs of all children/threads of ppid
+    """
+    return (system_output("ps -L --ppid=%d -o lwp" % ppid).split('\n')[1:])
+
+
 class CmdResult(object):
 
     """
