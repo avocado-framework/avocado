@@ -45,5 +45,5 @@ build-rpm-all: source
 clean:
 	$(PYTHON) setup.py clean
 	$(MAKE) -f $(CURDIR)/debian/rules clean || true
-	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS
+	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES
 	find . -name '*.pyc' -delete
