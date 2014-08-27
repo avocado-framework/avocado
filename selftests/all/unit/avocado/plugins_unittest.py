@@ -39,11 +39,14 @@ class FakePlugin(plugin.Plugin):
     name = 'fake'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
+    def configure(self, parser):
         self.configured = True
 
-    def activate(self, app_args):
+    def activate(self, args):
         self.activated = True
+
+    def run(self, args):
+        return 42
 
 
 class PluginsBasicTest(unittest.TestCase):
@@ -68,9 +71,7 @@ class PluginsBasicTest(unittest.TestCase):
         self.assertFalse(self.disabled_fake.enabled)
 
     def testConfigure(self):
-        self.assertRaises(NotImplementedError, self.p.configure, None, None)
-        self.assertRaises(NotImplementedError, self.null.configure, None, None)
-        self.fake.configure(None, None)
+        self.fake.configure(None)
         self.assertTrue(self.fake.configured, True)
 
     def testActivate(self):
@@ -79,6 +80,8 @@ class PluginsBasicTest(unittest.TestCase):
         self.fake.activate(None)
         self.assertTrue(self.fake.activated)
 
+    def testRun(self):
+        self.assertEqual(self.fake.run(None), 42)
 
 if __name__ == '__main__':
     unittest.main()

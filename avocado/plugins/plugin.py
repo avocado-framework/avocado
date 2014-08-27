@@ -45,17 +45,28 @@ class Plugin(object):
     def __repr__(self):
         return "%s(name='%s')" % (self.__class__.__name__, self.name)
 
-    def configure(self, app_parser, cmd_parser):
+    def configure(self, parser):
         """Configuration and argument parsing.
 
-        :param app_parser: application parser, modify to add extra options.
-        :param cmd_parser: subcommand parser, modify to add new subcommands.
-        """
-        raise NotImplementedError('Plugins must implement the method configure')
+        :param parser: an instance of :class:`avocado.cli.parser.Parser`
 
-    def activate(self, app_args):
+        To create a runner plugin, just call this method with `super()`.
+        To create a result plugin, just set `configure` to `True`.
+        """
+        parser.set_defaults(func=self.run)
+        self.configured = True
+
+    def activate(self, arguments):
         """Activate plugin.
 
-        :param app_args: the parsed arguments.
+        :param arguments: the parsed arguments.
+        """
+        pass
+
+    def run(self, arguments):
+        """
+        Run plugin.
+
+        :param arguments: the parsed arguments.
         """
         pass

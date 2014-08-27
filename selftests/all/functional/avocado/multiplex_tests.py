@@ -90,12 +90,12 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14*3)
 
     def test_run_mplex_doublesleep(self):
-        cmd_line = './scripts/avocado run "sleeptest sleeptest" --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run sleeptest sleeptest --multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_failtest(self):
-        cmd_line = './scripts/avocado run "sleeptest failtest" --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run sleeptest failtest --multiplex tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 
@@ -103,7 +103,7 @@ class MultiplexTests(unittest.TestCase):
         with tempfile.NamedTemporaryFile(delete=False) as multiplex_file:
             multiplex_file.write(timeout_multiplex)
             multiplex_file.close()
-            cmd_line = ('./scripts/avocado run "sleeptest" --multiplex %s' %
+            cmd_line = ('./scripts/avocado run sleeptest --multiplex %s' %
                         multiplex_file.name)
             expected_rc = 1
             try:
