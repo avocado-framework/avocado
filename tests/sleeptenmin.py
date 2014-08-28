@@ -31,12 +31,6 @@ class sleeptenmin(test.Test):
                       'sleep_cycles': 1,
                       'sleep_method': 'builtin'}
 
-    def check_progress(self):
-        """
-        We do nothing besides sleeping, so anything can be considered progress
-        """
-        return True
-
     def action(self):
         """
         Sleep for length seconds.
@@ -50,7 +44,7 @@ class sleeptenmin(test.Test):
                 time.sleep(length)
             elif self.params.sleep_method == 'shell':
                 os.system("sleep %s" % length)
-            self.communicate_state()
+            self.report_state()
 
 if __name__ == "__main__":
     job.main()
