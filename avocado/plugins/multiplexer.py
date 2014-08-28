@@ -68,15 +68,19 @@ class Multiplexer(plugin.Plugin):
             data = tree.read_ordered_yaml(open(multiplex_file))
             t = tree.create_from_ordered_data(data)
             pipe.write(t.get_ascii())
-            sys.exit(0)
+            sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
 
         variants = multiplexer.create_variants_from_yaml(open(multiplex_file))
 
         pipe.write(bcolors.header_str('Variants generated:'))
         pipe.write('\n')
-        for (index, dct) in enumerate(variants):
-            pipe.write('    Variant %s:    %s\n' % (index+1, [str(x) for x in dct]))
+        for (index, tpl) in enumerate(variants):
+            pipe.write('Variant %s:    %s\n' % (index+1, [str(x) for x in tpl]))
             if args.contents:
-                for key in sorted(dct.keys()):
-                    pipe.write('        %s = %s\n' % (key, dct.get(key)))
+                env = {}
+                for node in tpl:
+                    env.update(node.environment)
+                for k in sorted(env.keys()):
+                    pipe.write('    %s: %s\n' % (k, env[k]))
+
         sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
