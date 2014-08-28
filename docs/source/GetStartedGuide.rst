@@ -88,7 +88,7 @@ native tests and dropin tests::
     $ echo '#!/bin/bash' > /tmp/script_that_passes.sh
     $ echo 'true' >> /tmp/script_that_passes.sh
     $ chmod +x /tmp/script_that_passes.sh
-    $ avocado run "failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh"
+    $ avocado run failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh
     JOB ID : 86911e49b5f2c36caeea41307cee4fecdcdfa121
     JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
     TESTS  : 6

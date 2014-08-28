@@ -112,7 +112,7 @@ Using a multiplex file
 You may use the avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
-    $ avocado run sleeptest --multiplex tests/sleeptest.py.data/sleeptest.mplx 
+    $ avocado run sleeptest --multiplex tests/sleeptest.py.data/sleeptest.mplx
     JOB ID : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
     TESTS  : 3
@@ -134,7 +134,7 @@ can't leave the test ID empty::
 
 If you want to run some tests that don't require params set by the multiplex file, you can::
 
-    $ avocado run "sleeptest synctest" --multiplex tests/sleeptest.py.data/sleeptest.mplx
+    $ avocado run sleeptest synctest --multiplex tests/sleeptest.py.data/sleeptest.mplx
     JOB ID : dd91ea5f8b42b2f084702315688284f7e8aa220a
     JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
     TESTS  : 4
@@ -202,7 +202,7 @@ cass, you can run them with the ``nosetests`` application::
     .
     ----------------------------------------------------------------------
     Ran 1 test in 1.004s
-    
+
     OK
 
 Setup and cleanup methods
@@ -324,7 +324,7 @@ impact your test grid. You can account for that possibility and set up a
 
     $ cat /home/lmr/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     15:52:51 test       L0143 INFO | START sleeptest.1
-    15:52:51 test       L0144 DEBUG| 
+    15:52:51 test       L0144 DEBUG|
     15:52:51 test       L0145 DEBUG| Test log: /home/lmr/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/sleeptest.1/test.log
     15:52:51 test       L0146 DEBUG| Test instance parameters:
     15:52:51 test       L0153 DEBUG|     _name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
@@ -337,25 +337,25 @@ impact your test grid. You can account for that possibility and set up a
     15:52:51 test       L0153 DEBUG|     sleep_length_type = float
     15:52:51 test       L0153 DEBUG|     timeout = 3.0
     15:52:51 test       L0153 DEBUG|     timeout_type = float
-    15:52:51 test       L0154 DEBUG| 
+    15:52:51 test       L0154 DEBUG|
     15:52:51 test       L0157 DEBUG| Default parameters:
     15:52:51 test       L0159 DEBUG|     sleep_length = 1.0
-    15:52:51 test       L0161 DEBUG| 
+    15:52:51 test       L0161 DEBUG|
     15:52:51 test       L0162 DEBUG| Test instance params override defaults whenever available
-    15:52:51 test       L0163 DEBUG| 
+    15:52:51 test       L0163 DEBUG|
     15:52:51 test       L0169 INFO | Test timeout set. Will wait 3.00 s for PID 15670 to end
-    15:52:51 test       L0170 INFO | 
+    15:52:51 test       L0170 INFO |
     15:52:51 sleeptest  L0035 DEBUG| Sleeping for 5.00 seconds
-    15:52:54 test       L0057 ERROR| 
+    15:52:54 test       L0057 ERROR|
     15:52:54 test       L0060 ERROR| Traceback (most recent call last):
     15:52:54 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/tests/sleeptest.py", line 36, in action
     15:52:54 test       L0060 ERROR|     time.sleep(self.params.sleep_length)
     15:52:54 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/avocado/job.py", line 127, in timeout_handler
     15:52:54 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:52:54 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for sleeptest to end
-    15:52:54 test       L0061 ERROR| 
+    15:52:54 test       L0061 ERROR|
     15:52:54 test       L0400 ERROR| ERROR sleeptest.1 -> TestTimeoutError: Timeout reached waiting for sleeptest to end
-    15:52:54 test       L0387 INFO | 
+    15:52:54 test       L0387 INFO |
 
 
 If you pass that multiplex file to the runner multiplexer, this will register
@@ -414,30 +414,30 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 
     $ cat /home/lmr/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
     15:54:28 test       L0143 INFO | START timeouttest.1
-    15:54:28 test       L0144 DEBUG| 
+    15:54:28 test       L0144 DEBUG|
     15:54:28 test       L0145 DEBUG| Test log: /home/lmr/avocado/job-results/job-2014-08-12T15.54-d78498a5/timeouttest.1/test.log
     15:54:28 test       L0146 DEBUG| Test instance parameters:
     15:54:28 test       L0153 DEBUG|     id = timeouttest
-    15:54:28 test       L0154 DEBUG| 
+    15:54:28 test       L0154 DEBUG|
     15:54:28 test       L0157 DEBUG| Default parameters:
     15:54:28 test       L0159 DEBUG|     sleep_time = 5.0
     15:54:28 test       L0159 DEBUG|     timeout = 3.0
-    15:54:28 test       L0161 DEBUG| 
+    15:54:28 test       L0161 DEBUG|
     15:54:28 test       L0162 DEBUG| Test instance params override defaults whenever available
-    15:54:28 test       L0163 DEBUG| 
+    15:54:28 test       L0163 DEBUG|
     15:54:28 test       L0169 INFO | Test timeout set. Will wait 3.00 s for PID 15759 to end
-    15:54:28 test       L0170 INFO | 
+    15:54:28 test       L0170 INFO |
     15:54:28 timeouttes L0036 INFO | Sleeping for 5.00 seconds (2 more than the timeout)
-    15:54:31 test       L0057 ERROR| 
+    15:54:31 test       L0057 ERROR|
     15:54:31 test       L0060 ERROR| Traceback (most recent call last):
     15:54:31 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/tests/timeouttest.py", line 37, in action
     15:54:31 test       L0060 ERROR|     time.sleep(self.params.sleep_time)
     15:54:31 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/avocado/job.py", line 127, in timeout_handler
     15:54:31 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:54:31 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for timeouttest to end
-    15:54:31 test       L0061 ERROR| 
+    15:54:31 test       L0061 ERROR|
     15:54:31 test       L0400 ERROR| ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end
-    15:54:31 test       L0387 INFO | 
+    15:54:31 test       L0387 INFO |
 
 Environment Variables for Dropin Tests
 ======================================
