@@ -113,7 +113,7 @@ class TreeNode(object):
 
     def get_environment(self):
         def update_or_extend(target, source):
-            for k, v in source.items():
+            for k, _ in source.items():
                 if target.has_key(k) and isinstance(target[k], list):
                     target[k].extend(source[k])
                 else:
@@ -148,8 +148,8 @@ class TreeNode(object):
         return list(self.iter_leaves())
 
     def get_ascii(self, show_internal=True, compact=False, attributes=None):
-        (lines, mid) = self._ascii_art(show_internal=show_internal,
-                                       compact=compact, attributes=attributes)
+        (lines, _) = self._ascii_art(show_internal=show_internal,
+                                     compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
 
     def _ascii_art(self, char1='-', show_internal=True, compact=False, attributes=None):
@@ -218,10 +218,6 @@ def create_from_ordered_data(data, tree=None, root=None, name='/root'):
     if isinstance(data, dict):
         for key, value in data.items():
             if isinstance(value, dict):
-                leaf = True
-                for k, v in value.items():
-                    if isinstance(v, dict):
-                        leaf = False
                 node = TreeNode(key)
                 tree.add_child(node)
                 create_from_ordered_data(value, node, root)
