@@ -27,7 +27,7 @@ print while executing tests::
 
 Or the more verbose avocado output::
 
-    $ avocado run "sleeptest failtest synctest"
+    $ avocado run sleeptest failtest synctest
     JOB ID : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
     JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
     TESTS  : 3
