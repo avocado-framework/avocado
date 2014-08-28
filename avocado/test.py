@@ -24,6 +24,7 @@ import sys
 import time
 import traceback
 import unittest
+import tempfile
 
 from avocado.core import data_dir
 from avocado.core import exceptions
@@ -120,9 +121,15 @@ class Test(unittest.TestCase):
 
         basename = os.path.basename(self.name)
 
+        if job is not None:
+            tmpdir = tempfile.mkdtemp(dir=data_dir.get_tmp_dir(),
+                                      prefix='job-%s-' % job.unique_id)
+        else:
+            tmpdir = tempfile.mkdtemp(dir=data_dir.get_tmp_dir())
+
         self.basedir = os.path.dirname(inspect.getfile(self.__class__))
         self.datadir = os.path.join(self.basedir, '%s.data' % basename)
-        self.workdir = path.init_dir(data_dir.get_tmp_dir(), basename)
+        self.workdir = path.init_dir(tmpdir, basename)
         self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.get_job_logs_dir()
