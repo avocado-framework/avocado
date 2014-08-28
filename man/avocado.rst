@@ -9,7 +9,7 @@ SYNOPSIS
 ::
 
  avocado [-h] [-v] [-V] [--logdir LOGDIR] [--loglevel LOG_LEVEL]
-         [--plugins PLUGINS_DIR] [--silent] [--vm]
+         [--plugins PLUGINS_DIR] [--vm]
          [--vm-hypervisor-uri VM_HYPERVISOR_URI] [--vm-domain VM_DOMAIN]
          [--vm-hostname VM_HOSTNAME] [--vm-username VM_USERNAME]
          [--vm-password VM_PASSWORD] [--vm-cleanup] [--json JSON_OUTPUT]

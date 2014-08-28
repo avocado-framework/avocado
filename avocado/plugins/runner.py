@@ -93,7 +93,7 @@ class TestRunner(plugin.Plugin):
         """
         self.parser = parser.subcommands.add_parser(
             'run',
-            help='Run a list of test modules or dropin tests (space separated)')
+            help='Run one or more tests (test module in .py, test alias or dropin)')
 
         self.parser.add_argument('url', type=str, default=[], nargs='*',
                                  help='List of test IDs (aliases or paths)')
