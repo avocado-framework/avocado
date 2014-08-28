@@ -45,17 +45,41 @@ class ProgressStreamHandler(logging.StreamHandler):
             self.handleError(record)
 
 
+class Paginator(object):
+
+    """
+    Paginator that uses less to display contents on the terminal.
+
+    Contains cleanup handling for when user presses 'q' (to quit less).
+    """
+
+    def __init__(self):
+        less_cmd = process.find_command('less')
+        self.pipe = os.popen('%s -FRSX' % less_cmd, 'w')
+
+    def __del__(self):
+        try:
+            self.pipe.close()
+        except IOError:
+            pass
+
+    def write(self, msg):
+        try:
+            self.pipe.write(msg)
+        except IOError:
+            pass
+
+
 def get_paginator():
     """
-    Get a pipe. If we can't do that, return stdout.
+    Get a paginator. If we can't do that, return stdout.
 
     The paginator is 'less'. The paginator is a useful feature inspired in
     programs such as git, since it lets you scroll up and down large buffers
     of text, increasing the program's usability.
     """
     try:
-        less_cmd = process.find_command('less')
-        return os.popen('%s -FRSX' % less_cmd, 'w')
+        return Paginator()
     except process.CmdNotFoundError:
         return sys.stdout
 
@@ -238,7 +262,7 @@ class OutputManager(object):
         else:
             self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
 
-        if self.throbber_pos == (len(self.THROBBER_MOVES)-1):
+        if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
             self.throbber_pos = 0
         else:
             self.throbber_pos += 1
