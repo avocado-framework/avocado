@@ -414,7 +414,6 @@ class Job(object):
             params_list = []
             if urls is not None:
                 for url in urls:
-                    test_module = os.path.basename(url).split('.')[0]
                     try:
                         variants = multiplexer.create_variants_from_yaml(open(multiplex_file))
                     except SyntaxError:
