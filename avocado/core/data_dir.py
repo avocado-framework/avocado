@@ -183,6 +183,16 @@ def get_data_dir():
     return _get_rw_dir(SETTINGS_DATA_DIR, SYSTEM_DATA_DIR, USER_DATA_DIR)
 
 
+def get_datafile_path(*args):
+    """
+    Get a path relative to the data dir.
+
+    :param args: Arguments passed to os.path.join. Ex ('images', 'jeos.qcow2')
+    """
+    new_args = tuple([get_data_dir()] + list(args))
+    return os.path.join(*new_args)
+
+
 def get_logs_dir():
     """
     Get the most appropriate log dir location.
