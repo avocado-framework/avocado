@@ -1,0 +1,49 @@
+#!/usr/bin/python
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2013-2014
+# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+
+import socket
+
+from avocado import job
+from avocado import test
+
+from avocado.core import data_dir
+from avocado.virt.qemu import machine
+
+
+class boot(test.Test):
+
+    def setup(self):
+        self.vm = machine.VM(self.params)
+        self.vm.add_display('none')
+        self.vm.add_vga('none')
+        drive_file = data_dir.get_datafile_path('images', 'jeos-20-64.qcow2')
+        self.vm.add_drive(drive_file)
+        self.vm.add_net()
+
+    def action(self):
+        hostname = socket.gethostbyname(socket.gethostname())
+        username = self.params.get('remote_username', 'root')
+        password = self.params.get('remote_password', '123456')
+        self.vm.launch()
+        self.vm.setup_login(hostname=hostname, username=username,
+                            password=password, port=5000)
+
+    def cleanup(self):
+        self.vm.shutdown()
+
+
+if __name__ == "__main__":
+    job.main()
