@@ -183,7 +183,6 @@ class Test(unittest.TestCase):
         self.whiteboard = ''
 
         self.running = False
-        self.progress = False
         self.time_start = None
         self.time_end = None
 
@@ -213,42 +212,12 @@ class Test(unittest.TestCase):
             current_time = time.time()
         self.time_elapsed = current_time - self.time_start
 
-    def check_progress(self):
-        """
-        Check test specific logic for test progress
-
-        If a test writer wants to notify test runners about a real (from
-        the test point of view) progress, he/she should override this method.
-
-        By default it returns `False`, since the framework can not make guesses
-        about the test specific logic.
-
-        :returns: whether there has been test specific, measurable progress
-        :rtype: bool
-        """
-        return False
-
-    def communicate_state(self, progress=None):
+    def report_state(self):
         """
         Send the current test state to the test runner process
-
-        By default :meth:`check_progress` is called to check for test
-        specific progress. Users of this method can also skip calling
-        :meth:`check_progress` by supplying a `True` or `False` value.
-
-        :param progress: whether from the test own perspective, there has been
-                         progress that the user should know about it
-        :type progress: None or bool
         """
         if self.runner_queue is not None:
-            if progress is None:
-                self.progress = self.check_progress()
-            else:
-                self.progress = progress
             self.runner_queue.put(self.get_state())
-
-        # reset test progress indication
-        self.progress = False
 
     def get_state(self):
         """
@@ -267,7 +236,7 @@ class Test(unittest.TestCase):
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
-                         'time_end', 'running', 'progress']
+                         'time_end', 'running']
         for key in sorted(orig):
             if key in preserve_attr:
                 d[key] = orig[key]
