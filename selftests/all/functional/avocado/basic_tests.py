@@ -106,7 +106,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_doublefail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit - run doublefail'
+        cmd_line = './scripts/avocado run --xunit - doublefail'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = 1
@@ -123,7 +123,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_timeout(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit - run timeouttest'
+        cmd_line = './scripts/avocado run --xunit - timeouttest'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = 1
@@ -139,7 +139,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_abort(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit - run abort'
+        cmd_line = './scripts/avocado run --xunit - abort'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         unexpected_rc = 3
@@ -362,7 +362,7 @@ class PluginsXunitTest(PluginsTest):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nnotfound, e_nfailures, e_nskip):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --xunit - run %s' % testname
+        cmd_line = './scripts/avocado run --xunit - %s' % testname
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
         self.assertEqual(result.exit_status, e_rc,
@@ -436,7 +436,7 @@ class PluginsJSONTest(PluginsTest):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors, e_nnotfound,
                       e_nfailures, e_nskip):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --json - run --archive %s' % testname
+        cmd_line = './scripts/avocado run --json - --archive %s' % testname
         result = process.run(cmd_line, ignore_status=True)
         json_output = result.stdout
         self.assertEqual(result.exit_status, e_rc,
