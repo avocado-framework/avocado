@@ -214,8 +214,11 @@ class TestRunner(object):
                         if not test_state['running']:
                             break
                         else:
-                            if test_state['progress']:
-                                self.job.result_proxy.throbber_progress(True)
+                            self.job.result_proxy.throbber_progress(True)
+                            if test_state['paused']:
+                                msg = test_state['paused_msg']
+                                if msg:
+                                    self.job.output_manager.log_partial(msg)
 
                 except Queue.Empty:
                     if p.is_alive():
