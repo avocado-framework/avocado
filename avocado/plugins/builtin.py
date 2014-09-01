@@ -37,7 +37,11 @@ Builtins = [x for x in Modules if x not in Exclude]
 
 
 def load_builtins():
-    """Load builtin plugins."""
+    """
+    Load builtin plugins.
+
+    :return: a list of plugin classes, ordered by `priority`.
+    """
     plugins = []
     for module in Builtins:
         try:
@@ -53,4 +57,4 @@ def load_builtins():
             if isinstance(obj, type) and issubclass(obj, Plugin):
                 plugin = getattr(plugin_mod, name)
                 plugins.append(plugin)
-    return plugins
+    return sorted(plugins, key=lambda plugin: plugin.priority)

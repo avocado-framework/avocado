@@ -25,6 +25,7 @@ class Plugin(object):
 
     name = 'noname'
     enabled = False
+    priority = 3
 
     def __init__(self, name=None, enabled=None):
         """Creates a new plugin instance.
