@@ -37,6 +37,8 @@ class VM(object):
         self.devices.add_qmp_monitor(self.monitor_socket)
         self._qmp = monitor.QEMUMonitorProtocol(self.monitor_socket,
                                                 server=True)
+        self.serial_socket = tempfile.mktemp()
+        self.devices.add_serial(self.serial_socket)
         cmdline = self.devices.get_cmdline()
 
         try:

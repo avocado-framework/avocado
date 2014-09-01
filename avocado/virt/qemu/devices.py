@@ -47,3 +47,7 @@ class QemuDevices(object):
                       (device_type, device_id, nic_id),
                       '-netdev %s,id=%s,hostfwd=tcp::5000-:22' %
                       (netdev_type, nic_id))
+
+    def add_serial(self, serial_socket, device_id='avocado_serial'):
+        self.add_args('-chardev socket,id=%s,path=%s,server,nowait' % (device_id, serial_socket))
+        self.add_args('-device isa-serial,chardev=%s' % (device_id))
