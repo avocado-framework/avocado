@@ -300,7 +300,7 @@ class RunVM(plugin.Plugin):
             self.enabled = False
             return
         username = getpass.getuser()
-        self.parser = parser.application
+        self.parser = parser.runner
         self.parser.add_argument('--vm', action='store_true', default=False,
                                  help='Run tests on Virtual Machine')
         self.parser.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
