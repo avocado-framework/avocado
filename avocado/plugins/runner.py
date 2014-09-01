@@ -84,6 +84,7 @@ class TestRunner(plugin.Plugin):
 
     name = 'test_runner'
     enabled = True
+    priority = 0
 
     def configure(self, parser):
         """

@@ -89,6 +89,7 @@ class ExternalPluginManager(PluginManager):
         from glob import glob
         import os
         import imp
+        plugins = []
         if path:
             candidates = glob(os.path.join(path, pattern))
             candidates = [(os.path.splitext(os.path.basename(x))[0], path)
@@ -106,15 +107,13 @@ class ExternalPluginManager(PluginManager):
                     for name in mod.__dict__:
                         x = getattr(mod, name)
                         if isinstance(x, type) and issubclass(x, Plugin):
-                            self.add_plugin(x())
+                            plugins.append(x)
                             any_plugin = True
                     if not any_plugin:
                         log.error("Could not find any plugin in module '%s'",
                                   candidate[0])
-
-    def add_plugins(self, plugins):
-        for plugin in plugins:
-            self.add_plugin(plugin)
+        for plugin in sorted(plugins, key=lambda plugin: plugin.priority):
+            self.add_plugin(plugin())
 
 
 class AvocadoPluginManager(BuiltinPluginManager, ExternalPluginManager):
