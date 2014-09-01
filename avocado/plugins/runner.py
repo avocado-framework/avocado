@@ -116,6 +116,8 @@ class TestRunner(plugin.Plugin):
         self.parser.add_argument('-s', '--silent', action='store_true', default=False,
                                  help='Silent output, do not display results.')
         super(TestRunner, self).configure(self.parser)
+        # Export the test runner parser back to the main parser
+        parser.runner = self.parser
 
     def run(self, args):
         """
