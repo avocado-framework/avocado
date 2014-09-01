@@ -187,6 +187,8 @@ class Test(unittest.TestCase):
         self.running = False
         self.time_start = None
         self.time_end = None
+        self.paused = False
+        self.paused_msg = ''
 
         self.runner_queue = runner_queue
 
@@ -238,7 +240,7 @@ class Test(unittest.TestCase):
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
-                         'time_end', 'running']
+                         'time_end', 'running', 'paused', 'paused_msg']
         for key in sorted(orig):
             if key in preserve_attr:
                 d[key] = orig[key]
