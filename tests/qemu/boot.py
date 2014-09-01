@@ -27,11 +27,11 @@ class boot(test.Test):
 
     def setup(self):
         self.vm = machine.VM(self.params)
-        self.vm.add_display('none')
-        self.vm.add_vga('none')
+        self.vm.devices.add_display('none')
+        self.vm.devices.add_vga('none')
         drive_file = data_dir.get_datafile_path('images', 'jeos-20-64.qcow2')
-        self.vm.add_drive(drive_file)
-        self.vm.add_net()
+        self.vm.devices.add_drive(drive_file)
+        self.vm.devices.add_net()
 
     def action(self):
         hostname = socket.gethostbyname(socket.gethostname())
@@ -42,6 +42,7 @@ class boot(test.Test):
                             password=password, port=5000)
 
     def cleanup(self):
+        self.vm.remote.run('shutdown -h now')
         self.vm.shutdown()
 
 

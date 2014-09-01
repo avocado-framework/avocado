@@ -6,8 +6,8 @@ import tempfile
 from avocado.utils import process
 from avocado.utils import remote
 
-from avocado.virt.qemu import path
 from avocado.virt.qemu import monitor
+from avocado.virt.qemu import devices
 
 log = logging.getLogger("avocado.test")
 
@@ -20,11 +20,9 @@ class VM(object):
 
     def __init__(self, params=None):
         self._popen = None
-        self._args = [path.get_qemu_binary(params)]
+        self.devices = devices.QemuDevices(params)
         self.logged = False
-
-    def add_args(self, *args):
-        self._args.extend(args)
+        self.remote = None
 
     def __str__(self):
         return 'QEMU VM (%#x)' % id(self)
@@ -32,22 +30,14 @@ class VM(object):
     def log(self, msg):
         log.info('%s %s' % (self, msg))
 
-    def get_cmdline(self):
-        return ' '.join(self._args)
-
-    def add_qmp_monitor(self):
-        self.monitor_socket = tempfile.mktemp()
-        m = monitor.QEMUMonitorProtocol(self.monitor_socket, server=True)
-        self.add_args('-chardev',
-                      'socket,id=mon,path=%s' % self.monitor_socket,
-                      '-mon', 'chardev=mon,mode=control')
-        return m
-
     def launch(self):
         assert self._popen is None
 
-        self._qmp = self.add_qmp_monitor()
-        cmdline = self.get_cmdline()
+        self.monitor_socket = tempfile.mktemp()
+        self.devices.add_qmp_monitor(self.monitor_socket)
+        self._qmp = monitor.QEMUMonitorProtocol(self.monitor_socket,
+                                                server=True)
+        cmdline = self.devices.get_cmdline()
 
         try:
             self._popen = process.SubProcess(cmd=cmdline)
@@ -70,53 +60,6 @@ class VM(object):
         self.shutdown()
         return False
 
-    def add_display(self, value='none'):
-        self.add_args('-display', value)
-
-    def add_vga(self, value='none'):
-        self.add_args('-vga', value)
-
-    def add_drive(self, drive_file, device_type='virtio-blk-pci',
-                  device_id='avocado_image', drive_id='device_avocado_image'):
-        self.add_args('-drive',
-                      'id=%s,if=none,file=%s' % (drive_id, drive_file),
-                      '-device %s,id=%s,drive=%s' % (device_type, device_id, drive_id))
-
-    def add_net(self, netdev_type='user', device_type='virtio-net-pci',
-                device_id='avocado_nic', nic_id='device_avocado_nic'):
-        self.add_args('-device %s,id=%s,netdev=%s' % (device_type, device_id, nic_id),
-                      '-netdev %s,id=%s,hostfwd=tcp::5000-:22' % (netdev_type, nic_id))
-
-    def setup_login(self, hostname, username, password=None, port=22):
-        if not self.logged:
-            self.remote = remote.Remote(hostname, username, password, port)
-            res = self.remote.uptime()
-            if res.succeeded:
-                self.logged = True
-
-    def hmp_qemu_io(self, drive, cmd):
-        return self.qmp('human-monitor-command',
-                        command_line='qemu-io %s "%s"' % (drive, cmd))
-
-    def pause_drive(self, drive, event=None):
-        if event is None:
-            self.pause_drive(drive, "read_aio")
-            self.pause_drive(drive, "write_aio")
-            return
-        self.hmp_qemu_io(drive, 'break %s bp_%s' % (event, drive))
-
-    def resume_drive(self, drive):
-        self.hmp_qemu_io(drive, 'remove_break bp_%s' % drive)
-
-    def add_fd(self, fd, fdset, opaque, opts=''):
-        options = ['fd=%d' % fd,
-                   'set=%d' % fdset,
-                   'opaque=%s' % opaque]
-        if opts:
-            options.append(opts)
-
-        self.add_args('-add-fd', ','.join(options))
-
     def qmp(self, cmd, **args):
         qmp_args = dict()
         for k in args.keys():
@@ -134,3 +77,24 @@ class VM(object):
         events = self._qmp.get_events(wait=wait)
         self._qmp.clear_events()
         return events
+
+    def hmp_qemu_io(self, drive, cmd):
+        return self.qmp('human-monitor-command',
+                        command_line='qemu-io %s "%s"' % (drive, cmd))
+
+    def pause_drive(self, drive, event=None):
+        if event is None:
+            self.pause_drive(drive, "read_aio")
+            self.pause_drive(drive, "write_aio")
+            return
+        self.hmp_qemu_io(drive, 'break %s bp_%s' % (event, drive))
+
+    def resume_drive(self, drive):
+        self.hmp_qemu_io(drive, 'remove_break bp_%s' % drive)
+
+    def setup_login(self, hostname, username, password=None, port=22):
+        if not self.logged:
+            self.remote = remote.Remote(hostname, username, password, port)
+            res = self.remote.uptime()
+            if res.succeeded:
+                self.logged = True
