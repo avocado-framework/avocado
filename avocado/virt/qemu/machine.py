@@ -103,7 +103,7 @@ class VM(object):
     def resume_drive(self, drive):
         self.hmp_qemu_io(drive, 'remove_break bp_%s' % drive)
 
-    def setup_login(self, hostname, username, password=None, port=22):
+    def setup_remote_login(self, hostname, username, password=None, port=22):
         if not self.logged:
             self.remote = remote.Remote(hostname, username, password, port)
             res = self.remote.uptime()

@@ -38,8 +38,8 @@ class boot(test.Test):
         username = self.params.get('remote_username', 'root')
         password = self.params.get('remote_password', '123456')
         self.vm.launch()
-        self.vm.setup_login(hostname=hostname, username=username,
-                            password=password, port=5000)
+        self.vm.setup_remote_login(hostname=hostname, username=username,
+                                   password=password, port=5000)
 
     def cleanup(self):
         self.vm.remote.run('shutdown -h now')
