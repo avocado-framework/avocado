@@ -15,13 +15,12 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 from avocado import job
-from avocado import test
-
 from avocado.core import data_dir
+from avocado.virt import test
 from avocado.virt.qemu import machine
 
 
-class migration(test.Test):
+class migration(test.VirtTest):
 
     def setup(self):
         self.vm = machine.VM(self.params)
