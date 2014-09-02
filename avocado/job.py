@@ -259,6 +259,10 @@ class TestRunner(object):
                                    'Test aborted unexpectedly',
                                    test_state['name'])
 
+            # don't process other tests from the list
+            if ctrl_c_count > 0:
+                break
+
             self.result.check_test(test_state)
             if not status.mapping[test_state['status']]:
                 failures.append(test_state['name'])
