@@ -17,6 +17,7 @@ Base Test Runner Plugins.
 """
 
 import os
+import sys
 
 from avocado.plugins import plugin
 from avocado.core import data_dir
@@ -127,10 +128,22 @@ class TestRunner(plugin.Plugin):
 
         :param args: Command line args received from the run subparser.
         """
+
+        if args.unique_job_id is not None:
+            try:
+                int(args.unique_job_id, 16)
+                if len(args.unique_job_id) != 40:
+                    raise Exception
+            except:
+                print >> sys.stderr, \
+                        'Error: Unique Job ID needs to be a 40 digit hex number'
+                return -1
+
         job_instance = job.Job(args)
         rc = job_instance.run()
         if not args.url:
             self.parser.print_help()
+
         return rc
 
 
