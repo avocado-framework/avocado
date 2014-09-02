@@ -58,9 +58,9 @@ def get_qemu_dst_binary(params=None):
     This is for use in migration tests.
     """
     if params is not None:
-        params_qemu = params.get('qemu_bin_dst')
+        params_qemu = params.get('qemu_dst_bin')
         if params_qemu is not None:
-            return _validate_path(params_qemu, 'test param qemu_bin')
+            return _validate_path(params_qemu, 'test param qemu_dst_bin')
 
     env_qemu = os.environ.get('QEMU_DST')
     if env_qemu is not None:
