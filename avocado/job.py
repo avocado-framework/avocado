@@ -136,7 +136,7 @@ class TestRunner(object):
 
         def interrupt_handler(signum, frame):
             e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestTimeoutError(e_msg)
+            raise exceptions.TestInterruptedError(e_msg)
 
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
