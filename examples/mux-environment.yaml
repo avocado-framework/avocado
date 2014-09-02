@@ -1,0 +1,39 @@
+hw:
+    cpu:
+        intel:
+            cpu_CFLAGS: '-march=core2'
+        amd:
+            cpu_CFLAGS: '-march=athlon64'
+        arm:
+            cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+            filter-only: ['/root/os/linux', '/root/env/debug']
+            filter-out: '/root/hw'
+    disk:
+        scsi:
+            disk_type: 'scsi'
+        virtio:
+            disk_type: 'virtio'
+            filter-only: '/root/os/linux'
+os:
+    filter-out: '/root/os'
+    linux:
+        bsod: 'false'
+        fedora:
+            init: 'systemd'
+        mint:
+            init: 'systemv'
+    win:
+        bsod: 'true'
+        winxp:
+            win_version: 'xp'
+        win7:
+            win_version: '7'
+        win8:
+            win_version: '8'
+            bsod: 'false'
+env:
+    debug:
+        debug_CFLAGS: '-O0 -g'
+    prod:
+        debug_CFLAGS: ''
+        filter-only: '/root/os/win'
