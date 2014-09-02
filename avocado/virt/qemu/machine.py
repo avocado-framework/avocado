@@ -3,14 +3,19 @@ import socket
 import string
 import logging
 import tempfile
+import uuid
 
+from avocado.core import exceptions
 from avocado import aexpect
 from avocado.utils import io
+from avocado.utils import network
 from avocado.utils import process
 from avocado.utils import remote
+from avocado.utils import wait
 
 from avocado.virt.qemu import monitor
 from avocado.virt.qemu import devices
+from avocado.virt.qemu import path
 
 log = logging.getLogger("avocado.test")
 
@@ -27,9 +32,11 @@ class VM(object):
         self.devices = devices.QemuDevices(params)
         self.logged = False
         self.remote = None
+        self.uuid = uuid.uuid4()
 
     def __str__(self):
-        return 'QEMU VM (%#x)' % id(self)
+        uuid = str(self.uuid)
+        return 'QEMU VM (%s)' % uuid[:8]
 
     def log(self, msg):
         log.info('%s %s' % (self, msg))
@@ -106,6 +113,7 @@ class VM(object):
 
     def setup_remote_login(self, hostname=None, username=None, password=None, port=22):
         if not self.logged:
+            self.log('Setting up remote login')
             hostname = socket.gethostbyname(socket.gethostname())
             username = self.params.get('remote_username', 'root')
             password = self.params.get('remote_password', '123456')
@@ -114,3 +122,43 @@ class VM(object):
             res = self.remote.uptime()
             if res.succeeded:
                 self.logged = True
+
+    def clone(self, params=None):
+        new_vm = VM(self.params)
+        new_vm.devices = self.devices.clone(params)
+        return new_vm
+
+    def migrate(self, migration_mode='tcp'):
+        def migrate_finish():
+            mig_info = self.qmp("query-migrate")
+            return mig_info['return']['status'] != 'active'
+
+        def migrate_success():
+            mig_info = self.qmp("query-migrate")
+            return mig_info['return']['status'] == 'completed'
+
+        def migrate_fail():
+            mig_info = self.qmp("query-migrate")
+            return mig_info['return']['status'] == 'failed'
+
+        clone_params = self.params.copy()
+        clone_params['qemu_bin'] = path.get_qemu_dst_binary(clone_params)
+        clone = self.clone(clone_params)
+        migration_port = clone.devices.redir_port + 1
+        while not network.is_port_free(migration_port, 'localhost'):
+            migration_port += 1
+        incoming_args = " -incoming %s:0:%d" % (migration_mode, migration_port)
+        clone.devices.add_args(incoming_args)
+        clone.launch()
+        uri = "%s:localhost:%d" % (migration_mode, migration_port)
+        self.qmp("migrate", uri=uri)
+        wait.wait_for(migrate_finish, timeout=60,
+                      text='Waiting for migration to complete')
+        if migrate_success():
+            self.log("Migration successful")
+        else:
+            raise exceptions.TestFail("Migration of %s failed" % self)
+        old_vm = VM()
+        old_vm.__dict__ = self.__dict__
+        self.__dict__ = clone.__dict__
+        old_vm.shutdown()
