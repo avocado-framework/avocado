@@ -24,7 +24,7 @@ log = logging.getLogger("avocado.plugins")
 
 __all__ = ['load_builtins']
 
-Modules = ['avocado.plugins.' + x.rstrip('.py')
+Modules = ['avocado.plugins.' + x[:-3]
            for x in os.listdir(os.path.dirname(__file__))
            if x.endswith('.py')]
 
