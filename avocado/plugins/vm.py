@@ -322,6 +322,9 @@ class RunVM(plugin.Plugin):
         self.configured = True
 
     def activate(self, app_args):
-        if app_args.vm:
-            self.parser.set_defaults(vm_result=VMTestResult,
-                                     test_runner=VMTestRunner)
+        try:
+            if app_args.vm:
+                self.parser.set_defaults(vm_result=VMTestResult,
+                                         test_runner=VMTestRunner)
+        except AttributeError:
+            pass
