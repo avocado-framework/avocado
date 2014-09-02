@@ -28,6 +28,7 @@ import tempfile
 
 from avocado.core import data_dir
 from avocado.core import exceptions
+from avocado.utils import io
 from avocado.utils import path
 from avocado.utils import process
 from avocado.utils.params import Params
@@ -137,6 +138,7 @@ class Test(unittest.TestCase):
         self.tagged_name = self.get_tagged_name(base_logdir)
 
         self.logdir = path.init_dir(base_logdir, self.tagged_name)
+        io.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
