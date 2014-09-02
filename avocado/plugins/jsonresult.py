@@ -104,5 +104,8 @@ class JSON(plugin.Plugin):
         self.configured = True
 
     def activate(self, app_args):
-        if app_args.json_output:
-            self.parser.application.set_defaults(json_result=JSONTestResult)
+        try:
+            if app_args.json_output:
+                self.parser.application.set_defaults(json_result=JSONTestResult)
+        except AttributeError:
+            pass
