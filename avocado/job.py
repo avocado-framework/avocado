@@ -283,7 +283,7 @@ class Job(object):
         """
         self.args = args
         if args is not None:
-            self.unique_id = args.unique_id or job_id.get_job_id()
+            self.unique_id = args.unique_job_id or job_id.get_job_id()
         else:
             self.unique_id = job_id.get_job_id()
         self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
