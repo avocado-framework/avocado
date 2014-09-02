@@ -3,6 +3,8 @@ import string
 import logging
 import tempfile
 
+from avocado import aexpect
+from avocado.utils import io
 from avocado.utils import process
 from avocado.utils import remote
 
@@ -20,6 +22,7 @@ class VM(object):
 
     def __init__(self, params=None):
         self._popen = None
+        self.params = params
         self.devices = devices.QemuDevices(params)
         self.logged = False
         self.remote = None
@@ -44,6 +47,12 @@ class VM(object):
         try:
             self._popen = process.SubProcess(cmd=cmdline)
             self._qmp.accept()
+            self.serial_console = aexpect.ShellSession(
+                "nc -U %s" % self.serial_socket,
+                auto_close=False,
+                output_func=io.log_line,
+                output_params=("serial-console-%#x.log" % id(self),),
+                prompt=self.params.get("shell_prompt", "[\#\$]"))
         finally:
             os.remove(self.monitor_socket)
 
