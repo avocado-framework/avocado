@@ -240,5 +240,8 @@ class XUnit(plugin.Plugin):
         self.configured = True
 
     def activate(self, app_args):
-        if app_args.xunit_output:
-            self.parser.application.set_defaults(xunit_result=xUnitTestResult)
+        try:
+            if app_args.xunit_output:
+                self.parser.application.set_defaults(xunit_result=xUnitTestResult)
+        except AttributeError:
+            pass

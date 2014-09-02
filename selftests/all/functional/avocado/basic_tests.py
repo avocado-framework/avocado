@@ -352,6 +352,17 @@ class PluginsTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('Disabled', output)
 
+    def test_Namespace_object_has_no_attribute(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado plugins'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stderr
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn("'Namespace' object has no attribute", output)
+
 
 class ParseXMLError(Exception):
     pass
