@@ -108,8 +108,8 @@ def multiplex(*args, **kwargs):
         # (not implemented here, so using [] as placeholders)
         result = [x + [y] for x in result for y in pool
                   if any_sibling(*(x + [y])) is False and
-                  filter_only(y.environment.get('filter_only', []), x + [y]) and
-                  filter_out(y.environment.get('filter_out', []), x + [y])]
+                  filter_only(y.environment.get('filter-only', []), x + [y]) and
+                  filter_out(y.environment.get('filter-out', []), x + [y])]
 
         # if a pool gets totally filtered out above, result will be empty
         if len(result) == 0:
