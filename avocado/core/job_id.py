@@ -21,7 +21,7 @@ _RAND_POOL = random.SystemRandom()
 _HOSTNAME = socket.gethostname()
 
 
-def get_job_id():
+def create_unique_job_id():
     """
     Create a job ID SHA1.
 
