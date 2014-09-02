@@ -134,5 +134,8 @@ class Journal(plugin.Plugin):
         self.configured = True
 
     def activate(self, args):
-        if args.journal:
-            self.parser.application.set_defaults(journal_result=TestResultJournal)
+        try:
+            if args.journal:
+                self.parser.application.set_defaults(journal_result=TestResultJournal)
+        except AttributeError:
+            pass
