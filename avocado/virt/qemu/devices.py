@@ -1,3 +1,4 @@
+from avocado.utils import network
 from avocado.virt.qemu import path
 
 
@@ -5,6 +6,7 @@ class QemuDevices(object):
 
     def __init__(self, params=None):
         self.qemu_bin = path.get_qemu_binary(params)
+        self.redir_port = None
         self._args = [self.qemu_bin]
 
     def add_args(self, *args):
@@ -43,10 +45,11 @@ class QemuDevices(object):
 
     def add_net(self, netdev_type='user', device_type='virtio-net-pci',
                 device_id='avocado_nic', nic_id='device_avocado_nic'):
+        self.redir_port = network.find_free_port(5000, 6000)
         self.add_args('-device %s,id=%s,netdev=%s' %
                       (device_type, device_id, nic_id),
-                      '-netdev %s,id=%s,hostfwd=tcp::5000-:22' %
-                      (netdev_type, nic_id))
+                      '-netdev %s,id=%s,hostfwd=tcp::%s-:22' %
+                      (netdev_type, nic_id, self.redir_port))
 
     def add_serial(self, serial_socket, device_id='avocado_serial'):
         self.add_args('-chardev socket,id=%s,path=%s,server,nowait' % (device_id, serial_socket))

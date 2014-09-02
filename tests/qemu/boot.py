@@ -14,8 +14,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import socket
-
 from avocado import job
 from avocado import test
 
@@ -34,12 +32,8 @@ class boot(test.Test):
         self.vm.devices.add_net()
 
     def action(self):
-        hostname = socket.gethostbyname(socket.gethostname())
-        username = self.params.get('remote_username', 'root')
-        password = self.params.get('remote_password', '123456')
         self.vm.launch()
-        self.vm.setup_remote_login(hostname=hostname, username=username,
-                                   password=password, port=5000)
+        self.vm.setup_remote_login()
 
     def cleanup(self):
         self.vm.remote.run('shutdown -h now')
