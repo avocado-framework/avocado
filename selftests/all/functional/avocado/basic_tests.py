@@ -200,6 +200,14 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn('needs to be a 40 digit hex', result.stderr)
         self.assertIn('SKIP', result.stderr)
 
+    def test_automatic_unique_id(self):
+        cmd_line = './scripts/avocado run skiptest --json -'
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(0, result.exit_status)
+        r = json.loads(result.stdout)
+        int(r['job_id'], 16)  # it's an hex number
+        self.assertEqual(len(r['job_id']), 40)
+
 
 class RunnerDropinTest(unittest.TestCase):
 

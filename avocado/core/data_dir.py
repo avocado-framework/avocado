@@ -219,7 +219,7 @@ def get_job_logs_dir(args=None, unique_id=None):
         logdir = get_logs_dir()
     # Stand alone tests handling
     if unique_id is None:
-        unique_id = job_id.get_job_id()
+        unique_id = job_id.create_unique_job_id()
 
     debugbase = 'job-%s-%s' % (start_time, unique_id[:7])
     debugdir = path.init_dir(logdir, debugbase)
