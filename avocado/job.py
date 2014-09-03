@@ -136,7 +136,7 @@ class TestRunner(object):
 
         def interrupt_handler(signum, frame):
             e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestTimeoutError(e_msg)
+            raise exceptions.TestInterruptedError(e_msg)
 
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
@@ -258,6 +258,10 @@ class TestRunner(object):
                     test_log.error('ERROR %s -> TestAbortedError: '
                                    'Test aborted unexpectedly',
                                    test_state['name'])
+
+            # don't process other tests from the list
+            if ctrl_c_count > 0:
+                break
 
             self.result.check_test(test_state)
             if not status.mapping[test_state['status']]:
