@@ -12,25 +12,19 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import hashlib
 import random
-import socket
-import time
 
 _RAND_POOL = random.SystemRandom()
-_HOSTNAME = socket.gethostname()
 
 
-def get_job_id():
+def create_unique_job_id():
     """
-    Create a job ID SHA1.
+    Create a 40 digit hex number to be used as a job ID string.
+    (similar to SHA1)
 
-    :return: SHA1 string
+    :return: 40 digit hex number string
     :rtype: str
     """
-    info = '%s-%s-%s' % (_HOSTNAME,
-                         time.strftime('%Y-%m-%dT%H:%M:%S'),
-                         _RAND_POOL.getrandbits(64))
-    h = hashlib.sha1()
-    h.update(info)
-    return h.hexdigest()
+
+    n = _RAND_POOL.getrandbits(160)
+    return str(hex(n))[2:-1]
