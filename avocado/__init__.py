@@ -22,6 +22,10 @@ DEFAULT_LOGGING = {
         },
     },
     'handlers': {
+        'null': {
+            'level': 'INFO',
+            'class': 'logging.NullHandler',
+        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -43,6 +47,7 @@ DEFAULT_LOGGING = {
             'propagate': False,
         },
         'avocado.test': {
+            'handlers': ['null'],
             'level': 'DEBUG',
             'propagate': False,
         },
