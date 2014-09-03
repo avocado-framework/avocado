@@ -12,16 +12,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import aexpect
-import cli
-import core
-
-import job
-import test
-import version
-import linux
-
-import logging.config
 
 DEFAULT_LOGGING = {
     'version': 1,
@@ -59,5 +49,5 @@ DEFAULT_LOGGING = {
     }
 }
 
-
-logging.config.dictConfig(DEFAULT_LOGGING)
+from logging import config
+config.dictConfig(DEFAULT_LOGGING)
