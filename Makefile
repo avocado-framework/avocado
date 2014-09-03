@@ -47,3 +47,6 @@ clean:
 	$(MAKE) -f $(CURDIR)/debian/rules clean || true
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES
 	find . -name '*.pyc' -delete
+
+check:
+	selftests/checkall
