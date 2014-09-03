@@ -11,6 +11,7 @@ all:
 	@echo "make build-deb-bin - Generate a binary debian package"
 	@echo "make build-deb-all - Generate both source and binary debian packages"
 	@echo "make build-rpm-all - Generate both source and binary RPMs"
+	@echo "make man - Generate the avocado man page"
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:
@@ -47,6 +48,12 @@ clean:
 	$(MAKE) -f $(CURDIR)/debian/rules clean || true
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES
 	find . -name '*.pyc' -delete
+	rm -f man/avocado.1
 
 check:
 	selftests/checkall
+
+man:
+	rst2man man/avocado.rst man/avocado.1
+
+.PHONY: source install clean check man
