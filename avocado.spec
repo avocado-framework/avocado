@@ -8,7 +8,7 @@ URL: http://avocado-framework.readthedocs.org/
 Source: avocado-%{version}.tar.gz
 BuildRequires: python2-devel, python-docutils, python-yaml
 BuildArch: noarch
-Requires: python, python-requests, python-yaml
+Requires: python, python-requests, python-yaml, fabric
 
 %description
 Avocado is a set of tools and libraries (what people call
@@ -46,6 +46,9 @@ The set of example tests that are part of the Avocado framework.
 %{_datadir}/avocado/tests
 
 %changelog
+* Tue Sep  2 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.11.1-2
+- Added fabric dependency
+
 * Wed Aug 20 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.11.1-1
 - Bumped version to avocado 0.11.1
 - Added python-yaml build dependency
