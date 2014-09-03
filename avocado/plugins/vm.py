@@ -60,6 +60,7 @@ class Test(object):
 
 
 class VMTestRunner(TestRunner):
+    remote_test_dir = '~/avocado/tests'
 
     def run_test(self, urls):
         """
@@ -68,7 +69,9 @@ class VMTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
-        avocado_cmd = 'avocado --json - run --archive "%s"' % urls
+        urls = urls.split()
+        urls = [os.path.join(self.remote_test_dir, os.path.basename(url)) for url in urls]
+        avocado_cmd = 'avocado run --json - --archive %s' % " ".join(urls)
         stdout = self.result.vm.remote.run(avocado_cmd)
         try:
             results = json.loads(stdout)
@@ -126,7 +129,7 @@ class VMTestResult(TestResult):
         :param args: an instance of :class:`argparse.Namespace`.
         """
         TestResult.__init__(self, stream, args)
-        self.test_dir = data_dir.get_test_dir()
+        self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
 
     def _copy_tests(self):
@@ -137,7 +140,7 @@ class VMTestResult(TestResult):
             self.vm.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
-        self.urls = self.args.url.split()
+        self.urls = self.args.url
         if self.args.vm_domain is None:
             e_msg = ('Please set Virtual Machine Domain with option '
                      '--vm-domain.')
@@ -247,7 +250,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_error(self, test)
-        self.stream.log_error(test.time_elapsed)
+        self.stream.log_error(test['time_elapsed'])
 
     def add_not_found(self, test):
         """
@@ -256,7 +259,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_not_found(self, test)
-        self.stream.log_not_found(test.time_elapsed)
+        self.stream.log_not_found(test['time_elapsed'])
 
     def add_fail(self, test):
         """
@@ -265,7 +268,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_fail(self, test)
-        self.stream.log_fail(test.time_elapsed)
+        self.stream.log_fail(test['time_elapsed'])
 
     def add_skip(self, test):
         """
@@ -274,7 +277,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_skip(self, test)
-        self.stream.log_skip(test.time_elapsed)
+        self.stream.log_skip(test['time_elapsed'])
 
     def add_warn(self, test):
         """
@@ -283,7 +286,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_warn(self, test)
-        self.stream.log_warn(test.time_elapsed)
+        self.stream.log_warn(test['time_elapsed'])
 
 
 class RunVM(plugin.Plugin):
