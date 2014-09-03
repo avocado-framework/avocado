@@ -47,6 +47,12 @@ class Params(UserDict.IterableUserDict):
             except ParamNotFound:
                 return None
 
+    def copy(self):
+        new_dict = {}
+        for key in self:
+            new_dict[key] = self[key]
+        return Params(new_dict)
+
     def objects(self, key):
         """
         Return the names of objects defined using a given key.

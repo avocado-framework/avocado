@@ -38,7 +38,7 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 timeout=60, attempts=3, quiet=True):
+                 port=22, timeout=60, attempts=3, quiet=True):
         """
         Creates an instance of :class:`Remote`.
 
@@ -55,10 +55,12 @@ class Remote(object):
         self.username = username
         # None = use public key
         self.password = password
+        self.port = port
         self.quiet = quiet
         self._setup_environment(host_string=hostname,
                                 user=username,
                                 password=password,
+                                port=port,
                                 connection_timeout=timeout,
                                 connection_attempts=attempts)
 

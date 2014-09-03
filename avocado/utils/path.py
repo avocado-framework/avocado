@@ -19,8 +19,25 @@ Avocado path related functions.
 import os
 import stat
 
+from avocado.utils import aurl
+
 PY_EXTENSIONS = ['.py']
 SHEBANG = '#!'
+
+
+def get_path(base_path, user_path):
+    """
+    Translate a user specified path to a real path.
+    If user_path is relative, append it to base_path.
+    If user_path is absolute, return it as is.
+
+    :param base_path: The base path of relative user specified paths.
+    :param user_path: The user specified path.
+    """
+    if os.path.isabs(user_path) or aurl.is_url(user_path):
+        return user_path
+    else:
+        return os.path.join(base_path, user_path)
 
 
 def init_dir(*args):
