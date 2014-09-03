@@ -186,6 +186,20 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('NOT_FOUND', result.stderr)
         self.assertIn('NOT FOUND : 1', result.stderr)
 
+    def test_invalid_unique_id(self):
+        cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertNotEqual(0, result.exit_status)
+        self.assertIn('Error', result.stderr)
+        self.assertIn('needs to be a 40 digit hex', result.stderr)
+
+    def test_valid_unique_id(self):
+        cmd_line = './scripts/avocado run --force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 skiptest'
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(0, result.exit_status)
+        self.assertNotIn('needs to be a 40 digit hex', result.stderr)
+        self.assertIn('SKIP', result.stderr)
+
 
 class RunnerDropinTest(unittest.TestCase):
 
