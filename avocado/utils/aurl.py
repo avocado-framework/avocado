@@ -12,17 +12,21 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import archive
-import astring
-import aurl
-import build
-import crypto
-import download
-import io
-import memory
-import network
-import params
-import process
-import remote
-import virt
-import wait
+"""
+URL related functions.
+
+The strange name is to avoid accidental naming colisions in code.
+"""
+
+import urlparse
+
+
+def is_url(path):
+    """
+    Return `True` if path looks like an URL.
+
+    :param path: path to check.
+    :rtype: Boolean.
+    """
+    url_parts = urlparse.urlparse(path)
+    return (url_parts[0] in ('http', 'https', 'ftp', 'git'))
