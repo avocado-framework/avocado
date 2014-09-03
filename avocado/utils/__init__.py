@@ -11,18 +11,3 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
-import archive
-import astring
-import aurl
-import build
-import crypto
-import download
-import io
-import memory
-import network
-import params
-import process
-import remote
-import virt
-import wait
