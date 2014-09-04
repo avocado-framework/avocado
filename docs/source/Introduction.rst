@@ -21,3 +21,8 @@ added. The test runner is designed to help people to run their tests while
 providing an assortment of system and logging facilities, with no effort,
 and if you want more features, then you can start using the API features
 progressively.
+
+An `extensive set of slides about avocado
+<https://docs.google.com/presentation/d/1PLyOcmoYooWGAe-rS2gtjmrZ0B9J22FbfpNlQY8fIUE>`__,
+including details about its architecture, main features and status is available
+in google-drive.
