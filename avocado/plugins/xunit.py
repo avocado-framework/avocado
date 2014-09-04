@@ -235,7 +235,7 @@ class XUnit(plugin.Plugin):
         self.parser = parser
         self.parser.runner.add_argument(
             '--xunit', type=str, dest='xunit_output',
-            help=('Enable xUnit output to the file where the result should be written.'
+            help=('Enable xUnit output to the file where the result should be written. '
                   "Use '-' to redirect to the standard output."))
         self.configured = True
 
