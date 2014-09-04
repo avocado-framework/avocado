@@ -22,6 +22,9 @@ from avocado.plugins import plugin
 from avocado.result import TestResult
 
 
+# We use a subset of the XML format defined in this URL:
+# https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd
+
 class XmlResult(object):
 
     """
@@ -46,8 +49,7 @@ class XmlResult(object):
         """
         if filename is None:
             filename = self.output
-        xml = '\n'.join(self.xml)
-        xml += '\n'
+        xml = '\n'.join(self.xml) + '\n'
         if filename == '-':
             sys.stdout.write(xml)
         else:
@@ -60,7 +62,7 @@ class XmlResult(object):
 
         :param timestamp: Timestamp string in date/time format.
         """
-        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" not_found="{not_found}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
     def end_testsuite(self, tests, errors, not_found, failures, skip, total_time):
@@ -73,6 +75,7 @@ class XmlResult(object):
         :param skip: Number of test skipped.
         :param total_time: The total time of test execution.
         """
+        errors += not_found  # In XML count "not found tests" as error
         values = {'tests': tests,
                   'errors': errors,
                   'not_found': not_found,
