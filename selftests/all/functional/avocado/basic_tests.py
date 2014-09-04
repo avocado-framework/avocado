@@ -411,8 +411,8 @@ class PluginsXunitTest(PluginsTest):
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
 
         testsuite_tag = testsuite_list[0]
-        self.assertEqual(len(testsuite_tag.attributes), 8,
-                         'The testsuite tag does not have 8 attributes. '
+        self.assertEqual(len(testsuite_tag.attributes), 7,
+                         'The testsuite tag does not have 7 attributes. '
                          'XML:\n%s' % xml_output)
 
         n_tests = int(testsuite_tag.attributes['tests'].value)
@@ -423,11 +423,6 @@ class PluginsXunitTest(PluginsTest):
         n_errors = int(testsuite_tag.attributes['errors'].value)
         self.assertEqual(n_errors, e_nerrors,
                          "Unexpected number of test errors, "
-                         "XML:\n%s" % xml_output)
-
-        n_not_found = int(testsuite_tag.attributes['not_found'].value)
-        self.assertEqual(n_not_found, e_nnotfound,
-                         "Unexpected number of test not found, "
                          "XML:\n%s" % xml_output)
 
         n_failures = int(testsuite_tag.attributes['failures'].value)
@@ -453,11 +448,11 @@ class PluginsXunitTest(PluginsTest):
         self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
 
     def test_xunit_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
+        self.run_and_check('sbrubles', 1, 1, 1, 0, 0, 0)
 
     def test_xunit_plugin_mixedtest(self):
         self.run_and_check('sleeptest failtest skiptest errortest sbrubles',
-                           1, 5, 1, 1, 1, 1)
+                           1, 5, 2, 0, 1, 1)
 
 
 class ParseJSONError(Exception):
