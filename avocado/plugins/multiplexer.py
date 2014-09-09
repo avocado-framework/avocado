@@ -14,6 +14,7 @@
 
 import os
 import sys
+import collections
 
 from avocado.plugins import plugin
 from avocado.core import output
@@ -75,9 +76,10 @@ class Multiplexer(plugin.Plugin):
         pipe.write(bcolors.header_str('Variants generated:'))
         pipe.write('\n')
         for (index, tpl) in enumerate(variants):
-            pipe.write('Variant %s:    %s\n' % (index+1, [str(x) for x in tpl]))
+            paths = ', '.join([x.path for x in tpl])
+            pipe.write('Variant %s:    %s\n' % (index+1, paths))
             if args.contents:
-                env = {}
+                env = collections.OrderedDict()
                 for node in tpl:
                     env.update(node.environment)
                 for k in sorted(env.keys()):
