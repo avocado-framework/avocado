@@ -20,6 +20,7 @@ Contents:
    MultiplexConfig
    Plugins
    OutputPlugins
+   ContributionGuide
    api/modules
 
 Indices and tables
