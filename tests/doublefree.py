@@ -37,7 +37,7 @@ class doublefree(test.Test):
         self.cwd = os.getcwd()
         c_file = self.get_data_path(self.params.source)
         self.srcdir = os.path.dirname(c_file)
-        build.make(self.srcdir, extra_args='doublefree')
+        build.make(self.srcdir, env='CFLAGS="-g -O0"', extra_args='doublefree')
 
     def action(self):
         """
