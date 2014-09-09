@@ -1,6 +1,6 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.11.2
+Version: 0.12.0
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -46,6 +46,9 @@ The set of example tests that are part of the Avocado framework.
 %{_datadir}/avocado/tests
 
 %changelog
+* Tue Sep  9 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.12.0-1
+- New upstream release
+
 * Tue Sep  2 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.11.1-2
 - Added fabric dependency
 
