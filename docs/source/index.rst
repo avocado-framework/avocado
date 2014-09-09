@@ -21,6 +21,7 @@ Contents:
    Plugins
    OutputPlugins
    ContributionGuide
+   DebuggingWithGDB
    api/modules
 
 Indices and tables
