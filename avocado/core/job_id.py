@@ -12,7 +12,9 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import hashlib
 import random
+
 
 _RAND_POOL = random.SystemRandom()
 
@@ -25,6 +27,4 @@ def create_unique_job_id():
     :return: 40 digit hex number string
     :rtype: str
     """
-
-    n = _RAND_POOL.getrandbits(160)
-    return str(hex(n))[2:-1]
+    return hashlib.sha1(hex(_RAND_POOL.getrandbits(160))).hexdigest()
