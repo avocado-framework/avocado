@@ -42,7 +42,7 @@ class TreeNode(object):
 
     def __init__(self, name='/root', value=None, parent=None, children=None):
         if value is None:
-            value = {}
+            value = collections.OrderedDict()
         if children is None:
             children = []
         self.name = name
@@ -121,7 +121,7 @@ class TreeNode(object):
                         target[k] = source[k][:]
                     else:
                         target[k] = source[k]
-        env = {}
+        env = collections.OrderedDict()
         rev_parents = reversed(self.get_parents())
         for parent in rev_parents:
             update_or_extend(env, parent.value)
@@ -227,7 +227,7 @@ def create_from_ordered_data(data, tree=None, root=None, name='/root'):
                 tree.add_child(node)
             else:
                 # Node/leaf with variable
-                tree.value.update({key: value})
+                tree.value[key] = value
     return root
 
 

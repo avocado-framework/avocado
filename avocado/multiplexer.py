@@ -19,6 +19,8 @@
 Multiplex and create variants.
 """
 
+import collections
+
 from avocado.core import tree
 
 
@@ -87,15 +89,15 @@ def multiplex(*args, **kwargs):
     f_only = kwargs.get('filter_only', [''])
     f_out = kwargs.get('filter_out', [''])
     leaves = []
-    parents = set()
+    parents = collections.OrderedDict()
     # filter args and create a set of parents
     for arg in args[0]:
         if filter_only(f_only, [arg]) and filter_out(f_out, [arg]):
             leaves.append(arg)
-            parents.add(arg.parent)
+            parents[arg.parent] = True
 
     pools = []
-    for p in parents:
+    for p in parents.keys():
         pools.append(leaves)
         leaves = [x for x in leaves if x.parent != p]
 
