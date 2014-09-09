@@ -16,15 +16,19 @@ import os
 import process
 
 
-def make(path, make='make', extra_args='', ignore_status=False):
+def make(path, make='make', env='', extra_args='', ignore_status=False):
     """
     Run make, adding MAKEOPTS to the list of options.
 
+    :param env: environment variables to be set before calling make
+                (e.g.: CFLAGS).
     :param extra: extra command line arguments to pass to make.
     """
     cwd = os.getcwd()
     os.chdir(path)
-    cmd = make
+    if env:
+        env += ' '
+    cmd = '%smake' % env
     makeopts = os.environ.get('MAKEOPTS', '')
     if makeopts:
         cmd += ' %s' % makeopts
