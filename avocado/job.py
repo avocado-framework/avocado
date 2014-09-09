@@ -267,6 +267,7 @@ class TestRunner(object):
 
             # don't process other tests from the list
             if ctrl_c_count > 0:
+                self.job.output_manager.log_header("")
                 break
 
             self.result.check_test(test_state)
