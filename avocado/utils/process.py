@@ -52,6 +52,20 @@ class CmdNotFoundError(Exception):
                 (self.cmd, self.paths))
 
 
+class GDBInferiorProcessExitedError(exceptions.TestNAError):
+
+    """
+    Debugged process exited/finished outside of avocado control
+
+    This probably means that the user, in an interactive session, let the
+    inferior process exit before before avocado resumed the debugger session.
+
+    Since the information is unknown, and the behavior is undefined, the
+    test will be skipped.
+    """
+    pass
+
+
 def find_command(cmd):
     """
     Try to find a command in the PATH, paranoid version.
@@ -552,13 +566,12 @@ class GDBSubProcess(object):
                             log.warn('Binary "%s" terminated inside the '
                                      'debugger before avocado was resumed. '
                                      'Because important information about the '
-                                     'process was lost, we will assume it '
-                                     'exited with status 0. Please let avocado'
-                                     ' finish the execution of your binary to '
-                                     'have dependable results.', self.binary)
-                            self.result.exit_status = 0
-                            result = True
-                            break
+                                     'process was lost the results is '
+                                     'undefined. The test is going to be '
+                                     'skipped. Please let avocado finish the '
+                                     'the execution of your binary to have '
+                                     'dependable results.', self.binary)
+                            raise GDBInferiorProcessExitedError
 
             except IndexError:
                 continue
