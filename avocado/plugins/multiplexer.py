@@ -14,6 +14,7 @@
 
 import os
 import sys
+import collections
 
 from avocado.plugins import plugin
 from avocado.core import output
@@ -77,7 +78,7 @@ class Multiplexer(plugin.Plugin):
         for (index, tpl) in enumerate(variants):
             pipe.write('Variant %s:    %s\n' % (index+1, [str(x) for x in tpl]))
             if args.contents:
-                env = {}
+                env = collections.OrderedDict()
                 for node in tpl:
                     env.update(node.environment)
                 for k in sorted(env.keys()):
