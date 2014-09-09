@@ -579,7 +579,7 @@ class GenericParser:
                         why = (item, i, rule)
                         pptr = (pitem, parent)
                         #self.add(cur, (k, pparent),
-                        #	 i, pptr, why)
+                        #        i, pptr, why)
                         #INLINED --v
                         new = (k, pparent)
                         key = (new, i)
@@ -666,8 +666,8 @@ class GenericParser:
     def ambiguity(self, rules):
         #
         #  XXX - problem here and in collectRules() if the same rule
-        #	 appears in >1 method.  Also undefined results if rules
-        #	 causing the ambiguity appear in the same method.
+        #        appears in >1 method.  Also undefined results if rules
+        #        causing the ambiguity appear in the same method.
         #
         sortlist = []
         name2index = {}
