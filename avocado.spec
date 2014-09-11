@@ -36,11 +36,13 @@ these days a framework) to perform automated testing.
 %{_mandir}/man1/avocado.1.gz
 
 %package tests
-Summary: Avocado Test Framework Sample Tests
+Summary: Avocado Test Framework Example Tests
 Requires: avocado
 
 %description tests
-The set of example tests that are part of the Avocado framework.
+The set of example tests that are part of the Avocado framework. Some of
+them are used as functional tests of the framework, others serve as examples
+of how to write tests on your own.
 
 %files tests
 %{_datadir}/avocado/tests
