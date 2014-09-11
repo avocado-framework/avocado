@@ -35,16 +35,16 @@ these days a framework) to perform automated testing.
 %{python_sitelib}/avocado*
 %{_mandir}/man1/avocado.1.gz
 
-%package tests
+%package examples
 Summary: Avocado Test Framework Example Tests
 Requires: avocado
 
-%description tests
-The set of example tests that are part of the Avocado framework. Some of
-them are used as functional tests of the framework, others serve as examples
-of how to write tests on your own.
+%description examples
+The set of example tests present in the upstream tree of the Avocado framework.
+Some of them are used as functional tests of the framework, others serve as
+examples of how to write tests on your own.
 
-%files tests
+%files examples
 %{_datadir}/avocado/tests
 
 %changelog
