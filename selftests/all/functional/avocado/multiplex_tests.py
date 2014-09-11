@@ -57,7 +57,7 @@ class MultiplexTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
 
     def test_mplex_plugin(self):
-        cmd_line = './scripts/avocado multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc)
 
@@ -67,12 +67,12 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_noid(self):
-        cmd_line = './scripts/avocado run --multiplex tests/sleeptest.py.data/sleeptest.yaml'
-        expected_rc = 0
-        self.run_and_check(cmd_line, 2)
+        cmd_line = './scripts/avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        expected_rc = 2
+        self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_sleeptest(self):
-        cmd_line = './scripts/avocado run sleeptest --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         # A typical sleeptest has about 14 lines of output,
         # so we expect the full job log has at least 3 times
@@ -81,7 +81,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14*3)
 
     def test_run_mplex_noalias_sleeptest(self):
-        cmd_line = './scripts/avocado run tests/sleeptest.py --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run examples/tests/sleeptest.py --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         # A typical sleeptest has about 14 lines of output,
         # so we expect the full job log has at least 3 times
@@ -90,12 +90,12 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14*3)
 
     def test_run_mplex_doublesleep(self):
-        cmd_line = './scripts/avocado run sleeptest sleeptest --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run sleeptest sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_failtest(self):
-        cmd_line = './scripts/avocado run sleeptest failtest --multiplex tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run sleeptest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 

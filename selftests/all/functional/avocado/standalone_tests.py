@@ -44,27 +44,27 @@ class StandaloneTests(unittest.TestCase):
                          "%d:\n%s" % (tstname, expected_rc, result))
 
     def test_sleeptest(self):
-        cmd_line = './tests/sleeptest.py'
+        cmd_line = './examples/tests/sleeptest.py'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'sleeptest')
 
     def test_skiptest(self):
-        cmd_line = './tests/skiptest.py'
+        cmd_line = './examples/tests/skiptest.py'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'skiptest')
 
     def test_failtest(self):
-        cmd_line = './tests/failtest.py'
+        cmd_line = './examples/tests/failtest.py'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'failtest')
 
     def test_errortest(self):
-        cmd_line = './tests/errortest.py'
+        cmd_line = './examples/tests/errortest.py'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'errortest')
 
     def test_warntest(self):
-        cmd_line = './tests/warntest.py'
+        cmd_line = './examples/tests/warntest.py'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'warntest')
 

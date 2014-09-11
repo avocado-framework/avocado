@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.12.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.readthedocs.org/
@@ -35,17 +35,22 @@ these days a framework) to perform automated testing.
 %{python_sitelib}/avocado*
 %{_mandir}/man1/avocado.1.gz
 
-%package tests
-Summary: Avocado Test Framework Sample Tests
+%package examples
+Summary: Avocado Test Framework Example Tests
 Requires: avocado
 
-%description tests
-The set of example tests that are part of the Avocado framework.
+%description examples
+The set of example tests present in the upstream tree of the Avocado framework.
+Some of them are used as functional tests of the framework, others serve as
+examples of how to write tests on your own.
 
-%files tests
+%files examples
 %{_datadir}/avocado/tests
 
 %changelog
+* Tue Sep 11 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.12.0-2
+- Rename -tests package to -examples
+
 * Tue Sep  9 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.12.0-1
 - New upstream release
 
