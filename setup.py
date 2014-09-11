@@ -50,10 +50,11 @@ def get_docs_dir():
 
 def get_data_files():
     data_files = [(get_settings_dir(), ['etc/settings.ini'])]
-    data_files += [(get_tests_dir(), glob.glob('tests/*.py'))]
-    for data_dir in glob.glob('tests/*.data'):
+    data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
+    for data_dir in glob.glob('examples/tests/*.data'):
         fmt_str = '%s/*' % data_dir
-        data_files += [(os.path.join(get_tests_dir(), os.path.basename(data_dir)), [glob.glob(fmt_str)[0]])]
+        for f in glob.glob(fmt_str):
+            data_files += [(os.path.join(get_tests_dir(), os.path.basename(data_dir)), [f])]
     data_files.append((get_docs_dir(), ['man/avocado.rst']))
     return data_files
 

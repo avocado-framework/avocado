@@ -39,7 +39,7 @@ from avocado.settings import settings
 
 _BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
 _BASE_DIR = os.path.abspath(_BASE_DIR)
-_IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'tests')
+_IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'examples', 'tests')
 
 SETTINGS_BASE_DIR = os.path.expanduser(settings.get_value('runner', 'base_dir'))
 SETTINGS_TEST_DIR = os.path.expanduser(settings.get_value('runner', 'test_dir'))

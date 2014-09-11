@@ -77,12 +77,12 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_datadir_noalias(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run tests/datadir.py tests/datadir.py'
+        cmd_line = './scripts/avocado run examples/tests/datadir.py examples/tests/datadir.py'
         process.run(cmd_line)
 
     def test_runner_noalias(self):
         os.chdir(basedir)
-        cmd_line = "./scripts/avocado run tests/sleeptest.py tests/sleeptest.py"
+        cmd_line = "./scripts/avocado run examples/tests/sleeptest.py examples/tests/sleeptest.py"
         process.run(cmd_line)
 
     def test_runner_tests_fail(self):
