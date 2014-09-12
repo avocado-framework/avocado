@@ -31,28 +31,38 @@ from avocado.utils import process
 
 class JournalPluginTests(unittest.TestCase):
 
-    def test_journal_result(self):
+    def setUp(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --json - --journal examples/tests/sleeptest.py'
-        result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 0,
-                         "Command '%s' did not return 0" % cmd_line)
-        data = json.loads(result.stdout)
-        job_id = data['job_id']
+        self.cmd_line = './scripts/avocado run --json - --journal examples/tests/sleeptest.py'
+        self.result = process.run(self.cmd_line, ignore_status=True)
+        data = json.loads(self.result.stdout)
+        self.job_id = data['job_id']
         jfile = os.path.join(os.path.dirname(data['debuglog']),
                              'test-results/examples/tests/.journal.sqlite')
-        print jfile
-        db = sqlite3.connect(jfile)
-        cur = db.cursor()
+        self.db = sqlite3.connect(jfile)
+
+    def test_journal_job_id(self):
+        self.assertEqual(self.result.exit_status, 0,
+                         "Command '%s' did not return 0" % self.cmd_line)
+        cur = self.db.cursor()
         cur.execute('SELECT unique_id FROM job_info;')
         db_job_id = cur.fetchone()[0]
-        self.assertEqual(db_job_id, job_id,
-                         "The job ids differs, expected %s got %s" % (job_id, db_job_id))
+        self.assertEqual(db_job_id, self.job_id,
+                         "The job ids differs, expected %s got %s" % (self.job_id, db_job_id))
+
+    def test_journal_count_entries(self):
+        self.assertEqual(self.result.exit_status, 0,
+                         "Command '%s' did not return 0" % self.cmd_line)
+        cur = self.db.cursor()
         cur.execute('SELECT COUNT(*) FROM test_journal;')
         db_count = cur.fetchone()[0]
         count = 2
         self.assertEqual(db_count, count,
                          "The checkup count of test_journal is wrong, expected %d got %d" % (count, db_count))
+
+    def tearDown(self):
+        self.db.close()
+
 
 if __name__ == '__main__':
     unittest.main()
