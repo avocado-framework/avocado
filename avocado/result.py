@@ -29,7 +29,6 @@ class TestResultProxy(object):
 
     def __init__(self):
         self.output_plugins = []
-        self.console_plugin = None
 
     def __getattr__(self, attr):
         for output_plugin in self.output_plugins:
