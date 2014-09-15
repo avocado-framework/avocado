@@ -51,10 +51,11 @@ class TreeNode(object):
         self.children = children
 
     def __repr__(self):
-        return 'TreeNode(name=%r, value=%r, parent=%r, children=%r)' % (self.name, self.value, self.parent, self.children)
+        return 'TreeNode(name=%r)' % self.name
 
     def __str__(self):
-        return '%s=%r' % (self.name, self.environment)
+        variables = ['%s=%s' % (k, v) for k, v in self.environment.items()]
+        return '%s: %s' % (self.path, ', '.join(variables))
 
     def __len__(self):
         return len(self.get_leaves())
