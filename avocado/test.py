@@ -246,6 +246,7 @@ class Test(unittest.TestCase):
                 d[key] = orig[key]
         d['params'] = dict(orig['params'])
         d['class_name'] = self.__class__.__name__
+        d['job_logdir'] = self.job.logdir
         d['job_unique_id'] = self.job.unique_id
         return d
 
