@@ -415,6 +415,9 @@ class Job(object):
         if urls is not None:
             for url in urls:
                 params_list.append({'id': url})
+        else:
+            e_msg = "Empty test ID. A test path or alias must be provided"
+            raise exceptions.OptionValidationError(e_msg)
 
         if multiplex_file is None:
             if self.args and self.args.multiplex_file is not None:
@@ -438,12 +441,9 @@ class Job(object):
                             params_list.append(var.environment)
                     else:
                         params_list.append({'id': url})
-            else:
-                e_msg = "Empty test ID. A test path or alias must be provided"
-                raise exceptions.OptionValidationError(e_msg)
 
         if not params_list:
-            e_msg = "Empty test ID. A test path or alias must be provided"
+            e_msg = "Test(s) with empty parameter list or the number of variants is zero"
             raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
