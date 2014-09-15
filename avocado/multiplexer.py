@@ -41,6 +41,11 @@ def any_sibling(*args):
 
 def filter_only(keys, items):
 
+    if isinstance(keys, str):
+        keys = [keys]
+    if isinstance(items, str):
+        items = [items]
+
     # the default rule is to accept
     ret = True
 
@@ -66,6 +71,11 @@ def filter_only(keys, items):
 
 
 def filter_out(keys, items):
+
+    if isinstance(keys, str):
+        keys = [keys]
+    if isinstance(items, str):
+        items = [items]
 
     for key in keys:
         # ignore empty filters
