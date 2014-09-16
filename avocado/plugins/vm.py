@@ -217,10 +217,9 @@ class VMTestResult(TestResult):
 
         :param test: :class:`avocado.test.Test` instance.
         """
-        self.test_label = '(%s/%s) %s: ' % (self.tests_run,
-                                            self.tests_total,
-                                            test['tagged_name'])
-
+        self.test_label = '(%s/%s) %s:  ' % (self.tests_run,
+                                             self.tests_total,
+                                             test['tagged_name'])
         self.stream.info(msg=self.test_label, skip_newline=True)
 
     def end_test(self, test):
