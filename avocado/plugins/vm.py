@@ -100,10 +100,11 @@ class VMTestRunner(TestRunner):
             test = Test(name=tst['test'],
                         time=tst['time'],
                         status=tst['status'])
-            self.result.start_test(test)
-            self.result.check_test(test.get_state())
-            if not status.mapping[test.status]:
-                failures.append(test.tagged_name)
+            state = test.get_state()
+            self.result.start_test(state)
+            self.result.check_test(state)
+            if not status.mapping[state['status']]:
+                failures.append(state['tagged_name'])
         self.result.end_tests()
         local_log_dir = os.path.dirname(self.result.stream.debuglog)
         zip_filename = remote_log_dir + '.zip'
@@ -219,7 +220,7 @@ class VMTestResult(TestResult):
         """
         self.test_label = '(%s/%s) %s: ' % (self.tests_run,
                                             self.tests_total,
-                                            test.tagged_name)
+                                            test['tagged_name'])
 
         self.stream.info(msg=self.test_label, skip_newline=True)
 
