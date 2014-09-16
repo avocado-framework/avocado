@@ -172,10 +172,8 @@ class xUnitTestResult(TestResult):
         :param args: an instance of :class:`argparse.Namespace`.
         """
         TestResult.__init__(self, stream, args)
-        self.xml = XmlResult(self.output)
-
-    def set_output(self):
         self.output = getattr(self.args, 'xunit_output', '-')
+        self.xml = XmlResult(self.output)
 
     def start_tests(self):
         """
