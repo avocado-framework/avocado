@@ -24,16 +24,30 @@ import collections
 from avocado.core import tree
 
 
-def path_parent(element):
-    e = element.rpartition('/')[0]
-    if e == '':
-        return '/'
-    return e
+def path_parent(path):
+    """
+    From a given path, return its parent path.
+
+    :param path: the node path as string.
+    :return: the parent path as string.
+    """
+    parent = path.rpartition('/')[0]
+    if parent == '':
+        return '/root'
+    return parent
 
 
-def any_sibling(*args):
-    result = set(arg.parent for arg in args)
-    return len(args) != len(result)
+def any_sibling(*nodes):
+    """
+    Check if there is any sibling.
+
+    :param nodes: the nodes to check.
+    :return: `True` if there is any sibling or `False`.
+    """
+    if len(nodes) < 2:
+        return False
+    parents = set(node.parent for node in nodes)
+    return len(nodes) != len(parents)
 
 # only allow items which match the filter
 # siblings and their children will be removed
@@ -117,7 +131,6 @@ def multiplex(*args, **kwargs):
 
         # second level of filtering above should use the filter strings
         # extracted from the node being worked on
-        # (not implemented here, so using [] as placeholders)
         result = [x + [y] for x in result for y in pool
                   if any_sibling(*(x + [y])) is False and
                   filter_only(y.environment.get('filter-only', []), x + [y]) and
