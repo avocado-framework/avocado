@@ -99,6 +99,11 @@ class TestResult(object):
     Test result class, holder for test result information.
     """
 
+    #: Should be set by result plugins to inform users about output options
+    #: inconsistencies given on the command line, and where these
+    #: inconsistencies come from.
+    command_line_arg_name = None
+
     def __init__(self, stream, args):
         """
         Creates an instance of TestResult.
@@ -120,8 +125,6 @@ class TestResult(object):
         # The convention is that a dash denotes stdout.
         self.output = '-'
         self.set_output()
-        self.output_option = None
-        self.set_output_option()
 
     def set_output(self):
         """
@@ -135,21 +138,12 @@ class TestResult(object):
         """
         pass
 
-    def set_output_option(self):
-        """
-        Set the value of the output option (command line).
 
-        Must be implemented by plugins, so avocado prints a friendly
-        message to users who are using more than one plugin to print results
-        to stdout.
-        """
-        pass
 
     def start_tests(self):
         """
         Called once before any tests are executed.
         """
-
         self.tests_run += 1
 
     def end_tests(self):

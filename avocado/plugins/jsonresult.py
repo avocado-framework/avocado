@@ -28,11 +28,10 @@ class JSONTestResult(TestResult):
     JSON Test Result class.
     """
 
+    command_line_arg_name = '--json'
+
     def set_output(self):
         self.output = getattr(self.args, 'json_output', '-')
-
-    def set_output_option(self):
-        self.output_option = '--json'
 
     def start_tests(self):
         """
