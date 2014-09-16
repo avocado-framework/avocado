@@ -341,8 +341,8 @@ class Job(object):
                                                  self.args)
                     if result_plugin.output == '-':
                         if plugin_using_stdout is not None:
-                            e_msg %= (plugin_using_stdout.output_option,
-                                      result_plugin.output_option)
+                            e_msg %= (plugin_using_stdout.command_line_arg_name,
+                                      result_plugin.command_line_arg_name)
                             self.output_manager.log_fail_header(e_msg)
                             self.output_manager.log_fail_header(e_msg_2)
                             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])

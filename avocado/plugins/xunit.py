@@ -162,6 +162,8 @@ class xUnitTestResult(TestResult):
     xUnit Test Result class.
     """
 
+    command_line_arg_name = '--xunit'
+
     def __init__(self, stream=None, args=None):
         """
         Creates an instance of xUnitTestResult.
@@ -170,13 +172,8 @@ class xUnitTestResult(TestResult):
         :param args: an instance of :class:`argparse.Namespace`.
         """
         TestResult.__init__(self, stream, args)
-        self.xml = XmlResult(self.output)
-
-    def set_output(self):
         self.output = getattr(self.args, 'xunit_output', '-')
-
-    def set_output_option(self):
-        self.output_option = '--xunit'
+        self.xml = XmlResult(self.output)
 
     def start_tests(self):
         """
