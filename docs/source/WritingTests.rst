@@ -446,29 +446,29 @@ Avocado exports some environment variables to the running test. Those variables 
 to drop-in tests, because they can not make use of Avocado API directly with Python,
 like the native tests can do.
 
-Here is the current variables that Avocado exports to the tests:
+Here are the current variables that Avocado exports to the tests:
 
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| Environemnt Variable    | Meaning                               | Example                                                               |
-+=========================+=======================================+=======================================================================+
-| AVOCADO_VERSION         | Version of Avocado test runner        | 0.8.0                                                                 |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_BASEDIR    | Base directory of Avocado tests       | $HOME/Downloads/avocado-source/avocado                                |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_DATADIR    | Data directory for the test           | $AVOCADO_TEST_BASEDIR/my_test.sh.data                                 |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR    | Work directory for the test           | /var/tmp/avocado/my_test.sh                                           |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_SRCDIR     | Source directory for the test         | /var/tmp/avocado/my-test.sh/src                                       |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_LOGDIR     | Log directory for the test            | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1           |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_LOGFILE    | Log file for the test                 | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1/debug.log |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_OUTPUTDIR  | Output directory for the test         | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1/data      |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
-| AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/run-2014-08-06-10-51.53/home.rmoura.my_test.sh.1/sysinfo   |
-+-------------------------+---------------------------------------+-----------------------------------------------------------------------+
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| Environemnt Variable    | Meaning                               | Example                                                                                             |
++=========================+=======================================+=====================================================================================================+
+| AVOCADO_VERSION         | Version of Avocado test runner        | 0.12.0                                                                                              |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_BASEDIR    | Base directory of Avocado tests       | $HOME/Downloads/avocado-source/avocado                                                              |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_DATADIR    | Data directory for the test           | $AVOCADO_TEST_BASEDIR/my_test.sh.data                                                               |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_WORKDIR    | Work directory for the test           | /var/tmp/avocado/my_test.sh                                                                         |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_SRCDIR     | Source directory for the test         | /var/tmp/avocado/my-test.sh/src                                                                     |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_LOGDIR     | Log directory for the test            | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1           |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_LOGFILE    | Log file for the test                 | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/debug.log |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_OUTPUTDIR  | Output directory for the test         | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/data      |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/sysinfo   |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 Wrap Up
 =======
