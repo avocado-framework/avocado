@@ -159,9 +159,9 @@ class VMTestResult(TestResult):
                      '--vm-hostname.')
             self.stream.error(e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        self.stream.log_header("REMOTE TESTS: Virtual Machine Domain '%s'" %
+        self.stream.log_header("VM DOMAIN : %s" %
                                self.args.vm_domain)
-        self.stream.log_header("REMOTE TESTS: Host login '%s@%s'" %
+        self.stream.log_header("VM LOGIN  : %s@%s" %
                                (self.args.vm_username, self.args.vm_hostname))
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
