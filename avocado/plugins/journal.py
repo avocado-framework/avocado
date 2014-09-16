@@ -97,10 +97,6 @@ class TestResultJournal(TestResult):
                                      status))
         self.journal.commit()
 
-    def set_output(self):
-        # Journal does not output to stdout
-        self.output = None
-
     def start_test(self, state):
         self.lazy_init_journal(state)
         TestResult.start_test(self, state)

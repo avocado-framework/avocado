@@ -30,7 +30,8 @@ class JSONTestResult(TestResult):
 
     command_line_arg_name = '--json'
 
-    def set_output(self):
+    def __init__(self, stream=None, args=None):
+        TestResult.__init__(self, stream, args)
         self.output = getattr(self.args, 'json_output', '-')
 
     def start_tests(self):
