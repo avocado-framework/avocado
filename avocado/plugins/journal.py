@@ -42,6 +42,8 @@ class TestResultJournal(TestResult):
     feedback to users from a central place.
     """
 
+    command_line_arg_name = '--journal'
+
     def __init__(self, stream=None, args=None):
         """
         Creates an instance of TestResultJournal.
@@ -94,14 +96,6 @@ class TestResultJournal(TestResult):
                                      action,
                                      status))
         self.journal.commit()
-
-    def set_output(self):
-        # Journal does not output to stdout
-        self.output = None
-
-    def set_output_option(self):
-        # Journal does not need an output option
-        self.output_option = None
 
     def start_test(self, state):
         self.lazy_init_journal(state)

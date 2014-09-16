@@ -121,6 +121,8 @@ class VMTestResult(TestResult):
     Virtual Machine Test Result class.
     """
 
+    command_line_arg_name = '--vm'
+
     def __init__(self, stream, args):
         """
         Creates an instance of VMTestResult.
@@ -131,6 +133,7 @@ class VMTestResult(TestResult):
         TestResult.__init__(self, stream, args)
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
+        self.output = '-'
 
     def _copy_tests(self):
         self.vm.remote.makedir(self.remote_test_dir)
@@ -187,12 +190,6 @@ class VMTestResult(TestResult):
     def tear_down(self):
         if self.args.vm_cleanup is True and self.vm.snapshot is not None:
             self.vm.restore_snapshot()
-
-    def set_output(self):
-        self.output = '-'
-
-    def set_output_option(self):
-        self.output_option = "--vm"
 
     def start_tests(self):
         """

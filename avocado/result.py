@@ -29,7 +29,6 @@ class TestResultProxy(object):
 
     def __init__(self):
         self.output_plugins = []
-        self.console_plugin = None
 
     def __getattr__(self, attr):
         for output_plugin in self.output_plugins:
@@ -100,6 +99,11 @@ class TestResult(object):
     Test result class, holder for test result information.
     """
 
+    #: Should be set by result plugins to inform users about output options
+    #: inconsistencies given on the command line, and where these
+    #: inconsistencies come from.
+    command_line_arg_name = None
+
     def __init__(self, stream, args):
         """
         Creates an instance of TestResult.
@@ -118,39 +122,16 @@ class TestResult(object):
         self.failed = []
         self.skipped = []
         self.warned = []
-        # The convention is that a dash denotes stdout.
-        self.output = '-'
-        self.set_output()
-        self.output_option = None
-        self.set_output_option()
 
-    def set_output(self):
-        """
-        Set the value of the output attribute.
-
-        By default, output is the stream (stdout), denoted by '-'.
-
-        Must be implemented by plugins, so avocado knows where the plugin wants
-        to output to, avoiding clashes among different plugins that want to
-        use the stream at the same time.
-        """
-        pass
-
-    def set_output_option(self):
-        """
-        Set the value of the output option (command line).
-
-        Must be implemented by plugins, so avocado prints a friendly
-        message to users who are using more than one plugin to print results
-        to stdout.
-        """
-        pass
+        # Where this results intends to write to. Convention is that a dash (-)
+        # means stdout, and stdout is a special output that can be exclusively
+        # claimed by a result class.
+        self.output = None
 
     def start_tests(self):
         """
         Called once before any tests are executed.
         """
-
         self.tests_run += 1
 
     def end_tests(self):

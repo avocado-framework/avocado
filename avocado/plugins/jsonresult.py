@@ -28,11 +28,11 @@ class JSONTestResult(TestResult):
     JSON Test Result class.
     """
 
-    def set_output(self):
-        self.output = getattr(self.args, 'json_output', '-')
+    command_line_arg_name = '--json'
 
-    def set_output_option(self):
-        self.output_option = '--json'
+    def __init__(self, stream=None, args=None):
+        TestResult.__init__(self, stream, args)
+        self.output = getattr(self.args, 'json_output', '-')
 
     def start_tests(self):
         """
