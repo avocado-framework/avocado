@@ -121,6 +121,8 @@ class VMTestResult(TestResult):
     Virtual Machine Test Result class.
     """
 
+    command_line_arg_name = '--vm'
+
     def __init__(self, stream, args):
         """
         Creates an instance of VMTestResult.
@@ -190,9 +192,6 @@ class VMTestResult(TestResult):
 
     def set_output(self):
         self.output = '-'
-
-    def set_output_option(self):
-        self.output_option = "--vm"
 
     def start_tests(self):
         """
