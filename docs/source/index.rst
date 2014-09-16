@@ -20,8 +20,8 @@ Contents:
    MultiplexConfig
    Plugins
    OutputPlugins
-   ContributionGuide
    DebuggingWithGDB
+   ContributionGuide
    api/modules
 
 Indices and tables
