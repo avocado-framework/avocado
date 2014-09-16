@@ -27,10 +27,12 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.core import status
+from avocado.core import job_id
 from avocado.plugins import vm
 
 
 class _Stream(object):
+    job_unique_id = job_id.create_unique_job_id()
 
     def start_file_logging(self, param1, param2):
         pass

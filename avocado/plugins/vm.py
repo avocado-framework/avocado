@@ -70,8 +70,8 @@ class VMTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         urls = urls.split()
-        avocado_cmd = ('cd %s; avocado run --json - --archive %s' %
-                       (self.remote_test_dir, " ".join(urls)))
+        avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - --archive %s' %
+                       (self.remote_test_dir, self.result.stream.job_unique_id, " ".join(urls)))
         stdout = self.result.vm.remote.run(avocado_cmd)
         try:
             results = json.loads(stdout)
@@ -201,6 +201,8 @@ class VMTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
+        self.stream.log_header("JOB ID    : %s" % self.stream.job_unique_id)
+        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
         self.stream.log_header("TESTS     : %s" % self.tests_total)
 
     def end_tests(self):
@@ -214,7 +216,6 @@ class VMTestResult(TestResult):
         self.stream.log_header("SKIP      : %d" % len(self.skipped))
         self.stream.log_header("WARN      : %d" % len(self.warned))
         self.stream.log_header("TIME      : %.2f s" % self.total_time)
-        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
 
     def start_test(self, test):
         """
