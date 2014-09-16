@@ -142,6 +142,9 @@ class VMTestResult(TestResult):
         for url in uniq_urls:
             test_path = os.path.join(self.test_dir, url)
             self.vm.remote.send_files(test_path, self.remote_test_dir)
+            test_data_path = test_path + '.data'
+            if os.path.isdir(test_data_path):
+                self.vm.remote.send_files(test_data_path, self.remote_test_dir)
 
     def setup(self):
         self.urls = self.args.url
