@@ -67,7 +67,7 @@ class TestResultJournal(TestResult):
     def lazy_init_journal(self, state):
         # lazy init because we need the toplevel logdir for the job
         if not self.journal_initialized:
-            self._init_journal(os.path.dirname(state['logdir']))
+            self._init_journal(state['job_logdir'])
             self._record_job_info(state)
             self.journal_initialized = True
 

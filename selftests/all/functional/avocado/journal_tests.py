@@ -37,8 +37,7 @@ class JournalPluginTests(unittest.TestCase):
         self.result = process.run(self.cmd_line, ignore_status=True)
         data = json.loads(self.result.stdout)
         self.job_id = data['job_id']
-        jfile = os.path.join(os.path.dirname(data['debuglog']),
-                             'test-results/examples/tests/.journal.sqlite')
+        jfile = os.path.join(os.path.dirname(data['debuglog']), '.journal.sqlite')
         self.db = sqlite3.connect(jfile)
 
     def test_journal_job_id(self):
