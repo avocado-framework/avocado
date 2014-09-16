@@ -20,6 +20,7 @@ import json
 
 from avocado.core import exceptions
 from avocado.core import status
+from avocado.core import data_dir
 from avocado.job import TestRunner
 from avocado.result import TestResult
 from avocado.plugins import plugin
@@ -69,8 +70,8 @@ class VMTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         urls = urls.split()
-        urls = [os.path.join(self.remote_test_dir, os.path.basename(url)) for url in urls]
-        avocado_cmd = 'avocado run --json - --archive %s' % " ".join(urls)
+        avocado_cmd = ('cd %s; avocado run --json - --archive %s' %
+                       (self.remote_test_dir, " ".join(urls)))
         stdout = self.result.vm.remote.run(avocado_cmd)
         try:
             results = json.loads(stdout)
@@ -139,7 +140,11 @@ class VMTestResult(TestResult):
         self.vm.remote.makedir(self.remote_test_dir)
         uniq_urls = list(set(self.urls))
         for url in uniq_urls:
-            test_path = os.path.join(self.test_dir, url)
+            parent_dir = url.split(os.path.sep)[0]
+            if os.path.isdir(parent_dir):
+                test_path = os.path.abspath(parent_dir)
+            else:
+                test_path = os.path.join(data_dir.get_test_dir(), "%s*" % url)
             self.vm.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
