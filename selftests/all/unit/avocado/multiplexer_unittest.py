@@ -24,6 +24,60 @@ from avocado.multiplexer import *
 f_only = []
 f_out = []
 
+class TestPathParent(unittest.TestCase):
+
+    def test_empty_string(self):
+        self.assertEqual(path_parent(''), '/root')
+
+    def test_on_root(self):
+        self.assertEqual(path_parent('/root'), '/root')
+
+    def test_direct_parent(self):
+        self.assertEqual(path_parent('/root/os/linux'), '/root/os')
+
+    def test_false_direct_parent(self):
+        self.assertNotEqual(path_parent('/root/os/linux'), '/root')
+
+
+class TestAnySibling(unittest.TestCase):
+
+    def setUp(self):
+        # os:
+        #     linux:
+        #         mint:
+        #         fedora:
+        #     win:
+        #         winxp:
+        #         win7:
+        #         win8:
+        t = TreeNode('/root')
+        os = t.add_child(TreeNode('os'))
+        linux = os.add_child(TreeNode('linux'))
+        self.mint = linux.add_child(TreeNode('mint'))
+        self.fedora = linux.add_child(TreeNode('mint'))
+        win = os.add_child(TreeNode('win'))
+        self.winxp = win.add_child(TreeNode('winxp'))
+        self.win7 = win.add_child(TreeNode('win7'))
+        self.win8 = win.add_child(TreeNode('win8'))
+
+    def test_empty(self):
+        self.assertFalse(any_sibling())
+
+    def test_one_node(self):
+        t = TreeNode()
+        n = t.add_child(TreeNode('alone'))
+        self.assertFalse(any_sibling(n))
+
+    def test_same_parent(self):
+        self.assertTrue(any_sibling(self.mint, self.fedora))
+        self.assertTrue(any_sibling(self.winxp, self.win7, self.win8))
+
+    def test_one_linux_one_windows(self):
+        self.assertFalse(any_sibling(self.mint, self.winxp))
+
+    def test_two_linux_one_windows(self):
+        self.assertTrue(any_sibling(self.mint, self.fedora, self.winxp))
+
 
 class TestMultiplex(unittest.TestCase):
 
