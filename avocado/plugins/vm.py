@@ -19,8 +19,8 @@ import getpass
 import json
 
 from avocado.core import exceptions
-from avocado.core import data_dir
 from avocado.core import status
+from avocado.core import data_dir
 from avocado.job import TestRunner
 from avocado.result import TestResult
 from avocado.plugins import plugin
@@ -70,8 +70,8 @@ class VMTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         urls = urls.split()
-        urls = [os.path.join(self.remote_test_dir, os.path.basename(url)) for url in urls]
-        avocado_cmd = 'avocado run --json - --archive %s' % " ".join(urls)
+        avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - --archive %s' %
+                       (self.remote_test_dir, self.result.stream.job_unique_id, " ".join(urls)))
         stdout = self.result.vm.remote.run(avocado_cmd)
         try:
             results = json.loads(stdout)
@@ -140,7 +140,11 @@ class VMTestResult(TestResult):
         self.vm.remote.makedir(self.remote_test_dir)
         uniq_urls = list(set(self.urls))
         for url in uniq_urls:
-            test_path = os.path.join(self.test_dir, url)
+            parent_dir = url.split(os.path.sep)[0]
+            if os.path.isdir(parent_dir):
+                test_path = os.path.abspath(parent_dir)
+            else:
+                test_path = os.path.join(data_dir.get_test_dir(), "%s*" % url)
             self.vm.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
@@ -155,9 +159,9 @@ class VMTestResult(TestResult):
                      '--vm-hostname.')
             self.stream.error(e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        self.stream.log_header("REMOTE TESTS: Virtual Machine Domain '%s'" %
+        self.stream.log_header("VM DOMAIN : %s" %
                                self.args.vm_domain)
-        self.stream.log_header("REMOTE TESTS: Host login '%s@%s'" %
+        self.stream.log_header("VM LOGIN  : %s@%s" %
                                (self.args.vm_username, self.args.vm_hostname))
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
@@ -197,6 +201,8 @@ class VMTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
+        self.stream.log_header("JOB ID    : %s" % self.stream.job_unique_id)
+        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
         self.stream.log_header("TESTS     : %s" % self.tests_total)
 
     def end_tests(self):
@@ -210,7 +216,6 @@ class VMTestResult(TestResult):
         self.stream.log_header("SKIP      : %d" % len(self.skipped))
         self.stream.log_header("WARN      : %d" % len(self.warned))
         self.stream.log_header("TIME      : %.2f s" % self.total_time)
-        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
 
     def start_test(self, test):
         """
@@ -218,10 +223,9 @@ class VMTestResult(TestResult):
 
         :param test: :class:`avocado.test.Test` instance.
         """
-        self.test_label = '(%s/%s) %s: ' % (self.tests_run,
-                                            self.tests_total,
-                                            test['tagged_name'])
-
+        self.test_label = '(%s/%s) %s:  ' % (self.tests_run,
+                                             self.tests_total,
+                                             test['tagged_name'])
         self.stream.info(msg=self.test_label, skip_newline=True)
 
     def end_test(self, test):
