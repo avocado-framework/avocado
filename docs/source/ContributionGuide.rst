@@ -7,8 +7,8 @@ Useful pointers on how to participate of the avocado community and contribute.
 Contact information
 ===================
 
-- Avocado-devel mailing list: Coming soon.
-- `Avocado IRC channel: irc.oftc.net #avocado <irc://irc.oftc.net/#avocado>`_
+- Avocado-devel mailing list: `https://www.redhat.com/mailman/listinfo/avocado-devel <https://www.redhat.com/mailman/listinfo/avocado-devel>`_
+- Avocado IRC channel: `irc.oftc.net #avocado <irc://irc.oftc.net/#avocado>`_
 
 Contributing to avocado
 =======================
