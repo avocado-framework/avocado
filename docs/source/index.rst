@@ -20,6 +20,7 @@ Contents:
    MultiplexConfig
    Plugins
    OutputPlugins
+   VirtualMachinePlugin
    DebuggingWithGDB
    ContributionGuide
    api/modules
