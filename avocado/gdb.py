@@ -88,6 +88,41 @@ def is_break_hit(parsed_mi_msg):
             (parsed_mi_msg.result.reason == "breakpoint-hit"))
 
 
+def is_sigsegv(parsed_mi_msg):
+    return (hasattr(parsed_mi_msg, 'class_') and
+            (parsed_mi_msg.class_ == 'stopped') and
+            hasattr(parsed_mi_msg, 'result') and
+            hasattr(parsed_mi_msg.result, 'signal_name') and
+            (parsed_mi_msg.result.reason == "SIGSEGV"))
+
+
+def is_sigabrt_stopped(parsed_mi_msg):
+    return (hasattr(parsed_mi_msg, 'class_') and
+            (parsed_mi_msg.class_ == 'stopped') and
+            hasattr(parsed_mi_msg, 'record_type') and
+            (parsed_mi_msg.record_type == 'result') and
+            (parsed_mi_msg.result.reason == 'signal-received') and
+            (parsed_mi_msg.result.signal_name == 'SIGABRT'))
+
+
+def is_sigabrt_console(parsed_mi_msg):
+    return (hasattr(parsed_mi_msg, 'record_type') and
+            (parsed_mi_msg.record_type == 'stream') and
+            hasattr(parsed_mi_msg, 'type') and
+            (parsed_mi_msg.type == 'console') and
+            hasattr(parsed_mi_msg, 'value') and
+            parsed_mi_msg.value == 'SIGABRT, Aborted.\n')
+
+
+def is_sigabrt(parsed_mi_msg):
+    return (is_sigabrt_stopped(parsed_mi_msg) or
+            is_sigabrt_console(parsed_mi_msg))
+
+
+def is_fatal_signal(parsed_mi_msg):
+    return is_sigsegv(parsed_mi_msg) or is_sigabrt(parsed_mi_msg)
+
+
 class CommandResult(object):
 
     """

@@ -21,9 +21,9 @@ Module that contains runtime configuration
 #: using the given expression
 GDB_RUN_BINARY_NAMES_EXPR = []
 
-#: Wether to disable the automatic generation of core dumps for applications
+#: Wether to enable the automatic generation of core dumps for applications
 #: that are run inside the GNU debugger
-GDB_DISABLE_CORE = False
+GDB_ENABLE_CORE = False
 
 #: Sometimes it's useful for the framework and API to know about the test that
 #: is currently running, if one exists
