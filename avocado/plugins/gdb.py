@@ -37,11 +37,19 @@ class GDB(plugin.Plugin):
                                   'be "<binary>[:breakpoint]". Breakpoint '
                                   'defaults to "main"'))
 
+        runner.add_argument('--gdb-enable-core', action='store_true',
+                            default=False,
+                            help=('Automatically generate a core dump when the'
+                                  ' inferior process received a fatal signal '
+                                  'such as SIGSEGV or SIGABRT'))
+
         self.configured = True
 
     def activate(self, app_args):
         try:
             for binary in app_args.gdb_run_bin:
                 runtime.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
+            if app_args.gdb_enable_core:
+                runtime.GDB_ENABLE_CORE = True
         except AttributeError:
             pass
