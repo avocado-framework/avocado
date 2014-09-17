@@ -43,14 +43,18 @@ class TestPathParent(unittest.TestCase):
 class TestAnySibling(unittest.TestCase):
 
     def setUp(self):
-        # os:
-        #     linux:
-        #         mint:
-        #         fedora:
-        #     win:
-        #         winxp:
-        #         win7:
-        #         win8:
+        """
+        Setup the following tree node structure:
+
+        os:
+            linux:
+                mint:
+                fedora:
+            win:
+                winxp:
+                win7:
+                win8:
+        """
         t = TreeNode('/root')
         os = t.add_child(TreeNode('os'))
         linux = os.add_child(TreeNode('linux'))
