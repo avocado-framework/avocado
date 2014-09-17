@@ -24,6 +24,7 @@ from avocado.multiplexer import *
 f_only = []
 f_out = []
 
+
 class TestPathParent(unittest.TestCase):
 
     def test_empty_string(self):
