@@ -30,18 +30,19 @@ class GDB(plugin.Plugin):
     def configure(self, parser):
         self.parser = parser
         runner = self.parser.runner
-        runner.add_argument('--gdb-run-bin', action='append',
-                            default=[], metavar='BINARY_PATH',
-                            help=('Set a breakpoint on a given binary to be '
-                                  'run inside the GNU debugger. Format should '
-                                  'be "<binary>[:breakpoint]". Breakpoint '
-                                  'defaults to "main"'))
+        gdb_grp = self.parser.runner.add_argument_group('GNU Debugger support')
+        gdb_grp.add_argument('--gdb-run-bin', action='append',
+                             default=[], metavar='BINARY_PATH',
+                             help=('Set a breakpoint on a given binary to be '
+                                   'run inside the GNU debugger. Format should '
+                                   'be "<binary>[:breakpoint]". Breakpoint '
+                                   'defaults to "main"'))
 
-        runner.add_argument('--gdb-enable-core', action='store_true',
-                            default=False,
-                            help=('Automatically generate a core dump when the'
-                                  ' inferior process received a fatal signal '
-                                  'such as SIGSEGV or SIGABRT'))
+        gdb_grp.add_argument('--gdb-enable-core', action='store_true',
+                             default=False,
+                             help=('Automatically generate a core dump when the'
+                                   ' inferior process received a fatal signal '
+                                   'such as SIGSEGV or SIGABRT'))
 
         self.configured = True
 
