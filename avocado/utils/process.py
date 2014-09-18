@@ -24,6 +24,7 @@ import subprocess
 import time
 import stat
 import shlex
+import shutil
 import threading
 
 from avocado import gdb
@@ -453,6 +454,22 @@ class GDBSubProcess(object):
             breakpoints.append(gdb.GDB.DEFAULT_BREAK)
         return breakpoints
 
+    def create_and_wait_on_resume_fifo(self, path):
+        '''
+        Creates a FIFO file and waits until it's written to
+
+        :param path: the path that the file will be created
+        :type path: str
+        :returns: first character that was written to the fifo
+        :rtype: str
+        '''
+        os.mkfifo(path)
+        f = open(path, 'r')
+        c = f.read(1)
+        f.close()
+        os.unlink(path)
+        return c
+
     def generate_gdb_connect_cmds(self):
         current_test = runtime.CURRENT_TEST
         if current_test is not None:
@@ -475,10 +492,11 @@ class GDBSubProcess(object):
             binary_name = os.path.basename(self.binary)
 
             fifo_name = "%s.gdb.cont.fifo" % os.path.basename(binary_name)
-            fifo_path = os.path.join(runtime.CURRENT_TEST.workdir, fifo_name)
+            fifo_path = os.path.join(current_test.outputdir, fifo_name)
 
             script_name = '%s.gdb.sh' % binary_name
             script_path = os.path.join(current_test.outputdir, script_name)
+
             script = open(script_path, 'w')
             script.write("#!/bin/sh\n")
             script.write("%s -x %s\n" % (gdb.GDB.GDB_PATH, cmds))
@@ -486,6 +504,17 @@ class GDBSubProcess(object):
             script.close()
             os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
             return (script_path, fifo_path)
+
+    def generate_core(self):
+        core_name = "%s.core" % os.path.basename(self.binary)
+        core_path = os.path.join(runtime.CURRENT_TEST.outputdir, core_name)
+        gcore_cmd = 'gcore %s' % core_path
+        r = self.gdb.cli_cmd(gcore_cmd)
+        if not r.result.class_ == 'done':
+            raise gdb.UnexpectedResponseError
+        # also copy the binary as it's needed with the core
+        shutil.copy(self.binary, runtime.CURRENT_TEST.outputdir)
+        return core_path
 
     def handle_break_hit(self, response):
         self.gdb.disconnect()
@@ -501,12 +530,27 @@ class GDBSubProcess(object):
         runtime.CURRENT_TEST.report_state()
         runtime.CURRENT_TEST.paused_msg = ''
 
-        os.mkfifo(fifo_path)
-        f = open(fifo_path, 'r')
-        c = f.read(1)
-        f.close()
-        os.unlink(fifo_path)
-        return c
+        return self.create_and_wait_on_resume_fifo(fifo_path)
+
+    def handle_fatal_signal(self, response):
+        script_path, fifo_path = self.generate_gdb_connect_sh()
+
+        msg = ("\n\nTEST PAUSED because inferior process received a FATAL SIGNAL. "
+               "To DEBUG your application run:\n%s\n\n" % script_path)
+
+        if runtime.GDB_ENABLE_CORE:
+            core = self.generate_core()
+            msg += ("\nAs requested, a core dump has been generated "
+                    "automatically at the following location:\n%s\n") % core
+
+        self.gdb.disconnect()
+
+        runtime.CURRENT_TEST.paused = True
+        runtime.CURRENT_TEST.paused_msg = msg
+        runtime.CURRENT_TEST.report_state()
+        runtime.CURRENT_TEST.paused_msg = ''
+
+        return self.create_and_wait_on_resume_fifo(fifo_path)
 
     def _is_thread_stopped(self):
         result = False
@@ -550,6 +594,7 @@ class GDBSubProcess(object):
             try:
                 msg = messages.pop(0)
                 parsed_msg = gdb.parse_mi(msg)
+
                 if gdb.is_exit(parsed_msg):
                     self.result.exit_status = self._get_exit_status(parsed_msg)
                     result = True
@@ -572,6 +617,13 @@ class GDBSubProcess(object):
                                      'the execution of your binary to have '
                                      'dependable results.', self.binary)
                             raise GDBInferiorProcessExitedError
+
+                elif gdb.is_fatal_signal(parsed_msg):
+                    # waits on fifo read() until end of debug session is notified
+                    r = self.handle_fatal_signal(parsed_msg)
+                    log.warn('Because "%s" received a fatal signal, this test '
+                             'is going to be skipped.', self.binary)
+                    raise GDBInferiorProcessExitedError
 
             except IndexError:
                 continue
