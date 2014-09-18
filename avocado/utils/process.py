@@ -622,7 +622,7 @@ class GDBSubProcess(object):
                     # waits on fifo read() until end of debug session is notified
                     r = self.handle_fatal_signal(parsed_msg)
                     log.warn('Because "%s" received a fatal signal, this test '
-                             'going to be skipped.', self.binary)
+                             'is going to be skipped.', self.binary)
                     raise GDBInferiorProcessExitedError
 
             except IndexError:
