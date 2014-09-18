@@ -306,24 +306,25 @@ class RunVM(plugin.Plugin):
             return
         username = getpass.getuser()
         self.parser = parser.runner
-        self.parser.add_argument('--vm', action='store_true', default=False,
-                                 help='Run tests on Virtual Machine')
-        self.parser.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
-                                 default='qemu:///system',
-                                 help='Specify hypervisor URI driver connection')
-        self.parser.add_argument('--vm-domain', dest='vm_domain',
-                                 help='Specify domain name (Virtual Machine name)')
-        self.parser.add_argument('--vm-hostname', dest='vm_hostname',
-                                 help='Specify VM hostname to login')
-        self.parser.add_argument('--vm-username', dest='vm_username',
-                                 default=username,
-                                 help='Specify the username to login on VM')
-        self.parser.add_argument('--vm-password', dest='vm_password',
-                                 default=None,
-                                 help='Specify the password to login on VM')
-        self.parser.add_argument('--vm-cleanup', dest='vm_cleanup', action='store_true',
-                                 default=False,
-                                 help='Restore VM to a previous state, before running the tests')
+        vm = self.parser.add_argument_group('virtualization arguments')
+        vm.add_argument('--vm', action='store_true', default=False,
+                        help='Run tests on Virtual Machine')
+        vm.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
+                        default='qemu:///system',
+                        help='Specify hypervisor URI driver connection')
+        vm.add_argument('--vm-domain', dest='vm_domain',
+                        help='Specify domain name (Virtual Machine name)')
+        vm.add_argument('--vm-hostname', dest='vm_hostname',
+                        help='Specify VM hostname to login')
+        vm.add_argument('--vm-username', dest='vm_username',
+                        default=username,
+                        help='Specify the username to login on VM')
+        vm.add_argument('--vm-password', dest='vm_password',
+                        default=None,
+                        help='Specify the password to login on VM')
+        vm.add_argument('--vm-cleanup', dest='vm_cleanup', action='store_true',
+                        default=False,
+                        help='Restore VM to a previous state, before running the tests')
         self.configured = True
 
     def activate(self, app_args):
