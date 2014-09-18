@@ -305,31 +305,40 @@ class RunVM(plugin.Plugin):
             self.enabled = False
             return
         username = getpass.getuser()
-        self.parser = parser.runner
-        self.parser.add_argument('--vm', action='store_true', default=False,
-                                 help='Run tests on Virtual Machine')
-        self.parser.add_argument('--vm-hypervisor-uri', dest='vm_hypervisor_uri',
-                                 default='qemu:///system',
-                                 help='Specify hypervisor URI driver connection')
-        self.parser.add_argument('--vm-domain', dest='vm_domain',
-                                 help='Specify domain name (Virtual Machine name)')
-        self.parser.add_argument('--vm-hostname', dest='vm_hostname',
-                                 help='Specify VM hostname to login')
-        self.parser.add_argument('--vm-username', dest='vm_username',
-                                 default=username,
-                                 help='Specify the username to login on VM')
-        self.parser.add_argument('--vm-password', dest='vm_password',
-                                 default=None,
-                                 help='Specify the password to login on VM')
-        self.parser.add_argument('--vm-cleanup', dest='vm_cleanup', action='store_true',
-                                 default=False,
-                                 help='Restore VM to a previous state, before running the tests')
+        default_hypervisor_uri = 'qemu:///system'
+        self.vm_parser = parser.runner.add_argument_group('run on a libvirt domain '
+                                                          'arguments')
+
+        self.vm_parser.add_argument('--vm', action='store_true', default=False,
+                                    help=('Run tests on a Virtual Machine '
+                                          '(Libvirt Domain)'))
+        self.vm_parser.add_argument('--vm-hypervisor-uri',
+                                    dest='vm_hypervisor_uri',
+                                    default=default_hypervisor_uri,
+                                    help=('Specify hypervisor URI driver '
+                                          'connection. Default: %s' %
+                                          default_hypervisor_uri))
+        self.vm_parser.add_argument('--vm-domain', dest='vm_domain',
+                                    help=('Specify Libvirt Domain Name'))
+        self.vm_parser.add_argument('--vm-hostname', dest='vm_hostname',
+                                    help='Specify VM hostname to login')
+        self.vm_parser.add_argument('--vm-username', dest='vm_username',
+                                    default=username,
+                                    help='Specify the username to login on VM')
+        self.vm_parser.add_argument('--vm-password', dest='vm_password',
+                                    default=None,
+                                    help='Specify the password to login on VM')
+        self.vm_parser.add_argument('--vm-cleanup', dest='vm_cleanup',
+                                    action='store_true',
+                                    default=False,
+                                    help=('Restore VM to a previous state, before '
+                                          'running tests'))
         self.configured = True
 
     def activate(self, app_args):
         try:
             if app_args.vm:
-                self.parser.set_defaults(vm_result=VMTestResult,
-                                         test_runner=VMTestRunner)
+                self.vm_parser.set_defaults(vm_result=VMTestResult,
+                                            test_runner=VMTestRunner)
         except AttributeError:
             pass
