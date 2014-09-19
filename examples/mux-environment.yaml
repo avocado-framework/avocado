@@ -6,16 +6,16 @@ hw:
             cpu_CFLAGS: '-march=athlon64'
         arm:
             cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
-            filter-only: ['/root/os/linux', '/root/env/debug']
-            filter-out: '/root/hw'
+            filter-only: ['/os/linux', '/env/debug']
+            filter-out: '/hw'
     disk:
         scsi:
             disk_type: 'scsi'
         virtio:
             disk_type: 'virtio'
-            filter-only: '/root/os/linux'
+            filter-only: '/os/linux'
 os:
-    filter-out: '/root/os'
+    filter-out: '/os'
     linux:
         bsod: 'false'
         fedora:
@@ -36,4 +36,4 @@ env:
         debug_CFLAGS: '-O0 -g'
     prod:
         debug_CFLAGS: ''
-        filter-only: '/root/os/win'
+        filter-only: '/os/win'

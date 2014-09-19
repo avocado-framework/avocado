@@ -28,16 +28,16 @@ f_out = []
 class TestPathParent(unittest.TestCase):
 
     def test_empty_string(self):
-        self.assertEqual(path_parent(''), '/root')
+        self.assertEqual(path_parent(''), '')
 
     def test_on_root(self):
-        self.assertEqual(path_parent('/root'), '/root')
+        self.assertEqual(path_parent('/'), '')
 
     def test_direct_parent(self):
-        self.assertEqual(path_parent('/root/os/linux'), '/root/os')
+        self.assertEqual(path_parent('/os/linux'), '/os')
 
     def test_false_direct_parent(self):
-        self.assertNotEqual(path_parent('/root/os/linux'), '/root')
+        self.assertNotEqual(path_parent('/os/linux'), '/')
 
 
 class TestAnySibling(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestAnySibling(unittest.TestCase):
                 win7:
                 win8:
         """
-        t = TreeNode('/root')
+        t = TreeNode()
         os = t.add_child(TreeNode('os'))
         linux = os.add_child(TreeNode('linux'))
         self.mint = linux.add_child(TreeNode('mint'))
@@ -170,15 +170,15 @@ class TestMultiplex(unittest.TestCase):
     def test_multiplex_filter_only(self):
         f_only = ['']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
-        f_only = ['/root/arch']
+        f_only = ['/arch']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
-        f_only = ['/root/arch', '/root/linux']
+        f_only = ['/arch', '/linux']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 4)
-        f_only = ['/root/arch', '/root/linux/fedora']
+        f_only = ['/arch', '/linux/fedora']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
 
     def test_multiplex_filter_only_invalid(self):
-        f_only = ['/root/stage']
+        f_only = ['/stage']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 0)
         self.assertEqual(len(list(multiplex(self.leaves4, filter_only=f_only, filter_out=f_out))), 0)
 
@@ -190,31 +190,31 @@ class TestMultiplex(unittest.TestCase):
     def test_multiplex_filter_out(self):
         f_out = ['']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
-        f_out = ['/root/arch']
+        f_out = ['/arch']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 4)
-        f_out = ['/root/arch', '/root/linux']
+        f_out = ['/arch', '/linux']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
-        f_out = ['/root/arch', '/root/linux/fedora']
+        f_out = ['/arch', '/linux/fedora']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
 
     def test_multiplex_filter_combined(self):
         f_out = ['']
         f_only = ['']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
-        f_only = ['/root/arch']
-        f_out = ['/root/arch']
+        f_only = ['/arch']
+        f_out = ['/arch']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 0)
-        f_out = ['/root/arch']
-        f_only = ['/root/arch']
+        f_out = ['/arch']
+        f_only = ['/arch']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 0)
-        f_out = ['/root/arch', '/root/linux']
-        f_only = ['/root/linux/fedora']
+        f_out = ['/arch', '/linux']
+        f_only = ['/linux/fedora']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
-        f_out = ['/root/arch']
-        f_only = ['/root/linux']
+        f_out = ['/arch']
+        f_only = ['/linux']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
-        f_out = ['/root/arch']
-        f_only = ['/root/linux']
+        f_out = ['/arch']
+        f_only = ['/linux']
         self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
 
 if __name__ == '__main__':

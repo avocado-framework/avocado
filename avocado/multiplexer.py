@@ -33,7 +33,7 @@ def path_parent(path):
     """
     parent = path.rpartition('/')[0]
     if parent == '':
-        return '/root'
+        return ''
     return parent
 
 
