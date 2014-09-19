@@ -40,7 +40,7 @@ import yaml
 
 class TreeNode(object):
 
-    def __init__(self, name='/root', value=None, parent=None, children=None):
+    def __init__(self, name='', value=None, parent=None, children=None):
         if value is None:
             value = collections.OrderedDict()
         if children is None:
@@ -211,7 +211,7 @@ def read_ordered_yaml(fileobj):
     return data
 
 
-def create_from_ordered_data(data, tree=None, root=None, name='/root'):
+def create_from_ordered_data(data, tree=None, root=None, name=''):
     if tree is None:
         tree = TreeNode(name)
     if root is None:
