@@ -24,11 +24,17 @@ class HelloWorld(plugin.Plugin):
     name = 'hello_world'
     enabled = True
 
-    def configure(self, app_parser, cmd_parser):
-        myparser = cmd_parser.add_parser('hello',
-                                         help='Hello World! plugin example')
-        myparser.set_defaults(func=self.hello)
-        self.configured = True
+    def configure(self, parser):
+        """
+        Add the subparser for the 'hello' action.
+        """
+        self.parser = parser.subcommands.add_parser(
+            'hello',
+            help='Hello World! plugin example')
+        super(HelloWorld, self).configure(self.parser)
 
-    def hello(self, args):
+    def run(self, args):
+        """
+        This method is called whenever we use the command 'hello'.
+        """
         print self.__doc__
