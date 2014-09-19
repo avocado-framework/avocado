@@ -42,30 +42,34 @@ runner, ``hello``. This is how you'd do it::
         name = 'hello_world'
         enabled = True
 
-        def configure(self, app_parser, cmd_parser):
-            myparser = cmd_parser.add_parser('hello',
-                                             help='Hello World! plugin example')
-            myparser.set_defaults(func=self.hello)
-            self.configured = True
+        def configure(self, parser):
+            self.parser = parser.subcommands.add_parser(
+                'hello',
+                help='Hello World! plugin example')
+            super(HelloWorld, self).configure(self.parser)
 
-        def hello(self, args):
+        def run(self, args):
             print self.__doc__
-
 
 As you can see, plugins inherit from :class:`avocado.plugins.plugin.Plugin`,
 that have the methods :func:`avocado.plugins.plugin.Plugin.configure` and
 :func:`avocado.plugins.plugin.Plugin.activate`. Configure does add the
 command parser to the app test runner, and activate, if necessary will activate
 your plugin, overriding avocado core functionality. In this configure method,
-we added a new parser for the new command ``hello`` and set it to the method
-``hello``, that will print the plugin's docstring.
+we added a new parser for the new command ``hello`` and automatically set
+it to the method ``run``, that will print the plugin's docstring.
 
 Make avocado aware of the new plugin
 ------------------------------------
 
 Avocado has an option ``--plugins`` that allows you to provide a filesystem
-location that contains plugins, that will be automatically loaded. In the
-avocado source tree, the ``avocado_hello.py`` example is available under
+location that contains plugins, that will be automatically loaded.
+
+Note that all external plugins shall be prefixed with this ``avocado_`` name,
+otherwise the Python module will be just ignored and no plugin inside
+will be loaded!
+
+In the avocado source tree, the ``avocado_hello.py`` example is available under
 ``examples/plugins``. So, in order to enable the hello plugin, you can do a::
 
     $ avocado --plugins examples/plugins/ plugins
