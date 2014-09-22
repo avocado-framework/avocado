@@ -131,10 +131,15 @@ def multiplex(*args, **kwargs):
 
         # second level of filtering above should use the filter strings
         # extracted from the node being worked on
-        result = [x + [y] for x in result for y in pool
-                  if any_sibling(*(x + [y])) is False and
-                  filter_only(y.environment.get('filter-only', []), x + [y]) and
-                  filter_out(y.environment.get('filter-out', []), x + [y])]
+        items = []
+        for x in result:
+            for y in pool:
+                item = x + [y]
+                if any_sibling(*item) is False and \
+                        filter_only(y.environment.get('filter-only', []), item) and \
+                        filter_out(y.environment.get('filter-out', []), item):
+                    items.append(item)
+        result = items
 
         # if a pool gets totally filtered out above, result will be empty
         if len(result) == 0:
