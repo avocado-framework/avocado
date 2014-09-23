@@ -69,6 +69,7 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='message', msg='Config file tree structure:')
             data = tree.read_ordered_yaml(open(multiplex_file))
             t = tree.create_from_ordered_data(data)
+            t = tree.apply_filters(t, args.filter_only, args.filter_out)
             view.notify(event='minor', msg=t.get_ascii())
             sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
 

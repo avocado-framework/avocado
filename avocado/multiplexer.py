@@ -96,16 +96,13 @@ def filter_out(keys, items):
     return True
 
 
-def multiplex(*args, **kwargs):
-    f_only = kwargs.get('filter_only', [''])
-    f_out = kwargs.get('filter_out', [''])
+def multiplex(*args):
     leaves = []
     parents = collections.OrderedDict()
     # filter args and create a set of parents
     for arg in args[0]:
-        if filter_only(f_only, [arg]) and filter_out(f_out, [arg]):
-            leaves.append(arg)
-            parents[arg.parent] = True
+        leaves.append(arg)
+        parents[arg.parent] = True
 
     pools = []
     for p in parents.keys():
@@ -143,8 +140,7 @@ def multiplex(*args, **kwargs):
 
 def create_variants_from_yaml(input_yaml, filter_only=[], filter_out=[]):
     input_tree = tree.create_from_yaml(input_yaml)
-    leaves = input_tree.get_leaves()
-    variants = multiplex(leaves,
-                         filter_only=filter_only,
-                         filter_out=filter_out)
+    final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
+    leaves = final_tree.get_leaves()
+    variants = multiplex(leaves)
     return variants
