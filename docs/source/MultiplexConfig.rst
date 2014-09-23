@@ -48,22 +48,18 @@ it looks just like this::
 
          /-short
         |
-    -/root-medium
+    ----|-medium
         |
          \-long
-
-The node structure contains a special node ``/root``, which is
-implicitly included in every file parsed file by the multiplexer and
-the nodes that we have created, which are ``short``, ``medium`` and ``long``.
 
 It helps if you see the tree structure as a set of paths
 separated by ``/``, much like paths in the file system.
 
 In the example we have being working on, there are only three paths:
 
-- ``//root/short``
-- ``//root/medium``
-- ``//root/long``
+- ``//short``
+- ``//medium``
+- ``//long``
 
 The ending nodes (the leafs on the tree) will become part of all lower-level
 (i.e. further indented) variant stanzas (see section variants_).
@@ -126,8 +122,8 @@ And the rules defined as:
 
 The environment created for the nodes ``fedora`` and ``osx`` are:
 
-- Node ``//root/devtools/fedora`` environment ``compiler: 'gcc'``, ``flags: ['-O2', '-Wall']``
-- None ``//root/devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
+- Node ``//devtools/fedora`` environment ``compiler: 'gcc'``, ``flags: ['-O2', '-Wall']``
+- None ``//devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
 
 .. _variants:
 
