@@ -24,19 +24,6 @@ import collections
 from avocado.core import tree
 
 
-def path_parent(path):
-    """
-    From a given path, return its parent path.
-
-    :param path: the node path as string.
-    :return: the parent path as string.
-    """
-    parent = path.rpartition('/')[0]
-    if parent == '':
-        return ''
-    return parent
-
-
 def any_sibling(*nodes):
     """
     Check if there is any sibling.
@@ -74,7 +61,7 @@ def filter_only(keys, items):
                 return True
 
             # siblings and their children, filter them out
-            if item.parent.path.startswith(path_parent(key)):
+            if item.parent.path.startswith(tree.path_parent(key)):
                 ret = False
                 continue
 
@@ -102,7 +89,7 @@ def filter_out(keys, items):
                 return False
 
             # sibling and its children, let them in
-            if item.path.startswith(path_parent(key)):
+            if item.path.startswith(tree.path_parent(key)):
                 continue
 
     # everything else should get in

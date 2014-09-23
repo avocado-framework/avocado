@@ -241,3 +241,15 @@ def create_from_ordered_data(data, tree=None, root=None, name=''):
 def create_from_yaml(input_yaml):
     data = read_ordered_yaml(input_yaml)
     return create_from_ordered_data(data)
+
+def path_parent(path):
+    """
+    From a given path, return its parent path.
+
+    :param path: the node path as string.
+    :return: the parent path as string.
+    """
+    parent = path.rpartition('/')[0]
+    if parent == '':
+        return ''
+    return parent

@@ -133,5 +133,20 @@ class TestTreeNode(unittest.TestCase):
         self.assertNotIn(n, self.treenode.children)
 
 
+class TestPathParent(unittest.TestCase):
+
+    def test_empty_string(self):
+        self.assertEqual(path_parent(''), '')
+
+    def test_on_root(self):
+        self.assertEqual(path_parent('/'), '')
+
+    def test_direct_parent(self):
+        self.assertEqual(path_parent('/os/linux'), '/os')
+
+    def test_false_direct_parent(self):
+        self.assertNotEqual(path_parent('/os/linux'), '/')
+
+
 if __name__ == '__main__':
     unittest.main()
