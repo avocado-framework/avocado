@@ -40,7 +40,7 @@ and to store in a set of key/values (possibly empty). Basically nodes can contai
 other nodes, so will have the parent and child relationship in a tree structure.
 
 The tree node structure can be obtained by using the command line
-``avocado plugins --tree <file>`` and for previous example,
+``avocado multiplex --tree <file>`` and for previous example,
 it looks just like this::
 
     avocado multiplex --tree sleep.yaml
