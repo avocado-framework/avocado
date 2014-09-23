@@ -192,6 +192,12 @@ class TreeNode(object):
         else:
             return [char1 + '-' + node_name], 0
 
+    def detach(self):
+        if self.parent:
+            self.parent.children.remove(self)
+            self.parent = None
+        return self
+
 
 def ordered_load(stream, Loader=yaml.Loader,
                  object_pairs_hook=collections.OrderedDict):

@@ -127,6 +127,11 @@ class TestTreeNode(unittest.TestCase):
         self.assertDictEqual(self.treenode.children[1].children[1].children[0].environment, {'dev-tools': 'cygwin', 'metro': False})
         self.assertDictEqual(self.treenode.children[1].children[1].children[1].environment, {'dev-tools': 'cygwin', 'metro': True})
 
+    def test_detach(self):
+        n = self.treenode.children[1].detach()
+        self.assertEqual(n.name, 'os')
+        self.assertNotIn(n, self.treenode.children)
+
 
 if __name__ == '__main__':
     unittest.main()
