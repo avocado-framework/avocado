@@ -230,7 +230,7 @@ class TermSupport(object):
 term_support = TermSupport()
 
 
-class OutputManager(object):
+class View(object):
 
     """
     Takes care of both disk logs and stdout/err logs.

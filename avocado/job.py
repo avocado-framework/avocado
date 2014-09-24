@@ -317,7 +317,7 @@ class Job(object):
         self.result_proxy = result.TestResultProxy()
         self.sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
-        self.output_manager = output.OutputManager()
+        self.view = output.View()
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -337,14 +337,14 @@ class Job(object):
             if key.endswith('_result'):
                 result_class = getattr(self.args, key)
                 if issubclass(result_class, result.TestResult):
-                    result_plugin = result_class(self.output_manager,
+                    result_plugin = result_class(self.view,
                                                  self.args)
                     if result_plugin.output == '-':
                         if plugin_using_stdout is not None:
                             e_msg %= (plugin_using_stdout.command_line_arg_name,
                                       result_plugin.command_line_arg_name)
-                            self.output_manager.log_fail_header(e_msg)
-                            self.output_manager.log_fail_header(e_msg_2)
+                            self.view.log_fail_header(e_msg)
+                            self.view.log_fail_header(e_msg_2)
                             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
                         else:
                             plugin_using_stdout = result_plugin
@@ -370,14 +370,14 @@ class Job(object):
         xunit_file = os.path.join(self.logdir, 'results.xml')
         args = argparse.Namespace()
         args.xunit_output = xunit_file
-        xunit_plugin = xunit.xUnitTestResult(self.output_manager, args)
+        xunit_plugin = xunit.xUnitTestResult(self.view, args)
         self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')
         args = argparse.Namespace()
         args.json_output = json_file
-        json_plugin = jsonresult.JSONTestResult(self.output_manager, args)
+        json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
 
         # If there are no active output plugins besides xunit and json,
@@ -387,7 +387,7 @@ class Job(object):
         else:
             human = True
         if len(self.result_proxy.output_plugins) == 2 and human:
-            human_plugin = result.HumanTestResult(self.output_manager, self.args)
+            human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
     def _run(self, urls=None, multiplex_file=None):
@@ -454,12 +454,12 @@ class Job(object):
         self._make_test_result()
         self._make_test_runner()
 
-        self.output_manager.start_file_logging(self.logfile,
-                                               self.loglevel,
-                                               self.unique_id)
-        self.output_manager.logfile = self.logfile
+        self.view.start_file_logging(self.logfile,
+                                     self.loglevel,
+                                     self.unique_id)
+        self.view.logfile = self.logfile
         failures = self.test_runner.run(params_list)
-        self.output_manager.stop_file_logging()
+        self.view.stop_file_logging()
         self.sysinfo_logger.end_job_hook()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
@@ -505,11 +505,11 @@ class Job(object):
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.output_manager.log_fail_header('Avocado job failed: %s: %s' %
-                                                (fail_class, details))
+            self.view.log_fail_header('Avocado job failed: %s: %s' %
+                                      (fail_class, details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except exceptions.OptionValidationError, details:
-            self.output_manager.log_fail_header(str(details))
+            self.view.log_fail_header(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
 
         except Exception, details:
@@ -518,15 +518,15 @@ class Job(object):
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             fail_class = details.__class__.__name__
-            self.output_manager.log_fail_header('Avocado crashed: %s: %s' %
-                                                (fail_class, details))
+            self.view.log_fail_header('Avocado crashed: %s: %s' %
+                                      (fail_class, details))
             for line in tb_info:
-                self.output_manager.error(line)
-            self.output_manager.log_fail_header('Please include the traceback '
-                                                'info and command line used on '
-                                                'your bug report')
-            self.output_manager.log_fail_header('Report bugs visiting %s' %
-                                                _NEW_ISSUE_LINK)
+                self.view.error(line)
+            self.view.log_fail_header('Please include the traceback '
+                                      'info and command line used on '
+                                      'your bug report')
+            self.view.log_fail_header('Report bugs visiting %s' %
+                                      _NEW_ISSUE_LINK)
             return error_codes.numeric_status['AVOCADO_CRASH']
 
 
