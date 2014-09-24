@@ -33,23 +33,20 @@ class PluginsList(plugin.Plugin):
         super(PluginsList, self).configure(self.parser)
 
     def run(self, args):
-        bcolors = output.term_support
-        pipe = output.get_paginator()
+        view = output.View()
         pm = get_plugin_manager()
-        pipe.write(bcolors.header_str('Plugins loaded:'))
-        pipe.write('\n')
+        view.log_header('Plugins loaded:')
         blength = 0
         for plug in pm.plugins:
             clength = len(plug.name)
             if clength > blength:
                 blength = clength
 
-        format_str = "    %-" + str(blength) + "s - %s (%s)\n"
+        format_str = "    %-" + str(blength) + "s - %s "
         for plug in sorted(pm.plugins):
+            view.log(format_str % (plug.name, plug.description),
+                     skip_newline=True)
             if plug.enabled:
-                status = bcolors.healthy_str("Enabled")
+                view.log_healthy("(Enabled)")
             else:
-                status = bcolors.fail_header_str("Disabled")
-            pipe.write(format_str % (bcolors.header_str(plug.name),
-                                     plug.description,
-                                     status))
+                view.log_fail_header("(Disabled)")
