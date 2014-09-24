@@ -53,8 +53,7 @@ class TestLister(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        bcolors = output.term_support
-        pipe = output.get_paginator()
+        view = output.View(list_mode=True)
         base_test_dir = data_dir.get_test_dir()
         test_files = os.listdir(base_test_dir)
         test_dirs = []
@@ -66,15 +65,14 @@ class TestLister(plugin.Plugin):
                 if clength > blength:
                     blength = clength
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
-        format_string = "    %-" + str(blength) + "s %s\n"
-        pipe.write(bcolors.header_str('Tests dir: %s\n' % base_test_dir))
+        format_string = "    %-" + str(blength) + "s %s"
+        view.log_header('Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
-            pipe.write(bcolors.header_str(format_string % ('Alias', 'Path')))
+            view.log(format_string % ('Alias', 'Path'))
             for test_dir in test_dirs:
-                pipe.write(format_string % test_dir)
+                view.log(format_string % test_dir)
         else:
-            pipe.write(bcolors.header_str('No tests were found on current '
-                                          'tests dir'))
+            view.log_error('No tests were found on current tests dir')
 
 
 class TestRunner(plugin.Plugin):

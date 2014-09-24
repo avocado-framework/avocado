@@ -295,7 +295,7 @@ class ExternalPluginsTest(unittest.TestCase):
         cmd_line = './scripts/avocado --plugins %s plugins' % self.base_sourcedir
         result = process.run(cmd_line, ignore_status=True)
         expected_output = 'noname'
-        self.assertIn(expected_output, result.stdout)
+        self.assertIn(expected_output, result.stderr)
 
     def test_syntax_error_plugin(self):
         self.syntax_err_plugin = os.path.join(self.base_sourcedir, 'avocado_syntax_err.py')
