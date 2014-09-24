@@ -181,8 +181,10 @@ class TestMultiplex(unittest.TestCase):
         f_only = ['/stage']
         t3 = apply_filters(self.tree3, filter_only=f_only)
         t4 = apply_filters(self.tree4, filter_only=f_only)
-        self.assertEqual(len(list(multiplex(t3.get_leaves()))), 0)
-        self.assertEqual(len(list(multiplex(t4.get_leaves()))), 0)
+        leaves3 = [x for x in t3.get_leaves() if x.parent is not None]
+        leaves4 = [x for x in t4.get_leaves() if x.parent is not None]
+        self.assertEqual(len(list(multiplex(leaves3))), 0)
+        self.assertEqual(len(list(multiplex(leaves4))), 0)
 
     def test_multiplex_filter_out_invalid(self):
         f_out = ['/foobar']
@@ -221,6 +223,7 @@ class TestMultiplex(unittest.TestCase):
         f_only = ['/arch']
         f_out = ['/arch']
         leaves = apply_filters(self.tree3, filter_only=f_only, filter_out=f_out).get_leaves()
+        leaves = [x for x in leaves if x.parent is not None]
         self.assertEqual(len(list(multiplex(leaves))), 0)
 
     def test_multiplex_filter_combined_2(self):
