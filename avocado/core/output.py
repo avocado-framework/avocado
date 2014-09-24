@@ -230,7 +230,7 @@ class TermSupport(object):
 term_support = TermSupport()
 
 
-class OutputManager(object):
+class View(object):
 
     """
     Takes care of both disk logs and stdout/err logs.
@@ -263,59 +263,6 @@ class OutputManager(object):
         else:
             self.console_log.log(level=level, msg=msg, extra=extra)
 
-    def throbber_progress(self, progress_from_test=False):
-        """
-        Give an interactive indicator of the test progress
-
-        :param progress_from_test: if indication of progress came explicitly
-                                   from the test. If false, it means the test
-                                   process is running, but not communicating
-                                   test specific progress.
-        :type progress_from_test: bool
-        :rtype: None
-        """
-        if progress_from_test:
-            self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
-        else:
-            self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
-
-        if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
-            self.throbber_pos = 0
-        else:
-            self.throbber_pos += 1
-
-    def start_file_logging(self, logfile, loglevel, unique_id):
-        """
-        Start the main file logging.
-
-        :param logfile: Path to file that will receive logging.
-        :param loglevel: Level of the logger. Example: :mod:`logging.DEBUG`.
-        :param unique_id: job.Job() unique id attribute.
-        """
-        self.job_unique_id = unique_id
-        self.debuglog = logfile
-        self.file_handler = logging.FileHandler(filename=logfile)
-        self.file_handler.setLevel(loglevel)
-
-        fmt = '%(asctime)s %(module)-10.10s L%(lineno)-.4d %(levelname)-5.5s| %(message)s'
-        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-
-        self.file_handler.setFormatter(formatter)
-        test_logger = logging.getLogger('avocado.test')
-        linux_logger = logging.getLogger('avocado.linux')
-        test_logger.addHandler(self.file_handler)
-        linux_logger.addHandler(self.file_handler)
-
-    def stop_file_logging(self):
-        """
-        Simple helper for removing a handler from the current logger.
-        """
-        test_logger = logging.getLogger('avocado.test')
-        linux_logger = logging.getLogger('avocado.linux')
-        test_logger.removeHandler(self.file_handler)
-        linux_logger.removeHandler(self.file_handler)
-        self.file_handler.close()
-
     def info(self, msg, skip_newline=False):
         """
         Log a :mod:`logging.INFO` message.
@@ -326,7 +273,7 @@ class OutputManager(object):
 
     def error(self, msg):
         """
-        Log a :mod:`logging.INFO` message.
+        Log a :mod:`logging.ERROR` message.
 
         :param msg: Message to write.
         """
@@ -417,3 +364,56 @@ class OutputManager(object):
         """
         normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
         self.error(normal_warn_msg)
+
+    def throbber_progress(self, progress_from_test=False):
+        """
+        Give an interactive indicator of the test progress
+
+        :param progress_from_test: if indication of progress came explicitly
+                                   from the test. If false, it means the test
+                                   process is running, but not communicating
+                                   test specific progress.
+        :type progress_from_test: bool
+        :rtype: None
+        """
+        if progress_from_test:
+            self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+        else:
+            self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
+
+        if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
+            self.throbber_pos = 0
+        else:
+            self.throbber_pos += 1
+
+    def start_file_logging(self, logfile, loglevel, unique_id):
+        """
+        Start the main file logging.
+
+        :param logfile: Path to file that will receive logging.
+        :param loglevel: Level of the logger. Example: :mod:`logging.DEBUG`.
+        :param unique_id: job.Job() unique id attribute.
+        """
+        self.job_unique_id = unique_id
+        self.debuglog = logfile
+        self.file_handler = logging.FileHandler(filename=logfile)
+        self.file_handler.setLevel(loglevel)
+
+        fmt = '%(asctime)s %(module)-10.10s L%(lineno)-.4d %(levelname)-5.5s| %(message)s'
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+
+        self.file_handler.setFormatter(formatter)
+        test_logger = logging.getLogger('avocado.test')
+        linux_logger = logging.getLogger('avocado.linux')
+        test_logger.addHandler(self.file_handler)
+        linux_logger.addHandler(self.file_handler)
+
+    def stop_file_logging(self):
+        """
+        Simple helper for removing a handler from the current logger.
+        """
+        test_logger = logging.getLogger('avocado.test')
+        linux_logger = logging.getLogger('avocado.linux')
+        test_logger.removeHandler(self.file_handler)
+        linux_logger.removeHandler(self.file_handler)
+        self.file_handler.close()
