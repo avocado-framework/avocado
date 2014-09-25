@@ -140,11 +140,18 @@ class Test(unittest.TestCase):
         self.logdir = path.init_dir(base_logdir, self.tagged_name)
         io.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
+
+        self.stdout_file = os.path.join(self.logdir, 'stdout.actual')
+        self.stderr_file = os.path.join(self.logdir, 'stderr.actual')
+
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")
+
+        self.stdout_log = logging.getLogger("avocado.test.stdout")
+        self.stderr_log = logging.getLogger("avocado.test.stderr")
 
         self.log.info('START %s', self.tagged_name)
         self.log.debug('')
@@ -281,6 +288,19 @@ class Test(unittest.TestCase):
 
         self.file_handler.setFormatter(formatter)
         self.log.addHandler(self.file_handler)
+
+        stream_fmt = '%(message)s'
+        stream_formatter = logging.Formatter(fmt=stream_fmt)
+
+        self.stdout_file_handler = logging.FileHandler(filename=self.stdout_file)
+        self.stdout_file_handler.setLevel(logging.DEBUG)
+        self.stdout_file_handler.setFormatter(stream_formatter)
+        self.stdout_log.addHandler(self.stdout_file_handler)
+
+        self.stderr_file_handler = logging.FileHandler(filename=self.stderr_file)
+        self.stderr_file_handler.setLevel(logging.DEBUG)
+        self.stderr_file_handler.setFormatter(stream_formatter)
+        self.stderr_log.addHandler(self.stderr_file_handler)
 
     def stop_logging(self):
         """
