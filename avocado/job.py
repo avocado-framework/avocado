@@ -128,6 +128,8 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
+        sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
+        sys.sterr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
         instance = self.load_test(params, queue)
         runtime.CURRENT_TEST = instance
         early_state = instance.get_state()
