@@ -114,6 +114,13 @@ class TestRunner(plugin.Plugin):
         self.parser.add_argument('-s', '--silent', action='store_true', default=False,
                                  help='Silent output, do not display results.')
 
+        self.parser.add_argument('--output-check-record', type=str,
+                                 default=None,
+                                 help=('Record output streams of your tests '
+                                       'to reference files (valid options: '
+                                       'all, stdout, stderr). Default: Do not '
+                                       'record'))
+
         mux = self.parser.add_argument_group('multiplex arguments')
         mux.add_argument('-m', '--multiplex-file', type=str, default=None,
                          help='Path to an avocado multiplex (.yaml) file')
