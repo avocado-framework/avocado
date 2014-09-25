@@ -56,17 +56,17 @@ class Multiplexer(plugin.Plugin):
         view = output.View()
 
         if not args.multiplex_file:
-            view.log_fail_header('A multiplex file is required, aborting...')
+            view.log_ui_error('A multiplex file is required, aborting...')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         multiplex_file = os.path.abspath(args.multiplex_file)
 
         if not os.path.isfile(multiplex_file):
-            view.log_fail_header('Invalid multiplex file %s' % multiplex_file)
+            view.log_ui_error('Invalid multiplex file %s' % multiplex_file)
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         if args.tree:
-            view.log_header('Config file tree structure:')
+            view.log_ui_header('Config file tree structure:')
             data = tree.read_ordered_yaml(open(multiplex_file))
             t = tree.create_from_ordered_data(data)
             view.log(t.get_ascii())
@@ -76,7 +76,7 @@ class Multiplexer(plugin.Plugin):
                                                          args.filter_only,
                                                          args.filter_out)
 
-        view.log_header('Variants generated:')
+        view.log_ui_header('Variants generated:')
         for (index, tpl) in enumerate(variants):
             paths = ', '.join([x.path for x in tpl])
             view.log('Variant %s:    %s' % (index+1, paths))

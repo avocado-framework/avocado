@@ -263,109 +263,109 @@ class View(object):
         else:
             self.console_log.log(level=level, msg=msg, extra=extra)
 
-    def info(self, msg, skip_newline=False):
+    def _log_ui_info(self, msg, skip_newline=False):
         """
-        Log a :mod:`logging.INFO` message.
+        Log a :mod:`logging.INFO` message to the UI.
 
         :param msg: Message to write.
         """
         self.log(msg, level=logging.INFO, skip_newline=skip_newline)
 
-    def error(self, msg):
+    def _log_ui_error(self, msg, skip_newline=False):
         """
-        Log a :mod:`logging.ERROR` message.
+        Log a :mod:`logging.ERROR` message to the UI.
 
         :param msg: Message to write.
         """
-        self.log(msg, level=logging.ERROR)
+        self.log(msg, level=logging.ERROR, skip_newline=skip_newline)
 
-    def log_healthy(self, msg, skip_newline=False):
+    def log_ui_healthy(self, msg, skip_newline=False):
         """
-        Log a message that indicates something healthy is going on
+        Log a message that indicates that things are going as expected.
 
         :param msg: Message to write.
         """
-        self.info(term_support.healthy_str(msg), skip_newline)
+        self._log_ui_info(term_support.healthy_str(msg), skip_newline)
 
-    def log_partial(self, msg, skip_newline=False):
+    def log_ui_partial(self, msg, skip_newline=False):
         """
         Log a message that indicates something (at least) partially OK
 
         :param msg: Message to write.
         """
-        self.info(term_support.partial_str(msg), skip_newline)
+        self._log_ui_info(term_support.partial_str(msg), skip_newline)
 
-    def log_header(self, msg):
+    def log_ui_header(self, msg):
         """
         Log a header message.
 
         :param msg: Message to write.
         """
-        self.info(term_support.header_str(msg))
+        self._log_ui_info(term_support.header_str(msg))
 
-    def log_fail_header(self, msg):
+    def log_ui_error(self, msg):
         """
-        Log a fail header message (red, for critical errors).
+        Log an error message (useful for critical errors).
 
         :param msg: Message to write.
         """
-        self.info(term_support.fail_header_str(msg))
+        self._log_ui_info(term_support.fail_header_str(msg))
 
-    def log_pass(self, t_elapsed):
+    def log_ui_status_pass(self, t_elapsed):
         """
-        Log a PASS message.
+        Log a PASS status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
-        self.info(normal_pass_msg)
+        self._log_ui_info(normal_pass_msg)
 
-    def log_error(self, t_elapsed):
+    def log_ui_status_error(self, t_elapsed):
         """
-        Log an ERROR message.
+        Log an ERROR status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_error_msg)
+        self._log_ui_error(normal_error_msg)
 
-    def log_not_found(self, t_elapsed):
+    def log_ui_status_not_found(self, t_elapsed):
         """
-        Log a NOT_FOUND message.
+        Log a NOT_FOUND status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_error_msg)
+        self._log_ui_error(normal_error_msg)
 
-    def log_fail(self, t_elapsed):
+    def log_ui_status_fail(self, t_elapsed):
         """
-        Log a FAIL message.
+        Log a FAIL status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_fail_msg)
+        self._log_ui_error(normal_fail_msg)
 
-    def log_skip(self, t_elapsed):
+    def log_ui_status_skip(self, t_elapsed):
         """
-        Log a SKIP message.
+        Log a SKIP status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_skip_msg = term_support.skip_str()
-        self.info(normal_skip_msg)
+        self._log_ui_info(normal_skip_msg)
 
-    def log_warn(self, t_elapsed):
+    def log_ui_status_warn(self, t_elapsed):
         """
-        Log a WARN message.
+        Log a WARN status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_warn_msg)
+        self._log_ui_error(normal_warn_msg)
 
-    def throbber_progress(self, progress_from_test=False):
+    def log_ui_throbber_progress(self, progress_from_test=False):
         """
         Give an interactive indicator of the test progress
 
@@ -377,9 +377,9 @@ class View(object):
         :rtype: None
         """
         if progress_from_test:
-            self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+            self.log_ui_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
         else:
-            self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
+            self.log_ui_partial(self.THROBBER_MOVES[self.throbber_pos], True)
 
         if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
             self.throbber_pos = 0

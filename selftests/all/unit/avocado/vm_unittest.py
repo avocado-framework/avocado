@@ -37,16 +37,16 @@ class _Stream(object):
     def start_file_logging(self, param1, param2):
         pass
 
-    def info(self, msg, skip_newline=False):
-        pass
-
-    def log_header(self, param):
-        pass
-
     def stop_file_logging(self):
         pass
 
-    def log_pass(self, param1):
+    def log(self, msg, skip_newline=False):
+        pass
+
+    def log_ui_header(self, param):
+        pass
+
+    def log_ui_status_pass(self, param1):
         pass
 
 

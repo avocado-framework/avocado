@@ -35,7 +35,7 @@ class PluginsList(plugin.Plugin):
     def run(self, args):
         view = output.View()
         pm = get_plugin_manager()
-        view.log_header('Plugins loaded:')
+        view.log_ui_header('Plugins loaded:')
         blength = 0
         for plug in pm.plugins:
             clength = len(plug.name)
@@ -47,6 +47,6 @@ class PluginsList(plugin.Plugin):
             view.log(format_str % (plug.name, plug.description),
                      skip_newline=True)
             if plug.enabled:
-                view.log_healthy("(Enabled)")
+                view.log_ui_healthy("(Enabled)")
             else:
-                view.log_fail_header("(Disabled)")
+                view.log_ui_error("(Disabled)")

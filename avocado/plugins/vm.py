@@ -152,42 +152,42 @@ class VMTestResult(TestResult):
         if self.args.vm_domain is None:
             e_msg = ('Please set Virtual Machine Domain with option '
                      '--vm-domain.')
-            self.stream.error(e_msg)
+            self.stream.log_ui_error(e_msg)
             raise exceptions.TestSetupFail(e_msg)
         if self.args.vm_hostname is None:
             e_msg = ('Please set Virtual Machine hostname with option '
                      '--vm-hostname.')
-            self.stream.error(e_msg)
+            self.stream.log_ui_error(e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        self.stream.log_header("VM DOMAIN : %s" %
-                               self.args.vm_domain)
-        self.stream.log_header("VM LOGIN  : %s@%s" %
-                               (self.args.vm_username, self.args.vm_hostname))
+        self.stream.log_ui_header("VM DOMAIN : %s" %
+                                  self.args.vm_domain)
+        self.stream.log_ui_header("VM LOGIN  : %s@%s" %
+                                  (self.args.vm_username, self.args.vm_hostname))
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
         if self.vm is None:
-            self.stream.error("Could not connect to VM '%s'" % self.args.vm_domain)
+            self.stream.log_ui_error("Could not connect to VM '%s'" % self.args.vm_domain)
             raise exceptions.TestSetupFail()
         if self.vm.start() is False:
-            self.stream.error("Could not start VM '%s'" % self.args.vm_domain)
+            self.stream.log_ui_error("Could not start VM '%s'" % self.args.vm_domain)
             raise exceptions.TestSetupFail()
         assert self.vm.domain.isActive() is not False
         if self.args.vm_cleanup is True:
             self.vm.create_snapshot()
             if self.vm.snapshot is None:
-                self.stream.error("Could not create snapshot on VM '%s'" % self.args.vm_domain)
+                self.stream.log_ui_error("Could not create snapshot on VM '%s'" % self.args.vm_domain)
                 raise exceptions.TestSetupFail()
         try:
             self.vm.setup_login(self.args.vm_hostname,
                                 self.args.vm_username,
                                 self.args.vm_password)
         except Exception as err:
-            self.stream.error("Could not login on VM '%s': %s" % (self.args.vm_hostname,
-                                                                  err))
+            self.stream.log_ui_error("Could not login on VM '%s': %s" % (self.args.vm_hostname,
+                                                                         err))
             self.tear_down()
             raise exceptions.TestSetupFail()
         if self.vm.logged is False or self.vm.remote.uptime() is '':
-            self.stream.error("Could not login on VM '%s'" % self.args.vm_hostname)
+            self.stream.log_ui_error("Could not login on VM '%s'" % self.args.vm_hostname)
             self.tear_down()
             raise exceptions.TestSetupFail()
         self._copy_tests()
@@ -201,21 +201,21 @@ class VMTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.log_header("JOB ID    : %s" % self.stream.job_unique_id)
-        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
-        self.stream.log_header("TESTS     : %s" % self.tests_total)
+        self.stream.log_ui_header("JOB ID    : %s" % self.stream.job_unique_id)
+        self.stream.log_ui_header("JOB LOG   : %s" % self.stream.logfile)
+        self.stream.log_ui_header("TESTS     : %s" % self.tests_total)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
-        self.stream.log_header("PASS      : %d" % len(self.passed))
-        self.stream.log_header("ERROR     : %d" % len(self.errors))
-        self.stream.log_header("NOT FOUND : %d" % len(self.not_found))
-        self.stream.log_header("FAIL      : %d" % len(self.failed))
-        self.stream.log_header("SKIP      : %d" % len(self.skipped))
-        self.stream.log_header("WARN      : %d" % len(self.warned))
-        self.stream.log_header("TIME      : %.2f s" % self.total_time)
+        self.stream.log_ui_header("PASS      : %d" % len(self.passed))
+        self.stream.log_ui_header("ERROR     : %d" % len(self.errors))
+        self.stream.log_ui_header("NOT FOUND : %d" % len(self.not_found))
+        self.stream.log_ui_header("FAIL      : %d" % len(self.failed))
+        self.stream.log_ui_header("SKIP      : %d" % len(self.skipped))
+        self.stream.log_ui_header("WARN      : %d" % len(self.warned))
+        self.stream.log_ui_header("TIME      : %.2f s" % self.total_time)
 
     def start_test(self, test):
         """
@@ -226,7 +226,7 @@ class VMTestResult(TestResult):
         self.test_label = '(%s/%s) %s:  ' % (self.tests_run,
                                              self.tests_total,
                                              test['tagged_name'])
-        self.stream.info(msg=self.test_label, skip_newline=True)
+        self.stream.log(msg=self.test_label, skip_newline=True)
 
     def end_test(self, test):
         """
@@ -243,7 +243,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_pass(self, test)
-        self.stream.log_pass(test['time_elapsed'])
+        self.stream.log_ui_status_pass(test['time_elapsed'])
 
     def add_error(self, test):
         """
@@ -252,7 +252,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_error(self, test)
-        self.stream.log_error(test['time_elapsed'])
+        self.stream.log_ui_status_error(test['time_elapsed'])
 
     def add_not_found(self, test):
         """
@@ -261,7 +261,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_not_found(self, test)
-        self.stream.log_not_found(test['time_elapsed'])
+        self.stream.log_ui_status_not_found(test['time_elapsed'])
 
     def add_fail(self, test):
         """
@@ -270,7 +270,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_fail(self, test)
-        self.stream.log_fail(test['time_elapsed'])
+        self.stream.log_ui_status_fail(test['time_elapsed'])
 
     def add_skip(self, test):
         """
@@ -279,7 +279,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_skip(self, test)
-        self.stream.log_skip(test['time_elapsed'])
+        self.stream.log_ui_status_skip(test['time_elapsed'])
 
     def add_warn(self, test):
         """
@@ -288,7 +288,7 @@ class VMTestResult(TestResult):
         :param test: :class:`avocado.test.Test` instance.
         """
         TestResult.add_warn(self, test)
-        self.stream.log_warn(test['time_elapsed'])
+        self.stream.log_ui_status_warn(test['time_elapsed'])
 
 
 class RunVM(plugin.Plugin):

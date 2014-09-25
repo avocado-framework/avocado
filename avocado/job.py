@@ -239,17 +239,17 @@ class TestRunner(object):
                                        ignore_window)
                             k_msg_3 = ("A new Ctrl+C sent after that will send a "
                                        "SIGKILL to them")
-                            self.job.output_manager.log_header("\n")
-                            self.job.output_manager.log_header(k_msg_1)
-                            self.job.output_manager.log_header(k_msg_2)
-                            self.job.output_manager.log_header(k_msg_3)
+                            self.job.output_manager.log_ui_header("\n")
+                            self.job.output_manager.log_ui_header(k_msg_1)
+                            self.job.output_manager.log_ui_header(k_msg_2)
+                            self.job.output_manager.log_ui_header(k_msg_3)
                             stage_1_msg_displayed = True
                         ignore_time_started = time.time()
                     if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
                         if not stage_2_msg_displayed:
                             k_msg_3 = ("Ctrl+C received after the ignore window. "
                                        "Killing all active tests")
-                            self.job.output_manager.log_header(k_msg_3)
+                            self.job.output_manager.log_ui_header(k_msg_3)
                             stage_2_msg_displayed = True
                         os.kill(p.pid, signal.SIGKILL)
 
@@ -267,7 +267,7 @@ class TestRunner(object):
 
             # don't process other tests from the list
             if ctrl_c_count > 0:
-                self.job.output_manager.log_header("")
+                self.job.output_manager.log_ui_header("")
                 break
 
             self.result.check_test(test_state)
@@ -343,8 +343,8 @@ class Job(object):
                         if plugin_using_stdout is not None:
                             e_msg %= (plugin_using_stdout.command_line_arg_name,
                                       result_plugin.command_line_arg_name)
-                            self.view.log_fail_header(e_msg)
-                            self.view.log_fail_header(e_msg_2)
+                            self.view.log_ui_error(e_msg)
+                            self.view.log_ui_error(e_msg_2)
                             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
                         else:
                             plugin_using_stdout = result_plugin
@@ -505,11 +505,11 @@ class Job(object):
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.view.log_fail_header('Avocado job failed: %s: %s' %
-                                      (fail_class, details))
+            self.view.log_ui_error('Avocado job failed: %s: %s' %
+                                   (fail_class, details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except exceptions.OptionValidationError, details:
-            self.view.log_fail_header(str(details))
+            self.view.log_ui_error(str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
 
         except Exception, details:
@@ -518,15 +518,15 @@ class Job(object):
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             fail_class = details.__class__.__name__
-            self.view.log_fail_header('Avocado crashed: %s: %s' %
-                                      (fail_class, details))
+            self.view.log_ui_error('Avocado crashed: %s: %s' %
+                                   (fail_class, details))
             for line in tb_info:
-                self.view.error(line)
-            self.view.log_fail_header('Please include the traceback '
-                                      'info and command line used on '
-                                      'your bug report')
-            self.view.log_fail_header('Report bugs visiting %s' %
-                                      _NEW_ISSUE_LINK)
+                self.view.log_ui_error(line)
+            self.view.log_ui_error('Please include the traceback '
+                                   'info and command line used on '
+                                   'your bug report')
+            self.view.log_ui_error('Report bugs visiting %s' %
+                                   _NEW_ISSUE_LINK)
             return error_codes.numeric_status['AVOCADO_CRASH']
 
 

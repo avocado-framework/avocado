@@ -66,7 +66,7 @@ class TestLister(plugin.Plugin):
                     blength = clength
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
         format_string = "    %-" + str(blength) + "s %s"
-        view.log_header('Tests dir: %s' % base_test_dir)
+        view.log_ui_header('Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
             view.log(format_string % ('Alias', 'Path'))
             for test_dir in test_dirs:
