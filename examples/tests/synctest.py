@@ -56,7 +56,7 @@ class synctest(test.Test):
         path = os.path.join(os.getcwd(), 'synctest')
         cmd = ('%s %s %s' %
                (path, self.params.sync_length, self.params.sync_loop))
-        process.system(cmd)
+        process.system(cmd, record_stream_files=True)
         os.chdir(self.cwd)
 
 
