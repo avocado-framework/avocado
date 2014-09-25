@@ -168,7 +168,7 @@ class xUnitTestResult(TestResult):
         """
         Creates an instance of xUnitTestResult.
 
-        :param stream: an instance of :class:`avocado.core.output.OutputManager`.
+        :param stream: an instance of :class:`avocado.core.output.View`.
         :param args: an instance of :class:`argparse.Namespace`.
         """
         TestResult.__init__(self, stream, args)

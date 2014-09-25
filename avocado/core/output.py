@@ -230,7 +230,7 @@ class TermSupport(object):
 term_support = TermSupport()
 
 
-class OutputManager(object):
+class View(object):
 
     """
     Takes care of both disk logs and stdout/err logs.
@@ -242,9 +242,26 @@ class OutputManager(object):
                       term_support.MOVE_BACK + THROBBER_STEPS[2],
                       term_support.MOVE_BACK + THROBBER_STEPS[3]]
 
-    def __init__(self, logger_name='avocado.app'):
-        self.console_log = logging.getLogger('avocado.app')
+    def __init__(self, console_logger='avocado.app', list_mode=False):
+        self.list_mode = list_mode
+        self.console_log = logging.getLogger(console_logger)
+        self.paginator = get_paginator()
         self.throbber_pos = 0
+
+    def log(self, msg, level=logging.INFO, skip_newline=False):
+        """
+        Write a message to the avocado.app logger or the paginator.
+
+        :param msg: Message to write
+        :type msg: string
+        """
+        extra = {'skip_newline': skip_newline}
+        if self.list_mode:
+            if not skip_newline:
+                msg += '\n'
+            self.paginator.write(msg)
+        else:
+            self.console_log.log(level=level, msg=msg, extra=extra)
 
     def throbber_progress(self, progress_from_test=False):
         """
@@ -267,16 +284,6 @@ class OutputManager(object):
         else:
             self.throbber_pos += 1
 
-    def _log(self, msg, level=logging.INFO, skip_newline=False):
-        """
-        Write a message to the avocado.app logger.
-
-        :param msg: Message to write
-        :type msg: string
-        """
-        extra = {'skip_newline': skip_newline}
-        self.console_log.log(level=level, msg=msg, extra=extra)
-
     def start_file_logging(self, logfile, loglevel, unique_id):
         """
         Start the main file logging.
@@ -295,10 +302,8 @@ class OutputManager(object):
 
         self.file_handler.setFormatter(formatter)
         test_logger = logging.getLogger('avocado.test')
-        utils_logger = logging.getLogger('avocado.utils')
         linux_logger = logging.getLogger('avocado.linux')
         test_logger.addHandler(self.file_handler)
-        utils_logger.addHandler(self.file_handler)
         linux_logger.addHandler(self.file_handler)
 
     def stop_file_logging(self):
@@ -306,10 +311,8 @@ class OutputManager(object):
         Simple helper for removing a handler from the current logger.
         """
         test_logger = logging.getLogger('avocado.test')
-        utils_logger = logging.getLogger('avocado.utils')
         linux_logger = logging.getLogger('avocado.linux')
         test_logger.removeHandler(self.file_handler)
-        utils_logger.removeHandler(self.file_handler)
         linux_logger.removeHandler(self.file_handler)
         self.file_handler.close()
 
@@ -319,7 +322,7 @@ class OutputManager(object):
 
         :param msg: Message to write.
         """
-        self._log(msg, level=logging.INFO, skip_newline=skip_newline)
+        self.log(msg, level=logging.INFO, skip_newline=skip_newline)
 
     def error(self, msg):
         """
@@ -327,7 +330,7 @@ class OutputManager(object):
 
         :param msg: Message to write.
         """
-        self._log(msg, level=logging.ERROR)
+        self.log(msg, level=logging.ERROR)
 
     def log_healthy(self, msg, skip_newline=False):
         """
