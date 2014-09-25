@@ -224,4 +224,4 @@ Or the project github page at: `http://github.com/avocado-framework`
 AUTHOR
 ======
 
-Cleber Rosa <cleber@redhat.com>
+Avocado Development Team <avocado-devel@redhat.com>
