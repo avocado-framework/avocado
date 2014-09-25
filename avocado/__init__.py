@@ -51,6 +51,16 @@ DEFAULT_LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'avocado.test.stdout': {
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'avocado.test.stderr': {
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     }
 }
 
