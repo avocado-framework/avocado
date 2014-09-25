@@ -4,10 +4,10 @@
 Writing Avocado Tests
 =====================
 
-Avocado tests closely resemble autotest tests: All you need to do is to create a
-test module, which is a python file with a class that inherits from
-:class:`avocado.test.Test`. This class only really needs to implement a method
-called `action`, which represents the actual test payload.
+To write an avocado test, all you need to do is to create a test module, which
+is a python file with a class that inherits from :class:`avocado.test.Test`.
+This class only really needs to implement a method called `action`, which
+represents the actual test operations.
 
 Simple example
 ==============
@@ -260,7 +260,7 @@ an example that does that::
             os.chdir(self.srcdir)
             cmd = ('./synctest %s %s' %
                    (self.params.sync_length, self.params.sync_loop))
-            process.system(cmd)
+            process.system(cmd, record_stream_files=True)
             os.chdir(self.cwd)
 
 
@@ -276,7 +276,176 @@ suite.
 
 The ``action`` method just gets into the base directory of the compiled suite
 and executes the ``./synctest`` command, with appropriate parameters, using
-:func:`avocado.utils.process.system`.
+:func:`avocado.utils.process.system`. The ``record_stream_files=True`` param
+passed to that function is part of one avocado feature we are going to discuss
+about in the next section.
+
+Test Output Check and Output Record Mode
+========================================
+
+All that is nice and fancy, but in a lot of occasions, you want to go simpler:
+just check if the output of a given application matches an expected output.
+In order to help with this common use case, we offer the option
+``--output-check-record [mode]`` to the test runner::
+
+      --output-check-record OUTPUT_CHECK_RECORD
+                            Record output streams of your tests to reference files
+                            (valid options: all, stdout, stderr). Default: Do not
+                            record
+
+If this option is used, it will store the stdout or stderr of the process (or
+both, if you specified ``all``) being executed to reference files: ``stdout.expected``
+and ``stderr.expected``. Those files will be recorded in the test data dir. The
+data dir is in the same directory as the test source file, named
+``[source_file_name.data]``. Let's take as an example the test ``synctest.py``. In a
+fresh checkout of avocado, you can see::
+
+        examples/tests/synctest.py.data/stderr.expected
+        examples/tests/synctest.py.data/stdout.expected
+
+From those 2 files, only stdout.expected is non empty::
+
+    $ cat examples/tests/synctest.py.data/stdout.expected
+    PAR : waiting
+    PASS : sync interrupted
+
+The output files were originally obtained using the test runner and passing the
+option --output-check-record all to the test runner::
+
+    $ scripts/avocado run --output-check-record all synctest
+    JOB ID    : bcd05e4fd33e068b159045652da9eb7448802be5
+    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
+    TESTS     : 1
+    (1/1) synctest.py: PASS (2.20 s)
+    PASS      : 1
+    ERROR     : 0
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    NOT FOUND : 0
+    TIME      : 2.20 s
+
+Now, every time the test is executed, after it is done running, it will check
+if the outputs are exactly right before considering the test as PASSed. After
+the reference files are added, the check process is transparent, in the sense
+that you do not need to provide special flags to the test runner.
+
+However, in order to let people ignore the outputs of some commands that they
+do not wish to be logged in the expected files, such as test suite/kernel
+compile processes, we added the argument ``record_stream_files`` (defaults to
+``False``) to the :mod:`avocado.utils.process` APIs, so that you can select which
+process outputs will go to the reference files, should you chose to record them.
+
+If you check the source code of the synctest file (discussed on a previous
+section), you'll notice::
+
+        process.system(cmd, record_stream_files=True)
+
+The param ``record_stream_files=True`` is basically all it takes to have your
+command output properly recorded. The output for the previous build stage of
+the synctest suite is not going to be recorded, since its output is fragile
+and tends to change from machine to machine.
+
+This process works fine also with dropin tests (random programs/shell scripts
+that return 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
+
+    $ cat output_record.sh
+    #!/bin/bash
+    echo "Hello, world!"
+
+Let's record the output for this one::
+
+    $ scripts/avocado run output_record.sh --output-check-record all
+    JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
+    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
+    TESTS     : 1
+    (1/1) home/lmr/Code/avocado.lmr/output_record.sh: PASS (0.01 s)
+    PASS      : 1
+    ERROR     : 0
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    NOT FOUND : 0
+    TIME      : 0.01 s
+
+After this is done, you'll notice that a directory ``output_record.sh.data``
+appeared in the same level of our shell script, containing 2 files::
+
+    $ ls output_record.sh.data/
+    stderr.expected  stdout.expected
+
+Let's look what's in each of them::
+
+    $ cat output_record.sh.data/stdout.expected
+    Hello, world!
+    $ cat output_record.sh.data/stderr.expected
+    $
+
+Now, every time this test runs, it'll take into account the expected files that
+were recorded, no need to do anything else but run the test. Let's see what
+happens if we change the ``stdout.expected`` file contents to ``Hello, avocado!``::
+
+    $ scripts/avocado run output_record.sh
+    JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
+    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
+    TESTS     : 1
+    (1/1) home/lmr/Code/avocado.lmr/output_record.sh: FAIL (0.02 s)
+    PASS      : 0
+    ERROR     : 0
+    FAIL      : 1
+    SKIP      : 0
+    WARN      : 0
+    NOT FOUND : 0
+    TIME      : 0.02 s
+
+Verifying the failure reason::
+
+    $ cat /home/lmr/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
+    20:52:38 test       L0163 INFO | START home/lmr/Code/avocado.lmr/output_record.sh
+    20:52:38 test       L0164 DEBUG|
+    20:52:38 test       L0165 DEBUG| Test instance parameters:
+    20:52:38 test       L0173 DEBUG|
+    20:52:38 test       L0176 DEBUG| Default parameters:
+    20:52:38 test       L0180 DEBUG|
+    20:52:38 test       L0181 DEBUG| Test instance params override defaults whenever available
+    20:52:38 test       L0182 DEBUG|
+    20:52:38 process    L0242 INFO | Running '/home/lmr/Code/avocado.lmr/output_record.sh'
+    20:52:38 process    L0310 DEBUG| [stdout] Hello, world!
+    20:52:38 test       L0565 INFO | Command: /home/lmr/Code/avocado.lmr/output_record.sh
+    20:52:38 test       L0565 INFO | Exit status: 0
+    20:52:38 test       L0565 INFO | Duration: 0.00313782691956
+    20:52:38 test       L0565 INFO | Stdout:
+    20:52:38 test       L0565 INFO | Hello, world!
+    20:52:38 test       L0565 INFO |
+    20:52:38 test       L0565 INFO | Stderr:
+    20:52:38 test       L0565 INFO |
+    20:52:38 test       L0060 ERROR|
+    20:52:38 test       L0063 ERROR| Traceback (most recent call last):
+    20:52:38 test       L0063 ERROR|   File "/home/lmr/Code/avocado.lmr/avocado/test.py", line 397, in check_reference_stdout
+    20:52:38 test       L0063 ERROR|     self.assertEqual(expected, actual, msg)
+    20:52:38 test       L0063 ERROR|   File "/usr/lib64/python2.7/unittest/case.py", line 551, in assertEqual
+    20:52:38 test       L0063 ERROR|     assertion_func(first, second, msg=msg)
+    20:52:38 test       L0063 ERROR|   File "/usr/lib64/python2.7/unittest/case.py", line 544, in _baseAssertEqual
+    20:52:38 test       L0063 ERROR|     raise self.failureException(msg)
+    20:52:38 test       L0063 ERROR| AssertionError: Actual test sdtout differs from expected one:
+    20:52:38 test       L0063 ERROR| Actual:
+    20:52:38 test       L0063 ERROR| Hello, world!
+    20:52:38 test       L0063 ERROR|
+    20:52:38 test       L0063 ERROR| Expected:
+    20:52:38 test       L0063 ERROR| Hello, avocado!
+    20:52:38 test       L0063 ERROR|
+    20:52:38 test       L0064 ERROR|
+    20:52:38 test       L0529 ERROR| FAIL home/lmr/Code/avocado.lmr/output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
+    Actual:
+    Hello, world!
+
+    Expected:
+    Hello, avocado!
+
+    20:52:38 test       L0516 INFO |
+
+As expected, the test failed because we changed its expectations.
+
 
 Avocado Tests run on a separate process
 =======================================
@@ -439,6 +608,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     15:54:31 test       L0400 ERROR| ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end
     15:54:31 test       L0387 INFO |
 
+
 Environment Variables for Dropin Tests
 ======================================
 
@@ -473,8 +643,10 @@ Here are the current variables that Avocado exports to the tests:
 Wrap Up
 =======
 
-While there are certainly other resources that can be used to build your tests,
-we recommend you take a look at the example tests present in the ``tests``
-directory, that contains a few samples to take some inspiration. It is also
-recommended that you take a look at the :doc:`API documentation <api/modules>`
-for more possibilities.
+We recommend you take a look at the example tests present in the
+``examples/tests`` directory, that contains a few samples to take some
+inspiration from. That directory, besides containing examples, is also used by
+the avocado self test suite to do functional testing of avocado itself.
+
+It is also recommended that you take a look at the
+:doc:`API documentation <api/modules>` for more possibilities.
