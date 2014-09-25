@@ -32,6 +32,8 @@ from avocado import runtime
 from avocado.core import exceptions
 
 log = logging.getLogger('avocado.test')
+stdout_log = logging.getLogger('avocado.test.stdout')
+stderr_log = logging.getLogger('avocado.test.stderr')
 
 
 class CmdNotFoundError(Exception):
@@ -220,7 +222,7 @@ class SubProcess(object):
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True):
+    def __init__(self, cmd, verbose=True, record_stream_files=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -228,6 +230,11 @@ class SubProcess(object):
         :type cmd: str
         :param verbose: Whether to log the command run and stdout/stderr.
         :type verbose: bool
+        :param record_stream_files: Whether to log the command stream outputs
+                                    (stdout and stderr) in the
+                                    test stream files (stdout.actual and
+                                    stderr.actual).
+        :type record_stream_files: bool
         """
         self.cmd = cmd
         self.verbose = verbose
@@ -237,6 +244,7 @@ class SubProcess(object):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    shell=True)
+        self.record_stream_files = record_stream_files
         self.start_time = time.time()
         self.result = CmdResult(cmd)
         self.stdout_file = StringIO.StringIO()
@@ -273,12 +281,15 @@ class SubProcess(object):
 
         :param input_pipe: File like object to the stream.
         """
+        stream_prefix = "%s"
         if input_pipe == self.sp.stdout:
             prefix = '[stdout] %s'
+            stream_logger = stdout_log
             output_file = self.stdout_file
             lock = self.stdout_lock
         elif input_pipe == self.sp.stderr:
             prefix = '[stderr] %s'
+            stream_logger = stderr_log
             output_file = self.stderr_file
             lock = self.stderr_lock
 
@@ -297,6 +308,8 @@ class SubProcess(object):
                     if tmp.endswith('\n'):
                         for l in bfr.splitlines():
                             log.debug(prefix, l)
+                            if self.record_stream_files:
+                                stream_logger.debug(stream_prefix, l)
                         bfr = ''
             finally:
                 lock.release()
@@ -429,7 +442,7 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     '''
 
-    def __init__(self, cmd, verbose=True):
+    def __init__(self, cmd, verbose=True, record_stream_files=False):
         self.cmd = cmd
 
         self.args = shlex.split(cmd)
@@ -693,7 +706,8 @@ def get_sub_process_klass(cmd):
         return SubProcess
 
 
-def run(cmd, timeout=None, verbose=True, ignore_status=False):
+def run(cmd, timeout=None, verbose=True, ignore_status=False,
+        record_stream_files=False):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -709,11 +723,18 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False):
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
+    :param record_stream_files: Whether to log the command stream outputs
+                                (stdout and stderr) in the
+                                test stream files (stdout.actual and
+                                stderr.actual).
+    :type record_stream_files: bool
+
     :return: An :class:`avocado.utils.process.CmdResult` object.
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     klass = get_sub_process_klass(cmd)
-    sp = klass(cmd=cmd, verbose=verbose)
+    sp = klass(cmd=cmd, verbose=verbose,
+               record_stream_files=record_stream_files)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -721,7 +742,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False):
     return cmd_result
 
 
-def system(cmd, timeout=None, verbose=True, ignore_status=False):
+def system(cmd, timeout=None, verbose=True, ignore_status=False,
+           record_stream_files=False):
     """
     Run a subprocess, returning its exit code.
 
@@ -737,16 +759,23 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False):
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
+    :param record_stream_files: Whether to log the command stream outputs
+                                (stdout and stderr) in the
+                                test stream files (stdout.actual and
+                                stderr.actual).
+    :type record_stream_files: bool
     :return: Exit code.
     :rtype: int
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose,
-                     ignore_status=ignore_status)
+                     ignore_status=ignore_status,
+                     record_stream_files=record_stream_files)
     return cmd_result.exit_status
 
 
-def system_output(cmd, timeout=None, verbose=True, ignore_status=False):
+def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
+                  record_stream_files=False):
     """
     Run a subprocess, returning its output.
 
@@ -761,10 +790,16 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False):
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
+    :param record_stream_files: Whether to log the command stream outputs
+                                (stdout and stderr) in the
+                                test stream files (stdout.actual and
+                                stderr.actual).
+    :type record_stream_files: bool
     :return: Command output.
     :rtype: str
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose,
-                     ignore_status=ignore_status)
+                     ignore_status=ignore_status,
+                     record_stream_files=record_stream_files)
     return cmd_result.stdout
