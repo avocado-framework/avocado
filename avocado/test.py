@@ -569,8 +569,7 @@ class DropinTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
-            result = process.run(self.path, verbose=True,
-                                 record_stream_files=True)
+            result = process.run(self.path, verbose=True)
             self._log_detailed_cmd_info(result)
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)

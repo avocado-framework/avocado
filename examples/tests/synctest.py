@@ -42,9 +42,7 @@ class synctest(test.Test):
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         if self.params.debug_symbols:
-            build.make(self.srcdir,
-                       env='CFLAGS="-g -O0"',
-                       extra_args='synctest')
+            build.make(self.srcdir, env='CFLAGS="-g -O0"', extra_args='synctest')
         else:
             build.make(self.srcdir)
 
@@ -56,7 +54,7 @@ class synctest(test.Test):
         path = os.path.join(os.getcwd(), 'synctest')
         cmd = ('%s %s %s' %
                (path, self.params.sync_length, self.params.sync_loop))
-        process.system(cmd, record_stream_files=True)
+        process.system(cmd)
         os.chdir(self.cwd)
 
 
