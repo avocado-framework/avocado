@@ -274,24 +274,23 @@ location of the test suite code (tarball) through
 decompress the suite tarball, followed by ``build.make``, that will build the
 suite.
 
-The ``action`` method just gets into the base directory of the compiled suite
-and executes the ``./synctest`` command, with appropriate parameters, using
-:func:`avocado.utils.process.system`. The ``record_stream_files=True`` param
-passed to that function is part of one avocado feature we are going to discuss
-about in the next section.
+In this example, the ``action`` method just gets into the base directory of
+the compiled suite  and executes the ``./synctest`` command, with appropriate
+parameters, using :func:`avocado.utils.process.system`.
 
 Test Output Check and Output Record Mode
 ========================================
 
-All that is nice and fancy, but in a lot of occasions, you want to go simpler:
-just check if the output of a given application matches an expected output.
-In order to help with this common use case, we offer the option
-``--output-check-record [mode]`` to the test runner::
+In a lot of occasions, you want to go simpler: just check if the output of a
+given application matches an expected output. In order to help with this common
+use case, we offer the option ``--output-check-record [mode]`` to the test runner::
 
       --output-check-record OUTPUT_CHECK_RECORD
                             Record output streams of your tests to reference files
-                            (valid options: all, stdout, stderr). Default: Do not
-                            record
+                            (valid options: none (do not record output streams),
+                            all (record both stdout and stderr), stdout (record
+                            only stderr), stderr (record only stderr). Default:
+                            none
 
 If this option is used, it will store the stdout or stderr of the process (or
 both, if you specified ``all``) being executed to reference files: ``stdout.expected``
@@ -325,26 +324,17 @@ option --output-check-record all to the test runner::
     NOT FOUND : 0
     TIME      : 2.20 s
 
-Now, every time the test is executed, after it is done running, it will check
-if the outputs are exactly right before considering the test as PASSed. After
-the reference files are added, the check process is transparent, in the sense
+
+After the reference files are added, the check process is transparent, in the sense
 that you do not need to provide special flags to the test runner.
+Now, every time the test is executed, after it is done running, it will check
+if the outputs are exactly right before considering the test as PASSed. If you want to override the default
+behavior and skip output check entirely, you may provide the flag ``--disable-output-check`` to the test runner.
 
-However, in order to let people ignore the outputs of some commands that they
-do not wish to be logged in the expected files, such as test suite/kernel
-compile processes, we added the argument ``record_stream_files`` (defaults to
-``False``) to the :mod:`avocado.utils.process` APIs, so that you can select which
-process outputs will go to the reference files, should you chose to record them.
-
-If you check the source code of the synctest file (discussed on a previous
-section), you'll notice::
-
-        process.system(cmd, record_stream_files=True)
-
-The param ``record_stream_files=True`` is basically all it takes to have your
-command output properly recorded. The output for the previous build stage of
-the synctest suite is not going to be recorded, since its output is fragile
-and tends to change from machine to machine.
+The :mod:`avocado.utils.process` APIs have a parameter ``allow_output_check`` (defaults to ``all``), so that you
+can select which process outputs will go to the reference files, should you chose to record them. You may choose
+``all``, for both stdout and stderr, ``stdout``, for the stdout only, ``stderr``, for only the stderr only, or ``none``,
+to allow neither of them to be recorded and checked.
 
 This process works fine also with dropin tests (random programs/shell scripts
 that return 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
@@ -368,7 +358,7 @@ Let's record the output for this one::
     NOT FOUND : 0
     TIME      : 0.01 s
 
-After this is done, you'll notice that a directory ``output_record.sh.data``
+After this is done, you'll notice that a the test data directory
 appeared in the same level of our shell script, containing 2 files::
 
     $ ls output_record.sh.data/
