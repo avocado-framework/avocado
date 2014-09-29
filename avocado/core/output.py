@@ -45,6 +45,10 @@ class ProgressStreamHandler(logging.StreamHandler):
             self.handleError(record)
 
 
+class PagerNotFoundError(Exception):
+    pass
+
+
 class Paginator(object):
 
     """
@@ -54,8 +58,18 @@ class Paginator(object):
     """
 
     def __init__(self):
-        less_cmd = process.find_command('less')
-        self.pipe = os.popen('%s -FRSX' % less_cmd, 'w')
+        try:
+            paginator = "%s -FRSX" % process.find_command('less')
+        except process.CmdNotFoundError:
+            paginator = None
+
+        paginator = os.environ.get('PAGER', paginator)
+        if paginator is None:
+            raise PagerNotFoundError("Could not find a paginator program "
+                                     "('less' not found and env "
+                                     "variable $PAGER not set)")
+
+        self.pipe = os.popen(paginator, 'w')
 
     def __del__(self):
         try:
@@ -74,13 +88,13 @@ def get_paginator():
     """
     Get a paginator. If we can't do that, return stdout.
 
-    The paginator is 'less'. The paginator is a useful feature inspired in
-    programs such as git, since it lets you scroll up and down large buffers
-    of text, increasing the program's usability.
+    The paginator is whatever the user sets as $PAGER, or 'less'. It is a useful
+    feature inspired in programs such as git, since it lets you scroll up and down
+    large buffers of text, increasing the program's usability.
     """
     try:
         return Paginator()
-    except process.CmdNotFoundError:
+    except PagerNotFoundError:
         return sys.stdout
 
 
