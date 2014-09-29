@@ -14,24 +14,12 @@
 
 import os
 import logging
-try:
-    import hashlib
-except ImportError:
-    import md5
-    import sha
+import hashlib
 
 
 def hash_wrapper(algorithm='md5', data=None):
     """
-    Returns an hash object of data using md5 or sha1.
-
-    This function is implemented in order to encapsulate hash objects in a
-    way that is compatible with python 2.4 and python 2.6 without warnings.
-
-    Note that even though python 2.6 hashlib supports hash types other than
-    md5 and sha1, we are artificially limiting the input values in order to
-    make the function to behave exactly the same among both python
-    implementations.
+    Returns an hash object of data using either md5 or sha1 only.
 
     :param input: Optional input string that will be used to update the hash.
     :returns: Hash object.
@@ -39,14 +27,7 @@ def hash_wrapper(algorithm='md5', data=None):
     if algorithm not in ['md5', 'sha1']:
         raise ValueError("Unsupported hash algorithm: %s" % algorithm)
 
-    try:
-        hash_obj = hashlib.new(algorithm)
-    except NameError:
-        if type == 'md5':
-            hash_obj = md5.new()
-        elif type == 'sha1':
-            hash_obj = sha.new()
-
+    hash_obj = hashlib.new(algorithm)
     if data:
         hash_obj.update(data)
 
