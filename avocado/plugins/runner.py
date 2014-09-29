@@ -114,12 +114,25 @@ class TestRunner(plugin.Plugin):
         self.parser.add_argument('-s', '--silent', action='store_true', default=False,
                                  help='Silent output, do not display results.')
 
-        self.parser.add_argument('--output-check-record', type=str,
-                                 default=None,
-                                 help=('Record output streams of your tests '
+        out_check = self.parser.add_argument_group('output check arguments')
+
+        out_check.add_argument('--output-check-record', type=str,
+                               default='none',
+                               help=('Record output streams of your tests '
                                        'to reference files (valid options: '
-                                       'all, stdout, stderr). Default: Do not '
-                                       'record'))
+                                       'none (do not record output streams), '
+                                       'all (record both stdout and stderr), '
+                                       'stdout (record only stderr), '
+                                       'stderr (record only stderr). '
+                                       'Default: none'))
+
+        out_check.add_argument('--disable-output-check', action='store_true',
+                               default=False,
+                               help=('Disable test output (stdout/stderr) check. '
+                                     'If this option is selected, no output will '
+                                     'be checked, even if there are reference files '
+                                     'present for the test. '
+                                     'Default: False (output check enabled)'))
 
         mux = self.parser.add_argument_group('multiplex arguments')
         mux.add_argument('-m', '--multiplex-file', type=str, default=None,

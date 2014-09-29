@@ -436,19 +436,22 @@ class Test(unittest.TestCase):
         if self.job is not None:
             job_standalone = self.job.args is None
             no_record_mode = (not job_standalone and
-                              self.job.args.output_check_record is None)
+                              self.job.args.output_check_record == 'none')
+            disable_output_check = (not job_standalone and
+                                    self.job.args.disable_output_check)
 
             if job_standalone or no_record_mode:
-                try:
-                    self.check_reference_stdout()
-                except Exception, details:
-                    log_exc_info(sys.exc_info())
-                    stdout_check_exception = details
-                try:
-                    self.check_reference_stderr()
-                except Exception, details:
-                    log_exc_info(sys.exc_info())
-                    stderr_check_exception = details
+                if not disable_output_check:
+                    try:
+                        self.check_reference_stdout()
+                    except Exception, details:
+                        log_exc_info(sys.exc_info())
+                        stdout_check_exception = details
+                    try:
+                        self.check_reference_stderr()
+                    except Exception, details:
+                        log_exc_info(sys.exc_info())
+                        stderr_check_exception = details
 
             elif not job_standalone:
                 if self.job.args.output_check_record in ['all', 'stdout']:
