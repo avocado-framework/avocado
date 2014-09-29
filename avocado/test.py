@@ -148,8 +148,8 @@ class Test(unittest.TestCase):
         io.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
 
-        self.stdout_file = os.path.join(self.logdir, 'stdout.actual')
-        self.stderr_file = os.path.join(self.logdir, 'stderr.actual')
+        self.stdout_file = os.path.join(self.logdir, 'stdout')
+        self.stderr_file = os.path.join(self.logdir, 'stderr')
 
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
