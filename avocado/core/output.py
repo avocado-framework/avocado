@@ -318,8 +318,18 @@ class View(object):
                       term_support.MOVE_BACK + THROBBER_STEPS[2],
                       term_support.MOVE_BACK + THROBBER_STEPS[3]]
 
-    def __init__(self, console_logger='avocado.app', list_mode=False):
-        self.list_mode = list_mode
+    def __init__(self, console_logger='avocado.app', use_paginator=False):
+        """
+        Set up the console logger and the paginator mode.
+
+        :param console_logger: logging.Logger identifier for the main app logger.
+        :type console_logger: str
+        :param use_paginator: Whether to use paginator mode. Set it to True if
+                              the program is supposed to output a large list of
+                              lines to the user and you want the user to be able
+                              to scroll through them at will (think git log).
+        """
+        self.use_paginator = use_paginator
         self.console_log = logging.getLogger(console_logger)
         self.paginator = get_paginator()
         self.throbber_pos = 0
@@ -332,7 +342,7 @@ class View(object):
         :type msg: string
         """
         extra = {'skip_newline': skip_newline}
-        if self.list_mode:
+        if self.use_paginator:
             if not skip_newline:
                 msg += '\n'
             self.paginator.write(msg)

@@ -53,7 +53,7 @@ class TestLister(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        view = output.View(list_mode=True)
+        view = output.View(use_paginator=True)
         base_test_dir = data_dir.get_test_dir()
         test_files = os.listdir(base_test_dir)
         test_dirs = []
