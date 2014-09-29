@@ -283,6 +283,14 @@ class Test(unittest.TestCase):
         """
         return os.path.join(self.datadir, basename)
 
+    def _register_log_file_handler(self, logger, formatter, filename,
+                                   log_level=logging.DEBUG):
+        file_handler = logging.FileHandler(filename=filename)
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        return file_handler
+
     def start_logging(self):
         """
         Simple helper for adding a file logger to the root logger.
@@ -299,15 +307,10 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self.stdout_file_handler = logging.FileHandler(filename=self.stdout_file)
-        self.stdout_file_handler.setLevel(logging.DEBUG)
-        self.stdout_file_handler.setFormatter(stream_formatter)
-        self.stdout_log.addHandler(self.stdout_file_handler)
-
-        self.stderr_file_handler = logging.FileHandler(filename=self.stderr_file)
-        self.stderr_file_handler.setLevel(logging.DEBUG)
-        self.stderr_file_handler.setFormatter(stream_formatter)
-        self.stderr_log.addHandler(self.stderr_file_handler)
+        self.stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
+                                                                   self.stdout_file)
+        self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
+                                                                   self.stderr_file)
 
     def stop_logging(self):
         """
