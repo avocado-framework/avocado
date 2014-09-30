@@ -336,7 +336,10 @@ class View(object):
         self.app_args = app_args
         self.use_paginator = use_paginator
         self.console_log = logging.getLogger(console_logger)
-        self.paginator = get_paginator()
+        if self.use_paginator:
+            self.paginator = get_paginator()
+        else:
+            self.paginator = None
         self.throbber_pos = 0
         self.tests_info = {}
 
