@@ -33,20 +33,19 @@ class PluginsList(plugin.Plugin):
         super(PluginsList, self).configure(self.parser)
 
     def run(self, args):
-        view = output.View()
+        view = output.View(app_args=args, use_paginator=True)
         pm = get_plugin_manager()
-        view.log_ui_header('Plugins loaded:')
+        view.notify(event='message', msg='Plugins loaded:')
         blength = 0
         for plug in pm.plugins:
             clength = len(plug.name)
             if clength > blength:
                 blength = clength
 
-        format_str = "    %-" + str(blength) + "s - %s "
+        format_str = "    %-" + str(blength) + "s - %s %s"
         for plug in sorted(pm.plugins):
-            view.log(format_str % (plug.name, plug.description),
-                     skip_newline=True)
             if plug.enabled:
-                view.log_ui_healthy("(Enabled)")
+                status = "(Enabled)"
             else:
-                view.log_ui_error("(Disabled)")
+                status = "(Disabled)"
+            view.notify(event='minor', msg=format_str % (plug.name, plug.description, status))

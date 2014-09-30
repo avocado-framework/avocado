@@ -53,7 +53,7 @@ class TestLister(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        view = output.View(use_paginator=True)
+        view = output.View(app_args=args, use_paginator=True)
         base_test_dir = data_dir.get_test_dir()
         test_files = os.listdir(base_test_dir)
         test_dirs = []
@@ -66,13 +66,13 @@ class TestLister(plugin.Plugin):
                     blength = clength
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
         format_string = "    %-" + str(blength) + "s %s"
-        view.log_ui_header('Tests dir: %s' % base_test_dir)
+        view.notify(event='message', msg='Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
-            view.log(format_string % ('Alias', 'Path'))
+            view.notify(event='message', msg=format_string % ('Alias', 'Path'))
             for test_dir in test_dirs:
-                view.log(format_string % test_dir)
+                view.notify(event='minor', msg=format_string % test_dir)
         else:
-            view.log_error('No tests were found on current tests dir')
+            view.notify(event='error', msg='No tests were found on current tests dir')
 
 
 class TestRunner(plugin.Plugin):

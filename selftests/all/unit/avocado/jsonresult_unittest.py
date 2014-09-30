@@ -37,10 +37,19 @@ class _Stream(object):
     def start_file_logging(self, param1, param2):
         pass
 
-    def log_header(self, param):
+    def stop_file_logging(self):
         pass
 
-    def stop_file_logging(self):
+    def set_tests_info(self, info):
+        pass
+
+    def notify(self, event, msg):
+        pass
+
+    def add_test(self, state):
+        pass
+
+    def set_test_status(self, status, state):
         pass
 
 

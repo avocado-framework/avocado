@@ -40,13 +40,16 @@ class _Stream(object):
     def stop_file_logging(self):
         pass
 
-    def log(self, msg, skip_newline=False):
+    def set_tests_info(self, info):
         pass
 
-    def log_ui_header(self, param):
+    def notify(self, event, msg):
         pass
 
-    def log_ui_status_pass(self, param1):
+    def add_test(self, state):
+        pass
+
+    def set_test_status(self, status, state):
         pass
 
 

@@ -53,38 +53,38 @@ class Multiplexer(plugin.Plugin):
         super(Multiplexer, self).configure(self.parser)
 
     def run(self, args):
-        view = output.View()
+        view = output.View(app_args=args)
 
         if not args.multiplex_file:
-            view.log_ui_error('A multiplex file is required, aborting...')
+            view.notify(event='error', msg='A multiplex file is required, aborting...')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         multiplex_file = os.path.abspath(args.multiplex_file)
 
         if not os.path.isfile(multiplex_file):
-            view.log_ui_error('Invalid multiplex file %s' % multiplex_file)
+            view.notify(event='error', msg='Invalid multiplex file %s' % multiplex_file)
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         if args.tree:
-            view.log_ui_header('Config file tree structure:')
+            view.notify(event='message', msg='Config file tree structure:')
             data = tree.read_ordered_yaml(open(multiplex_file))
             t = tree.create_from_ordered_data(data)
-            view.log(t.get_ascii())
+            view.notify(event='minor', msg=t.get_ascii())
             sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
 
         variants = multiplexer.create_variants_from_yaml(open(multiplex_file),
                                                          args.filter_only,
                                                          args.filter_out)
 
-        view.log_ui_header('Variants generated:')
+        view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
             paths = ', '.join([x.path for x in tpl])
-            view.log('Variant %s:    %s' % (index+1, paths))
+            view.notify(event='message', msg='Variant %s:    %s' % (index+1, paths))
             if args.contents:
                 env = collections.OrderedDict()
                 for node in tpl:
                     env.update(node.environment)
                 for k in sorted(env.keys()):
-                    view.log('    %s: %s' % (k, env[k]))
+                    view.notify(event='message', msg='    %s: %s' % (k, env[k]))
 
         sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])

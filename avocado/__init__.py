@@ -35,6 +35,7 @@ DEFAULT_LOGGING = {
             'level': 'INFO',
             'class': 'avocado.core.output.ProgressStreamHandler',
             'formatter': 'brief',
+            'stream': 'ext://sys.stdout',
         },
     },
     'loggers': {

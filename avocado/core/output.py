@@ -64,12 +64,11 @@ class Paginator(object):
             paginator = None
 
         paginator = os.environ.get('PAGER', paginator)
-        if paginator is None:
-            raise PagerNotFoundError("Could not find a paginator program "
-                                     "('less' not found and env "
-                                     "variable $PAGER not set)")
 
-        self.pipe = os.popen(paginator, 'w')
+        if paginator is None:
+            self.pipe = sys.stdout
+        else:
+            self.pipe = os.popen(paginator, 'w')
 
     def __del__(self):
         try:
@@ -86,16 +85,13 @@ class Paginator(object):
 
 def get_paginator():
     """
-    Get a paginator. If we can't do that, return stdout.
+    Get a paginator.
 
-    The paginator is whatever the user sets as $PAGER, or 'less'. It is a useful
-    feature inspired in programs such as git, since it lets you scroll up and down
+    The paginator is whatever the user sets as $PAGER, or 'less', or if all else fails, sys.stdout.
+    It is a useful feature inspired in programs such as git, since it lets you scroll up and down
     large buffers of text, increasing the program's usability.
     """
-    try:
-        return Paginator()
-    except PagerNotFoundError:
-        return sys.stdout
+    return Paginator()
 
 
 def add_console_handler(logger):
@@ -171,6 +167,14 @@ class TermSupport(object):
     def fail_header_str(self, msg):
         """
         Print a fail header string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.FAIL + msg + self.ENDC
+
+    def warn_header_str(self, msg):
+        """
+        Print a warning header string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
@@ -318,7 +322,7 @@ class View(object):
                       term_support.MOVE_BACK + THROBBER_STEPS[2],
                       term_support.MOVE_BACK + THROBBER_STEPS[3]]
 
-    def __init__(self, console_logger='avocado.app', use_paginator=False):
+    def __init__(self, app_args=None, console_logger='avocado.app', use_paginator=False):
         """
         Set up the console logger and the paginator mode.
 
@@ -329,10 +333,41 @@ class View(object):
                               lines to the user and you want the user to be able
                               to scroll through them at will (think git log).
         """
+        self.app_args = app_args
         self.use_paginator = use_paginator
         self.console_log = logging.getLogger(console_logger)
         self.paginator = get_paginator()
         self.throbber_pos = 0
+        self.tests_info = {}
+
+    def notify(self, event='message', msg=None):
+        mapping = {'message': self.log_ui_header,
+                   'minor': self.log_ui_minor,
+                   'error': self.log_ui_error,
+                   'warning': self.log_ui_warning}
+        if msg is not None:
+            mapping[event](msg)
+
+    def set_tests_info(self, info):
+        self.tests_info.update(info)
+
+    def _get_test_tag(self, test_name):
+        return '(%s/%s) %s:  ' % (self.tests_info['tests_run'], self.tests_info['tests_total'], test_name)
+
+    def add_test(self, state):
+        self.log(msg=self._get_test_tag(state['tagged_name']), skip_newline=True)
+
+    def set_test_status(self, status, state):
+        mapping = {'PASS': self.log_ui_status_pass,
+                   'ERROR': self.log_ui_status_error,
+                   'NOT_FOUND': self.log_ui_status_not_found,
+                   'FAIL': self.log_ui_status_fail,
+                   'SKIP': self.log_ui_status_skip,
+                   'WARN': self.log_ui_status_warn}
+        mapping[status](state['time_elapsed'])
+
+    def notify_progress(self, progress):
+        self.log_ui_throbber_progress(progress)
 
     def log(self, msg, level=logging.INFO, skip_newline=False):
         """
@@ -341,12 +376,12 @@ class View(object):
         :param msg: Message to write
         :type msg: string
         """
-        extra = {'skip_newline': skip_newline}
         if self.use_paginator:
             if not skip_newline:
                 msg += '\n'
             self.paginator.write(msg)
         else:
+            extra = {'skip_newline': skip_newline}
             self.console_log.log(level=level, msg=msg, extra=extra)
 
     def _log_ui_info(self, msg, skip_newline=False):
@@ -389,6 +424,14 @@ class View(object):
         """
         self._log_ui_info(term_support.header_str(msg))
 
+    def log_ui_minor(self, msg):
+        """
+        Log a minor message.
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(msg)
+
     def log_ui_error(self, msg):
         """
         Log an error message (useful for critical errors).
@@ -396,6 +439,14 @@ class View(object):
         :param msg: Message to write.
         """
         self._log_ui_info(term_support.fail_header_str(msg))
+
+    def log_ui_warning(self, msg):
+        """
+        Log a warning message (useful for warning messages).
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(term_support.warn_header_str(msg))
 
     def log_ui_status_pass(self, t_elapsed):
         """

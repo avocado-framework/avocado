@@ -36,13 +36,34 @@ class ParseXMLError(Exception):
     pass
 
 
+class _Stream(object):
+
+    def start_file_logging(self, param1, param2):
+        pass
+
+    def stop_file_logging(self):
+        pass
+
+    def set_tests_info(self, info):
+        pass
+
+    def notify(self, event, msg):
+        pass
+
+    def add_test(self, state):
+        pass
+
+    def set_test_status(self, status, state):
+        pass
+
+
 class xUnitSucceedTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpfile = mkstemp()
         args = argparse.Namespace()
         args.xunit_output = self.tmpfile[1]
-        self.test_result = xunit.xUnitTestResult(args=args)
+        self.test_result = xunit.xUnitTestResult(stream=_Stream(), args=args)
         self.test_result.start_tests()
         self.test1 = test.Test(job=job.Job())
         self.test1.status = 'PASS'

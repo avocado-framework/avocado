@@ -18,6 +18,7 @@ import sys
 import datetime
 from xml.sax.saxutils import quoteattr
 
+from avocado.core import output
 from avocado.plugins import plugin
 from avocado.result import TestResult
 
@@ -31,9 +32,8 @@ class XmlResult(object):
     Handles the XML details for xUnit output.
     """
 
-    def __init__(self, output):
+    def __init__(self):
         self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
-        self.output = output
 
     def _escape_attr(self, attrib):
         return quoteattr(attrib)
@@ -41,20 +41,8 @@ class XmlResult(object):
     def _escape_cdata(self, cdata):
         return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
 
-    def save(self, filename=None):
-        """
-        Save the XML document to a file or standard output.
-
-        :param filename: File name to save. Use '-' for standard output.
-        """
-        if filename is None:
-            filename = self.output
-        xml = '\n'.join(self.xml) + '\n'
-        if filename == '-':
-            sys.stdout.write(xml)
-        else:
-            with open(filename, 'w') as fresult:
-                fresult.write(xml)
+    def get_contents(self):
+        return '\n'.join(self.xml)
 
     def start_testsuite(self, timestamp):
         """
@@ -173,7 +161,8 @@ class xUnitTestResult(TestResult):
         """
         TestResult.__init__(self, stream, args)
         self.output = getattr(self.args, 'xunit_output', '-')
-        self.xml = XmlResult(self.output)
+        self.stream = output.View(app_args=args)
+        self.xml = XmlResult()
 
     def start_tests(self):
         """
@@ -219,7 +208,12 @@ class xUnitTestResult(TestResult):
                   'not_found': len(self.not_found),
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
-        self.xml.save()
+        contents = self.xml.get_contents()
+        if self.output == '-':
+            self.stream.notify(event='minor', msg=contents)
+        else:
+            with open(self.output, 'w') as xunit_output:
+                xunit_output.write(contents)
 
 
 class XUnit(plugin.Plugin):

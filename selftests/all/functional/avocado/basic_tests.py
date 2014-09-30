@@ -174,7 +174,7 @@ class RunnerOperationTest(unittest.TestCase):
         expected_output = 'Empty test ID. A test path or alias must be provided'
         expected_output_2 = 'usage:'
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn(expected_output, result.stderr)
+        self.assertIn(expected_output, result.stdout)
         self.assertIn(expected_output_2, result.stdout)
 
     def test_not_found(self):
@@ -183,8 +183,8 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('NOT_FOUND', result.stderr)
-        self.assertIn('NOT FOUND : 1', result.stderr)
+        self.assertIn('NOT_FOUND', result.stdout)
+        self.assertIn('NOT FOUND : 1', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
@@ -197,8 +197,8 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 skiptest'
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(0, result.exit_status)
-        self.assertNotIn('needs to be a 40 digit hex', result.stderr)
-        self.assertIn('SKIP', result.stderr)
+        self.assertNotIn('needs to be a 40 digit hex', result.stdout)
+        self.assertIn('SKIP', result.stdout)
 
     def test_automatic_unique_id(self):
         cmd_line = './scripts/avocado run skiptest --json -'
@@ -295,7 +295,7 @@ class ExternalPluginsTest(unittest.TestCase):
         cmd_line = './scripts/avocado --plugins %s plugins' % self.base_sourcedir
         result = process.run(cmd_line, ignore_status=True)
         expected_output = 'noname'
-        self.assertIn(expected_output, result.stderr)
+        self.assertIn(expected_output, result.stdout)
 
     def test_syntax_error_plugin(self):
         self.syntax_err_plugin = os.path.join(self.base_sourcedir, 'avocado_syntax_err.py')
