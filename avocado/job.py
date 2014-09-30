@@ -309,16 +309,23 @@ class Job(object):
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
             self.multiplex_file = args.multiplex_file
+            self.show_job_log = args.show_job_log
+            self.silent = args.silent
         else:
             self.loglevel = logging.DEBUG
             self.multiplex_file = None
+            self.show_job_log = False
+            self.silent = False
+        if self.show_job_log:
+            if not self.silent:
+                output.add_console_handler(logging.getLogger('avocado.test'))
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
         self.sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
-        self.view = output.View()
+        self.view = output.View(app_args=self.args)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -378,7 +385,7 @@ class Job(object):
             self.view.notify(event='error', msg=msg)
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
-        if not op_set_stdout and not self.args.silent:
+        if not op_set_stdout:
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 

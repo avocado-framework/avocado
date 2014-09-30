@@ -380,10 +380,13 @@ class View(object):
         :type msg: string
         """
         silent = False
+        show_job_log = False
         if self.app_args is not None:
             if hasattr(self.app_args, 'silent'):
                 silent = self.app_args.silent
-        if not silent:
+            if hasattr(self.app_args, 'show_job_log'):
+                show_job_log = self.app_args.show_job_log
+        if not (silent or show_job_log):
             if self.use_paginator:
                 if not skip_newline:
                     msg += '\n'

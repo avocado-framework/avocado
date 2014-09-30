@@ -111,8 +111,15 @@ class TestRunner(plugin.Plugin):
                                        'server. You should not use this option '
                                        'unless you know exactly what you\'re doing'))
 
-        self.parser.add_argument('-s', '--silent', action='store_true', default=False,
-                                 help='Silent output, do not display results.')
+        out = self.parser.add_argument_group('output related arguments')
+
+        out.add_argument('-s', '--silent', action='store_true', default=False,
+                         help='Silence stdout')
+
+        out.add_argument('--show-job-log', action='store_true', default=False,
+                         help=('Display only the job log on stdout. Useful '
+                               'for test debugging purposes. No output will '
+                               'be displayed if you also specify --silent'))
 
         out_check = self.parser.add_argument_group('output check arguments')
 
