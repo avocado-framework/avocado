@@ -378,7 +378,7 @@ class Job(object):
             self.view.notify(event='error', msg=msg)
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
-        if not op_set_stdout:
+        if not op_set_stdout and not self.args.silent:
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
