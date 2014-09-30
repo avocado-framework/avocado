@@ -376,13 +376,18 @@ class View(object):
         :param msg: Message to write
         :type msg: string
         """
-        if self.use_paginator:
-            if not skip_newline:
-                msg += '\n'
-            self.paginator.write(msg)
-        else:
-            extra = {'skip_newline': skip_newline}
-            self.console_log.log(level=level, msg=msg, extra=extra)
+        silent = False
+        if self.app_args is not None:
+            if hasattr(self.app_args, 'silent'):
+                silent = self.app_args.silent
+        if not silent:
+            if self.use_paginator:
+                if not skip_newline:
+                    msg += '\n'
+                self.paginator.write(msg)
+            else:
+                extra = {'skip_newline': skip_newline}
+                self.console_log.log(level=level, msg=msg, extra=extra)
 
     def _log_ui_info(self, msg, skip_newline=False):
         """
