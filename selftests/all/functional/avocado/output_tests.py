@@ -68,9 +68,9 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_excerpt = "Avocado could not set --json and --xunit both to output to stdout."
+        error_excerpt = "Options --json --xunit are trying to use stdout simultaneously"
         self.assertIn(error_excerpt, output,
-                      "Missing excepted error message from output:\n%s" % output)
+                      "Missing excerpt error message from output:\n%s" % output)
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
@@ -81,9 +81,9 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_excerpt = "Avocado could not set --json and --vm both to output to stdout."
+        error_excerpt = "Options --json --vm are trying to use stdout simultaneously"
         self.assertIn(error_excerpt, output,
-                      "Missing excepted error message from output:\n%s" % output)
+                      "Missing excerpt error message from output:\n%s" % output)
 
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()

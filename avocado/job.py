@@ -330,25 +330,12 @@ class Job(object):
                                              test_result=self.result_proxy)
 
     def _set_output_plugins(self):
-        plugin_using_stdout = None
-        e_msg = ("Avocado could not set %s and %s both to output to stdout. ")
-        e_msg_2 = ("Please set the output flag of one of them to a file "
-                   "to avoid conflicts.")
         for key in self.args.__dict__:
             if key.endswith('_result'):
                 result_class = getattr(self.args, key)
                 if issubclass(result_class, result.TestResult):
                     result_plugin = result_class(self.view,
                                                  self.args)
-                    if result_plugin.output == '-':
-                        if plugin_using_stdout is not None:
-                            e_msg %= (plugin_using_stdout.command_line_arg_name,
-                                      result_plugin.command_line_arg_name)
-                            self.view.notify(event='error', msg=e_msg)
-                            self.view.notify(event='error', msg=e_msg_2)
-                            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
-                        else:
-                            plugin_using_stdout = result_plugin
                     self.result_proxy.add_output_plugin(result_plugin)
 
     def _make_test_result(self):
@@ -381,8 +368,17 @@ class Job(object):
         json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
 
-        outputs = [op.output for op in self.result_proxy.output_plugins]
-        if '-' not in outputs:
+        op_set_stdout = self.result_proxy.output_plugins_using_stdout()
+        if len(op_set_stdout) > 1:
+            msg = ('Options %s are trying to use stdout simultaneously' %
+                   " ".join(op_set_stdout))
+            self.view.notify(event='error', msg=msg)
+            msg = ('Please set at least one of them to a file to avoid '
+                   'conflicts')
+            self.view.notify(event='error', msg=msg)
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+
+        if not op_set_stdout:
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
