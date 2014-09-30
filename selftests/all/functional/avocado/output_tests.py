@@ -140,8 +140,7 @@ class OutputPluginTest(unittest.TestCase):
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
-            self.assertEqual(output, "",
-                             "Output is not empty as expected:\n%s" % output)
+            self.assertNotEqual(output, "", "Output is empty")
             # Check if we are producing valid outputs
             with open(tmpfile2, 'r') as fp:
                 json_results = json.load(fp)

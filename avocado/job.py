@@ -381,13 +381,8 @@ class Job(object):
         json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
 
-        # If there are no active output plugins besides xunit and json,
-        # and the option --silent is not present, then set up the human output.
-        if hasattr(self.args, 'silent') and self.args.silent:
-            human = False
-        else:
-            human = True
-        if len(self.result_proxy.output_plugins) == 2 and human:
+        outputs = [op.output for op in self.result_proxy.output_plugins]
+        if '-' not in outputs:
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
