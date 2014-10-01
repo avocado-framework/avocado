@@ -35,9 +35,6 @@ class Parser(object):
             version='Avocado %s' % VERSION,
             add_help=False,  # see parent parsing
             description='Avocado Test Runner')
-        self.application.add_argument('-V', '--verbose', action='store_true',
-                                      help='print extra debug messages',
-                                      dest='verbose')
         self.application.add_argument('--logdir', action='store',
                                       help='Alternate logs directory',
                                       dest='logdir', default='')
