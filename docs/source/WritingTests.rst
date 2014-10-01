@@ -260,7 +260,7 @@ an example that does that::
             os.chdir(self.srcdir)
             cmd = ('./synctest %s %s' %
                    (self.params.sync_length, self.params.sync_loop))
-            process.system(cmd, record_stream_files=True)
+            process.system(cmd)
             os.chdir(self.cwd)
 
 
