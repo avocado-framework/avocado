@@ -16,7 +16,7 @@ Avocado is primarily being developed on Fedora boxes, but we are making
 reasonable efforts that Ubuntu users can use and develop avocado well.
 
 Installing avocado - Fedora
----------------------------
+===========================
 
 You can install the rpm package by performing the following commands::
 
@@ -25,7 +25,7 @@ You can install the rpm package by performing the following commands::
     sudo yum install avocado
 
 Installing avocado - Ubuntu
----------------------------
+===========================
 
 You need to add the following lines::
 
@@ -37,8 +37,8 @@ performing the following commands::
     sudo apt-get update
     sudo apt-get install avocado
 
-Running the avocado test runner
--------------------------------
+Using the avocado test runner
+=============================
 
 The test runner is designed to conveniently run tests on your laptop. The tests
 you can run are:
@@ -47,6 +47,9 @@ you can run are:
 * Any executable in your box, really. The criteria for PASS/FAIL is the return
   code of the executable. If it returns 0, the test PASSed, if it returned
   != 0, it FAILed. We'll call those tests `dropin`.
+
+Native tests
+------------
 
 Avocado looks for avocado "native" tests in some locations, the main one is in
 the config file ``/etc/avocado/settings.ini``, section ``runner``, ``test_dir``
@@ -72,6 +75,9 @@ You can run them using the subcommand ``run``::
     WARN : 0
     TIME : 1.01 s
 
+Job ID
+------
+
 The Job ID is a SHA1 string that has some information encoded:
 
 * Hostname
@@ -81,6 +87,9 @@ The Job ID is a SHA1 string that has some information encoded:
 The idea is to have a unique identifier that can be used for job data, for
 the purposes of joining on a single database results obtained by jobs run
 on different systems.
+
+Drop-In tests
+-------------
 
 You can run any number of test in an arbitrary order, as well as mix and match
 native tests and dropin tests::
@@ -105,5 +114,32 @@ native tests and dropin tests::
     WARN : 0
     TIME : 1.04 s
 
-Some more involved functionalities for the avocado runner are discussed as appropriate, during
-the introduction of important concepts.
+Debugging tests
+---------------
+
+When developing new tests, you frequently want to look at the straight
+output of the job log in the stdout, without having to tail the job log.
+In order to do that, you can use --show-job-log to the avocado test runner::
+
+    $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
+    Not logging /proc/slabinfo (lack of permissions)
+    START examples/tests/sleeptest.py
+
+    Test instance parameters:
+        id = examples/tests/sleeptest.py
+
+    Default parameters:
+        sleep_length = 1.0
+
+    Test instance params override defaults whenever available
+
+    Sleeping for 1.00 seconds
+    Not logging /var/log/messages (lack of permissions)
+    PASS examples/tests/sleeptest.py
+
+    Not logging /proc/slabinfo (lack of permissions)
+
+As you can see, the UI output is suppressed and only the job log goes to
+stdout, making this a useful feature for test development/debugging. Some more
+involved functionalities for the avocado runner will be discussed as
+appropriate, during the introduction of important concepts.
