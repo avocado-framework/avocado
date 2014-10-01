@@ -119,9 +119,7 @@ def multiplex(*args):
         for x in result:
             for y in pool:
                 item = x + [y]
-                if any_sibling(*item) is False and \
-                        filter_only(y.environment.get('filter-only', []), item) and \
-                        filter_out(y.environment.get('filter-out', []), item):
+                if any_sibling(*item) is False:
                     items.append(item)
         result = items
 
