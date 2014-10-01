@@ -33,11 +33,10 @@ class DataDirList(plugin.Plugin):
         super(DataDirList, self).configure(self.parser)
 
     def run(self, args):
-        bcolors = output.term_support
-        pipe = output.get_paginator()
-        pipe.write(bcolors.header_str('Avocado Data Directories:'))
-        pipe.write('\n    base dir:        ' + data_dir.get_base_dir())
-        pipe.write('\n    tests dir:       ' + data_dir.get_test_dir())
-        pipe.write('\n    data dir:        ' + data_dir.get_data_dir())
-        pipe.write('\n    logs dir:        ' + data_dir.get_logs_dir())
-        pipe.write('\n    tmp dir:         ' + data_dir.get_tmp_dir())
+        view = output.View()
+        view.notify(event="message", msg='Avocado Data Directories:')
+        view.notify(event="message", msg='    base dir        ' + data_dir.get_base_dir())
+        view.notify(event="message", msg='    tests dir       ' + data_dir.get_test_dir())
+        view.notify(event="message", msg='    data dir        ' + data_dir.get_data_dir())
+        view.notify(event="message", msg='    logs dir        ' + data_dir.get_logs_dir())
+        view.notify(event="message", msg='    tmp dir         ' + data_dir.get_tmp_dir())

@@ -37,16 +37,23 @@ class TestResultProxy(object):
             else:
                 return None
 
-    def throbber_progress(self, progress_from_test=False):
+    def notify_progress(self, progress_from_test=False):
         for output_plugin in self.output_plugins:
-            if hasattr(output_plugin, 'throbber_progress'):
-                output_plugin.throbber_progress(progress_from_test)
+            if hasattr(output_plugin, 'notify_progress'):
+                output_plugin.notify_progress(progress_from_test)
 
     def add_output_plugin(self, plugin):
         if not isinstance(plugin, TestResult):
             raise InvalidOutputPlugin("Object %s is not an instance of "
                                       "TestResult" % plugin)
         self.output_plugins.append(plugin)
+
+    def output_plugins_using_stdout(self):
+        using_stdout = []
+        for op in self.output_plugins:
+            if op.output == '-':
+                using_stdout.append(op.command_line_arg_name)
+        return using_stdout
 
     def start_tests(self):
         for output_plugin in self.output_plugins:
@@ -108,7 +115,7 @@ class TestResult(object):
         """
         Creates an instance of TestResult.
 
-        :param stream: an instance of :class:`avocado.core.output.OutputManager`.
+        :param stream: an instance of :class:`avocado.core.output.View`.
         :param args: an instance of :class:`argparse.Namespace`.
         """
         self.stream = stream
@@ -133,6 +140,7 @@ class TestResult(object):
         Called once before any tests are executed.
         """
         self.tests_run += 1
+        self.stream.set_tests_info({'tests_run': self.tests_run})
 
     def end_tests(self):
         """
@@ -158,6 +166,7 @@ class TestResult(object):
         """
         self.tests_run += 1
         self.total_time += state['time_elapsed']
+        self.stream.set_tests_info({'tests_run': self.tests_run})
 
     def add_pass(self, state):
         """
@@ -242,21 +251,22 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.log_header("JOB ID    : %s" % self.stream.job_unique_id)
-        self.stream.log_header("JOB LOG   : %s" % self.stream.logfile)
-        self.stream.log_header("TESTS     : %s" % self.tests_total)
+        self.stream.notify(event="message", msg="JOB ID    : %s" % self.stream.job_unique_id)
+        self.stream.notify(event="message", msg="JOB LOG   : %s" % self.stream.logfile)
+        self.stream.notify(event="message", msg="TESTS     : %s" % self.tests_total)
+        self.stream.set_tests_info({'tests_total': self.tests_total})
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
-        self.stream.log_header("PASS      : %d" % len(self.passed))
-        self.stream.log_header("ERROR     : %d" % len(self.errors))
-        self.stream.log_header("FAIL      : %d" % len(self.failed))
-        self.stream.log_header("SKIP      : %d" % len(self.skipped))
-        self.stream.log_header("WARN      : %d" % len(self.warned))
-        self.stream.log_header("NOT FOUND : %d" % len(self.not_found))
-        self.stream.log_header("TIME      : %.2f s" % self.total_time)
+        self.stream.notify(event="message", msg="PASS      : %d" % len(self.passed))
+        self.stream.notify(event="message", msg="ERROR     : %d" % len(self.errors))
+        self.stream.notify(event="message", msg="FAIL      : %d" % len(self.failed))
+        self.stream.notify(event="message", msg="SKIP      : %d" % len(self.skipped))
+        self.stream.notify(event="message", msg="WARN      : %d" % len(self.warned))
+        self.stream.notify(event="message", msg="NOT FOUND : %d" % len(self.not_found))
+        self.stream.notify(event="message", msg="TIME      : %.2f s" % self.total_time)
 
     def start_test(self, state):
         """
@@ -265,10 +275,7 @@ class HumanTestResult(TestResult):
         :param state: result of :class:`avocado.test.Test.get_state`.
         :type state: dict
         """
-        self.test_label = '(%s/%s) %s:  ' % (self.tests_run,
-                                             self.tests_total,
-                                             state['tagged_name'])
-        self.stream.info(msg=self.test_label, skip_newline=True)
+        self.stream.add_test(state)
 
     def end_test(self, state):
         """
@@ -287,7 +294,7 @@ class HumanTestResult(TestResult):
         :type state: dict
         """
         TestResult.add_pass(self, state)
-        self.stream.log_pass(state['time_elapsed'])
+        self.stream.set_test_status(status='PASS', state=state)
 
     def add_error(self, state):
         """
@@ -297,7 +304,7 @@ class HumanTestResult(TestResult):
         :type state: dict
         """
         TestResult.add_error(self, state)
-        self.stream.log_error(state['time_elapsed'])
+        self.stream.set_test_status(status='ERROR', state=state)
 
     def add_not_found(self, state):
         """
@@ -307,7 +314,7 @@ class HumanTestResult(TestResult):
         :type state: dict
         """
         TestResult.add_not_found(self, state)
-        self.stream.log_not_found(state['time_elapsed'])
+        self.stream.set_test_status(status='NOT_FOUND', state=state)
 
     def add_fail(self, state):
         """
@@ -317,7 +324,7 @@ class HumanTestResult(TestResult):
         :type state: dict
         """
         TestResult.add_fail(self, state)
-        self.stream.log_fail(state['time_elapsed'])
+        self.stream.set_test_status(status='FAIL', state=state)
 
     def add_skip(self, state):
         """
@@ -327,7 +334,7 @@ class HumanTestResult(TestResult):
         :type state: dict
         """
         TestResult.add_skip(self, state)
-        self.stream.log_skip(state['time_elapsed'])
+        self.stream.set_test_status(status='SKIP', state=state)
 
     def add_warn(self, state):
         """
@@ -337,7 +344,7 @@ class HumanTestResult(TestResult):
         :type state: dict
         """
         TestResult.add_warn(self, state)
-        self.stream.log_warn(state['time_elapsed'])
+        self.stream.set_test_status(status='WARN', state=state)
 
-    def throbber_progress(self, progress_from_test=False):
-        self.stream.throbber_progress(progress_from_test)
+    def notify_progress(self, progress_from_test=False):
+        self.stream.notify_progress(progress_from_test)

@@ -68,9 +68,9 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_excerpt = "Avocado could not set --json and --xunit both to output to stdout."
+        error_excerpt = "Options --json --xunit are trying to use stdout simultaneously"
         self.assertIn(error_excerpt, output,
-                      "Missing excepted error message from output:\n%s" % output)
+                      "Missing excerpt error message from output:\n%s" % output)
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
@@ -81,9 +81,9 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_excerpt = "Avocado could not set --json and --vm both to output to stdout."
+        error_excerpt = "Options --json --vm are trying to use stdout simultaneously"
         self.assertIn(error_excerpt, output,
-                      "Missing excepted error message from output:\n%s" % output)
+                      "Missing excerpt error message from output:\n%s" % output)
 
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
@@ -128,7 +128,7 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    def test_output_compatible_setup_nooutput(self):
+    def test_output_compatible_setup_3(self):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
@@ -140,8 +140,7 @@ class OutputPluginTest(unittest.TestCase):
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
-            self.assertEqual(output, "",
-                             "Output is not empty as expected:\n%s" % output)
+            self.assertNotEqual(output, "", "Output is empty")
             # Check if we are producing valid outputs
             with open(tmpfile2, 'r') as fp:
                 json_results = json.load(fp)
@@ -154,6 +153,52 @@ class OutputPluginTest(unittest.TestCase):
                 os.remove(tmpfile2)
             except OSError:
                 pass
+
+    def test_output_compatible_setup_nooutput(self):
+        tmpfile = tempfile.mktemp()
+        tmpfile2 = tempfile.mktemp()
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --silent --xunit %s --json %s sleeptest' % (tmpfile, tmpfile2)
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout + result.stderr
+        expected_rc = 0
+        try:
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+            self.assertEqual(output, "", "Output is not empty:\n%s" % output)
+            # Check if we are producing valid outputs
+            with open(tmpfile2, 'r') as fp:
+                json_results = json.load(fp)
+                debug_log = json_results['debuglog']
+                self.check_output_files(debug_log)
+            minidom.parse(tmpfile)
+        finally:
+            try:
+                os.remove(tmpfile)
+                os.remove(tmpfile2)
+            except OSError:
+                pass
+
+    def test_show_job_log(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptest --show-job-log'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+    def test_silent_trumps_show_job_log(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptest --show-job-log --silent'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout + result.stderr
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertEqual(output, "")
 
     def test_default_enabled_plugins(self):
         os.chdir(basedir)

@@ -53,8 +53,7 @@ class TestLister(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        bcolors = output.term_support
-        pipe = output.get_paginator()
+        view = output.View(app_args=args, use_paginator=True)
         base_test_dir = data_dir.get_test_dir()
         test_files = os.listdir(base_test_dir)
         test_dirs = []
@@ -66,15 +65,14 @@ class TestLister(plugin.Plugin):
                 if clength > blength:
                     blength = clength
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
-        format_string = "    %-" + str(blength) + "s %s\n"
-        pipe.write(bcolors.header_str('Tests dir: %s\n' % base_test_dir))
+        format_string = "    %-" + str(blength) + "s %s"
+        view.notify(event='message', msg='Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
-            pipe.write(bcolors.header_str(format_string % ('Alias', 'Path')))
+            view.notify(event='message', msg=format_string % ('Alias', 'Path'))
             for test_dir in test_dirs:
-                pipe.write(format_string % test_dir)
+                view.notify(event='minor', msg=format_string % test_dir)
         else:
-            pipe.write(bcolors.header_str('No tests were found on current '
-                                          'tests dir'))
+            view.notify(event='error', msg='No tests were found on current tests dir')
 
 
 class TestRunner(plugin.Plugin):
@@ -113,8 +111,35 @@ class TestRunner(plugin.Plugin):
                                        'server. You should not use this option '
                                        'unless you know exactly what you\'re doing'))
 
-        self.parser.add_argument('-s', '--silent', action='store_true', default=False,
-                                 help='Silent output, do not display results.')
+        out = self.parser.add_argument_group('output related arguments')
+
+        out.add_argument('-s', '--silent', action='store_true', default=False,
+                         help='Silence stdout')
+
+        out.add_argument('--show-job-log', action='store_true', default=False,
+                         help=('Display only the job log on stdout. Useful '
+                               'for test debugging purposes. No output will '
+                               'be displayed if you also specify --silent'))
+
+        out_check = self.parser.add_argument_group('output check arguments')
+
+        out_check.add_argument('--output-check-record', type=str,
+                               default='none',
+                               help=('Record output streams of your tests '
+                                       'to reference files (valid options: '
+                                       'none (do not record output streams), '
+                                       'all (record both stdout and stderr), '
+                                       'stdout (record only stderr), '
+                                       'stderr (record only stderr). '
+                                       'Default: none'))
+
+        out_check.add_argument('--disable-output-check', action='store_true',
+                               default=False,
+                               help=('Disable test output (stdout/stderr) check. '
+                                     'If this option is selected, no output will '
+                                     'be checked, even if there are reference files '
+                                     'present for the test. '
+                                     'Default: False (output check enabled)'))
 
         mux = self.parser.add_argument_group('multiplex arguments')
         mux.add_argument('-m', '--multiplex-file', type=str, default=None,

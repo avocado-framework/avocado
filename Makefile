@@ -12,6 +12,7 @@ all:
 	@echo "make build-deb-all - Generate both source and binary debian packages"
 	@echo "make build-rpm-all - Generate both source and binary RPMs"
 	@echo "make man - Generate the avocado man page"
+	@echo "make check - Runs tree static check, unittests and functional tests"
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:

@@ -18,6 +18,7 @@ JSON output module.
 
 import json
 
+from avocado.core import output
 from avocado.plugins import plugin
 from avocado.result import TestResult
 
@@ -33,6 +34,7 @@ class JSONTestResult(TestResult):
     def __init__(self, stream=None, args=None):
         TestResult.__init__(self, stream, args)
         self.output = getattr(self.args, 'json_output', '-')
+        self.view = output.View(app_args=args)
 
     def start_tests(self):
         """
@@ -80,7 +82,7 @@ class JSONTestResult(TestResult):
         })
         self.json = json.dumps(self.json)
         if self.args.json_output == '-':
-            print self.json
+            self.view.notify(event='minor', msg=self.json)
         else:
             self._save_json()
 

@@ -45,6 +45,10 @@ class ProgressStreamHandler(logging.StreamHandler):
             self.handleError(record)
 
 
+class PagerNotFoundError(Exception):
+    pass
+
+
 class Paginator(object):
 
     """
@@ -54,8 +58,17 @@ class Paginator(object):
     """
 
     def __init__(self):
-        less_cmd = process.find_command('less')
-        self.pipe = os.popen('%s -FRSX' % less_cmd, 'w')
+        try:
+            paginator = "%s -FRSX" % process.find_command('less')
+        except process.CmdNotFoundError:
+            paginator = None
+
+        paginator = os.environ.get('PAGER', paginator)
+
+        if paginator is None:
+            self.pipe = sys.stdout
+        else:
+            self.pipe = os.popen(paginator, 'w')
 
     def __del__(self):
         try:
@@ -72,16 +85,13 @@ class Paginator(object):
 
 def get_paginator():
     """
-    Get a paginator. If we can't do that, return stdout.
+    Get a paginator.
 
-    The paginator is 'less'. The paginator is a useful feature inspired in
-    programs such as git, since it lets you scroll up and down large buffers
-    of text, increasing the program's usability.
+    The paginator is whatever the user sets as $PAGER, or 'less', or if all else fails, sys.stdout.
+    It is a useful feature inspired in programs such as git, since it lets you scroll up and down
+    large buffers of text, increasing the program's usability.
     """
-    try:
-        return Paginator()
-    except process.CmdNotFoundError:
-        return sys.stdout
+    return Paginator()
 
 
 def add_console_handler(logger):
@@ -162,6 +172,14 @@ class TermSupport(object):
         """
         return self.FAIL + msg + self.ENDC
 
+    def warn_header_str(self, msg):
+        """
+        Print a warning header string (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.FAIL + msg + self.ENDC
+
     def healthy_str(self, msg):
         """
         Print a healthy string (green colored).
@@ -230,23 +248,296 @@ class TermSupport(object):
 term_support = TermSupport()
 
 
-class OutputManager(object):
+class LoggingFile(object):
+
+    """
+    File-like object that will receive messages pass them to logging.
+    """
+
+    def __init__(self, prefix='', level=logging.DEBUG,
+                 logger=logging.getLogger()):
+        """
+        Constructor. Sets prefixes and which logger is going to be used.
+
+        :param prefix - The prefix for each line logged by this object.
+        """
+
+        self._prefix = prefix
+        self._level = level
+        self._buffer = []
+        self._logger = logger
+
+    def write(self, data):
+        """"
+        Writes data only if it constitutes a whole line. If it's not the case,
+        store it in a buffer and wait until we have a complete line.
+        :param data - Raw data (a string) that will be processed.
+        """
+        # splitlines() discards a trailing blank line, so use split() instead
+        data_lines = data.split('\n')
+        if len(data_lines) > 1:
+            self._buffer.append(data_lines[0])
+            self._flush_buffer()
+        for line in data_lines[1:-1]:
+            self._log_line(line)
+        if data_lines[-1]:
+            self._buffer.append(data_lines[-1])
+
+    def writelines(self, lines):
+        """"
+        Writes itertable of lines
+
+        :param lines: An iterable of strings that will be processed.
+        """
+        for data in lines:
+            self.write(data)
+
+    def _log_line(self, line):
+        """
+        Passes lines of output to the logging module.
+        """
+        self._logger.log(self._level, self._prefix + line)
+
+    def _flush_buffer(self):
+        if self._buffer:
+            self._log_line(''.join(self._buffer))
+            self._buffer = []
+
+    def flush(self):
+        self._flush_buffer()
+
+    def isatty(self):
+        return False
+
+
+class Throbber(object):
+
+    """
+    Produces a spinner used to notify progress in the application UI.
+    """
+    STEPS = ['-', '\\', '|', '/']
+    MOVES = [term_support.MOVE_BACK + STEPS[0],
+             term_support.MOVE_BACK + STEPS[1],
+             term_support.MOVE_BACK + STEPS[2],
+             term_support.MOVE_BACK + STEPS[3]]
+
+    def __init__(self):
+        self.position = 0
+
+    def _update_position(self):
+        if self.position == (len(self.MOVES) - 1):
+            self.position = 0
+        else:
+            self.position += 1
+
+    def render(self):
+        result = self.MOVES[self.position]
+        self._update_position()
+        return result
+
+
+class View(object):
 
     """
     Takes care of both disk logs and stdout/err logs.
     """
 
-    THROBBER_STEPS = ['-', '\\', '|', '/']
-    THROBBER_MOVES = [term_support.MOVE_BACK + THROBBER_STEPS[0],
-                      term_support.MOVE_BACK + THROBBER_STEPS[1],
-                      term_support.MOVE_BACK + THROBBER_STEPS[2],
-                      term_support.MOVE_BACK + THROBBER_STEPS[3]]
+    def __init__(self, app_args=None, console_logger='avocado.app', use_paginator=False):
+        """
+        Set up the console logger and the paginator mode.
 
-    def __init__(self, logger_name='avocado.app'):
-        self.console_log = logging.getLogger('avocado.app')
-        self.throbber_pos = 0
+        :param console_logger: logging.Logger identifier for the main app logger.
+        :type console_logger: str
+        :param use_paginator: Whether to use paginator mode. Set it to True if
+                              the program is supposed to output a large list of
+                              lines to the user and you want the user to be able
+                              to scroll through them at will (think git log).
+        """
+        self.app_args = app_args
+        self.use_paginator = use_paginator
+        self.console_log = logging.getLogger(console_logger)
+        if self.use_paginator:
+            self.paginator = get_paginator()
+        else:
+            self.paginator = None
+        self.throbber = Throbber()
+        self.tests_info = {}
 
-    def throbber_progress(self, progress_from_test=False):
+    def notify(self, event='message', msg=None):
+        mapping = {'message': self._log_ui_header,
+                   'minor': self._log_ui_minor,
+                   'error': self._log_ui_error,
+                   'warning': self._log_ui_warning,
+                   'partial': self._log_ui_partial}
+        if msg is not None:
+            mapping[event](msg)
+
+    def notify_progress(self, progress):
+        self._log_ui_throbber_progress(progress)
+
+    def add_test(self, state):
+        self._log(msg=self._get_test_tag(state['tagged_name']),
+                  skip_newline=True)
+
+    def set_test_status(self, status, state):
+        mapping = {'PASS': self._log_ui_status_pass,
+                   'ERROR': self._log_ui_status_error,
+                   'NOT_FOUND': self._log_ui_status_not_found,
+                   'FAIL': self._log_ui_status_fail,
+                   'SKIP': self._log_ui_status_skip,
+                   'WARN': self._log_ui_status_warn}
+        mapping[status](state['time_elapsed'])
+
+    def set_tests_info(self, info):
+        self.tests_info.update(info)
+
+    def _get_test_tag(self, test_name):
+        return ('(%s/%s) %s:  ' %
+                (self.tests_info['tests_run'],
+                 self.tests_info['tests_total'], test_name))
+
+    def _log(self, msg, level=logging.INFO, skip_newline=False):
+        """
+        Write a message to the avocado.app logger or the paginator.
+
+        :param msg: Message to write
+        :type msg: string
+        """
+        silent = False
+        show_job_log = False
+        if self.app_args is not None:
+            if hasattr(self.app_args, 'silent'):
+                silent = self.app_args.silent
+            if hasattr(self.app_args, 'show_job_log'):
+                show_job_log = self.app_args.show_job_log
+        if not (silent or show_job_log):
+            if self.use_paginator:
+                if not skip_newline:
+                    msg += '\n'
+                self.paginator.write(msg)
+            else:
+                extra = {'skip_newline': skip_newline}
+                self.console_log.log(level=level, msg=msg, extra=extra)
+
+    def _log_ui_info(self, msg, skip_newline=False):
+        """
+        Log a :mod:`logging.INFO` message to the UI.
+
+        :param msg: Message to write.
+        """
+        self._log(msg, level=logging.INFO, skip_newline=skip_newline)
+
+    def _log_ui_error_base(self, msg, skip_newline=False):
+        """
+        Log a :mod:`logging.ERROR` message to the UI.
+
+        :param msg: Message to write.
+        """
+        self._log(msg, level=logging.ERROR, skip_newline=skip_newline)
+
+    def _log_ui_healthy(self, msg, skip_newline=False):
+        """
+        Log a message that indicates that things are going as expected.
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(term_support.healthy_str(msg), skip_newline)
+
+    def _log_ui_partial(self, msg, skip_newline=False):
+        """
+        Log a message that indicates something (at least) partially OK
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(term_support.partial_str(msg), skip_newline)
+
+    def _log_ui_header(self, msg):
+        """
+        Log a header message.
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(term_support.header_str(msg))
+
+    def _log_ui_minor(self, msg):
+        """
+        Log a minor message.
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(msg)
+
+    def _log_ui_error(self, msg):
+        """
+        Log an error message (useful for critical errors).
+
+        :param msg: Message to write.
+        """
+        self._log_ui_error_base(term_support.fail_header_str(msg))
+
+    def _log_ui_warning(self, msg):
+        """
+        Log a warning message (useful for warning messages).
+
+        :param msg: Message to write.
+        """
+        self._log_ui_info(term_support.warn_header_str(msg))
+
+    def _log_ui_status_pass(self, t_elapsed):
+        """
+        Log a PASS status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
+        self._log_ui_info(normal_pass_msg)
+
+    def _log_ui_status_error(self, t_elapsed):
+        """
+        Log an ERROR status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
+        self._log_ui_error_base(normal_error_msg)
+
+    def _log_ui_status_not_found(self, t_elapsed):
+        """
+        Log a NOT_FOUND status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
+        self._log_ui_error_base(normal_error_msg)
+
+    def _log_ui_status_fail(self, t_elapsed):
+        """
+        Log a FAIL status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
+        self._log_ui_error_base(normal_fail_msg)
+
+    def _log_ui_status_skip(self, t_elapsed):
+        """
+        Log a SKIP status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_skip_msg = term_support.skip_str()
+        self._log_ui_info(normal_skip_msg)
+
+    def _log_ui_status_warn(self, t_elapsed):
+        """
+        Log a WARN status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
+        self._log_ui_error_base(normal_warn_msg)
+
+    def _log_ui_throbber_progress(self, progress_from_test=False):
         """
         Give an interactive indicator of the test progress
 
@@ -258,24 +549,9 @@ class OutputManager(object):
         :rtype: None
         """
         if progress_from_test:
-            self.log_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+            self._log_ui_healthy(self.throbber.render(), True)
         else:
-            self.log_partial(self.THROBBER_MOVES[self.throbber_pos], True)
-
-        if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
-            self.throbber_pos = 0
-        else:
-            self.throbber_pos += 1
-
-    def _log(self, msg, level=logging.INFO, skip_newline=False):
-        """
-        Write a message to the avocado.app logger.
-
-        :param msg: Message to write
-        :type msg: string
-        """
-        extra = {'skip_newline': skip_newline}
-        self.console_log.log(level=level, msg=msg, extra=extra)
+            self._log_ui_partial(self.throbber.render(), True)
 
     def start_file_logging(self, logfile, loglevel, unique_id):
         """
@@ -295,10 +571,8 @@ class OutputManager(object):
 
         self.file_handler.setFormatter(formatter)
         test_logger = logging.getLogger('avocado.test')
-        utils_logger = logging.getLogger('avocado.utils')
         linux_logger = logging.getLogger('avocado.linux')
         test_logger.addHandler(self.file_handler)
-        utils_logger.addHandler(self.file_handler)
         linux_logger.addHandler(self.file_handler)
 
     def stop_file_logging(self):
@@ -306,111 +580,7 @@ class OutputManager(object):
         Simple helper for removing a handler from the current logger.
         """
         test_logger = logging.getLogger('avocado.test')
-        utils_logger = logging.getLogger('avocado.utils')
         linux_logger = logging.getLogger('avocado.linux')
         test_logger.removeHandler(self.file_handler)
-        utils_logger.removeHandler(self.file_handler)
         linux_logger.removeHandler(self.file_handler)
         self.file_handler.close()
-
-    def info(self, msg, skip_newline=False):
-        """
-        Log a :mod:`logging.INFO` message.
-
-        :param msg: Message to write.
-        """
-        self._log(msg, level=logging.INFO, skip_newline=skip_newline)
-
-    def error(self, msg):
-        """
-        Log a :mod:`logging.INFO` message.
-
-        :param msg: Message to write.
-        """
-        self._log(msg, level=logging.ERROR)
-
-    def log_healthy(self, msg, skip_newline=False):
-        """
-        Log a message that indicates something healthy is going on
-
-        :param msg: Message to write.
-        """
-        self.info(term_support.healthy_str(msg), skip_newline)
-
-    def log_partial(self, msg, skip_newline=False):
-        """
-        Log a message that indicates something (at least) partially OK
-
-        :param msg: Message to write.
-        """
-        self.info(term_support.partial_str(msg), skip_newline)
-
-    def log_header(self, msg):
-        """
-        Log a header message.
-
-        :param msg: Message to write.
-        """
-        self.info(term_support.header_str(msg))
-
-    def log_fail_header(self, msg):
-        """
-        Log a fail header message (red, for critical errors).
-
-        :param msg: Message to write.
-        """
-        self.info(term_support.fail_header_str(msg))
-
-    def log_pass(self, t_elapsed):
-        """
-        Log a PASS message.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
-        self.info(normal_pass_msg)
-
-    def log_error(self, t_elapsed):
-        """
-        Log an ERROR message.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_error_msg)
-
-    def log_not_found(self, t_elapsed):
-        """
-        Log a NOT_FOUND message.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_error_msg)
-
-    def log_fail(self, t_elapsed):
-        """
-        Log a FAIL message.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_fail_msg)
-
-    def log_skip(self, t_elapsed):
-        """
-        Log a SKIP message.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_skip_msg = term_support.skip_str()
-        self.info(normal_skip_msg)
-
-    def log_warn(self, t_elapsed):
-        """
-        Log a WARN message.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
-        self.error(normal_warn_msg)

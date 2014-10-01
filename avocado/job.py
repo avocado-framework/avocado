@@ -128,6 +128,8 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
+        sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
+        sys.sterr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
         instance = self.load_test(params, queue)
         runtime.CURRENT_TEST = instance
         early_state = instance.get_state()
@@ -214,16 +216,16 @@ class TestRunner(object):
                         if not test_state['running']:
                             break
                         else:
-                            self.job.result_proxy.throbber_progress(True)
+                            self.job.result_proxy.notify_progress(True)
                             if test_state['paused']:
                                 msg = test_state['paused_msg']
                                 if msg:
-                                    self.job.output_manager.log_partial(msg)
+                                    self.job.view.notify(event='partial', msg=msg)
 
                 except Queue.Empty:
                     if p.is_alive():
                         if ctrl_c_count == 0:
-                            self.job.result_proxy.throbber_progress()
+                            self.job.result_proxy.notify_progress()
                     else:
                         break
 
@@ -239,17 +241,16 @@ class TestRunner(object):
                                        ignore_window)
                             k_msg_3 = ("A new Ctrl+C sent after that will send a "
                                        "SIGKILL to them")
-                            self.job.output_manager.log_header("\n")
-                            self.job.output_manager.log_header(k_msg_1)
-                            self.job.output_manager.log_header(k_msg_2)
-                            self.job.output_manager.log_header(k_msg_3)
+                            self.job.view.notify(event='message', msg=k_msg_1)
+                            self.job.view.notify(event='message', msg=k_msg_2)
+                            self.job.view.notify(event='message', msg=k_msg_3)
                             stage_1_msg_displayed = True
                         ignore_time_started = time.time()
                     if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
                         if not stage_2_msg_displayed:
                             k_msg_3 = ("Ctrl+C received after the ignore window. "
                                        "Killing all active tests")
-                            self.job.output_manager.log_header(k_msg_3)
+                            self.job.view.notify(event='message', msg=k_msg_3)
                             stage_2_msg_displayed = True
                         os.kill(p.pid, signal.SIGKILL)
 
@@ -267,7 +268,7 @@ class TestRunner(object):
 
             # don't process other tests from the list
             if ctrl_c_count > 0:
-                self.job.output_manager.log_header("")
+                self.job.view.notify(event='minor', msg='')
                 break
 
             self.result.check_test(test_state)
@@ -308,16 +309,23 @@ class Job(object):
         if self.args is not None:
             self.loglevel = args.log_level or logging.DEBUG
             self.multiplex_file = args.multiplex_file
+            self.show_job_log = args.show_job_log
+            self.silent = args.silent
         else:
             self.loglevel = logging.DEBUG
             self.multiplex_file = None
+            self.show_job_log = False
+            self.silent = False
+        if self.show_job_log:
+            if not self.silent:
+                output.add_console_handler(logging.getLogger('avocado.test'))
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
         self.sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
-        self.output_manager = output.OutputManager()
+        self.view = output.View(app_args=self.args)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -329,25 +337,12 @@ class Job(object):
                                              test_result=self.result_proxy)
 
     def _set_output_plugins(self):
-        plugin_using_stdout = None
-        e_msg = ("Avocado could not set %s and %s both to output to stdout. ")
-        e_msg_2 = ("Please set the output flag of one of them to a file "
-                   "to avoid conflicts.")
         for key in self.args.__dict__:
             if key.endswith('_result'):
                 result_class = getattr(self.args, key)
                 if issubclass(result_class, result.TestResult):
-                    result_plugin = result_class(self.output_manager,
+                    result_plugin = result_class(self.view,
                                                  self.args)
-                    if result_plugin.output == '-':
-                        if plugin_using_stdout is not None:
-                            e_msg %= (plugin_using_stdout.command_line_arg_name,
-                                      result_plugin.command_line_arg_name)
-                            self.output_manager.log_fail_header(e_msg)
-                            self.output_manager.log_fail_header(e_msg_2)
-                            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
-                        else:
-                            plugin_using_stdout = result_plugin
                     self.result_proxy.add_output_plugin(result_plugin)
 
     def _make_test_result(self):
@@ -370,24 +365,28 @@ class Job(object):
         xunit_file = os.path.join(self.logdir, 'results.xml')
         args = argparse.Namespace()
         args.xunit_output = xunit_file
-        xunit_plugin = xunit.xUnitTestResult(self.output_manager, args)
+        xunit_plugin = xunit.xUnitTestResult(self.view, args)
         self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')
         args = argparse.Namespace()
         args.json_output = json_file
-        json_plugin = jsonresult.JSONTestResult(self.output_manager, args)
+        json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
 
-        # If there are no active output plugins besides xunit and json,
-        # and the option --silent is not present, then set up the human output.
-        if hasattr(self.args, 'silent') and self.args.silent:
-            human = False
-        else:
-            human = True
-        if len(self.result_proxy.output_plugins) == 2 and human:
-            human_plugin = result.HumanTestResult(self.output_manager, self.args)
+        op_set_stdout = self.result_proxy.output_plugins_using_stdout()
+        if len(op_set_stdout) > 1:
+            msg = ('Options %s are trying to use stdout simultaneously' %
+                   " ".join(op_set_stdout))
+            self.view.notify(event='error', msg=msg)
+            msg = ('Please set at least one of them to a file to avoid '
+                   'conflicts')
+            self.view.notify(event='error', msg=msg)
+            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+
+        if not op_set_stdout:
+            human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
     def _run(self, urls=None, multiplex_file=None):
@@ -454,12 +453,12 @@ class Job(object):
         self._make_test_result()
         self._make_test_runner()
 
-        self.output_manager.start_file_logging(self.logfile,
-                                               self.loglevel,
-                                               self.unique_id)
-        self.output_manager.logfile = self.logfile
+        self.view.start_file_logging(self.logfile,
+                                     self.loglevel,
+                                     self.unique_id)
+        self.view.logfile = self.logfile
         failures = self.test_runner.run(params_list)
-        self.output_manager.stop_file_logging()
+        self.view.stop_file_logging()
         self.sysinfo_logger.end_job_hook()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
@@ -505,11 +504,11 @@ class Job(object):
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.output_manager.log_fail_header('Avocado job failed: %s: %s' %
-                                                (fail_class, details))
+            self.view.notify(event='error', msg=('Avocado job failed: %s: %s' %
+                                                 (fail_class, details)))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
         except exceptions.OptionValidationError, details:
-            self.output_manager.log_fail_header(str(details))
+            self.view.notify(event='error', msg=str(details))
             return error_codes.numeric_status['AVOCADO_JOB_FAIL']
 
         except Exception, details:
@@ -518,15 +517,15 @@ class Job(object):
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             fail_class = details.__class__.__name__
-            self.output_manager.log_fail_header('Avocado crashed: %s: %s' %
-                                                (fail_class, details))
+            self.view.notify(event='error', msg=('Avocado crashed: %s: %s' %
+                                                 (fail_class, details)))
             for line in tb_info:
-                self.output_manager.error(line)
-            self.output_manager.log_fail_header('Please include the traceback '
-                                                'info and command line used on '
-                                                'your bug report')
-            self.output_manager.log_fail_header('Report bugs visiting %s' %
-                                                _NEW_ISSUE_LINK)
+                self.view.notify(event='minor', msg=line)
+            self.view.notify(event='error', msg=('Please include the traceback '
+                                                 'info and command line used on '
+                                                 'your bug report'))
+            self.view.notify(event='error', msg=('Report bugs visiting %s' %
+                                                 _NEW_ISSUE_LINK))
             return error_codes.numeric_status['AVOCADO_CRASH']
 
 

@@ -20,6 +20,7 @@ framework tests.
 import inspect
 import logging
 import os
+import shutil
 import sys
 import time
 import traceback
@@ -130,6 +131,12 @@ class Test(unittest.TestCase):
 
         self.basedir = os.path.dirname(inspect.getfile(self.__class__))
         self.datadir = os.path.join(self.basedir, '%s.data' % basename)
+
+        self.expected_stdout_file = os.path.join(self.datadir,
+                                                 'stdout.expected')
+        self.expected_stderr_file = os.path.join(self.datadir,
+                                                 'stderr.expected')
+
         self.workdir = path.init_dir(tmpdir, basename)
         self.srcdir = path.init_dir(self.workdir, 'src')
         if base_logdir is None:
@@ -140,11 +147,18 @@ class Test(unittest.TestCase):
         self.logdir = path.init_dir(base_logdir, self.tagged_name)
         io.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
+
+        self.stdout_file = os.path.join(self.logdir, 'stdout')
+        self.stderr_file = os.path.join(self.logdir, 'stderr')
+
         self.outputdir = path.init_dir(self.logdir, 'data')
         self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")
+
+        self.stdout_log = logging.getLogger("avocado.test.stdout")
+        self.stderr_log = logging.getLogger("avocado.test.stderr")
 
         self.log.info('START %s', self.tagged_name)
         self.log.debug('')
@@ -269,6 +283,14 @@ class Test(unittest.TestCase):
         """
         return os.path.join(self.datadir, basename)
 
+    def _register_log_file_handler(self, logger, formatter, filename,
+                                   log_level=logging.DEBUG):
+        file_handler = logging.FileHandler(filename=filename)
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        return file_handler
+
     def start_logging(self):
         """
         Simple helper for adding a file logger to the root logger.
@@ -281,6 +303,14 @@ class Test(unittest.TestCase):
 
         self.file_handler.setFormatter(formatter)
         self.log.addHandler(self.file_handler)
+
+        stream_fmt = '%(message)s'
+        stream_formatter = logging.Formatter(fmt=stream_fmt)
+
+        self.stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
+                                                                   self.stdout_file)
+        self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
+                                                                   self.stderr_file)
 
     def stop_logging(self):
         """
@@ -351,6 +381,32 @@ class Test(unittest.TestCase):
         """
         pass
 
+    def record_reference_stdout(self):
+        if not os.path.isdir(self.datadir):
+            os.makedirs(self.datadir)
+        shutil.copyfile(self.stdout_file, self.expected_stdout_file)
+
+    def record_reference_stderr(self):
+        if not os.path.isdir(self.datadir):
+            os.makedirs(self.datadir)
+        shutil.copyfile(self.stderr_file, self.expected_stderr_file)
+
+    def check_reference_stdout(self):
+        if os.path.isfile(self.expected_stdout_file):
+            expected = io.read_file(self.expected_stdout_file)
+            actual = io.read_file(self.stdout_file)
+            msg = ('Actual test sdtout differs from expected one:\n'
+                   'Actual:\n%s\nExpected:\n%s' % (actual, expected))
+            self.assertEqual(expected, actual, msg)
+
+    def check_reference_stderr(self):
+        if os.path.isfile(self.expected_stderr_file):
+            expected = io.read_file(self.expected_stderr_file)
+            actual = io.read_file(self.stderr_file)
+            msg = ('Actual test sdterr differs from expected one:\n'
+                   'Actual:\n%s\nExpected:\n%s' % (actual, expected))
+            self.assertEqual(expected, actual, msg)
+
     def runTest(self, result=None):
         """
         Run test method, for compatibility with unittest.TestCase.
@@ -361,6 +417,8 @@ class Test(unittest.TestCase):
         self.sysinfo_logger.start_test_hook()
         action_exception = None
         cleanup_exception = None
+        stdout_check_exception = None
+        stderr_check_exception = None
         try:
             self.setup()
         except Exception, details:
@@ -377,11 +435,42 @@ class Test(unittest.TestCase):
             except Exception, details:
                 log_exc_info(sys.exc_info())
                 cleanup_exception = details
+
+        if self.job is not None:
+            job_standalone = self.job.args is None
+            no_record_mode = (not job_standalone and
+                              self.job.args.output_check_record == 'none')
+            disable_output_check = (not job_standalone and
+                                    self.job.args.disable_output_check)
+
+            if job_standalone or no_record_mode:
+                if not disable_output_check:
+                    try:
+                        self.check_reference_stdout()
+                    except Exception, details:
+                        log_exc_info(sys.exc_info())
+                        stdout_check_exception = details
+                    try:
+                        self.check_reference_stderr()
+                    except Exception, details:
+                        log_exc_info(sys.exc_info())
+                        stderr_check_exception = details
+
+            elif not job_standalone:
+                if self.job.args.output_check_record in ['all', 'stdout']:
+                    self.record_reference_stdout()
+                if self.job.args.output_check_record in ['all', 'stderr']:
+                    self.record_reference_stderr()
+
         # pylint: disable=E0702
         if action_exception is not None:
             raise action_exception
         elif cleanup_exception is not None:
             raise exceptions.TestSetupFail(cleanup_exception)
+        elif stdout_check_exception is not None:
+            raise stdout_check_exception
+        elif stderr_check_exception is not None:
+            raise stderr_check_exception
 
         self.status = 'PASS'
         self.sysinfo_logger.end_test_hook()
@@ -462,6 +551,14 @@ class DropinTest(Test):
         self.path = os.path.abspath(path)
         super(DropinTest, self).__init__(name=path, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
+        basedir = os.path.dirname(self.path)
+        basename = os.path.basename(self.path)
+        datadirname = basename + '.data'
+        self.datadir = os.path.join(basedir, datadirname)
+        self.expected_stdout_file = os.path.join(self.datadir,
+                                                 'stdout.expected')
+        self.expected_stderr_file = os.path.join(self.datadir,
+                                                 'stderr.expected')
 
     def _log_detailed_cmd_info(self, result):
         """
