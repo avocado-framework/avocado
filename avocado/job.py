@@ -220,7 +220,7 @@ class TestRunner(object):
                             if test_state['paused']:
                                 msg = test_state['paused_msg']
                                 if msg:
-                                    self.job.view.log_partial(msg)
+                                    self.job.view.notify(event='partial', msg=msg)
 
                 except Queue.Empty:
                     if p.is_alive():

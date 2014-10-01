@@ -347,7 +347,8 @@ class View(object):
         mapping = {'message': self.log_ui_header,
                    'minor': self.log_ui_minor,
                    'error': self.log_ui_error,
-                   'warning': self.log_ui_warning}
+                   'warning': self.log_ui_warning,
+                   'partial': self.log_ui_partial}
         if msg is not None:
             mapping[event](msg)
 
