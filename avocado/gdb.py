@@ -21,6 +21,7 @@ import time
 import fcntl
 import subprocess
 
+from avocado.utils import pts
 from avocado.utils import network
 from avocado.external import gdbmi_parser
 
@@ -192,9 +193,10 @@ class GDB(object):
 
         self.commands_history = []
 
-        # whatever comes from the app that is not a GDB MI message
-        self.output_messages = []
-        self.output_messages_queue = []
+        # the inferior tty file descriptors and path
+        self.inferior_tty_master_fd = None
+        self.inferior_tty_slave_fd = None
+        self.inferior_tty_master_path = None
 
     def read_gdb_response(self, timeout=0.01, max_tries=100):
         '''
@@ -337,6 +339,35 @@ class GDB(object):
             if not r.result.class_ == 'done':
                 raise UnexpectedResponseError
         return r
+
+    def set_tty(self, tty):
+        """
+        Automatically assign a tty to the inferior process
+
+        :param tty: the path to the tty file
+        :type tty: str
+        :returns: a :class:`CommandResult` instance
+        :rtype: :class:`CommandResult`
+        """
+        cmd = "set inferior-tty %s" % tty
+        r = self.cli_cmd(cmd)
+        if not r.result.class_ == 'done':
+            raise UnexpectedResponseError
+        return r
+
+    def allocate_pts(self):
+        """
+        Automatically allocate a tty (a pseudo terminal)
+
+        And set it as the tty for the inferior process
+
+        :returns: a :class:`CommandResult` instance
+        :rtype: :class:`CommandResult`
+        """
+        (self.inferior_tty_master_fd,
+         self.inferior_tty_slave_fd,
+         self.inferior_tty_master_path) = pts.openpty()
+        return self.set_tty(self.inferior_tty_master_path)
 
     def set_break(self, location, ignore_error=False):
         """
