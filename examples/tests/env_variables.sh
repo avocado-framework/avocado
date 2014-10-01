@@ -1,6 +1,6 @@
 #!/bin/sh
-# This test demonstrates that shell scripts have access to a lot off
-# avocado runtime information, exported through environment variables.
+# This test demonstrates that shell scripts have access to avocado runtime
+# information, exported through environment variables.
 echo "Avocado Version: $AVOCADO_VERSION"
 echo "Avocado Test basedir: $AVOCADO_TEST_BASEDIR"
 echo "Avocado Test datadir: $AVOCADO_TEST_DATADIR"
