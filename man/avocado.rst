@@ -82,6 +82,34 @@ The test directories will vary depending on you system and
 installation method used. Still, it's pretty easy to find that out as shown
 in the next section.
 
+DEBUGGING TESTS
+===============
+
+When you are developing new tests, frequently you want to look at the straight
+output of the job log in the stdout, without having to tail the job log.
+In order to do that, you can use --show-job-log to the avocado test runner::
+
+    $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
+    Not logging /proc/slabinfo (lack of permissions)
+    START examples/tests/sleeptest.py
+
+    Test instance parameters:
+        id = examples/tests/sleeptest.py
+
+    Default parameters:
+        sleep_length = 1.0
+
+    Test instance params override defaults whenever available
+
+    Sleeping for 1.00 seconds
+    Not logging /var/log/messages (lack of permissions)
+    PASS examples/tests/sleeptest.py
+
+    Not logging /proc/slabinfo (lack of permissions)
+
+As you can see, the UI output is suppressed and only the job log goes to
+stdout, making this a useful feature for test development/debugging.
+
 LISTING TESTS
 =============
 
