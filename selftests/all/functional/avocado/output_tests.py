@@ -180,6 +180,26 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
+    def test_show_job_log(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptest --show-job-log'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+    def test_silent_trumps_show_job_log(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run sleeptest --show-job-log --silent'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout + result.stderr
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertEqual(output, "")
+
     def test_default_enabled_plugins(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run sleeptest'
