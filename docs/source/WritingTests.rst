@@ -436,6 +436,46 @@ Verifying the failure reason::
 
 As expected, the test failed because we changed its expectations.
 
+Test log, stdout and stderr in native avocado modules
+=====================================================
+
+If needed, you can write directly to the expected stdout and stderr files
+from the native test scope. It is important to make the distinction between
+the following entities:
+
+* The test logs
+* The test expected stdout
+* The test expected stderr
+
+The first one is used for debugging and informational purposes. The framework
+machinery uses logs to give you more detailed info about your test, so they
+are not the most reliable source to compare stdout/err. You may log something
+into the test logs using the methods in :mod:`avocado.test.Test.log` class
+attributes. Consider
+the example::
+
+    class output_test(test.Test):
+
+        def action(self):
+            self.log.info('This goes to the log and it is only informational')
+
+If you need to write directly to the test stdout and stderr streams, there
+are another 2 class attributes for that, :mod:`avocado.test.Test.stdout_log`
+and :mod:`avocado.test.Test.stderr_log`, that have the exact same methods
+of the log object. So if you want to add stuff to your expected stdout and
+stderr streams, you can do something like::
+
+    class output_test(test.Test):
+
+        def action(self):
+            self.log.info('This goes to the log and it is only informational')
+            self.stdout_log.info('This goes to the test stdout (will be recorded)')
+            self.stderr_log.info('This goes to the test stderr (will be recorded)')
+
+Each one of the last 2 statements will go to the ``stdout.expected`` and
+``stderr.expected``, should you choose ``--output-check-record all``, and
+will be output to the files ``stderr`` and ``stdout`` of the job results dir
+every time that test is executed.
 
 Avocado Tests run on a separate process
 =======================================
