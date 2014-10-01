@@ -310,17 +310,37 @@ class LoggingFile(object):
         return False
 
 
+class Throbber(object):
+
+    """
+    Produces a spinner used to notify progress in the application UI.
+    """
+    STEPS = ['-', '\\', '|', '/']
+    MOVES = [term_support.MOVE_BACK + STEPS[0],
+             term_support.MOVE_BACK + STEPS[1],
+             term_support.MOVE_BACK + STEPS[2],
+             term_support.MOVE_BACK + STEPS[3]]
+
+    def __init__(self):
+        self.position = 0
+
+    def _update_position(self):
+        if self.position == (len(self.MOVES) - 1):
+            self.position = 0
+        else:
+            self.position += 1
+
+    def render(self):
+        result = self.MOVES[self.position]
+        self._update_position()
+        return result
+
+
 class View(object):
 
     """
     Takes care of both disk logs and stdout/err logs.
     """
-
-    THROBBER_STEPS = ['-', '\\', '|', '/']
-    THROBBER_MOVES = [term_support.MOVE_BACK + THROBBER_STEPS[0],
-                      term_support.MOVE_BACK + THROBBER_STEPS[1],
-                      term_support.MOVE_BACK + THROBBER_STEPS[2],
-                      term_support.MOVE_BACK + THROBBER_STEPS[3]]
 
     def __init__(self, app_args=None, console_logger='avocado.app', use_paginator=False):
         """
@@ -340,7 +360,7 @@ class View(object):
             self.paginator = get_paginator()
         else:
             self.paginator = None
-        self.throbber_pos = 0
+        self.throbber = Throbber()
         self.tests_info = {}
 
     def notify(self, event='message', msg=None):
@@ -529,14 +549,9 @@ class View(object):
         :rtype: None
         """
         if progress_from_test:
-            self._log_ui_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+            self._log_ui_healthy(self.throbber.render(), True)
         else:
-            self._log_ui_partial(self.THROBBER_MOVES[self.throbber_pos], True)
-
-        if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
-            self.throbber_pos = 0
-        else:
-            self.throbber_pos += 1
+            self._log_ui_partial(self.throbber.render(), True)
 
     def start_file_logging(self, logfile, loglevel, unique_id):
         """
