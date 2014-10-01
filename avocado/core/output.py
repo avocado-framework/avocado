@@ -344,36 +344,39 @@ class View(object):
         self.tests_info = {}
 
     def notify(self, event='message', msg=None):
-        mapping = {'message': self.log_ui_header,
-                   'minor': self.log_ui_minor,
-                   'error': self.log_ui_error,
-                   'warning': self.log_ui_warning,
-                   'partial': self.log_ui_partial}
+        mapping = {'message': self._log_ui_header,
+                   'minor': self._log_ui_minor,
+                   'error': self._log_ui_error,
+                   'warning': self._log_ui_warning,
+                   'partial': self._log_ui_partial}
         if msg is not None:
             mapping[event](msg)
+
+    def notify_progress(self, progress):
+        self._log_ui_throbber_progress(progress)
+
+    def add_test(self, state):
+        self._log(msg=self._get_test_tag(state['tagged_name']),
+                  skip_newline=True)
+
+    def set_test_status(self, status, state):
+        mapping = {'PASS': self._log_ui_status_pass,
+                   'ERROR': self._log_ui_status_error,
+                   'NOT_FOUND': self._log_ui_status_not_found,
+                   'FAIL': self._log_ui_status_fail,
+                   'SKIP': self._log_ui_status_skip,
+                   'WARN': self._log_ui_status_warn}
+        mapping[status](state['time_elapsed'])
 
     def set_tests_info(self, info):
         self.tests_info.update(info)
 
     def _get_test_tag(self, test_name):
-        return '(%s/%s) %s:  ' % (self.tests_info['tests_run'], self.tests_info['tests_total'], test_name)
+        return ('(%s/%s) %s:  ' %
+                (self.tests_info['tests_run'],
+                 self.tests_info['tests_total'], test_name))
 
-    def add_test(self, state):
-        self.log(msg=self._get_test_tag(state['tagged_name']), skip_newline=True)
-
-    def set_test_status(self, status, state):
-        mapping = {'PASS': self.log_ui_status_pass,
-                   'ERROR': self.log_ui_status_error,
-                   'NOT_FOUND': self.log_ui_status_not_found,
-                   'FAIL': self.log_ui_status_fail,
-                   'SKIP': self.log_ui_status_skip,
-                   'WARN': self.log_ui_status_warn}
-        mapping[status](state['time_elapsed'])
-
-    def notify_progress(self, progress):
-        self.log_ui_throbber_progress(progress)
-
-    def log(self, msg, level=logging.INFO, skip_newline=False):
+    def _log(self, msg, level=logging.INFO, skip_newline=False):
         """
         Write a message to the avocado.app logger or the paginator.
 
@@ -402,17 +405,17 @@ class View(object):
 
         :param msg: Message to write.
         """
-        self.log(msg, level=logging.INFO, skip_newline=skip_newline)
+        self._log(msg, level=logging.INFO, skip_newline=skip_newline)
 
-    def _log_ui_error(self, msg, skip_newline=False):
+    def _log_ui_error_base(self, msg, skip_newline=False):
         """
         Log a :mod:`logging.ERROR` message to the UI.
 
         :param msg: Message to write.
         """
-        self.log(msg, level=logging.ERROR, skip_newline=skip_newline)
+        self._log(msg, level=logging.ERROR, skip_newline=skip_newline)
 
-    def log_ui_healthy(self, msg, skip_newline=False):
+    def _log_ui_healthy(self, msg, skip_newline=False):
         """
         Log a message that indicates that things are going as expected.
 
@@ -420,7 +423,7 @@ class View(object):
         """
         self._log_ui_info(term_support.healthy_str(msg), skip_newline)
 
-    def log_ui_partial(self, msg, skip_newline=False):
+    def _log_ui_partial(self, msg, skip_newline=False):
         """
         Log a message that indicates something (at least) partially OK
 
@@ -428,7 +431,7 @@ class View(object):
         """
         self._log_ui_info(term_support.partial_str(msg), skip_newline)
 
-    def log_ui_header(self, msg):
+    def _log_ui_header(self, msg):
         """
         Log a header message.
 
@@ -436,7 +439,7 @@ class View(object):
         """
         self._log_ui_info(term_support.header_str(msg))
 
-    def log_ui_minor(self, msg):
+    def _log_ui_minor(self, msg):
         """
         Log a minor message.
 
@@ -444,15 +447,15 @@ class View(object):
         """
         self._log_ui_info(msg)
 
-    def log_ui_error(self, msg):
+    def _log_ui_error(self, msg):
         """
         Log an error message (useful for critical errors).
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.fail_header_str(msg))
+        self._log_ui_error_base(term_support.fail_header_str(msg))
 
-    def log_ui_warning(self, msg):
+    def _log_ui_warning(self, msg):
         """
         Log a warning message (useful for warning messages).
 
@@ -460,7 +463,7 @@ class View(object):
         """
         self._log_ui_info(term_support.warn_header_str(msg))
 
-    def log_ui_status_pass(self, t_elapsed):
+    def _log_ui_status_pass(self, t_elapsed):
         """
         Log a PASS status message for a given operation.
 
@@ -469,34 +472,34 @@ class View(object):
         normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
         self._log_ui_info(normal_pass_msg)
 
-    def log_ui_status_error(self, t_elapsed):
+    def _log_ui_status_error(self, t_elapsed):
         """
         Log an ERROR status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error(normal_error_msg)
+        self._log_ui_error_base(normal_error_msg)
 
-    def log_ui_status_not_found(self, t_elapsed):
+    def _log_ui_status_not_found(self, t_elapsed):
         """
         Log a NOT_FOUND status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error(normal_error_msg)
+        self._log_ui_error_base(normal_error_msg)
 
-    def log_ui_status_fail(self, t_elapsed):
+    def _log_ui_status_fail(self, t_elapsed):
         """
         Log a FAIL status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error(normal_fail_msg)
+        self._log_ui_error_base(normal_fail_msg)
 
-    def log_ui_status_skip(self, t_elapsed):
+    def _log_ui_status_skip(self, t_elapsed):
         """
         Log a SKIP status message for a given operation.
 
@@ -505,16 +508,16 @@ class View(object):
         normal_skip_msg = term_support.skip_str()
         self._log_ui_info(normal_skip_msg)
 
-    def log_ui_status_warn(self, t_elapsed):
+    def _log_ui_status_warn(self, t_elapsed):
         """
         Log a WARN status message for a given operation.
 
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error(normal_warn_msg)
+        self._log_ui_error_base(normal_warn_msg)
 
-    def log_ui_throbber_progress(self, progress_from_test=False):
+    def _log_ui_throbber_progress(self, progress_from_test=False):
         """
         Give an interactive indicator of the test progress
 
@@ -526,9 +529,9 @@ class View(object):
         :rtype: None
         """
         if progress_from_test:
-            self.log_ui_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
+            self._log_ui_healthy(self.THROBBER_MOVES[self.throbber_pos], True)
         else:
-            self.log_ui_partial(self.THROBBER_MOVES[self.throbber_pos], True)
+            self._log_ui_partial(self.THROBBER_MOVES[self.throbber_pos], True)
 
         if self.throbber_pos == (len(self.THROBBER_MOVES) - 1):
             self.throbber_pos = 0

@@ -34,9 +34,9 @@ class DataDirList(plugin.Plugin):
 
     def run(self, args):
         view = output.View()
-        view.log_ui_header('Avocado Data Directories:')
-        view.log('    base dir        ' + data_dir.get_base_dir())
-        view.log('    tests dir       ' + data_dir.get_test_dir())
-        view.log('    data dir        ' + data_dir.get_data_dir())
-        view.log('    logs dir        ' + data_dir.get_logs_dir())
-        view.log('    tmp dir         ' + data_dir.get_tmp_dir())
+        view.notify(event="message", msg='Avocado Data Directories:')
+        view.notify(event="message", msg='    base dir        ' + data_dir.get_base_dir())
+        view.notify(event="message", msg='    tests dir       ' + data_dir.get_test_dir())
+        view.notify(event="message", msg='    data dir        ' + data_dir.get_data_dir())
+        view.notify(event="message", msg='    logs dir        ' + data_dir.get_logs_dir())
+        view.notify(event="message", msg='    tmp dir         ' + data_dir.get_tmp_dir())
