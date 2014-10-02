@@ -103,9 +103,9 @@ class TreeNode(object):
         return self.get_path()
 
     def get_path(self, sep='/'):
-        path = [self.name]
+        path = [str(self.name)]
         for node in self.iter_parents():
-            path.append(node.name)
+            path.append(str(node.name))
         return sep.join(reversed(path))
 
     @property
