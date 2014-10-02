@@ -192,6 +192,12 @@ class TreeNode(object):
         else:
             return [char1 + '-' + node_name], 0
 
+    def detach(self):
+        if self.parent:
+            self.parent.children.remove(self)
+            self.parent = None
+        return self
+
 
 def ordered_load(stream, Loader=yaml.Loader,
                  object_pairs_hook=collections.OrderedDict):
@@ -235,3 +241,52 @@ def create_from_ordered_data(data, tree=None, root=None, name=''):
 def create_from_yaml(input_yaml):
     data = read_ordered_yaml(input_yaml)
     return create_from_ordered_data(data)
+
+
+def path_parent(path):
+    """
+    From a given path, return its parent path.
+
+    :param path: the node path as string.
+    :return: the parent path as string.
+    """
+    parent = path.rpartition('/')[0]
+    if parent == '':
+        return ''
+    return parent
+
+
+def apply_filters(tree, filter_only=[], filter_out=[]):
+    """
+    Apply a set of filters to the tree.
+
+    The basic filtering is filter only, which includes nodes,
+    and the filter out rules, that exclude nodes.
+
+    Note that filter_out is stronger than filter_only, so if you filter out
+    something, you could not bypass some nodes by using a filter_only rule.
+
+    :param filter_only: the list of paths which will include nodes.
+    :param filter_out: the list of paths which will exclude nodes.
+    :return: the original tree minus the nodes filtered by the rules.
+    """
+    for node in tree.iter_children_preorder():
+        keep_node = True
+        for path in filter_only:
+            if path == '':
+                continue
+            if node.path.startswith(path):
+                keep_node = True
+                break
+            if node.parent and node.parent.path.startswith(path_parent(path)):
+                keep_node = False
+                continue
+        for path in filter_out:
+            if path == '':
+                continue
+            if node.path.startswith(path):
+                keep_node = False
+                break
+        if not keep_node:
+            node.detach()
+    return tree

@@ -24,19 +24,6 @@ import collections
 from avocado.core import tree
 
 
-def path_parent(path):
-    """
-    From a given path, return its parent path.
-
-    :param path: the node path as string.
-    :return: the parent path as string.
-    """
-    parent = path.rpartition('/')[0]
-    if parent == '':
-        return ''
-    return parent
-
-
 def any_sibling(*nodes):
     """
     Check if there is any sibling.
@@ -74,7 +61,7 @@ def filter_only(keys, items):
                 return True
 
             # siblings and their children, filter them out
-            if item.parent.path.startswith(path_parent(key)):
+            if item.parent.path.startswith(tree.path_parent(key)):
                 ret = False
                 continue
 
@@ -102,23 +89,20 @@ def filter_out(keys, items):
                 return False
 
             # sibling and its children, let them in
-            if item.path.startswith(path_parent(key)):
+            if item.path.startswith(tree.path_parent(key)):
                 continue
 
     # everything else should get in
     return True
 
 
-def multiplex(*args, **kwargs):
-    f_only = kwargs.get('filter_only', [''])
-    f_out = kwargs.get('filter_out', [''])
+def multiplex(*args):
     leaves = []
     parents = collections.OrderedDict()
     # filter args and create a set of parents
     for arg in args[0]:
-        if filter_only(f_only, [arg]) and filter_out(f_out, [arg]):
-            leaves.append(arg)
-            parents[arg.parent] = True
+        leaves.append(arg)
+        parents[arg.parent] = True
 
     pools = []
     for p in parents.keys():
@@ -131,10 +115,13 @@ def multiplex(*args, **kwargs):
 
         # second level of filtering above should use the filter strings
         # extracted from the node being worked on
-        result = [x + [y] for x in result for y in pool
-                  if any_sibling(*(x + [y])) is False and
-                  filter_only(y.environment.get('filter-only', []), x + [y]) and
-                  filter_out(y.environment.get('filter-out', []), x + [y])]
+        items = []
+        for x in result:
+            for y in pool:
+                item = x + [y]
+                if any_sibling(*item) is False:
+                    items.append(item)
+        result = items
 
         # if a pool gets totally filtered out above, result will be empty
         if len(result) == 0:
@@ -151,8 +138,7 @@ def multiplex(*args, **kwargs):
 
 def create_variants_from_yaml(input_yaml, filter_only=[], filter_out=[]):
     input_tree = tree.create_from_yaml(input_yaml)
-    leaves = input_tree.get_leaves()
-    variants = multiplex(leaves,
-                         filter_only=filter_only,
-                         filter_out=filter_out)
+    final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
+    leaves = (x for x in final_tree.iter_leaves() if x.parent is not None)
+    variants = multiplex(leaves)
     return variants

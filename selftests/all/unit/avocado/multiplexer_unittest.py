@@ -21,24 +21,6 @@ import unittest
 from avocado.core.tree import *
 from avocado.multiplexer import *
 
-f_only = []
-f_out = []
-
-
-class TestPathParent(unittest.TestCase):
-
-    def test_empty_string(self):
-        self.assertEqual(path_parent(''), '')
-
-    def test_on_root(self):
-        self.assertEqual(path_parent('/'), '')
-
-    def test_direct_parent(self):
-        self.assertEqual(path_parent('/os/linux'), '/os')
-
-    def test_false_direct_parent(self):
-        self.assertNotEqual(path_parent('/os/linux'), '/')
-
 
 class TestAnySibling(unittest.TestCase):
 
@@ -95,6 +77,7 @@ class TestMultiplex(unittest.TestCase):
         t = t1.add_child(TreeNode('tests')).add_child(TreeNode('sync_test'))
         t.add_child(TreeNode('standard'))
         t.add_child(TreeNode('aggressive'))
+        self.tree1 = t1
         self.leaves = t1.get_leaves()
 
         t2 = TreeNode()
@@ -107,6 +90,7 @@ class TestMultiplex(unittest.TestCase):
         pt = t2.add_child(TreeNode('tests')).add_child(TreeNode('ping_test'))
         pt.add_child(TreeNode('standard'))
         pt.add_child(TreeNode('aggressive'))
+        self.tree2 = t2
         self.leaves2 = t2.get_leaves()
 
         t3 = TreeNode()
@@ -120,6 +104,7 @@ class TestMultiplex(unittest.TestCase):
         a.add_child(TreeNode('i386'))
         a.add_child(TreeNode('x86_64'))
         t = t3.add_child(TreeNode('tests')).add_child(TreeNode('sleep_test'))
+        self.tree3 = t3
         self.leaves3 = t3.get_leaves()
 
         t4 = TreeNode()
@@ -141,6 +126,7 @@ class TestMultiplex(unittest.TestCase):
         cpu.add_child(TreeNode('amd'))
         cpu.add_child(TreeNode('arm'))
         cpu.add_child(TreeNode('power'))
+        self.tree4 = t4
         self.leaves4 = t4.get_leaves()
 
     def test_any_sibling(self):
@@ -156,66 +142,108 @@ class TestMultiplex(unittest.TestCase):
         self.assertFalse(any_sibling(prod, fedora, sleeptest))
 
     def test_multiplex_no_dups(self):
-        self.assertEqual(len(list(multiplex(self.leaves, filter_only=f_only, filter_out=f_out))), len(set(multiplex(self.leaves, filter_only=f_only, filter_out=f_out))))
-        self.assertEqual(len(list(multiplex(self.leaves2, filter_only=f_only, filter_out=f_out))), len(set(multiplex(self.leaves2, filter_only=f_only, filter_out=f_out))))
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), len(set(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))))
-        self.assertEqual(len(list(multiplex(self.leaves4, filter_only=f_only, filter_out=f_out))), len(set(multiplex(self.leaves4, filter_only=f_only, filter_out=f_out))))
+        self.assertEqual(len(list(multiplex(self.leaves))),
+                         len(set(multiplex(self.leaves))))
+        self.assertEqual(len(list(multiplex(self.leaves2))),
+                         len(set(multiplex(self.leaves2))))
+        self.assertEqual(len(list(multiplex(self.leaves3))),
+                         len(set(multiplex(self.leaves3))))
+        self.assertEqual(len(list(multiplex(self.leaves4))),
+                         len(set(multiplex(self.leaves4))))
 
     def test_multiplex_size(self):
-        self.assertEqual(len(list(multiplex(self.leaves, filter_only=f_only, filter_out=f_out))), 4)
-        self.assertEqual(len(list(multiplex(self.leaves2, filter_only=f_only, filter_out=f_out))), 8)
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
-        self.assertEqual(len(list(multiplex(self.leaves4, filter_only=f_only, filter_out=f_out))), 72)
+        self.assertEqual(len(list(multiplex(self.leaves))), 4)
+        self.assertEqual(len(list(multiplex(self.leaves2))), 8)
+        self.assertEqual(len(list(multiplex(self.leaves3))), 8)
+        self.assertEqual(len(list(multiplex(self.leaves4))), 72)
 
-    def test_multiplex_filter_only(self):
+    def test_multiplex_filter_only_0(self):
         f_only = ['']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
+        leaves = apply_filters(self.tree3, filter_only=f_only).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 8)
+
+    def test_multiplex_filter_only_1(self):
         f_only = ['/arch']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
+        leaves = apply_filters(self.tree3, filter_only=f_only).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
+
+    def test_multiplex_filter_only_2(self):
         f_only = ['/arch', '/linux']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 4)
+        leaves = apply_filters(self.tree3, filter_only=f_only).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 4)
+
+    def test_multiplex_filter_only_3(self):
         f_only = ['/arch', '/linux/fedora']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
+        leaves = apply_filters(self.tree3, filter_only=f_only).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
 
     def test_multiplex_filter_only_invalid(self):
         f_only = ['/stage']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 0)
-        self.assertEqual(len(list(multiplex(self.leaves4, filter_only=f_only, filter_out=f_out))), 0)
+        t3 = apply_filters(self.tree3, filter_only=f_only)
+        t4 = apply_filters(self.tree4, filter_only=f_only)
+        leaves3 = [x for x in t3.get_leaves() if x.parent is not None]
+        leaves4 = [x for x in t4.get_leaves() if x.parent is not None]
+        self.assertEqual(len(list(multiplex(leaves3))), 0)
+        self.assertEqual(len(list(multiplex(leaves4))), 0)
 
     def test_multiplex_filter_out_invalid(self):
         f_out = ['/foobar']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
-        self.assertEqual(len(list(multiplex(self.leaves4, filter_only=f_only, filter_out=f_out))), 72)
+        t3 = apply_filters(self.tree3, filter_out=f_out)
+        t4 = apply_filters(self.tree4, filter_out=f_out)
+        self.assertEqual(len(list(multiplex(t3.get_leaves()))), 8)
+        self.assertEqual(len(list(multiplex(t4.get_leaves()))), 72)
 
-    def test_multiplex_filter_out(self):
+    def test_multiplex_filter_out_0(self):
         f_out = ['']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
-        f_out = ['/arch']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 4)
-        f_out = ['/arch', '/linux']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
-        f_out = ['/arch', '/linux/fedora']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
+        leaves = apply_filters(self.tree3, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 8)
 
-    def test_multiplex_filter_combined(self):
+    def test_multiplex_filter_out_1(self):
+        f_out = ['/arch']
+        leaves = apply_filters(self.tree3, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 4)
+
+    def test_multiplex_filter_out_2(self):
+        f_out = ['/arch', '/linux']
+        leaves = apply_filters(self.tree3, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
+
+    def test_multiplex_filter_out_3(self):
+        f_out = ['/arch', '/linux/fedora']
+        leaves = apply_filters(self.tree3, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
+
+    def test_multiplex_filter_combined_0(self):
         f_out = ['']
         f_only = ['']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 8)
+        leaves = apply_filters(self.tree3, filter_only=f_only, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 8)
+
+    def test_multiplex_filter_combined_1(self):
         f_only = ['/arch']
         f_out = ['/arch']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 0)
-        f_out = ['/arch']
-        f_only = ['/arch']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 0)
+        leaves = apply_filters(self.tree3, filter_only=f_only, filter_out=f_out).get_leaves()
+        leaves = [x for x in leaves if x.parent is not None]
+        self.assertEqual(len(list(multiplex(leaves))), 0)
+
+    def test_multiplex_filter_combined_2(self):
         f_out = ['/arch', '/linux']
         f_only = ['/linux/fedora']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
+        leaves = apply_filters(self.tree3, filter_only=f_only, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
+
+    def test_multiplex_filter_combined_3(self):
         f_out = ['/arch']
         f_only = ['/linux']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
+        leaves = apply_filters(self.tree3, filter_only=f_only, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
+
+    def test_multiplex_filter_combined_4(self):
         f_out = ['/arch']
         f_only = ['/linux']
-        self.assertEqual(len(list(multiplex(self.leaves3, filter_only=f_only, filter_out=f_out))), 2)
+        leaves = apply_filters(self.tree3, filter_only=f_only, filter_out=f_out).get_leaves()
+        self.assertEqual(len(list(multiplex(leaves))), 2)
+
 
 if __name__ == '__main__':
     unittest.main()
