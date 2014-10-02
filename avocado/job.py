@@ -307,7 +307,16 @@ class Job(object):
             id_file_obj.write("%s\n" % self.unique_id)
 
         if self.args is not None:
-            self.loglevel = args.log_level or logging.DEBUG
+            raw_log_level = args.job_log_level
+            mapping = {'info': logging.INFO,
+                       'debug': logging.DEBUG,
+                       'warning': logging.WARNING,
+                       'error': logging.ERROR,
+                       'critical': logging.CRITICAL}
+            if raw_log_level is not None and raw_log_level in mapping:
+                self.loglevel = mapping[raw_log_level]
+            else:
+                self.loglevel = logging.DEBUG
             self.multiplex_file = args.multiplex_file
             self.show_job_log = args.show_job_log
             self.silent = args.silent
@@ -318,7 +327,9 @@ class Job(object):
             self.silent = False
         if self.show_job_log:
             if not self.silent:
-                output.add_console_handler(logging.getLogger('avocado.test'))
+                test_logger = logging.getLogger('avocado.test')
+                output.add_console_handler(test_logger)
+                test_logger.setLevel(self.loglevel)
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
@@ -436,10 +447,13 @@ class Job(object):
                         variants = None
                     if variants:
                         for variant in variants:
-                            var = variant[0]
-                            if not var.value.has_key('id'):
-                                var.value.update({'id': url})
-                            params_list.append(var.environment)
+                            env = {}
+                            for t in variant:
+                                env.update(dict(t.environment))
+                            tag = ".".join([str(var.name) for var in variant])
+                            env.update({'tag': tag})
+                            env.update({'id': url})
+                            params_list.append(env)
                     else:
                         params_list.append({'id': url})
 

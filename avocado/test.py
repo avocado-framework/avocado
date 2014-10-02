@@ -112,13 +112,7 @@ class Test(unittest.TestCase):
         self.params = Params(params)
         self._raw_params = params
 
-        shortname = self.params.get('shortname')
-        s_tag = None
-        if shortname:
-            split_shortname = shortname.split('.')
-            if len(split_shortname) > 1:
-                s_tag = ".".join(split_shortname[1:])
-        self.tag = tag or s_tag
+        self.tag = tag or self.params.get('tag')
         self.job = job
 
         basename = os.path.basename(self.name)
