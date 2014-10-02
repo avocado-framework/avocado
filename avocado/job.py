@@ -447,10 +447,13 @@ class Job(object):
                         variants = None
                     if variants:
                         for variant in variants:
-                            var = variant[0]
-                            if not var.value.has_key('id'):
-                                var.value.update({'id': url})
-                            params_list.append(var.environment)
+                            env = {}
+                            for t in variant:
+                                env.update(dict(t.environment))
+                            tag = ".".join([str(var.name) for var in variant])
+                            env.update({'tag': tag})
+                            env.update({'id': url})
+                            params_list.append(env)
                     else:
                         params_list.append({'id': url})
 
