@@ -242,6 +242,7 @@ def create_from_yaml(input_yaml):
     data = read_ordered_yaml(input_yaml)
     return create_from_ordered_data(data)
 
+
 def path_parent(path):
     """
     From a given path, return its parent path.
@@ -253,6 +254,7 @@ def path_parent(path):
     if parent == '':
         return ''
     return parent
+
 
 def apply_filters(tree, filter_only=[], filter_out=[]):
     """

@@ -195,12 +195,12 @@ class TestMultiplex(unittest.TestCase):
 
     def test_multiplex_filter_out_0(self):
         f_out = ['']
-        leaves= apply_filters(self.tree3, filter_out=f_out).get_leaves()
+        leaves = apply_filters(self.tree3, filter_out=f_out).get_leaves()
         self.assertEqual(len(list(multiplex(leaves))), 8)
 
     def test_multiplex_filter_out_1(self):
         f_out = ['/arch']
-        leaves= apply_filters(self.tree3, filter_out=f_out).get_leaves()
+        leaves = apply_filters(self.tree3, filter_out=f_out).get_leaves()
         self.assertEqual(len(list(multiplex(leaves))), 4)
 
     def test_multiplex_filter_out_2(self):
