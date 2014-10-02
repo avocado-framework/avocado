@@ -121,6 +121,12 @@ class TestRunner(plugin.Plugin):
                                'for test debugging purposes. No output will '
                                'be displayed if you also specify --silent'))
 
+        out.add_argument('--job-log-level', action='store',
+                         help=("Log level of the job log. Options: "
+                               "'debug', 'info', 'warning', 'error', "
+                               "'critical'. Default: debug"),
+                         default='debug')
+
         out_check = self.parser.add_argument_group('output check arguments')
 
         out_check.add_argument('--output-check-record', type=str,

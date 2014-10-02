@@ -38,9 +38,6 @@ class Parser(object):
         self.application.add_argument('--logdir', action='store',
                                       help='Alternate logs directory',
                                       dest='logdir', default='')
-        self.application.add_argument('--loglevel', action='store',
-                                      help='Debug Level',
-                                      dest='log_level', default='')
         self.application.add_argument('--plugins', action='store',
                                       help='Load extra plugins from directory',
                                       dest='plugins_dir', default='')
