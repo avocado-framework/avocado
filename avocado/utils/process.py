@@ -23,6 +23,7 @@ import signal
 import subprocess
 import time
 import stat
+import fcntl
 import shlex
 import shutil
 import threading
@@ -654,6 +655,8 @@ class GDBSubProcess(object):
         return result
 
     def run(self, timeout=None):
+        self.gdb.allocate_pts()
+
         for b in self._get_breakpoints():
             self.gdb.set_break(b, ignore_error=True)
 
@@ -663,7 +666,31 @@ class GDBSubProcess(object):
             if r:
                 self.gdb.disconnect()
                 self.gdb_server.exit()
+                self.result.stdout = self.get_stdout()
+                self.result.stderr = self.result.stdout
                 return self.result
+
+    def get_stdout(self):
+        """
+        Get the full stdout of the subprocess so far.
+
+        :return: Standard output of the process.
+        :rtype: str
+        """
+        out = ''
+        buff_size = 1024
+
+        if self.gdb.inferior_tty_master_fd is None:
+            return out
+
+        while True:
+            read = os.read(self.gdb.inferior_tty_master_fd, buff_size)
+            out += read
+            if len(read) < buff_size:
+                break
+        return out
+
+    get_stderr = get_stdout
 
 
 def split_gdb_expr(expr):
