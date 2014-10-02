@@ -24,7 +24,8 @@ __all__ = ['ptsname']
 
 
 def get_libc():
-    libc_paths = ['/lib64/libc.so.6', '/lib/libc.so.6']
+    libc_paths = ['/lib64/libc.so.6', '/lib/libc.so.6',
+                  '/lib/x86_64-linux-gnu/libc.so.6']
     for lib_path in libc_paths:
         if os.path.exists(lib_path):
             return ctypes.cdll.LoadLibrary(lib_path)
