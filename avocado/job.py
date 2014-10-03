@@ -446,14 +446,15 @@ class Job(object):
                     except SyntaxError:
                         variants = None
                     if variants:
+                        tag = 1
                         for variant in variants:
                             env = {}
                             for t in variant:
                                 env.update(dict(t.environment))
-                            tag = ".".join([str(var.name) for var in variant])
                             env.update({'tag': tag})
                             env.update({'id': url})
                             params_list.append(env)
+                            tag += 1
                     else:
                         params_list.append({'id': url})
 
