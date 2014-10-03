@@ -26,9 +26,7 @@ on them being loaded::
 
  -h, --help             show this help message and exit
  -v, --version          show program's version number and exit
- -V, --verbose          print extra debug messages
  --logdir LOGDIR        Alternate logs directory
- --loglevel LOG_LEVEL   Debug Level
  --plugins PLUGINS_DIR  Load extra plugins from directory
 
 Real use of avocado depends on running avocado subcommands. This a typical list
