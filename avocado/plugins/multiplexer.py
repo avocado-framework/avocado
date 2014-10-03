@@ -80,12 +80,12 @@ class Multiplexer(plugin.Plugin):
         view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
             paths = ', '.join([x.path for x in tpl])
-            view.notify(event='message', msg='Variant %s:    %s' % (index+1, paths))
+            view.notify(event='minor', msg='Variant %s:    %s' % (index+1, paths))
             if args.contents:
                 env = collections.OrderedDict()
                 for node in tpl:
                     env.update(node.environment)
                 for k in sorted(env.keys()):
-                    view.notify(event='message', msg='    %s: %s' % (k, env[k]))
+                    view.notify(event='minor', msg='    %s: %s' % (k, env[k]))
 
         sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
