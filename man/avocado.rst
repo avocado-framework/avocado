@@ -108,6 +108,15 @@ In order to do that, you can use --show-job-log to the avocado test runner::
 As you can see, the UI output is suppressed and only the job log goes to
 stdout, making this a useful feature for test development/debugging.
 
+SILENCING RUNNER STDOUT
+=======================
+
+You may specify --silent, that means avocado will turn off all runner
+stdout. Even if you specify things like --show-job-log in the CLI, --silent
+will have precedence and you will not get application stdout. Note that --silent
+does not affect on disk job logs, those continue to be generated normally.
+
+
 LISTING TESTS
 =============
 
