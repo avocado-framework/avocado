@@ -105,6 +105,20 @@ In order to do that, you can use --show-job-log to the avocado test runner::
 
     Not logging /proc/slabinfo (lack of permissions)
 
+Let's say you are debugging a test particularly large, with lots of debug
+output and you want to reduce this output to only messages with level 'INFO'
+and higher. You can use the option --job-log-level info to reduce the output.
+Running the same example with this option::
+
+    $ scripts/avocado run sleeptest --show-job-log --job-log-level info
+    START sleeptest.py
+    PASS sleeptest.py
+
+The levels you can choose are the levels available in the python logging system
+`https://docs.python.org/2/library/logging.html#logging-levels`, translated
+to lowercase strings, so 'notset', 'debug', 'info', 'warning', 'error',
+'critical', in order of severity.
+
 As you can see, the UI output is suppressed and only the job log goes to
 stdout, making this a useful feature for test development/debugging.
 
