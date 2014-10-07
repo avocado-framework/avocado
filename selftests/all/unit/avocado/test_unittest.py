@@ -36,6 +36,7 @@ class AvocadoPass(test.Test):
     def action(self):
         variable = True
         self.assertTrue(variable)
+        self.whiteboard = 'foo'
 
 
 @unittest.skip("This class should not be tested per se")
@@ -90,6 +91,13 @@ class TestClassTest(unittest.TestCase):
 
     def testClassAttributesTaggedName(self):
         self.assertEqual(self.tst_instance_pass.tagged_name, "AvocadoPass")
+
+    def testWhiteboardSave(self):
+        whiteboard_file = os.path.join(self.tst_instance_pass.logdir, 'whiteboard')
+        self.assertTrue(os.path.isfile(whiteboard_file))
+        with open(whiteboard_file, 'r') as whiteboard_file_obj:
+            whiteboard_contents = whiteboard_file_obj.read().strip()
+            self.assertTrue(whiteboard_contents, 'foo')
 
     def testTaggedNameNewTests(self):
         """
