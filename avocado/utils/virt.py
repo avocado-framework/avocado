@@ -272,7 +272,8 @@ class VM(object):
         :param password: the password.
         """
         if not self.logged:
-            self.remote = remote.Remote(hostname, username, password)
+            self.remote = remote.Remote(hostname, username, password,
+                                        quiet=True)
             res = self.remote.uptime()
             if res.succeeded:
                 self.logged = True
