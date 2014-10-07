@@ -430,6 +430,9 @@ class Test(unittest.TestCase):
                 log_exc_info(sys.exc_info())
                 cleanup_exception = details
 
+        whiteboard_file = os.path.join(self.logdir, 'whiteboard')
+        io.write_file(whiteboard_file, self.whiteboard)
+
         if self.job is not None:
             job_standalone = self.job.args is None
             no_record_mode = (not job_standalone and
