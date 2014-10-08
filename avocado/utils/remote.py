@@ -18,6 +18,7 @@ Module to provide remote operations.
 
 import getpass
 import logging
+import time
 
 log = logging.getLogger('avocado.test')
 
@@ -30,6 +31,10 @@ except ImportError:
 else:
     remote_capable = True
 
+from avocado.core import output
+from avocado.core import exceptions
+from avocado.utils import process
+
 
 class Remote(object):
 
@@ -38,7 +43,7 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 port=22, timeout=60, attempts=3, quiet=True):
+                 port=22, timeout=60, attempts=3, quiet=False):
         """
         Creates an instance of :class:`Remote`.
 
@@ -62,23 +67,45 @@ class Remote(object):
                                 password=password,
                                 port=port,
                                 connection_timeout=timeout,
-                                connection_attempts=attempts)
+                                connection_attempts=attempts,
+                                linewise=True)
 
     def _setup_environment(self, **kwargs):
         fabric.api.env.update(kwargs)
 
-    def run(self, command):
+    def run(self, command, ignore_status=False):
         """
         Run a remote command.
 
         :param command: the command string to execute.
 
         :return: the result of the remote program's output.
-        :rtype: :class:`fabric.operations._AttributeString`.
+        :rtype: :class:`avocado.utils.process.CmdResult`.
         """
-        return fabric.operations.run(command,
-                                     quiet=self.quiet,
-                                     warn_only=True)
+        if not self.quiet:
+            log.info('[%s] Running command %s', self.hostname, command)
+        result = process.CmdResult()
+        stdout = output.LoggingFile(logger=logging.getLogger('avocado.test'))
+        stderr = output.LoggingFile(logger=logging.getLogger('avocado.test'))
+        start_time = time.time()
+        fabric_result = fabric.operations.run(command=command,
+                                              quiet=self.quiet,
+                                              stdout=stdout,
+                                              stderr=stderr,
+                                              warn_only=True)
+        end_time = time.time()
+        duration = end_time - start_time
+        result.command = command
+        result.stdout = str(fabric_result)
+        result.stderr = fabric_result.stderr
+        result.duration = duration
+        result.exit_status = fabric_result.return_code
+        result.failed = fabric_result.failed
+        result.succeeded = fabric_result.succeeded
+        if not ignore_status:
+            if result.failed:
+                raise exceptions.CmdError(command=command, result=result)
+        return result
 
     def uptime(self):
         """
@@ -86,8 +113,8 @@ class Remote(object):
 
         :return: the uptime string or empty string if fails.
         """
-        res = self.run('uptime')
-        if res.succeeded:
+        res = self.run('uptime', ignore_status=True)
+        if res.exit_status == 0:
             return res
         else:
             return ''
@@ -107,6 +134,9 @@ class Remote(object):
         :param local_path: the local path.
         :param remote_path: the remote path.
         """
+        if not self.quiet:
+            log.info('[%s] Receive remote files %s -> %s', self.hostname,
+                     local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
                 fabric.operations.put(local_path,
@@ -122,6 +152,9 @@ class Remote(object):
         :param local_path: the local path.
         :param remote_path: the remote path.
         """
+        if not self.quiet:
+            log.info('[%s] Receive remote files %s -> %s', self.hostname,
+                     local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
                 fabric.operations.get(remote_path,
