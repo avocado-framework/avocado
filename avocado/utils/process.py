@@ -452,7 +452,27 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     '''
 
-    def __init__(self, cmd, verbose=True, record_stream_files=False):
+    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+        """
+        Creates the subprocess object, stdout/err, reader threads and locks.
+
+        :param cmd: Command line to run.
+        :type cmd: str
+        :param verbose: Whether to log the command run and stdout/stderr.
+                        Currently unused and provided for compatibility only.
+        :type verbose: bool
+        :param allow_output_check: Whether to log the command stream outputs
+                                   (stdout and stderr) in the test stream
+                                   files. Valid values: 'stdout', for
+                                   allowing only standard output, 'stderr',
+                                   to allow only standard error, 'all',
+                                   to allow both standard output and error
+                                   (default), and 'none', to allow
+                                   none to be recorded. Currently unused and
+                                   provided for compatibility only.
+        :type allow_output_check: str
+        """
+
         self.cmd = cmd
 
         self.args = shlex.split(cmd)
