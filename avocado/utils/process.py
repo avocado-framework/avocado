@@ -452,7 +452,27 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     '''
 
-    def __init__(self, cmd, verbose=True, record_stream_files=False):
+    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+        """
+        Creates the subprocess object, stdout/err, reader threads and locks.
+
+        :param cmd: Command line to run.
+        :type cmd: str
+        :param verbose: Whether to log the command run and stdout/stderr.
+                        Currently unused and provided for compatibility only.
+        :type verbose: bool
+        :param allow_output_check: Whether to log the command stream outputs
+                                   (stdout and stderr) in the test stream
+                                   files. Valid values: 'stdout', for
+                                   allowing only standard output, 'stderr',
+                                   to allow only standard error, 'all',
+                                   to allow both standard output and error
+                                   (default), and 'none', to allow
+                                   none to be recorded. Currently unused and
+                                   provided for compatibility only.
+        :type allow_output_check: str
+        """
+
         self.cmd = cmd
 
         self.args = shlex.split(cmd)
@@ -658,10 +678,31 @@ class GDBSubProcess(object):
             self.gdb.set_break(b, ignore_error=True)
 
         result = self.gdb.run(self.args[1:])
+
+        # Collect gdbserver stdout and stderr file information for debugging
+        # based on its process ID and stream (stdout or stderr)
+        current_test = runtime.CURRENT_TEST
+        if current_test is not None:
+            stdout_name = 'gdbserver.%s.stdout' % self.gdb_server.process.pid
+            stdout_path = os.path.join(current_test.logdir, stdout_name)
+            stderr_name = 'gdbserver.%s.stderr' % self.gdb_server.process.pid
+            stderr_path = os.path.join(current_test.logdir, stderr_name)
+
         while True:
             r = self.wait_for_exit()
             if r:
                 self.gdb.disconnect()
+
+                # Now collect the gdbserver stdout and stderr file themselves
+                # and populate the CommandResult stdout and stderr
+                if current_test is not None:
+                    if os.path.exists(self.gdb_server.stdout_path):
+                        shutil.copy(self.gdb_server.stdout_path, stdout_path)
+                        self.result.stdout = open(stdout_path, 'r').read()
+                    if os.path.exists(self.gdb_server.stderr_path):
+                        shutil.copy(self.gdb_server.stderr_path, stderr_path)
+                        self.result.stderr = open(stderr_path, 'r').read()
+
                 self.gdb_server.exit()
                 return self.result
 

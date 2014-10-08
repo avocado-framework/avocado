@@ -19,6 +19,7 @@ Module that provides communication with GDB via its GDB/MI interpreter
 import os
 import time
 import fcntl
+import tempfile
 import subprocess
 
 from avocado.utils import network
@@ -451,12 +452,18 @@ class GDBServer(object):
     def __init__(self):
         self.port = network.find_free_port(*self.PORT_RANGE)
 
+        prefix = 'avocado_gdbserver_%s_' % self.port
+        _, self.stdout_path = tempfile.mkstemp(prefix=prefix + 'stdout_')
+        self.stdout = open(self.stdout_path, 'w')
+        _, self.stderr_path = tempfile.mkstemp(prefix=prefix + 'stderr_')
+        self.stderr = open(self.stderr_path, 'w')
+
         args = self.ARGS[:]
         args.append(":%s" % self.port)
         self.process = subprocess.Popen(args,
                                         stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
+                                        stdout=self.stdout,
+                                        stderr=self.stderr,
                                         close_fds=True)
 
     def exit(self, force=True):
@@ -488,3 +495,5 @@ class GDBServer(object):
                     temp_client.process.kill()
                     temp_client.process.wait()
             self.process.wait()
+            self.stdout.close()
+            self.stderr.close()

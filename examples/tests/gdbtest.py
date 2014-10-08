@@ -356,6 +356,42 @@ class gdbtest(test.Test):
             result = process.run(cmd, ignore_status=True)
             self.assertEquals(result.exit_status, exp)
 
+    def test_server_stderr(self):
+        self.log.info('Testing server stderr collection')
+        s = gdb.GDBServer()
+        s.exit()
+        self.assertTrue(os.path.exists(s.stderr_path))
+
+        stderr_lines = open(s.stderr_path, 'r').readlines()
+        listening_line = "Listening on port %s\n" % s.port
+        self.assertIn(listening_line, stderr_lines)
+
+    def test_server_stdout(self):
+        self.log.info('Testing server stdout/stderr collection')
+        s = gdb.GDBServer()
+        c = gdb.GDB()
+        c.connect(s.port)
+        c.set_file(self.return99_binary_path)
+        c.run()
+        s.exit()
+
+        self.assertTrue(os.path.exists(s.stdout_path))
+        self.assertTrue(os.path.exists(s.stderr_path))
+
+        stdout_lines = open(s.stdout_path, 'r').readlines()
+        self.assertIn("return 99\n", stdout_lines)
+
+    def test_interactive_stdout(self):
+        """
+        Tests avocado's GDB plugin features
+
+        If GDB command line options are given, `--gdb-run-bin=return99` for
+        this particular test, the test will stop at binary main() function.
+        """
+        self.log.info('Testing GDB interactivity')
+        result = process.run(self.return99_binary_path, ignore_status=True)
+        self.assertIn("return 99\n", result.stdout)
+
     def action(self):
         """
         Execute tests
@@ -377,3 +413,6 @@ class gdbtest(test.Test):
         self.test_interactive()
         self.test_interactive_args()
         self.test_exit_status()
+        self.test_server_stderr()
+        self.test_server_stdout()
+        self.test_interactive_stdout()
