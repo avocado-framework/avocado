@@ -275,16 +275,16 @@ def apply_filters(tree, filter_only=[], filter_out=[]):
         for path in filter_only:
             if path == '':
                 continue
-            if node.path.startswith(path):
+            if node.path == path:
                 keep_node = True
                 break
-            if node.parent and node.parent.path.startswith(path_parent(path)):
+            if node.parent and node.parent.path == path_parent(path):
                 keep_node = False
                 continue
         for path in filter_out:
             if path == '':
                 continue
-            if node.path.startswith(path):
+            if node.path == path:
                 keep_node = False
                 break
         if not keep_node:
