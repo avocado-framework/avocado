@@ -11,24 +11,13 @@ hw:
             disk_type: 'scsi'
         virtio:
             disk_type: 'virtio'
-os:
-    linux:
-        bsod: 'false'
-        fedora:
-            init: 'systemd'
-        mint:
-            init: 'systemv'
-    win:
-        bsod: 'true'
-        winxp:
-            win_version: 'xp'
-        win7:
-            win_version: '7'
-        win8:
-            win_version: '8'
-            bsod: 'false'
+distro:
+    fedora:
+        init: 'systemd'
+    mint:
+        init: 'systemv'
 env:
     debug:
-        debug_CFLAGS: '-O0 -g'
+        opt_CFLAGS: '-O0 -g'
     prod:
-        debug_CFLAGS: ''
+        opt_CFLAGS: '-O2'
