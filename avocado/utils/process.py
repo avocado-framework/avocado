@@ -347,6 +347,9 @@ class SubProcess(object):
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
+    def start(self):
+        self._init_sp()
+
     def get_stdout(self):
         """
         Get the full stdout of the subprocess so far.
