@@ -347,6 +347,19 @@ class SubProcess(object):
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
+    def start(self):
+        """
+        Start running the subprocess.
+
+        This method is particularly useful for background processes, since
+        you can start the subprocess and not block your test flow.
+
+        :return: Subprocess PID.
+        :rtype: int
+        """
+        self._init_sp()
+        return self.sp.pid
+
     def get_stdout(self):
         """
         Get the full stdout of the subprocess so far.
