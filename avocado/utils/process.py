@@ -348,6 +348,19 @@ class SubProcess(object):
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
+    def start(self):
+        """
+        Start running the subprocess.
+
+        This method is particularly useful for background processes, since
+        you can start the subprocess and not block your test flow.
+
+        :return: Subprocess PID.
+        :rtype: int
+        """
+        self._init_subprocess()
+        return self._popen.pid
+
     def get_stdout(self):
         """
         Get the full stdout of the subprocess so far.
@@ -417,14 +430,32 @@ class SubProcess(object):
             self._fill_results(rc)
         return rc
 
+    def stop(self):
+        """
+        Stop background subprocess.
+
+        Call this method to terminate the background subprocess and
+        wait for it results.
+        """
+        self._init_subprocess()
+        if self.result.exit_status is None:
+            self.terminate()
+        return self.wait()
+
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
-        Wait for the process to end, filling and returning the result attr.
+        Start a process and wait for it to end, returning the result attr.
+
+        If the process was already started using .start(), this will simply
+        wait for it to end.
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
                         and get a status.
         :type timeout: float
+        :param sig: Signal to send to the process in case it did not end after
+                    the specified timeout.
+        :type sig: int
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
