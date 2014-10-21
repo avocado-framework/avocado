@@ -63,6 +63,8 @@ class TestRunner(object):
         """
         self.job = job
         self.result = test_result
+        sysinfo_dir = path.init_dir(self.job.logdir, 'sysinfo')
+        self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
     def load_test(self, params, queue):
         """
@@ -177,6 +179,7 @@ class TestRunner(object):
         :return: a list of test failures.
         """
         failures = []
+        self.sysinfo.start_job_hook()
         self.result.start_tests()
         q = multiprocessing.Queue()
         for params in params_list:
@@ -276,6 +279,7 @@ class TestRunner(object):
                 failures.append(test_state['name'])
         runtime.CURRENT_TEST = None
         self.result.end_tests()
+        self.sysinfo.end_job_hook()
         return failures
 
 
@@ -334,8 +338,6 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-        self.sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
-        self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfo_dir)
         self.view = output.View(app_args=self.args)
 
     def _make_test_runner(self):
@@ -413,7 +415,6 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        self.sysinfo_logger.start_job_hook()
         params_list = []
         if urls is None:
             if self.args and self.args.url:
@@ -474,7 +475,6 @@ class Job(object):
         self.view.logfile = self.logfile
         failures = self.test_runner.run(params_list)
         self.view.stop_file_logging()
-        self.sysinfo_logger.end_job_hook()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
