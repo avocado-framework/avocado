@@ -28,6 +28,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado import test
+from avocado.utils import script
 
 
 @unittest.skip("This class should not be tested per se")
@@ -117,15 +118,12 @@ class DropinClassTest(unittest.TestCase):
 
     def setUp(self):
         self.base_logdir = tempfile.mkdtemp(prefix='avocado_dropin_unittest')
-        self.pass_script = os.path.join(self.base_logdir, 'avocado_pass.sh')
-        with open(self.pass_script, 'w') as pass_script_obj:
-            pass_script_obj.write(PASS_SCRIPT_CONTENTS)
-        os.chmod(self.pass_script, 0775)
-
-        self.fail_script = os.path.join(self.base_logdir, 'avocado_fail.sh')
-        with open(self.fail_script, 'w') as fail_script_obj:
-            fail_script_obj.write(FAIL_SCRIPT_CONTENTS)
-        os.chmod(self.fail_script, 0775)
+        self.pass_script = script.make_script(
+            os.path.join(self.base_logdir, 'avocado_pass.sh'),
+            PASS_SCRIPT_CONTENTS)
+        self.fail_script = script.make_script(
+            os.path.join(self.base_logdir, 'avocado_fail.sh'),
+            FAIL_SCRIPT_CONTENTS)
 
         self.tst_instance_pass = test.DropinTest(path=self.pass_script,
                                                  base_logdir=self.base_logdir)
