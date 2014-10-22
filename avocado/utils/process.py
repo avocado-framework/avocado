@@ -389,16 +389,22 @@ class SubProcess(object):
     def terminate(self):
         """
         Send a :attr:`signal.SIGTERM` to the process.
+
+        After the process is terminated, we wait on it to fill result objects.
         """
         self._init_sp()
         self.send_signal(signal.SIGTERM)
+        self.wait()
 
     def kill(self):
         """
         Send a :attr:`signal.SIGKILL` to the process.
+
+        After the process is terminated, we wait on it to fill result objects.
         """
         self._init_sp()
         self.send_signal(signal.SIGKILL)
+        self.wait()
 
     def send_signal(self, sig):
         """
