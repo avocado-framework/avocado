@@ -27,6 +27,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
+from avocado.utils import script
 
 OUTPUT_SCRIPT_CONTENTS = """#!/bin/sh
 echo "Hello, avocado!"
@@ -37,10 +38,9 @@ class RunnerDropinTest(unittest.TestCase):
 
     def setUp(self):
         self.base_logdir = tempfile.mkdtemp(prefix='avocado_output_check_functional')
-        self.output_script = os.path.join(self.base_logdir, 'output_check.sh')
-        with open(self.output_script, 'w') as output_script_obj:
-            output_script_obj.write(OUTPUT_SCRIPT_CONTENTS)
-        os.chmod(self.output_script, 0775)
+        self.output_script = script.make_script(
+            os.path.join(self.base_logdir, 'output_check.sh'),
+            OUTPUT_SCRIPT_CONTENTS)
 
     def test_output_record_none(self):
         os.chdir(basedir)
