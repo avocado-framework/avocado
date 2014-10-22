@@ -28,6 +28,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado.version import VERSION
 from avocado.utils import process
+from avocado.utils import script
 
 SCRIPT_CONTENT = """#!/bin/sh
 echo "Avocado Version: $AVOCADO_VERSION"
@@ -54,15 +55,15 @@ test "$AVOCADO_VERSION" = "{version}" -a \
 class EnvironmentVariablesTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_env_vars_functional')
-        self.script = os.path.join(self.base_logdir, 'version.sh')
-        with open(self.script, 'w') as script_obj:
-            script_obj.write(SCRIPT_CONTENT)
-        os.chmod(self.script, 0775)
+        self.script = script.TemporaryScript(
+            'version.sh',
+            SCRIPT_CONTENT,
+            'avocado_env_vars_functional')
+        self.script.save()
 
     def test_environment_vars(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run %s' % self.script
+        cmd_line = './scripts/avocado run %s' % self.script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -70,8 +71,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
                          (expected_rc, result))
 
     def tearDown(self):
-        if os.path.isdir(self.base_logdir):
-            shutil.rmtree(self.base_logdir, ignore_errors=True)
+        self.script.remove()
 
 
 if __name__ == '__main__':

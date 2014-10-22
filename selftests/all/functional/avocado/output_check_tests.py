@@ -27,6 +27,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
+from avocado.utils import script
 
 OUTPUT_SCRIPT_CONTENTS = """#!/bin/sh
 echo "Hello, avocado!"
@@ -36,15 +37,15 @@ echo "Hello, avocado!"
 class RunnerDropinTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_output_check_functional')
-        self.output_script = os.path.join(self.base_logdir, 'output_check.sh')
-        with open(self.output_script, 'w') as output_script_obj:
-            output_script_obj.write(OUTPUT_SCRIPT_CONTENTS)
-        os.chmod(self.output_script, 0775)
+        self.output_script = script.TemporaryScript(
+            'output_check.sh',
+            OUTPUT_SCRIPT_CONTENTS,
+            'avocado_output_check_functional')
+        self.output_script.save()
 
     def test_output_record_none(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run %s --output-check-record none' % self.output_script
+        cmd_line = './scripts/avocado run %s --output-check-record none' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -57,7 +58,7 @@ class RunnerDropinTest(unittest.TestCase):
 
     def test_output_record_stdout(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run %s --output-check-record stdout' % self.output_script
+        cmd_line = './scripts/avocado run %s --output-check-record stdout' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -70,7 +71,7 @@ class RunnerDropinTest(unittest.TestCase):
 
     def test_output_record_all(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run %s --output-check-record all' % self.output_script
+        cmd_line = './scripts/avocado run %s --output-check-record all' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -83,7 +84,7 @@ class RunnerDropinTest(unittest.TestCase):
 
     def test_output_record_and_check(self):
         self.test_output_record_all()
-        cmd_line = './scripts/avocado run %s' % self.output_script
+        cmd_line = './scripts/avocado run %s' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -93,10 +94,10 @@ class RunnerDropinTest(unittest.TestCase):
     def test_output_tamper_stdout(self):
         self.test_output_record_all()
         tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
+        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = './scripts/avocado run %s --xunit -' % self.output_script
+        cmd_line = './scripts/avocado run %s --xunit -' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -107,10 +108,10 @@ class RunnerDropinTest(unittest.TestCase):
     def test_disable_output_check(self):
         self.test_output_record_all()
         tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
+        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = './scripts/avocado run %s --disable-output-check --xunit -' % self.output_script
+        cmd_line = './scripts/avocado run %s --disable-output-check --xunit -' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -119,8 +120,7 @@ class RunnerDropinTest(unittest.TestCase):
         self.assertNotIn(tampered_msg, result.stdout)
 
     def tearDown(self):
-        if os.path.isdir(self.base_logdir):
-            shutil.rmtree(self.base_logdir, ignore_errors=True)
+        self.output_script.remove()
 
 if __name__ == '__main__':
     unittest.main()

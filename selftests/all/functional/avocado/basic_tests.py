@@ -30,6 +30,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
+from avocado.utils import script
 
 PASS_SCRIPT_CONTENTS = """#!/bin/sh
 true
@@ -212,20 +213,20 @@ class RunnerOperationTest(unittest.TestCase):
 class RunnerDropinTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_dropin_functional')
-        self.pass_script = os.path.join(self.base_logdir, 'avocado_pass.sh')
-        with open(self.pass_script, 'w') as pass_script_obj:
-            pass_script_obj.write(PASS_SCRIPT_CONTENTS)
-        os.chmod(self.pass_script, 0775)
-
-        self.fail_script = os.path.join(self.base_logdir, 'avocado_fail.sh')
-        with open(self.fail_script, 'w') as fail_script_obj:
-            fail_script_obj.write(FAIL_SCRIPT_CONTENTS)
-        os.chmod(self.fail_script, 0775)
+        self.pass_script = script.TemporaryScript(
+            'avocado_pass.sh',
+            PASS_SCRIPT_CONTENTS,
+            'avocado_dropin_functional')
+        self.pass_script.save()
+        self.fail_script = script.TemporaryScript(
+            'avocado_fail.sh',
+            FAIL_SCRIPT_CONTENTS,
+            'avocado_dropin_functional')
+        self.fail_script.save()
 
     def test_dropin_pass(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run %s' % self.pass_script
+        cmd_line = './scripts/avocado run %s' % self.pass_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -234,7 +235,7 @@ class RunnerDropinTest(unittest.TestCase):
 
     def test_dropin_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run %s' % self.fail_script
+        cmd_line = './scripts/avocado run %s' % self.fail_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -277,8 +278,8 @@ class RunnerDropinTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
     def tearDown(self):
-        if os.path.isdir(self.base_logdir):
-            shutil.rmtree(self.base_logdir, ignore_errors=True)
+        self.pass_script.remove()
+        self.fail_script.remove()
 
 
 class ExternalPluginsTest(unittest.TestCase):
@@ -287,10 +288,9 @@ class ExternalPluginsTest(unittest.TestCase):
         self.base_sourcedir = tempfile.mkdtemp(prefix='avocado_source_plugins')
 
     def test_void_plugin(self):
-        self.void_plugin = os.path.join(self.base_sourcedir, 'avocado_void.py')
-        with open(self.void_plugin, 'w') as void:
-            void.write(VOID_PLUGIN_CONTENTS)
-            os.chmod(self.void_plugin, 0775)
+        self.void_plugin = script.make_script(
+            os.path.join(self.base_sourcedir, 'avocado_void.py'),
+            VOID_PLUGIN_CONTENTS)
         os.chdir(basedir)
         cmd_line = './scripts/avocado --plugins %s plugins' % self.base_sourcedir
         result = process.run(cmd_line, ignore_status=True)
@@ -298,11 +298,9 @@ class ExternalPluginsTest(unittest.TestCase):
         self.assertIn(expected_output, result.stdout)
 
     def test_syntax_error_plugin(self):
-        self.syntax_err_plugin = os.path.join(self.base_sourcedir, 'avocado_syntax_err.py')
-        with open(self.syntax_err_plugin, 'w') as synerr:
-            synerr.write(SYNTAX_ERROR_PLUGIN_CONTENTS)
-            os.chmod(self.syntax_err_plugin, 0775)
-
+        self.syntax_err_plugin = script.make_script(
+            os.path.join(self.base_sourcedir, 'avocado_syntax_err.py'),
+            SYNTAX_ERROR_PLUGIN_CONTENTS)
         os.chdir(basedir)
         cmd_line = './scripts/avocado --plugins %s' % self.base_sourcedir
         result = process.run(cmd_line, ignore_status=True)
@@ -310,10 +308,9 @@ class ExternalPluginsTest(unittest.TestCase):
         self.assertIn(expected_output, result.stderr)
 
     def test_hello_plugin(self):
-        self.hello_plugin = os.path.join(self.base_sourcedir, 'avocado_hello.py')
-        with open(self.hello_plugin, 'w') as hello:
-            hello.write(HELLO_PLUGIN_CONTENTS)
-            os.chmod(self.hello_plugin, 0775)
+        self.hello_plugin = script.make_script(
+            os.path.join(self.base_sourcedir, 'avocado_hello.py'),
+            HELLO_PLUGIN_CONTENTS)
         os.chdir(basedir)
         cmd_line = './scripts/avocado --plugins %s hello' % self.base_sourcedir
         result = process.run(cmd_line, ignore_status=True)
