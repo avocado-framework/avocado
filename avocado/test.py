@@ -596,3 +596,34 @@ class MissingTest(Test):
                  '(or test path does not exist)' %
                  (self.name, data_dir.get_test_dir()))
         raise exceptions.TestNotFoundError(e_msg)
+
+
+class RemoteTest(object):
+
+    """
+    Mimics :class:`avocado.test.Test` for remote tests.
+    """
+
+    def __init__(self, name, status, time):
+        note = "Not supported yet"
+        self.name = name
+        self.tagged_name = name
+        self.status = status
+        self.time_elapsed = time
+        self.fail_class = note
+        self.traceback = note
+        self.text_output = note
+        self.fail_reason = note
+        self.whiteboard = ''
+        self.job_unique_id = ''
+
+    def get_state(self):
+        """
+        Serialize selected attributes representing the test state
+
+        :returns: a dictionary containing relevant test state data
+        :rtype: dict
+        """
+        d = self.__dict__
+        d['class_name'] = self.__class__.__name__
+        return d
