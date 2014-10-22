@@ -21,6 +21,7 @@ Contents:
    Plugins
    OutputPlugins
    VirtualMachinePlugin
+   RemoteMachinePlugin
    DebuggingWithGDB
    ContributionGuide
    api/modules
