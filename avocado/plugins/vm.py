@@ -26,37 +26,7 @@ from avocado.result import TestResult
 from avocado.plugins import plugin
 from avocado.utils import virt
 from avocado.utils import archive
-
-
-class Test(object):
-
-    """
-    Mimics :class:`avocado.test.Test`.
-    """
-
-    def __init__(self, name, status, time):
-        note = "Not supported yet"
-        self.name = name
-        self.tagged_name = name
-        self.status = status
-        self.time_elapsed = time
-        self.fail_class = note
-        self.traceback = note
-        self.text_output = note
-        self.fail_reason = note
-        self.whiteboard = ''
-        self.job_unique_id = ''
-
-    def get_state(self):
-        """
-        Serialize selected attributes representing the test state
-
-        :returns: a dictionary containing relevant test state data
-        :rtype: dict
-        """
-        d = self.__dict__
-        d['class_name'] = self.__class__.__name__
-        return d
+from avocado.test import RemoteTest
 
 
 class VMTestRunner(TestRunner):
@@ -97,9 +67,9 @@ class VMTestRunner(TestRunner):
         remote_log_dir = os.path.dirname(results['debuglog'])
         self.result.start_tests()
         for tst in results['tests']:
-            test = Test(name=tst['test'],
-                        time=tst['time'],
-                        status=tst['status'])
+            test = RemoteTest(name=tst['test'],
+                              time=tst['time'],
+                              status=tst['status'])
             state = test.get_state()
             self.result.start_test(state)
             self.result.check_test(state)

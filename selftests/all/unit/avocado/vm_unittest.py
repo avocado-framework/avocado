@@ -70,9 +70,9 @@ class VMResultTest(unittest.TestCase):
         failures = []
         self.test_result.start_tests()
         for tst in self.results['tests']:
-            test = vm.Test(name=tst['test'],
-                           time=tst['time'],
-                           status=tst['status'])
+            test = vm.RemoteTest(name=tst['test'],
+                                 time=tst['time'],
+                                 status=tst['status'])
             self.test_result.start_test(test.get_state())
             self.test_result.check_test(test.get_state())
             if not status.mapping[test.status]:
