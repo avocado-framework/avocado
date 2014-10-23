@@ -242,35 +242,9 @@ class SubProcess(object):
         """
         self.cmd = cmd
         self.verbose = verbose
-        if self.verbose:
-            log.info("Running '%s'", cmd)
-        self.sp = subprocess.Popen(cmd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True)
         self.allow_output_check = allow_output_check
-        self.start_time = time.time()
         self.result = CmdResult(cmd)
-        self.stdout_file = StringIO.StringIO()
-        self.stderr_file = StringIO.StringIO()
-        self.stdout_lock = threading.Lock()
-        self.stdout_thread = threading.Thread(target=self._fd_drainer,
-                                              name="%s-stdout" % cmd,
-                                              args=[self.sp.stdout])
-        self.stdout_thread.daemon = True
-        self.stderr_lock = threading.Lock()
-        self.stderr_thread = threading.Thread(target=self._fd_drainer,
-                                              name="%s-stderr" % cmd,
-                                              args=[self.sp.stderr])
-        self.stderr_thread.daemon = True
-        self.stdout_thread.start()
-        self.stderr_thread.start()
-
-        def signal_handler(signum, frame):
-            self.result.interrupted = True
-            self.wait()
-
-        signal.signal(signal.SIGINT, signal_handler)
+        self.sp = None
 
     def __str__(self):
         if self.result.exit_status is None:
@@ -278,6 +252,36 @@ class SubProcess(object):
         else:
             rc = self.result.exit_status
         return 'SubProcess(cmd="%s", rc="%s")' % (self.cmd, rc)
+
+    def _init_sp(self):
+        if self.sp is None:
+            if self.verbose:
+                log.info("Running '%s'", self.cmd)
+            self.start_time = time.time()
+            self.sp = subprocess.Popen(self.cmd,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       shell=True)
+            self.stdout_file = StringIO.StringIO()
+            self.stderr_file = StringIO.StringIO()
+            self.stdout_lock = threading.Lock()
+            self.stdout_thread = threading.Thread(target=self._fd_drainer,
+                                                  name="%s-stdout" % self.cmd,
+                                                  args=[self.sp.stdout])
+            self.stdout_thread.daemon = True
+            self.stderr_lock = threading.Lock()
+            self.stderr_thread = threading.Thread(target=self._fd_drainer,
+                                                  name="%s-stderr" % self.cmd,
+                                                  args=[self.sp.stderr])
+            self.stderr_thread.daemon = True
+            self.stdout_thread.start()
+            self.stderr_thread.start()
+
+            def signal_handler(signum, frame):
+                self.result.interrupted = True
+                self.wait()
+
+            signal.signal(signal.SIGINT, signal_handler)
 
     def _fd_drainer(self, input_pipe):
         """
@@ -343,6 +347,19 @@ class SubProcess(object):
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
+    def start(self):
+        """
+        Start running the subprocess.
+
+        This method is particularly useful for background processes, since
+        you can start the subprocess and not block your test flow.
+
+        :return: Subprocess PID.
+        :rtype: int
+        """
+        self._init_sp()
+        return self.sp.pid
+
     def get_stdout(self):
         """
         Get the full stdout of the subprocess so far.
@@ -350,6 +367,7 @@ class SubProcess(object):
         :return: Standard output of the process.
         :rtype: str
         """
+        self._init_sp()
         self.stdout_lock.acquire()
         stdout = self.stdout_file.getvalue()
         self.stdout_lock.release()
@@ -362,6 +380,7 @@ class SubProcess(object):
         :return: Standard error of the process.
         :rtype: str
         """
+        self._init_sp()
         self.stderr_lock.acquire()
         stderr = self.stderr_file.getvalue()
         self.stderr_lock.release()
@@ -370,14 +389,22 @@ class SubProcess(object):
     def terminate(self):
         """
         Send a :attr:`signal.SIGTERM` to the process.
+
+        After the process is terminated, we wait on it to fill result objects.
         """
+        self._init_sp()
         self.send_signal(signal.SIGTERM)
+        self.wait()
 
     def kill(self):
         """
         Send a :attr:`signal.SIGKILL` to the process.
+
+        After the process is terminated, we wait on it to fill result objects.
         """
+        self._init_sp()
         self.send_signal(signal.SIGKILL)
+        self.wait()
 
     def send_signal(self, sig):
         """
@@ -385,12 +412,14 @@ class SubProcess(object):
 
         :param sig: Signal to send.
         """
+        self._init_sp()
         self.sp.send_signal(sig)
 
     def poll(self):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
+        self._init_sp()
         rc = self.sp.poll()
         if rc is not None:
             self._fill_results(rc)
@@ -400,6 +429,7 @@ class SubProcess(object):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
+        self._init_sp()
         rc = self.sp.wait()
         if rc is not None:
             self._fill_results(rc)
@@ -407,15 +437,22 @@ class SubProcess(object):
 
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
-        Wait for the process to end, filling and returning the result attr.
+        Start a process and wait for it to end, returning the result attr.
+
+        If the process was already started using .start(), this will simply
+        wait for it to end.
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
                         and get a status.
         :type timeout: float
+        :param sig: Signal to send to the process in case it did not end after
+                    the specified timeout.
+        :type sig: int
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
+        self._init_sp()
         start_time = time.time()
 
         if timeout is None:
