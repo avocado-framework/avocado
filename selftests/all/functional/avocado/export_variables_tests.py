@@ -28,6 +28,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado.version import VERSION
 from avocado.utils import process
+from avocado.utils import script
 
 SCRIPT_CONTENT = """#!/bin/sh
 echo "Avocado Version: $AVOCADO_VERSION"
@@ -55,10 +56,9 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def setUp(self):
         self.base_logdir = tempfile.mkdtemp(prefix='avocado_env_vars_functional')
-        self.script = os.path.join(self.base_logdir, 'version.sh')
-        with open(self.script, 'w') as script_obj:
-            script_obj.write(SCRIPT_CONTENT)
-        os.chmod(self.script, 0775)
+        self.script = script.make_script(
+            os.path.join(self.base_logdir, 'version.sh'),
+            SCRIPT_CONTENT)
 
     def test_environment_vars(self):
         os.chdir(basedir)
