@@ -378,6 +378,42 @@ Let's look what's in each of them::
 Now, every time this test runs, it'll take into account the expected files that
 were recorded, no need to do anything else but run the test.
 
+RUNNING REMOTE TESTS
+====================
+
+Avocado allows you to execute tests on a remote machine by means of a SSH
+network connection. The remote machine must be configured to accept remote
+connections and the Avocado framework have to be installed in both origin
+and remote machines.
+
+When running tests on remote machine, the test sources and its data (if any present)
+are transfered to the remote target, just before the test execution.
+After the test execution, all test results are transfered back to the origin machine.
+
+Here is how to run the sleeptest example test in a remote machine with IP
+address 192.168.0.123 (standard port 22), remote user name `fedora` and
+remote user password `123456`::
+
+ $ avocado run --remote-hostname 192.168.0.123 --remote-username fedora --remote-password 123456
+
+The output should look like::
+
+ REMOTE LOGIN  : fedora@192.168.0.123:22
+ JOB ID    : <JOBID>
+ JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+ TESTS     : 1
+ (1/1) sleeptest.py:  PASS (1.01 s)
+ PASS      : 1
+ ERROR     : 0
+ NOT FOUND : 0
+ FAIL      : 0
+ SKIP      : 0
+ WARN      : 0
+ TIME      : 1.01 s
+
+For more information, please consult the topic Remote Machine Plugin
+on Avocado's online documentation.
+
 FILES
 =====
 
