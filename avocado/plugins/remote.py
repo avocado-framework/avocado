@@ -12,7 +12,7 @@
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-"""Run tests on Virtual Machine."""
+"""Run tests on a remote machine."""
 
 import os
 import getpass
@@ -24,12 +24,12 @@ from avocado.core import data_dir
 from avocado.job import TestRunner
 from avocado.result import TestResult
 from avocado.plugins import plugin
-from avocado.utils import virt
+from avocado.utils import remote
 from avocado.utils import archive
 from avocado.test import RemoteTest
 
 
-class VMTestRunner(TestRunner):
+class RemoteTestRunner(TestRunner):
     remote_test_dir = '~/avocado/tests'
 
     def run_test(self, urls):
@@ -42,7 +42,7 @@ class VMTestRunner(TestRunner):
         urls = urls.split()
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - --archive %s' %
                        (self.remote_test_dir, self.result.stream.job_unique_id, " ".join(urls)))
-        result = self.result.vm.remote.run(avocado_cmd, ignore_status=True)
+        result = self.result.remote.run(avocado_cmd, ignore_status=True)
         try:
             results = json.loads(result.stdout)
         except Exception, details:
@@ -79,24 +79,22 @@ class VMTestRunner(TestRunner):
         local_log_dir = os.path.dirname(self.result.stream.debuglog)
         zip_filename = remote_log_dir + '.zip'
         zip_path_filename = os.path.join(local_log_dir, os.path.basename(zip_filename))
-        self.result.vm.remote.receive_files(local_log_dir, zip_filename)
+        self.result.remote.receive_files(local_log_dir, zip_filename)
         archive.uncompress(zip_path_filename, local_log_dir)
         os.remove(zip_path_filename)
         self.result.tear_down()
         return failures
 
 
-class VMTestResult(TestResult):
+class RemoteTestResult(TestResult):
 
     """
-    Virtual Machine Test Result class.
+    Remote Machine Test Result class.
     """
-
-    command_line_arg_name = '--vm'
 
     def __init__(self, stream, args):
         """
-        Creates an instance of VMTestResult.
+        Creates an instance of RemoteTestResult.
 
         :param stream: an instance of :class:`avocado.core.output.View`.
         :param args: an instance of :class:`argparse.Namespace`.
@@ -107,7 +105,7 @@ class VMTestResult(TestResult):
         self.output = '-'
 
     def _copy_tests(self):
-        self.vm.remote.makedir(self.remote_test_dir)
+        self.remote.makedir(self.remote_test_dir)
         uniq_urls = list(set(self.urls))
         for url in uniq_urls:
             parent_dir = url.split(os.path.sep)[0]
@@ -115,53 +113,27 @@ class VMTestResult(TestResult):
                 test_path = os.path.abspath(parent_dir)
             else:
                 test_path = os.path.join(data_dir.get_test_dir(), "%s*" % url)
-            self.vm.remote.send_files(test_path, self.remote_test_dir)
+            self.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
         self.urls = self.args.url
-        if self.args.vm_domain is None:
-            e_msg = ('Please set Virtual Machine Domain with option '
-                     '--vm-domain.')
+        if self.args.remote_hostname is None:
+            e_msg = ('Please set remote machine hostname with option '
+                     '--remote-hostname.')
             self.stream.notify(event='error', msg=e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        if self.args.vm_hostname is None:
-            e_msg = ('Please set Virtual Machine hostname with option '
-                     '--vm-hostname.')
-            self.stream.notify(event='error', msg=e_msg)
-            raise exceptions.TestSetupFail(e_msg)
-        self.stream.notify(event='message', msg="VM DOMAIN : %s" % self.args.vm_domain)
-        self.stream.notify(event='message', msg="VM LOGIN  : %s@%s" % (self.args.vm_username, self.args.vm_hostname))
-        self.vm = virt.vm_connect(self.args.vm_domain,
-                                  self.args.vm_hypervisor_uri)
-        if self.vm is None:
-            self.stream.notify(event='error', msg="Could not connect to VM '%s'" % self.args.vm_domain)
-            raise exceptions.TestSetupFail()
-        if self.vm.start() is False:
-            self.stream.notify(event='error', msg="Could not start VM '%s'" % self.args.vm_domain)
-            raise exceptions.TestSetupFail()
-        assert self.vm.domain.isActive() is not False
-        if self.args.vm_cleanup is True:
-            self.vm.create_snapshot()
-            if self.vm.snapshot is None:
-                self.stream.notify(event='error', msg="Could not create snapshot on VM '%s'" % self.args.vm_domain)
-                raise exceptions.TestSetupFail()
-        try:
-            self.vm.setup_login(self.args.vm_hostname,
-                                self.args.vm_username,
-                                self.args.vm_password)
-        except Exception as err:
-            self.stream.notify(event='error', msg="Could not login on VM '%s': %s" % (self.args.vm_hostname, err))
-            self.tear_down()
-            raise exceptions.TestSetupFail()
-        if self.vm.logged is False or self.vm.remote.uptime() is '':
-            self.stream.notify(event='error', msg="Could not login on VM '%s'" % self.args.vm_hostname)
-            self.tear_down()
-            raise exceptions.TestSetupFail()
+        self.stream.notify(event='message', msg="REMOTE LOGIN  : %s@%s:%d" % (self.args.remote_username,
+                                                                              self.args.remote_hostname,
+                                                                              self.args.remote_port))
+        self.remote = remote.Remote(self.args.remote_hostname,
+                                    self.args.remote_username,
+                                    self.args.remote_password,
+                                    self.args.remote_port,
+                                    quiet=True)
         self._copy_tests()
 
     def tear_down(self):
-        if self.args.vm_cleanup is True and self.vm.snapshot is not None:
-            self.vm.restore_snapshot()
+        pass
 
     def start_tests(self):
         """
@@ -256,54 +228,41 @@ class VMTestResult(TestResult):
         self.stream.set_test_status(status='WARN', state=test)
 
 
-class RunVM(plugin.Plugin):
+class RunRemote(plugin.Plugin):
 
     """
-    Run tests on a Virtual Machine
+    Run tests on a remote machine
     """
 
-    name = 'run_vm'
+    name = 'run_remote'
     enabled = True
 
     def configure(self, parser):
-        if virt.virt_capable is False:
+        if remote.remote_capable is False:
             self.enabled = False
             return
         username = getpass.getuser()
-        default_hypervisor_uri = 'qemu:///system'
-        self.vm_parser = parser.runner.add_argument_group('run on a libvirt domain '
-                                                          'arguments')
-
-        self.vm_parser.add_argument('--vm', action='store_true', default=False,
-                                    help=('Run tests on a Virtual Machine '
-                                          '(Libvirt Domain)'))
-        self.vm_parser.add_argument('--vm-hypervisor-uri',
-                                    dest='vm_hypervisor_uri',
-                                    default=default_hypervisor_uri,
-                                    help=('Specify hypervisor URI driver '
-                                          'connection. Default: %s' %
-                                          default_hypervisor_uri))
-        self.vm_parser.add_argument('--vm-domain', dest='vm_domain',
-                                    help=('Specify Libvirt Domain Name'))
-        self.vm_parser.add_argument('--vm-hostname', dest='vm_hostname',
-                                    help='Specify VM hostname to login')
-        self.vm_parser.add_argument('--vm-username', dest='vm_username',
-                                    default=username,
-                                    help='Specify the username to login on VM')
-        self.vm_parser.add_argument('--vm-password', dest='vm_password',
-                                    default=None,
-                                    help='Specify the password to login on VM')
-        self.vm_parser.add_argument('--vm-cleanup', dest='vm_cleanup',
-                                    action='store_true',
-                                    default=False,
-                                    help=('Restore VM to a previous state, before '
-                                          'running tests'))
+        self.remote_parser = parser.runner.add_argument_group('run on a remote machine '
+                                                              'arguments')
+        self.remote_parser.add_argument('--remote-hostname', dest='remote_hostname',
+                                        default=None,
+                                        help='Specify the hostname to login on remote machine')
+        self.remote_parser.add_argument('--remote-port', dest='remote_port',
+                                        default=22, type=int,
+                                        help='Specify the port number to login on remote machine. '
+                                             'Default: 22')
+        self.remote_parser.add_argument('--remote-username', dest='remote_username',
+                                        default=username,
+                                        help='Specify the username to login on remote machine')
+        self.remote_parser.add_argument('--remote-password', dest='remote_password',
+                                        default=None,
+                                        help='Specify the password to login on remote machine')
         self.configured = True
 
     def activate(self, app_args):
         try:
-            if app_args.vm:
-                self.vm_parser.set_defaults(vm_result=VMTestResult,
-                                            test_runner=VMTestRunner)
+            if app_args.remote_hostname is not None:
+                self.remote_parser.set_defaults(remote_result=RemoteTestResult,
+                                                test_runner=RemoteTestRunner)
         except AttributeError:
             pass
