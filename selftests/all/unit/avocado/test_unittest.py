@@ -28,6 +28,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado import test
+from avocado.utils import script
 
 
 @unittest.skip("This class should not be tested per se")
@@ -116,23 +117,26 @@ class TestClassTest(unittest.TestCase):
 class DropinClassTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_dropin_unittest')
-        self.pass_script = os.path.join(self.base_logdir, 'avocado_pass.sh')
-        with open(self.pass_script, 'w') as pass_script_obj:
-            pass_script_obj.write(PASS_SCRIPT_CONTENTS)
-        os.chmod(self.pass_script, 0775)
+        self.pass_script = script.TemporaryScript(
+            'avocado_pass.sh',
+            PASS_SCRIPT_CONTENTS,
+            'avocado_dropin_unittest')
+        self.pass_script.save()
 
-        self.fail_script = os.path.join(self.base_logdir, 'avocado_fail.sh')
-        with open(self.fail_script, 'w') as fail_script_obj:
-            fail_script_obj.write(FAIL_SCRIPT_CONTENTS)
-        os.chmod(self.fail_script, 0775)
+        self.fail_script = script.TemporaryScript(
+            'avocado_fail.sh',
+            FAIL_SCRIPT_CONTENTS,
+            'avocado_dropin_unittest')
+        self.fail_script.save()
 
-        self.tst_instance_pass = test.DropinTest(path=self.pass_script,
-                                                 base_logdir=self.base_logdir)
+        self.tst_instance_pass = test.DropinTest(
+            path=self.pass_script.path,
+            base_logdir=os.path.dirname(self.pass_script.path))
         self.tst_instance_pass.run_avocado()
 
-        self.tst_instance_fail = test.DropinTest(path=self.fail_script,
-                                                 base_logdir=self.base_logdir)
+        self.tst_instance_fail = test.DropinTest(
+            path=self.fail_script.path,
+            base_logdir=os.path.dirname(self.fail_script.path))
         self.tst_instance_fail.run_avocado()
 
     def testDropinPassStatus(self):
@@ -142,8 +146,8 @@ class DropinClassTest(unittest.TestCase):
         self.assertEqual(self.tst_instance_fail.status, 'FAIL')
 
     def tearDown(self):
-        if os.path.isdir(self.base_logdir):
-            shutil.rmtree(self.base_logdir, ignore_errors=True)
+        self.pass_script.remove()
+        self.fail_script.remove()
 
 if __name__ == '__main__':
     unittest.main()
