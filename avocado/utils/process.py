@@ -222,7 +222,7 @@ class SubProcess(object):
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+    def __init__(self, cmd, verbose=True, allow_output_check='all', shell=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -239,38 +239,15 @@ class SubProcess(object):
                                    (default), and 'none', to allow
                                    none to be recorded.
         :type allow_output_check: str
+        :param shell: Whether to run the subprocess in a subshell.
+        :type shell: bool
         """
         self.cmd = cmd
         self.verbose = verbose
-        if self.verbose:
-            log.info("Running '%s'", cmd)
-        self.sp = subprocess.Popen(cmd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True)
         self.allow_output_check = allow_output_check
-        self.start_time = time.time()
         self.result = CmdResult(cmd)
-        self.stdout_file = StringIO.StringIO()
-        self.stderr_file = StringIO.StringIO()
-        self.stdout_lock = threading.Lock()
-        self.stdout_thread = threading.Thread(target=self._fd_drainer,
-                                              name="%s-stdout" % cmd,
-                                              args=[self.sp.stdout])
-        self.stdout_thread.daemon = True
-        self.stderr_lock = threading.Lock()
-        self.stderr_thread = threading.Thread(target=self._fd_drainer,
-                                              name="%s-stderr" % cmd,
-                                              args=[self.sp.stderr])
-        self.stderr_thread.daemon = True
-        self.stdout_thread.start()
-        self.stderr_thread.start()
-
-        def signal_handler(signum, frame):
-            self.result.interrupted = True
-            self.wait()
-
-        signal.signal(signal.SIGINT, signal_handler)
+        self.shell = shell
+        self.sp = None
 
     def __str__(self):
         if self.result.exit_status is None:
@@ -278,6 +255,40 @@ class SubProcess(object):
         else:
             rc = self.result.exit_status
         return 'SubProcess(cmd="%s", rc="%s")' % (self.cmd, rc)
+
+    def _init_sp(self):
+        if self.sp is None:
+            if self.verbose:
+                log.info("Running '%s'", self.cmd)
+            if self.shell is False:
+                cmd = shlex.split(self.cmd)
+            else:
+                cmd = self.cmd
+            self.start_time = time.time()
+            self.sp = subprocess.Popen(cmd,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       shell=self.shell)
+            self.stdout_file = StringIO.StringIO()
+            self.stderr_file = StringIO.StringIO()
+            self.stdout_lock = threading.Lock()
+            self.stdout_thread = threading.Thread(target=self._fd_drainer,
+                                                  name="%s-stdout" % self.cmd,
+                                                  args=[self.sp.stdout])
+            self.stdout_thread.daemon = True
+            self.stderr_lock = threading.Lock()
+            self.stderr_thread = threading.Thread(target=self._fd_drainer,
+                                                  name="%s-stderr" % self.cmd,
+                                                  args=[self.sp.stderr])
+            self.stderr_thread.daemon = True
+            self.stdout_thread.start()
+            self.stderr_thread.start()
+
+            def signal_handler(signum, frame):
+                self.result.interrupted = True
+                self.wait()
+
+            signal.signal(signal.SIGINT, signal_handler)
 
     def _fd_drainer(self, input_pipe):
         """
@@ -343,6 +354,19 @@ class SubProcess(object):
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
+    def start(self):
+        """
+        Start running the subprocess.
+
+        This method is particularly useful for background processes, since
+        you can start the subprocess and not block your test flow.
+
+        :return: Subprocess PID.
+        :rtype: int
+        """
+        self._init_sp()
+        return self.sp.pid
+
     def get_stdout(self):
         """
         Get the full stdout of the subprocess so far.
@@ -350,6 +374,7 @@ class SubProcess(object):
         :return: Standard output of the process.
         :rtype: str
         """
+        self._init_sp()
         self.stdout_lock.acquire()
         stdout = self.stdout_file.getvalue()
         self.stdout_lock.release()
@@ -362,6 +387,7 @@ class SubProcess(object):
         :return: Standard error of the process.
         :rtype: str
         """
+        self._init_sp()
         self.stderr_lock.acquire()
         stderr = self.stderr_file.getvalue()
         self.stderr_lock.release()
@@ -371,12 +397,14 @@ class SubProcess(object):
         """
         Send a :attr:`signal.SIGTERM` to the process.
         """
+        self._init_sp()
         self.send_signal(signal.SIGTERM)
 
     def kill(self):
         """
         Send a :attr:`signal.SIGKILL` to the process.
         """
+        self._init_sp()
         self.send_signal(signal.SIGKILL)
 
     def send_signal(self, sig):
@@ -385,12 +413,14 @@ class SubProcess(object):
 
         :param sig: Signal to send.
         """
+        self._init_sp()
         self.sp.send_signal(sig)
 
     def poll(self):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
+        self._init_sp()
         rc = self.sp.poll()
         if rc is not None:
             self._fill_results(rc)
@@ -400,6 +430,7 @@ class SubProcess(object):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
+        self._init_sp()
         rc = self.sp.wait()
         if rc is not None:
             self._fill_results(rc)
@@ -407,15 +438,22 @@ class SubProcess(object):
 
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
-        Wait for the process to end, filling and returning the result attr.
+        Start a process and wait for it to end, returning the result attr.
+
+        If the process was already started using .start(), this will simply
+        wait for it to end.
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
                         and get a status.
         :type timeout: float
+        :param sig: Signal to send to the process in case it did not end after
+                    the specified timeout.
+        :type sig: int
         :returns: The command result object.
         :rtype: A :class:`avocado.utils.process.CmdResult` instance.
         """
+        self._init_sp()
         start_time = time.time()
 
         if timeout is None:
@@ -452,7 +490,7 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     '''
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+    def __init__(self, cmd, verbose=True, allow_output_check='all', shell=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -757,7 +795,8 @@ def get_sub_process_klass(cmd):
         return SubProcess
 
 
-def run(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check='all'):
+def run(cmd, timeout=None, verbose=True, ignore_status=False,
+        allow_output_check='all', shell=False):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -782,13 +821,15 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check
                                (default), and 'none', to allow
                                none to be recorded.
     :type allow_output_check: str
+    :param shell: Whether to run the command on a subshell
+    :type shell: bool
 
     :return: An :class:`avocado.utils.process.CmdResult` object.
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
-               allow_output_check=allow_output_check)
+               allow_output_check=allow_output_check, shell=shell)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -797,7 +838,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check
 
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check='all'):
+           allow_output_check='all', shell=False):
     """
     Run a subprocess, returning its exit code.
 
@@ -822,16 +863,20 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                                (default), and 'none', to allow
                                none to be recorded.
     :type allow_output_check: str
+    :param shell: Whether to run the command on a subshell
+    :type shell: bool
+
     :return: Exit code.
     :rtype: int
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check)
+                     allow_output_check=allow_output_check, shell=shell)
     return cmd_result.exit_status
 
 
-def system_output(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check='all'):
+def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
+                  allow_output_check='all', shell=False):
     """
     Run a subprocess, returning its output.
 
@@ -855,10 +900,13 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False, allow_ou
                                (default), and 'none', to allow
                                none to be recorded.
     :type allow_output_check: str
+    :param shell: Whether to run the command on a subshell
+    :type shell: bool
+
     :return: Command output.
     :rtype: str
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check)
+                     allow_output_check=allow_output_check, shell=shell)
     return cmd_result.stdout
