@@ -147,17 +147,18 @@ class ProcessTest(unittest.TestCase):
         os.chmod(self.fake_uptime, 0775)
 
     def test_process_start(self):
-        proc = process.SubProcess('%s 1' % self.fake_vmstat)
+        print self.fake_vmstat
+        proc = process.SubProcess([self.fake_vmstat, '1'], shell=False)
         proc.start()
         time.sleep(3)
         proc.terminate()
         proc.wait()
         stdout = proc.get_stdout()
-        self.assertIn('memory', stdout, 'result: %s' % stdout)
+        self.assertIn('memory', stdout)
         self.assertRegexpMatches(stdout, '[0-9]+')
 
     def test_process_run(self):
-        proc = process.SubProcess(self.fake_uptime)
+        proc = process.SubProcess([self.fake_uptime], shell=False)
         result = proc.run()
         self.assertEqual(result.exit_status, 0, 'result: %s' % result)
         self.assertIn('load average', result.stdout)

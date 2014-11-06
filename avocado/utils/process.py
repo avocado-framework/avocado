@@ -222,7 +222,7 @@ class SubProcess(object):
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+    def __init__(self, cmd, verbose=True, allow_output_check='all', shell=True):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -243,6 +243,7 @@ class SubProcess(object):
         self.cmd = cmd
         self.verbose = verbose
         self.allow_output_check = allow_output_check
+        self.shell = shell
         self.result = CmdResult(cmd)
         self.sp = None
 
@@ -261,17 +262,17 @@ class SubProcess(object):
             self.sp = subprocess.Popen(self.cmd,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE,
-                                       shell=True)
+                                       shell=self.shell)
             self.stdout_file = StringIO.StringIO()
             self.stderr_file = StringIO.StringIO()
             self.stdout_lock = threading.Lock()
             self.stdout_thread = threading.Thread(target=self._fd_drainer,
-                                                  name="%s-stdout" % self.cmd,
+                                                  name="%s-stdout" % ' '.join(self.cmd),
                                                   args=[self.sp.stdout])
             self.stdout_thread.daemon = True
             self.stderr_lock = threading.Lock()
             self.stderr_thread = threading.Thread(target=self._fd_drainer,
-                                                  name="%s-stderr" % self.cmd,
+                                                  name="%s-stderr" % ' '.join(self.cmd),
                                                   args=[self.sp.stderr])
             self.stderr_thread.daemon = True
             self.stdout_thread.start()
