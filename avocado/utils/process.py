@@ -222,7 +222,8 @@ class SubProcess(object):
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+    def __init__(self, cmd, verbose=True, allow_output_check='all',
+                 shell=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -239,11 +240,14 @@ class SubProcess(object):
                                    (default), and 'none', to allow
                                    none to be recorded.
         :type allow_output_check: str
+        :param shell: Whether to run the subprocess in a subshell.
+        :type shell: bool
         """
         self.cmd = cmd
         self.verbose = verbose
         self.allow_output_check = allow_output_check
         self.result = CmdResult(self.cmd)
+        self.shell = shell
         self._popen = None
 
     def __str__(self):
@@ -257,10 +261,14 @@ class SubProcess(object):
         if self._popen is None:
             if self.verbose:
                 log.info("Running '%s'", self.cmd)
-            self._popen = subprocess.Popen(self.cmd,
+            if self.shell is False:
+                cmd = shlex.split(self.cmd)
+            else:
+                cmd = self.cmd
+            self._popen = subprocess.Popen(cmd,
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.PIPE,
-                                           shell=True)
+                                           shell=self.shell)
             self.start_time = time.time()
             self.stdout_file = StringIO.StringIO()
             self.stderr_file = StringIO.StringIO()
@@ -496,7 +504,7 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     '''
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all'):
+    def __init__(self, cmd, verbose=True, allow_output_check='all', shell=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -801,7 +809,8 @@ def get_sub_process_klass(cmd):
         return SubProcess
 
 
-def run(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check='all'):
+def run(cmd, timeout=None, verbose=True, ignore_status=False,
+        allow_output_check='all', shell=False):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -826,13 +835,15 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check
                                (default), and 'none', to allow
                                none to be recorded.
     :type allow_output_check: str
+    :param shell: Whether to run the command on a subshell
+    :type shell: bool
 
     :return: An :class:`avocado.utils.process.CmdResult` object.
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
-               allow_output_check=allow_output_check)
+               allow_output_check=allow_output_check, shell=shell)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -841,7 +852,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check
 
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check='all'):
+           allow_output_check='all', shell=False):
     """
     Run a subprocess, returning its exit code.
 
@@ -866,16 +877,20 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                                (default), and 'none', to allow
                                none to be recorded.
     :type allow_output_check: str
+    :param shell: Whether to run the command on a subshell
+    :type shell: bool
+
     :return: Exit code.
     :rtype: int
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check)
+                     allow_output_check=allow_output_check, shell=shell)
     return cmd_result.exit_status
 
 
-def system_output(cmd, timeout=None, verbose=True, ignore_status=False, allow_output_check='all'):
+def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
+                  allow_output_check='all', shell=False):
     """
     Run a subprocess, returning its output.
 
@@ -899,10 +914,13 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False, allow_ou
                                (default), and 'none', to allow
                                none to be recorded.
     :type allow_output_check: str
+    :param shell: Whether to run the command on a subshell
+    :type shell: bool
+
     :return: Command output.
     :rtype: str
     :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check)
+                     allow_output_check=allow_output_check, shell=shell)
     return cmd_result.stdout
