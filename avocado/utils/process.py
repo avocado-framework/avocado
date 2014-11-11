@@ -244,10 +244,10 @@ class SubProcess(object):
         self.verbose = verbose
         if self.verbose:
             log.info("Running '%s'", cmd)
-        self.sp = subprocess.Popen(cmd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True)
+        self._popen = subprocess.Popen(cmd,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       shell=True)
         self.allow_output_check = allow_output_check
         self.start_time = time.time()
         self.result = CmdResult(cmd)
@@ -256,12 +256,12 @@ class SubProcess(object):
         self.stdout_lock = threading.Lock()
         self.stdout_thread = threading.Thread(target=self._fd_drainer,
                                               name="%s-stdout" % cmd,
-                                              args=[self.sp.stdout])
+                                              args=[self._popen.stdout])
         self.stdout_thread.daemon = True
         self.stderr_lock = threading.Lock()
         self.stderr_thread = threading.Thread(target=self._fd_drainer,
                                               name="%s-stderr" % cmd,
-                                              args=[self.sp.stderr])
+                                              args=[self._popen.stderr])
         self.stderr_thread.daemon = True
         self.stdout_thread.start()
         self.stderr_thread.start()
@@ -286,7 +286,7 @@ class SubProcess(object):
         :param input_pipe: File like object to the stream.
         """
         stream_prefix = "%s"
-        if input_pipe == self.sp.stdout:
+        if input_pipe == self._popen.stdout:
             prefix = '[stdout] %s'
             if self.allow_output_check in ['none', 'stderr']:
                 stream_logger = None
@@ -294,7 +294,7 @@ class SubProcess(object):
                 stream_logger = stdout_log
             output_file = self.stdout_file
             lock = self.stdout_lock
-        elif input_pipe == self.sp.stderr:
+        elif input_pipe == self._popen.stderr:
             prefix = '[stderr] %s'
             if self.allow_output_check in ['none', 'stdout']:
                 stream_logger = None
@@ -338,8 +338,8 @@ class SubProcess(object):
         self.stdout_thread.join()
         self.stderr_thread.join()
         # Clean subprocess pipes and populate stdout/err
-        self.sp.stdout.close()
-        self.sp.stderr.close()
+        self._popen.stdout.close()
+        self._popen.stderr.close()
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
@@ -385,13 +385,13 @@ class SubProcess(object):
 
         :param sig: Signal to send.
         """
-        self.sp.send_signal(sig)
+        self._popen.send_signal(sig)
 
     def poll(self):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
-        rc = self.sp.poll()
+        rc = self._popen.poll()
         if rc is not None:
             self._fill_results(rc)
         return rc
@@ -400,7 +400,7 @@ class SubProcess(object):
         """
         Call the subprocess poll() method, fill results if rc is not None.
         """
-        rc = self.sp.wait()
+        rc = self._popen.wait()
         if rc is not None:
             self._fill_results(rc)
         return rc
@@ -440,7 +440,7 @@ class SubProcess(object):
                 self.poll()
 
         # If all this work fails, we're dealing with a zombie process.
-        e_msg = 'Zombie Process %s' % self.sp.pid
+        e_msg = 'Zombie Process %s' % self._popen.pid
         assert self.result.exit_status is not None, e_msg
 
         return self.result
