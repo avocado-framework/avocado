@@ -250,12 +250,23 @@ class SubProcess(object):
         self.shell = shell
         self._popen = None
 
-    def __str__(self):
-        if self.result.exit_status is None:
-            rc = '(still running)'
+    def __repr__(self):
+        if self._popen is None:
+            rc = '(not started)'
+        elif self.result.exit_status is None:
+            rc = '(running)'
         else:
             rc = self.result.exit_status
-        return 'SubProcess(cmd="%s", rc="%s")' % (self.cmd, rc)
+        return '%s(cmd=%r, rc=%r)' % (self.__class__.__name__, self.cmd, rc)
+
+    def __str__(self):
+        if self._popen is None:
+            rc = '(not started)'
+        elif self.result.exit_status is None:
+            rc = '(running)'
+        else:
+            rc = '(finished with exit status=%d)' % self.result.exit_status
+        return '%s %s' % (self.cmd,  rc)
 
     def _init_subprocess(self):
         if self._popen is None:
