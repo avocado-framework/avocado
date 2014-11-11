@@ -245,9 +245,10 @@ class RpmBackend(BaseBackend):
             cmd_format = "rpm -qa --qf '%s' | sort"
             query_format = "%s\n" % self.SOFTWARE_COMPONENT_QRY
             cmd_format = cmd_format % query_format
-            cmd_result = process.run(cmd_format, verbose=False)
+            cmd_result = process.run(cmd_format, verbose=False, shell=True)
         else:
-            cmd_result = process.run('rpm -qa | sort', verbose=False)
+            cmd_result = process.run('rpm -qa | sort', verbose=False,
+                                     shell=True)
 
         out = cmd_result.stdout.strip()
         installed_packages = out.splitlines()
@@ -357,7 +358,7 @@ class YumBackend(RpmBackend):
         self.cfgparser.read(self.repo_file_path)
         y_cmd = executable + ' --version | head -1'
         cmd_result = process.run(y_cmd, ignore_status=True,
-                                 verbose=False)
+                                 verbose=False, shell=True)
         out = cmd_result.stdout.strip()
         try:
             ver = re.findall('\d*.\d*.\d*', out)[0]
@@ -627,7 +628,8 @@ class AptBackend(DpkgBackend):
         self.repo_file_path = '/etc/apt/sources.list.d/autotest'
         cmd_result = process.run('apt-get -v | head -1',
                                  ignore_status=True,
-                                 verbose=False)
+                                 verbose=False,
+                                 shell=True)
         out = cmd_result.stdout.strip()
         try:
             ver = re.findall('\d\S*', out)[0]
