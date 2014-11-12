@@ -16,12 +16,13 @@ import os
 import process
 
 
-def make(path, make='make', env='', extra_args='', ignore_status=False, allow_output_check='none'):
+def make(path, make='make', env=None, extra_args='', ignore_status=False, allow_output_check='none'):
     """
     Run make, adding MAKEOPTS to the list of options.
 
-    :param env: environment variables to be set before calling make
-                (e.g.: CFLAGS).
+    :param make: what make command name to use.
+    :param env: dictioanry with environment variables to be set before
+                calling make (e.g.: CFLAGS).
     :param extra: extra command line arguments to pass to make.
     :param allow_output_check: Whether to log the command stream outputs
                                (stdout and stderr) of the make process in
@@ -38,14 +39,15 @@ def make(path, make='make', env='', extra_args='', ignore_status=False, allow_ou
     """
     cwd = os.getcwd()
     os.chdir(path)
-    if env:
-        env += ' '
-    cmd = '%smake' % env
+    cmd = make
     makeopts = os.environ.get('MAKEOPTS', '')
     if makeopts:
         cmd += ' %s' % makeopts
     if extra_args:
         cmd += ' %s' % extra_args
-    make_process = process.system(cmd, ignore_status=ignore_status, allow_output_check=allow_output_check)
+    make_process = process.system(cmd,
+                                  env=env,
+                                  ignore_status=ignore_status,
+                                  allow_output_check=allow_output_check)
     os.chdir(cwd)
     return make_process
