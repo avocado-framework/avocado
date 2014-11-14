@@ -42,7 +42,9 @@ class synctest(test.Test):
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         if self.params.debug_symbols:
-            build.make(self.srcdir, env='CFLAGS="-g -O0"', extra_args='synctest')
+            build.make(self.srcdir,
+                       env={'CFLAGS': '-g -O0'},
+                       extra_args='synctest')
         else:
             build.make(self.srcdir)
 
