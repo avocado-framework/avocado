@@ -25,6 +25,18 @@ GDB_RUN_BINARY_NAMES_EXPR = []
 #: that are run inside the GNU debugger
 GDB_ENABLE_CORE = False
 
+# The active wrapper utility script.
+CURRENT_WRAPPER = None
+
+# The global wrapper.
+# If set, run every process under this wrapper.
+WRAP_PROCESS = None
+
+# Set wrapper per program names.
+# A list of wrappers and program names.
+# Format: [ ('/path/to/wrapper.sh', 'progname'), ... ]
+WRAP_PROCESS_NAMES_EXPR = []
+
 #: Sometimes it's useful for the framework and API to know about the test that
 #: is currently running, if one exists
 CURRENT_TEST = None
