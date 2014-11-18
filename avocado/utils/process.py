@@ -130,7 +130,8 @@ def kill_process_tree(pid, sig=signal.SIGKILL):
     """
     if not safe_kill(pid, signal.SIGSTOP):
         return
-    children = system_output("ps --ppid=%d -o pid=" % pid).split()
+    children = system_output("ps --ppid=%d -o pid=" % pid, ignore_status=True,
+                             verbose=False).split()
     for child in children:
         kill_process_tree(int(child), sig)
     safe_kill(pid, sig)
