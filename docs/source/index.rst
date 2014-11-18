@@ -23,6 +23,7 @@ Contents:
    VirtualMachinePlugin
    RemoteMachinePlugin
    DebuggingWithGDB
+   WrapProcess
    ContributionGuide
    api/modules
 
