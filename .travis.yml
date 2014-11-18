@@ -11,7 +11,7 @@ virtualenv:
 
 before_script:
     - sudo apt-get update
-    - sudo apt-get -y --force-yes install python-libvirt build-essential python-yaml
+    - sudo apt-get -y --force-yes install python-libvirt build-essential python-yaml python-lzma
 
 install:
     - pip install sphinx tox pylint autopep8 flexmock

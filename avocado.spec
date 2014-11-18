@@ -8,7 +8,7 @@ URL: http://avocado-framework.readthedocs.org/
 Source: avocado-%{version}.tar.gz
 BuildRequires: python2-devel, python-docutils, python-yaml
 BuildArch: noarch
-Requires: python, python-requests, python-yaml, fabric
+Requires: python, python-requests, python-yaml, fabric, pyliblzma
 
 %description
 Avocado is a set of tools and libraries (what people call
