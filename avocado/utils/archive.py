@@ -17,9 +17,10 @@
 Module to help extract and create compressed archives.
 """
 
+import lzma
 import os
-import zipfile
 import tarfile
+import zipfile
 
 
 class ArchiveException(Exception):
@@ -28,6 +29,39 @@ class ArchiveException(Exception):
     Base exception for all archive errors.
     """
     pass
+
+
+class _WrapLZMA(object):
+
+    """ wraps tar.xz for python 2.7's tarfile """
+
+    def __init__(self, filename, mode):
+        """
+        Creates an instance of :class:`ArchiveFile`.
+
+        :param filename: the archive file name.
+        :param mode: file mode, `r` read, `w` write.
+        """
+        self._engine = tarfile.open(fileobj=lzma.LZMAFile(filename, mode),
+                                    mode=mode)
+        methods = dir(self._engine)
+        for meth in dir(self):
+            try:
+                methods.remove(meth)
+            except ValueError:
+                pass
+        for method in methods:
+            setattr(self, method, getattr(self._engine, method))
+
+    @classmethod
+    def open(cls, filename, mode='r'):
+        """
+        Creates an instance of :class:`_WrapLZMA`.
+
+        :param filename: the archive file name.
+        :param mode: file mode, `r` read, `w` write.
+        """
+        return cls(filename, mode)
 
 
 class ArchiveFile(object):
@@ -45,7 +79,8 @@ class ArchiveFile(object):
         '.tar.gz': (False, True, tarfile.open, ':gz'),
         '.tgz': (False, True, tarfile.open, ':gz'),
         '.tar.bz2': (False, True, tarfile.open, ':bz2'),
-        '.tbz2': (False, True, tarfile.open, ':bz2'), }
+        '.tbz2': (False, True, tarfile.open, ':bz2'),
+        '.xz': (False, True, _WrapLZMA.open, '')}
 
     def __init__(self, filename, mode='r'):
         """
