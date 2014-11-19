@@ -518,6 +518,19 @@ class SubProcess(object):
         return self.result
 
 
+class WrapSubProcess(SubProcess):
+
+    '''
+    Wrap subprocess inside an utility program.
+    '''
+
+    def __init__(self, cmd, verbose=True, allow_output_check='all',
+                 shell=False, env=None):
+        cmd = runtime.CURRENT_WRAPPER + ' ' + cmd
+        super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
+                                             shell, env)
+
+
 class GDBSubProcess(object):
 
     '''
@@ -816,6 +829,29 @@ def should_run_inside_gdb(cmd):
     return False
 
 
+def should_run_inside_wrapper(cmd):
+    '''
+    Wether the given command should be run inside the wrapper utility.
+
+    :param cmd: the command arguments, from where we extract the binary name
+    '''
+    runtime.CURRENT_WRAPPER = None
+    args = shlex.split(cmd)
+    cmd_binary_name = os.path.basename(args[0])
+
+    for script, cmd in runtime.WRAP_PROCESS_NAMES_EXPR:
+        if cmd_binary_name == os.path.basename(cmd):
+            runtime.CURRENT_WRAPPER = script
+
+    if runtime.WRAP_PROCESS is not None and runtime.CURRENT_WRAPPER is None:
+        runtime.CURRENT_WRAPPER = runtime.WRAP_PROCESS
+
+    if runtime.CURRENT_WRAPPER is None:
+        return False
+    else:
+        return True
+
+
 def get_sub_process_klass(cmd):
     '''
     Which sub process implementation should be used
@@ -826,6 +862,8 @@ def get_sub_process_klass(cmd):
     '''
     if should_run_inside_gdb(cmd):
         return GDBSubProcess
+    elif should_run_inside_wrapper(cmd):
+        return WrapSubProcess
     else:
         return SubProcess
 
