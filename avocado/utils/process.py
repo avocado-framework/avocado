@@ -525,8 +525,14 @@ class WrapSubProcess(SubProcess):
     '''
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None):
-        cmd = runtime.CURRENT_WRAPPER + ' ' + cmd
+                 shell=False, env=None, wrapper=None):
+        if wrapper is None and runtime.CURRENT_WRAPPER is not None:
+            wrapper = runtime.CURRENT_WRAPPER
+        self.wrapper = wrapper
+        if self.wrapper:
+            if not os.path.exists(self.wrapper):
+                raise IOError("No such wrapper: '%s'" % self.wrapper)
+            cmd = wrapper + ' ' + cmd
         super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
                                              shell, env)
 
