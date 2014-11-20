@@ -4,9 +4,12 @@ Wrap process in tests
 Avocado allows the instrumentation of applications being
 run by a test in a transparent way.
 
-The user specify a script ("the wrapper") to be used to run the actual
+The user specifies a script ("the wrapper") to be used to run the actual
 program called by the test.  If the instrument is
 implemented correctly, it should not interfere with the test behavior.
+
+So it means that the wrapper should avoid to change the return status,
+standard output and standard error messages of the process.
 
 
 Usage
@@ -34,12 +37,17 @@ Now you can run::
 Caveats
 -------
 
+* It is not possible to debug with GDB (`--gdb-run-bin`) and use
+  wrappers (`--wrapper`), both options together are incompatible.
+
 * You cannot set multiples (global) wrappers
   -- like `--wrapper foo.sh --wrapper bar.sh` -- it will trigger an error.
-  Maybe you should use a script with the things you need to perform.
+  You should use a single script that performs both things
+  you are trying to achieve.
 
 * The only process that can be wrapper are those that uses
-  Avocado module `avocado.utils.process` and the modules that make use of it,
+  Processes can only be wrapped if the test uses the Avocado
+  module `avocado.utils.process` and the modules that make use of it,
   like `avocado.utils.build` and so on.
 
 * The process name matches with the base name  (it ignores paths),
