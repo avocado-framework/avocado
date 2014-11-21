@@ -286,6 +286,12 @@ while you are debugging it, avocado has no way to know about its status.
 Avocado will automatically send a `continue` command to the debugger
 when you disconnect from and exit gdb.
 
+If, for some reason you have a custom GDB, or your system does not put
+GDB on what avocado believes to be the standard location (`/usr/bin/gdb`),
+you can override that with::
+
+ $ avocado run --gdb-path=~/code/gdb/gdb --gdb-run-bin=foo:main footest
+
 RECORDING TEST REFERENCE OUTPUT
 ===============================
 
