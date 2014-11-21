@@ -15,6 +15,7 @@
 """Run tests with GDB goodies enabled."""
 
 from avocado import runtime
+from avocado.utils import process
 from avocado.plugins import plugin
 
 
@@ -43,6 +44,17 @@ class GDB(plugin.Plugin):
                                    ' inferior process received a fatal signal '
                                    'such as SIGSEGV or SIGABRT'))
 
+        default_gdb_path = '/usr/bin/gdb'
+        try:
+            system_gdb_path = process.find_command('gdb')
+        except process.CmdNotFoundError:
+            system_gdb_path = default_gdb_path
+        gdb_grp.add_argument('--gdb-path',
+                             default=system_gdb_path, metavar='PATH',
+                             help=('Path to the GDB executable, should you '
+                                   'need to use a custom GDB version. Defaults '
+                                   'to "%(default)s"'))
+
         self.configured = True
 
     def activate(self, app_args):
@@ -51,5 +63,6 @@ class GDB(plugin.Plugin):
                 runtime.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
             if app_args.gdb_enable_core:
                 runtime.GDB_ENABLE_CORE = True
+            runtime.GDB_PATH = app_args.gdb_path
         except AttributeError:
             pass

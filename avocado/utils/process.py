@@ -554,7 +554,7 @@ class GDBSubProcess(object):
         self.result = CmdResult(cmd)
 
         self.gdb_server = gdb.GDBServer()
-        self.gdb = gdb.GDB()
+        self.gdb = gdb.GDB(runtime.GDB_PATH)
         self.gdb.connect(self.gdb_server.port)
         self.gdb.set_file(self.binary)
 
@@ -615,7 +615,7 @@ class GDBSubProcess(object):
 
             script = open(script_path, 'w')
             script.write("#!/bin/sh\n")
-            script.write("%s -x %s\n" % (gdb.GDB.GDB_PATH, cmds))
+            script.write("%s -x %s\n" % (runtime.GDB_PATH, cmds))
             script.write("echo -n 'C' > %s\n" % fifo_path)
             script.close()
             os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)

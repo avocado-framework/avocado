@@ -165,16 +165,19 @@ class GDB(object):
     Wraps a GDB subprocess for easier manipulation
     """
 
-    GDB_PATH = '/usr/bin/gdb'
-
-    GDB_ARGS = [GDB_PATH,
-                '--interpreter=mi',
-                '--quiet']
+    REQUIRED_ARGS = ['--interpreter=mi',
+                     '--quiet']
 
     DEFAULT_BREAK = 'main'
 
-    def __init__(self):
-        self.process = subprocess.Popen(self.GDB_ARGS,
+    def __init__(self, path='/usr/bin/gdb', *extra_args):
+
+        self.path = path
+        args = [self.path]
+        args += self.REQUIRED_ARGS
+        args += extra_args
+
+        self.process = subprocess.Popen(args,
                                         stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
