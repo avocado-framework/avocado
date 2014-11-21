@@ -38,6 +38,14 @@ class UnexpectedResponseError(Exception):
     pass
 
 
+class ServerInitTimeoutError(Exception):
+
+    '''
+    Server took longer than expected to initialize itself properly
+    '''
+    pass
+
+
 def parse_mi(line):
     '''
     Parse a GDB/MI line
@@ -451,8 +459,26 @@ class GDBServer(object):
     #: The range from which a port to GDB server will try to be allocated from
     PORT_RANGE = (20000, 20999)
 
-    def __init__(self, path='/usr/bin/gdbserver', port=None, *extra_args):
+    #: The time to optionally wait for the server to initialize itself and be
+    #: ready to accept new connections
+    INIT_TIMEOUT = 2.0
 
+    def __init__(self, path='/usr/bin/gdbserver', port=None,
+                 wait_until_running=True, *extra_args):
+        """
+        Initializes a new gdbserver instance
+
+        :param path: location of the gdbserver binary
+        :type path: str
+        :param port: tcp port number to listen on for incoming connections
+        :type port: int
+        :param wait_until_running: wait until the gdbserver is running and
+                                   accepting connections. It may take a little
+                                   after the process is started and it is
+                                   actually bound to the aloccated port
+        :type wait_until_running: bool
+        :param extra_args: optional extra arguments to be passed to gdbserver
+        """
         self.path = path
         args = [self.path]
         args += self.REQUIRED_ARGS
@@ -474,6 +500,25 @@ class GDBServer(object):
                                         stdout=self.stdout,
                                         stderr=self.stderr,
                                         close_fds=True)
+
+        if wait_until_running:
+            self._wait_until_running()
+
+    def _wait_until_running(self):
+        init_time = time.time()
+        connection_ok = False
+        c = GDB()
+        while time.time() - init_time < self.INIT_TIMEOUT:
+            try:
+                c.connect(self.port)
+                connection_ok = True
+                break
+            except:
+                time.sleep(0.1)
+        c.disconnect()
+        c.exit()
+        if not connection_ok:
+            raise ServerInitTimeoutError
 
     def exit(self, force=True):
         """
