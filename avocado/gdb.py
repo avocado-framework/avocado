@@ -38,6 +38,14 @@ class UnexpectedResponseError(Exception):
     pass
 
 
+class ServerInitTimeoutError(Exception):
+
+    '''
+    Server took longer than expected to initialize itself properly
+    '''
+    pass
+
+
 def parse_mi(line):
     '''
     Parse a GDB/MI line
@@ -449,7 +457,20 @@ class GDBServer(object):
     #: The range from which a port to GDB server will try to be allocated from
     PORT_RANGE = (20000, 20999)
 
-    def __init__(self):
+    #: The time to optionally wait for the server to initialize itself and be
+    #: ready to accept new connections
+    INIT_TIMEOUT = 2.0
+
+    def __init__(self, wait_until_running=True):
+        """
+        Initializes a new gdbserver instance
+
+        :param wait_until_running: wait until the gdbserver is running and
+                                   accepting connections. It may take a little
+                                   after the process is started and it is
+                                   actually bound to the aloccated port
+        :type wait_until_running: bool
+        """
         self.port = network.find_free_port(*self.PORT_RANGE)
 
         prefix = 'avocado_gdbserver_%s_' % self.port
@@ -465,6 +486,25 @@ class GDBServer(object):
                                         stdout=self.stdout,
                                         stderr=self.stderr,
                                         close_fds=True)
+
+        if wait_until_running:
+            self._wait_until_running()
+
+    def _wait_until_running(self):
+        init_time = time.time()
+        connection_ok = False
+        c = GDB()
+        while time.time() - init_time < self.INIT_TIMEOUT:
+            try:
+                c.connect(self.port)
+                connection_ok = True
+                break
+            except:
+                time.sleep(0.1)
+        c.disconnect()
+        c.exit()
+        if not connection_ok:
+            raise ServerInitTimeoutError
 
     def exit(self, force=True):
         """
