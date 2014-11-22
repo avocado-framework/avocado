@@ -553,7 +553,7 @@ class GDBSubProcess(object):
         self.binary_path = os.path.abspath(self.cmd)
         self.result = CmdResult(cmd)
 
-        self.gdb_server = gdb.GDBServer()
+        self.gdb_server = gdb.GDBServer(runtime.GDBSERVER_PATH)
         self.gdb = gdb.GDB(runtime.GDB_PATH)
         self.gdb.connect(self.gdb_server.port)
         self.gdb.set_file(self.binary)

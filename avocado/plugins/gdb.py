@@ -49,6 +49,12 @@ class GDB(plugin.Plugin):
                                    'need to use a custom GDB version. Defaults '
                                    'to "%(default)s"'))
 
+        gdb_grp.add_argument('--gdbserver-path',
+                             default='/usr/bin/gdbserver', metavar='PATH',
+                             help=('Path to the gdbserver executable, should you '
+                                   'need to use a custom version. Defaults '
+                                   'to "%(default)s"'))
+
         self.configured = True
 
     def activate(self, app_args):
@@ -58,5 +64,6 @@ class GDB(plugin.Plugin):
             if app_args.gdb_enable_core:
                 runtime.GDB_ENABLE_CORE = True
             runtime.GDB_PATH = app_args.gdb_path
+            runtime.GDBSERVER_PATH = app_args.gdbserver_path
         except AttributeError:
             pass
