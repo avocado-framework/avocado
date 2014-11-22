@@ -292,6 +292,10 @@ you can override that with::
 
  $ avocado run --gdb-path=~/code/gdb/gdb --gdb-run-bin=foo:main footest
 
+The same applies to `gdbserver`, which can be chosen with a command line like::
+
+ $ avocado run --gdbserver-path=~/code/gdb/gdbserver --gdb-run-bin=foo:main footest
+
 RECORDING TEST REFERENCE OUTPUT
 ===============================
 
