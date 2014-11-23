@@ -37,6 +37,14 @@ class GDB(plugin.Plugin):
                                    'be "<binary>[:breakpoint]". Breakpoint '
                                    'defaults to "main"'))
 
+        gdb_grp.add_argument('--gdb-prerun-commands', action='append',
+                             default=[], metavar='BINARY_PATH:COMMANDS_PATH',
+                             help=('After loading a binary in binary in GDB, '
+                                   'but before actually running it, execute '
+                                   'the given GDB commands in the given file.'
+                                   'BINARY_PATH is optional and if ommited '
+                                   'will apply to all binaries'))
+
         gdb_grp.add_argument('--gdb-enable-core', action='store_true',
                              default=False,
                              help=('Automatically generate a core dump when the'
@@ -49,6 +57,12 @@ class GDB(plugin.Plugin):
         try:
             for binary in app_args.gdb_run_bin:
                 runtime.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
+            for commands in app_args.gdb_prerun_commands:
+                if ':' in commands:
+                    binary, commands_path = commands.split(':', 1)
+                    runtime.GDB_PRERUN_COMMANDS['binary'] = commands_path
+                else:
+                    runtime.GDB_PRERUN_COMMANDS[''] = commands
             if app_args.gdb_enable_core:
                 runtime.GDB_ENABLE_CORE = True
         except AttributeError:

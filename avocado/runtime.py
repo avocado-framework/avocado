@@ -21,6 +21,10 @@ Module that contains runtime configuration
 #: using the given expression
 GDB_RUN_BINARY_NAMES_EXPR = []
 
+#: After loading a binary in binary in GDB, but before actually running it,
+#: execute the given GDB commands present in the given file, one per line
+GDB_PRERUN_COMMANDS = {}
+
 #: Wether to enable the automatic generation of core dumps for applications
 #: that are run inside the GNU debugger
 GDB_ENABLE_CORE = False

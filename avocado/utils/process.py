@@ -746,10 +746,27 @@ class GDBSubProcess(object):
 
         return result
 
+    def _run_pre_commands(self):
+        '''
+        Run commands if user passed a commands file with --gdb-prerun-commands
+        '''
+        binary_name = os.path.basename(self.binary)
+        # The commands file can be specific to a given binary or universal,
+        # start checking for specific ones first
+        prerun_commands_path = runtime.GDB_PRERUN_COMMANDS.get(
+            binary_name,
+            runtime.GDB_PRERUN_COMMANDS.get('', None))
+
+        if prerun_commands_path is not None:
+            prerun_commands = open(prerun_commands_path).readlines()
+            for command in prerun_commands:
+                self.gdb.cmd(command)
+
     def run(self, timeout=None):
         for b in self._get_breakpoints():
             self.gdb.set_break(b, ignore_error=True)
 
+        self._run_pre_commands()
         result = self.gdb.run(self.args[1:])
 
         # Collect gdbserver stdout and stderr file information for debugging

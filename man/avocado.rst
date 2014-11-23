@@ -286,6 +286,20 @@ while you are debugging it, avocado has no way to know about its status.
 Avocado will automatically send a `continue` command to the debugger
 when you disconnect from and exit gdb.
 
+If you're debugging a special application and need to setup GDB in custom
+ways by running GDB commands, you can do that with the `--gdb-prerun-commands`
+option::
+
+ $ avocado run --gdb-run-bin=foo:bar --gdb-prerun-commands=/tmp/disable-signals footest
+
+In this example, `/tmp/disable-signals` is a simple text file containing two lines::
+
+ signal SIGUSR1 pass
+ signal SIGUSR1 nostop
+
+Each line is a GDB command, so you can have from simple to very complex
+debuggin environments configured like that.
+
 RECORDING TEST REFERENCE OUTPUT
 ===============================
 
