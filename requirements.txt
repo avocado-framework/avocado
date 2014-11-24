@@ -7,3 +7,4 @@ mysql-python==1.2.3
 requests==1.2.3
 fabric==1.7.0
 pyliblzma==0.5.3
+pystache>0.5.0
