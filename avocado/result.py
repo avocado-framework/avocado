@@ -20,6 +20,8 @@ It also contains the most basic test result class, HumanTestResult,
 used by the test runner.
 """
 
+import os
+
 
 class InvalidOutputPlugin(Exception):
     pass
@@ -253,6 +255,11 @@ class HumanTestResult(TestResult):
         TestResult.start_tests(self)
         self.stream.notify(event="message", msg="JOB ID    : %s" % self.stream.job_unique_id)
         self.stream.notify(event="message", msg="JOB LOG   : %s" % self.stream.logfile)
+        if self.args is not None:
+            if 'html_output' in self.args:
+                logdir = os.path.dirname(self.stream.logfile)
+                html_file = os.path.join(logdir, 'html', 'results.html')
+                self.stream.notify(event="message", msg="JOB HTML  : %s" % html_file)
         self.stream.notify(event="message", msg="TESTS     : %s" % self.tests_total)
         self.stream.set_tests_info({'tests_total': self.tests_total})
 
