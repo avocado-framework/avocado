@@ -286,6 +286,28 @@ while you are debugging it, avocado has no way to know about its status.
 Avocado will automatically send a `continue` command to the debugger
 when you disconnect from and exit gdb.
 
+WRAP PROCESS IN TESTS
+=====================
+
+Avocado allows the instrumentation of applications being
+run by a test in a transparent way.
+
+The user specify a script ("the wrapper") to be used to run the actual
+program called by the test.  If the instrument is
+implemented correctly, it should not interfere with the test behavior.
+
+So it means that the wrapper should avoid to change the return status,
+standard output and standard error messages of the process.
+
+Examples::
+
+ $ avocado run datadir --wrapper examples/wrappers/strace.sh
+ $ avocado run datadir --wrapper examples/wrappers/ltrace.sh:make \
+                       --wrapper examples/wrappers/perf.sh:datadir
+
+Note that it's not possible to use ``--gdb-run-bin`` together
+with ``--wrapper``, they are incompatible.
+
 RECORDING TEST REFERENCE OUTPUT
 ===============================
 
