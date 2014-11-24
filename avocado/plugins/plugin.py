@@ -12,6 +12,9 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
+import os
+import sys
+
 """Plugins basic structure."""
 
 
@@ -45,6 +48,17 @@ class Plugin(object):
 
     def __repr__(self):
         return "%s(name='%s')" % (self.__class__.__name__, self.name)
+
+    def get_resource_path(self, *args):
+        """
+        Get the path of a plugin resource (static files, templates, etc).
+
+        :param args: Path components (plugin resources dir is the root).
+        :return: Full resource path.
+        """
+        plugins_dir = os.path.dirname(sys.modules[__name__].__file__)
+        resources_dir = os.path.join(plugins_dir, 'resources', self.name)
+        return os.path.join(resources_dir, *args)
 
     def configure(self, parser):
         """Configuration and argument parsing.
