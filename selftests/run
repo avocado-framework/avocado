@@ -21,8 +21,6 @@ from nose.selector import Selector
 
 from nose.plugins import Plugin
 from nose.plugins.attrib import AttributeSelector
-from nose.plugins.xunit import Xunit
-from nose.plugins.cover import Coverage
 
 import logging
 import os
@@ -84,6 +82,4 @@ class AvocadoTestRunner(Plugin):
 
 if __name__ == '__main__':
     nose.main(addplugins=[AvocadoTestRunner(),
-                          AttributeSelector(),
-                          Xunit(),
-                          Coverage()])
+                          AttributeSelector()])
