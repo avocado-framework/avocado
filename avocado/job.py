@@ -43,6 +43,11 @@ from avocado import sysinfo
 from avocado import runtime
 from avocado.plugins import xunit
 from avocado.plugins import jsonresult
+try:
+    from avocado.plugins import htmlresult
+    HTML_REPORT_SUPPORT = True
+except ImportError:
+    HTML_REPORT_SUPPORT = False
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
@@ -387,6 +392,18 @@ class Job(object):
         args.json_output = json_file
         json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
+
+        # Setup the json plugin to output to the debug directory
+        if HTML_REPORT_SUPPORT:
+            html_file = os.path.join(self.logdir, 'html', 'results.html')
+            args = argparse.Namespace()
+            args.html_output = html_file
+            if self.args is not None:
+                args.open_browser = getattr(self.args, 'open_browser')
+            else:
+                args.open_browser = False
+            html_plugin = htmlresult.HTMLTestResult(self.view, args)
+            self.result_proxy.add_output_plugin(html_plugin)
 
         op_set_stdout = self.result_proxy.output_plugins_using_stdout()
         if len(op_set_stdout) > 1:
