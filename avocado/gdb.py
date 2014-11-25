@@ -165,16 +165,19 @@ class GDB(object):
     Wraps a GDB subprocess for easier manipulation
     """
 
-    GDB_PATH = '/usr/bin/gdb'
-
-    GDB_ARGS = [GDB_PATH,
-                '--interpreter=mi',
-                '--quiet']
+    REQUIRED_ARGS = ['--interpreter=mi',
+                     '--quiet']
 
     DEFAULT_BREAK = 'main'
 
-    def __init__(self):
-        self.process = subprocess.Popen(self.GDB_ARGS,
+    def __init__(self, path='/usr/bin/gdb', *extra_args):
+
+        self.path = path
+        args = [self.path]
+        args += self.REQUIRED_ARGS
+        args += extra_args
+
+        self.process = subprocess.Popen(args,
                                         stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
@@ -443,14 +446,22 @@ class GDBServer(object):
     """
 
     #: The default arguments used when starting the GDB server process
-    ARGS = ['/usr/bin/gdbserver',
-            '--multi']
+    REQUIRED_ARGS = ['--multi']
 
     #: The range from which a port to GDB server will try to be allocated from
     PORT_RANGE = (20000, 20999)
 
-    def __init__(self):
-        self.port = network.find_free_port(*self.PORT_RANGE)
+    def __init__(self, path='/usr/bin/gdbserver', port=None, *extra_args):
+
+        self.path = path
+        args = [self.path]
+        args += self.REQUIRED_ARGS
+
+        if port is None:
+            self.port = network.find_free_port(*self.PORT_RANGE)
+        else:
+            self.port = port
+        args.append(":%s" % self.port)
 
         prefix = 'avocado_gdbserver_%s_' % self.port
         _, self.stdout_path = tempfile.mkstemp(prefix=prefix + 'stdout_')
@@ -458,8 +469,6 @@ class GDBServer(object):
         _, self.stderr_path = tempfile.mkstemp(prefix=prefix + 'stderr_')
         self.stderr = open(self.stderr_path, 'w')
 
-        args = self.ARGS[:]
-        args.append(":%s" % self.port)
         self.process = subprocess.Popen(args,
                                         stdin=subprocess.PIPE,
                                         stdout=self.stdout,

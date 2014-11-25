@@ -25,6 +25,12 @@ GDB_RUN_BINARY_NAMES_EXPR = []
 #: that are run inside the GNU debugger
 GDB_ENABLE_CORE = False
 
+#: Path to the GDB binary
+GDB_PATH = None
+
+#: Path to the gdbserver binary
+GDBSERVER_PATH = None
+
 #: Sometimes it's useful for the framework and API to know about the test that
 #: is currently running, if one exists
 CURRENT_TEST = None
