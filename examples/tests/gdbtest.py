@@ -392,6 +392,17 @@ class gdbtest(test.Test):
         result = process.run(self.return99_binary_path, ignore_status=True)
         self.assertIn("return 99\n", result.stdout)
 
+    def test_remote(self):
+        """
+        Tests GDBRemote interaction with a GDBServer
+        """
+        s = gdb.GDBServer()
+        r = gdb.GDBRemote('127.0.0.1', s.port)
+        r.connect()
+        r.cmd("qSupported")
+        r.cmd("qfThreadInfo")
+        s.exit()
+
     def action(self):
         """
         Execute tests
@@ -416,3 +427,4 @@ class gdbtest(test.Test):
         self.test_server_stderr()
         self.test_server_stdout()
         self.test_interactive_stdout()
+        self.test_remote()
