@@ -19,6 +19,7 @@ import tempfile
 import unittest
 import os
 import sys
+import shutil
 from xml.dom import minidom
 
 # simple magic for using scripts within a source tree
@@ -85,6 +86,19 @@ class OutputPluginTest(unittest.TestCase):
         self.assertIn(error_excerpt, output,
                       "Missing excerpt error message from output:\n%s" % output)
 
+    def test_output_incompatible_setup_3(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --html - sleeptest'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 2
+        output = result.stdout + result.stderr
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        error_excerpt = "HTML to stdout not supported"
+        self.assertIn(error_excerpt, output,
+                      "Missing excerpt error message from output:\n%s" % output)
+
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
@@ -131,11 +145,17 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_3(self):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
+        tmpdir = tempfile.mkdtemp()
+        tmpfile3 = tempfile.mktemp(dir=tmpdir)
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --xunit %s --json %s passtest' % (tmpfile, tmpfile2)
+        cmd_line = ('./scripts/avocado run --xunit %s --json %s --html %s passtest' %
+                    (tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
+        tmpdir_contents = os.listdir(tmpdir)
+        self.assertEqual(len(tmpdir_contents), 5,
+                         'Not all resources dir were created: %s' % tmpdir_contents)
         try:
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
@@ -151,6 +171,7 @@ class OutputPluginTest(unittest.TestCase):
             try:
                 os.remove(tmpfile)
                 os.remove(tmpfile2)
+                shutil.rmtree(tmpdir)
             except OSError:
                 pass
 

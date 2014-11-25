@@ -32,8 +32,23 @@ these days a framework) to perform automated testing.
 %dir /etc/avocado
 %config(noreplace)/etc/avocado/settings.ini
 %{_bindir}/avocado
+%exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
+%exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
 %{python_sitelib}/avocado*
 %{_mandir}/man1/avocado.1.gz
+
+%package plugins-output-html
+Summary: Avocado HTML report plugin
+Requires: avocado, pystache
+
+%description plugins-output-html
+Adds to avocado the ability to generate an HTML report at every job results
+directory. It also gives the user the ability to write a report on an
+arbitrary filesystem location.
+
+%files plugins-output-html
+%{python_sitelib}/avocado/plugins/htmlresult.py*
+%{python_sitelib}/avocado/plugins/resources/htmlresult/*
 
 %package examples
 Summary: Avocado Test Framework Example Tests

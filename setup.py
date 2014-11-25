@@ -59,6 +59,18 @@ def get_data_files():
     return data_files
 
 
+def _get_plugin_resource_files(path):
+    """
+    Given a path, return all the files in there to package
+    """
+    flist = []
+    for root, _, files in sorted(os.walk(path)):
+        for name in files:
+            fullname = os.path.join(root, name)
+            flist.append(fullname[len('avocado/plugins/'):])
+    return flist
+
+
 setup(name='avocado',
       version=avocado.version.VERSION,
       description='Avocado Test Framework',
@@ -72,5 +84,6 @@ setup(name='avocado',
                 'avocado.linux',
                 'avocado.utils',
                 'avocado.plugins'],
+      package_data={'avocado.plugins': _get_plugin_resource_files('avocado/plugins/resources')},
       data_files=get_data_files(),
       scripts=['scripts/avocado'])
