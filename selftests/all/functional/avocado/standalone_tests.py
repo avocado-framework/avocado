@@ -43,10 +43,10 @@ class StandaloneTests(unittest.TestCase):
                          "Stand alone %s did not return rc "
                          "%d:\n%s" % (tstname, expected_rc, result))
 
-    def test_sleeptest(self):
-        cmd_line = './examples/tests/sleeptest.py'
+    def test_passtest(self):
+        cmd_line = './examples/tests/passtest.py'
         expected_rc = 0
-        self.run_and_check(cmd_line, expected_rc, 'sleeptest')
+        self.run_and_check(cmd_line, expected_rc, 'passtest')
 
     def test_skiptest(self):
         cmd_line = './examples/tests/skiptest.py'

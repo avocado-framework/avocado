@@ -68,7 +68,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_all_ok(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptest sleeptest'
+        cmd_line = './scripts/avocado run passtest passtest'
         process.run(cmd_line)
 
     def test_datadir_alias(self):
@@ -83,12 +83,12 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_noalias(self):
         os.chdir(basedir)
-        cmd_line = "./scripts/avocado run examples/tests/sleeptest.py examples/tests/sleeptest.py"
+        cmd_line = "./scripts/avocado run examples/tests/passtest.py examples/tests/passtest.py"
         process.run(cmd_line)
 
     def test_runner_tests_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptest failtest sleeptest'
+        cmd_line = './scripts/avocado run passtest failtest passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -151,7 +151,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_silent_output(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptest --silent'
+        cmd_line = './scripts/avocado run passtest --silent'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         expected_output = ''
@@ -432,8 +432,8 @@ class PluginsXunitTest(PluginsTest):
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)
 
-    def test_xunit_plugin_sleeptest(self):
-        self.run_and_check('sleeptest', 0, 1, 0, 0, 0, 0)
+    def test_xunit_plugin_passtest(self):
+        self.run_and_check('passtest', 0, 1, 0, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
         self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
@@ -448,7 +448,7 @@ class PluginsXunitTest(PluginsTest):
         self.run_and_check('sbrubles', 1, 1, 1, 0, 0, 0)
 
     def test_xunit_plugin_mixedtest(self):
-        self.run_and_check('sleeptest failtest skiptest errortest sbrubles',
+        self.run_and_check('passtest failtest skiptest errortest sbrubles',
                            1, 5, 2, 0, 1, 1)
 
 
@@ -491,8 +491,8 @@ class PluginsJSONTest(PluginsTest):
         self.assertEqual(n_skip, e_nskip,
                          "Different number of skipped tests")
 
-    def test_json_plugin_sleeptest(self):
-        self.run_and_check('sleeptest', 0, 1, 0, 0, 0, 0)
+    def test_json_plugin_passtest(self):
+        self.run_and_check('passtest', 0, 1, 0, 0, 0, 0)
 
     def test_json_plugin_failtest(self):
         self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
@@ -507,7 +507,7 @@ class PluginsJSONTest(PluginsTest):
         self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
 
     def test_json_plugin_mixedtest(self):
-        self.run_and_check('sleeptest failtest skiptest errortest sbrubles',
+        self.run_and_check('passtest failtest skiptest errortest sbrubles',
                            1, 5, 1, 1, 1, 1)
 
 if __name__ == '__main__':

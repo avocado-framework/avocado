@@ -61,7 +61,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --xunit - --json - sleeptest'
+        cmd_line = './scripts/avocado run --xunit - --json - passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
@@ -74,7 +74,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --vm --json - sleeptest'
+        cmd_line = './scripts/avocado run --vm --json - passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
@@ -88,7 +88,7 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --journal --xunit %s --json - sleeptest' % tmpfile
+        cmd_line = './scripts/avocado run --journal --xunit %s --json - passtest' % tmpfile
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -108,7 +108,7 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --xunit - --json %s sleeptest' % tmpfile
+        cmd_line = './scripts/avocado run --xunit - --json %s passtest' % tmpfile
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -132,7 +132,7 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --xunit %s --json %s sleeptest' % (tmpfile, tmpfile2)
+        cmd_line = './scripts/avocado run --xunit %s --json %s passtest' % (tmpfile, tmpfile2)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -158,7 +158,7 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --silent --xunit %s --json %s sleeptest' % (tmpfile, tmpfile2)
+        cmd_line = './scripts/avocado run --silent --xunit %s --json %s passtest' % (tmpfile, tmpfile2)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -182,7 +182,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptest --show-job-log'
+        cmd_line = './scripts/avocado run passtest --show-job-log'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -191,7 +191,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptest --show-job-log --silent'
+        cmd_line = './scripts/avocado run passtest --show-job-log --silent'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -202,7 +202,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_default_enabled_plugins(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run sleeptest'
+        cmd_line = './scripts/avocado run passtest'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
