@@ -9,18 +9,16 @@ branches:
 virtualenv:
     system_site_packages: true
 
-before_script:
-    - sudo apt-get update
-    - sudo apt-get -y --force-yes install python-libvirt build-essential python-yaml python-lzma
+before_install:
+    - sudo apt-get -y --force-yes install python-libvirt python-lzma python-yaml
 
 install:
-    - pip install sphinx tox pylint autopep8 flexmock
-    - pip install inspektor
-    - pip install -r requirements.txt
+    - pip install -r requirements-travis.txt
 
 script:
     - inspekt lint
+    - inspekt indent
     - inspekt style
-    - ./selftests/run -v selftests/all/doc
-    - ./selftests/run -v selftests/all/functional
-    - ./selftests/run -v selftests/all/unit
+    - ./selftests/run selftests/all/doc
+    - ./selftests/run selftests/all/functional
+    - ./selftests/run selftests/all/unit
