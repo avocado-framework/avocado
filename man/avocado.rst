@@ -310,6 +310,46 @@ In this example, `/tmp/disable-signals` is a simple text file containing two lin
 Each line is a GDB command, so you can have from simple to very complex
 debugging environments configured like that.
 
+WRAP PROCESS IN TESTS
+=====================
+
+Avocado allows the instrumentation of applications being
+run by a test in a transparent way.
+
+The user specify a script ("the wrapper") to be used to run the actual
+program called by the test.  If the instrument is
+implemented correctly, it should not interfere with the test behavior.
+
+So it means that the wrapper should avoid to change the return status,
+standard output and standard error messages of the process.
+
+By using an optional parameter to the wrapper, you can specify the
+"target binary" to wrap, so that for every program spawned by the test,
+the program name will be compared to the target binary.
+
+If the target binary is absolute path and the program name is absolute,
+then both paths should be equal to the wrapper take effect, otherwise
+the wrapper will not be used.
+
+For the case that the target binary is not absolute or the program name
+is not absolute, then both will be compared by its base name, ignoring paths.
+
+Examples::
+
+ $ avocado run datadir --wrapper examples/wrappers/strace.sh
+ $ avocado run datadir --wrapper examples/wrappers/ltrace.sh:make \
+                       --wrapper examples/wrappers/perf.sh:datadir
+
+Note that it's not possible to use ``--gdb-run-bin`` together
+with ``--wrapper``, they are incompatible.::
+
+ $ avocado run mytest --wrapper examples/wrappers/strace:/opt/bin/foo
+
+In this case, the possible program that can wrapped by ``mytest`` is
+``/opt/bin/foo`` (absolute paths equal) and ``foo`` without absolute path
+will be wrapped too, but ``/opt/bin/foo`` will never be wrapped, because
+the absolute paths are not equal.
+
 RECORDING TEST REFERENCE OUTPUT
 ===============================
 
