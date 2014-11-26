@@ -85,9 +85,16 @@ def get_requirements():
                 requirements.append("%s" % line)
     return requirements
 
+
+def get_long_description():
+    with open('README.rst', 'r') as req:
+        req_contents = req.read()
+    return req_contents
+
 setup(name='avocado',
       version=avocado.version.VERSION,
       description='Avocado Test Framework',
+      long_description=get_long_description(),
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://github.com/avocado-framework/avocado',
