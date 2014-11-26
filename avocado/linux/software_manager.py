@@ -353,7 +353,7 @@ class YumBackend(RpmBackend):
         executable = process.find_command('yum')
         base_arguments = '-y'
         self.base_command = executable + ' ' + base_arguments
-        self.repo_file_path = '/etc/yum.repos.d/autotest.repo'
+        self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
         self.cfgparser = ConfigParser.ConfigParser()
         self.cfgparser.read(self.repo_file_path)
         y_cmd = executable + ' --version | head -1'
@@ -425,7 +425,7 @@ class YumBackend(RpmBackend):
             if not self.cfgparser.has_section(section_name):
                 break
         self.cfgparser.add_section(section_name)
-        self.cfgparser.set(section_name, 'name', 'Autotest managed repository')
+        self.cfgparser.set(section_name, 'name', 'Avocado managed repository')
         self.cfgparser.set(section_name, 'url', url)
         self.cfgparser.set(section_name, 'enabled', 1)
         self.cfgparser.set(section_name, 'gpgcheck', 0)
@@ -625,7 +625,7 @@ class AptBackend(DpkgBackend):
         super(AptBackend, self).__init__()
         executable = process.find_command('apt-get')
         self.base_command = executable + ' -y'
-        self.repo_file_path = '/etc/apt/sources.list.d/autotest'
+        self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'
         cmd_result = process.run('apt-get -v | head -1',
                                  ignore_status=True,
                                  verbose=False,
