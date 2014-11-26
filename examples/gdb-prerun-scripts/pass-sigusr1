@@ -1,0 +1,2 @@
+signal SIGUSR1 pass
+signal SIGUSR1 nostop
