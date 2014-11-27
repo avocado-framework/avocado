@@ -149,8 +149,9 @@ class TestRunner(plugin.Plugin):
                                      'Default: False (output check enabled)'))
 
         mux = self.parser.add_argument_group('multiplex arguments')
-        mux.add_argument('-m', '--multiplex-file', type=str, default=None,
-                         help='Path to an avocado multiplex (.yaml) file')
+        mux.add_argument('-m', '--multiplex-file', default=[], action='append',
+                         help='List of paths to avocado multiplex (.yaml) '
+                         'files')
         mux.add_argument('--filter-only', nargs='*', default=[],
                          help='Filter only path(s) from multiplexing')
         mux.add_argument('--filter-out', nargs='*', default=[],
@@ -166,7 +167,6 @@ class TestRunner(plugin.Plugin):
 
         :param args: Command line args received from the run subparser.
         """
-
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
