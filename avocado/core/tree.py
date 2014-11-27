@@ -115,7 +115,7 @@ class TreeNode(object):
     def get_environment(self):
         def update_or_extend(target, source):
             for k, _ in source.items():
-                if target.has_key(k) and isinstance(target[k], list):
+                if k in target and isinstance(target[k], list):
                     target[k].extend(source[k])
                 else:
                     if isinstance(source[k], list):
@@ -153,12 +153,16 @@ class TreeNode(object):
                                      compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
 
-    def _ascii_art(self, char1='-', show_internal=True, compact=False, attributes=None):
+    def _ascii_art(self, char1='-', show_internal=True, compact=False,
+                   attributes=None):
         if attributes is None:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        node_name = ', '.join(map(str, [getattr(self, v)
+                                        for v in attributes
+                                        if hasattr(self, v)]))
 
-        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
+        LEN = max(3,
+                  len(node_name) if not self.children or show_internal else 3)
         PAD = ' ' * LEN
         PA = ' ' * (LEN - 1)
         if not self.is_leaf:
@@ -173,7 +177,8 @@ class TreeNode(object):
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._ascii_art(char2, show_internal, compact, attributes)
+                (clines, mid) = c._ascii_art(char2, show_internal, compact,
+                                             attributes)
                 mids.append(mid + len(result))
                 result.extend(clines)
                 if not compact:
@@ -181,7 +186,8 @@ class TreeNode(object):
             if not compact:
                 result.pop()
             (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = [PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1) + [PAD] * (end - hi)
+            prefixes = ([PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1)
+                        + [PAD] * (end - hi))
             mid = (lo + hi) / 2
             prefixes[mid] = char1 + '-' * (LEN - 2) + prefixes[mid][-1]
             result = [p + l for (p, l) in zip(prefixes, result)]

@@ -56,7 +56,8 @@ class Multiplexer(plugin.Plugin):
         view = output.View(app_args=args)
 
         if not args.multiplex_file:
-            view.notify(event='error', msg='A multiplex file is required, aborting...')
+            view.notify(event='error',
+                        msg='A multiplex file is required, aborting...')
             sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         multiplex_file = os.path.abspath(args.multiplex_file)

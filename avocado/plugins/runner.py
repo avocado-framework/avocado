@@ -64,7 +64,8 @@ class TestLister(plugin.Plugin):
                 clength = len((t.split('.')[0]))
                 if clength > blength:
                     blength = clength
-                test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
+                test_dirs.append((t.split('.')[0],
+                                  os.path.join(base_test_dir, t)))
         format_string = "    %-" + str(blength) + "s %s"
         view.notify(event='message', msg='Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
@@ -72,7 +73,8 @@ class TestLister(plugin.Plugin):
             for test_dir in test_dirs:
                 view.notify(event='minor', msg=format_string % test_dir)
         else:
-            view.notify(event='error', msg='No tests were found on current tests dir')
+            view.notify(event='error',
+                        msg='No tests were found on current tests dir')
 
 
 class TestRunner(plugin.Plugin):
@@ -91,9 +93,8 @@ class TestRunner(plugin.Plugin):
 
         :param parser: Main test runner parser.
         """
-        self.parser = parser.subcommands.add_parser(
-            'run',
-            help='Run one or more tests (test module in .py, test alias or dropin)')
+        msg = 'Run one or more tests (test module in .py, test alias or dropin)'
+        self.parser = parser.subcommands.add_parser('run', help=msg)
 
         self.parser.add_argument('url', type=str, default=[], nargs='*',
                                  help='List of test IDs (aliases or paths)')
