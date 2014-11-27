@@ -4,7 +4,7 @@ Version: 0.14.0
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
-URL: http://avocado-framework.readthedocs.org/
+URL: https://github.com/avocado-framework/avocado
 Source: avocado-%{version}.tar.gz
 BuildRequires: python2-devel, python-docutils, python-yaml
 BuildArch: noarch

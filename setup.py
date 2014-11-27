@@ -16,7 +16,11 @@
 import glob
 import os
 # pylint: disable=E0611
-from distutils.core import setup
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 import avocado.version
 
@@ -71,11 +75,28 @@ def _get_plugin_resource_files(path):
     return flist
 
 
+def get_requirements():
+    requirements = []
+    with open('requirements.txt', 'r') as req:
+        req_contents = req.read()
+        for line in req_contents.splitlines():
+            if not line.startswith("#"):
+                line = line.split("#")[0].strip()
+                requirements.append("%s" % line)
+    return requirements
+
+
+def get_long_description():
+    with open('README.rst', 'r') as req:
+        req_contents = req.read()
+    return req_contents
+
 setup(name='avocado',
       version=avocado.version.VERSION,
       description='Avocado Test Framework',
-      author='Lucas Meneghel Rodrigues',
-      author_email='lmr@redhat.com',
+      long_description=get_long_description(),
+      author='Avocado Developers',
+      author_email='avocado-devel@redhat.com',
       url='http://github.com/avocado-framework/avocado',
       packages=['avocado',
                 'avocado.cli',
@@ -86,4 +107,5 @@ setup(name='avocado',
                 'avocado.plugins'],
       package_data={'avocado.plugins': _get_plugin_resource_files('avocado/plugins/resources')},
       data_files=get_data_files(),
-      scripts=['scripts/avocado'])
+      scripts=['scripts/avocado'],
+      install_requires=get_requirements())
