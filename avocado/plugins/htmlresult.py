@@ -11,21 +11,19 @@
 #
 # Copyright: Red Hat Inc. 2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
 """
 HTML output module.
 """
-
+import codecs
 import os
-import time
+import pystache
 import shutil
 import sys
+import time
 import webbrowser
 
-import pystache
-
-from avocado.core import output
 from avocado.core import error_codes
+from avocado.core import output
 from avocado.plugins import plugin
 from avocado.result import TestResult
 
@@ -208,7 +206,7 @@ class HTMLTestResult(TestResult):
             relative_links = False
 
         context = ReportModel(json_input=self.json, html_output=self.output, relative_links=relative_links)
-        renderer = pystache.Renderer()
+        renderer = pystache.Renderer('utf-8', 'utf-8')
         html = HTML()
         template = html.get_resource_path('templates', 'report.mustache')
         report_contents = renderer.render(open(template, 'r').read(), context)
@@ -227,7 +225,7 @@ class HTMLTestResult(TestResult):
                 if os.path.exists(out_dir):
                     shutil.rmtree(out_dir)
                 shutil.copytree(res_dir, out_dir)
-            with open(self.output, 'w') as report_file:
+            with codecs.open(self.output, 'w', 'utf-8') as report_file:
                 report_file.write(report_contents)
 
             if self.args is not None:
