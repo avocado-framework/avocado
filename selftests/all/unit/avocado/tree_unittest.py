@@ -52,41 +52,21 @@ os:
 """
 
 
-class TestReadYAML(unittest.TestCase):
-
-    def setUp(self):
-        self.yaml = StringIO.StringIO(source_yaml)
-
-    def test_read_yaml_values(self):
-        data = read_ordered_yaml(self.yaml)
-        self.assertIsInstance(data, dict)
-        self.assertIn('hw', data)
-        self.assertIn('os', data)
-        self.assertIn('cpu', data['hw'])
-        self.assertIn('intel', data['hw']['cpu'])
-        self.assertIsInstance(data['hw']['cpu']['intel']['arch'], list)
-        self.assertIn('arm', data['hw']['cpu'])
-        self.assertIsInstance(data['hw']['cpu']['arm']['arch'], list)
-        self.assertIn('os', data)
-        self.assertIn('linux', data['os'])
-        self.assertIn('dev-tools', data['os']['linux'])
-        self.assertIn('fedora', data['os']['linux'])
-        self.assertIn('mint', data['os']['linux'])
-        self.assertIn('centos', data['os']['linux'])
-        self.assertIn('win', data['os'])
-        self.assertIn('dev-tools', data['os']['win'])
-        self.assertIn('win7', data['os']['win'])
-        self.assertIn('win8', data['os']['win'])
-
-
 class TestTreeNode(unittest.TestCase):
 
     def setUp(self):
-        self.data = read_ordered_yaml(StringIO.StringIO(source_yaml))
-        self.treenode = create_from_ordered_data(self.data)
+        self.treenode = create_from_yaml(StringIO.StringIO(source_yaml))
 
     def test_create_treenode(self):
         self.assertIsInstance(self.treenode, TreeNode)
+
+    def test_comparism(self):
+        self.assertEqual(self.treenode.children[0], self.treenode.children[0])
+        self.assertEqual(self.treenode.children[0], "hw")
+        self.assertEqual("hw", self.treenode.children[0])
+        self.assertNotEqual(self.treenode.children[0],
+                            self.treenode.children[1])
+        self.assertNotEqual(self.treenode.children[0], "nothw")
 
     def test_node_order(self):
         self.assertEqual(self.treenode.children[0].name, 'hw')
