@@ -48,7 +48,9 @@ class TreeNode(object):
         self.name = name
         self.value = value
         self.parent = parent
-        self.children = children
+        self.children = []
+        for child in children:
+            self.add_child(child)
 
     def __repr__(self):
         return 'TreeNode(name=%r)' % self.name
