@@ -207,13 +207,49 @@ class TreeNode(object):
         return self
 
 
+class Value(tuple):
+    pass
+
+
+def tree_node_from_values(name, values):
+    node_children = []
+    node_values = []
+    for value in values:
+        if isinstance(value, TreeNode):
+            node_children.append(value)
+        else:
+            node_values.append(value)
+    return TreeNode(name, dict(node_values), children=node_children)
+
+
 def ordered_load(stream, Loader=yaml.Loader,
                  object_pairs_hook=collections.OrderedDict):
     class OrderedLoader(Loader):
         pass
+
+    def mapping_loader(loader, node):
+        def is_node(values):
+            if (isinstance(values, dict)
+                or (isinstance(values, list)
+                    and isinstance(values[0], (Value, TreeNode)))):
+                return True
+
+        _value = loader.construct_pairs(node)
+        print _value
+        objects = []
+        for name, values in _value:
+            if is_node(values):    # New node
+                objects.append(tree_node_from_values(name, values))
+            elif values is None:            # Empty node
+                objects.append(TreeNode(name))
+            elif isinstance(values, list) and isinstance(values[0],
+                                                         (Value, TreeNode)):
+                objects.append(TreeNode(name, dict(values)))
+            else:                           # Values
+                objects.append(Value((name, values)))
+        return objects
     OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                                  lambda loader, node:
-                                  object_pairs_hook(loader.construct_pairs(node)))
+                                  mapping_loader)
     return yaml.load(stream, OrderedLoader)
 
 
@@ -248,7 +284,8 @@ def create_from_ordered_data(data, tree=None, root=None, name=''):
 
 def create_from_yaml(input_yaml):
     data = read_ordered_yaml(input_yaml)
-    return create_from_ordered_data(data)
+    # return create_from_ordered_data(data)
+    return data
 
 
 def path_parent(path):
