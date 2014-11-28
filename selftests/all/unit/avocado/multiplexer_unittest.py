@@ -41,7 +41,7 @@ class TestAnySibling(unittest.TestCase):
         os = t.add_child(TreeNode('os'))
         linux = os.add_child(TreeNode('linux'))
         self.mint = linux.add_child(TreeNode('mint'))
-        self.fedora = linux.add_child(TreeNode('mint'))
+        self.fedora = linux.add_child(TreeNode('fedora'))
         win = os.add_child(TreeNode('win'))
         self.winxp = win.add_child(TreeNode('winxp'))
         self.win7 = win.add_child(TreeNode('win7'))
@@ -69,7 +69,6 @@ class TestAnySibling(unittest.TestCase):
 class TestMultiplex(unittest.TestCase):
 
     def setUp(self):
-
         t1 = TreeNode()
         e = t1.add_child(TreeNode('env'))
         e.add_child(TreeNode('production'))
@@ -87,7 +86,7 @@ class TestMultiplex(unittest.TestCase):
         st = t2.add_child(TreeNode('tests')).add_child(TreeNode('sync_test'))
         st.add_child(TreeNode('standard'))
         st.add_child(TreeNode('aggressive'))
-        pt = t2.add_child(TreeNode('tests')).add_child(TreeNode('ping_test'))
+        pt = t2.children[1].add_child(TreeNode('ping_test'))
         pt.add_child(TreeNode('standard'))
         pt.add_child(TreeNode('aggressive'))
         self.tree2 = t2
