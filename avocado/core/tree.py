@@ -48,7 +48,9 @@ class TreeNode(object):
         self.name = name
         self.value = value
         self.parent = parent
-        self.children = children
+        self.children = []
+        for child in children:
+            self.add_child(child)
 
     def __repr__(self):
         return 'TreeNode(name=%r)' % self.name
@@ -153,12 +155,16 @@ class TreeNode(object):
                                      compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
 
-    def _ascii_art(self, char1='-', show_internal=True, compact=False, attributes=None):
+    def _ascii_art(self, char1='-', show_internal=True, compact=False,
+                   attributes=None):
         if attributes is None:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        node_name = ', '.join(map(str, [getattr(self, v)
+                                        for v in attributes
+                                        if hasattr(self, v)]))
 
-        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
+        LEN = max(3, len(node_name)
+                  if not self.children or show_internal else 3)
         PAD = ' ' * LEN
         PA = ' ' * (LEN - 1)
         if not self.is_leaf:
@@ -173,7 +179,8 @@ class TreeNode(object):
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._ascii_art(char2, show_internal, compact, attributes)
+                (clines, mid) = c._ascii_art(char2, show_internal, compact,
+                                             attributes)
                 mids.append(mid + len(result))
                 result.extend(clines)
                 if not compact:
@@ -181,7 +188,8 @@ class TreeNode(object):
             if not compact:
                 result.pop()
             (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = [PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1) + [PAD] * (end - hi)
+            prefixes = ([PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1)
+                        + [PAD] * (end - hi))
             mid = (lo + hi) / 2
             prefixes[mid] = char1 + '-' * (LEN - 2) + prefixes[mid][-1]
             result = [p + l for (p, l) in zip(prefixes, result)]
@@ -199,13 +207,49 @@ class TreeNode(object):
         return self
 
 
+class Value(tuple):
+    pass
+
+
+def tree_node_from_values(name, values):
+    node_children = []
+    node_values = []
+    for value in values:
+        if isinstance(value, TreeNode):
+            node_children.append(value)
+        else:
+            node_values.append(value)
+    return TreeNode(name, dict(node_values), children=node_children)
+
+
 def ordered_load(stream, Loader=yaml.Loader,
                  object_pairs_hook=collections.OrderedDict):
     class OrderedLoader(Loader):
         pass
+
+    def mapping_loader(loader, node):
+        def is_node(values):
+            if (isinstance(values, dict)
+                or (isinstance(values, list)
+                    and isinstance(values[0], (Value, TreeNode)))):
+                return True
+
+        _value = loader.construct_pairs(node)
+        print _value
+        objects = []
+        for name, values in _value:
+            if is_node(values):    # New node
+                objects.append(tree_node_from_values(name, values))
+            elif values is None:            # Empty node
+                objects.append(TreeNode(name))
+            elif isinstance(values, list) and isinstance(values[0],
+                                                         (Value, TreeNode)):
+                objects.append(TreeNode(name, dict(values)))
+            else:                           # Values
+                objects.append(Value((name, values)))
+        return objects
     OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                                  lambda loader, node:
-                                  object_pairs_hook(loader.construct_pairs(node)))
+                                  mapping_loader)
     return yaml.load(stream, OrderedLoader)
 
 
@@ -240,7 +284,8 @@ def create_from_ordered_data(data, tree=None, root=None, name=''):
 
 def create_from_yaml(input_yaml):
     data = read_ordered_yaml(input_yaml)
-    return create_from_ordered_data(data)
+    # return create_from_ordered_data(data)
+    return data
 
 
 def path_parent(path):
