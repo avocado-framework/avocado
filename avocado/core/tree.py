@@ -37,6 +37,12 @@ import collections
 import yaml
 
 
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+
 class TreeNode(object):
 
     def __init__(self, name='', value=None, parent=None, children=None):
@@ -257,9 +263,9 @@ def _create_from_yaml(stream):
             else:                           # Values
                 objects.append(Value((name, values)))
         return objects
-    yaml.Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                                mapping_to_tree_loader)
-    return tree_node_from_values('', yaml.load(stream, yaml.Loader))
+    Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                           mapping_to_tree_loader)
+    return tree_node_from_values('', yaml.load(stream, Loader))
 
 
 def create_from_yaml(fileobj):
