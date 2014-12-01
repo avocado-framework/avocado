@@ -572,7 +572,9 @@ class DropinTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
-            result = process.run(self.path, verbose=True)
+            test_params = {str(key): str(val)
+                           for key, val in self.params.iteritems()}
+            result = process.run(self.path, verbose=True, env=test_params)
             self._log_detailed_cmd_info(result)
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
