@@ -36,6 +36,10 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 import collections
 
 import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 
 class TreeNode(object):
@@ -49,6 +53,19 @@ class TreeNode(object):
         self.value = value
         self.parent = parent
         self.children = children
+
+    def get_child(self, child):
+        for _child in self.children:
+            if child == _child:
+                return _child
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            if self.name == other:
+                return True
+        else:
+            super(TreeNode, self).__eq__(other)
+        return False
 
     def __repr__(self):
         return 'TreeNode(name=%r)' % self.name
@@ -115,7 +132,7 @@ class TreeNode(object):
     def get_environment(self):
         def update_or_extend(target, source):
             for k, _ in source.items():
-                if target.has_key(k) and isinstance(target[k], list):
+                if k in target and isinstance(target[k], list):
                     target[k].extend(source[k])
                 else:
                     if isinstance(source[k], list):
@@ -153,12 +170,16 @@ class TreeNode(object):
                                      compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
 
-    def _ascii_art(self, char1='-', show_internal=True, compact=False, attributes=None):
+    def _ascii_art(self, char1='-', show_internal=True, compact=False,
+                   attributes=None):
         if attributes is None:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        node_name = ', '.join(map(str, [getattr(self, v)
+                                        for v in attributes
+                                        if hasattr(self, v)]))
 
-        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
+        LEN = max(3,
+                  len(node_name) if not self.children or show_internal else 3)
         PAD = ' ' * LEN
         PA = ' ' * (LEN - 1)
         if not self.is_leaf:
@@ -173,7 +194,8 @@ class TreeNode(object):
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._ascii_art(char2, show_internal, compact, attributes)
+                (clines, mid) = c._ascii_art(char2, show_internal, compact,
+                                             attributes)
                 mids.append(mid + len(result))
                 result.extend(clines)
                 if not compact:
@@ -181,7 +203,8 @@ class TreeNode(object):
             if not compact:
                 result.pop()
             (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = [PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1) + [PAD] * (end - hi)
+            prefixes = ([PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1)
+                        + [PAD] * (end - hi))
             mid = (lo + hi) / 2
             prefixes[mid] = char1 + '-' * (LEN - 2) + prefixes[mid][-1]
             result = [p + l for (p, l) in zip(prefixes, result)]
@@ -199,13 +222,25 @@ class TreeNode(object):
         return self
 
 
-def ordered_load(stream, Loader=yaml.Loader,
-                 object_pairs_hook=collections.OrderedDict):
+class DebugTreeNode(TreeNode):
+
+    """ Stores node/values source files """
+
+    def __init__(self, name='', value=None, parent=None, children=None,
+                 mux=None):
+        super(DebugTreeNode, self).__init__(name, value, parent, children)
+        self.mux = mux
+        self.value_mux = {}
+
+
+def ordered_load(stream, Loader=Loader,
+                 mapping_cls=collections.OrderedDict):
     class OrderedLoader(Loader):
         pass
-    OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    mapping_tag = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
+    OrderedLoader.add_constructor(mapping_tag,
                                   lambda loader, node:
-                                  object_pairs_hook(loader.construct_pairs(node)))
+                                  mapping_cls(loader.construct_pairs(node)))
     return yaml.load(stream, OrderedLoader)
 
 
@@ -217,30 +252,49 @@ def read_ordered_yaml(fileobj):
     return data
 
 
-def create_from_ordered_data(data, tree=None, root=None, name=''):
-    if tree is None:
-        tree = TreeNode(name)
-    if root is None:
-        root = tree
+def process_tree_from_data(data, tree, mux=None):
+    """
+    Recursive function; creates tree structure from dicts.
+    :param data: dict-structured data to be processed into tree
+    :param tree: current processed node
+    :param root: root of the tree
+    """
+    def new_node(key, mux):
+        if not mux:
+            return TreeNode(key)
+        else:
+            return DebugTreeNode(key, mux=mux)
     if isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                node = TreeNode(key)
-                tree.add_child(node)
-                create_from_ordered_data(value, node, root)
-            elif value is None:
-                # Leaf without variable
-                node = TreeNode(key)
-                tree.add_child(node)
-            else:
-                # Node/leaf with variable
+        for key, value in data.items():     # Iter children
+            if isinstance(value, dict):     # another node
+                if key in tree.children:    # - Existing
+                    node = tree.get_child(key)
+                else:                       # - New one
+                    node = new_node(key, mux)
+                    tree.add_child(node)
+                process_tree_from_data(value, node, mux)
+            elif value is None:                 # another node without value
+                if key not in tree.children:    # - New one
+                    node = new_node(key, mux)
+                    tree.add_child(node)
+            else:                           # value
                 tree.value[key] = value
-    return root
+                if mux:
+                    tree.value_mux[key] = mux
+    else:
+        msg = ("process_tree_from_data got unsupported type '%s' data '%s'"
+               % (type(data), data))
+        if mux:
+            msg += " parsed from file %s" % mux
+        raise ValueError()
 
 
-def create_from_yaml(input_yaml):
-    data = read_ordered_yaml(input_yaml)
-    return create_from_ordered_data(data)
+def create_from_yaml(input_yamls, debug=False):
+    tree = TreeNode('')
+    for input_yaml in input_yamls:
+        data = read_ordered_yaml(open(input_yaml))
+        process_tree_from_data(data, tree, input_yaml if debug else None)
+    return tree
 
 
 def path_parent(path):

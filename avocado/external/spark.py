@@ -546,7 +546,7 @@ class GenericParser:
                         self.links[key] = []
                         next.append(new)
                     self.links[key].append((ptr, None))
-                    #INLINED --^
+                    # INLINED --^
                     #nk = self.goto(k, None)
                     nk = self.edges.get((k, None), None)
                     if nk is not None:
@@ -555,7 +555,7 @@ class GenericParser:
                         new = (nk, i + 1)
                         if new not in next:
                             next.append(new)
-                        #INLINED --^
+                        # INLINED --^
             else:
                 add = self.gotoST(state, token)
                 for k in add:
@@ -578,7 +578,7 @@ class GenericParser:
                     if k is not None:
                         why = (item, i, rule)
                         pptr = (pitem, parent)
-                        #self.add(cur, (k, pparent),
+                        # self.add(cur, (k, pparent),
                         #        i, pptr, why)
                         #INLINED --v
                         new = (k, pparent)
@@ -587,7 +587,7 @@ class GenericParser:
                             self.links[key] = []
                             cur.append(new)
                         self.links[key].append((pptr, why))
-                        #INLINED --^
+                        # INLINED --^
                         #nk = self.goto(k, None)
                         nk = self.edges.get((k, None), None)
                         if nk is not None:
@@ -596,7 +596,7 @@ class GenericParser:
                             new = (nk, i)
                             if new not in cur:
                                 cur.append(new)
-                            #INLINED --^
+                            # INLINED --^
 
     def predecessor(self, key, causal):
         for p, c in self.links[key]:
@@ -621,7 +621,7 @@ class GenericParser:
             rule = self.ambiguity(self.newrules[nt])
         else:
             rule = self.newrules[nt][0]
-        #print rule
+        # print rule
 
         rhs = rule[1]
         attr = [None] * len(rhs)
@@ -640,7 +640,7 @@ class GenericParser:
         rule = choices[0]
         if len(choices) > 1:
             rule = self.ambiguity(choices)
-        #print rule
+        # print rule
 
         rhs = rule[1]
         attr = [None] * len(rhs)
@@ -652,7 +652,7 @@ class GenericParser:
                     attr[i] = tokens[k - 1]
                     key = (item, k)
                     item, k = self.predecessor(key, None)
-            #elif self.isnullable(sym):
+            # elif self.isnullable(sym):
             elif self._NULLABLE == sym[0:len(self._NULLABLE)]:
                 attr[i] = self.deriveEpsilon(sym)
             else:
