@@ -57,35 +57,27 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = 2
         self.run_and_check(cmd_line, expected_rc)
 
-    def test_run_mplex_sleeptest(self):
-        cmd_line = './scripts/avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+    def test_run_mplex_passtest(self):
+        cmd_line = './scripts/avocado run passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
-        # A typical sleeptest has about 14 lines of output,
-        # so we expect the full job log has at least 3 times
+        # A typical pass has about 14 lines of output,
+        # so we expect the full job log has at least 4 times
         # this value. If that is not the case, something is wrong with
         # the output.
-        self.run_and_check(cmd_line, expected_rc, 14*3)
+        self.run_and_check(cmd_line, expected_rc, 14*4)
 
-    def test_run_mplex_noalias_sleeptest(self):
-        cmd_line = './scripts/avocado run examples/tests/sleeptest.py --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
-        expected_rc = 0
-        # A typical sleeptest has about 14 lines of output,
-        # so we expect the full job log has at least 3 times
-        # this value. If that is not the case, something is wrong with
-        # the output.
-        self.run_and_check(cmd_line, expected_rc, 14*3)
-
-    def test_run_mplex_doublesleep(self):
-        cmd_line = './scripts/avocado run sleeptest sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
-        expected_rc = 0
-        self.run_and_check(cmd_line, expected_rc)
+    def test_run_mplex_doublepass(self):
+        cmd_line = './scripts/avocado run passtest passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        # Should run 2-times 4 variants of pass test
+        self.run_and_check(cmd_line, expected_rc=0, expected_lines=2*4*14)
 
     def test_run_mplex_failtest(self):
-        cmd_line = './scripts/avocado run sleeptest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run passtest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_timeout(self):
+        # FIXME: Use envtest and check the printed value instead of wait
         with tempfile.NamedTemporaryFile(delete=False) as multiplex_file:
             multiplex_file.write(timeout_multiplex)
             multiplex_file.close()
