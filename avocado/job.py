@@ -120,7 +120,7 @@ class TestRunner(object):
 
         else:
             test_class = test.DropinTest
-            test_instance = test_class(path=test_path,
+            test_instance = test_class(params=params, path=test_path,
                                        base_logdir=self.job.logdir,
                                        job=self.job)
 
