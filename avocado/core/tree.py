@@ -34,8 +34,13 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 """
 
 import collections
-
 import yaml
+
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 
 class TreeNode(object):
@@ -48,7 +53,9 @@ class TreeNode(object):
         self.name = name
         self.value = value
         self.parent = parent
-        self.children = children
+        self.children = []
+        for child in children:
+            self.add_child(child)
 
     def __repr__(self):
         return 'TreeNode(name=%r)' % self.name
@@ -63,8 +70,21 @@ class TreeNode(object):
     def __iter__(self):
         return self.iter_leaves()
 
+    def __eq__(self, other):
+        if isinstance(other, str):  # Compare names
+            if self.name == other:
+                return True
+        elif isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
     def add_child(self, node):
         if isinstance(node, self.__class__):
+            if node.name in self.children:
+                raise NotImplementedError('Adding children with the same '
+                                          'name is not implemented yet.'
+                                          '\nnode: %s\nchildren: %s'
+                                          % (node, self.children))
             node.parent = self
             self.children.append(node)
         else:
@@ -115,7 +135,7 @@ class TreeNode(object):
     def get_environment(self):
         def update_or_extend(target, source):
             for k, _ in source.items():
-                if target.has_key(k) and isinstance(target[k], list):
+                if k in target and isinstance(target[k], list):
                     target[k].extend(source[k])
                 else:
                     if isinstance(source[k], list):
@@ -153,12 +173,16 @@ class TreeNode(object):
                                      compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
 
-    def _ascii_art(self, char1='-', show_internal=True, compact=False, attributes=None):
+    def _ascii_art(self, char1='-', show_internal=True, compact=False,
+                   attributes=None):
         if attributes is None:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v) for v in attributes if hasattr(self, v)]))
+        node_name = ', '.join(map(str, [getattr(self, v)
+                                        for v in attributes
+                                        if hasattr(self, v)]))
 
-        LEN = max(3, len(node_name) if not self.children or show_internal else 3)
+        LEN = max(3, len(node_name)
+                  if not self.children or show_internal else 3)
         PAD = ' ' * LEN
         PA = ' ' * (LEN - 1)
         if not self.is_leaf:
@@ -173,7 +197,8 @@ class TreeNode(object):
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._ascii_art(char2, show_internal, compact, attributes)
+                (clines, mid) = c._ascii_art(char2, show_internal, compact,
+                                             attributes)
                 mids.append(mid + len(result))
                 result.extend(clines)
                 if not compact:
@@ -181,7 +206,8 @@ class TreeNode(object):
             if not compact:
                 result.pop()
             (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = [PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1) + [PAD] * (end - hi)
+            prefixes = ([PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1)
+                        + [PAD] * (end - hi))
             mid = (lo + hi) / 2
             prefixes[mid] = char1 + '-' * (LEN - 2) + prefixes[mid][-1]
             result = [p + l for (p, l) in zip(prefixes, result)]
@@ -199,48 +225,61 @@ class TreeNode(object):
         return self
 
 
-def ordered_load(stream, Loader=yaml.Loader,
-                 object_pairs_hook=collections.OrderedDict):
-    class OrderedLoader(Loader):
+def _create_from_yaml(stream):
+    """ Create tree structure from yaml stream """
+    class Value(tuple):
+
+        """ Used to mark values to simplify checking for node vs. value """
         pass
-    OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                                  lambda loader, node:
-                                  object_pairs_hook(loader.construct_pairs(node)))
-    return yaml.load(stream, OrderedLoader)
+
+    def tree_node_from_values(name, values):
+        """ Create $name node and add values  """
+        node_children = []
+        node_values = []
+        for value in values:
+            if isinstance(value, TreeNode):
+                node_children.append(value)
+            else:
+                node_values.append(value)
+        return TreeNode(name, dict(node_values), children=node_children)
+
+    def mapping_to_tree_loader(loader, node):
+        def is_node(values):
+            if isinstance(values, dict):    # dicts are always nodes
+                return True
+            elif (isinstance(values, list) and values
+                  and isinstance(values[0], (Value, TreeNode))):
+                # When any value is TreeNode or Value, all of them are already
+                # parsed and we can wrap them into self
+                return True
+
+        _value = loader.construct_pairs(node)
+        objects = []
+        for name, values in _value:
+            if is_node(values):    # New node
+                objects.append(tree_node_from_values(name, values))
+            elif values is None:            # Empty node
+                objects.append(TreeNode(name))
+            else:                           # Values
+                objects.append(Value((name, values)))
+        return objects
+    Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+                           mapping_to_tree_loader)
+    return tree_node_from_values('', yaml.load(stream, Loader))
 
 
-def read_ordered_yaml(fileobj):
+def create_from_yaml(fileobj):
+    """
+    Create tree structure from yaml-like file
+    :param fileobj: File object to be processed
+    :raise SyntaxError: When yaml-file is corrupted
+    :return: Root of the created tree structure
+    """
     try:
-        data = ordered_load(fileobj.read())
+        data = _create_from_yaml(fileobj.read())
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
         raise SyntaxError(err)
     return data
-
-
-def create_from_ordered_data(data, tree=None, root=None, name=''):
-    if tree is None:
-        tree = TreeNode(name)
-    if root is None:
-        root = tree
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                node = TreeNode(key)
-                tree.add_child(node)
-                create_from_ordered_data(value, node, root)
-            elif value is None:
-                # Leaf without variable
-                node = TreeNode(key)
-                tree.add_child(node)
-            else:
-                # Node/leaf with variable
-                tree.value[key] = value
-    return root
-
-
-def create_from_yaml(input_yaml):
-    data = read_ordered_yaml(input_yaml)
-    return create_from_ordered_data(data)
 
 
 def path_parent(path):
