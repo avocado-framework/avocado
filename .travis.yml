@@ -20,6 +20,6 @@ script:
     - inspekt lint
     - inspekt indent
     - inspekt style
-    - ./selftests/run selftests/all/doc
-    - ./selftests/run selftests/all/functional
-    - ./selftests/run selftests/all/unit
+    - ./selftests/run -v selftests/all/doc
+    - ./selftests/run -v selftests/all/functional
+    - ./selftests/run -v selftests/all/unit
