@@ -18,6 +18,9 @@ Reads the avocado settings from a .ini file (from python ConfigParser).
 import ConfigParser
 import os
 import sys
+import shutil
+
+from avocado.utils import path
 
 if 'VIRTUAL_ENV' in os.environ:
     CFG_DIR = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
@@ -158,10 +161,16 @@ class Settings(object):
                 self.config_path = config_path_intree
                 self.intree = True
             else:
-                if config_local:
-                    self.config_path = config_path_local
-                else:
-                    self.config_path = config_path_system
+                # If there's not a local config, create one
+                # based on the global config
+                if not config_local:
+                    path.init_dir(_config_dir_local)
+                    with open(config_path_local, 'w') as config_local_fileobj:
+                        config_local_fileobj.write('# You can use this file to override configuration values from '
+                                                   '%s\n' % config_path_system)
+                self.config_path = config_path_local
+                self.config.read(config_path_local)
+                self.config_paths.append(config_path_local)
         else:
             self.config_path = config_path
         self.config.read(self.config_path)
