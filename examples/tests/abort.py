@@ -11,6 +11,7 @@ class abort(test.Test):
     """
     A test that just calls abort() (and abort).
     """
+    default_params = {'timeout': 2.0}
 
     def action(self):
         os.abort()
