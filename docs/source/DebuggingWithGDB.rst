@@ -1,19 +1,31 @@
 Debugging with GDB
 ==================
 
-Avocado has support for transparently debugging binaries inside the GNU
-Debugger. This means that any test that uses :mod:`avocado.utils.process`
+Avocado has two levels of GDB support, one by using the Avocado GDB APIs
+to fire up GDB and interact with it, and other by transparently debugging
+binaries inside the GNU Debugger based on command line only options. This
+later option means that any test that uses :mod:`avocado.utils.process`
 can transparently inspect processes during test run time.
 
-Usage
------
+API
+---
+
+Avocado's GDB module, provides three main classes that lets a test writer
+interact with a `gdb` process, a `gdbserver` process and also use the GDB
+remote protocol for interaction with a remote target.
+
+Please refer to :mod:`avocado.gdb` for more information.
+
+
+Transparent Debugging Usage
+---------------------------
 
 This feature is implemented as a plugin, that adds the `--gdb-run-bin` option
 to the avocado `run` command. For a detailed explanation please consult the
 avocado man page.
 
 Caveats
--------
+~~~~~~~
 
 Currently, when using the Avocado GDB plugin, that is, when using the
 `--gdb-run-bin` option, there are some caveats you should be aware of:

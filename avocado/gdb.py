@@ -16,9 +16,13 @@
 Module that provides communication with GDB via its GDB/MI interpreter
 """
 
+__all__ = ['GDB', 'GDBServer', 'GDBRemote']
+
+
 import os
 import time
 import fcntl
+import socket
 import tempfile
 import subprocess
 
@@ -29,11 +33,61 @@ GDB_PROMPT = '(gdb)'
 GDB_EXIT = '^exit'
 GDB_BREAK_CONTITIONS = [GDB_PROMPT, GDB_EXIT]
 
+#: How the remote protocol signals a transmission success (in ACK mode)
+REMOTE_TRANSMISSION_SUCCESS = '+'
+
+#: How the remote protocol signals a transmission failure (in ACK mode)
+REMOTE_TRANSMISSION_FAILURE = '-'
+
+#: How the remote protocol flags the start of a packet
+REMOTE_PREFIX = '$'
+
+#: How the remote protocol flags the end of the packet payload, and that the
+#: two digits checksum follow
+REMOTE_DELIMITER = '#'
+
+#: Rather conservative default maximum packet size for clients using the
+#: remote protocol. Individual connections can ask (and do so by default)
+#: the server about the maximum packet size they can handle.
+REMOTE_MAX_PACKET_SIZE = 1024
+
 
 class UnexpectedResponseError(Exception):
 
     '''
     A response different from the one expected was received from GDB
+    '''
+    pass
+
+
+class ServerInitTimeoutError(Exception):
+
+    '''
+    Server took longer than expected to initialize itself properly
+    '''
+    pass
+
+
+class InvalidPacketError(Exception):
+
+    '''
+    Packet received has invalid format
+    '''
+    pass
+
+
+class NotConnectedError(Exception):
+
+    '''
+    GDBRemote is not connected to a remote GDB server
+    '''
+    pass
+
+
+class RetransmissionRequestedError(Exception):
+
+    '''
+    Message integrity was not validated and retransmission is being requested
     '''
     pass
 
@@ -122,6 +176,91 @@ def is_sigabrt(parsed_mi_msg):
 
 def is_fatal_signal(parsed_mi_msg):
     return is_sigsegv(parsed_mi_msg) or is_sigabrt(parsed_mi_msg)
+
+
+def format_as_hex(char):
+    """
+    Formats a single ascii character as a lower case hex string
+
+    :param char: a single ascii character
+    :type char: str
+    :returns: the character formatted as a lower case hex string
+    :rtype: str
+    """
+    return "%2x" % ord(char)
+
+
+def string_to_hex(text):
+    """
+    Formats a string of text into an hex representation
+
+    :param text: a multi character string
+    :type text: str
+    :returns: the string converted to an hex representation
+    :rtype: str
+    """
+    return "".join(map(format_as_hex, text))
+
+
+def remote_checksum(input):
+    '''
+    Calculates a remote message checksum
+
+    :param input: the message input payload, without the start and end markers
+    :type input: str
+    :returns: two digit checksum
+    :rtype: str
+    '''
+    sum = 0
+    for i in input:
+        sum += ord(i)
+    result = sum % 256
+
+    hexa = "%2x" % result
+    return hexa.lower()
+
+
+def remote_encode(data):
+    """
+    Encodes a command
+
+    That is, add prefix, suffix and checksum
+
+    :param command_data: the command data payload
+    :type command_data: str
+    :returns: the encoded command, ready to be sent to a remote GDB
+    :rtype: str
+    """
+    return "$%s#%s" % (data, remote_checksum(data))
+
+
+def remote_decode(data):
+    """
+    Decodes a packet and returns its payload
+
+    :param command_data: the command data payload
+    :type command_data: str
+    :returns: the encoded command, ready to be sent to a remote GDB
+    :rtype: str
+    """
+    if data[0] != REMOTE_PREFIX:
+        raise InvalidPacketError
+
+    if data[-3] != REMOTE_DELIMITER:
+        raise InvalidPacketError
+
+    payload = data[1:-3]
+    checksum = data[-2:]
+
+    if payload == '':
+        expected_checksum = '00'
+    else:
+        expected_checksum = remote_checksum(payload)
+
+    if checksum != expected_checksum:
+        raise InvalidPacketError
+
+    return payload
 
 
 class CommandResult(object):
@@ -451,8 +590,26 @@ class GDBServer(object):
     #: The range from which a port to GDB server will try to be allocated from
     PORT_RANGE = (20000, 20999)
 
-    def __init__(self, path='/usr/bin/gdbserver', port=None, *extra_args):
+    #: The time to optionally wait for the server to initialize itself and be
+    #: ready to accept new connections
+    INIT_TIMEOUT = 2.0
 
+    def __init__(self, path='/usr/bin/gdbserver', port=None,
+                 wait_until_running=True, *extra_args):
+        """
+        Initializes a new gdbserver instance
+
+        :param path: location of the gdbserver binary
+        :type path: str
+        :param port: tcp port number to listen on for incoming connections
+        :type port: int
+        :param wait_until_running: wait until the gdbserver is running and
+                                   accepting connections. It may take a little
+                                   after the process is started and it is
+                                   actually bound to the aloccated port
+        :type wait_until_running: bool
+        :param extra_args: optional extra arguments to be passed to gdbserver
+        """
         self.path = path
         args = [self.path]
         args += self.REQUIRED_ARGS
@@ -474,6 +631,25 @@ class GDBServer(object):
                                         stdout=self.stdout,
                                         stderr=self.stderr,
                                         close_fds=True)
+
+        if wait_until_running:
+            self._wait_until_running()
+
+    def _wait_until_running(self):
+        init_time = time.time()
+        connection_ok = False
+        c = GDB()
+        while time.time() - init_time < self.INIT_TIMEOUT:
+            try:
+                c.connect(self.port)
+                connection_ok = True
+                break
+            except:
+                time.sleep(0.1)
+        c.disconnect()
+        c.exit()
+        if not connection_ok:
+            raise ServerInitTimeoutError
 
     def exit(self, force=True):
         """
@@ -506,3 +682,110 @@ class GDBServer(object):
             self.process.wait()
             self.stdout.close()
             self.stderr.close()
+
+
+class GDBRemote(object):
+
+    def __init__(self, host, port, no_ack_mode=True, extended_mode=True):
+        """
+        Initializes a new GDBRemote object.
+
+        A GDBRemote acts like a client that speaks the GDB remote protocol,
+        documented at:
+
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html
+
+        Caveat: we currently do not support communicating with devices, only
+        with TCP sockets. This limitation is basically due to the lack of
+        use cases that justify an implementation, but not due to any technical
+        shortcoming.
+
+        :param host: the IP address or host name
+        :type host: str
+        :param port: the port number where the the remote GDB is listening on
+        :type port: int
+        :param no_ack_mode: if the packet transmission confirmation mode should
+                            be disabled
+        :type no_ack_mode: bool
+        :param extended_mode: if the remote extended mode should be enabled
+        :type param extended_mode: bool
+        """
+        self.host = host
+        self.port = port
+
+        # Temporary holder for the class init attributes
+        self._no_ack_mode = no_ack_mode
+        self.no_ack_mode = False
+        self._extended_mode = extended_mode
+        self.extended_mode = False
+
+        self._socket = None
+
+    def cmd(self, command_data, expected_response=None):
+        """
+        Sends a command data to a remote gdb server
+
+        Limitations: the current version does not deal with retransmissions.
+
+        :param command_data: the remote command to send the the remote stub
+        :type command_data: str
+        :param expected_response: the (optional) response that is expected
+                                  as a response for the command sent
+        :type expected_response: str
+        :raises: RetransmissionRequestedError, UnexpectedResponseError
+        :returns: raw data read from from the remote server
+        :rtype: str
+        """
+        if self._socket is None:
+            raise NotConnectedError
+
+        data = remote_encode(command_data)
+        sent = self._socket.send(data)
+
+        if not self.no_ack_mode:
+            transmission_result = self._socket.recv(1)
+            if transmission_result == REMOTE_TRANSMISSION_FAILURE:
+                raise RetransmissionRequestedError
+
+        result = self._socket.recv(REMOTE_MAX_PACKET_SIZE)
+        response_payload = remote_decode(result)
+
+        if expected_response is not None:
+            if expected_response != response_payload:
+                raise UnexpectedResponseError
+
+        return response_payload
+
+    def set_extended_mode(self):
+        """
+        Enable extended mode. In extended mode, the remote server is made
+        persistent. The 'R' packet is used to restart the program being
+        debugged. Original documentation at:
+
+        https://sourceware.org/gdb/current/onlinedocs/gdb/Packets.html#extended-mode
+        """
+        self.cmd("!", "OK")
+        self.extended_mode = True
+
+    def start_no_ack_mode(self):
+        """
+        Request that the remote stub disable the normal +/- protocol
+        acknowledgments. Original documentation at:
+
+        https://sourceware.org/gdb/current/onlinedocs/gdb/General-Query-Packets.html#QStartNoAckMode
+        """
+        self.cmd("QStartNoAckMode", "OK")
+        self.no_ack_mode = True
+
+    def connect(self):
+        """
+        Connects to the remote target and initializes the chosen modes
+        """
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((self.host, self.port))
+
+        if self._no_ack_mode:
+            self.start_no_ack_mode()
+
+        if self._extended_mode:
+            self.set_extended_mode()
