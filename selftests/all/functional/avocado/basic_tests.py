@@ -180,8 +180,7 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
         result = process.run(cmd_line, ignore_status=True)
         self.assertNotEqual(0, result.exit_status)
-        self.assertIn('Error', result.stderr)
-        self.assertIn('needs to be a 40 digit hex', result.stderr)
+        self.assertIn('needs to be a 40 digit hex', result.stdout)
 
     def test_valid_unique_id(self):
         cmd_line = './scripts/avocado run --force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 skiptest'
