@@ -16,8 +16,12 @@ import gzip
 import logging
 import os
 import shutil
-import subprocess
 import time
+
+try:
+    import subprocess32 as subprocess
+except ImportError:
+    import subprocess
 
 from avocado import utils
 from avocado.linux import software_manager
