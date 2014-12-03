@@ -10,6 +10,7 @@ echo "Avocado Test logdir: $AVOCADO_TEST_LOGDIR"
 echo "Avocado Test logfile: $AVOCADO_TEST_LOGFILE"
 echo "Avocado Test outputdir: $AVOCADO_TEST_OUTPUTDIR"
 echo "Avocado Test sysinfodir: $AVOCADO_TEST_SYSINFODIR"
+echo "Custom variable: $CUSTOM_VARIABLE"
 
 test -d "$AVOCADO_TEST_BASEDIR" -a \
      -d "$AVOCADO_TEST_WORKDIR" -a \

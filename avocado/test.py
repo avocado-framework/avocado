@@ -572,6 +572,8 @@ class DropinTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
+            os.environ.update({str(key): str(val)
+                               for key, val in self.params.iteritems()})
             result = process.run(self.path, verbose=True)
             self._log_detailed_cmd_info(result)
         except exceptions.CmdError, details:
