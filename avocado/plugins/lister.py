@@ -42,7 +42,7 @@ class PluginsList(plugin.Plugin):
             if clength > blength:
                 blength = clength
 
-        format_str = "    %-" + str(blength) + "s - %s %s"
+        format_str = "    %-" + str(blength) + "s %s %s"
         for plug in sorted(pm.plugins):
             if plug.enabled:
                 status = "(Enabled)"
