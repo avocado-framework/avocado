@@ -264,11 +264,15 @@ if __name__ == "__main__":
 
 # The following is the client part of the module.
 
-import subprocess
 import time
 import signal
 import re
 import threading
+
+try:
+    import subprocess32 as subprocess
+except ImportError:
+    import subprocess
 
 from avocado.utils import astring
 from avocado.utils import data_factory
