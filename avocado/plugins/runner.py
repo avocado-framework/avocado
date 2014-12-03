@@ -25,6 +25,7 @@ from avocado.core import output
 from avocado.utils import path
 from avocado import sysinfo
 from avocado import job
+from avocado.settings import settings
 
 
 class TestLister(plugin.Plugin):
@@ -66,6 +67,7 @@ class TestLister(plugin.Plugin):
                     blength = clength
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
         format_string = "    %-" + str(blength) + "s %s"
+        view.notify(event="message", msg='Config file path: %s' % settings.config_path)
         view.notify(event='message', msg='Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
             view.notify(event='message', msg=format_string % ('Alias', 'Path'))
