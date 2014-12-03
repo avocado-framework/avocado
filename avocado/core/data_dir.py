@@ -19,9 +19,9 @@ Library used to let avocado tests find important paths in the system.
 
 The general reasoning to find paths is:
 
-* When running in tree, don't honor settings.ini. Also, we get to
+* When running in tree, don't honor avocado.conf. Also, we get to
   run/display the example tests shipped in tree.
-* When settings.ini is in /etc/avocado, or ~/.config/avocado, then honor
+* When avocado.conf is in /etc/avocado, or ~/.config/avocado, then honor
   the values there as much as possible. If they point to a location where
   we can't write to, use the next best location available.
 * The next best location is the default system wide one.
