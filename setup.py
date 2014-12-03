@@ -49,6 +49,15 @@ def get_docs_dir():
         return settings_system_wide
 
 
+def get_wrappers_dir():
+    settings_system_wide = os.path.join('/usr', 'share', 'avocado', 'wrappers')
+    settings_local_install = 'wrappers'
+    if 'VIRTUAL_ENV' in os.environ:
+        return settings_local_install
+    else:
+        return settings_system_wide
+
+
 def get_data_files():
     data_files = [(get_settings_dir(), ['etc/settings.ini'])]
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
@@ -57,6 +66,7 @@ def get_data_files():
         for f in glob.glob(fmt_str):
             data_files += [(os.path.join(get_tests_dir(), os.path.basename(data_dir)), [f])]
     data_files.append((get_docs_dir(), ['man/avocado.rst']))
+    data_files += [(get_wrappers_dir(), glob.glob('examples/wrappers/*.sh'))]
     return data_files
 
 
