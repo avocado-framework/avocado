@@ -25,7 +25,11 @@ import fcntl
 import socket
 import tempfile
 import commands
-import subprocess
+
+try:
+    import subprocess32 as subprocess
+except ImportError:
+    import subprocess
 
 from avocado.utils import network
 from avocado.external import gdbmi_parser

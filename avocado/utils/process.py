@@ -20,12 +20,18 @@ import logging
 import os
 import StringIO
 import signal
-import subprocess
 import time
 import stat
 import shlex
 import shutil
 import threading
+
+try:
+    import subprocess32 as subprocess
+    SUBPROCESS32_SUPPORT = True
+except ImportError:
+    import subprocess
+    SUBPROCESS32_SUPPORT = False
 
 from avocado import gdb
 from avocado import runtime
