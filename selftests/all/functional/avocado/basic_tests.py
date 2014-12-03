@@ -128,12 +128,15 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --xunit - abort'
         result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        excerpt = 'Test process aborted'
         expected_rc = 1
         unexpected_rc = 3
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.assertIn(excerpt, output)
 
     def test_silent_output(self):
         os.chdir(basedir)
