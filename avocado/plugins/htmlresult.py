@@ -241,7 +241,6 @@ class HTML(plugin.Plugin):
 
     name = 'htmlresult'
     enabled = True
-    parser = None
 
     def configure(self, parser):
         self.parser = parser
