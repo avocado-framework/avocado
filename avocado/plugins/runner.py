@@ -68,13 +68,14 @@ class TestLister(plugin.Plugin):
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
         format_string = "    %-" + str(blength) + "s %s"
         view.notify(event="message", msg='Config file path: %s' % settings.config_path)
-        view.notify(event='message', msg='Tests dir: %s' % base_test_dir)
+        view.notify(event="minor", msg='')
+        view.notify(event="message", msg='Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:
-            view.notify(event='message', msg=format_string % ('Alias', 'Path'))
+            view.notify(event="minor", msg=format_string % ('Alias', 'Path'))
             for test_dir in test_dirs:
-                view.notify(event='minor', msg=format_string % test_dir)
+                view.notify(event="minor", msg=format_string % test_dir)
         else:
-            view.notify(event='error', msg='No tests were found on current tests dir')
+            view.notify(event="error", msg='No tests were found on current tests dir')
 
 
 class TestRunner(plugin.Plugin):
