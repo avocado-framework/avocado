@@ -61,8 +61,12 @@ examples of how to write tests on your own.
 
 %files examples
 %{_datadir}/avocado/tests
+%{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Dec  3 2014 Ruda Moura <rmoura@redhat.com> - 0.14.0-2
+- Include all wrappers scripts to examples subpackage.
+
 * Mon Oct 13 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.14.0-1
 - New upstream release
 
