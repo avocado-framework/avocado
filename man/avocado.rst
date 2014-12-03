@@ -483,7 +483,7 @@ FILES
 
 ::
 
- /etc/avocado/settings.ini
+ /etc/avocado/avocado.conf
     system wide configuration file
 
 BUGS

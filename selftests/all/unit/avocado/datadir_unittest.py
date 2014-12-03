@@ -42,7 +42,7 @@ class DataDirTest(unittest.TestCase):
 
     def testDataDirFromConfig(self):
         """
-        When settings.ini is present, honor the values coming from it.
+        When avocado.conf is present, honor the values coming from it.
         """
         stg = settings.Settings(self.config_file.name)
         # Trick the module to think we're on a system wide install

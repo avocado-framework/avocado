@@ -52,7 +52,7 @@ Native tests
 ------------
 
 Avocado looks for avocado "native" tests in some locations, the main one is in
-the config file ``/etc/avocado/settings.ini``, section ``runner``, ``test_dir``
+the config file ``/etc/avocado/avocado.conf``, section ``runner``, ``test_dir``
 key. You can list tests by::
 
     $ avocado list
