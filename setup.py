@@ -17,10 +17,7 @@ import glob
 import os
 # pylint: disable=E0611
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from distutils.core import setup
 
 import avocado.version
 
@@ -75,17 +72,6 @@ def _get_plugin_resource_files(path):
     return flist
 
 
-def get_requirements():
-    requirements = []
-    with open('requirements.txt', 'r') as req:
-        req_contents = req.read()
-        for line in req_contents.splitlines():
-            if not line.startswith("#"):
-                line = line.split("#")[0].strip()
-                requirements.append("%s" % line)
-    return requirements
-
-
 def get_long_description():
     with open('README.rst', 'r') as req:
         req_contents = req.read()
@@ -107,5 +93,4 @@ setup(name='avocado',
                 'avocado.plugins'],
       package_data={'avocado.plugins': _get_plugin_resource_files('avocado/plugins/resources')},
       data_files=get_data_files(),
-      scripts=['scripts/avocado'],
-      install_requires=get_requirements())
+      scripts=['scripts/avocado'])
