@@ -37,7 +37,9 @@ class ConfigOptions(plugin.Plugin):
 
     def run(self, args):
         view = output.View()
-        view.notify(event="message", msg='Config file path: %s' % settings.config_path)
+        view.notify(event="message", msg='Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            view.notify(event="message", msg='    %s' % cfg_path)
         view.notify(event="minor", msg='')
         if not args.datadir:
             blength = 0
