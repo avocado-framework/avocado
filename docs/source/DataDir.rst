@@ -26,4 +26,8 @@ avocado plugin called ``datadir`` to do that. You can run::
 The relevant API documentation and meaning of each of those data directories
 is in :mod:`avocado.core.data_dir`, so it's higly recommended you take a look.
 
+You may set your preferred data dirs by setting them in the avocado config files.
+The next section of the documentation explains how you can see and set config
+values that modify the behavior for the avocado utilities and plugins.
+
 [1] For example, autotest.
