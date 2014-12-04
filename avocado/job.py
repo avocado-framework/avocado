@@ -12,7 +12,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 #          Ruda Moura <rmoura@redhat.com>
-
 """
 Module that describes a sequence of automated test operations.
 """
@@ -21,28 +20,29 @@ import argparse
 import imp
 import logging
 import multiprocessing
+from multiprocessing.queues import SimpleQueue
 import os
-import sys
 import signal
+import sys
 import time
 import traceback
-import Queue
 
+from avocado import multiplexer
+from avocado import result
+from avocado import runtime
+from avocado import sysinfo
+from avocado import test
 from avocado.core import data_dir
+from avocado.core import error_codes
+from avocado.core import exceptions
+from avocado.core import job_id
 from avocado.core import output
 from avocado.core import status
-from avocado.core import exceptions
-from avocado.core import error_codes
-from avocado.core import job_id
+from avocado.plugins import jsonresult
+from avocado.plugins import xunit
 from avocado.utils import archive
 from avocado.utils import path
-from avocado import multiplexer
-from avocado import test
-from avocado import result
-from avocado import sysinfo
-from avocado import runtime
-from avocado.plugins import xunit
-from avocado.plugins import jsonresult
+from avocado.utils.wait import wait_for
 try:
     from avocado.plugins import htmlresult
     HTML_REPORT_SUPPORT = True
@@ -186,7 +186,7 @@ class TestRunner(object):
         failures = []
         self.sysinfo.start_job_hook()
         self.result.start_tests()
-        q = multiprocessing.Queue()
+        q = SimpleQueue()
         for params in params_list:
             p = multiprocessing.Process(target=self.run_test,
                                         args=(params, q,))
@@ -216,11 +216,12 @@ class TestRunner(object):
             while True:
                 try:
                     if time.time() >= time_deadline:
+                        logging.error("timeout")
                         os.kill(p.pid, signal.SIGUSR1)
                         break
 
-                    test_state = q.get(timeout=cycle_timeout)
-                    if test_state is not None:
+                    if wait_for(lambda: not q.empty(), cycle_timeout, 0.1):
+                        test_state = q.get()
                         if not test_state['running']:
                             break
                         else:
@@ -230,8 +231,7 @@ class TestRunner(object):
                                 if msg:
                                     self.job.view.notify(event='partial', msg=msg)
 
-                except Queue.Empty:
-                    if p.is_alive():
+                    elif p.is_alive():
                         if ctrl_c_count == 0:
                             self.job.result_proxy.notify_progress()
                     else:
@@ -264,9 +264,9 @@ class TestRunner(object):
 
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
-                try:
-                    test_state = q.get(timeout=cycle_timeout)
-                except Queue.Empty:
+                if wait_for(lambda: not q.empty(), cycle_timeout, 0.1):
+                    test_state = q.get()
+                else:
                     early_state['time_elapsed'] = time.time() - time_started
                     test_state = self._fill_aborted_test_state(early_state)
                     test_log = logging.getLogger('avocado.test')
