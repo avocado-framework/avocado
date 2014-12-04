@@ -646,9 +646,10 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 Environment Variables for Dropin Tests
 ======================================
 
-Avocado exports some environment variables to the running test. Those variables are interesting
-to drop-in tests, because they can not make use of Avocado API directly with Python,
-like the native tests can do.
+Avocado exports avocado variables and multiplexed variables as BASH environment
+to the running test. Those variables are interesting to drop-in tests, because
+they can not make use of Avocado API directly with Python, like the native
+tests can do and also they can modify the test parameters.
 
 Here are the current variables that Avocado exports to the tests:
 
@@ -672,6 +673,8 @@ Here are the current variables that Avocado exports to the tests:
 | AVOCADO_TEST_OUTPUTDIR  | Output directory for the test         | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/data      |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/sysinfo   |
++-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| *                       | All variables from --multiplex-file   | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 Wrap Up
