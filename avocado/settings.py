@@ -19,6 +19,7 @@ import ConfigParser
 import os
 import sys
 import shutil
+import glob
 
 from avocado.utils import path
 
@@ -28,9 +29,11 @@ else:
     CFG_DIR = '/etc'
 
 _config_dir_system = os.path.join(CFG_DIR, 'avocado')
+_config_dir_system_extra = os.path.join(CFG_DIR, 'avocado', 'conf.d')
 _config_dir_local = os.path.join(os.path.expanduser("~"), '.config', 'avocado')
 _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..")
-_config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc')
+_config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado')
+_config_path_intree_extra = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado', 'conf.d')
 
 config_filename = 'avocado.conf'
 config_path_system = os.path.join(_config_dir_system, config_filename)
@@ -152,8 +155,10 @@ class Settings(object):
         self.config_paths = []
         if config_path is None:
             config_system = os.path.exists(config_path_system)
+            config_system_extra = os.path.exists(_config_dir_system_extra)
             config_local = os.path.exists(config_path_local)
             config_intree = os.path.exists(config_path_intree)
+            config_intree_extra = os.path.exists(_config_path_intree_extra)
             if (not config_system) and (not config_local) and (not config_intree):
                 raise ConfigFileNotFound([config_path_system,
                                           config_path_local,
@@ -162,6 +167,10 @@ class Settings(object):
                 # In this case, respect only the intree config
                 self.config.read(config_path_intree)
                 self.config_paths.append(config_path_intree)
+                if config_intree_extra:
+                    for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
+                        self.config.read(extra_file)
+                        self.config_paths.append(extra_file)
                 self.intree = True
             else:
                 # In this case, load first the global config, then the
@@ -169,6 +178,10 @@ class Settings(object):
                 if config_system:
                     self.config.read(config_path_system)
                     self.config_paths.append(config_path_system)
+                    if config_system_extra:
+                        for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
+                            self.config.read(extra_file)
+                            self.config_paths.append(extra_file)
                 if not config_local:
                     path.init_dir(_config_dir_local)
                     shutil.copy(config_path_system, config_path_local)
