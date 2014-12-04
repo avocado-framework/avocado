@@ -171,8 +171,14 @@ class TestRunner(object):
         test_state['status'] = exceptions.TestAbortError.status
         test_state['fail_class'] = exceptions.TestAbortError.__class__.__name__
         test_state['traceback'] = 'Traceback not available'
-        with open(test_state['logfile'], 'r') as log_file_obj:
-            test_state['text_output'] = log_file_obj.read()
+        if 'logfile' in test_state:
+            try:
+                with open(test_state['logfile'], 'r') as log_file_obj:
+                    test_state['text_output'] = log_file_obj.read()
+            except (OSError, IOError):
+                test_state['text_output'] = 'Test log not available (log file unavailable)'
+        else:
+            test_state['text_output'] = 'Test log not available (test process aborted)'
         return test_state
 
     def run(self, params_list):
@@ -197,7 +203,15 @@ class TestRunner(object):
 
             p.start()
 
-            early_state = q.get()
+            try:
+                early_state = q.get(timeout=cycle_timeout)
+            except Queue.Empty:
+                # Test aborted, let's reload the instance to
+                # get the early state
+                instance = self.load_test(params, q)
+                runtime.CURRENT_TEST = instance
+                early_state = instance.get_state()
+
             # At this point, the test is already initialized and we know
             # for sure if there's a timeout set.
             if 'timeout' in early_state['params'].keys():
