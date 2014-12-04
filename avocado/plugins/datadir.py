@@ -15,6 +15,7 @@
 from avocado.plugins import plugin
 from avocado.core import output
 from avocado.core import data_dir
+from avocado.settings import settings
 
 
 class DataDirList(plugin.Plugin):
@@ -34,9 +35,11 @@ class DataDirList(plugin.Plugin):
 
     def run(self, args):
         view = output.View()
+        view.notify(event="message", msg='Config file path: %s' % settings.config_path)
+        view.notify(event="message", msg='')
         view.notify(event="message", msg='Avocado Data Directories:')
-        view.notify(event="message", msg='    base dir        ' + data_dir.get_base_dir())
-        view.notify(event="message", msg='    tests dir       ' + data_dir.get_test_dir())
-        view.notify(event="message", msg='    data dir        ' + data_dir.get_data_dir())
-        view.notify(event="message", msg='    logs dir        ' + data_dir.get_logs_dir())
-        view.notify(event="message", msg='    tmp dir         ' + data_dir.get_tmp_dir())
+        view.notify(event="minor", msg='    base dir  ' + data_dir.get_base_dir())
+        view.notify(event="minor", msg='    tests dir ' + data_dir.get_test_dir())
+        view.notify(event="minor", msg='    data dir  ' + data_dir.get_data_dir())
+        view.notify(event="minor", msg='    logs dir  ' + data_dir.get_logs_dir())
+        view.notify(event="minor", msg='    tmp dir   ' + data_dir.get_tmp_dir())
