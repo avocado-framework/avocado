@@ -59,7 +59,8 @@ def get_wrappers_dir():
 
 
 def get_data_files():
-    data_files = [(get_settings_dir(), ['etc/avocado.conf'])]
+    data_files = [(get_settings_dir(), ['etc/avocado/avocado.conf'])]
+    data_files += [(os.path.join(get_settings_dir(), 'conf.d'), ['etc/avocado/conf.d/README'])]
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
     for data_dir in glob.glob('examples/tests/*.data'):
         fmt_str = '%s/*' % data_dir

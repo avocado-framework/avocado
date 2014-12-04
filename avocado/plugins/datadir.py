@@ -35,7 +35,18 @@ class DataDirList(plugin.Plugin):
 
     def run(self, args):
         view = output.View()
-        view.notify(event="message", msg='Config file path: %s' % settings.config_path)
+        view.notify(event="message", msg='Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            view.notify(event="message", msg='    %s' % cfg_path)
+        if settings.config_paths_failed:
+            view.notify(event="minor", msg='')
+            view.notify(event="error", msg='Config files that failed to read:')
+            for cfg_path in settings.config_paths_failed:
+                view.notify(event="error", msg='    %s' % cfg_path)
+        view.notify(event="message", msg='')
+        view.notify(event="minor", msg="Avocado replaces config dirs that can't be accessed")
+        view.notify(event="minor", msg="with sensible defaults. Please edit your local config")
+        view.notify(event="minor", msg="file to customize values")
         view.notify(event="message", msg='')
         view.notify(event="message", msg='Avocado Data Directories:')
         view.notify(event="minor", msg='    base dir  ' + data_dir.get_base_dir())
