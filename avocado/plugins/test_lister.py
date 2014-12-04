@@ -60,7 +60,9 @@ class TestLister(plugin.Plugin):
                     blength = clength
                 test_dirs.append((t.split('.')[0], os.path.join(base_test_dir, t)))
         format_string = "    %-" + str(blength) + "s %s"
-        view.notify(event="message", msg='Config file path: %s' % settings.config_path)
+        view.notify(event="message", msg='Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            view.notify(event="message", msg='    %s' % cfg_path)
         view.notify(event="minor", msg='')
         view.notify(event="message", msg='Tests dir: %s' % base_test_dir)
         if len(test_dirs) > 0:

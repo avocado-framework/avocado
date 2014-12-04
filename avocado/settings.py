@@ -149,27 +149,36 @@ class Settings(object):
         """
         self.config = ConfigParser.ConfigParser()
         self.intree = False
+        self.config_paths = []
         if config_path is None:
             config_system = os.path.exists(config_path_system)
             config_local = os.path.exists(config_path_local)
             config_intree = os.path.exists(config_path_intree)
-            if not config_local and not config_system:
-                if not config_intree:
-                    raise ConfigFileNotFound([config_path_system,
-                                              config_path_local,
-                                              config_path_intree])
-                self.config_path = config_path_intree
+            if (not config_system) and (not config_local) and (not config_intree):
+                raise ConfigFileNotFound([config_path_system,
+                                          config_path_local,
+                                          config_path_intree])
+            if config_intree:
+                # In this case, respect only the intree config
+                self.config.read(config_path_intree)
+                self.config_paths.append(config_path_intree)
                 self.intree = True
             else:
-                # If there's not a local config, create one
-                # based on the global config
+                # In this case, load first the global config, then the
+                # local config overrides the global one
+                if config_system:
+                    self.config.read(config_path_system)
+                    self.config_paths.append(config_path_system)
                 if not config_local:
                     path.init_dir(_config_dir_local)
                     shutil.copy(config_path_system, config_path_local)
-                self.config_path = config_path_local
+                self.config.read(config_path_local)
+                self.config_paths.append(config_path_local)
         else:
+            # Unittests
             self.config_path = config_path
-        self.config.read(self.config_path)
+            self.config_paths.append(config_path)
+            self.config.read(config_path)
 
     def _handle_no_value(self, section, key, default):
         """
