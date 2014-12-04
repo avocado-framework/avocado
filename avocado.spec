@@ -30,7 +30,9 @@ these days a framework) to perform automated testing.
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
 %dir /etc/avocado
+%dir /etc/avocado/conf.d
 %config(noreplace)/etc/avocado/avocado.conf
+%config(noreplace)/etc/avocado/conf.d/README
 %{_bindir}/avocado
 %exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
 %exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
