@@ -3,7 +3,6 @@
 import unittest
 import os
 import sys
-import tempfile
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -12,12 +11,6 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
-
-timeout_multiplex = """
-sleeptest:
-    sleep_length: 5.0
-    timeout: 3
-"""
 
 
 class MultiplexTests(unittest.TestCase):
@@ -41,6 +34,7 @@ class MultiplexTests(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
+        return output
 
     def test_mplex_plugin(self):
         cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
@@ -76,18 +70,20 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 
-    def test_run_mplex_timeout(self):
-        # FIXME: Use envtest and check the printed value instead of wait
-        with tempfile.NamedTemporaryFile(delete=False) as multiplex_file:
-            multiplex_file.write(timeout_multiplex)
-            multiplex_file.close()
-            cmd_line = ('./scripts/avocado run sleeptest --multiplex %s' %
-                        multiplex_file.name)
-            expected_rc = 1
-            try:
-                self.run_and_check(cmd_line, expected_rc)
-            finally:
-                os.unlink(multiplex_file.name)
+    def test_run_mplex_params(self):
+        cmd_line = ('./scripts/avocado run examples/tests/env_variables.sh '
+                    '--multiplex examples/tests/env_variables.sh.data'
+                    '/env_variables.yaml '
+                    '--show-job-log')
+        expected_rc = 0
+        output = self.run_and_check(cmd_line, expected_rc)
+        for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
+            msg = ('[stdout] Custom variable: '
+                   + '\n[stdout] '.join(msg.splitlines()))
+            self.assertIn(msg, output, "Multiplexed variable should produce:"
+                          "\n  %s\nwhich is not present in the output:\n  %s"
+                          % ("\n  ".join(msg.splitlines()),
+                             "\n  ".join(output.splitlines())))
 
 if __name__ == '__main__':
     unittest.main()

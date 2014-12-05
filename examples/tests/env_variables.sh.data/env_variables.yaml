@@ -1,0 +1,6 @@
+short:
+    CUSTOM_VARIABLE: A
+medium:
+    CUSTOM_VARIABLE: ASDFASDF
+long:
+    CUSTOM_VARIABLE: "This is very long\nmultiline\ntext."
