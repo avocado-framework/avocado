@@ -37,7 +37,6 @@ def any_sibling(*nodes):
     return len(nodes) != len(parents)
 
 
-
 def multiplex(*args):
     leaves = []
     parents = collections.OrderedDict()
@@ -78,8 +77,8 @@ def multiplex(*args):
         yield tuple(prod)
 
 
-def create_variants_from_yaml(input_yaml, filter_only=[], filter_out=[]):
-    input_tree = tree.create_from_yaml(input_yaml)
+def create_variants_from_yaml(input_yamls, filter_only=[], filter_out=[]):
+    input_tree = tree.create_from_yaml(input_yamls)
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
     leaves = (x for x in final_tree.iter_leaves() if x.parent is not None)
     variants = multiplex(leaves)

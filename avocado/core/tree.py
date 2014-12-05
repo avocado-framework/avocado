@@ -65,7 +65,7 @@ class TreeNode(object):
         return '%s: %s' % (self.path, ', '.join(variables))
 
     def __len__(self):
-        return len(self.get_leaves())
+        return len(tuple(self.iter_leaves()))
 
     def __iter__(self):
         return self.iter_leaves()
@@ -85,15 +85,18 @@ class TreeNode(object):
     def add_child(self, node):
         if isinstance(node, self.__class__):
             if node.name in self.children:
-                raise NotImplementedError('Adding children with the same '
-                                          'name is not implemented yet.'
-                                          '\nnode: %s\nchildren: %s'
-                                          % (node, self.children))
-            node.parent = self
-            self.children.append(node)
+                self.children[self.children.index(node.name)].merge(node)
+            else:
+                node.parent = self
+                self.children.append(node)
         else:
             raise ValueError('Bad node type.')
-        return node
+
+    def merge(self, other):
+        """ Merges $other node into this one (doesn't check the name) """
+        self.value.update(other.value)
+        for child in other.children:
+            self.add_child(child)
 
     @property
     def is_leaf(self):
@@ -272,15 +275,17 @@ def _create_from_yaml(stream):
     return tree_node_from_values('', yaml.load(stream, Loader))
 
 
-def create_from_yaml(fileobj):
+def create_from_yaml(paths):
     """
     Create tree structure from yaml-like file
     :param fileobj: File object to be processed
     :raise SyntaxError: When yaml-file is corrupted
     :return: Root of the created tree structure
     """
+    data = TreeNode()
     try:
-        data = _create_from_yaml(fileobj.read())
+        for path in paths:
+            data.merge(_create_from_yaml(open(path).read()))
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
         raise SyntaxError(err)
     return data
