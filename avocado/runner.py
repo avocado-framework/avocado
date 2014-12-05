@@ -273,6 +273,3 @@ class TestRunner(object):
         self.result.end_tests()
         self.sysinfo.end_job_hook()
         return failures
-
-
-
