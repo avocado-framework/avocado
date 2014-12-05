@@ -36,8 +36,8 @@ class Multiplexer(plugin.Plugin):
         self.parser = parser.subcommands.add_parser(
             'multiplex',
             help='Generate a list of dictionaries with params from a multiplex file')
-        self.parser.add_argument('multiplex_file', type=str, nargs='?', default=None,
-                                 help='Path to a multiplex file')
+        self.parser.add_argument('multiplex_files', nargs='+',
+                                 help='Path(s) to a multiplex file(s)')
 
         self.parser.add_argument('--filter-only', nargs='*', default=[],
                                  help='Filter only path(s) from multiplexing')
@@ -54,32 +54,30 @@ class Multiplexer(plugin.Plugin):
 
     def run(self, args):
         view = output.View(app_args=args)
-
-        if not args.multiplex_file:
-            view.notify(event='error', msg='A multiplex file is required, aborting...')
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
-
-        multiplex_file = os.path.abspath(args.multiplex_file)
-
-        if not os.path.isfile(multiplex_file):
-            view.notify(event='error', msg='Invalid multiplex file %s' % multiplex_file)
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+        multiplex_files = tuple(os.path.abspath(_)
+                                for _ in args.multiplex_files)
+        for path in multiplex_files:
+            if not os.path.isfile(path):
+                view.notify(event='error',
+                            msg='Invalid multiplex file %s' % path)
+                sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
 
         if args.tree:
             view.notify(event='message', msg='Config file tree structure:')
-            t = tree.create_from_yaml(open(multiplex_file))
+            t = tree.create_from_yaml(multiplex_files)
             t = tree.apply_filters(t, args.filter_only, args.filter_out)
             view.notify(event='minor', msg=t.get_ascii())
             sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
 
-        variants = multiplexer.create_variants_from_yaml(open(multiplex_file),
+        variants = multiplexer.create_variants_from_yaml(multiplex_files,
                                                          args.filter_only,
                                                          args.filter_out)
 
         view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
             paths = ', '.join([x.path for x in tpl])
-            view.notify(event='minor', msg='Variant %s:    %s' % (index+1, paths))
+            view.notify(event='minor', msg='Variant %s:    %s' %
+                        (index + 1, paths))
             if args.contents:
                 env = collections.OrderedDict()
                 for node in tpl:
