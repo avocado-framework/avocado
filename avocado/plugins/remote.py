@@ -21,7 +21,7 @@ import json
 from avocado.core import exceptions
 from avocado.core import status
 from avocado.core import data_dir
-from avocado.job import TestRunner
+from avocado.runner import TestRunner
 from avocado.result import TestResult
 from avocado.plugins import plugin
 from avocado.utils import remote
