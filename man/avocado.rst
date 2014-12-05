@@ -35,7 +35,7 @@ of avocado subcommands::
  run         Run one or more tests (test module in .py, test alias or dropin)
  list        List available test modules
  sysinfo     Collect system information
- multiplex   Generate a list of dictionaries with params from a multiplex file
+ multiplex   Generate a list of dictionaries with params from multiplex file(s)
  plugins     List all plugins loaded
  datadir     List all relevant directories used by avocado
 
@@ -45,10 +45,10 @@ To get usage instructions for a given subcommand, run it with `--help`. Example:
  usage: avocado multiplex [-h] [--filter-only [FILTER_ONLY [FILTER_ONLY ...]]]
                           [--filter-out [FILTER_OUT [FILTER_OUT ...]]] [-t]
                           [-c]
-                          [multiplex_file]
+                          multiplex_files [multiplex_files ...]
 
  positional arguments:
-   multiplex_file        Path to a multiplex file
+   multiplex_files       Path(s) to a multiplex file(s)
 
  optional arguments:
    -h, --help            show this help message and exit
@@ -208,7 +208,7 @@ be run::
  Variant 4:    /longest
      sleep_length: 10
 
- $ avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml sleeptest
+ $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml
 
 And the output should look like::
 
@@ -235,13 +235,13 @@ the `filter-out` removes one or more paths from being processed.
 From the previous example, if we are interested to use the variants `/medium`
 and `longest`, we do the following command line::
 
- $ avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml sleeptest \
+ $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml \
        --filter-only /medium /longest
 
 And if you want to remove `/small` from the variants created,
 we do the following::
 
- $ avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml sleeptest \
+ $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml \
        --filter-out /medium
 
 Note that both filters can be arranged in the same command line.

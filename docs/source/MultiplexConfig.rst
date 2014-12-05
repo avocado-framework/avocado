@@ -125,6 +125,37 @@ The environment created for the nodes ``fedora`` and ``osx`` are:
 - Node ``//devtools/fedora`` environment ``compiler: 'gcc'``, ``flags: ['-O2', '-Wall']``
 - None ``//devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
 
+.. _multiple_files:
+
+Multiple files
+==============
+
+You can provide multiple files. In such scenario final tree is a combination
+of the provided files where later nodes with the same name override values of
+the precending corresponding node. New nodes are appended as new children::
+
+    file-1.yaml:
+        debug:
+            CFLAGS: '-O0 -g'
+        prod:
+            CFLAGS: '-O2'
+
+    file-2.yaml:
+        prod:
+            CFLAGS: '-Os'
+        fast:
+            CFLAGS: '-Ofast'
+
+results in::
+
+    debug:
+        CFLAGS: '-O0 -g'
+    prod:
+        CFLAGS: '-Os'       # overriden
+    fast:
+        CFLAGS: '-Ofast'    # appended
+
+
 .. _variants:
 
 Variants
