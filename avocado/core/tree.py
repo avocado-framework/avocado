@@ -251,10 +251,8 @@ def _create_from_yaml(stream):
 
     def mapping_to_tree_loader(loader, node):
         def is_node(values):
-            if isinstance(values, dict):    # dicts are always nodes
-                return True
-            elif (isinstance(values, list) and values
-                  and isinstance(values[0], (Value, TreeNode))):
+            if (isinstance(values, list) and values
+                    and isinstance(values[0], (Value, TreeNode))):
                 # When any value is TreeNode or Value, all of them are already
                 # parsed and we can wrap them into self
                 return True
