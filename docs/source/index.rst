@@ -14,7 +14,6 @@ Contents:
 
    Introduction
    GetStartedGuide
-   DataDir
    Configuration
    WritingTests
    ResultsSpecification
