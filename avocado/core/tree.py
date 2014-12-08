@@ -299,7 +299,7 @@ def path_parent(path):
     return parent
 
 
-def apply_filters(tree, filter_only=[], filter_out=[]):
+def apply_filters(tree, filter_only=None, filter_out=None):
     """
     Apply a set of filters to the tree.
 
@@ -313,6 +313,10 @@ def apply_filters(tree, filter_only=[], filter_out=[]):
     :param filter_out: the list of paths which will exclude nodes.
     :return: the original tree minus the nodes filtered by the rules.
     """
+    if filter_only is None:
+        filter_only = []
+    if filter_out is None:
+        filter_out = []
     for node in tree.iter_children_preorder():
         keep_node = True
         for path in filter_only:
