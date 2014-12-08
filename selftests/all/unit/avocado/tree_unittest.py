@@ -1,117 +1,126 @@
 #!/usr/bin/env python
 
+from collections import OrderedDict
+import copy
 import unittest
-import StringIO
 
-from avocado.core.tree import *
-
-source_yaml = """
-hw:
-    cpu:
-        arch:
-            - noarch
-        intel:
-            arch:
-                - i386
-                - x86-64
-        arm:
-            arch:
-                - arm
-                - arm64
-os:
-    linux:
-        dev-tools: gcc
-        pm: tar
-        fedora:
-            pm: rpm
-        mint:
-            pm: deb
-        centos:
-            pm: rpm
-    win:
-        dev-tools: 'cygwin'
-        win7:
-            metro: false
-        win8:
-            metro: true
-"""
+from avocado.core import tree
 
 
-class TestTreeNode(unittest.TestCase):
-
-    def setUp(self):
-        self.treenode = create_from_yaml(StringIO.StringIO(source_yaml))
-
-    def test_create_treenode(self):
-        self.assertIsInstance(self.treenode, TreeNode)
-
-    def test_comparison(self):
-        self.assertEqual(self.treenode.children[0], self.treenode.children[0])
-        self.assertEqual(self.treenode.children[0], "hw")
-        self.assertEqual("hw", self.treenode.children[0])
-        self.assertNotEqual(self.treenode.children[0],
-                            self.treenode.children[1])
-        self.assertNotEqual(self.treenode.children[0], "nothw")
+class TestTree(unittest.TestCase):
+    # Share tree with all tests
+    tree = tree.create_from_yaml(['examples/mux-selftest.yaml'])
 
     def test_node_order(self):
-        self.assertEqual(self.treenode.children[0].name, 'hw')
-        self.assertEqual(self.treenode.children[0].children[0].name, 'cpu')
-        self.assertEqual(self.treenode.children[0].children[0].children[0].name, 'intel')
-        self.assertEqual(self.treenode.children[0].children[0].children[1].name, 'arm')
-        self.assertEqual(self.treenode.children[1].name, 'os')
-        self.assertEqual(self.treenode.children[1].children[0].name, 'linux')
-        self.assertEqual(self.treenode.children[1].children[0].children[0].name, 'fedora')
-        self.assertEqual(self.treenode.children[1].children[0].children[1].name, 'mint')
-        self.assertEqual(self.treenode.children[1].children[0].children[2].name, 'centos')
-        self.assertEqual(self.treenode.children[1].children[1].name, 'win')
-        self.assertEqual(self.treenode.children[1].children[1].children[0].name, 'win7')
-        self.assertEqual(self.treenode.children[1].children[1].children[1].name, 'win8')
+        self.assertIsInstance(self.tree, tree.TreeNode)
+        self.assertEqual('hw', self.tree.children[0])
+        self.assertEqual({'cpu_CFLAGS': '-march=core2'},
+                         self.tree.children[0].children[0].children[0].value)
+        disk = self.tree.children[0].children[1]
+        self.assertEqual('scsi', disk.children[0])
+        self.assertEqual({'disk_type': 'scsi'}, disk.children[0].value)
+        self.assertEqual('virtio', disk.children[1])
+        self.assertEqual(OrderedDict(), disk.children[1].value)
+        self.assertEqual('distro', self.tree.children[1])
+        self.assertEqual('env', self.tree.children[2])
+        self.assertEqual({'opt_CFLAGS': '-O2'},
+                         self.tree.children[2].children[0].value)
 
-    def test_values(self):
-        self.assertDictEqual(self.treenode.children[0].children[0].children[0].value, {'arch': ['i386', 'x86-64']})
-        self.assertDictEqual(self.treenode.children[0].children[0].children[1].value, {'arch': ['arm', 'arm64']})
-        self.assertDictEqual(self.treenode.children[1].children[0].value, {'dev-tools': 'gcc', 'pm': 'tar'})
-        self.assertDictEqual(self.treenode.children[1].children[1].value, {'dev-tools': 'cygwin'})
+    def test_eq(self):
+        # Copy
+        tree2 = copy.deepcopy(self.tree)
+        self.assertEqual(self.tree, tree2)
+        # Additional node
+        child = tree.TreeNode("20", {'name': 'Heisenbug'})
+        tree2.children[1].children[1].add_child(child)
+        self.assertNotEqual(self.tree, tree2)
+        # Should match again
+        child.detach()
+        self.assertEqual(self.tree, tree2)
+        # Missing node
+        tree2.children[1].children[1].detach()
+        self.assertNotEqual(self.tree, tree2)
+        self.assertEqual(self.tree.children[0], tree2.children[0])
+        # Different value
+        tree2.children[0].children[0].children[0].value = {'something': 'else'}
+        self.assertNotEqual(self.tree.children[0], tree2.children[0])
+        tree3 = tree.TreeNode()
+        self.assertNotEqual(tree3, tree2)
+        # Merge
+        tree3.merge(tree2)
+        self.assertEqual(tree3, tree2)
+        # Add_child existing
+        tree3.add_child(tree2.children[0])
+        self.assertEqual(tree3, tree2)
+        # Add_child incorrect class
+        self.assertRaises(ValueError, tree3.add_child, 'probably_bad_type')
 
-    def test_parent(self):
-        self.assertIsNone(self.treenode.parent)
-        self.assertIsNone(self.treenode.children[0].parent.parent)
-        self.assertEqual(self.treenode.children[0].parent, self.treenode)
-        self.assertEqual(self.treenode.children[0].children[0].parent, self.treenode.children[0])
-        self.assertEqual(self.treenode.children[0].children[0].parent.parent, self.treenode)
+    def test_basic_functions(self):
+        # repr
+        self.assertEqual("TreeNode(name='hw')", repr(self.tree.children[0]))
+        # str
+        self.assertEqual("/distro/mint: init=systemv",
+                         str(self.tree.children[1].children[1]))
+        # len
+        self.assertEqual(8, len(self.tree))  # number of leaves
+        # __iter__
+        self.assertEqual(8, sum((1 for _ in self.tree)))  # number of leaves
+        # .root
+        self.assertEqual(id(self.tree),
+                         id(self.tree.children[0].children[0].children[0].root)
+                         )
+        # .parents
+        self.assertEqual(['hw', ''], self.tree.children[0].children[0].parents)
+        # environment
+        self.assertEqual({}, self.tree.environment)
+        self.assertEqual(OrderedDict((('test_value', 42),)),
+                         self.tree.children[0].environment)
+        cpu = self.tree.children[0].children[0]
+        self.assertEqual(OrderedDict((('test_value', ['a']),)),
+                         cpu.environment)
+        vals = OrderedDict((('test_value', ['a', 'b', 'c']),
+                            ('cpu_CFLAGS', '-march=athlon64')))
+        self.assertEqual(vals, cpu.children[1].environment)
+        vals = OrderedDict((('test_value', ['a']),
+                            ('cpu_CFLAGS', '-mabi=apcs-gnu -march=armv8-a '
+                             '-mtune=arm8')))
+        self.assertEqual(vals, cpu.children[2].environment)
+        # leaves order
+        leaves = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint',
+                  'prod']
+        self.assertEqual(leaves, self.tree.get_leaves())
+        # asci contain all leaves and doesn't raise any exceptions
+        ascii = self.tree.get_ascii()
+        for leaf in leaves:
+            self.assertIn(leaf, ascii, "Leaf %s not in asci:\n%s"
+                          % (leaf, ascii))
 
-    def test_environment(self):
-        self.assertDictEqual(self.treenode.children[0].children[0].environment, {'arch': ['noarch']})
-        self.assertDictEqual(self.treenode.children[0].children[0].children[0].environment, {'arch': ['noarch', 'i386', 'x86-64']})
-        self.assertDictEqual(self.treenode.children[0].children[0].children[1].environment, {'arch': ['noarch', 'arm', 'arm64']})
-        self.assertDictEqual(self.treenode.children[1].children[0].environment, {'dev-tools': 'gcc', 'pm': 'tar'})
-        self.assertDictEqual(self.treenode.children[1].children[0].children[0].environment, {'dev-tools': 'gcc', 'pm': 'rpm'})
-        self.assertDictEqual(self.treenode.children[1].children[0].children[1].environment, {'dev-tools': 'gcc', 'pm': 'deb'})
-        self.assertDictEqual(self.treenode.children[1].children[0].children[2].environment, {'dev-tools': 'gcc', 'pm': 'rpm'})
-        self.assertDictEqual(self.treenode.children[1].children[1].environment, {'dev-tools': 'cygwin'})
-        self.assertDictEqual(self.treenode.children[1].children[1].children[0].environment, {'dev-tools': 'cygwin', 'metro': False})
-        self.assertDictEqual(self.treenode.children[1].children[1].children[1].environment, {'dev-tools': 'cygwin', 'metro': True})
-
-    def test_detach(self):
-        n = self.treenode.children[1].detach()
-        self.assertEqual(n.name, 'os')
-        self.assertNotIn(n, self.treenode.children)
+    def test_filters(self):
+        tree2 = copy.deepcopy(self.tree)
+        exp = ['intel', 'amd', 'arm', 'fedora', 'mint', 'prod']
+        act = tree.apply_filters(tree2,
+                                 filter_only=['/hw/cpu', '']).get_leaves()
+        self.assertEqual(exp, act)
+        tree2 = copy.deepcopy(self.tree)
+        exp = ['scsi', 'virtio', 'fedora', 'mint', 'prod']
+        act = tree.apply_filters(tree2,
+                                 filter_out=['/hw/cpu', '']).get_leaves()
+        self.assertEqual(exp, act)
 
 
 class TestPathParent(unittest.TestCase):
 
     def test_empty_string(self):
-        self.assertEqual(path_parent(''), '')
+        self.assertEqual(tree.path_parent(''), '')
 
     def test_on_root(self):
-        self.assertEqual(path_parent('/'), '')
+        self.assertEqual(tree.path_parent('/'), '')
 
     def test_direct_parent(self):
-        self.assertEqual(path_parent('/os/linux'), '/os')
+        self.assertEqual(tree.path_parent('/os/linux'), '/os')
 
     def test_false_direct_parent(self):
-        self.assertNotEqual(path_parent('/os/linux'), '/')
-
+        self.assertNotEqual(tree.path_parent('/os/linux'), '/')
 
 if __name__ == '__main__':
     unittest.main()
