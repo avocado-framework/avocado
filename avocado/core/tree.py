@@ -104,15 +104,17 @@ class TreeNode(object):
         return self.get_root()
 
     def get_root(self):
-        root = self
-        while root.parent is not None:
-            root = root.parent
+        root = None
+        for root in self.iter_parents():
+            pass
         return root
 
     def iter_parents(self):
-        node = self
-        while node.parent is not None:
-            yield node.parent
+        node = self.parent
+        while True:
+            if node is None:
+                raise StopIteration
+            yield node
             node = node.parent
 
     @property
