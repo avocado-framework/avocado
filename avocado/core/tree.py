@@ -65,7 +65,7 @@ class TreeNode(object):
         return '%s: %s' % (self.path, ', '.join(variables))
 
     def __len__(self):
-        return len(self.get_leaves())
+        return len(tuple(self.iter_leaves()))
 
     def __iter__(self):
         return self.iter_leaves()
@@ -75,21 +75,28 @@ class TreeNode(object):
             if self.name == other:
                 return True
         elif isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
+            first = self.__dict__.copy()
+            first.pop('parent')
+            second = other.__dict__.copy()
+            second.pop('parent')
+            return first == second
         return False
 
     def add_child(self, node):
         if isinstance(node, self.__class__):
             if node.name in self.children:
-                raise NotImplementedError('Adding children with the same '
-                                          'name is not implemented yet.'
-                                          '\nnode: %s\nchildren: %s'
-                                          % (node, self.children))
-            node.parent = self
-            self.children.append(node)
+                self.children[self.children.index(node.name)].merge(node)
+            else:
+                node.parent = self
+                self.children.append(node)
         else:
             raise ValueError('Bad node type.')
-        return node
+
+    def merge(self, other):
+        """ Merges $other node into this one (doesn't check the name) """
+        self.value.update(other.value)
+        for child in other.children:
+            self.add_child(child)
 
     @property
     def is_leaf(self):
@@ -100,15 +107,17 @@ class TreeNode(object):
         return self.get_root()
 
     def get_root(self):
-        root = self
-        while root.parent is not None:
-            root = root.parent
+        root = None
+        for root in self.iter_parents():
+            pass
         return root
 
     def iter_parents(self):
-        node = self
-        while node.parent is not None:
-            yield node.parent
+        node = self.parent
+        while True:
+            if node is None:
+                raise StopIteration
+            yield node
             node = node.parent
 
     @property
@@ -245,10 +254,8 @@ def _create_from_yaml(stream):
 
     def mapping_to_tree_loader(loader, node):
         def is_node(values):
-            if isinstance(values, dict):    # dicts are always nodes
-                return True
-            elif (isinstance(values, list) and values
-                  and isinstance(values[0], (Value, TreeNode))):
+            if (isinstance(values, list) and values
+                    and isinstance(values[0], (Value, TreeNode))):
                 # When any value is TreeNode or Value, all of them are already
                 # parsed and we can wrap them into self
                 return True
@@ -268,15 +275,17 @@ def _create_from_yaml(stream):
     return tree_node_from_values('', yaml.load(stream, Loader))
 
 
-def create_from_yaml(fileobj):
+def create_from_yaml(paths):
     """
     Create tree structure from yaml-like file
     :param fileobj: File object to be processed
     :raise SyntaxError: When yaml-file is corrupted
     :return: Root of the created tree structure
     """
+    data = TreeNode()
     try:
-        data = _create_from_yaml(fileobj.read())
+        for path in paths:
+            data.merge(_create_from_yaml(open(path).read()))
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
         raise SyntaxError(err)
     return data
@@ -295,7 +304,7 @@ def path_parent(path):
     return parent
 
 
-def apply_filters(tree, filter_only=[], filter_out=[]):
+def apply_filters(tree, filter_only=None, filter_out=None):
     """
     Apply a set of filters to the tree.
 
@@ -309,6 +318,10 @@ def apply_filters(tree, filter_only=[], filter_out=[]):
     :param filter_out: the list of paths which will exclude nodes.
     :return: the original tree minus the nodes filtered by the rules.
     """
+    if filter_only is None:
+        filter_only = []
+    if filter_out is None:
+        filter_out = []
     for node in tree.iter_children_preorder():
         keep_node = True
         for path in filter_only:

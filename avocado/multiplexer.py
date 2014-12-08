@@ -33,67 +33,12 @@ def any_sibling(*nodes):
     """
     if len(nodes) < 2:
         return False
-    parents = set(node.parent for node in nodes)
-    return len(nodes) != len(parents)
-
-# only allow items which match the filter
-# siblings and their children will be removed
-
-
-def filter_only(keys, items):
-
-    if isinstance(keys, str):
-        keys = [keys]
-    if isinstance(items, str):
-        items = [items]
-
-    # the default rule is to accept
-    ret = True
-
-    for key in keys:
-        # ignore empty filters
-        if key == '':
-            continue
-
-        for item in items:
-            # key is part of the item, let the branch in
-            if item.path.startswith(key):
-                return True
-
-            # siblings and their children, filter them out
-            if item.parent.path.startswith(tree.path_parent(key)):
-                ret = False
-                continue
-
-    # everything else should go in
-    return ret
-
-# remove one item and its children
-
-
-def filter_out(keys, items):
-
-    if isinstance(keys, str):
-        keys = [keys]
-    if isinstance(items, str):
-        items = [items]
-
-    for key in keys:
-        # ignore empty filters
-        if key == '':
-            continue
-
-        for item in items:
-            # key is part of the item, leave the branch out
-            if item.path.startswith(key):
-                return False
-
-            # sibling and its children, let them in
-            if item.path.startswith(tree.path_parent(key)):
-                continue
-
-    # everything else should get in
-    return True
+    parents = []
+    for node in nodes:
+        if node.parent in parents:
+            return True
+        parents.append(node.parent)
+    return False
 
 
 def multiplex(*args):
@@ -136,8 +81,12 @@ def multiplex(*args):
         yield tuple(prod)
 
 
-def create_variants_from_yaml(input_yaml, filter_only=[], filter_out=[]):
-    input_tree = tree.create_from_yaml(input_yaml)
+def multiplex_yamls(input_yamls, filter_only=None, filter_out=None):
+    if filter_only is None:
+        filter_only = []
+    if filter_out is None:
+        filter_out = []
+    input_tree = tree.create_from_yaml(input_yamls)
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
     leaves = (x for x in final_tree.iter_leaves() if x.parent is not None)
     variants = multiplex(leaves)
