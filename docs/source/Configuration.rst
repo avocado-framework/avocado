@@ -84,3 +84,50 @@ configuration, after all the files are parsed in their correct resolution order.
 
 The command also shows the order in which your config files were parsed, giving you a better understanding of
 what's going on. The Section.Key nomenclature was inspired in ``git config --list`` output.
+
+Avocado Data Directories
+========================
+
+When running tests, we are frequently looking to:
+
+* Locate tests
+* Write logs to a given location
+* Grab files that will be useful for tests, such as ISO files or VM disk
+  images
+
+Avocado has a module dedicated to find those paths, to avoid cumbersome
+path manipulation magic that people had to do in previous test frameworks [1].
+
+If you want to list all relevant directories for your test, you can use
+`avocado config --datadir` command to list those directories. Executing
+it will give you an output similar to the one seen below::
+
+    $ avocado config --datadir
+    Config files read (in order):
+        /etc/avocado/avocado.conf
+        /home/lmr/.config/avocado/avocado.conf
+
+    Avocado replaces config dirs that can't be accessed
+    with sensible defaults. Please edit your local config
+    file to customize values
+
+    Avocado Data Directories:
+        base  /home/lmr/avocado
+        tests /home/lmr/Code/avocado.lmr/examples/tests
+        data  /home/lmr/avocado/data
+        logs  /home/lmr/avocado/job-results
+        tmp   /var/tmp/avocado
+
+Note that, while avocado will do its best to use the config values you
+provide in the config file, if it can't write values to the locations
+provided, it will fall back to (we hope) reasonable defaults, and we
+notify the user about that in the output of the command.
+
+The relevant API documentation and meaning of each of those data directories
+is in :mod:`avocado.core.data_dir`, so it's higly recommended you take a look.
+
+You may set your preferred data dirs by setting them in the avocado config files.
+The next section of the documentation explains how you can see and set config
+values that modify the behavior for the avocado utilities and plugins.
+
+[1] For example, autotest.
