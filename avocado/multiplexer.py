@@ -36,64 +36,6 @@ def any_sibling(*nodes):
     parents = set(node.parent for node in nodes)
     return len(nodes) != len(parents)
 
-# only allow items which match the filter
-# siblings and their children will be removed
-
-
-def filter_only(keys, items):
-
-    if isinstance(keys, str):
-        keys = [keys]
-    if isinstance(items, str):
-        items = [items]
-
-    # the default rule is to accept
-    ret = True
-
-    for key in keys:
-        # ignore empty filters
-        if key == '':
-            continue
-
-        for item in items:
-            # key is part of the item, let the branch in
-            if item.path.startswith(key):
-                return True
-
-            # siblings and their children, filter them out
-            if item.parent.path.startswith(tree.path_parent(key)):
-                ret = False
-                continue
-
-    # everything else should go in
-    return ret
-
-# remove one item and its children
-
-
-def filter_out(keys, items):
-
-    if isinstance(keys, str):
-        keys = [keys]
-    if isinstance(items, str):
-        items = [items]
-
-    for key in keys:
-        # ignore empty filters
-        if key == '':
-            continue
-
-        for item in items:
-            # key is part of the item, leave the branch out
-            if item.path.startswith(key):
-                return False
-
-            # sibling and its children, let them in
-            if item.path.startswith(tree.path_parent(key)):
-                continue
-
-    # everything else should get in
-    return True
 
 
 def multiplex(*args):
