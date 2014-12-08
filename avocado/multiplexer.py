@@ -33,9 +33,12 @@ def any_sibling(*nodes):
     """
     if len(nodes) < 2:
         return False
-    parents = set(node.parent for node in nodes)
-    return len(nodes) != len(parents)
-
+    parents = []
+    for node in nodes:
+        if node.parent in parents:
+            return True
+        parents.append(node.parent)
+    return False
 
 
 def multiplex(*args):
