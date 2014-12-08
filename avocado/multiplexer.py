@@ -77,7 +77,11 @@ def multiplex(*args):
         yield tuple(prod)
 
 
-def create_variants_from_yaml(input_yamls, filter_only=[], filter_out=[]):
+def multiplex_yamls(input_yamls, filter_only=None, filter_out=None):
+    if filter_only is None:
+        filter_only = []
+    if filter_out is None:
+        filter_out = []
     input_tree = tree.create_from_yaml(input_yamls)
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
     leaves = (x for x in final_tree.iter_leaves() if x.parent is not None)

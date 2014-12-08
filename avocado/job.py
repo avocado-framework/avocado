@@ -220,9 +220,9 @@ class Job(object):
             if urls is not None:
                 for url in urls:
                     try:
-                        variants = multiplexer.create_variants_from_yaml(multiplex_files,
-                                                                         self.args.filter_only,
-                                                                         self.args.filter_out)
+                        variants = multiplexer.multiplex_yamls(multiplex_files,
+                                                               self.args.filter_only,
+                                                               self.args.filter_out)
                     except SyntaxError:
                         variants = None
                     if variants:

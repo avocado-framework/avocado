@@ -69,9 +69,9 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='minor', msg=t.get_ascii())
             sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
 
-        variants = multiplexer.create_variants_from_yaml(multiplex_files,
-                                                         args.filter_only,
-                                                         args.filter_out)
+        variants = multiplexer.multiplex_yamls(multiplex_files,
+                                               args.filter_only,
+                                               args.filter_out)
 
         view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
