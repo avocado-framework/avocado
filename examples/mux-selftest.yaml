@@ -1,0 +1,27 @@
+hw:
+    cpu:
+        test_value:
+            - a
+        intel:
+            cpu_CFLAGS: '-march=core2'
+        amd:
+            test_value:
+                - b
+                - c
+            cpu_CFLAGS: '-march=athlon64'
+        arm:
+            cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+    disk:
+        disk_type: 'virtio'
+        scsi:
+            disk_type: 'scsi'
+        virtio:
+    test_value: 42
+distro:
+    fedora:
+        init: 'systemd'
+    mint:
+        init: 'systemv'
+env:
+    prod:
+        opt_CFLAGS: '-O2'
