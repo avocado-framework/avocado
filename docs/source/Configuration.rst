@@ -31,7 +31,9 @@ Config file parsing order
 Avocado starts by parsing what it calls system wide config file, that is shipped to all avocado users on a system
 wide directory, ``/etc/avocado/avocado.conf``. Then it'll verify if there's a local user config file, that is located
 usually in ``~/.config/avocado/avocado.conf``. The order of the parsing matters, so the system wide file is parsed,
-then the user config file is parsed last, so that the user can override values at will.
+then the user config file is parsed last, so that the user can override values at will. There is another directory
+that will be scanned by extra config files, ``/etc/avocado/conf.d``. This directory may contain plugin config files,
+and extra additional config files that the system administrator/avocado developers might judge necessary to put there.
 
 Please note that for base directories, if you chose a directory that can't be properly used by avocado (some directories
 require read access, others, read and write access), avocado will fall back to some defaults. So if your regular user
@@ -43,8 +45,8 @@ Plugin config files
 
 Plugins can also be configured by config files. In order to not disturb the main avocado config file, those plugins,
 if they wish so, may install additional config files to ``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed
-after the system wide config file. Users can override those values as well at the local config file level. So considering
-the hypothetical plugin config::
+after the system wide config file. Users can override those values as well at the local config file level.
+Considering the hypothetical plugin config::
 
     [plugin.salad]
     base = ceasar
@@ -84,3 +86,50 @@ configuration, after all the files are parsed in their correct resolution order.
 
 The command also shows the order in which your config files were parsed, giving you a better understanding of
 what's going on. The Section.Key nomenclature was inspired in ``git config --list`` output.
+
+Avocado Data Directories
+========================
+
+When running tests, we are frequently looking to:
+
+* Locate tests
+* Write logs to a given location
+* Grab files that will be useful for tests, such as ISO files or VM disk
+  images
+
+Avocado has a module dedicated to find those paths, to avoid cumbersome
+path manipulation magic that people had to do in previous test frameworks [1].
+
+If you want to list all relevant directories for your test, you can use
+`avocado config --datadir` command to list those directories. Executing
+it will give you an output similar to the one seen below::
+
+    $ avocado config --datadir
+    Config files read (in order):
+        /etc/avocado/avocado.conf
+        /home/lmr/.config/avocado/avocado.conf
+
+    Avocado replaces config dirs that can't be accessed
+    with sensible defaults. Please edit your local config
+    file to customize values
+
+    Avocado Data Directories:
+        base  /home/lmr/avocado
+        tests /home/lmr/Code/avocado.lmr/examples/tests
+        data  /home/lmr/avocado/data
+        logs  /home/lmr/avocado/job-results
+        tmp   /var/tmp/avocado
+
+Note that, while avocado will do its best to use the config values you
+provide in the config file, if it can't write values to the locations
+provided, it will fall back to (we hope) reasonable defaults, and we
+notify the user about that in the output of the command.
+
+The relevant API documentation and meaning of each of those data directories
+is in :mod:`avocado.core.data_dir`, so it's higly recommended you take a look.
+
+You may set your preferred data dirs by setting them in the avocado config files.
+The next section of the documentation explains how you can see and set config
+values that modify the behavior for the avocado utilities and plugins.
+
+[1] For example, autotest.
