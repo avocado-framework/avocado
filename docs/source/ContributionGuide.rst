@@ -31,3 +31,30 @@ patches, integrate them on a branch, and then those patches will be submitted
 as a github Pull Request. This process tries to ensure that every contributed
 patch goes through the CI jobs before it is considered good for inclusion.
 
+Avocado development tools
+=========================
+
+Debug
+-----
+
+You can find handy utils in `avocado.utils.debug`:
+
+measure_duration
+~~~~~~~~~~~~~~~~
+
+Decorator can be used to print current duration of the executed function
+and accumulated duration of this decorated function. It's very handy
+when optimizing.
+
+Usage::
+
+    from avocado.utils import debug
+    ...
+    @debug.measure_duration
+    def your_function(...):
+
+During the execution look for::
+
+    Function <function your_function at 0x29b17d0>: (0.1, 11.3)
+    Function <function your_function at 0x29b17d0>: (0.2, 11.5)
+
