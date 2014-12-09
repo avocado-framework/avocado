@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from collections import OrderedDict
 import copy
 import unittest
 
@@ -20,7 +19,7 @@ class TestTree(unittest.TestCase):
         self.assertEqual('scsi', disk.children[0])
         self.assertEqual({'disk_type': 'scsi'}, disk.children[0].value)
         self.assertEqual('virtio', disk.children[1])
-        self.assertEqual(OrderedDict(), disk.children[1].value)
+        self.assertEqual({}, disk.children[1].value)
         self.assertEqual('distro', self.tree.children[1])
         self.assertEqual('env', self.tree.children[2])
         self.assertEqual({'opt_CFLAGS': '-O2'},
@@ -73,17 +72,15 @@ class TestTree(unittest.TestCase):
         self.assertEqual(['hw', ''], self.tree.children[0].children[0].parents)
         # environment
         self.assertEqual({}, self.tree.environment)
-        self.assertEqual(OrderedDict((('test_value', 42),)),
+        self.assertEqual({'test_value': 42},
                          self.tree.children[0].environment)
         cpu = self.tree.children[0].children[0]
-        self.assertEqual(OrderedDict((('test_value', ['a']),)),
+        self.assertEqual({'test_value': ['a']},
                          cpu.environment)
-        vals = OrderedDict((('test_value', ['a', 'b', 'c']),
-                            ('cpu_CFLAGS', '-march=athlon64')))
+        vals = {'test_value': ['a', 'b', 'c'], 'cpu_CFLAGS': '-march=athlon64'}
         self.assertEqual(vals, cpu.children[1].environment)
-        vals = OrderedDict((('test_value', ['a']),
-                            ('cpu_CFLAGS', '-mabi=apcs-gnu -march=armv8-a '
-                             '-mtune=arm8')))
+        vals = {'test_value': ['a'], 'cpu_CFLAGS': '-mabi=apcs-gnu '
+                '-march=armv8-a -mtune=arm8'}
         self.assertEqual(vals, cpu.children[2].environment)
         # leaves order
         leaves = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint',
