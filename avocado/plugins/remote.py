@@ -43,8 +43,9 @@ class RemoteTestRunner(TestRunner):
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - --archive %s' %
                        (self.remote_test_dir, self.result.stream.job_unique_id, " ".join(urls)))
         result = self.result.remote.run(avocado_cmd, ignore_status=True)
+        json_output = result.stdout.splitlines()[0]
         try:
-            results = json.loads(result.stdout)
+            results = json.loads(json_output)
         except Exception, details:
             raise ValueError('Error loading JSON '
                              '(full output below): %s\n"""\n%s\n"""' %
