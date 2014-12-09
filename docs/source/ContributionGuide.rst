@@ -58,3 +58,19 @@ During the execution look for::
     Function <function your_function at 0x29b17d0>: (0.1, 11.3)
     Function <function your_function at 0x29b17d0>: (0.2, 11.5)
 
+Line-profiler
+-------------
+
+You can measure line-by-line performance by using line_profiler. You can
+install it using pip::
+
+    pip install line_profiler
+
+and then simply mark the desired function with `@profile` (no need to import
+it from anywhere). Then you execute::
+
+    kernprof -l -v ./scripts/avocado run ...
+
+and when the process finishes you'll see the profiling information. (sometimes
+the binary is called `kernprof.py`)
+
