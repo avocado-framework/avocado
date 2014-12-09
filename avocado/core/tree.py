@@ -75,13 +75,11 @@ class TreeNode(object):
         if isinstance(other, str):  # Compare names
             if self.name == other:
                 return True
-        elif isinstance(other, self.__class__):
-            first = self.__dict__.copy()
-            first.pop('parent')
-            second = other.__dict__.copy()
-            second.pop('parent')
-            return first == second
-        return False
+        else:
+            for attr in ('name', 'value', 'children'):
+                if getattr(self, attr) != getattr(other, attr):
+                    return False
+            return True
 
     def add_child(self, node):
         if isinstance(node, self.__class__):
