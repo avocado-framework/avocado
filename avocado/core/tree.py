@@ -47,7 +47,7 @@ class TreeNode(object):
 
     def __init__(self, name='', value=None, parent=None, children=None):
         if value is None:
-            value = collections.OrderedDict()
+            value = {}
         if children is None:
             children = []
         self.name = name
@@ -151,7 +151,7 @@ class TreeNode(object):
                         target[k] = source[k][:]
                     else:
                         target[k] = source[k]
-        env = collections.OrderedDict()
+        env = {}
         rev_parents = reversed(self.get_parents())
         for parent in rev_parents:
             update_or_extend(env, parent.value)
