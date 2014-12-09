@@ -54,6 +54,7 @@ class TreeNode(object):
         self.value = value
         self.parent = parent
         self.children = []
+        self._environment = None
         for child in children:
             self.add_child(child)
 
@@ -140,21 +141,24 @@ class TreeNode(object):
         return self.get_environment()
 
     def get_environment(self):
-        def update_or_extend(target, source):
-            for k, _ in source.items():
-                if k in target and isinstance(target[k], list):
-                    target[k].extend(source[k])
-                else:
-                    if isinstance(source[k], list):
-                        target[k] = source[k][:]
+        if self._environment is None:
+            self._environment = (self.parent.environment.copy()
+                                 if self.parent else {})
+            for key, value in self.value.iteritems():
+                if isinstance(value, list):
+                    if (key in self._environment
+                            and isinstance(self._environment[key], list)):
+                        self._environment[key] = self._environment[key] + value
                     else:
-                        target[k] = source[k]
-        env = {}
-        rev_parents = reversed(self.get_parents())
-        for parent in rev_parents:
-            update_or_extend(env, parent.value)
-        update_or_extend(env, self.value)
-        return env
+                        self._environment[key] = value
+                else:
+                    self._environment[key] = value
+        return self._environment
+
+    def set_environment_dirty(self):
+        for child in self.children:
+            child.set_environment_dirty()
+        self._environment = None
 
     def iter_children_preorder(self, node=None):
         q = collections.deque()
