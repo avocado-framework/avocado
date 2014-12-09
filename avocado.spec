@@ -30,7 +30,9 @@ these days a framework) to perform automated testing.
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
 %dir /etc/avocado
-%config(noreplace)/etc/avocado/settings.ini
+%dir /etc/avocado/conf.d
+%config(noreplace)/etc/avocado/avocado.conf
+%config(noreplace)/etc/avocado/conf.d/README
 %{_bindir}/avocado
 %exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
 %exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
@@ -64,6 +66,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Dec  3 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.14.0-3
+- Change config file name from settings.ini to avocado.conf
+
 * Wed Dec  3 2014 Ruda Moura <rmoura@redhat.com> - 0.14.0-2
 - Include all wrappers scripts to examples subpackage.
 

@@ -18,6 +18,10 @@ Reads the avocado settings from a .ini file (from python ConfigParser).
 import ConfigParser
 import os
 import sys
+import shutil
+import glob
+
+from avocado.utils import path
 
 if 'VIRTUAL_ENV' in os.environ:
     CFG_DIR = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
@@ -25,11 +29,13 @@ else:
     CFG_DIR = '/etc'
 
 _config_dir_system = os.path.join(CFG_DIR, 'avocado')
+_config_dir_system_extra = os.path.join(CFG_DIR, 'avocado', 'conf.d')
 _config_dir_local = os.path.join(os.path.expanduser("~"), '.config', 'avocado')
 _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..")
-_config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc')
+_config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado')
+_config_path_intree_extra = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado', 'conf.d')
 
-config_filename = 'settings.ini'
+config_filename = 'avocado.conf'
 config_path_system = os.path.join(_config_dir_system, config_filename)
 config_path_local = os.path.join(_config_dir_local, config_filename)
 config_path_intree = os.path.join(_config_path_intree, config_filename)
@@ -146,25 +152,49 @@ class Settings(object):
         """
         self.config = ConfigParser.ConfigParser()
         self.intree = False
+        self.config_paths = []
         if config_path is None:
             config_system = os.path.exists(config_path_system)
+            config_system_extra = os.path.exists(_config_dir_system_extra)
             config_local = os.path.exists(config_path_local)
             config_intree = os.path.exists(config_path_intree)
-            if not config_local and not config_system:
-                if not config_intree:
-                    raise ConfigFileNotFound([config_path_system,
-                                              config_path_local,
-                                              config_path_intree])
-                self.config_path = config_path_intree
+            config_intree_extra = os.path.exists(_config_path_intree_extra)
+            if (not config_system) and (not config_local) and (not config_intree):
+                raise ConfigFileNotFound([config_path_system,
+                                          config_path_local,
+                                          config_path_intree])
+            if config_intree:
+                # In this case, respect only the intree config
+                self.config.read(config_path_intree)
+                self.config_paths.append(config_path_intree)
+                if config_intree_extra:
+                    for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
+                        self.config.read(extra_file)
+                        self.config_paths.append(extra_file)
                 self.intree = True
             else:
-                if config_local:
-                    self.config_path = config_path_local
-                else:
-                    self.config_path = config_path_system
+                # In this case, load first the global config, then the
+                # local config overrides the global one
+                if config_system:
+                    self.config.read(config_path_system)
+                    self.config_paths.append(config_path_system)
+                    if config_system_extra:
+                        for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
+                            self.config.read(extra_file)
+                            self.config_paths.append(extra_file)
+                if not config_local:
+                    path.init_dir(_config_dir_local)
+                    with open(config_path_local, 'w') as config_local_fileobj:
+                        config_local_fileobj.write('# You can use this file to override configuration values from '
+                                                   '%s and %s\n' % (config_path_system, _config_dir_system_extra))
+                self.config_path = config_path_local
+                self.config.read(config_path_local)
+                self.config_paths.append(config_path_local)
         else:
+            # Unittests
             self.config_path = config_path
-        self.config.read(self.config_path)
+            self.config_paths.append(config_path)
+            self.config.read(config_path)
 
     def _handle_no_value(self, section, key, default):
         """
