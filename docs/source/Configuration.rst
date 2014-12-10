@@ -31,7 +31,9 @@ Config file parsing order
 Avocado starts by parsing what it calls system wide config file, that is shipped to all avocado users on a system
 wide directory, ``/etc/avocado/avocado.conf``. Then it'll verify if there's a local user config file, that is located
 usually in ``~/.config/avocado/avocado.conf``. The order of the parsing matters, so the system wide file is parsed,
-then the user config file is parsed last, so that the user can override values at will.
+then the user config file is parsed last, so that the user can override values at will. There is another directory
+that will be scanned by extra config files, ``/etc/avocado/conf.d``. This directory may contain plugin config files,
+and extra additional config files that the system administrator/avocado developers might judge necessary to put there.
 
 Please note that for base directories, if you chose a directory that can't be properly used by avocado (some directories
 require read access, others, read and write access), avocado will fall back to some defaults. So if your regular user
@@ -43,8 +45,8 @@ Plugin config files
 
 Plugins can also be configured by config files. In order to not disturb the main avocado config file, those plugins,
 if they wish so, may install additional config files to ``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed
-after the system wide config file. Users can override those values as well at the local config file level. So considering
-the hypothetical plugin config::
+after the system wide config file. Users can override those values as well at the local config file level.
+Considering the hypothetical plugin config::
 
     [plugin.salad]
     base = ceasar
