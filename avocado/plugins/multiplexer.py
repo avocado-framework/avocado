@@ -79,7 +79,7 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='minor', msg='Variant %s:    %s' %
                         (index + 1, paths))
             if args.contents:
-                env = collections.OrderedDict()
+                env = {}
                 for node in tpl:
                     env.update(node.environment)
                 for k in sorted(env.keys()):
