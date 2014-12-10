@@ -104,7 +104,7 @@ class TestRunner(object):
                                            runner_queue=queue)
 
         else:
-            test_class = test.DropinTest
+            test_class = test.SimpleTest
             test_instance = test_class(params=params, path=test_path,
                                        base_logdir=self.job.logdir,
                                        job=self.job)
