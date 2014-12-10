@@ -42,7 +42,7 @@ class TestRunner(plugin.Plugin):
         """
         self.parser = parser.subcommands.add_parser(
             'run',
-            help='Run one or more tests (test module in .py, test alias or dropin)')
+            help='Run one or more tests (native test, test alias, binary or script)')
 
         self.parser.add_argument('url', type=str, default=[], nargs='*',
                                  help='List of test IDs (aliases or paths)')
@@ -110,7 +110,7 @@ class TestRunner(plugin.Plugin):
 
     def run(self, args):
         """
-        Run test modules or dropin tests.
+        Run test modules or simple tests.
 
         :param args: Command line args received from the run subparser.
         """

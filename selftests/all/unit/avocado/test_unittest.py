@@ -99,35 +99,35 @@ class TestClassTest(unittest.TestCase):
             shutil.rmtree(self.base_logdir, ignore_errors=True)
 
 
-class DropinClassTest(unittest.TestCase):
+class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
         self.pass_script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,
-            'avocado_dropin_unittest')
+            'avocado_simpletest_unittest')
         self.pass_script.save()
 
         self.fail_script = script.TemporaryScript(
             'avocado_fail.sh',
             FAIL_SCRIPT_CONTENTS,
-            'avocado_dropin_unittest')
+            'avocado_simpletest_unittest')
         self.fail_script.save()
 
-        self.tst_instance_pass = test.DropinTest(
+        self.tst_instance_pass = test.SimpleTest(
             path=self.pass_script.path,
             base_logdir=os.path.dirname(self.pass_script.path))
         self.tst_instance_pass.run_avocado()
 
-        self.tst_instance_fail = test.DropinTest(
+        self.tst_instance_fail = test.SimpleTest(
             path=self.fail_script.path,
             base_logdir=os.path.dirname(self.fail_script.path))
         self.tst_instance_fail.run_avocado()
 
-    def testDropinPassStatus(self):
+    def testSimpleTestPassStatus(self):
         self.assertEqual(self.tst_instance_pass.status, 'PASS')
 
-    def testDropinFailStatus(self):
+    def testSimpleTestFailStatus(self):
         self.assertEqual(self.tst_instance_fail.status, 'FAIL')
 
     def tearDown(self):

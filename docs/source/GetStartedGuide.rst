@@ -46,7 +46,7 @@ you can run are:
 * Tests written in python, using the avocado API, which we'll call `native`.
 * Any executable in your box, really. The criteria for PASS/FAIL is the return
   code of the executable. If it returns 0, the test PASSed, if it returned
-  != 0, it FAILed. We'll call those tests `dropin`.
+  != 0, it FAILed. We'll call those tests `simple tests`.
 
 Native tests
 ------------
@@ -88,11 +88,11 @@ The idea is to have a unique identifier that can be used for job data, for
 the purposes of joining on a single database results obtained by jobs run
 on different systems.
 
-Drop-In tests
--------------
+Simple Tests
+------------
 
 You can run any number of test in an arbitrary order, as well as mix and match
-native tests and dropin tests::
+native tests and simple tests::
 
     $ echo '#!/bin/bash' > /tmp/script_that_passes.sh
     $ echo 'true' >> /tmp/script_that_passes.sh

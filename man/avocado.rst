@@ -32,7 +32,7 @@ on them being loaded::
 Real use of avocado depends on running avocado subcommands. This a typical list
 of avocado subcommands::
 
- run         Run one or more tests (test module in .py, test alias or dropin)
+ run         Run one or more tests (native test, test alias, binary or script)
  list        List available test modules
  sysinfo     Collect system information
  multiplex   Generate a list of dictionaries with params from multiplex file(s)
@@ -404,7 +404,7 @@ for both stdout and stderr, ``stdout``, for the stdout only, ``stderr``, for
 only the stderr only, or ``none``, to allow neither of them to be recorded and
 checked.
 
-This process works fine also with dropin tests (random executables that
+This process works fine also with simple tests, executables that
 return 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
 
     $ cat output_record.sh

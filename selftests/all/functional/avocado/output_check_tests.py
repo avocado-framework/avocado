@@ -20,7 +20,7 @@ echo "Hello, avocado!"
 """
 
 
-class RunnerDropinTest(unittest.TestCase):
+class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
         self.output_script = script.TemporaryScript(

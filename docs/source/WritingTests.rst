@@ -340,8 +340,8 @@ can select which process outputs will go to the reference files, should you chos
 ``all``, for both stdout and stderr, ``stdout``, for the stdout only, ``stderr``, for only the stderr only, or ``none``,
 to allow neither of them to be recorded and checked.
 
-This process works fine also with dropin tests (random programs/shell scripts
-that return 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
+This process works fine also with simple tests, which are programs or shell scripts
+that returns 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
 
     $ cat output_record.sh
     #!/bin/bash
@@ -643,11 +643,11 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     15:54:31 test       L0387 INFO |
 
 
-Environment Variables for Dropin Tests
+Environment Variables for Simple Tests
 ======================================
 
 Avocado exports avocado variables and multiplexed variables as BASH environment
-to the running test. Those variables are interesting to drop-in tests, because
+to the running test. Those variables are interesting to simple tests, because
 they can not make use of Avocado API directly with Python, like the native
 tests can do and also they can modify the test parameters.
 
