@@ -198,21 +198,21 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(len(r['job_id']), 40)
 
 
-class RunnerDropinTest(unittest.TestCase):
+class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
         self.pass_script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,
-            'avocado_dropin_functional')
+            'avocado_simpletest_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript(
             'avocado_fail.sh',
             FAIL_SCRIPT_CONTENTS,
-            'avocado_dropin_functional')
+            'avocado_simpletest_functional')
         self.fail_script.save()
 
-    def test_dropin_pass(self):
+    def test_simpletest_pass(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run %s' % self.pass_script.path
         result = process.run(cmd_line, ignore_status=True)
@@ -221,7 +221,7 @@ class RunnerDropinTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    def test_dropin_fail(self):
+    def test_simpletest_fail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run %s' % self.fail_script.path
         result = process.run(cmd_line, ignore_status=True)

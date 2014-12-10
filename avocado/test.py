@@ -538,7 +538,7 @@ class Test(unittest.TestCase):
                           self.tagged_name)
 
 
-class DropinTest(Test):
+class SimpleTest(Test):
 
     """
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
@@ -546,7 +546,7 @@ class DropinTest(Test):
 
     def __init__(self, path, params=None, base_logdir=None, tag=None, job=None):
         self.path = os.path.abspath(path)
-        super(DropinTest, self).__init__(name=path, base_logdir=base_logdir,
+        super(SimpleTest, self).__init__(name=path, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
         basedir = os.path.dirname(self.path)
         basename = os.path.basename(self.path)
