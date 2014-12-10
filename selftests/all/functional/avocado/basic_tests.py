@@ -348,9 +348,20 @@ class PluginsTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('Disabled', output)
 
-    def test_datadir_plugin(self):
+    def test_config_plugin(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado datadir'
+        cmd_line = './scripts/avocado config'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertNotIn('Disabled', output)
+
+    def test_config_plugin_datadir(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado config --datadir'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = 0

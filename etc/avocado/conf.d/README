@@ -1,0 +1,9 @@
+This directory holds avocado config files,
+any files in this directory ending in .conf
+will be processed and their directives, included
+in the global config that will be used by avocado
+to alter the behavior of certain sub commands.
+
+This is used for plugins that want to include default
+configuration values, that can users can override
+in their local config file (~/.config/avocado/avocado.conf)
