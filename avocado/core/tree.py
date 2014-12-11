@@ -119,7 +119,7 @@ class TreeNode(object):
     @property
     def is_leaf(self):
         """ Is this a leaf node? """
-        return len(self.children) == 0
+        return not self.children
 
     @property
     def root(self):
