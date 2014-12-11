@@ -83,12 +83,12 @@ class Job(object):
                 self.loglevel = mapping[raw_log_level]
             else:
                 self.loglevel = logging.DEBUG
-            self.multiplex_file = args.multiplex_file
+            self.multiplex_files = args.multiplex_files
             self.show_job_log = args.show_job_log
             self.silent = args.silent
         else:
             self.loglevel = logging.DEBUG
-            self.multiplex_file = None
+            self.multiplex_files = None
             self.show_job_log = False
             self.silent = False
         if self.show_job_log:
@@ -177,12 +177,12 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
-    def _run(self, urls=None, multiplex_file=None):
+    def _run(self, urls=None, multiplex_files=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
         :param urls: String with tests to run.
-        :param multiplex_file: File that multiplexes a given test url.
+        :param multiplex_files: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
                  :mod:`avocado.core.error_codes` for more information.
@@ -205,20 +205,24 @@ class Job(object):
             e_msg = "Empty test ID. A test path or alias must be provided"
             raise exceptions.OptionValidationError(e_msg)
 
-        if multiplex_file is None:
-            if self.args and self.args.multiplex_file is not None:
-                multiplex_file = os.path.abspath(self.args.multiplex_file)
+        if multiplex_files is None:
+            if self.args and self.args.multiplex_files is not None:
+                multiplex_files = self.args.multiplex_files
         else:
-            multiplex_file = os.path.abspath(multiplex_file)
+            multiplex_files = multiplex_files
 
-        if multiplex_file is not None:
+        if multiplex_files is not None:
+            for mux_file in multiplex_files:
+                if not os.path.exists(mux_file):
+                    e_msg = "Multiplex file %s doesn't exist." % (mux_file)
+                    raise exceptions.OptionValidationError(e_msg)
             params_list = []
             if urls is not None:
                 for url in urls:
                     try:
-                        variants = multiplexer.create_variants_from_yaml(open(multiplex_file),
-                                                                         self.args.filter_only,
-                                                                         self.args.filter_out)
+                        variants = multiplexer.multiplex_yamls(multiplex_files,
+                                                               self.args.filter_only,
+                                                               self.args.filter_out)
                     except SyntaxError:
                         variants = None
                     if variants:
@@ -267,7 +271,7 @@ class Job(object):
         else:
             return error_codes.numeric_status['AVOCADO_TESTS_FAIL']
 
-    def run(self, urls=None, multiplex_file=None):
+    def run(self, urls=None, multiplex_files=None):
         """
         Handled main job method. Runs a list of test URLs to its completion.
 
@@ -275,22 +279,22 @@ class Job(object):
 
         * If urls is provided alone, just make a simple list with no specific
           params (all tests use default params).
-        * If urls and multiplex_file are provided, multiplex provides params
+        * If urls and multiplex_files are provided, multiplex provides params
           and variants to all tests it can.
-        * If multiplex_file is provided alone, just use the matrix produced by
-          the file
+        * If multiplex_files are provided alone, just use the matrix produced
+          by the file
 
         The test runner figures out which tests need to be run on an empty urls
         list by assuming the first component of the shortname is the test url.
 
         :param urls: String with tests to run.
-        :param multiplex_file: File that multiplexes a given test url.
+        :param multiplex_files: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
                  :mod:`avocado.core.error_codes` for more information.
         """
         try:
-            return self._run(urls, multiplex_file)
+            return self._run(urls, multiplex_files)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__

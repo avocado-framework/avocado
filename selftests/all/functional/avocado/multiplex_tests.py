@@ -5,7 +5,8 @@ import os
 import sys
 
 # simple magic for using scripts within a source tree
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
+basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
+                       '..', '..')
 basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
@@ -31,6 +32,10 @@ class MultiplexTests(unittest.TestCase):
                                     'The multiplexed job log output has less '
                                     'lines than expected\n%s' %
                                     "".join(job_log_lines))
+            self.assertLess(lines_output, expected_lines * 1.1,
+                            'The multiplexed job log output has more '
+                            'lines than expected\n%s'
+                            % "".join(job_log_lines))
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
@@ -58,17 +63,28 @@ class MultiplexTests(unittest.TestCase):
         # so we expect the full job log has at least 4 times
         # this value. If that is not the case, something is wrong with
         # the output.
-        self.run_and_check(cmd_line, expected_rc, 14*4)
+        self.run_and_check(cmd_line, expected_rc, 14 * 4)
 
     def test_run_mplex_doublepass(self):
         cmd_line = './scripts/avocado run passtest passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         # Should run 2-times 4 variants of pass test
-        self.run_and_check(cmd_line, expected_rc=0, expected_lines=2*4*14)
+        self.run_and_check(cmd_line, expected_rc=0, expected_lines=2 * 4 * 14)
 
     def test_run_mplex_failtest(self):
         cmd_line = './scripts/avocado run passtest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
+
+    def test_run_double_mplex(self):
+        cmd_line = ('./scripts/avocado run passtest --multiplex '
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml')
+        expected_rc = 0
+        # A typical pass has about 14 lines of output,
+        # so we expect the full job log has at least 4 times
+        # this value. If that is not the case, something is wrong with
+        # the output.
+        self.run_and_check(cmd_line, expected_rc, 14 * 4)
 
     def test_run_mplex_params(self):
         cmd_line = ('./scripts/avocado run examples/tests/env_variables.sh '
