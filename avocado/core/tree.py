@@ -190,7 +190,7 @@ class TreeNode(object):
             child.set_environment_dirty()
         self._environment = None
 
-    def iter_children_preorder(self, node=None):
+    def iter_children_preorder(self):
         """ Iterate through children """
         queue = collections.deque()
         node = self
