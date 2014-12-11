@@ -44,6 +44,10 @@ except ImportError:
 
 class TreeNode(object):
 
+    """
+    Class for bounding nodes into tree-structure.
+    """
+
     def __init__(self, name='', value=None, parent=None, children=None):
         if value is None:
             value = {}
@@ -65,12 +69,18 @@ class TreeNode(object):
         return '%s: %s' % (self.path, ', '.join(variables))
 
     def __len__(self):
+        """ Return number of descended leaf nodes """
         return len(tuple(self.iter_leaves()))
 
     def __iter__(self):
+        """ Iterate through descended leaf nodes """
         return self.iter_leaves()
 
     def __eq__(self, other):
+        """
+        Compare if THIS node and all DESCENDANT ones are alike
+        :warning: Preceding nodes and environment might differ!
+        """
         if isinstance(other, str):  # Compare names
             if self.name == other:
                 return True
@@ -81,6 +91,10 @@ class TreeNode(object):
             return True
 
     def add_child(self, node):
+        """
+        Append node as child. Nodes with the same name gets merged into the
+        existing position.
+        """
         if isinstance(node, TreeNode):
             if node.name in self.children:
                 self.children[self.children.index(node.name)].merge(node)
@@ -91,26 +105,36 @@ class TreeNode(object):
             raise ValueError('Bad node type.')
 
     def merge(self, other):
-        """ Merges $other node into this one (doesn't check the name) """
+        """
+        Merges $other node into this one without checking the name of the
+        other node. New values are appended, existing values overwritten
+        and unaffected ones are kept. Then all other node children are
+        added as children (recursively they get either appended at the end
+        or merged into existing node in the previous position.
+        """
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
 
     @property
     def is_leaf(self):
+        """ Is this a leaf node? """
         return len(self.children) == 0
 
     @property
     def root(self):
+        """ Root of this tree """
         return self.get_root()
 
     def get_root(self):
+        """ Get root of this tree """
         root = None
         for root in self.iter_parents():
             pass
         return root
 
     def iter_parents(self):
+        """ Iterate through parent nodes to root """
         node = self.parent
         while True:
             if node is None:
@@ -120,16 +144,20 @@ class TreeNode(object):
 
     @property
     def parents(self):
+        """ List of parent nodes """
         return self.get_parents()
 
     def get_parents(self):
+        """ Get list of parent nodes """
         return list(self.iter_parents())
 
     @property
     def path(self):
+        """ Node path """
         return self.get_path()
 
     def get_path(self, sep='/'):
+        """ Get node path """
         path = [str(self.name)]
         for node in self.iter_parents():
             path.append(str(node.name))
@@ -137,9 +165,11 @@ class TreeNode(object):
 
     @property
     def environment(self):
+        """ Node environment (values + preceding envs) """
         return self.get_environment()
 
     def get_environment(self):
+        """ Get node environment (values + preceding envs) """
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
                                  if self.parent else {})
@@ -155,71 +185,90 @@ class TreeNode(object):
         return self._environment
 
     def set_environment_dirty(self):
+        """ Set the environment cache dirty """
         for child in self.children:
             child.set_environment_dirty()
         self._environment = None
 
     def iter_children_preorder(self, node=None):
-        q = collections.deque()
+        """ Iterate through children """
+        queue = collections.deque()
         node = self
         while node is not None:
             yield node
-            q.extendleft(reversed(node.children))
+            queue.extendleft(reversed(node.children))
             try:
-                node = q.popleft()
-            except:
+                node = queue.popleft()
+            except IndexError:
                 node = None
 
     def iter_leaves(self):
+        """ Iterate throuh leaf nodes """
         for node in self.iter_children_preorder():
             if node.is_leaf:
                 yield node
 
     def get_leaves(self):
+        """ Get list of leafe nodes """
         return list(self.iter_leaves())
 
     def get_ascii(self, show_internal=True, compact=False, attributes=None):
-        (lines, _) = self._ascii_art(show_internal=show_internal,
-                                     compact=compact, attributes=attributes)
+        """
+        Get asci-art tree structure
+        :param show_internal: Show intermediary nodes
+        :param compact: Compress the tree vertically
+        :param attributes: List of node attributes to be printed out ['name']
+        :return: string
+        """
+        (lines, _) = self.ascii_art(show_internal=show_internal,
+                                    compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
 
-    def _ascii_art(self, char1='-', show_internal=True, compact=False,
-                   attributes=None):
+    def ascii_art(self, char1='-', show_internal=True, compact=False,
+                  attributes=None):
+        """
+        Generate asci-art for this node
+        :param char1: Incomming path character [-]
+        :param show_internal: Show intermediary nodes
+        :param compact: Compress the tree vertically
+        :param attributes: List of node attributes to be printed out ['name']
+        :return: list of strings
+        """
         if attributes is None:
             attributes = ["name"]
         node_name = ', '.join(map(str, [getattr(self, v)
                                         for v in attributes
                                         if hasattr(self, v)]))
 
-        LEN = max(3, len(node_name)
-                  if not self.children or show_internal else 3)
-        PAD = ' ' * LEN
-        PA = ' ' * (LEN - 1)
+        length = max(3, len(node_name)
+                     if not self.children or show_internal else 3)
+        pad = ' ' * length
+        _pad = ' ' * (length - 1)
         if not self.is_leaf:
             mids = []
             result = []
-            for c in self.children:
+            for char in self.children:
                 if len(self.children) == 1:
                     char2 = '/'
-                elif c is self.children[0]:
+                elif char is self.children[0]:
                     char2 = '/'
-                elif c is self.children[-1]:
+                elif char is self.children[-1]:
                     char2 = '\\'
                 else:
                     char2 = '-'
-                (clines, mid) = c._ascii_art(char2, show_internal, compact,
-                                             attributes)
+                (clines, mid) = char.ascii_art(char2, show_internal, compact,
+                                               attributes)
                 mids.append(mid + len(result))
                 result.extend(clines)
                 if not compact:
                     result.append('')
             if not compact:
                 result.pop()
-            (lo, hi, end) = (mids[0], mids[-1], len(result))
-            prefixes = ([PAD] * (lo + 1) + [PA + '|'] * (hi - lo - 1)
-                        + [PAD] * (end - hi))
-            mid = (lo + hi) / 2
-            prefixes[mid] = char1 + '-' * (LEN - 2) + prefixes[mid][-1]
+            (low, high, end) = (mids[0], mids[-1], len(result))
+            prefixes = ([pad] * (low + 1) + [_pad + '|'] * (high - low - 1)
+                        + [pad] * (end - high))
+            mid = (low + high) / 2
+            prefixes[mid] = char1 + '-' * (length - 2) + prefixes[mid][-1]
             result = [p + l for (p, l) in zip(prefixes, result)]
             if show_internal:
                 stem = result[mid]
@@ -229,12 +278,19 @@ class TreeNode(object):
             return [char1 + '-' + node_name], 0
 
     def detach(self):
+        """ Detach this node from parent """
         if self.parent:
             self.parent.children.remove(self)
             self.parent = None
         return self
 
 
+# Following class defines debug classes inside, whose super() calls are
+# incorrectly recognized by pylint-1.2. Disabling Bad first argument given
+# to super() pylint.
+# It also extends classes requiring more arguments and defining too few
+# new behavior. Disable Too few public methods and To many arguments messages.
+# pylint: disable=E1003,R0903,R0913
 class TreeNodeDebug(TreeNode):
 
     """
@@ -245,7 +301,7 @@ class TreeNodeDebug(TreeNode):
 
     def __init__(self, name='', value=None, parent=None, children=None,
                  srcyaml=None):
-        class OutputValue(object):  # pylint: disable=R0903
+        class OutputValue(object):
 
             """ Ordinary value with some debug info """
 
@@ -261,20 +317,18 @@ class TreeNodeDebug(TreeNode):
                                          self.yaml, self.node.path,
                                          output.term_support.ENDC)
 
-        class OutputList(list):     # pylint: disable=R0903
+        class OutputList(list):
 
             """ List with some debug info """
 
             def __init__(self, values, nodes, yamls):
-                super(OutputList, self).__init__(
-                    values)    # pylint: disable=E1003
+                super(OutputList, self).__init__(values)
                 self.nodes = nodes
                 self.yamls = yamls
 
             def __add__(self, other):
                 """ Keep attrs separate in order to print the origins """
-                value = super(OutputList, self).__add__(
-                    other)  # pylint: disable=E1003
+                value = super(OutputList, self).__add__(other)
                 return OutputList(value,
                                   self.nodes + other.nodes,
                                   self.yamls + other.yamls)
@@ -289,12 +343,12 @@ class TreeNodeDebug(TreeNode):
                                   for _ in itertools.izip(self, self.yamls,
                                                           self.nodes))
 
-        class ValueDict(dict):        # pylint: disable=R0903
+        class ValueDict(dict):
 
             """ Dict which stores the origin of the items """
 
             def __init__(self, srcyaml, node, values):
-                super(ValueDict, self).__init__()   # pylint: disable=E1003
+                super(ValueDict, self).__init__()
                 self.yaml = srcyaml
                 self.node = node
                 self.yaml_per_key = {}
@@ -305,7 +359,7 @@ class TreeNodeDebug(TreeNode):
                 """ Store yaml_per_key and value """
                 # Merge is responsible to set `self.yaml` to current file
                 self.yaml_per_key[key] = self.yaml
-                return super(ValueDict, self).__setitem__(key, value)   # pylint: disable=E1003
+                return super(ValueDict, self).__setitem__(key, value)
 
             def __getitem__(self, key):
                 """
@@ -314,7 +368,7 @@ class TreeNodeDebug(TreeNode):
                 overrides the `__str__` and return string with origin.
                 :warning: Returned values are unusable in tests!
                 """
-                value = super(ValueDict, self).__getitem__(key)     # pylint: disable=E1003
+                value = super(ValueDict, self).__getitem__(key)
                 origin = self.yaml_per_key.get(key)
                 if isinstance(value, list):
                     value = OutputList([value], [self.node], [origin])
@@ -333,7 +387,8 @@ class TreeNodeDebug(TreeNode):
             value = {}
         if srcyaml:
             srcyaml = os.path.relpath(srcyaml)
-        super(TreeNodeDebug, self).__init__(name, ValueDict(srcyaml, self, value),
+        super(TreeNodeDebug, self).__init__(name,
+                                            ValueDict(srcyaml, self, value),
                                             parent, children)
         self.yaml = srcyaml
 
@@ -350,11 +405,12 @@ class TreeNodeDebug(TreeNode):
         self.yaml = srcyaml
         self.value.yaml = srcyaml
         return super(TreeNodeDebug, self).merge(other)
+# reenable pylint: enable=E1003,R0903,R0913
 
 
 def _create_from_yaml(stream, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
-    class Value(tuple):
+    class Value(tuple):     # Few methods pylint: disable=R0903
 
         """ Used to mark values to simplify checking for node vs. value """
         pass
@@ -371,7 +427,9 @@ def _create_from_yaml(stream, cls_node=TreeNode):
         return cls_node(name, dict(node_values), children=node_children)
 
     def mapping_to_tree_loader(loader, node):
+        """ Maps yaml mapping tag to TreeNode structure """
         def is_node(values):
+            """ Whether these values represent node or just random values """
             if (isinstance(values, list) and values
                     and isinstance(values[0], (Value, TreeNode))):
                 # When any value is TreeNode or Value, all of them are already
