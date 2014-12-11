@@ -400,6 +400,7 @@ class TreeNodeDebug(TreeNode):
         import os       # Don't consume memory in normal run
         if hasattr(other, 'yaml'):
             srcyaml = os.path.relpath(other.yaml)
+            self.value.yaml_per_key.update(other.value.yaml_per_key)
         else:
             srcyaml = "Unknown"
         self.yaml = srcyaml
