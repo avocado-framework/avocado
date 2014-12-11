@@ -162,15 +162,16 @@ class TreeNode(object):
             child.set_environment_dirty()
         self._environment = None
 
-    def iter_children_preorder(self, node=None):
-        q = collections.deque()
+    def iter_children_preorder(self):
+        """ Iterate through children """
+        queue = collections.deque()
         node = self
         while node is not None:
             yield node
-            q.extendleft(reversed(node.children))
+            queue.extendleft(reversed(node.children))
             try:
-                node = q.popleft()
-            except:
+                node = queue.popleft()
+            except IndexError:
                 node = None
 
     def iter_leaves(self):
