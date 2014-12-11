@@ -25,6 +25,7 @@ Contents:
    DebuggingWithGDB
    WrapProcess
    ContributionGuide
+   DevelopmentTips
    api/modules
 
 Indices and tables
