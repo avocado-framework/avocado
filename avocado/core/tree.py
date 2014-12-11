@@ -16,7 +16,6 @@
 #          Lucas Meneghel Rodrigues <lmr@redhat.com>
 #          Jaime Huerta-Cepas <jhcepas@gmail.com>
 #
-
 """
 Tree data strucure with nodes.
 
@@ -82,7 +81,7 @@ class TreeNode(object):
             return True
 
     def add_child(self, node):
-        if isinstance(node, self.__class__):
+        if isinstance(node, TreeNode):
             if node.name in self.children:
                 self.children[self.children.index(node.name)].merge(node)
             else:
@@ -236,7 +235,124 @@ class TreeNode(object):
         return self
 
 
-def _create_from_yaml(stream):
+class TreeNodeDebug(TreeNode):
+
+    """
+    Debug version of TreeNodeDebug
+    :warning: Origin of the value is appended to all values thus it's not
+    suitable for running tests.
+    """
+
+    def __init__(self, name='', value=None, parent=None, children=None,
+                 srcyaml=None):
+        class OutputValue(object):  # pylint: disable=R0903
+
+            """ Ordinary value with some debug info """
+
+            def __init__(self, value, node, srcyaml):
+                self.value = value
+                self.node = node
+                self.yaml = srcyaml
+
+            def __str__(self):
+                from avocado.core import output
+                return "%s%s@%s:%s%s" % (self.value,
+                                         output.term_support.GREY,
+                                         self.yaml, self.node.path,
+                                         output.term_support.ENDC)
+
+        class OutputList(list):     # pylint: disable=R0903
+
+            """ List with some debug info """
+
+            def __init__(self, values, nodes, yamls):
+                super(OutputList, self).__init__(
+                    values)    # pylint: disable=E1003
+                self.nodes = nodes
+                self.yamls = yamls
+
+            def __add__(self, other):
+                """ Keep attrs separate in order to print the origins """
+                value = super(OutputList, self).__add__(
+                    other)  # pylint: disable=E1003
+                return OutputList(value,
+                                  self.nodes + other.nodes,
+                                  self.yamls + other.yamls)
+
+            def __str__(self):
+                import itertools       # Don't consume memory in normal run
+                from avocado.core import output
+                color = output.term_support.GREY
+                cend = output.term_support.ENDC
+                return ' + '.join("%s%s@%s:%s%s"
+                                  % (_[0], color, _[1], _[2].path, cend)
+                                  for _ in itertools.izip(self, self.yamls,
+                                                          self.nodes))
+
+        class ValueDict(dict):        # pylint: disable=R0903
+
+            """ Dict which stores the origin of the items """
+
+            def __init__(self, srcyaml, node, values):
+                super(ValueDict, self).__init__()   # pylint: disable=E1003
+                self.yaml = srcyaml
+                self.node = node
+                self.yaml_per_key = {}
+                for key, value in values.iteritems():
+                    self[key] = value
+
+            def __setitem__(self, key, value):
+                """ Store yaml_per_key and value """
+                # Merge is responsible to set `self.yaml` to current file
+                self.yaml_per_key[key] = self.yaml
+                return super(ValueDict, self).__setitem__(key, value)   # pylint: disable=E1003
+
+            def __getitem__(self, key):
+                """
+                This is debug run. Fake the results and return either
+                OutputValue (let's call it string) and OutputList. These
+                overrides the `__str__` and return string with origin.
+                :warning: Returned values are unusable in tests!
+                """
+                value = super(ValueDict, self).__getitem__(key)     # pylint: disable=E1003
+                origin = self.yaml_per_key.get(key)
+                if isinstance(value, list):
+                    value = OutputList([value], [self.node], [origin])
+                else:
+                    value = OutputValue(value, self.node, origin)
+                return value
+
+            def iteritems(self):
+                """ Slower implementation with the use of __getitem__ """
+                for key in self.iterkeys():
+                    yield key, self[key]
+                raise StopIteration
+
+        import os       # Don't consume memory in normal run
+        if value is None:
+            value = {}
+        if srcyaml:
+            srcyaml = os.path.relpath(srcyaml)
+        super(TreeNodeDebug, self).__init__(name, ValueDict(srcyaml, self, value),
+                                            parent, children)
+        self.yaml = srcyaml
+
+    def merge(self, other):
+        """
+        Override origin with the one from other tree. Updated/Newly set values
+        are going to use this location as origin.
+        """
+        import os       # Don't consume memory in normal run
+        if hasattr(other, 'yaml'):
+            srcyaml = os.path.relpath(other.yaml)
+        else:
+            srcyaml = "Unknown"
+        self.yaml = srcyaml
+        self.value.yaml = srcyaml
+        return super(TreeNodeDebug, self).merge(other)
+
+
+def _create_from_yaml(stream, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
     class Value(tuple):
 
@@ -252,7 +368,7 @@ def _create_from_yaml(stream):
                 node_children.append(value)
             else:
                 node_values.append(value)
-        return TreeNode(name, dict(node_values), children=node_children)
+        return cls_node(name, dict(node_values), children=node_children)
 
     def mapping_to_tree_loader(loader, node):
         def is_node(values):
@@ -268,7 +384,7 @@ def _create_from_yaml(stream):
             if is_node(values):    # New node
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
-                objects.append(TreeNode(name))
+                objects.append(cls_node(name))
             else:                           # Values
                 objects.append(Value((name, values)))
         return objects
@@ -277,17 +393,39 @@ def _create_from_yaml(stream):
     return tree_node_from_values('', yaml.load(stream, Loader))
 
 
-def create_from_yaml(paths):
+def create_from_yaml(paths, debug=False):
     """
     Create tree structure from yaml-like file
     :param fileobj: File object to be processed
     :raise SyntaxError: When yaml-file is corrupted
     :return: Root of the created tree structure
     """
-    data = TreeNode()
+    def _merge(data, path):
+        """ Normal run """
+        data.merge(_create_from_yaml(open(path).read()))
+
+    def _merge_debug(data, path):
+        """ Use NamedTreeNodeDebug magic """
+        class NamedTreeNodeDebug(TreeNodeDebug):    # pylint: disable=R0903
+
+            """ Fake class with hardcoded yaml path """
+
+            def __init__(self, name='', value=None, parent=None,
+                         children=None):
+                super(NamedTreeNodeDebug, self).__init__(name, value, parent,
+                                                         children, path)
+        data.merge(_create_from_yaml(open(path).read(), NamedTreeNodeDebug))
+
+    if not debug:
+        data = TreeNode()
+        merge = _merge
+    else:
+        data = TreeNodeDebug()
+        merge = _merge_debug
+
     try:
         for path in paths:
-            data.merge(_create_from_yaml(open(path).read()))
+            merge(data, path)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
         raise SyntaxError(err)
     return data
