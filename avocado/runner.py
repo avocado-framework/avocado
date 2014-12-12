@@ -56,62 +56,7 @@ class TestRunner(object):
         sysinfo_dir = path.init_dir(self.job.logdir, 'sysinfo')
         self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
-    def load_test(self, params, queue):
-        """
-        Resolve and load the test url from the the test shortname.
-
-        This method should now be called by the test runner process.
-
-        :param params: Dictionary with test params.
-        :type params: dict
-        :param queue: a Queue for communicating with the test runner
-        :type queue: an instance of :class:`multiprocessing.Queue`.
-        :return: an instance of :class:`avocado.test.Test`.
-        """
-        t_id = params.get('id')
-        test_path = os.path.abspath(t_id)
-        path_analyzer = path.PathInspector(test_path)
-        module_name = os.path.basename(test_path).split('.')[0]
-        if not os.path.exists(test_path):
-            # Try to resolve test ID (keep compatibility)
-            rel_path = '%s.py' % t_id
-            test_path = os.path.join(data_dir.get_test_dir(), rel_path)
-            if os.path.exists(test_path):
-                path_analyzer = path.PathInspector(test_path)
-                t_id = rel_path
-            else:
-                test_class = test.MissingTest
-                test_instance = test_class(name=t_id,
-                                           base_logdir=self.job.logdir,
-                                           params=params,
-                                           job=self.job)
-                return test_instance
-
-        if path_analyzer.is_python():
-            try:
-                test_module_dir = os.path.dirname(test_path)
-                f, p, d = imp.find_module(module_name, [test_module_dir])
-                test_module = imp.load_module(module_name, f, p, d)
-                f.close()
-                test_class = getattr(test_module, module_name)
-            except ImportError:
-                test_class = test.MissingTest
-            finally:
-                test_instance = test_class(name=t_id,
-                                           base_logdir=self.job.logdir,
-                                           params=params,
-                                           job=self.job,
-                                           runner_queue=queue)
-
-        else:
-            test_class = test.SimpleTest
-            test_instance = test_class(params=params, path=test_path,
-                                       base_logdir=self.job.logdir,
-                                       job=self.job)
-
-        return test_instance
-
-    def run_test(self, params, queue):
+    def run_test(self, test_factory, queue):
         """
         Run a test instance in a subprocess.
 
@@ -122,7 +67,7 @@ class TestRunner(object):
         """
         sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
         sys.sterr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
-        instance = self.load_test(params, queue)
+        instance = self.job.test_loader.load_test(test_factory)
         runtime.CURRENT_TEST = instance
         early_state = instance.get_state()
         queue.put(early_state)
@@ -160,7 +105,7 @@ class TestRunner(object):
             test_state['text_output'] = log_file_obj.read()
         return test_state
 
-    def run(self, params_list):
+    def run_suite(self, params_list):
         """
         Run one or more tests and report with test result.
 
@@ -172,9 +117,11 @@ class TestRunner(object):
         self.sysinfo.start_job_hook()
         self.result.start_tests()
         q = queues.SimpleQueue()
-        for params in params_list:
+        test_suite = self.job.test_loader.discover(params_list, q)
+
+        for test_factory in test_suite:
             p = multiprocessing.Process(target=self.run_test,
-                                        args=(params, q,))
+                                        args=(test_factory, q,))
 
             cycle_timeout = 1
             time_started = time.time()
