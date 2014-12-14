@@ -21,6 +21,7 @@ import datetime
 from avocado.plugins import plugin
 from avocado.result import TestResult
 
+
 JOURNAL_FILENAME = ".journal.sqlite"
 
 SCHEMA = {'job_info': 'CREATE TABLE job_info (unique_id TEXT UNIQUE)',

@@ -18,10 +18,10 @@ Reads the avocado settings from a .ini file (from python ConfigParser).
 import ConfigParser
 import os
 import sys
-import shutil
 import glob
 
 from avocado.utils import path
+
 
 if 'VIRTUAL_ENV' in os.environ:
     CFG_DIR = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')

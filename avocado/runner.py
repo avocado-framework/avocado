@@ -17,7 +17,6 @@
 Test runner module.
 """
 
-import imp
 import logging
 import multiprocessing
 from multiprocessing import queues
@@ -28,8 +27,6 @@ import time
 
 from avocado import runtime
 from avocado import sysinfo
-from avocado import test
-from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status

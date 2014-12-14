@@ -16,11 +16,12 @@ HTML output module.
 """
 import codecs
 import os
-import pystache
 import shutil
 import sys
 import time
 import webbrowser
+
+import pystache
 
 from avocado.core import error_codes
 from avocado.core import output
