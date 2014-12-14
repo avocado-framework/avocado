@@ -27,6 +27,7 @@ from avocado import multiplexer
 from avocado import result
 from avocado import test
 from avocado import runner
+from avocado import loader
 from avocado.core import data_dir
 from avocado.core import error_codes
 from avocado.core import exceptions
@@ -101,6 +102,14 @@ class Job(object):
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
         self.view = output.View(app_args=self.args)
+
+    def _make_test_loader(self):
+        if hasattr(self.args, 'test_loader'):
+            test_loader_class = self.args.test_loader
+        else:
+            test_loader_class = loader.TestLoader
+
+        self.test_loader = test_loader_class(job=self)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -247,12 +256,13 @@ class Job(object):
 
         self._make_test_result()
         self._make_test_runner()
+        self._make_test_loader()
 
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id)
         self.view.logfile = self.logfile
-        failures = self.test_runner.run(params_list)
+        failures = self.test_runner.run_suite(params_list)
         self.view.stop_file_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
