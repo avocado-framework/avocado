@@ -37,6 +37,7 @@ from avocado.plugins import jsonresult
 from avocado.plugins import xunit
 from avocado.utils import archive
 
+
 try:
     from avocado.plugins import htmlresult
     HTML_REPORT_SUPPORT = True

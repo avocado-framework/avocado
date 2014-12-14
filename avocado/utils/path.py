@@ -21,6 +21,7 @@ import stat
 
 from avocado.utils import aurl
 
+
 PY_EXTENSIONS = ['.py']
 SHEBANG = '#!'
 

@@ -22,7 +22,6 @@
 __version__ = 'SPARK-0.7 (pre-alpha-7)'
 
 import re
-import sys
 import string
 
 

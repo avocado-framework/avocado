@@ -20,6 +20,7 @@ from importlib import import_module
 
 from avocado.plugins.plugin import Plugin
 
+
 log = logging.getLogger("avocado.plugins")
 
 __all__ = ['load_builtins']

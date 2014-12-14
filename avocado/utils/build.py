@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import os
+
 import process
 
 
