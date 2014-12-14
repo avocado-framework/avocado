@@ -17,7 +17,6 @@
 Test runner module.
 """
 
-import imp
 import logging
 import multiprocessing
 from multiprocessing import queues
@@ -28,8 +27,6 @@ import time
 
 from avocado import runtime
 from avocado import sysinfo
-from avocado import test
-from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
@@ -66,7 +63,7 @@ class TestRunner(object):
         :type queue: :class`multiprocessing.Queue` instance.
         """
         sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
-        sys.sterr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
+        sys.stderr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
         instance = self.job.test_loader.load_test(test_factory)
         runtime.CURRENT_TEST = instance
         early_state = instance.get_state()

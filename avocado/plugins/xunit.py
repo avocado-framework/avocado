@@ -14,7 +14,6 @@
 
 """xUnit module."""
 
-import sys
 import datetime
 from xml.sax.saxutils import quoteattr
 

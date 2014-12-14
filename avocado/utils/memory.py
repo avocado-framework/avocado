@@ -24,6 +24,7 @@ import logging
 
 from avocado.utils import process
 
+
 # Returns total memory in kb
 
 

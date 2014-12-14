@@ -36,6 +36,7 @@ from avocado.utils.params import Params
 from avocado import sysinfo
 from avocado.version import VERSION
 
+
 log = logging.getLogger("avocado.test")
 
 
