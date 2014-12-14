@@ -417,7 +417,7 @@ Let's record the output (both stdout and stderr) for this one::
     JOB ID    : <id>
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS     : 1
-    (1/1) home/lmr/Code/avocado.lmr/output_record.sh: PASS (0.01 s)
+    (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
     PASS      : 1
     ERROR     : 0
     FAIL      : 0

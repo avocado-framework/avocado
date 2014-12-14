@@ -13,7 +13,7 @@ that contain a number of `keys` and `values`. Take for example a basic avocado c
 
     [runner]
     base_dir = ~/avocado
-    test_dir = /home/lmr/Code/avocado.lmr/examples/tests
+    test_dir = /$HOME/Code/avocado/examples/tests
     data_dir = /usr/share/avocado/data
     logs_dir = ~/avocado/job-results
     tmp_dir = /var/tmp/avocado
@@ -75,11 +75,11 @@ configuration, after all the files are parsed in their correct resolution order.
     $ avocado config
     Config files read (in order):
         /etc/avocado/avocado.conf
-        /home/lmr/.config/avocado/avocado.conf
+        $HOME/.config/avocado/avocado.conf
 
         Section.Key     Value
         runner.base_dir /usr/share/avocado
-        runner.test_dir /home/lmr/Code/avocado.lmr/examples/tests
+        runner.test_dir $HOME/Code/avocado/examples/tests
         runner.data_dir /usr/share/avocado/data
         runner.logs_dir ~/avocado/job-results
         runner.tmp_dir  /var/tmp/avocado
@@ -107,17 +107,17 @@ it will give you an output similar to the one seen below::
     $ avocado config --datadir
     Config files read (in order):
         /etc/avocado/avocado.conf
-        /home/lmr/.config/avocado/avocado.conf
+        $HOME/.config/avocado/avocado.conf
 
     Avocado replaces config dirs that can't be accessed
     with sensible defaults. Please edit your local config
     file to customize values
 
     Avocado Data Directories:
-        base  /home/lmr/avocado
-        tests /home/lmr/Code/avocado.lmr/examples/tests
-        data  /home/lmr/avocado/data
-        logs  /home/lmr/avocado/job-results
+        base  $HOME/avocado
+        tests $HOME/Code/avocado/examples/tests
+        data  $HOME/avocado/data
+        logs  $HOME/avocado/job-results
         tmp   /var/tmp/avocado
 
 Note that, while avocado will do its best to use the config values you

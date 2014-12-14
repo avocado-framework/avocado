@@ -118,7 +118,7 @@ generation for sleeptest just like::
 
     $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID : d565e8dec576d6040f894841f32a836c751f968f
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
     TESTS  : 3
     (1/3) sleeptest.short: PASS (0.50 s)
     (2/3) sleeptest.medium: PASS (1.01 s)
@@ -140,7 +140,7 @@ If you want to run some tests that don't require params set by the multiplex fil
 
     $ avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID : dd91ea5f8b42b2f084702315688284f7e8aa220a
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
     TESTS  : 4
     (1/4) sleeptest.short: PASS (0.50 s)
     (2/4) sleeptest.medium: PASS (1.01 s)
@@ -183,7 +183,7 @@ Executing an avocado test gives::
 
     $ examples/tests/sleeptest.py
     JOB ID : de6c1e4c227c786dc4d926f6fca67cda34d96276
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/job.log
     TESTS  : 1
     (1/1) sleeptest.1: PASS (1.00 s)
     PASS : 1
@@ -317,7 +317,7 @@ option --output-check-record all to the test runner::
 
     $ scripts/avocado run --output-check-record all synctest
     JOB ID    : bcd05e4fd33e068b159045652da9eb7448802be5
-    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
+    JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
     TESTS     : 1
     (1/1) synctest.py: PASS (2.20 s)
     PASS      : 1
@@ -351,9 +351,9 @@ Let's record the output for this one::
 
     $ scripts/avocado run output_record.sh --output-check-record all
     JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
-    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
+    JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
     TESTS     : 1
-    (1/1) home/lmr/Code/avocado.lmr/output_record.sh: PASS (0.01 s)
+    (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
     PASS      : 1
     ERROR     : 0
     FAIL      : 0
@@ -381,9 +381,9 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, avocado!`
 
     $ scripts/avocado run output_record.sh
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
-    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
+    JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
     TESTS     : 1
-    (1/1) home/lmr/Code/avocado.lmr/output_record.sh: FAIL (0.02 s)
+    (1/1) home/$USER/Code/avocado/output_record.sh: FAIL (0.02 s)
     PASS      : 0
     ERROR     : 0
     FAIL      : 1
@@ -394,8 +394,8 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, avocado!`
 
 Verifying the failure reason::
 
-    $ cat /home/lmr/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
-    20:52:38 test       L0163 INFO | START home/lmr/Code/avocado.lmr/output_record.sh
+    $ cat $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
+    20:52:38 test       L0163 INFO | START home/$USER/Code/avocado/output_record.sh
     20:52:38 test       L0164 DEBUG|
     20:52:38 test       L0165 DEBUG| Test instance parameters:
     20:52:38 test       L0173 DEBUG|
@@ -403,9 +403,9 @@ Verifying the failure reason::
     20:52:38 test       L0180 DEBUG|
     20:52:38 test       L0181 DEBUG| Test instance params override defaults whenever available
     20:52:38 test       L0182 DEBUG|
-    20:52:38 process    L0242 INFO | Running '/home/lmr/Code/avocado.lmr/output_record.sh'
+    20:52:38 process    L0242 INFO | Running '$HOME/Code/avocado/output_record.sh'
     20:52:38 process    L0310 DEBUG| [stdout] Hello, world!
-    20:52:38 test       L0565 INFO | Command: /home/lmr/Code/avocado.lmr/output_record.sh
+    20:52:38 test       L0565 INFO | Command: $HOME/Code/avocado/output_record.sh
     20:52:38 test       L0565 INFO | Exit status: 0
     20:52:38 test       L0565 INFO | Duration: 0.00313782691956
     20:52:38 test       L0565 INFO | Stdout:
@@ -415,7 +415,7 @@ Verifying the failure reason::
     20:52:38 test       L0565 INFO |
     20:52:38 test       L0060 ERROR|
     20:52:38 test       L0063 ERROR| Traceback (most recent call last):
-    20:52:38 test       L0063 ERROR|   File "/home/lmr/Code/avocado.lmr/avocado/test.py", line 397, in check_reference_stdout
+    20:52:38 test       L0063 ERROR|   File "$HOME/Code/avocado/avocado/test.py", line 397, in check_reference_stdout
     20:52:38 test       L0063 ERROR|     self.assertEqual(expected, actual, msg)
     20:52:38 test       L0063 ERROR|   File "/usr/lib64/python2.7/unittest/case.py", line 551, in assertEqual
     20:52:38 test       L0063 ERROR|     assertion_func(first, second, msg=msg)
@@ -429,7 +429,7 @@ Verifying the failure reason::
     20:52:38 test       L0063 ERROR| Hello, avocado!
     20:52:38 test       L0063 ERROR|
     20:52:38 test       L0064 ERROR|
-    20:52:38 test       L0529 ERROR| FAIL home/lmr/Code/avocado.lmr/output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
+    20:52:38 test       L0529 ERROR| FAIL home/$USER/Code/avocado/output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
     Actual:
     Hello, world!
 
@@ -513,7 +513,7 @@ impact your test grid. You can account for that possibility and set up a
 
     $ avocado run sleeptest --multiplex /tmp/sleeptest-example.mplx
     JOB ID : 6d5a2ff16bb92395100fbc3945b8d253308728c9
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     TESTS  : 1
     (1/1) sleeptest.1: ERROR (2.97 s)
     PASS : 0
@@ -525,10 +525,10 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    $ cat /home/lmr/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
+    $ cat $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     15:52:51 test       L0143 INFO | START sleeptest.1
     15:52:51 test       L0144 DEBUG|
-    15:52:51 test       L0145 DEBUG| Test log: /home/lmr/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/sleeptest.1/test.log
+    15:52:51 test       L0145 DEBUG| Test log: $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/sleeptest.1/test.log
     15:52:51 test       L0146 DEBUG| Test instance parameters:
     15:52:51 test       L0153 DEBUG|     _name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
     15:52:51 test       L0153 DEBUG|     _short_name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
@@ -551,9 +551,9 @@ impact your test grid. You can account for that possibility and set up a
     15:52:51 sleeptest  L0035 DEBUG| Sleeping for 5.00 seconds
     15:52:54 test       L0057 ERROR|
     15:52:54 test       L0060 ERROR| Traceback (most recent call last):
-    15:52:54 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/tests/sleeptest.py", line 36, in action
+    15:52:54 test       L0060 ERROR|   File "$HOME/Code/avocado/tests/sleeptest.py", line 36, in action
     15:52:54 test       L0060 ERROR|     time.sleep(self.params.sleep_length)
-    15:52:54 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/avocado/job.py", line 127, in timeout_handler
+    15:52:54 test       L0060 ERROR|   File "$HOME/Code/avocado/avocado/job.py", line 127, in timeout_handler
     15:52:54 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:52:54 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for sleeptest to end
     15:52:54 test       L0061 ERROR|
@@ -602,7 +602,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 
     $ avocado run timeouttest
     JOB ID : d78498a54504b481192f2f9bca5ebb9bbb820b8a
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
     TESTS  : 1
     (1/1) timeouttest.1: ERROR (2.97 s)
     PASS : 0
@@ -615,10 +615,10 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 
 ::
 
-    $ cat /home/lmr/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
+    $ cat $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
     15:54:28 test       L0143 INFO | START timeouttest.1
     15:54:28 test       L0144 DEBUG|
-    15:54:28 test       L0145 DEBUG| Test log: /home/lmr/avocado/job-results/job-2014-08-12T15.54-d78498a5/timeouttest.1/test.log
+    15:54:28 test       L0145 DEBUG| Test log: $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/timeouttest.1/test.log
     15:54:28 test       L0146 DEBUG| Test instance parameters:
     15:54:28 test       L0153 DEBUG|     id = timeouttest
     15:54:28 test       L0154 DEBUG|
@@ -633,9 +633,9 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     15:54:28 timeouttes L0036 INFO | Sleeping for 5.00 seconds (2 more than the timeout)
     15:54:31 test       L0057 ERROR|
     15:54:31 test       L0060 ERROR| Traceback (most recent call last):
-    15:54:31 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/tests/timeouttest.py", line 37, in action
+    15:54:31 test       L0060 ERROR|   File "$HOME/Code/avocado/tests/timeouttest.py", line 37, in action
     15:54:31 test       L0060 ERROR|     time.sleep(self.params.sleep_time)
-    15:54:31 test       L0060 ERROR|   File "/home/lmr/Code/avocado.lmr/avocado/job.py", line 127, in timeout_handler
+    15:54:31 test       L0060 ERROR|   File "$HOME/Code/avocado/avocado/job.py", line 127, in timeout_handler
     15:54:31 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:54:31 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for timeouttest to end
     15:54:31 test       L0061 ERROR|
@@ -666,13 +666,13 @@ Here are the current variables that Avocado exports to the tests:
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_SRCDIR     | Source directory for the test         | /var/tmp/avocado/my-test.sh/src                                                                     |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_LOGDIR     | Log directory for the test            | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1           |
+| AVOCADO_TEST_LOGDIR     | Log directory for the test            | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1                 |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_LOGFILE    | Log file for the test                 | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/debug.log |
+| AVOCADO_TEST_LOGFILE    | Log file for the test                 | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/debug.log       |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_OUTPUTDIR  | Output directory for the test         | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/data      |
+| AVOCADO_TEST_OUTPUTDIR  | Output directory for the test         | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/data            |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/home.rmoura.my_test.sh.1/sysinfo   |
+| AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/sysinfo         |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | *                       | All variables from --multiplex-file   | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
