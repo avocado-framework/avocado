@@ -65,7 +65,7 @@ Once everything is verified and covered, you may run your test. Example::
     VM DOMAIN : fedora20
     VM LOGIN  : autotest@192.168.122.30
     JOB ID    : 60ddd718e7d7bb679f258920ce3c39ce73cb9779
-    JOB LOG   : /home/lmr/avocado/job-results/job-2014-09-16T18.41-60ddd71/job.log
+    JOB LOG   : $HOME/avocado/job-results/job-2014-09-16T18.41-60ddd71/job.log
     TESTS     : 2
     (1/2) examples/tests/sleeptest.py: PASS (1.00 s)
     (2/2) examples/tests/failtest.py: FAIL (0.00 s)

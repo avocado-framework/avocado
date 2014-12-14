@@ -58,7 +58,7 @@ Once everything is verified and covered, you may run your test. Example::
     $ scripts/avocado run --remote-hostname 192.168.122.30 --remote-username fedora examples/tests/sleeptest.py examples/tests/failtest.py
     REMOTE LOGIN  : fedora@192.168.122.30:22
     JOB ID    : 60ddd718e7d7bb679f258920ce3c39ce73cb9779
-    JOB LOG   : /home/rmoura/avocado/job-results/job-2014-10-23T11.45-a329461/job.log
+    JOB LOG   : $HOME/avocado/job-results/job-2014-10-23T11.45-a329461/job.log
     TESTS     : 2
     (1/2) examples/tests/sleeptest.py: PASS (1.00 s)
     (2/2) examples/tests/failtest.py: FAIL (0.00 s)
