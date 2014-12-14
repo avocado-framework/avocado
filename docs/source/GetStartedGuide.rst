@@ -65,7 +65,7 @@ You can run them using the subcommand ``run``::
 
     $ avocado run sleeptest
     JOB ID : 381b849a62784228d2fd208d929cc49f310412dc
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
     TESTS  : 1
     (1/1) sleeptest.1: PASS (1.01 s)
     PASS : 1
@@ -99,7 +99,7 @@ native tests and simple tests::
     $ chmod +x /tmp/script_that_passes.sh
     $ avocado run failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh
     JOB ID : 86911e49b5f2c36caeea41307cee4fecdcdfa121
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
     TESTS  : 6
     (1/6) failtest.1: FAIL (0.00 s)
     (2/6) sleeptest.1: PASS (1.00 s)

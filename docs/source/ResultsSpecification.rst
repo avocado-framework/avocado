@@ -8,7 +8,7 @@ logs directory (see the data dir plugin), and the directory name includes
 a timestamp, such as ``job-2014-08-12T15.44-565e8de``. A typical
 results directory structure can be seen below ::
 
-    /home/lmr/avocado/job-results/job-2014-08-13T00.45-4a92bc0/
+    $HOME/avocado/job-results/job-2014-08-13T00.45-4a92bc0/
     ├── id
     ├── job.log
     ├── results.json

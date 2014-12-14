@@ -29,7 +29,7 @@ Or the more verbose avocado output::
 
     $ avocado run sleeptest failtest synctest
     JOB ID : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
-    JOB LOG: /home/lmr/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
+    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
     TESTS  : 3
     (1/3) sleeptest.1: PASS (1.01 s)
     (2/3) failtest.1: FAIL (0.00 s)
@@ -74,7 +74,7 @@ json avocado plugin outputs job information, similarly to the xunit output
 plugin::
 
     $ scripts/avocado --json - run "sleeptest failtest synctest"
-    {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.4282619953155518}, {"test": "failtest.1", "url": "failtest", "status": "FAIL", "time": 0.34017300605773926}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 2.109131097793579}], "errors": 0, "skip": 0, "time": 3.87756609916687, "debuglog": "/home/lmr/avocado/logs/run-2014-06-11-01.35.15/debug.log", "pass": 2, "failures": 1, "total": 3}
+    {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.4282619953155518}, {"test": "failtest.1", "url": "failtest", "status": "FAIL", "time": 0.34017300605773926}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 2.109131097793579}], "errors": 0, "skip": 0, "time": 3.87756609916687, "debuglog": "$HOME/avocado/logs/run-2014-06-11-01.35.15/debug.log", "pass": 2, "failures": 1, "total": 3}
 
 Note the dash `-` in the option `--json`, it means that the output
 goes through the standard output.
@@ -107,7 +107,7 @@ stdout and the JSON plugin to output to a file::
     </testsuite>
 
     $ cat /tmp/result.json
-    {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.345332145690918}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 1.8685932159423828}], "errors": 0, "skip": 0, "time": 3.213925361633301, "debuglog": "/home/lmr/avocado/logs/run-2014-06-11-01.49.35/debug.log", "pass": 2, "failures": 0, "total": 2}
+    {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.345332145690918}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 1.8685932159423828}], "errors": 0, "skip": 0, "time": 3.213925361633301, "debuglog": "$HOME/avocado/logs/run-2014-06-11-01.49.35/debug.log", "pass": 2, "failures": 0, "total": 2}
 
 But you won't be able to do the same without the --json flag passed to
 the program::
