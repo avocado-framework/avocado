@@ -16,13 +16,12 @@ that contain a number of `keys` and `values`. Take for example a basic avocado c
     test_dir = /$HOME/Code/avocado/examples/tests
     data_dir = /usr/share/avocado/data
     logs_dir = ~/avocado/job-results
-    tmp_dir = /var/tmp/avocado
 
 The ``runner`` section contains a number of keys, all of them related to directories used by
 the test runner. The ``base_dir`` is the base directory to other important avocado directories, such
 as log, data and test directories. You can also choose to set those other important directories by
-means of the variables ``test_dir``, ``data_dir``, ``logs_dir`` and ``tmp_dir``. You can do this by
-simply editing the config files available.
+means of the variables ``test_dir``, ``data_dir`` and ``logs_dir``. You can do this by simply editing
+the config files available.
 
 
 Config file parsing order
@@ -82,7 +81,6 @@ configuration, after all the files are parsed in their correct resolution order.
         runner.test_dir $HOME/Code/avocado/examples/tests
         runner.data_dir /usr/share/avocado/data
         runner.logs_dir ~/avocado/job-results
-        runner.tmp_dir  /var/tmp/avocado
 
 The command also shows the order in which your config files were parsed, giving you a better understanding of
 what's going on. The Section.Key nomenclature was inspired in ``git config --list`` output.
@@ -118,7 +116,6 @@ it will give you an output similar to the one seen below::
         tests $HOME/Code/avocado/examples/tests
         data  $HOME/avocado/data
         logs  $HOME/avocado/job-results
-        tmp   /var/tmp/avocado
 
 Note that, while avocado will do its best to use the config values you
 provide in the config file, if it can't write values to the locations
@@ -129,6 +126,12 @@ The relevant API documentation and meaning of each of those data directories
 is in :mod:`avocado.core.data_dir`, so it's higly recommended you take a look.
 
 You may set your preferred data dirs by setting them in the avocado config files.
+The only exception for important data dirs here is the avocado tmp dir, used to
+place temporary files used by tests. That directory will be in normal circumstances
+`/var/tmp/avocado_XXXXX`, (where `XXXXX` is in actuality a random string) securely
+created on `/var/tmp/`, unless the user has the `$TMPDIR` environment variable set,
+since that is customary among unix programs.
+
 The next section of the documentation explains how you can see and set config
 values that modify the behavior for the avocado utilities and plugins.
 

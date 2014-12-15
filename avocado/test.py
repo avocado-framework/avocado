@@ -118,11 +118,7 @@ class Test(unittest.TestCase):
 
         basename = os.path.basename(self.name)
 
-        if job is not None:
-            tmpdir = tempfile.mkdtemp(dir=data_dir.get_tmp_dir(),
-                                      prefix='job-%s-' % job.unique_id)
-        else:
-            tmpdir = tempfile.mkdtemp(dir=data_dir.get_tmp_dir())
+        tmpdir = data_dir.get_tmp_dir()
 
         self.basedir = os.path.dirname(inspect.getfile(self.__class__))
         self.datadir = os.path.join(self.basedir, '%s.data' % basename)
