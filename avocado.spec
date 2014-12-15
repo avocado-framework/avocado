@@ -1,6 +1,6 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.14.0
+Version: 0.17.0
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -66,6 +66,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Dec 15 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.17.0-1
+- Update to upstream version 0.17.0
+
 * Wed Dec  3 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.14.0-3
 - Change config file name from settings.ini to avocado.conf
 
