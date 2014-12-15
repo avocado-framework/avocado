@@ -662,9 +662,9 @@ Here are the current variables that Avocado exports to the tests:
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_DATADIR    | Data directory for the test           | $AVOCADO_TEST_BASEDIR/my_test.sh.data                                                               |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_WORKDIR    | Work directory for the test           | /var/tmp/avocado/my_test.sh                                                                         |
+| AVOCADO_TEST_WORKDIR    | Work directory for the test           | /var/tmp/my_test.sh                                                                                 |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_SRCDIR     | Source directory for the test         | /var/tmp/avocado/my-test.sh/src                                                                     |
+| AVOCADO_TEST_SRCDIR     | Source directory for the test         | /var/tmp/my-test.sh/src                                                                             |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_LOGDIR     | Log directory for the test            | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1                 |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
