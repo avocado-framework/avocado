@@ -22,8 +22,7 @@ def _get_bogus_settings(args):
             'base_dir = %(base_dir)s\n'
             'test_dir = %(test_dir)s\n'
             'data_dir = %(data_dir)s\n'
-            'logs_dir = %(logs_dir)s\n'
-            'tmp_dir = %(tmp_dir)s\n') % args
+            'logs_dir = %(logs_dir)s\n') % args
 
 
 class DataDirTest(unittest.TestCase):
@@ -33,9 +32,8 @@ class DataDirTest(unittest.TestCase):
         tdir = os.path.join(tbase, 'tests')
         tdata = os.path.join(tbase, 'data')
         tlogs = os.path.join(tbase, 'logs')
-        ttmp = os.path.join(tbase, 'tmp')
         self.mapping = {'base_dir': tbase, 'test_dir': tdir, 'data_dir': tdata,
-                        'logs_dir': tlogs, 'tmp_dir': ttmp}
+                        'logs_dir': tlogs}
         self.config_file = tempfile.NamedTemporaryFile(delete=False)
         self.config_file.write(_get_bogus_settings(self.mapping))
         self.config_file.close()

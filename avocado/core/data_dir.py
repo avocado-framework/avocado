@@ -35,6 +35,7 @@ import tempfile
 
 from avocado.core import job_id
 from avocado.utils import path
+from avocado.utils.data_structures import Borg
 from avocado.settings import settings
 
 
@@ -46,7 +47,6 @@ SETTINGS_BASE_DIR = os.path.expanduser(settings.get_value('runner', 'base_dir'))
 SETTINGS_TEST_DIR = os.path.expanduser(settings.get_value('runner', 'test_dir'))
 SETTINGS_DATA_DIR = os.path.expanduser(settings.get_value('runner', 'data_dir'))
 SETTINGS_LOG_DIR = os.path.expanduser(settings.get_value('runner', 'logs_dir'))
-SETTINGS_TMP_DIR = os.path.expanduser(settings.get_value('runner', 'tmp_dir'))
 
 SYSTEM_BASE_DIR = '/var/lib/avocado'
 if 'VIRTUAL_ENV' in os.environ:
@@ -54,13 +54,13 @@ if 'VIRTUAL_ENV' in os.environ:
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
 SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
 SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'job-results')
-SYSTEM_TMP_DIR = '/var/tmp/avocado'
 
 USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
-USER_TMP_DIR = '/var/tmp/avocado'
+
+BASE_TMP_DIR = os.environ.get('TMPDIR', '/var/tmp')
 
 
 def _usable_rw_dir(directory):
@@ -233,6 +233,19 @@ def get_job_logs_dir(args=None, unique_id=None):
     return debugdir
 
 
+class _TmpDirTracker(Borg):
+
+    def __init__(self):
+        Borg.__init__(self)
+        if not hasattr(self, 'tmp_dir'):
+            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
+
+    def get(self):
+        return self.tmp_dir
+
+_tmp_tracker = _TmpDirTracker()
+
+
 def get_tmp_dir():
     """
     Get the most appropriate tmp dir location.
@@ -243,7 +256,7 @@ def get_tmp_dir():
         * Copies of a test suite source code
         * Compiled test suite source code
     """
-    return _get_rw_dir(SETTINGS_TMP_DIR, SYSTEM_TMP_DIR, USER_TMP_DIR)
+    return _tmp_tracker.get()
 
 
 def clean_tmp_files():
