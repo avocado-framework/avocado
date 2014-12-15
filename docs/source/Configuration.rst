@@ -16,7 +16,7 @@ that contain a number of `keys` and `values`. Take for example a basic avocado c
     test_dir = /$HOME/Code/avocado/examples/tests
     data_dir = /usr/share/avocado/data
     logs_dir = ~/avocado/job-results
-    tmp_dir = /var/tmp
+    tmp_dir = /var/tmp/avocado
 
 The ``runner`` section contains a number of keys, all of them related to directories used by
 the test runner. The ``base_dir`` is the base directory to other important avocado directories, such
@@ -82,7 +82,7 @@ configuration, after all the files are parsed in their correct resolution order.
         runner.test_dir $HOME/Code/avocado/examples/tests
         runner.data_dir /usr/share/avocado/data
         runner.logs_dir ~/avocado/job-results
-        runner.tmp_dir  /var/tmp
+        runner.tmp_dir  /var/tmp/avocado
 
 The command also shows the order in which your config files were parsed, giving you a better understanding of
 what's going on. The Section.Key nomenclature was inspired in ``git config --list`` output.
@@ -118,7 +118,7 @@ it will give you an output similar to the one seen below::
         tests $HOME/Code/avocado/examples/tests
         data  $HOME/avocado/data
         logs  $HOME/avocado/job-results
-        tmp   /var/tmp
+        tmp   /var/tmp/avocado
 
 Note that, while avocado will do its best to use the config values you
 provide in the config file, if it can't write values to the locations
