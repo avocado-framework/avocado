@@ -54,13 +54,13 @@ if 'VIRTUAL_ENV' in os.environ:
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
 SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
 SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'job-results')
-SYSTEM_TMP_DIR = '/var/tmp'
+SYSTEM_TMP_DIR = '/var/tmp/avocado'
 
 USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
-USER_TMP_DIR = '/var/tmp'
+USER_TMP_DIR = '/var/tmp/avocado'
 
 
 def _usable_rw_dir(directory):
