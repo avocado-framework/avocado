@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Run process inside ltrace.
+#
+
+set -e
 
 # Map interesting signals to exit codes (see kill -L)
 # Example: SIGHUP (kill -1) 128+1 = 129
@@ -30,16 +35,16 @@ signal_map[SIGPWR]=158
 signal_map[SIGSYS]=159
 signal_map[UNKNOWN_SIGNAL]=160
 
-ltrace -f -o $AVOCADO_TEST_LOGDIR/ltrace.log.$$ -- $@
+ltrace -f -o $AVOCADO_TEST_LOGDIR/ltrace.log.$$ -- "$@"
 
-signal_name=$(sed -ne 's/^.*+++ killed by \([A-Z_]\+\) +++$/\1/p' $AVOCADO_TEST_LOGDIR/ltrace.log.$$)
-if [ -n "$signal_name" ] ; then
-    exit ${signal_map[$signal_name]}
-fi
-
-exit_status=$(sed -ne 's/^.*+++ exited (status \([0-9]\+\)) +++$/\1/p' $AVOCADO_TEST_LOGDIR/ltrace.log.$$)
+exit_status=$(sed -ne 's/^[0-9]\+ +++ exited (status \([0-9]\+\)) +++$/\1/p' $AVOCADO_TEST_LOGDIR/ltrace.log.$$ | tail -1)
 if [ -n "$exit_status" ] ; then
     exit $exit_status
+fi
+
+signal_name=$(sed -ne 's/^[0-9]\+ +++ killed by \([A-Z_]\+\) +++$/\1/p' $AVOCADO_TEST_LOGDIR/ltrace.log.$$ | tail -1)
+if [ -n "$signal_name" ] ; then
+    exit ${signal_map[$signal_name]}
 fi
 
 exit 0
