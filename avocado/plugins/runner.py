@@ -18,7 +18,7 @@ Base Test Runner Plugins.
 
 import sys
 
-from avocado.core import error_codes
+from avocado.core import exit_codes
 from avocado.plugins import plugin
 from avocado.core import output
 from avocado import job
@@ -122,7 +122,7 @@ class TestRunner(plugin.Plugin):
                     raise ValueError
             except ValueError:
                 view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
-                return sys.exit(error_codes.numeric_status['AVOCADO_CRASH'])
+                return sys.exit(exit_codes.AVOCADO_CRASH)
 
         job_instance = job.Job(args)
         rc = job_instance.run()

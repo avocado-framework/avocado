@@ -18,7 +18,7 @@ import collections
 
 from avocado.plugins import plugin
 from avocado.core import output
-from avocado.core import error_codes
+from avocado.core import exit_codes
 from avocado.core import tree
 from avocado import multiplexer
 
@@ -60,14 +60,14 @@ class Multiplexer(plugin.Plugin):
             if not os.path.isfile(path):
                 view.notify(event='error',
                             msg='Invalid multiplex file %s' % path)
-                sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if args.tree:
             view.notify(event='message', msg='Config file tree structure:')
             t = tree.create_from_yaml(multiplex_files)
             t = tree.apply_filters(t, args.filter_only, args.filter_out)
             view.notify(event='minor', msg=t.get_ascii())
-            sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
+            sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         variants = multiplexer.multiplex_yamls(multiplex_files,
                                                args.filter_only,
@@ -85,4 +85,4 @@ class Multiplexer(plugin.Plugin):
                 for k in sorted(env.keys()):
                     view.notify(event='minor', msg='    %s: %s' % (k, env[k]))
 
-        sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
+        sys.exit(exit_codes.AVOCADO_ALL_OK)
