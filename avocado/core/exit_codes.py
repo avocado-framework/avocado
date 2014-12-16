@@ -10,25 +10,25 @@
 # See LICENSE for more details.
 
 """
-Maps the different avocado failure statuses to unix return codes.
+Avocado exit codes.
 
-The current return codes are:
-    * AVOCADO_ALL_OK
+The current exit codes are:
+    * AVOCADO_ALL_OK (0)
         Both job and tests PASSed
-    * AVOCADO_TESTS_FAIL
+    * AVOCADO_TESTS_FAIL (1)
         Job went fine, but some tests FAILed or ERRORed
-    * AVOCADO_JOB_FAIL
+    * AVOCADO_JOB_FAIL (2)
         Something went wrong with the Job itself, by explicit
         :class:`avocado.core.exceptions.JobError` exception.
-    * AVOCADO_CRASH
+    * AVOCADO_CRASH (3)
         Something else went wrong and avocado plain crashed.
-    * AVOCADO_JOB_INTERRUPTED
+    * AVOCADO_JOB_INTERRUPTED (4)
         The job was explicitly interrupted. Usually this means that a user
         hit CTRL+C while the job was still running.
 """
 
-numeric_status = {"AVOCADO_ALL_OK": 0,
-                  "AVOCADO_TESTS_FAIL": 1,
-                  "AVOCADO_JOB_FAIL": 2,
-                  "AVOCADO_CRASH": 3,
-                  "AVOCADO_JOB_INTERRUPTED": 4}
+AVOCADO_ALL_OK = 0
+AVOCADO_TESTS_FAIL = 1
+AVOCADO_JOB_FAIL = 2
+AVOCADO_CRASH = 3
+AVOCADO_JOB_INTERRUPTED = 4
