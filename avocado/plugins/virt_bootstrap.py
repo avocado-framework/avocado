@@ -1,0 +1,1 @@
+/home/rmoura/Work/avocado-virt.git/avocado/plugins/virt_bootstrap.py
