@@ -13,6 +13,15 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado.utils import process
 
+DEBUG_OUT = """Variant 16:    amd@examples/mux-environment.yaml, virtio@examples/mux-environment.yaml, mint@examples/mux-environment.yaml, debug@examples/mux-environment.yaml
+    corruptlist: nonlist@examples/mux-selftest.yaml:/hw/disk
+    cpu_CFLAGS: -march=athlon64@examples/mux-environment.yaml:/hw/cpu/amd
+    disk_type: virtio@examples/mux-environment.yaml:/hw/disk/virtio
+    init: systemv@examples/mux-environment.yaml:/distro/mint
+    joinlist: ['first_item']@examples/mux-selftest.yaml:/hw/cpu + ['second', 'third']@examples/mux-selftest.yaml:/hw/cpu/amd
+    opt_CFLAGS: -O0 -g@examples/mux-environment.yaml:/env/debug
+"""
+
 
 class MultiplexTests(unittest.TestCase):
 
@@ -50,6 +59,14 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = './scripts/avocado multiplex nonexist'
         expected_rc = 2
         self.run_and_check(cmd_line, expected_rc)
+
+    def test_mplex_debug(self):
+        cmd_line = ('./scripts/avocado multiplex -c -d '
+                    'examples/mux-selftest.yaml examples/mux-environment.yaml '
+                    'examples/mux-selftest.yaml examples/mux-environment.yaml')
+        expected_rc = 0
+        out = self.run_and_check(cmd_line, expected_rc)
+        self.assertIn(DEBUG_OUT, out)
 
     def test_run_mplex_noid(self):
         cmd_line = './scripts/avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
