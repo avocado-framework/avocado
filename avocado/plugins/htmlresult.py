@@ -23,7 +23,7 @@ import webbrowser
 
 import pystache
 
-from avocado.core import error_codes
+from avocado.core import exit_codes
 from avocado.core import output
 from avocado.plugins import plugin
 from avocado.result import TestResult
@@ -215,7 +215,7 @@ class HTMLTestResult(TestResult):
         if self.output == '-':
             self.view.notify(event='error', msg="HTML to stdout not supported "
                                                 "(not all HTML resources can be embedded to a single file)")
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         else:
             output_dir = os.path.dirname(os.path.abspath(self.output))
             if not os.path.exists(output_dir):

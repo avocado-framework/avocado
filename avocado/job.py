@@ -29,7 +29,7 @@ from avocado import test
 from avocado import runner
 from avocado import loader
 from avocado.core import data_dir
-from avocado.core import error_codes
+from avocado.core import exit_codes
 from avocado.core import exceptions
 from avocado.core import job_id
 from avocado.core import output
@@ -181,7 +181,7 @@ class Job(object):
             msg = ('Please set at least one of them to a file to avoid '
                    'conflicts')
             self.view.notify(event='error', msg=msg)
-            sys.exit(error_codes.numeric_status['AVOCADO_JOB_FAIL'])
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if not op_set_stdout:
             human_plugin = result.HumanTestResult(self.view, self.args)
@@ -195,7 +195,7 @@ class Job(object):
         :param multiplex_files: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
-                 :mod:`avocado.core.error_codes` for more information.
+                 :mod:`avocado.core.exit_codes` for more information.
         :raise: Any exception (avocado crashed), or
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
@@ -278,9 +278,9 @@ class Job(object):
 
         tests_status = not bool(failures)
         if tests_status:
-            return error_codes.numeric_status['AVOCADO_ALL_OK']
+            return exit_codes.AVOCADO_ALL_OK
         else:
-            return error_codes.numeric_status['AVOCADO_TESTS_FAIL']
+            return exit_codes.AVOCADO_TESTS_FAIL
 
     def run(self, urls=None, multiplex_files=None):
         """
@@ -302,7 +302,7 @@ class Job(object):
         :param multiplex_files: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
-                 :mod:`avocado.core.error_codes` for more information.
+                 :mod:`avocado.core.exit_codes` for more information.
         """
         try:
             return self._run(urls, multiplex_files)
@@ -311,10 +311,10 @@ class Job(object):
             fail_class = details.__class__.__name__
             self.view.notify(event='error', msg=('Avocado job failed: %s: %s' %
                                                  (fail_class, details)))
-            return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+            return exit_codes.AVOCADO_JOB_FAIL
         except exceptions.OptionValidationError, details:
             self.view.notify(event='error', msg=str(details))
-            return error_codes.numeric_status['AVOCADO_JOB_FAIL']
+            return exit_codes.AVOCADO_JOB_FAIL
 
         except Exception, details:
             self.status = "ERROR"
@@ -331,7 +331,7 @@ class Job(object):
                                                  'your bug report'))
             self.view.notify(event='error', msg=('Report bugs visiting %s' %
                                                  _NEW_ISSUE_LINK))
-            return error_codes.numeric_status['AVOCADO_CRASH']
+            return exit_codes.AVOCADO_CRASH
 
 
 class TestModuleRunner(object):
@@ -357,6 +357,6 @@ class TestModuleRunner(object):
         self.job = Job()
         if self.url is not None:
             sys.exit(self.job.run(urls=[self.url]))
-        sys.exit(error_codes.numeric_status['AVOCADO_ALL_OK'])
+        sys.exit(exit_codes.AVOCADO_ALL_OK)
 
 main = TestModuleRunner

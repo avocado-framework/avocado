@@ -16,7 +16,7 @@ import os
 import sys
 
 from avocado import runtime
-from avocado.core import error_codes
+from avocado.core import exit_codes
 from avocado.core import output
 from avocado.plugins import plugin
 
@@ -46,7 +46,7 @@ class Wrapper(plugin.Plugin):
                         view.notify(event='error',
                                     msg="You can't have multiple global"
                                         " wrappers at once.")
-                        sys.exit(error_codes.numeric_status['AVOCADO_CRASH'])
+                        sys.exit(exit_codes.AVOCADO_CRASH)
                 else:
                     script, cmd = wrap.split(':', 1)
                     script = os.path.abspath(script)
@@ -54,11 +54,11 @@ class Wrapper(plugin.Plugin):
                 if not os.path.exists(script):
                     view.notify(event='error',
                                 msg="Wrapper '%s' not found!" % script)
-                    sys.exit(error_codes.numeric_status['AVOCADO_CRASH'])
+                    sys.exit(exit_codes.AVOCADO_CRASH)
             if app_args.gdb_run_bin:
                 view.notify(event='error',
                             msg='Command line option --wrapper is incompatible'
                                 ' with option --gdb-run-bin.')
-                sys.exit(error_codes.numeric_status['AVOCADO_CRASH'])
+                sys.exit(exit_codes.AVOCADO_CRASH)
         except AttributeError:
             pass
