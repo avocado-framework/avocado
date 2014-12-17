@@ -1,27 +1,43 @@
+# Special values
+# joinlist: list which gets combined while getting environment
+# corruptlist: list which is overwritten with string and again by list
+# /distro: should be merged from two separated trees into the position of
+#          the first one. PS: Don't do this in production, it works but
+#          it's not nice and readable... here it simulates the use of
+#          multiple files and checks that the node ordering works fine.
+# /env/opt_CFLAGS: Should be present in merged node
+# /env/prod/opt_CFLAGS: value should be overridden by latter node
+
 hw:
     cpu:
-        test_value:
-            - a
+        joinlist:
+            - first_item
         intel:
             cpu_CFLAGS: '-march=core2'
         amd:
-            test_value:
-                - b
-                - c
+            joinlist: ['second', 'third']
             cpu_CFLAGS: '-march=athlon64'
         arm:
             cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
     disk:
         disk_type: 'virtio'
+        corruptlist: 'nonlist'
         scsi:
+            corruptlist: ['againlist']
             disk_type: 'scsi'
         virtio:
-    test_value: 42
+    corruptlist: ['upper_node_list']
 distro:
     fedora:
         init: 'systemd'
-    mint:
-        init: 'systemv'
+env:
+    opt_CFLAGS: '-Os'
+    prod:
+        opt_CFLAGS: 'THIS SHOULD GET OVERWRITTEN'
 env:
     prod:
         opt_CFLAGS: '-O2'
+distro:
+    mint:
+        init: 'systemv'
+

@@ -50,6 +50,9 @@ class Multiplexer(plugin.Plugin):
 
         self.parser.add_argument('-c', '--contents', action='store_true', default=False,
                                  help="Shows the variant's content (variables)")
+        self.parser.add_argument('-d', '--debug', action='store_true',
+                                 default=False, help="Debug multiplexed "
+                                 "files.")
         super(Multiplexer, self).configure(self.parser)
 
     def run(self, args):
@@ -71,12 +74,19 @@ class Multiplexer(plugin.Plugin):
 
         variants = multiplexer.multiplex_yamls(multiplex_files,
                                                args.filter_only,
-                                               args.filter_out)
+                                               args.filter_out,
+                                               args.debug)
 
         view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
-            paths = ', '.join([x.path for x in tpl])
-            view.notify(event='minor', msg='Variant %s:    %s' %
+            if not args.debug:
+                paths = ', '.join([x.path for x in tpl])
+            else:
+                color = output.term_support.LOWLIGHT
+                cend = output.term_support.ENDC
+                paths = ', '.join(["%s%s@%s%s" % (_.name, color, _.yaml, cend)
+                                   for _ in tpl])
+            view.notify(event='minor', msg='\nVariant %s:    %s' %
                         (index + 1, paths))
             if args.contents:
                 env = {}

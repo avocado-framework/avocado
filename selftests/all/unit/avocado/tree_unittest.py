@@ -17,7 +17,8 @@ class TestTree(unittest.TestCase):
                          self.tree.children[0].children[0].children[0].value)
         disk = self.tree.children[0].children[1]
         self.assertEqual('scsi', disk.children[0])
-        self.assertEqual({'disk_type': 'scsi'}, disk.children[0].value)
+        self.assertEqual({'disk_type': 'scsi', 'corruptlist': ['againlist']},
+                         disk.children[0].value)
         self.assertEqual('virtio', disk.children[1])
         self.assertEqual({}, disk.children[1].value)
         self.assertEqual('distro', self.tree.children[1])
@@ -54,6 +55,11 @@ class TestTree(unittest.TestCase):
         # Add_child incorrect class
         self.assertRaises(ValueError, tree3.add_child, 'probably_bad_type')
 
+    def test_links(self):
+        """ Verify child->parent links """
+        for leaf in self.tree:
+            self.assertEqual(leaf.root, self.tree)
+
     def test_basic_functions(self):
         # repr
         self.assertEqual("TreeNode(name='hw')", repr(self.tree.children[0]))
@@ -70,18 +76,36 @@ class TestTree(unittest.TestCase):
                          )
         # .parents
         self.assertEqual(['hw', ''], self.tree.children[0].children[0].parents)
-        # environment
+        # environment / (root)
         self.assertEqual({}, self.tree.environment)
-        self.assertEqual({'test_value': 42},
+        # environment /hw (nodes first)
+        self.assertEqual({'corruptlist': ['upper_node_list']},
                          self.tree.children[0].environment)
         cpu = self.tree.children[0].children[0]
-        self.assertEqual({'test_value': ['a']},
+        # environment /hw/cpu (mixed env)
+        self.assertEqual({'corruptlist': ['upper_node_list'],
+                          'joinlist': ['first_item']},
                          cpu.environment)
-        vals = {'test_value': ['a', 'b', 'c'], 'cpu_CFLAGS': '-march=athlon64'}
+        # environment /hw/cpu/amd (list extension)
+        vals = {'corruptlist': ['upper_node_list'],
+                'cpu_CFLAGS': '-march=athlon64',
+                'joinlist': ['first_item', 'second', 'third']}
         self.assertEqual(vals, cpu.children[1].environment)
-        vals = {'test_value': ['a'], 'cpu_CFLAGS': '-mabi=apcs-gnu '
+        # environment /hw/cpu/arm (deep env)
+        vals = {'corruptlist': ['upper_node_list'], 'joinlist': ['first_item'],
+                'cpu_CFLAGS': '-mabi=apcs-gnu '
                 '-march=armv8-a -mtune=arm8'}
         self.assertEqual(vals, cpu.children[2].environment)
+        # environment /hw/disk (list -> string)
+        vals = {'corruptlist': 'nonlist', 'disk_type': 'virtio'}
+        disk = self.tree.children[0].children[1]
+        self.assertEqual(vals, disk.environment)
+        # environment /hw/disk/scsi (string -> list)
+        vals = {'corruptlist': ['againlist'], 'disk_type': 'scsi'}
+        self.assertEqual(vals, disk.children[0].environment)
+        # environment /env
+        vals = {'opt_CFLAGS': '-Os'}
+        self.assertEqual(vals, self.tree.children[2].environment)
         # leaves order
         leaves = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint',
                   'prod']
@@ -119,9 +143,10 @@ class TestTree(unittest.TestCase):
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'default', 'virtio',
                'fedora', 'mint', 'prod']
         self.assertEqual(exp, tree2.get_leaves())
-        self.assertEqual({'test_value': 42, 'another_value': 'bbb'},
+        self.assertEqual({'corruptlist': ['upper_node_list'],
+                          'another_value': 'bbb'},
                          tree2.children[0].value)
-        self.assertEqual({'test_value': ['z']},
+        self.assertEqual({'joinlist': ['first_item'], 'test_value': ['z']},
                          tree2.children[0].children[0].value)
         self.assertFalse(tree2.children[0].children[2].children[0].value)
         self.assertEqual({'nic': 'virtio'},
