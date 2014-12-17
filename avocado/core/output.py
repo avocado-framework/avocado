@@ -112,6 +112,7 @@ class TermSupport(object):
     COLOR_GREEN = '\033[92m'
     COLOR_YELLOW = '\033[93m'
     COLOR_RED = '\033[91m'
+    COLOR_DARKGREY = '\033[90m'
 
     CONTROL_END = '\033[0m'
 
@@ -138,6 +139,7 @@ class TermSupport(object):
         self.WARN = self.COLOR_YELLOW
         self.PARTIAL = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
+        self.GREY = self.COLOR_DARKGREY
         term = os.environ.get("TERM")
         if (not os.isatty(1)) or (term not in self.allowed_terms):
             self.disable()
@@ -155,6 +157,7 @@ class TermSupport(object):
         self.WARN = ''
         self.PARTIAL = ''
         self.ENDC = ''
+        self.GREY = ''
 
     def header_str(self, msg):
         """
