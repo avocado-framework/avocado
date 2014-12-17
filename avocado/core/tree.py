@@ -97,7 +97,7 @@ class TreeNode(object):
         Append node as child. Nodes with the same name gets merged into the
         existing position.
         """
-        if isinstance(node, self.__class__):
+        if isinstance(node, TreeNode):
             if node.name in self.children:
                 self.children[self.children.index(node.name)].merge(node)
             else:
@@ -287,13 +287,14 @@ class TreeNode(object):
         return self
 
 
-def _create_from_yaml(stream):
+class Value(tuple):     # Few methods pylint: disable=R0903
+
+    """ Used to mark values to simplify checking for node vs. value """
+    pass
+
+
+def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
-    class Value(tuple):
-
-        """ Used to mark values to simplify checking for node vs. value """
-        pass
-
     def tree_node_from_values(name, values):
         """ Create $name node and add values  """
         node_children = []
@@ -303,10 +304,12 @@ def _create_from_yaml(stream):
                 node_children.append(value)
             else:
                 node_values.append(value)
-        return TreeNode(name, dict(node_values), children=node_children)
+        return cls_node(name, dict(node_values), children=node_children)
 
     def mapping_to_tree_loader(loader, node):
+        """ Maps yaml mapping tag to TreeNode structure """
         def is_node(values):
+            """ Whether these values represent node or just random values """
             if (isinstance(values, list) and values
                     and isinstance(values[0], (Value, TreeNode))):
                 # When any value is TreeNode or Value, all of them are already
@@ -319,26 +322,44 @@ def _create_from_yaml(stream):
             if is_node(values):    # New node
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
-                objects.append(TreeNode(name))
+                objects.append(cls_node(name))
             else:                           # Values
                 objects.append(Value((name, values)))
         return objects
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
-    return tree_node_from_values('', yaml.load(stream, Loader))
+
+    with open(path) as stream:
+        return tree_node_from_values('', yaml.load(stream, Loader))
 
 
-def create_from_yaml(paths):
+def create_from_yaml(paths, debug=False):
     """
     Create tree structure from yaml-like file
     :param fileobj: File object to be processed
     :raise SyntaxError: When yaml-file is corrupted
     :return: Root of the created tree structure
     """
-    data = TreeNode()
+    def _merge(data, path):
+        """ Normal run """
+        data.merge(_create_from_yaml(path))
+
+    def _merge_debug(data, path):
+        """ Use NamedTreeNodeDebug magic """
+        node_cls = tree_debug.get_named_tree_cls(path)
+        data.merge(_create_from_yaml(path, node_cls))
+
+    if not debug:
+        data = TreeNode()
+        merge = _merge
+    else:
+        from avocado.core import tree_debug
+        data = tree_debug.TreeNodeDebug()
+        merge = _merge_debug
+
     try:
         for path in paths:
-            data.merge(_create_from_yaml(open(path).read()))
+            merge(data, path)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
         raise SyntaxError(err)
     return data
