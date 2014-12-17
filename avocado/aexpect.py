@@ -15,15 +15,11 @@ import tempfile
 import logging
 import shutil
 
-BASE_DIR = os.path.join('/tmp', 'aexpect')
-
-
-def clean_tmp_files():
-    """
-    Remove all aexpect temporary files.
-    """
-    if os.path.isdir(BASE_DIR):
-        shutil.rmtree(BASE_DIR, ignore_errors=True)
+BASE_DIR = os.environ.get('TMPDIR', '/tmp')
+# If you want to debug problems with your aexpect instances, setting
+# DEBUG = True will leave the temporary files created by aexpect around
+# so you can look at them.
+DEBUG = False
 
 # The following helper functions are shared by the server and the client.
 
@@ -88,14 +84,14 @@ def _makestandard(shell_fd, echo):
 
 
 def _get_filenames(base_dir, a_id):
-    return [os.path.join(base_dir, a_id, s) for s in
+    return [os.path.join(base_dir, 'aexpect_%s' % a_id, s) for s in
             "shell-pid", "status", "output", "inpipe", "ctrlpipe",
             "lock-server-running", "lock-client-starting",
             "server-log"]
 
 
 def _get_reader_filename(base_dir, a_id, reader):
-    return os.path.join(base_dir, a_id, "outpipe-%s" % reader)
+    return os.path.join(base_dir, 'aexpect_%s' % a_id, "outpipe-%s" % reader)
 
 
 # The following is the server part of the module.
@@ -527,7 +523,7 @@ class Spawn(object):
         self.a_id = a_id or data_factory.generate_random_string(8)
         self.log_file = None
 
-        base_dir = os.path.join(BASE_DIR, self.a_id)
+        base_dir = os.path.join(BASE_DIR, 'aexpect_%s' % self.a_id)
 
         # Define filenames for communication with server
         try:
@@ -751,11 +747,8 @@ class Spawn(object):
         self._close_reader_fds()
         self.reader_fds = {}
         # Remove all used files
-        for filename in (_get_filenames(BASE_DIR, self.a_id)):
-            try:
-                os.unlink(filename)
-            except OSError:
-                pass
+        if not DEBUG:
+            shutil.rmtree(os.path.join(BASE_DIR, 'aexpect_%s' % self.a_id))
 
     def set_linesep(self, linesep):
         """
