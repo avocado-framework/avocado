@@ -34,6 +34,7 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 """
 
 import collections
+import os
 
 import yaml
 
@@ -42,6 +43,10 @@ try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader
+
+
+# Mapping for yaml flags
+YAML_INCLUDE = 0
 
 
 class TreeNode(object):
@@ -294,18 +299,43 @@ class Value(tuple):     # Few methods pylint: disable=R0903
     pass
 
 
+class Control(object):  # Few methods pylint: disable=R0903
+
+    """ Container used to identify node vs. control sequence """
+
+    def __init__(self, ctr_type):
+        self.ctr_type = ctr_type
+
+    def __eq__(self, other):
+        if isinstance(other, Control):
+            return self.ctr_type == other.ctr_type
+        else:
+            return self.ctr_type == other
+
+    def __req__(self, other):
+        return self == other
+
+    def __str__(self):
+        return self.ctr_type
+
+
 def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
-        node_children = []
-        node_values = []
+        node = cls_node(str(name))
         for value in values:
             if isinstance(value, TreeNode):
-                node_children.append(value)
+                node.add_child(value)
+            elif isinstance(value[0], Control):
+                # Include file
+                ypath = value[1]
+                if not os.path.isabs(ypath):
+                    ypath = os.path.join(os.path.dirname(path), ypath)
+                node.merge(_create_from_yaml(ypath, cls_node))
             else:
-                node_values.append(value)
-        return cls_node(name, dict(node_values), children=node_children)
+                node.value[value[0]] = value[1]
+        return node
 
     def mapping_to_tree_loader(loader, node):
         """ Maps yaml mapping tag to TreeNode structure """
@@ -323,10 +353,13 @@ def _create_from_yaml(path, cls_node=TreeNode):
             if is_node(values):    # New node
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
-                objects.append(cls_node(name))
+                objects.append(cls_node(str(name)))
             else:                           # Values
                 objects.append(Value((name, values)))
         return objects
+
+    Loader.add_constructor(u'!include',
+                           lambda loader, node: Control(YAML_INCLUDE))
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 

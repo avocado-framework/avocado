@@ -155,6 +155,21 @@ results in::
     fast:
         CFLAGS: '-Ofast'    # appended
 
+It's also possilbe to include existing file into other file's node. This
+is done by `!include : $path` directive::
+
+    os:
+        fedora:
+            !include : fedora.yaml
+        gentoo:
+            !include : gentoo.yaml
+
+Due to yaml nature, it's __mandatory__ to put space between `!include` and `:`!
+
+The file location can be either absolute path or relative path to the yaml
+file where the `!include` is called (even when it's nested).
+
+Whole file is __merged__ into the node where it's defined.
 
 .. _variants:
 
