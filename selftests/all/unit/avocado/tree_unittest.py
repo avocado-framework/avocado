@@ -152,6 +152,18 @@ class TestTree(unittest.TestCase):
         self.assertEqual({'nic': 'virtio'},
                          tree2.children[0].children[2].children[1].value)
 
+    def test_advanced_yaml(self):
+        tree2 = tree.create_from_yaml(['examples/mux-selftest-advanced.yaml'])
+        exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint', '6',
+               '7', 'prod', 'new_node']
+        act = tree2.get_leaves()
+        self.assertEqual(exp, act)
+        self.assertEqual({'enterprise': True},
+                         tree2.children[1].children[2].value)
+        self.assertEqual({'init': 'systemd'},
+                         tree2.children[1].children[0].value)
+        self.assertEqual({'new_value': 'something'}, tree2.children[3].value)
+
 
 class TestPathParent(unittest.TestCase):
 

@@ -1,0 +1,8 @@
+# Following line makes it look exactly as mux-selftest.yaml
+!include : mux-selftest.yaml
+distro:
+    # This line extends the distro branch using include
+    !include : mux-selftest-distro.yaml
+# This creates new branch the usual way
+new_node:
+    new_value: "something"
