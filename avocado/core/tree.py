@@ -127,7 +127,7 @@ class TreeNode(object):
 
     def get_root(self):
         """ Get root of this tree """
-        root = None
+        root = self
         for root in self.iter_parents():
             pass
         return root
