@@ -50,6 +50,7 @@ except ImportError:
 YAML_INCLUDE = 0
 YAML_USING = 1
 YAML_REMOVE_NODE = 2
+YAML_REMOVE_VALUE = 3
 
 
 class Control(object):  # Few methods pylint: disable=R0903
@@ -129,7 +130,6 @@ class TreeNode(object):
         added as children (recursively they get either appended at the end
         or merged into existing node in the previous position.
         """
-        self.value.update(other.value)
         for ctrl in other.ctrl:
             if isinstance(ctrl, Control):
                 if ctrl.code == YAML_REMOVE_NODE:
@@ -140,6 +140,15 @@ class TreeNode(object):
                             remove.append(child)
                     for child in remove:
                         self.children.remove(child)
+                elif ctrl.code == YAML_REMOVE_VALUE:
+                    remove = []
+                    regexp = re.compile(ctrl.value)
+                    for key in self.value.iterkeys():
+                        if regexp.match(key):
+                            remove.append(key)
+                    for key in remove:
+                        self.value.pop(key, None)
+        self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
 
@@ -350,6 +359,9 @@ def _create_from_yaml(path, cls_node=TreeNode):
                 elif value[0].code == YAML_REMOVE_NODE:
                     value[0].value = value[1]   # set the name
                     node.ctrl.append(value[0])    # add "blue pill" of death
+                elif value[0].code == YAML_REMOVE_VALUE:
+                    value[0].value = value[1]   # set the name
+                    node.ctrl.append(value[0])
             else:
                 node.value[value[0]] = value[1]
         if using:
@@ -384,6 +396,8 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_USING))
     Loader.add_constructor(u'!remove_node',
                            lambda loader, node: Control(YAML_REMOVE_NODE))
+    Loader.add_constructor(u'!remove_value',
+                           lambda loader, node: Control(YAML_REMOVE_VALUE))
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 

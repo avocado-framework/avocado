@@ -163,6 +163,22 @@ And lists::
 
 The list above will become ``['-O2', '-g', '-Wall']`` to Python. In fact,
 YAML is compatible to JSON.
+
+It's also possible to remove key using python's regexp, which can be useful
+when extending upstream file using downstream yaml files. This is done by
+`!remove_value : $value_name` directive::
+
+    debug:
+        CFLAGS: '-O0 -g'
+    debug:
+        !remove_value: CFLAGS
+
+removes the CFLAGS value completely from the debug node. This happens during
+the merge and only once. So if you switch the two, CFLAGS would be defined.
+
+Due to yaml nature, it's __mandatory__ to put space between `!remove_value`
+and `:`!
+
 .. _environment:
 
 Environment
