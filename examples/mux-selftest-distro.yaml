@@ -4,3 +4,5 @@ RHEL:
         init: 'systemv'
     7:
         init: 'systemd'
+gentoo:
+    is_cool: False
