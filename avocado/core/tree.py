@@ -47,6 +47,7 @@ except ImportError:
 
 # Mapping for yaml flags
 YAML_INCLUDE = 0
+YAML_USING = 1
 
 
 class TreeNode(object):
@@ -324,17 +325,24 @@ def _create_from_yaml(path, cls_node=TreeNode):
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
         node = cls_node(str(name))
+        using = ''
         for value in values:
             if isinstance(value, TreeNode):
                 node.add_child(value)
             elif isinstance(value[0], Control):
-                # Include file
-                ypath = value[1]
-                if ypath[0] != '/':
-                    ypath = os.path.join(os.path.dirname(path), ypath)
-                node.merge(_create_from_yaml(ypath, cls_node))
+                if value[0] == YAML_INCLUDE:
+                    # Include file
+                    ypath = value[1]
+                    if ypath[0] != '/':
+                        ypath = os.path.join(os.path.dirname(path), ypath)
+                    node.merge(_create_from_yaml(ypath, cls_node))
+                elif value[0] == YAML_USING:
+                    using = value[1]
             else:
                 node.value[value[0]] = value[1]
+        if using:
+            for name in using.strip('/').split('/')[::-1]:
+                node = cls_node(name, children=[node])
         return node
 
     def mapping_to_tree_loader(loader, node):
@@ -360,6 +368,8 @@ def _create_from_yaml(path, cls_node=TreeNode):
 
     Loader.add_constructor(u'!include',
                            lambda loader, node: Control(YAML_INCLUDE))
+    Loader.add_constructor(u'!using',
+                           lambda loader, node: Control(YAML_USING))
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 

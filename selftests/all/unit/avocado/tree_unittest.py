@@ -157,12 +157,14 @@ class TestTree(unittest.TestCase):
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint', '6',
                '7', 'prod', 'new_node']
         act = tree2.get_leaves()
+        oldroot = tree2.children[0]
         self.assertEqual(exp, act)
         self.assertEqual({'enterprise': True},
-                         tree2.children[1].children[2].value)
+                         oldroot.children[1].children[2].value)
         self.assertEqual({'init': 'systemd'},
-                         tree2.children[1].children[0].value)
-        self.assertEqual({'new_value': 'something'}, tree2.children[3].value)
+                         oldroot.children[1].children[0].value)
+        self.assertEqual({'new_value': 'something'},
+                         oldroot.children[3].children[0].children[0].value)
 
 
 class TestPathParent(unittest.TestCase):
