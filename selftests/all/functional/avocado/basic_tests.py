@@ -161,7 +161,7 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
-        expected_output = 'Empty test ID. A test path or alias must be provided'
+        expected_output = 'Test(s) with empty parameter list or the number of variants is zero'
         expected_output_2 = 'usage:'
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stdout)
