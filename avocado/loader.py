@@ -25,13 +25,21 @@ from avocado.core import data_dir
 from avocado.utils import path
 
 
+class _DebugJob(object):
+
+    def __init__(self):
+        self.logdir = '.'
+
+
 class TestLoader(object):
 
     """
     Test loader class.
     """
 
-    def __init__(self, job):
+    def __init__(self, job=None):
+        if job is None:
+            job = _DebugJob()
         self.job = job
 
     def _make_missing_test(self, test_name, params):
@@ -50,7 +58,7 @@ class TestLoader(object):
                            'job': self.job}
         return test_class, test_parameters
 
-    def _make_test(self, test_name, test_path, params, queue):
+    def _make_test(self, test_name, test_path, params):
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
         try:
@@ -64,18 +72,15 @@ class TestLoader(object):
             test_parameters = {'name': test_name,
                                'base_logdir': self.job.logdir,
                                'params': params,
-                               'job': self.job,
-                               'runner_queue': queue}
+                               'job': self.job}
         return test_class, test_parameters
 
-    def discover_test(self, params, queue):
+    def discover_test(self, params):
         """
         Try to discover and resolve a test.
 
         :param params: dictionary with test parameters.
         :type params: dict
-        :param queue: a queue for communicating with the test runner.
-        :type queue: an instance of :class:`multiprocessing.Queue`
         :return: a test factory (a pair of test class and test parameters)
         """
         test_name = params.get('id')
@@ -85,10 +90,13 @@ class TestLoader(object):
             if path_analyzer.is_python():
                 test_class, test_parameters = self._make_test(test_name,
                                                               test_path,
-                                                              params, queue)
+                                                              params)
             elif os.access(test_path, os.X_OK):
                 test_class, test_parameters = self._make_simple_test(test_path,
                                                                      params)
+            else:
+                test_class, test_parameters = self._make_missing_test(test_name,
+                                                                      params)
         else:
             # Try to resolve test ID (keep compatibility)
             rel_path = '%s.py' % test_name
@@ -96,25 +104,84 @@ class TestLoader(object):
             if os.path.exists(test_path):
                 test_class, test_parameters = self._make_test(rel_path,
                                                               test_path,
-                                                              params, queue)
+                                                              params)
             else:
                 test_class, test_parameters = self._make_missing_test(
                     test_name, params)
         return test_class, test_parameters
 
-    def discover(self, params_list, queue):
+    def discover_directory(self, dir_path='.', ignore_suffix=None):
+        """
+        Discover (possible) tests from a directory.
+
+        Recursively walk in a directory and find tests params.
+        The tests are returned in alphabetic order.
+
+        :param dir_path: the directory path to inspect.
+        :type dir_path: str
+        :param ignore_suffix: list of suffix to ignore in paths.
+        :type ignore_suffix: list
+        :return: a list of test params (each one a dictionary).
+        """
+        if ignore_suffix is None:
+            ignore_suffix = ('.data', '.pyc', '.pyo')
+        entries = sorted(os.listdir(os.path.abspath(dir_path)))
+        params_list = []
+        for entry in entries:
+            new_path = os.path.join(dir_path, entry)
+            if entry.startswith('.'):
+                continue
+            elif entry.endswith(ignore_suffix):
+                continue
+            elif os.path.isdir(new_path):
+                params_list.extend(self.discover_directory(new_path))
+            else:
+                params_list.append({'id': new_path})
+        return params_list
+
+    def discover_url(self, url):
+        """
+        Discover (possible) test from test url.
+
+        :params url: the test url to discover.
+        :type url: str
+        :return: a list of test params (each one a dictionary).
+        """
+        if os.path.isdir(os.path.abspath(url)):
+            params_list = self.discover_directory(url)
+            if params_list:
+                return params_list
+            else:
+                return []
+        else:
+            return [{'id': url}]
+
+    def discover_urls(self, urls):
+        """
+        Discover (possible) tests from test urls.
+
+        :param urls: a list of tests urls.
+        :type urls: list
+        :return: a list of test params (each one a dictioanry).
+        """
+        params_list = []
+        for url in urls:
+            if url == '':
+                continue
+            params_list.extend(self.discover_url(url))
+        return params_list
+
+    def discover(self, params_list):
         """
         Discover tests for test suite.
 
         :param params_list: a list of test parameters.
         :type params_list: list
-        :param queue: a queue for communicating with the test runner.
-        :type queue: an instance of :class:`multiprocessing.Queue`
         :return: a test suite (a list of test factories).
         """
         test_suite = []
         for params in params_list:
-            test_class, test_parameters = self.discover_test(params, queue)
+            test_class, test_parameters = self.discover_test(params)
             test_suite.append((test_class, test_parameters))
         return test_suite
 
