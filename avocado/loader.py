@@ -149,8 +149,7 @@ class TestLoader(object):
         :return: a test factory (a pair of test class and test parameters)
                  or `None`.
         """
-        test_name = params.get('id')
-        test_path = os.path.abspath(test_name)
+        test_name = test_path = params.get('id')
         if os.path.exists(test_path):
             if os.access(test_path, os.R_OK) is False:
                 return None
