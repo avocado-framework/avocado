@@ -52,7 +52,7 @@ class VMTestRunner(TestRunner):
                              (details, result.stdout))
         return results
 
-    def run(self, params_list):
+    def run_suite(self, params_list):
         """
         Run one or more tests and report with test result.
 
