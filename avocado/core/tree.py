@@ -34,6 +34,7 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 """
 
 import collections
+import os
 
 import yaml
 
@@ -42,6 +43,22 @@ try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader
+
+
+# Mapping for yaml flags
+YAML_INCLUDE = 0
+YAML_USING = 1
+YAML_REMOVE_NODE = 2
+YAML_REMOVE_VALUE = 3
+
+
+class Control(object):  # Few methods pylint: disable=R0903
+
+    """ Container used to identify node vs. control sequence """
+
+    def __init__(self, code, value=None):
+        self.code = code
+        self.value = value
 
 
 class TreeNode(object):
@@ -60,6 +77,7 @@ class TreeNode(object):
         self.parent = parent
         self.children = []
         self._environment = None
+        self.ctrl = []
         for child in children:
             self.add_child(child)
 
@@ -111,6 +129,14 @@ class TreeNode(object):
         added as children (recursively they get either appended at the end
         or merged into existing node in the previous position.
         """
+        for ctrl in other.ctrl:
+            if isinstance(ctrl, Control):
+                if ctrl.code == YAML_REMOVE_NODE:
+                    idx = self.children.index(ctrl.value)
+                    if idx >= 0:
+                        self.children[idx].detach()
+                elif ctrl.code == YAML_REMOVE_VALUE:
+                    self.value.pop(ctrl.value, None)
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -127,7 +153,7 @@ class TreeNode(object):
 
     def get_root(self):
         """ Get root of this tree """
-        root = None
+        root = self
         for root in self.iter_parents():
             pass
         return root
@@ -298,14 +324,32 @@ def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
-        node_children = []
-        node_values = []
+        node = cls_node(str(name))
+        using = ''
         for value in values:
             if isinstance(value, TreeNode):
-                node_children.append(value)
+                node.add_child(value)
+            elif isinstance(value[0], Control):
+                if value[0].code == YAML_INCLUDE:
+                    # Include file
+                    ypath = value[1]
+                    if ypath[0] != '/':
+                        ypath = os.path.join(os.path.dirname(path), ypath)
+                    node.merge(_create_from_yaml(ypath, cls_node))
+                elif value[0].code == YAML_USING:
+                    using = value[1]
+                elif value[0].code == YAML_REMOVE_NODE:
+                    value[0].value = value[1]   # set the name
+                    node.ctrl.append(value[0])    # add "blue pill" of death
+                elif value[0].code == YAML_REMOVE_VALUE:
+                    value[0].value = value[1]   # set the name
+                    node.ctrl.append(value[0])
             else:
-                node_values.append(value)
-        return cls_node(name, dict(node_values), children=node_children)
+                node.value[value[0]] = value[1]
+        if using:
+            for name in using.strip('/').split('/')[::-1]:
+                node = cls_node(name, children=[node])
+        return node
 
     def mapping_to_tree_loader(loader, node):
         """ Maps yaml mapping tag to TreeNode structure """
@@ -323,10 +367,19 @@ def _create_from_yaml(path, cls_node=TreeNode):
             if is_node(values):    # New node
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
-                objects.append(cls_node(name))
+                objects.append(cls_node(str(name)))
             else:                           # Values
                 objects.append(Value((name, values)))
         return objects
+
+    Loader.add_constructor(u'!include',
+                           lambda loader, node: Control(YAML_INCLUDE))
+    Loader.add_constructor(u'!using',
+                           lambda loader, node: Control(YAML_USING))
+    Loader.add_constructor(u'!remove_node',
+                           lambda loader, node: Control(YAML_REMOVE_NODE))
+    Loader.add_constructor(u'!remove_value',
+                           lambda loader, node: Control(YAML_REMOVE_VALUE))
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 

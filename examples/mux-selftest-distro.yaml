@@ -1,0 +1,8 @@
+RHEL:
+    enterprise: true
+    6:
+        init: 'systemv'
+    7:
+        init: 'systemd'
+gentoo:
+    is_cool: False

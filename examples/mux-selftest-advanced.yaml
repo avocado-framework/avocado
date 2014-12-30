@@ -1,0 +1,26 @@
+# Put everything into /virt
+!using : virt
+# Following line makes it look exactly as mux-selftest.yaml
+!include : mux-selftest.yaml
+distro:
+    # This line extends the distro branch using include
+    !include : mux-selftest-distro.yaml
+    # remove node called "mint"
+    !remove_node : mint
+    # This is a new /distro/mint appended as latest child
+    mint:
+        new_mint: True
+    fedora:
+        !remove_value : init
+        new_init: systemd
+    gentoo:
+        # This modifies the value of 'is_cool'
+        is_cool: True
+        # And this removes the original 'is_cool'
+        # Setting happens after ctrl so it should be created'
+        !remove_value : is_cool
+# This creates new branch the usual way
+new_node:
+    # Put this new_node into /absolutely/fresh/
+    !using : /absolutely/fresh/
+    new_value: "something"
