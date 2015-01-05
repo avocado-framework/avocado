@@ -6,7 +6,8 @@ import unittest
 import tempfile
 
 # simple magic for using scripts within a source tree
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
+basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
+                       '..', '..')
 basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
@@ -41,36 +42,46 @@ class WrapperTest(unittest.TestCase):
 
     def test_global_wrapper(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --wrapper %s examples/tests/datadir.py' % self.script.path
+        cmd_line = ('./scripts/avocado run --wrapper %s '
+                    'examples/tests/datadir.py' % self.script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertTrue(os.path.exists(self.tmpfile),
-                        "Wrapper did not create file %s" % self.tmpfile)
+                        "Wrapper did not touch the tmp file %s\nStdout: "
+                        "%s\nCmdline: %s" %
+                        (self.tmpfile, result.stdout, cmd_line))
 
     def test_process_wrapper(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --wrapper %s:datadir examples/tests/datadir.py' % self.script.path
+        cmd_line = ('./scripts/avocado run --wrapper %s:*/datadir '
+                    'examples/tests/datadir.py' % self.script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertTrue(os.path.exists(self.tmpfile),
-                        "Wrapper did not create file %s" % self.tmpfile)
+                        "Wrapper did not touch the tmp file %s\nStdout: "
+                        "%s\nStdout: %s" %
+                        (self.tmpfile, cmd_line, result.stdout))
 
     def test_both_wrappers(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --wrapper %s --wrapper %s:datadir examples/tests/datadir.py' % (self.dummy.path, self.script.path)
+        cmd_line = ('./scripts/avocado run --wrapper %s --wrapper %s:*/datadir '
+                    'examples/tests/datadir.py' % (self.dummy.path,
+                                                   self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertTrue(os.path.exists(self.tmpfile),
-                        "Wrapper did not create file %s" % self.tmpfile)
+                        "Wrapper did not touch the tmp file %s\nStdout: "
+                        "%s\nStdout: %s" %
+                        (self.tmpfile, cmd_line, result.stdout))
 
     def tearDown(self):
         self.script.remove()
