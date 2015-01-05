@@ -35,6 +35,7 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 
 import collections
 import os
+import re
 
 import yaml
 
@@ -48,6 +49,16 @@ except ImportError:
 # Mapping for yaml flags
 YAML_INCLUDE = 0
 YAML_USING = 1
+YAML_REMOVE_NODE = 2
+
+
+class Control(object):  # Few methods pylint: disable=R0903
+
+    """ Container used to identify node vs. control sequence """
+
+    def __init__(self, code, value=None):
+        self.code = code
+        self.value = value
 
 
 class TreeNode(object):
@@ -66,6 +77,7 @@ class TreeNode(object):
         self.parent = parent
         self.children = []
         self._environment = None
+        self.ctrl = []
         for child in children:
             self.add_child(child)
 
@@ -118,6 +130,16 @@ class TreeNode(object):
         or merged into existing node in the previous position.
         """
         self.value.update(other.value)
+        for ctrl in other.ctrl:
+            if isinstance(ctrl, Control):
+                if ctrl.code == YAML_REMOVE_NODE:
+                    remove = []
+                    regexp = re.compile(ctrl.value)
+                    for child in self.children:
+                        if regexp.match(child.name):
+                            remove.append(child)
+                    for child in remove:
+                        self.children.remove(child)
         for child in other.children:
             self.add_child(child)
 
@@ -300,26 +322,6 @@ class Value(tuple):     # Few methods pylint: disable=R0903
     pass
 
 
-class Control(object):  # Few methods pylint: disable=R0903
-
-    """ Container used to identify node vs. control sequence """
-
-    def __init__(self, ctr_type):
-        self.ctr_type = ctr_type
-
-    def __eq__(self, other):
-        if isinstance(other, Control):
-            return self.ctr_type == other.ctr_type
-        else:
-            return self.ctr_type == other
-
-    def __req__(self, other):
-        return self == other
-
-    def __str__(self):
-        return self.ctr_type
-
-
 def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
@@ -330,13 +332,13 @@ def _create_from_yaml(path, cls_node=TreeNode):
             if isinstance(value, TreeNode):
                 node.add_child(value)
             elif isinstance(value[0], Control):
-                if value[0] == YAML_INCLUDE:
+                if value[0].code == YAML_INCLUDE:
                     # Include file
                     ypath = value[1]
                     if not os.path.isabs(ypath):
                         ypath = os.path.join(os.path.dirname(path), ypath)
                     node.merge(_create_from_yaml(ypath, cls_node))
-                elif value[0] == YAML_USING:
+                elif value[0].code == YAML_USING:
                     if using:
                         raise ValueError("!using can be used only once per "
                                          "node! (%s:%s)" % (path, name))
@@ -345,6 +347,9 @@ def _create_from_yaml(path, cls_node=TreeNode):
                         using = using[1:]
                     if using[-1] == '/':
                         using = using[:-1]
+                elif value[0].code == YAML_REMOVE_NODE:
+                    value[0].value = value[1]   # set the name
+                    node.ctrl.append(value[0])    # add "blue pill" of death
             else:
                 node.value[value[0]] = value[1]
         if using:
@@ -377,6 +382,8 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
                            lambda loader, node: Control(YAML_USING))
+    Loader.add_constructor(u'!remove_node',
+                           lambda loader, node: Control(YAML_REMOVE_NODE))
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 

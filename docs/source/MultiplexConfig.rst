@@ -66,6 +66,34 @@ The ending nodes (the leafs on the tree) will become part of all lower-level
 However, the precedence is evaluated in top-down or ``last defined`` order.
 In other words, the last parsed has precedence over earlier definitions.
 
+It's also possible to remove node using python's regexp, which can be useful
+when extending upstream file using downstream yaml files. This is done by
+`!remove_node : $value_name` directive::
+
+    os:
+        fedora:
+        windows:
+            3.11:
+            95:
+    os:
+        !remove_node : windows
+        windows:
+            win3.11:
+            win95:
+
+Removes the `windows` node from structure. It's different from `filter-out`
+as it really removes the node (and all children) from the tree and
+it can be replaced by you new structure as shown in the example. It removes
+`windows` with all children and then replaces this structure with slightly
+modified version.
+
+As `!remove_node` is processed during merge, when you reverse the order,
+windows is not removed and you end-up with `/windows/{win3.11,win95,3.11,95}`
+nodes.
+
+Due to yaml nature, it's __mandatory__ to put space between `!remove_node`
+and `:`!
+
 Additionally you can prepend multiple nodes to the given node by using
 `!using : $prepended/path`. This is useful when extending complex structure,
 for example imagine having distro variants in separate ymal files. In the

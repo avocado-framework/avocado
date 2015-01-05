@@ -1,10 +1,15 @@
 # Put everything into /virt
-!using : /virt
+!using : virt
 # Following line makes it look exactly as mux-selftest.yaml
 !include : mux-selftest.yaml
 distro:
     # This line extends the distro branch using include
     !include : mux-selftest-distro.yaml
+    # remove node called "mint"
+    !remove_node : mi.*nt
+    # This is a new /distro/mint appended as latest child
+    mint:
+        new_mint: True
 # This creates new branch the usual way
 new_node:
     # Put this new_node into /absolutely/fresh/ ('/' are automatically
