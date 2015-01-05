@@ -25,6 +25,7 @@ import stat
 import shlex
 import shutil
 import threading
+import fnmatch
 
 try:
     import subprocess32 as subprocess
@@ -868,11 +869,8 @@ def should_run_inside_wrapper(cmd):
     args = shlex.split(cmd)
     cmd_binary_name = args[0]
 
-    for script, cmd in runtime.WRAP_PROCESS_NAMES_EXPR:
-        if os.path.isabs(cmd_binary_name) and os.path.isabs(cmd) is False:
-            cmd_binary_name = os.path.basename(cmd_binary_name)
-            cmd = os.path.basename(cmd)
-        if cmd_binary_name == cmd:
+    for script, cmd_expr in runtime.WRAP_PROCESS_NAMES_EXPR:
+        if fnmatch.fnmatch(cmd_binary_name, cmd_expr):
             runtime.CURRENT_WRAPPER = script
 
     if runtime.WRAP_PROCESS is not None and runtime.CURRENT_WRAPPER is None:
