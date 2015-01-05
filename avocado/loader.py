@@ -82,9 +82,12 @@ class TestLoader(object):
         :param params: dictionary with test parameters.
         :type params: dict
         :return: a test factory (a pair of test class and test parameters)
+                 or `None`.
         """
         test_name = test_path = params.get('id')
         if os.path.exists(test_path):
+            if os.access(test_path, os.R_OK) is False:
+                return None
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
                 test_class, test_parameters = self._make_test(test_name,
@@ -124,8 +127,11 @@ class TestLoader(object):
         """
         if ignore_suffix is None:
             ignore_suffix = ('.data', '.pyc', '.pyo')
-        entries = sorted(os.listdir(os.path.abspath(dir_path)))
         params_list = []
+        try:
+            entries = sorted(os.listdir(os.path.abspath(dir_path)))
+        except OSError:
+            return params_list
         for entry in entries:
             new_path = os.path.join(dir_path, entry)
             if entry.startswith('.'):
@@ -180,7 +186,10 @@ class TestLoader(object):
         """
         test_suite = []
         for params in params_list:
-            test_class, test_parameters = self.discover_test(params)
+            test_factory = self.discover_test(params)
+            if test_factory is None:
+                continue
+            test_class, test_parameters = test_factory
             test_suite.append((test_class, test_parameters))
         return test_suite
 
