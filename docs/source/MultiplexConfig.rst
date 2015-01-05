@@ -66,6 +66,79 @@ The ending nodes (the leafs on the tree) will become part of all lower-level
 However, the precedence is evaluated in top-down or ``last defined`` order.
 In other words, the last parsed has precedence over earlier definitions.
 
+It's also possible to remove node using python's regexp, which can be useful
+when extending upstream file using downstream yaml files. This is done by
+`!remove_node : $value_name` directive::
+
+    os:
+        fedora:
+        windows:
+            3.11:
+            95:
+    os:
+        !remove_node : windows
+        windows:
+            win3.11:
+            win95:
+
+Removes the `windows` node from structure. It's different from `filter-out`
+as it really removes the node (and all children) from the tree and
+it can be replaced by you new structure as shown in the example. It removes
+`windows` with all children and then replaces this structure with slightly
+modified version.
+
+As `!remove_node` is processed during merge, when you reverse the order,
+windows is not removed and you end-up with `/windows/{win3.11,win95,3.11,95}`
+nodes.
+
+Due to yaml nature, it's __mandatory__ to put space between `!remove_node`
+and `:`!
+
+Additionally you can prepend multiple nodes to the given node by using
+`!using : $prepended/path`. This is useful when extending complex structure,
+for example imagine having distro variants in separate ymal files. In the
+end you want to merge them into the `/os` node. The main file can be simply::
+
+    # main.yaml
+    os:
+        !include : os/fedora/21.yaml
+        ....
+
+And each file can look either like this::
+
+    # fedora/21.yaml
+    fedora:
+        21:
+            some: value
+
+or you can use `!using` which prepends the `fedora/21`::
+
+    # fedora/21.yaml
+    !using : /fedora/21
+    some: value
+
+To be precise there is a way to define the structure in the main yaml file::
+
+    # main.yaml
+    os:
+        fedora:
+            21:
+                !include : fedora_21.yaml
+
+Or use recursive `!include` (slower)::
+
+    # main.yaml
+    os:
+        fedora:
+            !include : os/fedora.yaml
+    # os/fedora.yaml
+    21:
+        !include : fedora/21.yaml
+    # os/fedora/21.yaml
+    some: value
+
+Due to yaml nature, it's __mandatory__ to put space between `!using` and `:`!
+
 .. _keys_and_values:
 
 Keys and Values
@@ -90,6 +163,22 @@ And lists::
 
 The list above will become ``['-O2', '-g', '-Wall']`` to Python. In fact,
 YAML is compatible to JSON.
+
+It's also possible to remove key using python's regexp, which can be useful
+when extending upstream file using downstream yaml files. This is done by
+`!remove_value : $value_name` directive::
+
+    debug:
+        CFLAGS: '-O0 -g'
+    debug:
+        !remove_value: CFLAGS
+
+removes the CFLAGS value completely from the debug node. This happens during
+the merge and only once. So if you switch the two, CFLAGS would be defined.
+
+Due to yaml nature, it's __mandatory__ to put space between `!remove_value`
+and `:`!
+
 .. _environment:
 
 Environment
@@ -155,6 +244,21 @@ results in::
     fast:
         CFLAGS: '-Ofast'    # appended
 
+It's also possilbe to include existing file into other file's node. This
+is done by `!include : $path` directive::
+
+    os:
+        fedora:
+            !include : fedora.yaml
+        gentoo:
+            !include : gentoo.yaml
+
+Due to yaml nature, it's __mandatory__ to put space between `!include` and `:`!
+
+The file location can be either absolute path or relative path to the yaml
+file where the `!include` is called (even when it's nested).
+
+Whole file is __merged__ into the node where it's defined.
 
 .. _variants:
 

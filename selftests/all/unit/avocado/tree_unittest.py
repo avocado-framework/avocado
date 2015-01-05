@@ -52,8 +52,6 @@ class TestTree(unittest.TestCase):
         # Add_child existing
         tree3.add_child(tree2.children[0])
         self.assertEqual(tree3, tree2)
-        # Add_child incorrect class
-        self.assertRaises(ValueError, tree3.add_child, 'probably_bad_type')
 
     def test_links(self):
         """ Verify child->parent links """
@@ -151,6 +149,22 @@ class TestTree(unittest.TestCase):
         self.assertFalse(tree2.children[0].children[2].children[0].value)
         self.assertEqual({'nic': 'virtio'},
                          tree2.children[0].children[2].children[1].value)
+
+    def test_advanced_yaml(self):
+        tree2 = tree.create_from_yaml(['examples/mux-selftest-advanced.yaml'])
+        exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
+               '7', 'gentoo', 'mint', 'prod', 'new_node']
+        act = tree2.get_leaves()
+        oldroot = tree2.children[0]
+        self.assertEqual(exp, act)
+        self.assertEqual({'enterprise': True},
+                         oldroot.children[1].children[1].value)
+        self.assertEqual({'new_init': 'systemd'},
+                         oldroot.children[1].children[0].value)
+        self.assertEqual({'is_cool': True},
+                         oldroot.children[1].children[2].value)
+        self.assertEqual({'new_value': 'something'},
+                         oldroot.children[3].children[0].children[0].value)
 
 
 class TestPathParent(unittest.TestCase):
