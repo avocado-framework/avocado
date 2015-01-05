@@ -239,7 +239,11 @@ class Job(object):
             urls = urls.split()
 
         self._make_test_loader()
+
         params_list = self.test_loader.discover_urls(urls)
+        if not params_list:
+            e_msg = "No tests found within the specified path(s)"
+            raise exceptions.OptionValidationError(e_msg)
 
         if multiplex_files is None:
             if self.args and self.args.multiplex_files is not None:
@@ -247,10 +251,9 @@ class Job(object):
 
         if multiplex_files is not None:
             params_list = self._multiplex_params_list(params_list, multiplex_files)
-
-        if not params_list:
-            e_msg = "Test(s) with empty parameter list or the number of variants is zero"
-            raise exceptions.OptionValidationError(e_msg)
+            if not params_list:
+                e_msg = "The number of test variants is zero"
+                raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
             self.args.test_result_total = len(params_list)
