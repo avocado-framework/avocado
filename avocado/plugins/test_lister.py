@@ -52,7 +52,7 @@ class TestLister(plugin.Plugin):
         test_files = os.listdir(base_test_dir)
         test_dirs = []
         blength = 0
-        for t in test_files:
+        for t in sorted(test_files):
             inspector = path.PathInspector(path=t)
             if inspector.is_python():
                 clength = len((t.split('.')[0]))
