@@ -1,3 +1,5 @@
+# Put everything into /virt
+!using : /virt
 # Following line makes it look exactly as mux-selftest.yaml
 !include : mux-selftest.yaml
 distro:
@@ -5,4 +7,8 @@ distro:
     !include : mux-selftest-distro.yaml
 # This creates new branch the usual way
 new_node:
+    # Put this new_node into /absolutely/fresh/ ('/' are automatically
+    # removed during parse time, absolute location is not supported and
+    # not even planned)
+    !using : /absolutely/fresh/
     new_value: "something"
