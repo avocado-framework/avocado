@@ -23,6 +23,7 @@ import webbrowser
 
 import pystache
 
+from avocado import runtime
 from avocado.core import exit_codes
 from avocado.core import output
 from avocado.plugins import plugin
@@ -70,7 +71,12 @@ class ReportModel(object):
         return self.json['pass']
 
     def pass_rate(self):
-        pr = 100 * (float(self.json['pass']) / float(self.json['total']))
+        total = float(self.json['total'])
+        passed = float(self.json['pass'])
+        if total > 0:
+            pr = 100 * (passed / total)
+        else:
+            pr = 0
         return "%.2f" % pr
 
     def _get_sysinfo(self, sysinfo_file):
@@ -158,6 +164,7 @@ class HTMLTestResult(TestResult):
         """
         TestResult.start_tests(self)
         self.json = {'debuglog': self.stream.logfile,
+                     'job_id': runtime.CURRENT_JOB.unique_id,
                      'tests': []}
 
     def end_test(self, state):
@@ -168,8 +175,6 @@ class HTMLTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
-        if 'job_id' not in self.json:
-            self.json['job_id'] = state['job_unique_id']
         if state['fail_reason'] is None:
             state['fail_reason'] = ''
         else:
