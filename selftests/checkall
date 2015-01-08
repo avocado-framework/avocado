@@ -1,18 +1,17 @@
 #!/bin/bash
+GR=0
 run_rc() {
     echo "Running '$1'"
     $1
+    if [ $? != 0 ]; then
+        GR=1
+    fi
 }
 run_rc 'inspekt lint'
-rc1=$?
 echo ""
 run_rc 'inspekt indent'
-rc2=$?
 echo ""
 run_rc 'inspekt style'
-rc3=$?
 echo ""
 run_rc 'selftests/run selftests/all'
-rc4=$?
-exit $rc1 || $rc2 || $rc3 || $rc4
-
+exit ${GR}
