@@ -54,6 +54,7 @@ class TestLoader(object):
     def _make_test(self, test_name, test_path, params):
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
+        sys.path.append(test_module_dir)
         test_class = None
         try:
             f, p, d = imp.find_module(module_name, [test_module_dir])
@@ -66,6 +67,9 @@ class TestLoader(object):
 
         except (ImportError, AttributeError):
             return None
+        finally:
+            sys.path.pop()
+
         if test_class is None:
             return None
         test_parameters = {'name': test_name,
