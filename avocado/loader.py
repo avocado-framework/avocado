@@ -19,6 +19,7 @@ Test loader module.
 
 import os
 import imp
+import inspect
 
 from avocado import test
 from avocado.core import data_dir
@@ -53,18 +54,24 @@ class TestLoader(object):
     def _make_test(self, test_name, test_path, params):
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
+        test_class = None
         try:
             f, p, d = imp.find_module(module_name, [test_module_dir])
             test_module = imp.load_module(module_name, f, p, d)
             f.close()
-            test_class = getattr(test_module, module_name)
-        except ImportError:
-            test_class = test.MissingTest
-        finally:
-            test_parameters = {'name': test_name,
-                               'base_logdir': self.job.logdir,
-                               'params': params,
-                               'job': self.job}
+            for name, obj in inspect.getmembers(test_module):
+                if inspect.isclass(obj):
+                    if issubclass(obj, test.Test):
+                        test_class = obj
+
+        except (ImportError, AttributeError):
+            return None
+        if test_class is None:
+            return None
+        test_parameters = {'name': test_name,
+                           'base_logdir': self.job.logdir,
+                           'params': params,
+                           'job': self.job}
         return test_class, test_parameters
 
     def discover_test(self, params):
@@ -82,12 +89,9 @@ class TestLoader(object):
                 return None
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
-                test_class, test_parameters = self._make_test(test_name,
-                                                              test_path,
-                                                              params)
+                return self._make_test(test_name, test_path, params)
             elif os.access(test_path, os.X_OK):
-                test_class, test_parameters = self._make_simple_test(test_path,
-                                                                     params)
+                return self._make_simple_test(test_path, params)
             else:
                 return None
         else:
@@ -95,12 +99,9 @@ class TestLoader(object):
             rel_path = '%s.py' % test_name
             test_path = os.path.join(data_dir.get_test_dir(), rel_path)
             if os.path.exists(test_path):
-                test_class, test_parameters = self._make_test(rel_path,
-                                                              test_path,
-                                                              params)
+                return self._make_test(rel_path, test_path, params)
             else:
                 return None
-        return test_class, test_parameters
 
     def discover_directory(self, dir_path='.', ignore_suffix=None):
         """
