@@ -4,7 +4,7 @@ from avocado import job
 from avocado import test
 
 
-class passtest(test.Test):
+class PassTest(test.Test):
 
     """
     Example test that passes.

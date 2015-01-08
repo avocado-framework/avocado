@@ -6,7 +6,7 @@ from avocado import job
 import base64
 
 
-class whiteboard(test.Test):
+class WhiteBoard(test.Test):
 
     """
     Simple test that saves test custom data to the test whiteboard
