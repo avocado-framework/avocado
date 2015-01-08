@@ -97,8 +97,7 @@ class TestLoader(object):
                 test_class, test_parameters = self._make_simple_test(test_path,
                                                                      params)
             else:
-                test_class, test_parameters = self._make_missing_test(test_name,
-                                                                      params)
+                return None
         else:
             # Try to resolve test ID (keep compatibility)
             rel_path = '%s.py' % test_name
@@ -108,8 +107,7 @@ class TestLoader(object):
                                                               test_path,
                                                               params)
             else:
-                test_class, test_parameters = self._make_missing_test(
-                    test_name, params)
+                return None
         return test_class, test_parameters
 
     def discover_directory(self, dir_path='.', ignore_suffix=None):

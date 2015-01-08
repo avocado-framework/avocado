@@ -241,9 +241,6 @@ class Job(object):
         self._make_test_loader()
 
         params_list = self.test_loader.discover_urls(urls)
-        if not params_list:
-            e_msg = "No tests found within the specified path(s)"
-            raise exceptions.OptionValidationError(e_msg)
 
         if multiplex_files is None:
             if self.args and self.args.multiplex_files is not None:
@@ -251,12 +248,14 @@ class Job(object):
 
         if multiplex_files is not None:
             params_list = self._multiplex_params_list(params_list, multiplex_files)
-            if not params_list:
-                e_msg = "The number of test variants is zero"
-                raise exceptions.OptionValidationError(e_msg)
+
+        test_suite = self.test_loader.discover(params_list)
+        if not test_suite:
+            e_msg = "No tests found within the specified path(s) (Check input for typos)"
+            raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
-            self.args.test_result_total = len(params_list)
+            self.args.test_result_total = len(test_suite)
 
         self._make_test_result()
         self._make_test_runner()
@@ -265,7 +264,6 @@ class Job(object):
                                      self.loglevel,
                                      self.unique_id)
         self.view.logfile = self.logfile
-        test_suite = self.test_loader.discover(params_list)
         failures = self.test_runner.run_suite(test_suite)
         self.view.stop_file_logging()
         # If it's all good so far, set job status to 'PASS'
