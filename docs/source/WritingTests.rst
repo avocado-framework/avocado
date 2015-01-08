@@ -24,7 +24,7 @@ nothing but ``time.sleep([number-seconds])``::
     from avocado import test
 
 
-    class sleeptest(test.Test):
+    class SleepTest(test.Test):
 
         """
         Example test for avocado.
@@ -43,7 +43,10 @@ nothing but ``time.sleep([number-seconds])``::
         job.main()
 
 This is about the simplest test you can write for avocado (at least, one using
-the avocado APIs). Note that the test object provides you with a number of
+the avocado APIs). An avocado test is basically a class that inherits from :mod:`avocado.test.Test`
+and could have any name you might like (we'll trust you'll choose a good name).
+
+Note that the test object provides you with a number of
 convenience attributes, such as ``self.log``, that lets you log debug, info, error
 and warning messages. Also, we note the parameter passing system that avocado provides:
 We frequently want to pass parameters to tests, and we can do that through what
