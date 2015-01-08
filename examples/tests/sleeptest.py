@@ -6,7 +6,7 @@ from avocado import job
 from avocado import test
 
 
-class sleeptest(test.Test):
+class SleepTest(test.Test):
 
     """
     Example test for avocado.

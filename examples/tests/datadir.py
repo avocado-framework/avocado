@@ -8,7 +8,7 @@ from avocado.utils import build
 from avocado.utils import process
 
 
-class datadir(test.Test):
+class DataDirTest(test.Test):
 
     """
     Test that uses resources from the data dir.

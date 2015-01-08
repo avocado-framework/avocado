@@ -10,7 +10,7 @@ from avocado.utils import process
 from avocado.utils import data_factory
 
 
-class trinity(test.Test):
+class TrinityTest(test.Test):
 
     """
     Trinity syscall fuzzer wrapper.

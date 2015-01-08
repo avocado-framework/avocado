@@ -4,10 +4,10 @@ from avocado import test
 from avocado import job
 
 
-class multiplextest(test.Test):
+class MultiplexTest(test.Test):
 
     """
-    Execute the Linux Build test.
+    Execute a test that uses provided parameters (for multiplexing testing).
     """
     default_params = {'os_type': 'linux',
                       'gcc_flags': '-O2',
