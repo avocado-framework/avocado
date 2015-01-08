@@ -6,7 +6,7 @@ from avocado import test
 from avocado import job
 
 
-class gendata(test.Test):
+class GenDataTest(test.Test):
 
     """
     Simple test that generates data to be persisted after the test is run

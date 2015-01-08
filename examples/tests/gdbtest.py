@@ -8,7 +8,7 @@ from avocado import runtime
 from avocado.utils import process
 
 
-class gdbtest(test.Test):
+class GdbTest(test.Test):
 
     """
     Execute the gdb test
