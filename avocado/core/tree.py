@@ -79,6 +79,7 @@ class TreeNode(object):
         self.children = []
         self._environment = None
         self.ctrl = []
+        self.mux_domain = False
         for child in children:
             self.add_child(child)
 
@@ -390,6 +391,13 @@ def _create_from_yaml(path, cls_node=TreeNode):
                 objects.append(Value((name, values)))
         return objects
 
+    def mux_loader(loader, obj):
+        objects = mapping_to_tree_loader(loader, obj)
+        for obj in objects:     # Every child is separate mux-domain
+            if isinstance(obj, TreeNode):
+                obj.mux_domain = True
+        return objects
+
     Loader.add_constructor(u'!include',
                            lambda loader, node: Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
@@ -398,6 +406,7 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
                            lambda loader, node: Control(YAML_REMOVE_VALUE))
+    Loader.add_constructor(u'!mux-domain', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 
