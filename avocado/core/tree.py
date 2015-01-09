@@ -51,6 +51,7 @@ YAML_INCLUDE = 0
 YAML_USING = 1
 YAML_REMOVE_NODE = 2
 YAML_REMOVE_VALUE = 3
+YAML_MUX_DOMAIN = 4
 
 
 class Control(object):  # Few methods pylint: disable=R0903
@@ -149,6 +150,7 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
+        self.mux_domain = other.mux_domain
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -261,6 +263,7 @@ class TreeNode(object):
         :param attributes: List of node attributes to be printed out ['name']
         :return: string
         """
+        attributes = 'name', 'mux_domain'
         (lines, _) = self.ascii_art(show_internal=show_internal,
                                     compact=compact, attributes=attributes)
         return '\n' + '\n'.join(lines)
@@ -363,6 +366,8 @@ def _create_from_yaml(path, cls_node=TreeNode):
                 elif value[0].code == YAML_REMOVE_VALUE:
                     value[0].value = value[1]   # set the name
                     node.ctrl.append(value[0])
+                elif value[0].code == YAML_MUX_DOMAIN:
+                    node.mux_domain = True
             else:
                 node.value[value[0]] = value[1]
         if using:
@@ -393,9 +398,7 @@ def _create_from_yaml(path, cls_node=TreeNode):
 
     def mux_loader(loader, obj):
         objects = mapping_to_tree_loader(loader, obj)
-        for obj in objects:     # Every child is separate mux-domain
-            if isinstance(obj, TreeNode):
-                obj.mux_domain = True
+        objects.append((Control(YAML_MUX_DOMAIN), None))
         return objects
 
     Loader.add_constructor(u'!include',

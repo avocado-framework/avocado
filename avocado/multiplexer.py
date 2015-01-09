@@ -24,7 +24,7 @@ import itertools
 from avocado.core import tree
 
 
-def tree2pools(node):
+def tree2pools(node, mux=False):
     """
     Process tree and flattens the structure to remaining leaves and
     list of lists of leaves per each multiplex group.
@@ -35,12 +35,12 @@ def tree2pools(node):
     """
     leaves = []
     pools = []
-    if not node.mux_domain:
+    if not mux:
         for child in node.children:
             if child.is_leaf:
                 leaves.append(child)
             else:
-                _leafs, _pools = tree2pools(child)
+                _leafs, _pools = tree2pools(child, node.mux_domain)
                 leaves.extend(_leafs)
                 pools.extend(_pools)
     else:
@@ -51,7 +51,7 @@ def tree2pools(node):
             if child.is_leaf:
                 new_leafs.append(child)
             else:
-                _leafs, _pools = tree2pools(child)
+                _leafs, _pools = tree2pools(child, node.mux_domain)
                 new_leafs.extend(_leafs)
                 # TODO: For 2nd level filters store this separately in case
                 # this branch is filtered out
