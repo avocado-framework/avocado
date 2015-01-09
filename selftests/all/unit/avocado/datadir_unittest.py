@@ -18,7 +18,7 @@ from avocado import settings
 
 
 def _get_bogus_settings(args):
-    return ('[runner]\n'
+    return ('[datadir.paths]\n'
             'base_dir = %(base_dir)s\n'
             'test_dir = %(test_dir)s\n'
             'data_dir = %(data_dir)s\n'
@@ -52,7 +52,7 @@ class DataDirTest(unittest.TestCase):
         reload(data_dir)
         for key in self.mapping.keys():
             data_dir_func = getattr(data_dir, 'get_%s' % key)
-            self.assertEqual(data_dir_func(), stg.get_value('runner', key))
+            self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
         del data_dir
 
     def tearDown(self):
