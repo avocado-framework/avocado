@@ -9,7 +9,7 @@ from avocado.utils import build
 from avocado.utils import process
 
 
-class synctest(test.Test):
+class SyncTest(test.Test):
 
     """
     Execute the synctest test suite.

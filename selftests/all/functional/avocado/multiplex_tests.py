@@ -70,7 +70,7 @@ class MultiplexTests(unittest.TestCase):
 
     def test_run_mplex_noid(self):
         cmd_line = './scripts/avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
-        expected_rc = 2
+        expected_rc = 3
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):

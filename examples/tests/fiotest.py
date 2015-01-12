@@ -9,7 +9,7 @@ from avocado.utils import build
 from avocado.utils import process
 
 
-class fiotest(test.Test):
+class FioTest(test.Test):
 
     """
     fio is an I/O tool meant to be used both for benchmark and

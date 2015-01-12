@@ -84,7 +84,7 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run bogustest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         unexpected_rc = 3
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
@@ -160,7 +160,7 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = 3
         expected_output = 'Empty test ID. A test path or alias must be provided'
         expected_output_2 = 'usage:'
         self.assertEqual(result.exit_status, expected_rc)
@@ -171,10 +171,9 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run sbrubles'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('NOT_FOUND', result.stdout)
-        self.assertIn('NOT FOUND : 1', result.stdout)
+        self.assertIn('No tests found within the specified path(s)', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
@@ -389,7 +388,7 @@ class ParseXMLError(Exception):
 class PluginsXunitTest(PluginsTest):
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nnotfound, e_nfailures, e_nskip):
+                      e_nfailures, e_nskip):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --xunit - %s' % testname
         result = process.run(cmd_line, ignore_status=True)
@@ -397,58 +396,59 @@ class PluginsXunitTest(PluginsTest):
         self.assertEqual(result.exit_status, e_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (e_rc, result))
-        try:
-            xunit_doc = xml.dom.minidom.parseString(xml_output)
-        except Exception, detail:
-            raise ParseXMLError("Failed to parse content: %s\n%s" %
-                                (detail, xml_output))
+        if e_rc == 0:
+            try:
+                xunit_doc = xml.dom.minidom.parseString(xml_output)
+            except Exception, detail:
+                raise ParseXMLError("Failed to parse content: %s\n%s" %
+                                    (detail, xml_output))
 
-        testsuite_list = xunit_doc.getElementsByTagName('testsuite')
-        self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
+            testsuite_list = xunit_doc.getElementsByTagName('testsuite')
+            self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
 
-        testsuite_tag = testsuite_list[0]
-        self.assertEqual(len(testsuite_tag.attributes), 7,
-                         'The testsuite tag does not have 7 attributes. '
-                         'XML:\n%s' % xml_output)
+            testsuite_tag = testsuite_list[0]
+            self.assertEqual(len(testsuite_tag.attributes), 7,
+                             'The testsuite tag does not have 7 attributes. '
+                             'XML:\n%s' % xml_output)
 
-        n_tests = int(testsuite_tag.attributes['tests'].value)
-        self.assertEqual(n_tests, e_ntests,
-                         "Unexpected number of executed tests, "
-                         "XML:\n%s" % xml_output)
+            n_tests = int(testsuite_tag.attributes['tests'].value)
+            self.assertEqual(n_tests, e_ntests,
+                             "Unexpected number of executed tests, "
+                             "XML:\n%s" % xml_output)
 
-        n_errors = int(testsuite_tag.attributes['errors'].value)
-        self.assertEqual(n_errors, e_nerrors,
-                         "Unexpected number of test errors, "
-                         "XML:\n%s" % xml_output)
+            n_errors = int(testsuite_tag.attributes['errors'].value)
+            self.assertEqual(n_errors, e_nerrors,
+                             "Unexpected number of test errors, "
+                             "XML:\n%s" % xml_output)
 
-        n_failures = int(testsuite_tag.attributes['failures'].value)
-        self.assertEqual(n_failures, e_nfailures,
-                         "Unexpected number of test failures, "
-                         "XML:\n%s" % xml_output)
+            n_failures = int(testsuite_tag.attributes['failures'].value)
+            self.assertEqual(n_failures, e_nfailures,
+                             "Unexpected number of test failures, "
+                             "XML:\n%s" % xml_output)
 
-        n_skip = int(testsuite_tag.attributes['skip'].value)
-        self.assertEqual(n_skip, e_nskip,
-                         "Unexpected number of test skips, "
-                         "XML:\n%s" % xml_output)
+            n_skip = int(testsuite_tag.attributes['skip'].value)
+            self.assertEqual(n_skip, e_nskip,
+                             "Unexpected number of test skips, "
+                             "XML:\n%s" % xml_output)
 
     def test_xunit_plugin_passtest(self):
-        self.run_and_check('passtest', 0, 1, 0, 0, 0, 0)
+        self.run_and_check('passtest', 0, 1, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
+        self.run_and_check('failtest', 1, 1, 0, 1, 0)
 
     def test_xunit_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
+        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
 
     def test_xunit_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
+        self.run_and_check('errortest', 1, 1, 1, 0, 0)
 
     def test_xunit_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 1, 0, 0, 0)
+        self.run_and_check('sbrubles', 2, 1, 1, 0, 0)
 
     def test_xunit_plugin_mixedtest(self):
         self.run_and_check('passtest failtest skiptest errortest sbrubles',
-                           1, 5, 2, 0, 1, 1)
+                           1, 4, 2, 1, 1)
 
 
 class ParseJSONError(Exception):
@@ -457,7 +457,7 @@ class ParseJSONError(Exception):
 
 class PluginsJSONTest(PluginsTest):
 
-    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors, e_nnotfound,
+    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --json - --archive %s' % testname
@@ -466,48 +466,46 @@ class PluginsJSONTest(PluginsTest):
         self.assertEqual(result.exit_status, e_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (e_rc, result))
-        try:
-            json_data = json.loads(json_output)
-        except Exception, detail:
-            raise ParseJSONError("Failed to parse content: %s\n%s" %
-                                 (detail, json_output))
-        self.assertTrue(json_data, "Empty JSON result:\n%s" % json_output)
-        self.assertIsInstance(json_data['tests'], list,
-                              "JSON result lacks 'tests' list")
-        n_tests = len(json_data['tests'])
-        self.assertEqual(n_tests, e_ntests,
-                         "Different number of expected tests")
-        n_errors = json_data['errors']
-        self.assertEqual(n_errors, e_nerrors,
-                         "Different number of expected tests")
-        n_not_found = json_data['not_found']
-        self.assertEqual(n_not_found, e_nnotfound,
-                         "Different number of not found tests")
-        n_failures = json_data['failures']
-        self.assertEqual(n_failures, e_nfailures,
-                         "Different number of expected tests")
-        n_skip = json_data['skip']
-        self.assertEqual(n_skip, e_nskip,
-                         "Different number of skipped tests")
+        if e_rc == 0:
+            try:
+                json_data = json.loads(json_output)
+            except Exception, detail:
+                raise ParseJSONError("Failed to parse content: %s\n%s" %
+                                     (detail, json_output))
+            self.assertTrue(json_data, "Empty JSON result:\n%s" % json_output)
+            self.assertIsInstance(json_data['tests'], list,
+                                  "JSON result lacks 'tests' list")
+            n_tests = len(json_data['tests'])
+            self.assertEqual(n_tests, e_ntests,
+                             "Different number of expected tests")
+            n_errors = json_data['errors']
+            self.assertEqual(n_errors, e_nerrors,
+                             "Different number of expected tests")
+            n_failures = json_data['failures']
+            self.assertEqual(n_failures, e_nfailures,
+                             "Different number of expected tests")
+            n_skip = json_data['skip']
+            self.assertEqual(n_skip, e_nskip,
+                             "Different number of skipped tests")
 
     def test_json_plugin_passtest(self):
-        self.run_and_check('passtest', 0, 1, 0, 0, 0, 0)
+        self.run_and_check('passtest', 0, 1, 0, 0, 0)
 
     def test_json_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
+        self.run_and_check('failtest', 1, 1, 0, 1, 0)
 
     def test_json_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
+        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
+        self.run_and_check('errortest', 1, 1, 1, 0, 0)
 
     def test_json_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
+        self.run_and_check('sbrubles', 2, 0, 0, 0, 0)
 
     def test_json_plugin_mixedtest(self):
         self.run_and_check('passtest failtest skiptest errortest sbrubles',
-                           1, 5, 1, 1, 1, 1)
+                           1, 4, 1, 1, 1)
 
 if __name__ == '__main__':
     unittest.main()

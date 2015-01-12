@@ -5,7 +5,7 @@ from avocado import job
 from avocado.linux import kernel_build
 
 
-class linuxbuild(test.Test):
+class LinuxBuildTest(test.Test):
 
     """
     Execute the Linux Build test.

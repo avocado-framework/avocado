@@ -16,8 +16,6 @@
 Base Test Runner Plugins.
 """
 
-import sys
-
 from avocado.core import exit_codes
 from avocado.plugins import plugin
 from avocado.core import output
@@ -114,6 +112,7 @@ class TestRunner(plugin.Plugin):
 
         :param args: Command line args received from the run subparser.
         """
+
         view = output.View(app_args=args, use_paginator=True)
         if args.unique_job_id is not None:
             try:
@@ -122,11 +121,12 @@ class TestRunner(plugin.Plugin):
                     raise ValueError
             except ValueError:
                 view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
-                return sys.exit(exit_codes.AVOCADO_CRASH)
+                return exit_codes.AVOCADO_CRASH
+        if not args.url:
+            self.parser.print_help()
+            view.notify(event='error', msg='Empty test ID. A test path or alias must be provided')
+            return exit_codes.AVOCADO_CRASH
 
         job_instance = job.Job(args)
         rc = job_instance.run()
-        if not args.url:
-            self.parser.print_help()
-
         return rc
