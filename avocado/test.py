@@ -585,10 +585,11 @@ class MissingTest(Test):
     """
 
     def __init__(self, name=None, params=None, base_logdir=None, tag=None,
-                 job=None):
+                 job=None, runner_queue=None):
         super(MissingTest, self).__init__(name=name,
                                           base_logdir=base_logdir,
-                                          tag=tag, job=job)
+                                          tag=tag, job=job,
+                                          runner_queue=runner_queue)
 
     def action(self):
         e_msg = ('Test %s could not be found in the test dir %s '
