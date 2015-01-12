@@ -385,7 +385,6 @@ class View(object):
     def set_test_status(self, status, state):
         mapping = {'PASS': self._log_ui_status_pass,
                    'ERROR': self._log_ui_status_error,
-                   'NOT_FOUND': self._log_ui_status_not_found,
                    'FAIL': self._log_ui_status_fail,
                    'SKIP': self._log_ui_status_skip,
                    'WARN': self._log_ui_status_warn}
@@ -502,15 +501,6 @@ class View(object):
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error_base(normal_error_msg)
-
-    def _log_ui_status_not_found(self, t_elapsed):
-        """
-        Log a NOT_FOUND status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_error_msg)
 
     def _log_ui_status_fail(self, t_elapsed):

@@ -152,7 +152,6 @@ class RemoteTestResult(TestResult):
         """
         self.stream.notify(event='message', msg="PASS      : %d" % len(self.passed))
         self.stream.notify(event='message', msg="ERROR     : %d" % len(self.errors))
-        self.stream.notify(event='message', msg="NOT FOUND : %d" % len(self.not_found))
         self.stream.notify(event='message', msg="FAIL      : %d" % len(self.failed))
         self.stream.notify(event='message', msg="SKIP      : %d" % len(self.skipped))
         self.stream.notify(event='message', msg="WARN      : %d" % len(self.warned))
@@ -191,15 +190,6 @@ class RemoteTestResult(TestResult):
         """
         TestResult.add_error(self, test)
         self.stream.set_test_status(status='ERROR', state=test)
-
-    def add_not_found(self, test):
-        """
-        Called when a test had a setup error.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_not_found(self, test)
-        self.stream.set_test_status(status='NOT_FOUND', state=test)
 
     def add_fail(self, test):
         """
