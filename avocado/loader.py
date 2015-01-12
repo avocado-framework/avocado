@@ -42,14 +42,6 @@ class TestLoader(object):
             job = _DebugJob()
         self.job = job
 
-    def _make_missing_test(self, test_name, params):
-        test_class = test.MissingTest
-        test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
-        return test_class, test_parameters
-
     def _make_simple_test(self, test_path, params):
         test_class = test.SimpleTest
         test_parameters = {'path': test_path,
