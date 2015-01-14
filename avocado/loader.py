@@ -18,12 +18,17 @@ Test loader module.
 """
 
 import os
+import sys
 import imp
 import inspect
+import logging
 
 from avocado import test
 from avocado.core import data_dir
 from avocado.utils import path
+from avocado.utils import debug
+
+log = logging.getLogger('avocado.test')
 
 
 class _DebugJob(object):
@@ -65,12 +70,15 @@ class TestLoader(object):
                     if issubclass(obj, test.Test):
                         test_class = obj
 
-        except (ImportError, AttributeError):
+        except Exception, details:
+            debug.log_exc_info(sys.exc_info(), logger=log)
+            log.error('Error importing file %s: %s' % (test_path, details))
             return None
         finally:
             sys.path.pop()
 
         if test_class is None:
+            log.info('No avocado test class found on file %s' % test_path)
             return None
         test_parameters = {'name': test_name,
                            'base_logdir': self.job.logdir,
