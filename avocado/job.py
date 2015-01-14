@@ -251,7 +251,8 @@ class Job(object):
 
         test_suite = self.test_loader.discover(params_list)
         if not test_suite:
-            e_msg = "No tests found within the specified path(s) (Check input for typos)"
+            e_msg = ("No tests found within the specified path(s) "
+                     "(Check input and tests for typos. Try --show-job-log for more info)")
             raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
