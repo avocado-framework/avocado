@@ -18,6 +18,7 @@ import json
 
 from avocado.core import output
 from avocado.plugins import plugin
+from avocado.utils import process
 from avocado.linux import distro as distro_utils
 
 
@@ -156,8 +157,38 @@ class DistroPkgInfoLoader(object):
         raise NotImplementedError
 
 
+class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
+
+    '''
+    Loads package information for RPM files
+    '''
+
+    def __init__(self, path):
+        super(DistroPkgInfoLoaderRpm, self).__init__(path)
+        try:
+            process.find_command('rpm')
+            self.capable = True
+        except process.CmdNotFoundError:
+            self.capable = False
+
+    def is_software_package(self, path):
+        '''
+        Systems needs to be able to run the rpm binary in order to fetch
+        information on package files. If the rpm binary is not available
+        on this system, we simply ignore the rpm files found
+        '''
+        return self.capable and path.endswith('.rpm')
+
+    def get_package_info(self, path):
+        cmd = "rpm -qp --qf '%{NAME} %{VERSION} %{RELEASE} %{SIGMD5} %{ARCH}' "
+        cmd += path
+        info = process.system_output(cmd, ignore_status=True)
+        info = tuple(info.split(' '))
+        return info
+
+
 #: the type of distro that will determine what loader will be used
-DISTRO_PKG_INFO_LOADERS = {}
+DISTRO_PKG_INFO_LOADERS = {'rpm': DistroPkgInfoLoaderRpm}
 
 
 class DistroOptions(plugin.Plugin):
