@@ -219,6 +219,74 @@ DISTRO_PKG_INFO_LOADERS = {'rpm': DistroPkgInfoLoaderRpm,
                            'deb': DistroPkgInfoLoaderDeb}
 
 
+def save_distro(linux_distro, path):
+    '''
+    Saves the linux_distro to an external file format
+
+    :param linux_distro: an :class:`DistroDef` instance
+    :type linux_distro: DistroDef
+    :param path: the location for the output file
+    :type path: str
+    :return: None
+    '''
+    output = open(path, 'w')
+    output.write(bz2.compress(linux_distro.to_json()))
+    output.close()
+
+
+def load_distro(path):
+    '''
+    Loads the distro from an external file
+
+    :param path: the location for the input file
+    :type path: str
+    :return: a dict with the distro definition data
+    :rtype: dict
+    '''
+    return json.loads(bz2.decompress(open(path).read()))
+
+
+def load_from_tree(name, version, release, arch, package_type, path):
+    '''
+    Loads a DistroDef from an installable tree
+
+    :param name: a short name that precisely distinguishes this Linux
+                 Distribution among all others.
+    :type name: str
+    :param version: the major version of the distribution. Usually this
+                    is a single number that denotes a large development
+                    cycle and support file.
+    :type version: str
+    :param release: the release or minor version of the distribution.
+                    Usually this is also a single number, that is often
+                    omitted or starts with a 0 when the major version
+                    is initially release. It's ofter associated with a
+                    shorter development cycle that contains incremental
+                    a collection of improvements and fixes.
+    :type release: str
+    :param arch: the main target for this Linux Distribution. It's common
+                 for some architectures to ship with packages for
+                 previous and still compatible architectures, such as it's
+                 the case with Intel/AMD 64 bit architecture that support
+                 32 bit code. In cases like this, this should be set to
+                 the 64 bit architecture name.
+    :type arch: str
+    :param package_type: one of the available package info loader types
+    :type package_type: str
+    :param path: top level directory of the distro installation tree files
+    :type path: str
+    '''
+    distro_def = DistroDef(name, version, release, arch)
+
+    loader_class = DISTRO_PKG_INFO_LOADERS.get(package_type, None)
+    if loader_class is not None:
+        loader = loader_class(path)
+        distro_def.software_packages = [SoftwarePackage(*args)
+                                        for args in loader.get_packages_info()]
+        distro_def.software_packages_type = package_type
+    return distro_def
+
+
 class DistroOptions(plugin.Plugin):
 
     """
