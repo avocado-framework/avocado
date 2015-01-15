@@ -120,7 +120,7 @@ class Test(unittest.TestCase):
 
         tmpdir = data_dir.get_tmp_dir()
 
-        self.basedir = os.path.dirname(inspect.getfile(self.__class__))
+        self.basedir = os.path.abspath(os.path.dirname(inspect.getfile(self.__class__)))
         self.datadir = os.path.join(self.basedir, '%s.data' % basename)
 
         self.expected_stdout_file = os.path.join(self.datadir,
