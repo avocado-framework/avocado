@@ -12,6 +12,7 @@
 # Copyright: Red Hat Inc. 2015
 # Author: Cleber Rosa <cleber@redhat.com>
 
+import os
 import bz2
 import json
 
@@ -91,6 +92,72 @@ class DistroDef(distro_utils.LinuxDistro):
         Returns the representation of the distro as JSON
         '''
         return json.dumps(self.to_dict())
+
+
+class DistroPkgInfoLoader(object):
+
+    '''
+    Loads information from the distro installation tree into a DistroDef
+
+    It will go through all package files and inspect them with specific
+    package utilities, collecting the necessary information.
+    '''
+
+    def __init__(self, path):
+        self.path = path
+
+    def get_packages_info(self):
+        '''
+        This method will go throught each file, checking if it's a valid
+        software package file by calling :meth:`is_software_package` and
+        calling :meth:`load_package_info` if it's so.
+        '''
+        packages_info = set()
+        for dirpath, dirnames, filenames in os.walk(self.path):
+            for filename in filenames:
+                path = os.path.join(dirpath, filename)
+                if self.is_software_package(path):
+                    packages_info.add(self.get_package_info(path))
+
+        # because we do not track of locations or how many copies of a given
+        # package file exists in the installation tree, packages should be
+        # comprised of unique entries
+        return list(packages_info)
+
+    def is_software_package(self, path):
+        '''
+        Determines if the given file at `path` is a software package
+
+        This check will be used to determine if :meth:`load_package_info`
+        will be called for file at `path`. This method should be
+        implemented by classes inheriting from :class:`DistroPkgInfoLoader` and
+        could be as simple as checking for a file suffix.
+
+        :param path: path to the software package file
+        :type path: str
+        :return: either True if the file is a valid software package or False
+                 otherwise
+        :rtype: bool
+        '''
+        raise NotImplementedError
+
+    def get_package_info(self, path):
+        '''
+        Returns information about a given software package
+
+        Should be implemented by classes inheriting from
+        :class:`DistroDefinitionLoader`.
+
+        :param path: path to the software package file
+        :type path: str
+        :returns: tuple with name, version, release, checksum and arch
+        :rtype: tuple
+        '''
+        raise NotImplementedError
+
+
+#: the type of distro that will determine what loader will be used
+DISTRO_PKG_INFO_LOADERS = {}
 
 
 class DistroOptions(plugin.Plugin):
