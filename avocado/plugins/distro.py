@@ -300,14 +300,80 @@ class DistroOptions(plugin.Plugin):
         self.parser = parser.subcommands.add_parser(
             'distro',
             help='Shows detected Linux distribution')
+        self.parser.add_argument('--distro-def-create',
+                                 action='store_true', default=False,
+                                 help=('Creates a distro definition file '
+                                       'based on the path given'))
+        self.parser.add_argument('--distro-def-name',
+                                 help='Distribution short name')
+        self.parser.add_argument('--distro-def-version',
+                                 help='Distribution major version number')
+        self.parser.add_argument('---distro-def-release', default='',
+                                 help='Distribution release version number')
+        self.parser.add_argument('--distro-def-arch',
+                                 help=('Primary architecture that the distro '
+                                       'targets'))
+        self.parser.add_argument('--distro-def-path',
+                                 help=('Top level directory of the distro '
+                                       'installation files'))
+        type_choices = DISTRO_PKG_INFO_LOADERS.keys()
+        type_choices_hlp = ', '.join(type_choices)
+        type_help_msg = 'Distro type (one of: %s)' % type_choices_hlp
+        self.parser.add_argument('--distro-def-type', choices=type_choices,
+                                 help=type_help_msg)
         super(DistroOptions, self).configure(self.parser)
+
+    def get_output_file_name(self, args):
+        '''
+        Adapt the output file name based on given args
+
+        It's not uncommon for some distros to not have a release number, so
+        adapt the output file name to that
+        '''
+        if args.distro_def_release:
+            return '%s-%s.%s-%s.distro' % (args.distro_def_name,
+                                           args.distro_def_version,
+                                           args.distro_def_release,
+                                           args.distro_def_arch)
+        else:
+            return '%s-%s-%s.distro' % (args.distro_def_name,
+                                        args.distro_def_version,
+                                        args.distro_def_arch)
 
     def run(self, args):
         view = output.View()
-        detected = distro_utils.detect()
-        msg = 'Detected distribution: %s (%s) version %s release %s' % (
-            detected.name,
-            detected.arch,
-            detected.version,
-            detected.release)
-        view.notify(event="message", msg=msg)
+        if args.distro_def_create:
+            if not (args.distro_def_name and args.distro_def_version and
+                    args.distro_def_arch and args.distro_def_type and
+                    args.distro_def_path):
+                error_msg = ('Required arguments: name, version, arch, type '
+                             'and path')
+                view.notify(event="error", msg=error_msg)
+
+            output_file_name = self.get_output_file_name(args)
+            if os.path.exists(output_file_name):
+                error_msg = ('Output file "%s" already exists, will not '
+                             'overwrite it' % output_file_name)
+                view.notify(event="error", msg=error_msg)
+            else:
+                view.notify(event="message",
+                            msg=("Loading distro information from tree... "
+                                 "Please wait..."))
+                distro = load_from_tree(args.distro_def_name,
+                                        args.distro_def_version,
+                                        args.distro_def_release,
+                                        args.distro_def_arch,
+                                        args.distro_def_type,
+                                        args.distro_def_path)
+                save_distro(distro, output_file_name)
+                view.notify(event="message",
+                            msg=('Distro information saved '
+                                 'to "%s"' % output_file_name))
+        else:
+            detected = distro_utils.detect()
+            msg = 'Detected distribution: %s (%s) version %s release %s' % (
+                detected.name,
+                detected.arch,
+                detected.version,
+                detected.release)
+            view.notify(event="message", msg=msg)
