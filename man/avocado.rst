@@ -37,6 +37,7 @@ of avocado subcommands::
  sysinfo     Collect system information
  multiplex   Generate a list of dictionaries with params from multiplex file(s)
  plugins     List all plugins loaded
+ distro      Shows detected Linux distribution
  datadir     List all relevant directories used by avocado
 
 To get usage instructions for a given subcommand, run it with `--help`. Example::
@@ -477,6 +478,16 @@ The output should look like::
 
 For more information, please consult the topic Remote Machine Plugin
 on Avocado's online documentation.
+
+LINUX DISTRIBUTION UTILITIES
+============================
+
+Avocado has some planned features that depend on knowing the Linux Distribution being used on the sytem.
+The most basic command prints the detected Linux Distribution::
+
+  $ avocado distro
+  Detected distribution: fedora (x86_64) version 21 release 0
+
 
 FILES
 =====
