@@ -187,8 +187,36 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
         return info
 
 
+class DistroPkgInfoLoaderDeb(DistroPkgInfoLoader):
+
+    '''
+    Loads package information for DEB files
+    '''
+
+    def __init__(self, path):
+        super(DistroPkgInfoLoaderDeb, self).__init__(path)
+        try:
+            process.find_command('dpkg-deb')
+            self.capable = True
+        except process.CmdNotFoundError:
+            self.capable = False
+
+    def is_software_package(self, path):
+        return self.capable and (path.endswith('.deb') or
+                                 path.endswith('.udeb'))
+
+    def get_package_info(self, path):
+        cmd = ("dpkg-deb --showformat '${Package} ${Version} ${Architecture}' "
+               "--show ")
+        cmd += path
+        info = process.system_output(cmd, ignore_status=True)
+        name, version, arch = info.split(' ')
+        return (name, version, '', '', arch)
+
+
 #: the type of distro that will determine what loader will be used
-DISTRO_PKG_INFO_LOADERS = {'rpm': DistroPkgInfoLoaderRpm}
+DISTRO_PKG_INFO_LOADERS = {'rpm': DistroPkgInfoLoaderRpm,
+                           'deb': DistroPkgInfoLoaderDeb}
 
 
 class DistroOptions(plugin.Plugin):
