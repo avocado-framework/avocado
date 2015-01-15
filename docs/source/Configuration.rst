@@ -11,13 +11,13 @@ The avocado config file format is based on the (informal)
 python's  :mod:`ConfigParser`. The format is simple and straightforward, composed by `sections`,
 that contain a number of `keys` and `values`. Take for example a basic avocado config file::
 
-    [runner]
+    [datadir.paths]
     base_dir = ~/avocado
     test_dir = /$HOME/Code/avocado/examples/tests
     data_dir = /usr/share/avocado/data
     logs_dir = ~/avocado/job-results
 
-The ``runner`` section contains a number of keys, all of them related to directories used by
+The ``datadir.paths`` section contains a number of keys, all of them related to directories used by
 the test runner. The ``base_dir`` is the base directory to other important avocado directories, such
 as log, data and test directories. You can also choose to set those other important directories by
 means of the variables ``test_dir``, ``data_dir`` and ``logs_dir``. You can do this by simply editing
@@ -45,25 +45,40 @@ Plugin config files
 Plugins can also be configured by config files. In order to not disturb the main avocado config file, those plugins,
 if they wish so, may install additional config files to ``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed
 after the system wide config file. Users can override those values as well at the local config file level.
-Considering the hypothetical plugin config::
+Considering the config for the hypothethical plugin ``salad``::
 
-    [plugin.salad]
+    [salad.core]
     base = ceasar
     dressing = ceasar
 
-If you want, you may change ``dressing`` in your config file by simply adding a ``[plugin.salad]`` new section in your
+If you want, you may change ``dressing`` in your config file by simply adding a ``[salad.core]`` new section in your
 local config file, and set a different value for ``dressing`` there.
 
 Parsing order recap
 ===================
 
-So the parsing order is:
+So the file parsing order is:
 
 * ``/etc/avocado/avocado.conf``
 * ``/etc/avocado/conf.d/*.conf``
 * ``~/.config/avocado/avocado.conf``
 
 In this order, meaning that what you set on your local config file may override what's defined in the system wide files.
+
+Order of precedence for values used in tests
+============================================
+
+Since you can use the config system to alter behavior and values used in tests (think paths to test programs, for
+example), we established the following order of precedence for variables (from least precedence to most):
+
+* default value (from library or test code)
+* global config file
+* local (user) config file
+* command line switch
+* multiplexer
+
+So the least important value comes from the library or test code default, going all the way up to the multiplexing
+system.
 
 Config plugin
 =============
