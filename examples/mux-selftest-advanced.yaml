@@ -19,6 +19,16 @@ distro:
         # And this removes the original 'is_cool'
         # Setting happens after ctrl so it should be created'
         !remove_value : is_cool
+distro: !multiplex
+    # Only set !multiplex flag on 'distro', which was aoriginally created
+    # as leafs-only
+    # Note: It doesn't make sense to define distro as !multiplex, it's used
+    #       here only to test |= feature
+    mint:   # This won't change anything
+distro:
+    # Again define distro without !multiplex. As !multiplex flag is defined
+    # as |=, this shouldn't affect the node and it should stay as !multiplex
+    gentoo:     # This won't change anything
 # This creates new branch the usual way
 new_node:
     # Put this new_node into /absolutely/fresh/ ('/' are automatically

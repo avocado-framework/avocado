@@ -165,6 +165,21 @@ class TestTree(unittest.TestCase):
                          oldroot.children[1].children[2].value)
         self.assertEqual({'new_value': 'something'},
                          oldroot.children[3].children[0].children[0].value)
+        # multiplex root (always False)
+        self.assertEqual(tree2.multiplex, False)
+        # multiplex /
+        self.assertEqual(tree2.children[0].multiplex, True)
+        # multiplex /hw
+        self.assertEqual(tree2.children[0].children[0].multiplex, True)
+        # multiplex /distro
+        self.assertEqual(tree2.children[0].children[1].multiplex, True)
+        # multiplex /env
+        self.assertEqual(tree2.children[0].children[2].multiplex, False)
+        # multiplex /absolutly
+        self.assertEqual(tree2.children[0].children[3].multiplex, False)
+        # multiplex /distr/fedora
+        self.assertEqual(tree2.children[0].children[1].children[0].multiplex,
+                         False)
 
 
 class TestPathParent(unittest.TestCase):

@@ -20,6 +20,7 @@ enhancements and basic validation, it saves time!
 Here is how a simple and valid multiplex configuration looks like::
 
     # Multiplex config example, file sleep.yaml
+    !multiplex
     short:
         sleep_length: 1
     medium:
@@ -28,6 +29,12 @@ Here is how a simple and valid multiplex configuration looks like::
         sleep_length: 600
 
 The key concepts here are ``nodes`` (provides context and scope), ``keys`` (think of variables) and ``values`` (scalar or lists).
+
+When creating list of variants, leaves of each ``!multiplex`` marked node are
+gathered as separate lists and passed to the upper ``!multiplex`` node.
+This continues until the root (``/``), where product is enumerated from all
+the leaves groups. 
+
 In the next section, we will describe these concepts in more details.
 
 .. _nodes:
@@ -265,30 +272,94 @@ Whole file is __merged__ into the node where it's defined.
 Variants
 ========
 
-To be written.
+As said in the introduction, each test is parametrized using variants, which
+means it is executed multiple times with slightly different parameters.
+Each leaf of the yaml tree is used and when there are multiple leaves in
+single ``!multiplex`` group, variant with each is created. All these are
+then combined together to create product of all ``!multiplex`` groups.
+Let me show you an example::
 
-Avocado comes equipped with a plugin to parse multiplex files. The appropriate
-subcommand is::
+	Line:	yaml file	# comments
+	0:	!multiplex	# multiplex hw+os as separate groups
+	1:	hw: !multiplex	# multiplex cpu+fmt as separate groups
+	2:		cpu:
+	3:			intel:	# 1st leaf of cpu group
+	4:			amd:	# 2nd leaf of cpu group
+	5:			arm:	# 3rd leaf of cpu group
+	6:		fmt:
+	7:			qcow:
+	8:				qcow2:		# 1st leaf of fmt group
+	9:				qcow2v3:	# 2nd leaf of fmt group
+	10:			raw:			# 3rd leaf of fmt group
+	11:	os:
+	12:		linux:
+	13:			Fedora:
+	14:				19:	# 1st leaf of os group
+	15:			Gentoo:		# 2nd leaf of os group
+	16:		windows:
+	17:			3.11:		# 3rd leaf of os group
+
+As you can see, ``!multiplex`` sets each child node as separate multiplex
+group. This is very powerful as end-leaves might be from different level
+and they still end in the same multiplex group (viz. line 8-10 and 14-17).
+
+It was also mentioned, that all ``pools`` of separate leaves are passed to
+the upper ``!multiplex`` node until root (``/``) is reached. On the way
+pools appended and they create list of lists of leafs. You can imagine
+it as if the tree is rebuilt into::
+
+    cpu:
+    	intel:
+    	amd:
+    	arm:
+    fmt:
+    	qcow2:
+    	qcow2v3:
+    	raw:
+    os:
+    	19:
+    	Gentoo:
+    	3.11:
+
+While preserving names and environment values. Then all combinations are
+created resulting into 27 unique variants covering all possible combinations
+of given tree::
+
+    Variant 1:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 2:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
+	Variant 3:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/windows/3.11
+	Variant 4:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
+	Variant 5:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
+	Variant 6:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
+	Variant 7:    /hw/cpu/intel, /hw/fmt/raw, /os/linux/Fedora/19
+	Variant 8:    /hw/cpu/intel, /hw/fmt/raw, /os/linux/Gentoo
+	Variant 9:    /hw/cpu/intel, /hw/fmt/raw, /os/windows/3.11
+	Variant 10:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 11:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
+	Variant 12:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/windows/3.11
+	Variant 13:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
+	Variant 14:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
+	Variant 15:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
+	Variant 16:    /hw/cpu/amd, /hw/fmt/raw, /os/linux/Fedora/19
+	Variant 17:    /hw/cpu/amd, /hw/fmt/raw, /os/linux/Gentoo
+	Variant 18:    /hw/cpu/amd, /hw/fmt/raw, /os/windows/3.11
+	Variant 19:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 20:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
+	Variant 21:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/windows/3.11
+	Variant 22:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
+	Variant 23:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
+	Variant 24:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
+	Variant 25:    /hw/cpu/arm, /hw/fmt/raw, /os/linux/Fedora/19
+	Variant 26:    /hw/cpu/arm, /hw/fmt/raw, /os/linux/Gentoo
+	Variant 27:    /hw/cpu/arm, /hw/fmt/raw, /os/windows/3.11
+
+You can generate this list yourself by executing::
 
     avocado multiplex /path/to/multiplex.yaml [-c]
 
 Note that there's no need to put extensions to a multiplex file, although
 doing so helps with organization. The optional -c param is used to provide
 the contents of the dictionaries generated, not only their shortnames.
-
-``avocado multiplex`` against the content above produces the following
-combinations and names::
-
-    Dictionaries generated:
-        dict 1:    four.one
-        dict 2:    four.two
-        dict 3:    four.three
-        dict 4:    five.one
-        dict 5:    five.two
-        dict 6:    five.three
-        dict 7:    six.one
-        dict 8:    six.two
-        dict 9:    six.three
 
 With Nodes, Keys, Values & Filters, we have most of what you
 actually need to construct most multiplex files.
