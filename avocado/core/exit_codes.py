@@ -20,8 +20,9 @@ The current exit codes are:
     * AVOCADO_JOB_FAIL (2)
         Something went wrong with the Job itself, by explicit
         :class:`avocado.core.exceptions.JobError` exception.
-    * AVOCADO_CRASH (3)
-        Something else went wrong and avocado plain crashed.
+    * AVOCADO_FAIL (3)
+        Something else went wrong and avocado failed (or crashed). Commonly
+        used on command line validation errors.
     * AVOCADO_JOB_INTERRUPTED (4)
         The job was explicitly interrupted. Usually this means that a user
         hit CTRL+C while the job was still running.
@@ -30,5 +31,5 @@ The current exit codes are:
 AVOCADO_ALL_OK = 0
 AVOCADO_TESTS_FAIL = 1
 AVOCADO_JOB_FAIL = 2
-AVOCADO_CRASH = 3
+AVOCADO_FAIL = 3
 AVOCADO_JOB_INTERRUPTED = 4

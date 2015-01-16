@@ -46,7 +46,7 @@ class Wrapper(plugin.Plugin):
                         view.notify(event='error',
                                     msg="You can't have multiple global"
                                         " wrappers at once.")
-                        sys.exit(exit_codes.AVOCADO_CRASH)
+                        sys.exit(exit_codes.AVOCADO_FAIL)
                 else:
                     script, cmd = wrap.split(':', 1)
                     script = os.path.abspath(script)
@@ -54,11 +54,11 @@ class Wrapper(plugin.Plugin):
                 if not os.path.exists(script):
                     view.notify(event='error',
                                 msg="Wrapper '%s' not found!" % script)
-                    sys.exit(exit_codes.AVOCADO_CRASH)
+                    sys.exit(exit_codes.AVOCADO_FAIL)
             if app_args.gdb_run_bin:
                 view.notify(event='error',
                             msg='Command line option --wrapper is incompatible'
                                 ' with option --gdb-run-bin.')
-                sys.exit(exit_codes.AVOCADO_CRASH)
+                sys.exit(exit_codes.AVOCADO_FAIL)
         except AttributeError:
             pass

@@ -122,7 +122,7 @@ class TestRunner(plugin.Plugin):
                     raise ValueError
             except ValueError:
                 view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
-                return sys.exit(exit_codes.AVOCADO_CRASH)
+                return sys.exit(exit_codes.AVOCADO_FAIL)
 
         job_instance = job.Job(args)
         rc = job_instance.run()
