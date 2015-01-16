@@ -15,8 +15,6 @@
 """
 This module provides the client facilities to detect the Linux Distribution
 it's running under.
-
-This is a replacement for the get_os_vendor() function from the utils module.
 """
 
 import os
