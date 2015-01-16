@@ -26,6 +26,7 @@ except ImportError:
 from avocado import utils
 from avocado.linux import software_manager
 from avocado.core import output
+from avocado.settings import settings
 
 log = logging.getLogger("avocado.test")
 
@@ -324,20 +325,29 @@ class SysInfo(object):
     * end_job
     """
 
-    def __init__(self, basedir=None, log_packages=False):
+    def __init__(self, basedir=None, log_packages=None):
         """
         Set sysinfo loggables.
 
         :param basedir: Base log dir where sysinfo files will be located.
         :param log_packages: Whether to log system packages (optional because
-                             logging packages is a costly operation).
+                             logging packages is a costly operation). If not
+                             given explicitly, tries to look in the config
+                             files, and if not found, defaults to False.
         """
         if basedir is None:
             basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
 
         self.basedir = basedir
-        self.log_packages = log_packages
+
         self._installed_pkgs = None
+        if log_packages is None:
+            self.log_packages = settings.get_value('sysinfo.collect',
+                                                   'installed_packages',
+                                                   key_type='bool',
+                                                   default=False)
+        else:
+            self.log_packages = log_packages
 
         self.start_job_loggables = set()
         self.end_job_loggables = set()
@@ -472,7 +482,7 @@ class SysInfo(object):
         """
         Log any changes to installed packages.
         """
-        old_packages = set(self._installed_packages)
+        old_packages = set(self._installed_pkgs)
         new_packages = set(self._get_installed_packages())
         added_path = os.path.join(path, "added_packages")
         added_packages = "\n".join(new_packages - old_packages) + "\n"
