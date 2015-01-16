@@ -472,7 +472,7 @@ class SysInfo(object):
         """
         Log any changes to installed packages.
         """
-        old_packages = set(self._installed_packages)
+        old_packages = set(self._installed_pkgs)
         new_packages = set(self._get_installed_packages())
         added_path = os.path.join(path, "added_packages")
         added_packages = "\n".join(new_packages - old_packages) + "\n"
