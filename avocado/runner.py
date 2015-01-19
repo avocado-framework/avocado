@@ -149,7 +149,7 @@ class TestRunner(object):
                         os.kill(p.pid, signal.SIGUSR1)
                         break
                     wait.wait_for(lambda: not q.empty() or not p.is_alive(),
-                                  cycle_timeout, step=0.1)
+                                  cycle_timeout, first=0.01, step=0.1)
                     if not q.empty():
                         test_state = q.get()
                         if not test_state['running']:
@@ -195,7 +195,7 @@ class TestRunner(object):
             # If test_state is None, the test was aborted before it ended.
             if test_state is None:
                 if p.is_alive() and wait.wait_for(lambda: not q.empty(),
-                                                  cycle_timeout, step=0.1):
+                                                  cycle_timeout, first=0.01, step=0.1):
                     test_state = q.get()
                 else:
                     early_state['time_elapsed'] = time.time() - time_started
