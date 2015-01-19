@@ -251,10 +251,11 @@ class RunRemote(plugin.Plugin):
         self.remote_parser.add_argument('--remote-port', dest='remote_port',
                                         default=22, type=int,
                                         help='Specify the port number to login on remote machine. '
-                                             'Default: 22')
+                                             'Current: 22')
         self.remote_parser.add_argument('--remote-username', dest='remote_username',
                                         default=username,
-                                        help='Specify the username to login on remote machine')
+                                        help=('Specify the username to login on remote machine. '
+                                              'Current: %(default)s'))
         self.remote_parser.add_argument('--remote-password', dest='remote_password',
                                         default=None,
                                         help='Specify the password to login on remote machine')

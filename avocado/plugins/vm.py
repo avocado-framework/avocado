@@ -282,7 +282,7 @@ class RunVM(plugin.Plugin):
                                     dest='vm_hypervisor_uri',
                                     default=default_hypervisor_uri,
                                     help=('Specify hypervisor URI driver '
-                                          'connection. Default: %s' %
+                                          'connection. Current: %s' %
                                           default_hypervisor_uri))
         self.vm_parser.add_argument('--vm-domain', dest='vm_domain',
                                     help=('Specify Libvirt Domain Name'))
