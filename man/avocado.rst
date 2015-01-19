@@ -12,10 +12,14 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-Avocado is an experimental test framework that is built on the experience
+Avocado is a modern test framework that is built on the experience
 accumulated with `autotest` (`http://autotest.github.io`).
 
-`avocado` is also the name of its test runner command line tool.
+`avocado` is also the name of its test runner command line tool, described in
+this man page.
+
+For more information about the Avocado project, please check its website:
+http://avocado-framework.github.io/
 
 OPTIONS
 =======
@@ -491,13 +495,22 @@ BUGS
 
 If you find a bug, please report it over our github page as an issue.
 
+LICENSE
+================
+
+Avocado is released under GPLv2 (explicit version)
+`http://gnu.org/licenses/gpl-2.0.html`. Even though most of the current code is
+licensed under a "and any later version" clause, some parts are specifically
+bound to the version 2 of the license and therefore that's the official license
+of the prject itself. For more details, please see the LICENSE file in the
+project source code directory.
+
 MORE INFORMATION
 ================
 
-For more information check Avocado's online documentation at: `http://avocado-framework.readthedocs.org/`
-
-Or the project github page at: `http://github.com/avocado-framework`
-
+For more information please check Avocado's project website, located at
+`http://avocado-framework.github.io/`. There you'll find links to online
+documentation, source code and community resources.
 
 AUTHOR
 ======

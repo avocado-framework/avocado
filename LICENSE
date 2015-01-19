@@ -1,9 +1,11 @@
-avocado is released specifically under the GPLv2, and not any
-later version of the license, unless explicitly otherwise stated
+Most files in Avocado are released under the GPLv2 with a "and any later
+version" clause (GPLv2+), but some files are explicitly bound to the
+version 2 of the license and therefore that's the official license of
+the project itself. The header on each individual file contains
+information about the GPL version that applies to it.
 
-All files in the avocado project are covered by the GPLv2, unless
-explicitly otherwise stated.
-
+Unless explicitly otherwise stated, all files in the avocado project
+are covered by the GPLv2+ (i.e: v2, or any later version).
 
                    GNU GENERAL PUBLIC LICENSE
                       Version 2, June 1991
