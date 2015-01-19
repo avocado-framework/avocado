@@ -15,6 +15,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 from avocado.utils import process
+from avocado.core.output import TermSupport
 
 
 class OutputTest(unittest.TestCase):
@@ -244,6 +245,31 @@ class OutputPluginTest(unittest.TestCase):
                 os.remove(tmpfile)
             except OSError:
                 pass
+
+    def test_redirect_output(self):
+        redirected_output_path = tempfile.mktemp()
+        try:
+            os.chdir(basedir)
+            cmd_line = './scripts/avocado run passtest > %s' % redirected_output_path
+            result = process.run(cmd_line, ignore_status=True, shell=True)
+            output = result.stdout + result.stderr
+            expected_rc = 0
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+            assert output == '', 'After redirecting to file, output is not empty: %s' % output
+            with open(redirected_output_path, 'r') as redirected_output_file_obj:
+                redirected_output = redirected_output_file_obj.read()
+                for code in TermSupport.ESCAPE_CODES:
+                    self.assertNotIn(code,  redirected_output,
+                                     'Found terminal support code %s in redirected output\n%s' %
+                                     (code, redirected_output))
+        finally:
+            try:
+                os.remove(redirected_output_path)
+            except OSError:
+                pass
+
 
 if __name__ == '__main__':
     unittest.main()
