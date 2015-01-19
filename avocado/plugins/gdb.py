@@ -60,8 +60,8 @@ class GDB(plugin.Plugin):
         gdb_grp.add_argument('--gdb-path',
                              default=system_gdb_path, metavar='PATH',
                              help=('Path to the GDB executable, should you '
-                                   'need to use a custom GDB version. Defaults '
-                                   'to "%(default)s"'))
+                                   'need to use a custom GDB version. Current: '
+                                   '"%(default)s"'))
 
         default_gdbserver_path = '/usr/bin/gdbserver'
         try:
@@ -71,8 +71,8 @@ class GDB(plugin.Plugin):
         gdb_grp.add_argument('--gdbserver-path',
                              default=system_gdbserver_path, metavar='PATH',
                              help=('Path to the gdbserver executable, should you '
-                                   'need to use a custom version. Defaults '
-                                   'to "%(default)s"'))
+                                   'need to use a custom version. Current: '
+                                   '"%(default)s"'))
 
         self.configured = True
 

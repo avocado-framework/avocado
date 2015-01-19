@@ -257,7 +257,7 @@ class HTML(plugin.Plugin):
             dest='relative_links',
             action='store_true',
             default=False,
-            help=('On the HTML report, generate anchor links with relative instead of absolute paths. Default: %s' %
+            help=('On the HTML report, generate anchor links with relative instead of absolute paths. Current: %s' %
                   False))
         self.parser.runner.add_argument(
             '--open-browser',
@@ -266,7 +266,7 @@ class HTML(plugin.Plugin):
             default=False,
             help='Open the generated report on your preferred browser. '
                  'This works even if --html was not explicitly passed, since an HTML '
-                 'report is always generated on the job results dir. Default: %s' % False)
+                 'report is always generated on the job results dir. Current: %s' % False)
         self.configured = True
 
     def activate(self, app_args):

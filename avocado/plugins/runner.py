@@ -73,7 +73,7 @@ class TestRunner(plugin.Plugin):
         out.add_argument('--job-log-level', action='store',
                          help=("Log level of the job log. Options: "
                                "'debug', 'info', 'warning', 'error', "
-                               "'critical'. Default: debug"),
+                               "'critical'. Current: debug"),
                          default='debug')
 
         out_check = self.parser.add_argument_group('output check arguments')
@@ -81,12 +81,12 @@ class TestRunner(plugin.Plugin):
         out_check.add_argument('--output-check-record', type=str,
                                default='none',
                                help=('Record output streams of your tests '
-                                       'to reference files (valid options: '
-                                       'none (do not record output streams), '
-                                       'all (record both stdout and stderr), '
-                                       'stdout (record only stderr), '
-                                       'stderr (record only stderr). '
-                                       'Default: none'))
+                                     'to reference files (valid options: '
+                                     'none (do not record output streams), '
+                                     'all (record both stdout and stderr), '
+                                     'stdout (record only stderr), '
+                                     'stderr (record only stderr). '
+                                     'Current: none'))
 
         out_check.add_argument('--disable-output-check', action='store_true',
                                default=False,
@@ -94,7 +94,7 @@ class TestRunner(plugin.Plugin):
                                      'If this option is selected, no output will '
                                      'be checked, even if there are reference files '
                                      'present for the test. '
-                                     'Default: False (output check enabled)'))
+                                     'Current: False (output check enabled)'))
 
         mux = self.parser.add_argument_group('multiplex arguments')
         mux.add_argument('-m', '--multiplex-files', nargs='*', default=None,
