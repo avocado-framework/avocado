@@ -119,6 +119,8 @@ class TermSupport(object):
     MOVE_BACK = '\033[1D'
     MOVE_FORWARD = '\033[1C'
 
+    ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
+
     """
     Class to help applications to colorize their outputs for terminals.
 
@@ -140,6 +142,7 @@ class TermSupport(object):
         self.PARTIAL = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
         self.LOWLIGHT = self.COLOR_DARKGREY
+        self.enabled = True
         term = os.environ.get("TERM")
         if (not os.isatty(1)) or (term not in self.allowed_terms):
             self.disable()
@@ -148,6 +151,7 @@ class TermSupport(object):
         """
         Disable colors from the strings output by this class.
         """
+        self.enabled = False
         self.HEADER = ''
         self.PASS = ''
         self.SKIP = ''
@@ -158,6 +162,8 @@ class TermSupport(object):
         self.PARTIAL = ''
         self.ENDC = ''
         self.LOWLIGHT = ''
+        self.MOVE_BACK = ''
+        self.MOVE_FORWARD = ''
 
     def header_str(self, msg):
         """
@@ -319,10 +325,14 @@ class Throbber(object):
     Produces a spinner used to notify progress in the application UI.
     """
     STEPS = ['-', '\\', '|', '/']
-    MOVES = [term_support.MOVE_BACK + STEPS[0],
-             term_support.MOVE_BACK + STEPS[1],
-             term_support.MOVE_BACK + STEPS[2],
-             term_support.MOVE_BACK + STEPS[3]]
+    # Only print a throbber when we're on a terminal
+    if term_support.enabled:
+        MOVES = [term_support.MOVE_BACK + STEPS[0],
+                 term_support.MOVE_BACK + STEPS[1],
+                 term_support.MOVE_BACK + STEPS[2],
+                 term_support.MOVE_BACK + STEPS[3]]
+    else:
+        MOVES = ['', '', '', '']
 
     def __init__(self):
         self.position = 0
