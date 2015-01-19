@@ -1,6 +1,6 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.17.0
+Version: 0.18.0
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
