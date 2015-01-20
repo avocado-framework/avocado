@@ -85,6 +85,16 @@ class TestNotFoundError(TestBaseException):
     status = "NOT_FOUND"
 
 
+class NotATestError(TestBaseException):
+
+    """
+    Indicates that the py module is not an avocado test
+
+    Causes: Non executable py module that has no avocado test classes inside of it.
+    """
+    status = "NOT_A_TEST"
+
+
 class TestTimeoutError(TestBaseException):
 
     """

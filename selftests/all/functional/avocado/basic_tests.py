@@ -174,7 +174,7 @@ class RunnerOperationTest(unittest.TestCase):
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn('NOT_FOUND', result.stdout)
-        self.assertIn('NOT FOUND : 1', result.stdout)
+        self.assertIn('NOT FOUND  : 1', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
