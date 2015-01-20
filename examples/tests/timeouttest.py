@@ -6,7 +6,7 @@ from avocado import test
 from avocado import job
 
 
-class timeouttest(test.Test):
+class TimeoutTest(test.Test):
 
     """
     Functional test for avocado. Throw a TestTimeoutError.

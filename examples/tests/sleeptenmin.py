@@ -7,7 +7,7 @@ from avocado import job
 from avocado import test
 
 
-class sleeptenmin(test.Test):
+class SleepTenMin(test.Test):
 
     """
     Sleeps for 10 minutes

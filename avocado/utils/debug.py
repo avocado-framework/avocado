@@ -17,6 +17,7 @@ This file contains tools for (not only) Avocado developers.
 """
 import logging
 import time
+import traceback
 
 
 # Use this for debug logging
@@ -43,3 +44,28 @@ def measure_duration(func):
             LOGGER.debug("PERF: %s: (%ss, %ss)", func, duration,
                          __MEASURE_DURATION[func])
     return wrapper
+
+
+def tb_info(exc_info):
+    """
+    Prepare traceback info.
+
+    :param exc_info: Exception info produced by sys.exc_info()
+    """
+    exc_type, exc_value, exc_traceback = exc_info
+    info = traceback.format_exception(exc_type, exc_value,
+                                      exc_traceback.tb_next)
+    return info
+
+
+def log_exc_info(exc_info, logger=LOGGER):
+    """
+    Log exception info.
+
+    :param exc_info: Exception info produced by sys.exc_info()
+    """
+    logger.error('')
+    for line in tb_info(exc_info):
+        for l in line.splitlines():
+            logger.error(l)
+    logger.error('')

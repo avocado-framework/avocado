@@ -70,7 +70,12 @@ class ReportModel(object):
         return self.json['pass']
 
     def pass_rate(self):
-        pr = 100 * (float(self.json['pass']) / float(self.json['total']))
+        total = self.json['total']
+        passed = self.json['pass']
+        if int(total) > 0:
+            pr = 100 * (float(passed) / float(total))
+        else:
+            pr = 0
         return "%.2f" % pr
 
     def _get_sysinfo(self, sysinfo_file):
@@ -156,7 +161,12 @@ class HTMLTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
+        logdir = os.path.dirname(self.stream.logfile)
+        id_path = os.path.join(logdir, 'id')
+        with open(id_path, 'r') as id_file:
+            job_id = id_file.read()
         self.json = {'debuglog': self.stream.logfile,
+                     'job_id': job_id,
                      'tests': []}
 
     def end_test(self, state):
@@ -167,8 +177,6 @@ class HTMLTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
-        if 'job_id' not in self.json:
-            self.json['job_id'] = state['job_unique_id']
         if state['fail_reason'] is None:
             state['fail_reason'] = ''
         else:

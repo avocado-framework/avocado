@@ -120,7 +120,7 @@ class Test(unittest.TestCase):
 
         tmpdir = data_dir.get_tmp_dir()
 
-        self.basedir = os.path.dirname(inspect.getfile(self.__class__))
+        self.basedir = os.path.abspath(os.path.dirname(inspect.getfile(self.__class__)))
         self.datadir = os.path.join(self.basedir, '%s.data' % basename)
 
         self.expected_stdout_file = os.path.join(self.datadir,
@@ -576,26 +576,6 @@ class SimpleTest(Test):
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
-
-
-class MissingTest(Test):
-
-    """
-    Handle when there is no such test module in the test directory.
-    """
-
-    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
-                 job=None, runner_queue=None):
-        super(MissingTest, self).__init__(name=name,
-                                          base_logdir=base_logdir,
-                                          tag=tag, job=job,
-                                          runner_queue=runner_queue)
-
-    def action(self):
-        e_msg = ('Test %s could not be found in the test dir %s '
-                 '(or test path does not exist)' %
-                 (self.name, data_dir.get_test_dir()))
-        raise exceptions.TestNotFoundError(e_msg)
 
 
 class RemoteTest(object):
