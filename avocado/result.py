@@ -128,6 +128,7 @@ class TestResult(object):
         self.passed = []
         self.errors = []
         self.not_found = []
+        self.not_a_test = []
         self.failed = []
         self.skipped = []
         self.warned = []
@@ -199,6 +200,17 @@ class TestResult(object):
         """
         self.not_found.append(state)
 
+    def add_not_a_test(self, state):
+        """
+        Called when a file is not an avocado test
+
+        Causes: Non python, non executable file or python file non executable with no avocado test class in it.
+
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
+        """
+        self.not_a_test.append(state)
+
     def add_fail(self, state):
         """
         Called when a test fails.
@@ -234,6 +246,7 @@ class TestResult(object):
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
                       'NOT_FOUND': self.add_not_found,
+                      'NOT_A_TEST': self.add_not_a_test,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn}
@@ -253,27 +266,28 @@ class HumanTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.stream.notify(event="message", msg="JOB ID    : %s" % self.stream.job_unique_id)
-        self.stream.notify(event="message", msg="JOB LOG   : %s" % self.stream.logfile)
+        self.stream.notify(event="message", msg="JOB ID     : %s" % self.stream.job_unique_id)
+        self.stream.notify(event="message", msg="JOB LOG    : %s" % self.stream.logfile)
         if self.args is not None:
             if 'html_output' in self.args:
                 logdir = os.path.dirname(self.stream.logfile)
                 html_file = os.path.join(logdir, 'html', 'results.html')
-                self.stream.notify(event="message", msg="JOB HTML  : %s" % html_file)
-        self.stream.notify(event="message", msg="TESTS     : %s" % self.tests_total)
+                self.stream.notify(event="message", msg="JOB HTML   : %s" % html_file)
+        self.stream.notify(event="message", msg="TESTS      : %s" % self.tests_total)
         self.stream.set_tests_info({'tests_total': self.tests_total})
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
-        self.stream.notify(event="message", msg="PASS      : %d" % len(self.passed))
-        self.stream.notify(event="message", msg="ERROR     : %d" % len(self.errors))
-        self.stream.notify(event="message", msg="FAIL      : %d" % len(self.failed))
-        self.stream.notify(event="message", msg="SKIP      : %d" % len(self.skipped))
-        self.stream.notify(event="message", msg="WARN      : %d" % len(self.warned))
-        self.stream.notify(event="message", msg="NOT FOUND : %d" % len(self.not_found))
-        self.stream.notify(event="message", msg="TIME      : %.2f s" % self.total_time)
+        self.stream.notify(event="message", msg="PASS       : %d" % len(self.passed))
+        self.stream.notify(event="message", msg="ERROR      : %d" % len(self.errors))
+        self.stream.notify(event="message", msg="FAIL       : %d" % len(self.failed))
+        self.stream.notify(event="message", msg="SKIP       : %d" % len(self.skipped))
+        self.stream.notify(event="message", msg="WARN       : %d" % len(self.warned))
+        self.stream.notify(event="message", msg="NOT FOUND  : %d" % len(self.not_found))
+        self.stream.notify(event="message", msg="NOT A TEST : %d" % len(self.not_a_test))
+        self.stream.notify(event="message", msg="TIME       : %.2f s" % self.total_time)
 
     def start_test(self, state):
         """
@@ -322,6 +336,16 @@ class HumanTestResult(TestResult):
         """
         TestResult.add_not_found(self, state)
         self.stream.set_test_status(status='NOT_FOUND', state=state)
+
+    def add_not_a_test(self, state):
+        """
+        Called when a given file is not a test.
+
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
+        """
+        TestResult.add_not_a_test(self, state)
+        self.stream.set_test_status(status='NOT_A_TEST', state=state)
 
     def add_fail(self, state):
         """
