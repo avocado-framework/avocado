@@ -70,19 +70,21 @@ class VMTestRunner(TestRunner):
         for tst in results['tests']:
             test = RemoteTest(name=tst['test'],
                               time=tst['time'],
+                              start=tst['start'],
+                              end=tst['end'],
                               status=tst['status'])
             state = test.get_state()
             self.result.start_test(state)
             self.result.check_test(state)
             if not status.mapping[state['status']]:
                 failures.append(state['tagged_name'])
-        self.result.end_tests()
         local_log_dir = os.path.dirname(self.result.stream.debuglog)
         zip_filename = remote_log_dir + '.zip'
         zip_path_filename = os.path.join(local_log_dir, os.path.basename(zip_filename))
         self.result.vm.remote.receive_files(local_log_dir, zip_filename)
         archive.uncompress(zip_path_filename, local_log_dir)
         os.remove(zip_path_filename)
+        self.result.end_tests()
         self.result.tear_down()
         return failures
 
@@ -171,6 +173,11 @@ class VMTestResult(TestResult):
         TestResult.start_tests(self)
         self.stream.notify(event='message', msg="JOB ID    : %s" % self.stream.job_unique_id)
         self.stream.notify(event='message', msg="JOB LOG   : %s" % self.stream.logfile)
+        if self.args is not None:
+            if 'html_output' in self.args:
+                logdir = os.path.dirname(self.stream.logfile)
+                html_file = os.path.join(logdir, 'html', 'results.html')
+                self.stream.notify(event="message", msg="JOB HTML  : %s" % html_file)
         self.stream.notify(event='message', msg="TESTS     : %s" % self.tests_total)
         self.stream.set_tests_info({'tests_total': self.tests_total})
 
