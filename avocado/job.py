@@ -331,7 +331,7 @@ class Job(object):
                                                  'your bug report'))
             self.view.notify(event='error', msg=('Report bugs visiting %s' %
                                                  _NEW_ISSUE_LINK))
-            return exit_codes.AVOCADO_CRASH
+            return exit_codes.AVOCADO_FAIL
 
 
 class TestModuleRunner(object):

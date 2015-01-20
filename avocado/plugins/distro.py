@@ -350,7 +350,7 @@ class DistroOptions(plugin.Plugin):
                 error_msg = ('Required arguments: name, version, arch, type '
                              'and path')
                 view.notify(event="error", msg=error_msg)
-                sys.exit(exit_codes.AVOCADO_CRASH)
+                sys.exit(exit_codes.AVOCADO_FAIL)
 
             output_file_name = self.get_output_file_name(args)
             if os.path.exists(output_file_name):
