@@ -56,6 +56,8 @@ class JSONTestResult(TestResult):
             self.json['job_id'] = state['job_unique_id']
         t = {'test': state['tagged_name'],
              'url': state['name'],
+             'start': state['time_start'],
+             'end': state['time_end'],
              'time': state['time_elapsed'],
              'status': state['status'],
              'whiteboard': state['whiteboard'],

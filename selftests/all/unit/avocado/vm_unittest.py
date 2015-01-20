@@ -46,7 +46,8 @@ class VMResultTest(unittest.TestCase):
         stream = _Stream()
         stream.logfile = 'debug.log'
         self.test_result = vm.VMTestResult(stream, args)
-        j = '''{"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.23}],
+        j = '''{"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS",
+                "time": 1.23, "start": 0.0, "end": 1.23}],
                 "debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.37/debug.log",
                 "errors": 0, "skip": 0, "time": 1.4,
                 "pass": 1, "failures": 0, "total": 1}'''
@@ -58,6 +59,8 @@ class VMResultTest(unittest.TestCase):
         for tst in self.results['tests']:
             test = vm.RemoteTest(name=tst['test'],
                                  time=tst['time'],
+                                 start=tst['start'],
+                                 end=tst['end'],
                                  status=tst['status'])
             self.test_result.start_test(test.get_state())
             self.test_result.check_test(test.get_state())
