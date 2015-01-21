@@ -5,7 +5,7 @@ from avocado import job
 from avocado.core import exceptions
 
 
-class skiptest(test.Test):
+class SkipTest(test.Test):
 
     """
     Functional test for avocado. Throw a TestNAError (skips the test).

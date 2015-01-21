@@ -4,10 +4,32 @@
 Writing Avocado Tests
 =====================
 
-To write an avocado test, all you need to do is to create a test module, which
-is a python file with a class that inherits from :class:`avocado.test.Test`.
-This class only really needs to implement a method called `action`, which
-represents the actual test operations.
+Test Resolution in avocado - simple tests vs instrumented tests
+===============================================================
+
+What is a test in the avocado context? Either one of:
+
+* An executable file, that returns exit code 0 (PASS) or != 0 (FAIL). This
+  is known as a SimpleTest, in avocado terminology.
+* A python module containing a class derived from :mod:`avocado.test.Test`.
+  This is known as an instrumented test, in avocado terminology. The term
+  instrumented is used because the avocado python test classes allow you to
+  get more features for your test, such as logging facilities and more
+  sophisticated test APIs.
+
+When you use the avocado runner, frequently you'll provide paths to files,
+that will be inspected, and acted upon depending on their contents. The
+diagram below shows how avocado analyzes a file and decides what to do with
+it:
+
+.. figure:: diagram.png
+
+Now that we covered how avocado resolves tests, let's get to business.
+This section is concerned with writing an avocado test. The process is not
+hard, all you need to do is to create a test module, which is a python file
+with a class that inherits from :class:`avocado.test.Test`. This class only
+really needs to implement a method called `action`, which represents the actual
+sequence of test operations.
 
 Simple example
 ==============
@@ -42,14 +64,14 @@ nothing but ``time.sleep([number-seconds])``::
     if __name__ == "__main__":
         job.main()
 
-This is about the simplest test you can write for avocado (at least, one using
-the avocado APIs). Note that the test object provides you with a number of
-convenience attributes, such as ``self.log``, that lets you log debug, info, error
-and warning messages. Also, we note the parameter passing system that avocado provides:
-We frequently want to pass parameters to tests, and we can do that through what
-we call a `multiplex file`, which is a configuration file that not only allows you
-to provide params to your test, but also easily create a validation matrix in a
-concise way. You can find more about the multiplex file format on :doc:`MultiplexConfig`.
+This a simple test you can write for avocado. Note that the test object provides
+you with a number of convenience attributes, such as ``self.log``, that lets you
+log debug, info, error and warning messages. Also, we note the parameter passing
+system that avocado provides: We frequently want to pass parameters to tests,
+and we can do that through what we call a `multiplex file`, which is a
+configuration file that not only allows you to provide params to your test, but
+also easily create a validation matrix in a concise way. You can find more about
+the multiplex file format on :doc:`MultiplexConfig`.
 
 Saving test generated (custom) data
 ===================================

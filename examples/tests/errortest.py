@@ -5,7 +5,7 @@ from avocado import job
 from avocado.core import exceptions
 
 
-class errortest(test.Test):
+class ErrorTest(test.Test):
 
     """
     Functional test for avocado. Throw a TestError.

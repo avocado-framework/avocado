@@ -6,7 +6,7 @@ from avocado import test
 from avocado import job
 
 
-class abort(test.Test):
+class AbortTest(test.Test):
 
     """
     A test that just calls abort() (and abort).

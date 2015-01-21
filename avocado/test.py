@@ -598,6 +598,50 @@ class MissingTest(Test):
         raise exceptions.TestNotFoundError(e_msg)
 
 
+class BuggyTest(Test):
+
+    """
+    Used when the python module could not be imported.
+
+    That means it is possibly a buggy test, but it could also be a random
+    buggy python module.
+    """
+
+    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
+                 job=None, runner_queue=None):
+        super(BuggyTest, self).__init__(name=name,
+                                        base_logdir=base_logdir,
+                                        params=params,
+                                        tag=tag, job=job,
+                                        runner_queue=runner_queue)
+
+    def action(self):
+        # pylint: disable=E0702
+        raise self.params.get('exception')
+
+
+class NotATest(Test):
+
+    """
+    The file is not a test.
+
+    Either a non executable python module with no avocado test class in it,
+    or a regular, non executable file.
+    """
+
+    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
+                 job=None, runner_queue=None):
+        super(NotATest, self).__init__(name=name,
+                                       base_logdir=base_logdir,
+                                       tag=tag, job=job,
+                                       runner_queue=runner_queue)
+
+    def action(self):
+        e_msg = ('File %s is not executable and does not contain an avocado '
+                 'test class in it ' % self.name)
+        raise exceptions.NotATestError(e_msg)
+
+
 class RemoteTest(object):
 
     """

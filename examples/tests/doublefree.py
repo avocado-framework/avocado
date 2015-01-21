@@ -8,7 +8,7 @@ from avocado.utils import build
 from avocado.utils import process
 
 
-class doublefree(test.Test):
+class DoubleFreeTest(test.Test):
 
     """
     Double free test case.

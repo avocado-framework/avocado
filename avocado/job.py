@@ -340,20 +340,8 @@ class TestModuleRunner(object):
     Convenience class to make avocado test modules executable.
     """
 
-    def __init__(self, module='__main__'):
-        if isinstance(module, basestring):
-            self.module = __import__(module)
-            for part in module.split('.')[1:]:
-                self.module = getattr(self.module, part)
-        else:
-            self.module = module
-        self.url = None
-        for key, value in self.module.__dict__.iteritems():
-            try:
-                if issubclass(value, test.Test):
-                    self.url = key
-            except TypeError:
-                pass
+    def __init__(self):
+        self.url = sys.argv[0]
         self.job = Job()
         if self.url is not None:
             sys.exit(self.job.run(urls=[self.url]))
