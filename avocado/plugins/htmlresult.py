@@ -91,6 +91,7 @@ class ReportModel(object):
                    "ABORT": "danger",
                    "ERROR": "danger",
                    "NOT_FOUND": "warning",
+                   "NOT_A_TEST": "warning",
                    "FAIL": "danger",
                    "WARN": "warning",
                    "PASS": "success",
