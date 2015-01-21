@@ -64,7 +64,7 @@ class _DebugJob(object):
     logdir = '.'
 
 
-class WrapperTest(unittest.TestCase):
+class LoaderTest(unittest.TestCase):
 
     def setUp(self):
         self.loader = loader.TestLoader(job=_DebugJob)
