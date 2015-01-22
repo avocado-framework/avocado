@@ -18,6 +18,7 @@ Test loader module.
 """
 
 import os
+import re
 import sys
 import imp
 import inspect
@@ -99,18 +100,35 @@ class TestLoader(object):
                     test_class = test.NotATest
                     test_parameters = test_parameters_queue
 
-        except ImportError, details:
+        # Since a lot of things can happen here, the broad exception is
+        # justified. The user will get it unadulterated anyway, and avocado
+        # will not crash.
+        except Exception, details:
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
                 test_class = test.SimpleTest
                 test_parameters = test_parameters_simple
             else:
-                # Module can't be imported and it's not an executable. Our
-                # best guess is that this is a buggy test.
-                test_class = test.BuggyTest
-                params['exception'] = details
+                # Module can't be imported and it's not an executable. Let's
+                # see if there's an avocado import into the test. Although
+                # not entirely reliable, we hope it'll be good enough.
+                likely_avocado_test = False
+                with open(test_path, 'r') as test_file_obj:
+                    test_contents = test_file_obj.read()
+                    # Actual tests will have imports starting on column 0
+                    patterns = ['^from avocado.* import', '^import avocado.*']
+                    for pattern in patterns:
+                        if re.search(pattern, test_contents, re.MULTILINE):
+                            likely_avocado_test = True
+                            break
+                if likely_avocado_test:
+                    test_class = test.BuggyTest
+                    params['exception'] = details
+                else:
+                    test_class = test.NotATest
                 test_parameters = test_parameters_queue
+
         sys.path.pop(sys.path.index(test_module_dir))
 
         return test_class, test_parameters
