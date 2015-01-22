@@ -46,7 +46,7 @@ nothing but ``time.sleep([number-seconds])``::
     from avocado import test
 
 
-    class sleeptest(test.Test):
+    class SleepTest(test.Test):
 
         """
         Example test for avocado.
@@ -64,14 +64,21 @@ nothing but ``time.sleep([number-seconds])``::
     if __name__ == "__main__":
         job.main()
 
-This a simple test you can write for avocado. Note that the test object provides
-you with a number of convenience attributes, such as ``self.log``, that lets you
-log debug, info, error and warning messages. Also, we note the parameter passing
-system that avocado provides: We frequently want to pass parameters to tests,
-and we can do that through what we call a `multiplex file`, which is a
-configuration file that not only allows you to provide params to your test, but
-also easily create a validation matrix in a concise way. You can find more about
-the multiplex file format on :doc:`MultiplexConfig`.
+
+This is about the simplest test you can write for avocado (at least, one using
+the avocado APIs). An avocado test is basically a class that inherits from
+:mod:`avocado.test.Test` and could have any name you might like (we'll trust
+you'll choose a good name, although we do recommend that the name uses the
+CamelCase convention, for PEP8 consistency).
+
+Note that the test object provides you with a number of convenience
+attributes, such as ``self.log``, that lets you log debug, info, error and
+warning messages. Also, we note the parameter passing system that avocado
+provides: We frequently want to pass parameters to tests, and we can do that
+through what we call a `multiplex file`, which is a configuration file that
+not only allows you to provide params to your test, but also easily create a
+validation matrix in a concise way. You can find more about the multiplex
+file format on :doc:`MultiplexConfig`.
 
 Saving test generated (custom) data
 ===================================
@@ -181,7 +188,7 @@ Avocado tests are also unittests
 Since avocado tests inherit from :class:`unittest.TestCase`, you can use all
 the :func:`assert` class methods on your tests. Some silly examples::
 
-    class random_examples(test.Test):
+    class RandomExamples(test.Test):
         def action(self):
             self.log.debug("Verifying some random math...")
             four = 2 * 2
@@ -259,7 +266,7 @@ an example that does that::
     from avocado.utils import process
 
 
-    class synctest(test.Test):
+    class SyncTest(test.Test):
 
         """
         Execute the synctest test suite.
@@ -598,7 +605,7 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
     from avocado import job
 
 
-    class timeouttest(test.Test):
+    class TimeoutTest(test.Test):
 
         """
         Functional test for avocado. Throw a TestTimeoutError.
