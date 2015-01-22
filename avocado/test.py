@@ -25,7 +25,6 @@ import sys
 import time
 import traceback
 import unittest
-import tempfile
 
 from avocado.core import data_dir
 from avocado.core import exceptions
