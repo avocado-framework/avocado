@@ -31,6 +31,9 @@ from avocado.settings import settings
 log = logging.getLogger("avocado.test")
 
 
+_DEFAULT_DAEMON_START_JOB = ["journalctl -f",
+                             "vmstat 1"]
+
 _DEFAULT_COMMANDS_START_JOB = ["df -mP",
                                "dmesg -c",
                                "uname -a",
@@ -47,7 +50,8 @@ _DEFAULT_COMMANDS_START_JOB = ["df -mP",
                                "numactl --hardware show",
                                "lscpu",
                                "fdisk -l"]
-_DEFAULT_COMMANDS_END_JOB = []
+
+_DEFAULT_COMMANDS_END_JOB = _DEFAULT_COMMANDS_START_JOB
 
 _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/proc/mounts",
@@ -63,7 +67,7 @@ _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
                             "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
 
-_DEFAULT_FILES_END_JOB = []
+_DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
 
 _DEFAULT_COMMANDS_START_TEST = []
 
@@ -158,6 +162,10 @@ class Logfile(Loggable):
             except IOError:
                 log.debug("Not logging %s (lack of permissions)", self.path)
 
+    def stop(self):
+        """Not used."""
+        pass
+
 
 class Command(Loggable):
 
@@ -208,18 +216,60 @@ class Command(Loggable):
             env["PATH"] = "/usr/bin:/bin"
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
-        stderr = open(os.devnull, "w")
         stdout = open(logf_path, "w")
         try:
             subprocess.call(self.cmd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=True, env=env)
+                            stderr=subprocess.STDOUT, shell=True, env=env)
         finally:
-            for f in (stdin, stdout, stderr):
+            for f in (stdin, stdout):
                 f.close()
             if self._compress_log and os.path.exists(logf_path):
                 utils.process.run('gzip -9 "%s"' % logf_path,
                                   ignore_status=True,
                                   verbose=False)
+
+    def stop(self):
+        """Not used."""
+        pass
+
+
+class Daemon(Command):
+
+    """
+    Loggable daemon.
+
+    :param cmd: String with the daemon command.
+    :param logf: Basename of the file where output is logged (optional).
+    :param compress_logf: Wether to compress the output of the command.
+    """
+
+    def run(self, logdir):
+        """
+        Execute the daemon as a subprocess and log its output in logdir.
+
+        :param logdir: Path to a log directory.
+        """
+        env = os.environ.copy()
+        if "PATH" not in env:
+            env["PATH"] = "/usr/bin:/bin"
+        logf_path = os.path.join(logdir, self.logf)
+        stdin = open(os.devnull, "r")
+        stdout = open(logf_path, "w")
+        self.pipe = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
+                                     stderr=subprocess.STDOUT, shell=True, env=env)
+
+    def stop(self):
+        """
+        Stop daemon execution.
+        """
+        retcode = self.pipe.poll()
+        if retcode is None:
+            self.pipe.terminate()
+            retcode = self.pipe.wait()
+        else:
+            log.debug("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
+                      self.cmd, self.pipe.pid, retcode)
+        return retcode
 
 
 class LogWatcher(Loggable):
@@ -384,6 +434,9 @@ class SysInfo(object):
         return syslog_watcher
 
     def _set_loggables(self):
+        for cmd in _DEFAULT_DAEMON_START_JOB:
+            self.start_job_loggables.add(Daemon(cmd))
+
         for cmd in _DEFAULT_COMMANDS_START_JOB:
             self.start_job_loggables.add(Command(cmd))
 
@@ -507,8 +560,11 @@ class SysInfo(object):
         Logging hook called whenever a job starts, and again after reboot.
         """
         post_dir = utils.path.init_dir(self.basedir, 'post')
-        for log in self.start_job_loggables:
+        for log in self.end_job_loggables:
             log.run(post_dir)
+        # Stop daemon(s) started previously
+        for log in self.start_job_loggables:
+            log.stop()
 
         if self.log_packages:
             self._log_modified_packages(post_dir)
