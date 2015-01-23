@@ -331,6 +331,13 @@ class Value(tuple):     # Few methods pylint: disable=R0903
     pass
 
 
+class ListOfNodeObjects(list):
+    """
+    Used to mark list as list of objects from whose node is going to be created
+    """
+    pass
+
+
 def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
@@ -371,18 +378,10 @@ def _create_from_yaml(path, cls_node=TreeNode):
 
     def mapping_to_tree_loader(loader, node):
         """ Maps yaml mapping tag to TreeNode structure """
-        def is_node(values):
-            """ Whether these values represent node or just random values """
-            if (isinstance(values, list) and values
-                    and isinstance(values[0], (Value, TreeNode))):
-                # When any value is TreeNode or Value, all of them are already
-                # parsed and we can wrap them into self
-                return True
-
         _value = loader.construct_pairs(node)
-        objects = []
+        objects = ListOfNodeObjects()
         for name, values in _value:
-            if is_node(values):    # New node
+            if isinstance(values, ListOfNodeObjects):   # New node from list
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
                 objects.append(cls_node(str(name)))
