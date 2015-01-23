@@ -97,7 +97,13 @@ class Test(unittest.TestCase):
         base_logdir = os.path.join(base_logdir, 'test-results')
         self.tagged_name = self.get_tagged_name(base_logdir)
 
-        self.logdir = path.init_dir(base_logdir, self.tagged_name)
+        # Let's avoid trouble at logdir init time, since we're interested
+        # in a relative directory here
+        tagged_name = self.tagged_name
+        if tagged_name.startswith('/'):
+            tagged_name = tagged_name[1:]
+
+        self.logdir = path.init_dir(base_logdir, tagged_name)
         io.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
 
@@ -283,8 +289,6 @@ class Test(unittest.TestCase):
 
         :return: String `test.tag`.
         """
-        if self.name.startswith('/'):
-            self.name = self.name[1:]
         if self.tag is not None:
             return "%s.%s" % (self.name, self.tag)
 
