@@ -39,7 +39,6 @@ class VMTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
-        urls = urls.split()
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - --archive %s' %
                        (self.remote_test_dir, self.result.stream.job_unique_id, " ".join(urls)))
         result = self.result.vm.remote.run(avocado_cmd, ignore_status=True)
@@ -61,10 +60,8 @@ class VMTestRunner(TestRunner):
         :return: a list of test failures.
         """
         failures = []
-        urls = [x['id'] for x in params_list]
-        self.result.urls = urls
         self.result.setup()
-        results = self.run_test(' '.join(urls))
+        results = self.run_test(self.result.urls)
         remote_log_dir = os.path.dirname(results['debuglog'])
         self.result.start_tests()
         for tst in results['tests']:
