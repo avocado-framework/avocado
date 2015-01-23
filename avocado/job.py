@@ -28,6 +28,7 @@ from avocado import result
 from avocado import test
 from avocado import runner
 from avocado import loader
+from avocado import runtime
 from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import exceptions
@@ -304,6 +305,7 @@ class Job(object):
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
+        runtime.CURRENT_JOB = self
         try:
             return self._run(urls, multiplex_files)
         except exceptions.JobBaseException, details:

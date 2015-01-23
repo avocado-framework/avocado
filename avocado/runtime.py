@@ -47,6 +47,10 @@ WRAP_PROCESS = None
 #: Format: [ ('/path/to/wrapper.sh', 'progname'), ... ]
 WRAP_PROCESS_NAMES_EXPR = []
 
+#: Sometimes it's useful for the framework and API to know about the job that
+#: is currently running, if one exists
+CURRENT_JOB = None
+
 #: Sometimes it's useful for the framework and API to know about the test that
 #: is currently running, if one exists
 CURRENT_TEST = None
