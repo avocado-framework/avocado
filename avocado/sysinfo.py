@@ -375,7 +375,7 @@ class SysInfo(object):
     * end_job
     """
 
-    def __init__(self, basedir=None, log_packages=None):
+    def __init__(self, basedir=None, log_packages=None, log_daemons=None):
         """
         Set sysinfo loggables.
 
@@ -384,6 +384,9 @@ class SysInfo(object):
                              logging packages is a costly operation). If not
                              given explicitly, tries to look in the config
                              files, and if not found, defaults to False.
+        :param log_daemons: Wether to log daemons. If not given explicitly,
+                            tries to look in the config files, and if not found,
+                            defaults to True.
         """
         if basedir is None:
             basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
@@ -398,6 +401,14 @@ class SysInfo(object):
                                                    default=False)
         else:
             self.log_packages = log_packages
+
+        if log_daemons is None:
+            self.log_daemons = settings.get_value('sysinfo.collect',
+                                                  'profile_daemons',
+                                                  key_type='bool',
+                                                  default=True)
+        else:
+            self.log_daemons = log_daemons
 
         self.start_job_loggables = set()
         self.end_job_loggables = set()
@@ -438,8 +449,9 @@ class SysInfo(object):
         return syslog_watcher
 
     def _set_loggables(self):
-        for cmd in _DEFAULT_DAEMON_START_JOB:
-            self.start_job_loggables.add(Daemon(cmd))
+        if self.log_daemons:
+            for cmd in _DEFAULT_DAEMON_START_JOB:
+                self.start_job_loggables.add(Daemon(cmd))
 
         for cmd in _DEFAULT_COMMANDS_START_JOB:
             self.start_job_loggables.add(Command(cmd))
