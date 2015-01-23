@@ -187,11 +187,39 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
+    def _multiplex_params_list(self, params_list, multiplex_files):
+        for mux_file in multiplex_files:
+            if not os.path.exists(mux_file):
+                e_msg = "Multiplex file %s doesn't exist." % mux_file
+                raise exceptions.OptionValidationError(e_msg)
+        result = []
+        for params in params_list:
+            try:
+                variants = multiplexer.multiplex_yamls(multiplex_files,
+                                                       self.args.filter_only,
+                                                       self.args.filter_out)
+            except SyntaxError:
+                variants = None
+            if variants:
+                tag = 1
+                for variant in variants:
+                    env = {}
+                    for t in variant:
+                        env.update(dict(t.environment))
+                    env.update({'tag': tag})
+                    env.update({'id': params['id']})
+                    result.append(env)
+                    tag += 1
+            else:
+                result.append(params)
+        return result
+
     def _run(self, urls=None, multiplex_files=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
-        :param urls: String with tests to run.
+        :param urls: String with tests to run, separated by whitespace.
+                     Optionally, a list of tests (each test a string).
         :param multiplex_files: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See
@@ -200,70 +228,47 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        params_list = []
         if urls is None:
-            if self.args and self.args.url:
+            if self.args and self.args.url is not None:
                 urls = self.args.url
-        else:
-            if isinstance(urls, str):
-                urls = urls.split()
 
-        if urls is not None:
-            for url in urls:
-                params_list.append({'id': url})
-        else:
+        if isinstance(urls, str):
+            urls = urls.split()
+
+        if not urls:
             e_msg = "Empty test ID. A test path or alias must be provided"
             raise exceptions.OptionValidationError(e_msg)
+
+        self._make_test_loader()
+
+        params_list = self.test_loader.discover_urls(urls)
 
         if multiplex_files is None:
             if self.args and self.args.multiplex_files is not None:
                 multiplex_files = self.args.multiplex_files
-        else:
-            multiplex_files = multiplex_files
 
         if multiplex_files is not None:
-            for mux_file in multiplex_files:
-                if not os.path.exists(mux_file):
-                    e_msg = "Multiplex file %s doesn't exist." % (mux_file)
-                    raise exceptions.OptionValidationError(e_msg)
-            params_list = []
-            if urls is not None:
-                for url in urls:
-                    try:
-                        variants = multiplexer.multiplex_yamls(multiplex_files,
-                                                               self.args.filter_only,
-                                                               self.args.filter_out)
-                    except SyntaxError:
-                        variants = None
-                    if variants:
-                        tag = 1
-                        for variant in variants:
-                            env = {}
-                            for t in variant:
-                                env.update(dict(t.environment))
-                            env.update({'tag': tag})
-                            env.update({'id': url})
-                            params_list.append(env)
-                            tag += 1
-                    else:
-                        params_list.append({'id': url})
+            params_list = self._multiplex_params_list(params_list,
+                                                      multiplex_files)
 
-        if not params_list:
-            e_msg = "Test(s) with empty parameter list or the number of variants is zero"
+        test_suite = self.test_loader.discover(params_list)
+        if not test_suite:
+            e_msg = ("No tests found within the specified path(s) "
+                     "(Check input and tests for typos. Try --show-job-log "
+                     "for more info)")
             raise exceptions.OptionValidationError(e_msg)
 
         if self.args is not None:
-            self.args.test_result_total = len(params_list)
+            self.args.test_result_total = len(test_suite)
 
         self._make_test_result()
         self._make_test_runner()
-        self._make_test_loader()
 
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id)
         self.view.logfile = self.logfile
-        failures = self.test_runner.run_suite(params_list)
+        failures = self.test_runner.run_suite(test_suite)
         self.view.stop_file_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
@@ -298,7 +303,8 @@ class Job(object):
         The test runner figures out which tests need to be run on an empty urls
         list by assuming the first component of the shortname is the test url.
 
-        :param urls: String with tests to run.
+        :param urls: String with tests to run, separated by whitespace.
+                     Optionally, a list of tests (each test a string).
         :param multiplex_files: File that multiplexes a given test url.
 
         :return: Integer with overall job status. See

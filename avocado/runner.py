@@ -30,8 +30,10 @@ from avocado import sysinfo
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
+from avocado.core import exit_codes
 from avocado.utils import path
 from avocado.utils import wait
+from avocado.utils import tb
 
 
 class TestRunner(object):
@@ -62,13 +64,6 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
-        sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
-        sys.stderr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
-        instance = self.job.test_loader.load_test(test_factory)
-        runtime.CURRENT_TEST = instance
-        early_state = instance.get_state()
-        queue.put(early_state)
-
         def timeout_handler(signum, frame):
             e_msg = "Timeout reached waiting for %s to end" % instance
             raise exceptions.TestTimeoutError(e_msg)
@@ -76,6 +71,24 @@ class TestRunner(object):
         def interrupt_handler(signum, frame):
             e_msg = "Test %s interrupted by user" % instance
             raise exceptions.TestInterruptedError(e_msg)
+
+        sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
+        sys.stderr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
+
+        try:
+            instance = self.job.test_loader.load_test(test_factory)
+            if instance.runner_queue is None:
+                instance.runner_queue = queue
+            runtime.CURRENT_TEST = instance
+            early_state = instance.get_state()
+            queue.put(early_state)
+        except Exception:
+            exc_info = sys.exc_info()
+            app_logger = logging.getLogger('avocado.app')
+            app_logger.exception('Exception loading test')
+            tb_info = tb.tb_info(exc_info)
+            queue.put({'load_exception': tb_info})
+            return
 
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
@@ -102,11 +115,11 @@ class TestRunner(object):
             test_state['text_output'] = log_file_obj.read()
         return test_state
 
-    def run_suite(self, params_list):
+    def run_suite(self, test_suite):
         """
         Run one or more tests and report with test result.
 
-        :param params_list: a list of param dicts.
+        :param test_suite: a list of tests to run.
 
         :return: a list of test failures.
         """
@@ -114,7 +127,6 @@ class TestRunner(object):
         self.sysinfo.start_job_hook()
         self.result.start_tests()
         q = queues.SimpleQueue()
-        test_suite = self.job.test_loader.discover(params_list, q)
 
         for test_factory in test_suite:
             p = multiprocessing.Process(target=self.run_test,
@@ -127,6 +139,12 @@ class TestRunner(object):
             p.start()
 
             early_state = q.get()
+
+            if 'load_exception' in early_state:
+                self.job.view.notify(event='error', msg='Bug loading test. '
+                                                        'Aborting...')
+                sys.exit(exit_codes.AVOCADO_FAIL)
+
             # At this point, the test is already initialized and we know
             # for sure if there's a timeout set.
             if 'timeout' in early_state['params'].keys():
