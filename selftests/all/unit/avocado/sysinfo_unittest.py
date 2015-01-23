@@ -62,8 +62,8 @@ class SysinfoTest(unittest.TestCase):
         sysinfo_logger = sysinfo.SysInfo(basedir=jobdir)
         sysinfo_logger.start_job_hook()
         self.assertTrue(os.path.isdir(jobdir))
-        self.assertEqual(len(os.listdir(jobdir)), 1,
-                         "Job does not have 'pre' dir")
+        self.assertEqual(len(os.listdir(jobdir)), 3,
+                         "Job does not have 'pre/post/profile' dirs")
         job_predir = os.path.join(jobdir, 'pre')
         self.assertTrue(os.path.isdir(job_predir))
         self.assertGreater(len(os.listdir(job_predir)), 0,
@@ -73,22 +73,24 @@ class SysinfoTest(unittest.TestCase):
         self.assertTrue(os.path.isdir(job_postdir))
         self.assertGreater(len(os.listdir(job_postdir)), 0,
                            "Job post dir is empty")
+        self.assertTrue(os.path.isdir(job_postdir))
+        job_profiledir = os.path.join(jobdir, 'profile')
 
     def test_logger_test_hooks(self):
         testdir = os.path.join(self.tmpdir, 'job', 'test1')
         sysinfo_logger = sysinfo.SysInfo(basedir=testdir)
         sysinfo_logger.start_test_hook()
         self.assertTrue(os.path.isdir(testdir))
-        self.assertEqual(len(os.listdir(testdir)), 1,
-                         "Test does not have 'pre' dir")
+        self.assertEqual(len(os.listdir(testdir)), 3,
+                         "Test does not have 'pre/post/profile' dirs")
         test_predir = os.path.join(testdir, 'pre')
         self.assertTrue(os.path.isdir(test_predir))
         # By default, there are no pre test files
         self.assertEqual(len(os.listdir(test_predir)), 0,
                          "Test pre dir is not empty")
         sysinfo_logger.end_test_hook()
-        self.assertEqual(len(os.listdir(testdir)), 2,
-                         "Test does not have 'pre' dir")
+        self.assertEqual(len(os.listdir(testdir)), 3,
+                         "Test does not have 'pre/post/profile' dirs")
         job_postdir = os.path.join(testdir, 'post')
         self.assertTrue(os.path.isdir(job_postdir))
         # By default, there are no post test files
