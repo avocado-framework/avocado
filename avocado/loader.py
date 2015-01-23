@@ -178,7 +178,8 @@ class TestLoader(object):
                     test_name, params)
         return test_class, test_parameters
 
-    def discover_directory(self, dir_path='.', ignore_suffix=None):
+    def discover_directory(self, dir_path='.', ignore_suffix=None,
+                           omit_non_tests=False):
         """
         Discover (possible) tests from a directory.
 
@@ -205,12 +206,15 @@ class TestLoader(object):
             elif entry.endswith(ignore_suffix):
                 continue
             elif os.path.isdir(new_path):
-                params_list.extend(self.discover_directory(new_path))
+                params_list.extend(
+                    self.discover_directory(new_path,
+                                            omit_non_tests=omit_non_tests))
             else:
-                params_list.append({'id': new_path})
+                params_list.append({'id': new_path,
+                                    'omit_non_tests': omit_non_tests})
         return params_list
 
-    def discover_url(self, url):
+    def discover_url(self, url, omit_non_tests=False):
         """
         Discover (possible) test from test url.
 
@@ -219,13 +223,9 @@ class TestLoader(object):
         :return: a list of test params (each one a dictionary).
         """
         if os.path.isdir(os.path.abspath(url)):
-            params_list = self.discover_directory(url)
-            if params_list:
-                return params_list
-            else:
-                return []
+            return self.discover_directory(url, omit_non_tests=omit_non_tests)
         else:
-            return [{'id': url}]
+            return [{'id': url, 'omit_non_tests': omit_non_tests}]
 
     def discover_urls(self, urls):
         """
@@ -239,7 +239,10 @@ class TestLoader(object):
         for url in urls:
             if url == '':
                 continue
-            params_list.extend(self.discover_url(url))
+            if os.path.isdir(url):
+                params_list.extend(self.discover_url(url, omit_non_tests=True))
+            else:
+                params_list.extend(self.discover_url(url, omit_non_tests=False))
         return params_list
 
     def discover(self, params_list):
@@ -256,7 +259,11 @@ class TestLoader(object):
             if test_factory is None:
                 continue
             test_class, test_parameters = test_factory
-            test_suite.append((test_class, test_parameters))
+            if test_class == test.NotATest:
+                if not params.get('omit_non_tests'):
+                    test_suite.append((test_class, test_parameters))
+            else:
+                test_suite.append((test_class, test_parameters))
         return test_suite
 
     def load_test(self, test_factory):
