@@ -553,7 +553,10 @@ class SysInfo(object):
         Logging hook called whenever a job starts, and again after reboot.
         """
         for log in self.start_job_loggables:
-            log.run(self.pre_dir)
+            if isinstance(log, Daemon):  # log daemons in profile directory
+                log.run(self.profile_dir)
+            else:
+                log.run(self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
