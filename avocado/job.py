@@ -211,6 +211,8 @@ class Job(object):
 
         if urls is not None:
             for url in urls:
+                if url.startswith(os.path.pardir):
+                    url = os.path.abspath(url)
                 params_list.append({'id': url})
         else:
             e_msg = "Empty test ID. A test path or alias must be provided"
