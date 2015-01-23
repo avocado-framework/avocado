@@ -41,7 +41,7 @@ test::
  from avocado import test
  from avocado.utils import process
 
- class hello_output_test(test.Test):
+ class HelloOutputTest(test.Test):
 
      def action(self):
          result = process.run("/path/to/hello", ignore_status=True)
