@@ -164,7 +164,6 @@ class TestRunner(object):
             while True:
                 try:
                     if time.time() >= time_deadline:
-                        logging.error("timeout")
                         os.kill(p.pid, signal.SIGUSR1)
                         break
                     wait.wait_for(lambda: not q.empty() or not p.is_alive(),
