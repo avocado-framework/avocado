@@ -218,26 +218,21 @@ class HTMLTestResult(TestResult):
         template = html.get_resource_path('templates', 'report.mustache')
         report_contents = renderer.render(open(template, 'r').read(), context)
         static_basedir = html.get_resource_path('static')
-        if self.output == '-':
-            self.view.notify(event='error', msg="HTML to stdout not supported "
-                                                "(not all HTML resources can be embedded to a single file)")
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        else:
-            output_dir = os.path.dirname(os.path.abspath(self.output))
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            for resource_dir in os.listdir(static_basedir):
-                res_dir = os.path.join(static_basedir, resource_dir)
-                out_dir = os.path.join(output_dir, resource_dir)
-                if os.path.exists(out_dir):
-                    shutil.rmtree(out_dir)
-                shutil.copytree(res_dir, out_dir)
-            with codecs.open(self.output, 'w', 'utf-8') as report_file:
-                report_file.write(report_contents)
+        output_dir = os.path.dirname(os.path.abspath(self.output))
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        for resource_dir in os.listdir(static_basedir):
+            res_dir = os.path.join(static_basedir, resource_dir)
+            out_dir = os.path.join(output_dir, resource_dir)
+            if os.path.exists(out_dir):
+                shutil.rmtree(out_dir)
+            shutil.copytree(res_dir, out_dir)
+        with codecs.open(self.output, 'w', 'utf-8') as report_file:
+            report_file.write(report_contents)
 
-            if self.args is not None:
-                if getattr(self.args, 'open_browser'):
-                    webbrowser.open(self.output)
+        if self.args is not None:
+            if getattr(self.args, 'open_browser'):
+                webbrowser.open(self.output)
 
 
 class HTML(plugin.Plugin):
@@ -278,6 +273,13 @@ class HTML(plugin.Plugin):
     def activate(self, app_args):
         try:
             if app_args.html_output:
-                self.parser.application.set_defaults(html_result=HTMLTestResult)
+                if app_args.html_output == '-':
+                    view = output.View(app_args=app_args)
+                    view.notify(event='error',
+                                msg="HTML to stdout not supported "
+                                    "(not all HTML resources can be embedded to a single file)")
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                else:
+                    self.parser.application.set_defaults(html_result=HTMLTestResult)
         except AttributeError:
             pass
