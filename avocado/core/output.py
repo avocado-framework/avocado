@@ -187,7 +187,7 @@ class TermSupport(object):
 
         If the output does not support colors, just return the original string.
         """
-        return self.FAIL + msg + self.ENDC
+        return self.SKIP + msg + self.ENDC
 
     def healthy_str(self, msg):
         """
