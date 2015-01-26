@@ -51,7 +51,7 @@ class RemoteTestRunner(TestRunner):
         raise ValueError("Can't parse json out of remote's avocado output:"
                          "\n%s" % result.stdout)
 
-    def run_suite(self, params_list):
+    def run_suite(self, test_suite):
         """
         Run one or more tests and report with test result.
 
@@ -108,15 +108,25 @@ class RemoteTestResult(TestResult):
         self.command_line_arg_name = '--remote-hostname'
 
     def _copy_tests(self):
+        # TODO: Use `avocado.loader.TestLoader` instead
         self.remote.makedir(self.remote_test_dir)
-        uniq_urls = list(set(self.urls))
-        for url in uniq_urls:
-            parent_dir = url.split(os.path.sep)[0]
-            if os.path.isdir(parent_dir):
-                test_path = os.path.abspath(parent_dir)
-            else:
-                test_path = os.path.join(data_dir.get_test_dir(), "%s*" % url)
-            self.remote.send_files(test_path, self.remote_test_dir)
+        paths = set()
+        for i in xrange(len(self.urls)):
+            url = self.urls[i]
+            if not os.path.exists(url):     # use test_dir path + py
+                url = os.path.join(data_dir.get_test_dir(), '%s.py' % url)
+            url = os.path.abspath(url)  # always use abspath; avoid clashes
+            # modify url to remote_path + abspath
+            paths.add(os.path.dirname(url))
+            self.urls[i] = self.remote_test_dir + url
+        previous = ' NOT ABSOLUTE PATH'
+        for path in sorted(paths):
+            if os.path.commonprefix((path, previous)) == previous:
+                continue    # already copied
+            rpath = self.remote_test_dir + path
+            self.remote.makedir(rpath)
+            self.remote.send_files(path, os.path.dirname(rpath))
+            previous = path
 
     def setup(self):
         self.stream.notify(event='message', msg="REMOTE LOGIN  : %s@%s:%d" % (self.args.remote_username,
