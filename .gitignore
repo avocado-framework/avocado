@@ -2,6 +2,7 @@
 .pydevproject
 .settings
 .coverage
+.idea/*
 coverage.xml
 xunit.xml
 tmp/*
