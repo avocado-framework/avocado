@@ -18,25 +18,25 @@ Module to provide remote operations.
 
 import getpass
 import logging
-import time
-import tempfile
 import os
+import tempfile
+import time
 
-log = logging.getLogger('avocado.test')
+from avocado.core import exceptions
+from avocado.core import output
+from avocado.utils import process
+
+LOG = logging.getLogger('avocado.test')
 
 try:
     import fabric.api
     import fabric.operations
     from fabric.contrib.project import rsync_project
 except ImportError:
-    remote_capable = False
-    log.info('Remote module is disabled: could not import fabric')
+    REMOTE_CAPABLE = False
+    LOG.info('Remote module is disabled: could not import fabric')
 else:
-    remote_capable = True
-
-from avocado.core import output
-from avocado.core import exceptions
-from avocado.utils import process
+    REMOTE_CAPABLE = True
 
 
 class Remote(object):
@@ -73,7 +73,9 @@ class Remote(object):
                                 connection_attempts=attempts,
                                 linewise=True)
 
-    def _setup_environment(self, **kwargs):
+    @staticmethod
+    def _setup_environment(**kwargs):
+        """ Setup fabric environemnt """
         fabric.api.env.update(kwargs)
 
     def run(self, command, ignore_status=False):
@@ -86,7 +88,7 @@ class Remote(object):
         :rtype: :class:`avocado.utils.process.CmdResult`.
         """
         if not self.quiet:
-            log.info('[%s] Running command %s', self.hostname, command)
+            LOG.info('[%s] Running command %s', self.hostname, command)
         result = process.CmdResult()
         stdout = output.LoggingFile(logger=logging.getLogger('avocado.test'))
         stderr = output.LoggingFile(logger=logging.getLogger('avocado.test'))
@@ -138,7 +140,7 @@ class Remote(object):
         :param remote_path: the remote path.
         """
         if not self.quiet:
-            log.info('[%s] Sending files %s -> %s', self.hostname,
+            LOG.info('[%s] Sending files %s -> %s', self.hostname,
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
@@ -156,7 +158,7 @@ class Remote(object):
         :param remote_path: the remote path.
         """
         if not self.quiet:
-            log.info('[%s] rsync-ing files %s -> %s', self.hostname,
+            LOG.info('[%s] rsync-ing files %s -> %s', self.hostname,
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
@@ -184,7 +186,7 @@ class Remote(object):
         :param remote_path: the remote path.
         """
         if not self.quiet:
-            log.info('[%s] Receive remote files %s -> %s', self.hostname,
+            LOG.info('[%s] Receive remote files %s -> %s', self.hostname,
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
