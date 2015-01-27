@@ -17,9 +17,9 @@
 import getpass
 
 from avocado.core import exceptions
-from avocado.plugins.remote import RemoteTestRunner
-from avocado.plugins.remote import RemoteTestResult
 from avocado.plugins import plugin
+from avocado.plugins.remote import RemoteTestResult
+from avocado.plugins.remote import RemoteTestRunner
 from avocado.utils import virt
 
 
@@ -45,20 +45,25 @@ class VMTestResult(RemoteTestResult):
                      '--vm-hostname.')
             self.stream.notify(event='error', msg=e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        self.stream.notify(event='message', msg="VM DOMAIN : %s" % self.args.vm_domain)
+        self.stream.notify(event='message', msg="VM DOMAIN : %s"
+                           % self.args.vm_domain)
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
         if self.vm is None:
-            self.stream.notify(event='error', msg="Could not connect to VM '%s'" % self.args.vm_domain)
+            self.stream.notify(event='error',
+                               msg="Could not connect to VM '%s'"
+                               % self.args.vm_domain)
             raise exceptions.TestSetupFail()
         if self.vm.start() is False:
-            self.stream.notify(event='error', msg="Could not start VM '%s'" % self.args.vm_domain)
+            self.stream.notify(event='error', msg="Could not start VM '%s'"
+                               % self.args.vm_domain)
             raise exceptions.TestSetupFail()
         assert self.vm.domain.isActive() is not False
         if self.args.vm_cleanup is True:
             self.vm.create_snapshot()
             if self.vm.snapshot is None:
-                self.stream.notify(event='error', msg="Could not create snapshot on VM '%s'" % self.args.vm_domain)
+                self.stream.notify(event='error', msg="Could not create "
+                                   "snapshot on VM '%s'" % self.args.vm_domain)
                 raise exceptions.TestSetupFail()
         try:
             # Finish remote setup and copy the tests
@@ -84,15 +89,16 @@ class RunVM(plugin.Plugin):
 
     name = 'run_vm'
     enabled = True
+    vm_parser = None
 
     def configure(self, parser):
-        if virt.virt_capable is False:
+        if virt.VIRT_CAPABLE is False:
             self.enabled = False
             return
         username = getpass.getuser()
         default_hypervisor_uri = 'qemu:///system'
-        self.vm_parser = parser.runner.add_argument_group('run on a libvirt domain '
-                                                          'arguments')
+        self.vm_parser = parser.runner.add_argument_group('run on a libvirt '
+                                                          'domain arguments')
 
         self.vm_parser.add_argument('--vm-domain', dest='vm_domain',
                                     help=('Specify Libvirt Domain Name'))
@@ -113,8 +119,8 @@ class RunVM(plugin.Plugin):
         self.vm_parser.add_argument('--vm-cleanup', dest='vm_cleanup',
                                     action='store_true',
                                     default=False,
-                                    help=('Restore VM to a previous state, before '
-                                          'running tests'))
+                                    help='Restore VM to a previous state, '
+                                    'before running tests')
         self.configured = True
 
     @staticmethod
