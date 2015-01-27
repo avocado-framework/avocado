@@ -19,12 +19,15 @@ Module to provide remote operations.
 import getpass
 import logging
 import time
+import tempfile
+import os
 
 log = logging.getLogger('avocado.test')
 
 try:
     import fabric.api
     import fabric.operations
+    from fabric.contrib.project import rsync_project
 except ImportError:
     remote_capable = False
     log.info('Remote module is disabled: could not import fabric')
@@ -135,12 +138,38 @@ class Remote(object):
         :param remote_path: the remote path.
         """
         if not self.quiet:
-            log.info('[%s] Receive remote files %s -> %s', self.hostname,
+            log.info('[%s] Sending files %s -> %s', self.hostname,
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
                 fabric.operations.put(local_path,
                                       remote_path)
+            except ValueError:
+                return False
+        return True
+
+    def rsync(self, local_path, remote_path):
+        """
+        Send files to remote.
+
+        :param local_path: the local path.
+        :param remote_path: the remote path.
+        """
+        if not self.quiet:
+            log.info('[%s] rsync-ing files %s -> %s', self.hostname,
+                     local_path, remote_path)
+        with fabric.context_managers.quiet():
+            try:
+                # rsync in fabric doesn't support password passing, using file
+                passwdfile = None
+                try:
+                    _, passwdfile = tempfile.mkstemp(text=self.password)
+                    rsync_project(remote_path, local_path,
+                                  ssh_opts=('--password-file %s'
+                                            % passwdfile))
+                finally:
+                    if passwdfile:
+                        os.unlink(passwdfile)
             except ValueError:
                 return False
         return True
