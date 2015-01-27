@@ -122,7 +122,7 @@ class RemoteTestResult(TestResult):
                 continue    # already copied
             rpath = self.remote_test_dir + path
             self.remote.makedir(rpath)
-            self.remote.send_files(path, os.path.dirname(rpath))
+            self.remote.rsync(path, os.path.dirname(rpath))
             previous = path
 
     def setup(self):
