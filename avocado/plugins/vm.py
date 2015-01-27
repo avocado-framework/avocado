@@ -29,6 +29,10 @@ class VMTestResult(RemoteTestResult):
     Virtual Machine Test Result class.
     """
 
+    def __init__(self, stream, args):
+        super(VMTestResult, self).__init__(stream, args)
+        self.vm = None
+
     def setup(self):
         # Super called after VM is found and initialized
         if self.args.vm_domain is None:
