@@ -18,7 +18,6 @@ import os
 import getpass
 import json
 
-from avocado.core import exceptions
 from avocado.core import status
 from avocado.core import data_dir
 from avocado.runner import TestRunner
@@ -107,6 +106,7 @@ class RemoteTestResult(TestResult):
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
         self.output = '-'
+        self.urls = self.args.url
 
     def _copy_tests(self):
         self.remote.makedir(self.remote_test_dir)
@@ -120,12 +120,6 @@ class RemoteTestResult(TestResult):
             self.remote.send_files(test_path, self.remote_test_dir)
 
     def setup(self):
-        self.urls = self.args.url
-        if self.args.remote_hostname is None:
-            e_msg = ('Please set remote machine hostname with option '
-                     '--remote-hostname.')
-            self.stream.notify(event='error', msg=e_msg)
-            raise exceptions.TestSetupFail(e_msg)
         self.stream.notify(event='message', msg="REMOTE LOGIN  : %s@%s:%d" % (self.args.remote_username,
                                                                               self.args.remote_hostname,
                                                                               self.args.remote_port))
@@ -279,10 +273,32 @@ class RunRemote(plugin.Plugin):
                                         help='Specify the password to login on remote machine')
         self.configured = True
 
+    @staticmethod
+    def _check_required_args(app_args, enable_arg, required_args):
+        """
+        :return: True when enable_arg enabled and all required args are set
+        :raise sys.exit: When missing required argument.
+        """
+        if not getattr(app_args, enable_arg):
+            return False
+        missing = []
+        for arg in required_args:
+            if not getattr(app_args, arg):
+                missing.append(arg)
+        if missing:
+            from avocado.core import output, exit_codes
+            import sys
+            view = output.View(app_args=app_args, use_paginator=True)
+            e_msg = ('Use of %s requires %s arguments to be set. Please set %s'
+                     '.' % (enable_arg, ', '.join(required_args),
+                            ', '.join(missing)))
+
+            view.notify(event='error', msg=e_msg)
+            return sys.exit(exit_codes.AVOCADO_FAIL)
+        return True
+
     def activate(self, app_args):
-        try:
-            if app_args.remote_hostname is not None:
-                self.remote_parser.set_defaults(remote_result=RemoteTestResult,
-                                                test_runner=RemoteTestRunner)
-        except AttributeError:
-            pass
+        if self._check_required_args(app_args, 'remote_hostname',
+                                     ('remote_hostname',)):
+            self.remote_parser.set_defaults(remote_result=RemoteTestResult,
+                                            test_runner=RemoteTestRunner)
