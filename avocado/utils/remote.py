@@ -165,10 +165,12 @@ class Remote(object):
                 # rsync in fabric doesn't support password passing, using file
                 passwdfile = None
                 try:
-                    _, passwdfile = tempfile.mkstemp(text=self.password)
-                    rsync_project(remote_path, local_path,
-                                  ssh_opts=('--password-file %s'
-                                            % passwdfile))
+                    # TODO: What happens when passwordless access is setuped?
+                    ssh_opts = ""
+                    if self.password:
+                        _, passwdfile = tempfile.mkstemp(text=self.password)
+                        ssh_opts += '--password-file %s' % passwdfile
+                    rsync_project(remote_path, local_path, ssh_opts=ssh_opts)
                 finally:
                     if passwdfile:
                         os.unlink(passwdfile)
