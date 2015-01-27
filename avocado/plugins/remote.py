@@ -21,7 +21,7 @@ import os
 from avocado.core import data_dir
 from avocado.core import status
 from avocado.plugins import plugin
-from avocado.result import TestResult
+from avocado.result import HumanTestResult
 from avocado.runner import TestRunner
 from avocado.test import RemoteTest
 from avocado.utils import archive
@@ -93,7 +93,7 @@ class RemoteTestRunner(TestRunner):
         return failures
 
 
-class RemoteTestResult(TestResult):
+class RemoteTestResult(HumanTestResult):
 
     """
     Remote Machine Test Result class.
@@ -106,7 +106,7 @@ class RemoteTestResult(TestResult):
         :param stream: an instance of :class:`avocado.core.output.View`.
         :param args: an instance of :class:`argparse.Namespace`.
         """
-        TestResult.__init__(self, stream, args)
+        HumanTestResult.__init__(self, stream, args)
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
         self.urls = self.args.url
@@ -157,125 +157,6 @@ class RemoteTestResult(TestResult):
     def tear_down(self):
         """ Cleanup after test execution """
         pass
-
-    def start_tests(self):
-        """
-        Called once before any tests are executed.
-        """
-        TestResult.start_tests(self)
-        self.stream.notify(event='message',
-                           msg="JOB ID    : %s" % self.stream.job_unique_id)
-        self.stream.notify(event='message',
-                           msg="JOB LOG   : %s" % self.stream.logfile)
-        if self.args is not None:
-            if 'html_output' in self.args:
-                logdir = os.path.dirname(self.stream.logfile)
-                html_file = os.path.join(logdir, 'html', 'results.html')
-                self.stream.notify(event="message",
-                                   msg="JOB HTML  : %s" % html_file)
-        self.stream.notify(event='message',
-                           msg="TESTS     : %s" % self.tests_total)
-        self.stream.set_tests_info({'tests_total': self.tests_total})
-
-    def end_tests(self):
-        """
-        Called once after all tests are executed.
-        """
-        self.stream.notify(event='message',
-                           msg="PASS       : %d" % len(self.passed))
-        self.stream.notify(event='message',
-                           msg="ERROR      : %d" % len(self.errors))
-        self.stream.notify(event='message',
-                           msg="NOT FOUND  : %d" % len(self.not_found))
-        self.stream.notify(event='message',
-                           msg="NOT A TEST : %d" % len(self.not_a_test))
-        self.stream.notify(event='message',
-                           msg="FAIL       : %d" % len(self.failed))
-        self.stream.notify(event='message',
-                           msg="SKIP       : %d" % len(self.skipped))
-        self.stream.notify(event='message',
-                           msg="WARN       : %d" % len(self.warned))
-        self.stream.notify(event='message',
-                           msg="TIME       : %.2f s" % self.total_time)
-
-    def start_test(self, test):
-        """
-        Called when the given test is about to run.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        self.stream.add_test(test)
-
-    def end_test(self, test):
-        """
-        Called when the given test has been run.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.end_test(self, test)
-
-    def add_pass(self, test):
-        """
-        Called when a test succeeded.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_pass(self, test)
-        self.stream.set_test_status(status='PASS', state=test)
-
-    def add_error(self, test):
-        """
-        Called when a test had a setup error.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_error(self, test)
-        self.stream.set_test_status(status='ERROR', state=test)
-
-    def add_not_found(self, test):
-        """
-        Called when a test path was not found.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_not_found(self, test)
-        self.stream.set_test_status(status='NOT_FOUND', state=test)
-
-    def add_not_a_test(self, test):
-        """
-        Called when a file is not an avocado test.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_not_a_test(self, test)
-        self.stream.set_test_status(status='NOT_A_TEST', state=test)
-
-    def add_fail(self, test):
-        """
-        Called when a test fails.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_fail(self, test)
-        self.stream.set_test_status(status='FAIL', state=test)
-
-    def add_skip(self, test):
-        """
-        Called when a test is skipped.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_skip(self, test)
-        self.stream.set_test_status(status='SKIP', state=test)
-
-    def add_warn(self, test):
-        """
-        Called when a test had a warning.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_warn(self, test)
-        self.stream.set_test_status(status='WARN', state=test)
 
 
 class RunRemote(plugin.Plugin):
