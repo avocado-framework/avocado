@@ -407,6 +407,14 @@ class SysInfo(object):
                                                   'profile_daemons',
                                                   key_type='bool',
                                                   default=True)
+            daemons_list = settings.get_value('sysinfo.collect',
+                                              'profile_daemons_list',
+                                              key_type='str',
+                                              default='')
+            if daemons_list == '':
+                self.start_daemons = _DEFAULT_DAEMON_START_JOB
+            else:
+                self.start_daemons = [x for x in daemons_list.split(':') if x != '']
         else:
             self.log_daemons = log_daemons
 
@@ -450,7 +458,7 @@ class SysInfo(object):
 
     def _set_loggables(self):
         if self.log_daemons:
-            for cmd in _DEFAULT_DAEMON_START_JOB:
+            for cmd in self.start_daemons:
                 self.start_job_loggables.add(Daemon(cmd))
 
         for cmd in _DEFAULT_COMMANDS_START_JOB:
