@@ -178,7 +178,7 @@ class Command(Loggable):
 
     def __repr__(self):
         r = "sysinfo.Command(%r, %r, %r)"
-        r %= (self.cmd, self.logf)
+        r %= (self.cmd, self.logf, self._compress_log)
         return r
 
     def __eq__(self, other):
