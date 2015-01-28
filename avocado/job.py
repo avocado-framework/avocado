@@ -253,6 +253,16 @@ class Job(object):
                                                       multiplex_files)
 
         test_suite = self.test_loader.discover(params_list)
+        missing_files = self.test_loader.missing_files(test_suite)
+        if missing_files:
+            if len(missing_files) == 1:
+                e_msg = ("Cannot access '%s': File not found" %
+                         ", ".join(missing_files))
+            elif len(missing_files) > 1:
+                e_msg = ("Cannot access '%s': Files not found" %
+                         ", ".join(missing_files))
+            raise exceptions.OptionValidationError(e_msg)
+
         if not test_suite:
             e_msg = ("No tests found within the specified path(s) "
                      "(Check input and tests for typos. Try --show-job-log "

@@ -261,6 +261,26 @@ class TestLoader(object):
                 test_suite.append((test_class, test_parameters))
         return test_suite
 
+    @staticmethod
+    def missing_files(test_suite):
+        """
+        Find missing files provided by the user in the input.
+
+        Used mostly for user input validation.
+
+        :param test_suite: List with tuples (test_class, test_params)
+        :return: list of missing files.
+        """
+        missing_tests = [suite for suite in test_suite if
+                         suite[0] == test.MissingTest]
+        missing_files = []
+        if missing_tests:
+            for suite in missing_tests:
+                cls, params = suite
+                missing_file = params['params']['id']
+                missing_files.append(missing_file)
+        return missing_files
+
     def load_test(self, test_factory):
         """
         Load test from the test factory.

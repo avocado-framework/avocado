@@ -84,7 +84,7 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run bogustest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         unexpected_rc = 3
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
@@ -171,10 +171,9 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run sbrubles'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('NOT_FOUND', result.stdout)
-        self.assertIn('NOT FOUND  : 1', result.stdout)
+        self.assertIn('File not found', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
@@ -443,13 +442,6 @@ class PluginsXunitTest(PluginsTest):
     def test_xunit_plugin_errortest(self):
         self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
 
-    def test_xunit_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 1, 0, 0, 0)
-
-    def test_xunit_plugin_mixedtest(self):
-        self.run_and_check('passtest failtest skiptest errortest sbrubles',
-                           1, 5, 2, 0, 1, 1)
-
 
 class ParseJSONError(Exception):
     pass
@@ -501,13 +493,6 @@ class PluginsJSONTest(PluginsTest):
 
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
-
-    def test_json_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
-
-    def test_json_plugin_mixedtest(self):
-        self.run_and_check('passtest failtest skiptest errortest sbrubles',
-                           1, 5, 1, 1, 1, 1)
 
 if __name__ == '__main__':
     unittest.main()

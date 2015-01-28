@@ -12,10 +12,13 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import sys
+
 from avocado import loader
 from avocado import test
 from avocado.core import data_dir
 from avocado.core import output
+from avocado.core import exit_codes
 from avocado.utils import astring
 from avocado.plugins import plugin
 
@@ -68,6 +71,17 @@ class TestLister(plugin.Plugin):
         for params in params_list:
             params['omit_non_tests'] = False
         test_suite = self.test_loader.discover(params_list)
+        missing_files = self.test_loader.missing_files(test_suite)
+        if missing_files:
+            if len(missing_files) == 1:
+                e_msg = ("Cannot access '%s': File not found" %
+                         ", ".join(missing_files))
+            elif len(missing_files) > 1:
+                e_msg = ("Cannot access '%s': Files not found" %
+                         ", ".join(missing_files))
+            self.view.notify(event='error', msg=e_msg)
+            sys.exit(exit_codes.AVOCADO_FAIL)
+
         test_matrix = []
         stats = {'simple': 0,
                  'instrumented': 0,
