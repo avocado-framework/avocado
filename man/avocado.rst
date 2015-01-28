@@ -145,18 +145,65 @@ LISTING TESTS
 =============
 
 The `avocado` command line tool also has a `list` command, that lists the
-known tests in the standard test directory::
+known tests in a given path, be it a path to an individual test, or a path
+to a directory. If no arguments provided, avocado will inspect the contents
+of the test location being used by avocado (if you are in doubt about which
+one is that, you may use `avocado config --datadir`). The output looks like::
 
- $ avocado list
+    $ avocado list
+    INSTRUMENTED /usr/share/avocado/tests/abort.py
+    INSTRUMENTED /usr/share/avocado/tests/datadir.py
+    INSTRUMENTED /usr/share/avocado/tests/doublefail.py
+    INSTRUMENTED /usr/share/avocado/tests/doublefree.py
+    INSTRUMENTED /usr/share/avocado/tests/errortest.py
+    INSTRUMENTED /usr/share/avocado/tests/failtest.py
+    INSTRUMENTED /usr/share/avocado/tests/fiotest.py
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py
+    INSTRUMENTED /usr/share/avocado/tests/gendata.py
+    INSTRUMENTED /usr/share/avocado/tests/linuxbuild.py
+    INSTRUMENTED /usr/share/avocado/tests/multiplextest.py
+    INSTRUMENTED /usr/share/avocado/tests/passtest.py
+    INSTRUMENTED /usr/share/avocado/tests/skiptest.py
+    INSTRUMENTED /usr/share/avocado/tests/sleeptenmin.py
+    INSTRUMENTED /usr/share/avocado/tests/sleeptest.py
+    INSTRUMENTED /usr/share/avocado/tests/synctest.py
+    INSTRUMENTED /usr/share/avocado/tests/timeouttest.py
+    INSTRUMENTED /usr/share/avocado/tests/trinity.py
+    INSTRUMENTED /usr/share/avocado/tests/warntest.py
+    INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
 
-The output should be similar to::
+Here, `INSTRUMENTED` means that the files there are python files with an avocado
+test class in them, therefore, that they are what we call instrumented tests.
+This means those tests can use all avocado APIs and facilities. Let's try to
+list a directory with a bunch of executable shell scripts::
 
- Tests dir: /home/<user>/local/avocado/tests
-     Alias         Path
-     sleeptest     /home/<user>/local/avocado/tests/sleeptest.py
-     ...
-     warntest      /home/<user>/local/avocado/tests/warntest.py
-     sleeptenmin   /home/<user>/local/avocado/tests/sleeptenmin.py
+    $ avocado list examples/wrappers/
+    SIMPLE examples/wrappers/dummy.sh
+    SIMPLE examples/wrappers/ltrace.sh
+    SIMPLE examples/wrappers/perf.sh
+    SIMPLE examples/wrappers/strace.sh
+    SIMPLE examples/wrappers/time.sh
+    SIMPLE examples/wrappers/valgrind.sh
+
+Here, `SIMPLE` means that those files are executables, that avocado will simply
+execute and return PASS or FAIL depending on their return codes (PASS -> 0,
+FAIL -> any integer different than 0). You can also provide the `--verbose`,
+or `-V` flag to display files that were detected but are not avocado tests,
+along with summary information::
+
+    $ avocado list examples/gdb-prerun-scripts/ -V
+    Type       file
+    NOT_A_TEST examples/gdb-prerun-scripts/README
+    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
+
+    SIMPLE: 0
+    INSTRUMENTED: 0
+    BUGGY: 0
+    MISSING: 0
+    NOT_A_TEST: 2
+
+That summarizes the basic commands you should be using more frequently when
+you start with avocado. Let's talk now about how avocado stores test results.
 
 EXPLORING RESULTS
 =================
