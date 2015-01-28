@@ -253,6 +253,13 @@ class Job(object):
                                                       multiplex_files)
 
         test_suite = self.test_loader.discover(params_list)
+
+        error_msg_parts = self.test_loader.validate_ui(test_suite)
+
+        if error_msg_parts:
+            e_msg = '\n'.join(error_msg_parts)
+            raise exceptions.OptionValidationError(e_msg)
+
         if not test_suite:
             e_msg = ("No tests found within the specified path(s) "
                      "(Possible reasons: File ownership, permissions, typos)")

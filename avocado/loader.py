@@ -262,6 +262,67 @@ class TestLoader(object):
                 test_suite.append((test_class, test_parameters))
         return test_suite
 
+    @staticmethod
+    def validate(test_suite):
+        """
+        Find missing files/non-tests provided by the user in the input.
+
+        Used mostly for user input validation.
+
+        :param test_suite: List with tuples (test_class, test_params)
+        :return: list of missing files.
+        """
+        missing_tests = []
+        not_tests = []
+        for suite in test_suite:
+            if suite[0] == test.MissingTest:
+                missing_tests.append(suite)
+            elif suite[0] == test.NotATest:
+                not_tests.append(suite)
+        missing_files = []
+        not_test_files = []
+        if missing_tests:
+            for suite in missing_tests:
+                cls, params = suite
+                missing_file = params['params']['id']
+                missing_files.append(missing_file)
+        if not_tests:
+            for suite in not_tests:
+                cls, params = suite
+                not_test_file = params['params']['id']
+                not_test_files.append(not_test_file)
+
+        return missing_files, not_test_files
+
+    def validate_ui(self, test_suite, ignore_missing=False,
+                    ignore_not_test=False):
+        """
+        Validate test suite and deliver error messages to the UI
+        :param test_suite: List of tuples (test_class, test_params)
+        :type test_suite: list
+        :return: List with error messages
+        :rtype: list
+        """
+        missing_files, not_test_files = self.validate(test_suite)
+        missing_msg = ''
+        if (not ignore_missing) and missing_files:
+            if len(missing_files) == 1:
+                missing_msg = ("Cannot access '%s': File not found" %
+                               ", ".join(missing_files))
+            elif len(missing_files) > 1:
+                missing_msg = ("Cannot access '%s': Files not found" %
+                               ", ".join(missing_files))
+        not_test_msg = ''
+        if (not ignore_not_test) and not_test_files:
+            if len(not_test_files) == 1:
+                not_test_msg = ("File '%s' is not an avocado test" %
+                                ", ".join(not_test_files))
+            elif len(not_test_files) > 1:
+                not_test_msg = ("Files '%s' are not avocado tests" %
+                                ", ".join(not_test_files))
+
+        return [msg for msg in [missing_msg, not_test_msg] if msg]
+
     def load_test(self, test_factory):
         """
         Load test from the test factory.
