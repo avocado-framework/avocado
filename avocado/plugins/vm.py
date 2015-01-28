@@ -184,7 +184,6 @@ class VMTestResult(TestResult):
         """
         self.stream.notify(event='message', msg="PASS       : %d" % len(self.passed))
         self.stream.notify(event='message', msg="ERROR      : %d" % len(self.errors))
-        self.stream.notify(event='message', msg="NOT FOUND  : %d" % len(self.not_found))
         self.stream.notify(event='message', msg="NOT A TEST : %d" % len(self.not_a_test))
         self.stream.notify(event='message', msg="FAIL       : %d" % len(self.failed))
         self.stream.notify(event='message', msg="SKIP       : %d" % len(self.skipped))
@@ -224,15 +223,6 @@ class VMTestResult(TestResult):
         """
         TestResult.add_error(self, test)
         self.stream.set_test_status(status='ERROR', state=test)
-
-    def add_not_found(self, test):
-        """
-        Called when a test path was not found.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_not_found(self, test)
-        self.stream.set_test_status(status='NOT_FOUND', state=test)
 
     def add_not_a_test(self, test):
         """

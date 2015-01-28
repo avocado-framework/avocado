@@ -84,7 +84,6 @@ directories. The output should be similar to::
  FAIL      : 0
  SKIP      : 0
  WARN      : 0
- NOT FOUND : 0
  TIME      : 1.00 s
 
 The test directories will vary depending on you system and
@@ -276,7 +275,6 @@ And the output should look like::
  FAIL      : 0
  SKIP      : 0
  WARN      : 0
- NOT FOUND : 0
  TIME      : 16.53 s
 
 The `multiplex` plugin and the test runner supports two kinds of global
@@ -439,7 +437,6 @@ option --output-check-record all to the test runner::
     FAIL      : 0
     SKIP      : 0
     WARN      : 0
-    NOT FOUND : 0
     TIME      : 2.20 s
 
 After the reference files are added, the check process is transparent, in the
@@ -475,7 +472,6 @@ Let's record the output (both stdout and stderr) for this one::
     FAIL      : 0
     SKIP      : 0
     WARN      : 0
-    NOT FOUND : 0
     TIME      : 0.01 s
 
 After this is done, you'll notice that a the test data directory
@@ -521,7 +517,6 @@ The output should look like::
  (1/1) sleeptest.py:  PASS (1.01 s)
  PASS      : 1
  ERROR     : 0
- NOT FOUND : 0
  FAIL      : 0
  SKIP      : 0
  WARN      : 0
