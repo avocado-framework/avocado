@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import unittest
 
 from avocado import runtime
