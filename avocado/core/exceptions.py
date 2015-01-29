@@ -28,7 +28,7 @@ class JobBaseException(Exception):
     status = "FAIL"
 
 
-class JobError(Exception):
+class JobError(JobBaseException):
 
     """
     A generic error happened during a job execution.

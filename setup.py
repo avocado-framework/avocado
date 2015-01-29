@@ -88,20 +88,22 @@ def get_long_description():
         req_contents = req.read()
     return req_contents
 
-setup(name='avocado',
-      version=avocado.version.VERSION,
-      description='Avocado Test Framework',
-      long_description=get_long_description(),
-      author='Avocado Developers',
-      author_email='avocado-devel@redhat.com',
-      url='http://avocado-framework.github.io/',
-      packages=['avocado',
-                'avocado.cli',
-                'avocado.core',
-                'avocado.external',
-                'avocado.linux',
-                'avocado.utils',
-                'avocado.plugins'],
-      package_data={'avocado.plugins': _get_plugin_resource_files('avocado/plugins/resources')},
-      data_files=get_data_files(),
-      scripts=['scripts/avocado'])
+if __name__ == '__main__':
+    setup(name='avocado',
+          version=avocado.version.VERSION,
+          description='Avocado Test Framework',
+          long_description=get_long_description(),
+          author='Avocado Developers',
+          author_email='avocado-devel@redhat.com',
+          url='http://avocado-framework.github.io/',
+          packages=['avocado',
+                    'avocado.cli',
+                    'avocado.core',
+                    'avocado.external',
+                    'avocado.linux',
+                    'avocado.utils',
+                    'avocado.plugins'],
+          package_data={'avocado.plugins': _get_plugin_resource_files(
+              'avocado/plugins/resources')},
+          data_files=get_data_files(),
+          scripts=['scripts/avocado'])
