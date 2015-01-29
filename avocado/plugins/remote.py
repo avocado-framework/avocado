@@ -39,7 +39,6 @@ class RemoteTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
-        urls = urls.split()
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - --archive %s' %
                        (self.remote_test_dir, self.result.stream.job_unique_id, " ".join(urls)))
         result = self.result.remote.run(avocado_cmd, ignore_status=True)
@@ -62,10 +61,8 @@ class RemoteTestRunner(TestRunner):
         :return: a list of test failures.
         """
         failures = []
-        urls = [x['id'] for x in params_list]
-        self.result.urls = urls
         self.result.setup()
-        results = self.run_test(' '.join(urls))
+        results = self.run_test(self.result.urls)
         remote_log_dir = os.path.dirname(results['debuglog'])
         self.result.start_tests()
         for tst in results['tests']:
@@ -160,8 +157,6 @@ class RemoteTestResult(TestResult):
         """
         self.stream.notify(event='message', msg="PASS       : %d" % len(self.passed))
         self.stream.notify(event='message', msg="ERROR      : %d" % len(self.errors))
-        self.stream.notify(event='message', msg="NOT FOUND  : %d" % len(self.not_found))
-        self.stream.notify(event='message', msg="NOT A TEST : %d" % len(self.not_a_test))
         self.stream.notify(event='message', msg="FAIL       : %d" % len(self.failed))
         self.stream.notify(event='message', msg="SKIP       : %d" % len(self.skipped))
         self.stream.notify(event='message', msg="WARN       : %d" % len(self.warned))
@@ -200,24 +195,6 @@ class RemoteTestResult(TestResult):
         """
         TestResult.add_error(self, test)
         self.stream.set_test_status(status='ERROR', state=test)
-
-    def add_not_found(self, test):
-        """
-        Called when a test path was not found.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_not_found(self, test)
-        self.stream.set_test_status(status='NOT_FOUND', state=test)
-
-    def add_not_a_test(self, test):
-        """
-        Called when a file is not an avocado test.
-
-        :param test: :class:`avocado.test.Test` instance.
-        """
-        TestResult.add_not_a_test(self, test)
-        self.stream.set_test_status(status='NOT_A_TEST', state=test)
 
     def add_fail(self, test):
         """

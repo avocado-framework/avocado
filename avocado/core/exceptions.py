@@ -75,16 +75,6 @@ class TestError(TestBaseException):
     status = "ERROR"
 
 
-class TestNotFoundError(TestBaseException):
-
-    """
-    Indicates that the test was not found.
-
-    Causes: non existing path or could not resolve alias.
-    """
-    status = "NOT_FOUND"
-
-
 class NotATestError(TestBaseException):
 
     """
