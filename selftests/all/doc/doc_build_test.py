@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """
 Build documentation and report whether we had warning/error messages.
 
