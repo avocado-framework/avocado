@@ -137,7 +137,7 @@ class TermSupport(object):
         self.SKIP = self.COLOR_YELLOW
         self.FAIL = self.COLOR_RED
         self.ERROR = self.COLOR_RED
-        self.NOT_FOUND = self.COLOR_YELLOW
+        self.NOT_A_TEST = self.COLOR_YELLOW
         self.WARN = self.COLOR_YELLOW
         self.PARTIAL = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
@@ -157,7 +157,7 @@ class TermSupport(object):
         self.SKIP = ''
         self.FAIL = ''
         self.ERROR = ''
-        self.NOT_FOUND = ''
+        self.NOT_A_TEST = ''
         self.WARN = ''
         self.PARTIAL = ''
         self.ENDC = ''
@@ -237,21 +237,13 @@ class TermSupport(object):
         """
         return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
 
-    def not_found_str(self):
-        """
-        Print a warning NOT_FOUND string (yellow colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.NOT_FOUND + 'NOT_FOUND' + self.ENDC
-
     def not_a_test_str(self):
         """
         Print a warning NOT_A_TEST string (yellow colored).
 
         If the output does not support colors, just return the original string.
         """
-        return self.MOVE_BACK + self.NOT_FOUND + 'NOT_A_TEST' + self.ENDC
+        return self.MOVE_BACK + self.NOT_A_TEST + 'NOT_A_TEST' + self.ENDC
 
     def warn_str(self):
         """
@@ -403,7 +395,6 @@ class View(object):
     def set_test_status(self, status, state):
         mapping = {'PASS': self._log_ui_status_pass,
                    'ERROR': self._log_ui_status_error,
-                   'NOT_FOUND': self._log_ui_status_not_found,
                    'NOT_A_TEST': self._log_ui_status_not_a_test,
                    'FAIL': self._log_ui_status_fail,
                    'SKIP': self._log_ui_status_skip,
@@ -521,15 +512,6 @@ class View(object):
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error_base(normal_error_msg)
-
-    def _log_ui_status_not_found(self, t_elapsed):
-        """
-        Log a NOT_FOUND status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_error_msg = term_support.not_found_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_error_msg)
 
     def _log_ui_status_not_a_test(self, t_elapsed):

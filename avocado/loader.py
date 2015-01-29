@@ -28,13 +28,21 @@ from avocado.core import data_dir
 from avocado.utils import path
 
 
+class _DebugJob(object):
+
+    def __init__(self):
+        self.logdir = '.'
+
+
 class TestLoader(object):
 
     """
     Test loader class.
     """
 
-    def __init__(self, job):
+    def __init__(self, job=None):
+        if job is None:
+            job = _DebugJob()
         self.job = job
 
     def _make_missing_test(self, test_name, params):
@@ -61,7 +69,7 @@ class TestLoader(object):
                            'job': self.job}
         return test_class, test_parameters
 
-    def _make_test(self, test_name, test_path, params, queue):
+    def _make_test(self, test_name, test_path, params):
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
         sys.path.append(test_module_dir)
@@ -71,11 +79,10 @@ class TestLoader(object):
                                   'params': params,
                                   'job': self.job}
 
-        test_parameters_queue = {'name': test_name,
-                                 'base_logdir': self.job.logdir,
-                                 'params': params,
-                                 'job': self.job,
-                                 'runner_queue': queue}
+        test_parameters_name = {'name': test_name,
+                                'base_logdir': self.job.logdir,
+                                'params': params,
+                                'job': self.job}
         try:
             f, p, d = imp.find_module(module_name, [test_module_dir])
             test_module = imp.load_module(module_name, f, p, d)
@@ -87,7 +94,7 @@ class TestLoader(object):
             if test_class is not None:
                 # Module is importable and does have an avocado test class
                 # inside, let's proceed.
-                test_parameters = test_parameters_queue
+                test_parameters = test_parameters_name
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
@@ -98,7 +105,7 @@ class TestLoader(object):
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
                     test_class = test.NotATest
-                    test_parameters = test_parameters_queue
+                    test_parameters = test_parameters_name
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -127,30 +134,30 @@ class TestLoader(object):
                     params['exception'] = details
                 else:
                     test_class = test.NotATest
-                test_parameters = test_parameters_queue
+                test_parameters = test_parameters_name
 
         sys.path.pop(sys.path.index(test_module_dir))
 
         return test_class, test_parameters
 
-    def discover_test(self, params, queue):
+    def discover_test(self, params):
         """
         Try to discover and resolve a test.
 
         :param params: dictionary with test parameters.
         :type params: dict
-        :param queue: a queue for communicating with the test runner.
-        :type queue: an instance of :class:`multiprocessing.Queue`
         :return: a test factory (a pair of test class and test parameters)
+                 or `None`.
         """
-        test_name = params.get('id')
-        test_path = os.path.abspath(test_name)
+        test_name = test_path = params.get('id')
         if os.path.exists(test_path):
+            if os.access(test_path, os.R_OK) is False:
+                return None
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
                 test_class, test_parameters = self._make_test(test_name,
                                                               test_path,
-                                                              params, queue)
+                                                              params)
             else:
                 if os.access(test_path, os.X_OK):
                     test_class, test_parameters = self._make_simple_test(test_path,
@@ -165,27 +172,156 @@ class TestLoader(object):
             if os.path.exists(test_path):
                 test_class, test_parameters = self._make_test(rel_path,
                                                               test_path,
-                                                              params, queue)
+                                                              params)
             else:
                 test_class, test_parameters = self._make_missing_test(
                     test_name, params)
         return test_class, test_parameters
 
-    def discover(self, params_list, queue):
+    def discover_directory(self, dir_path='.', ignore_suffix=None):
+        """
+        Discover (possible) tests from a directory.
+
+        Recursively walk in a directory and find tests params.
+        The tests are returned in alphabetic order.
+
+        :param dir_path: the directory path to inspect.
+        :type dir_path: str
+        :param ignore_suffix: list of suffix to ignore in paths.
+        :type ignore_suffix: list
+        :return: a list of test params (each one a dictionary).
+        """
+        if ignore_suffix is None:
+            ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
+                             '__main__.py')
+        params_list = []
+        try:
+            entries = sorted(os.listdir(os.path.abspath(dir_path)))
+        except OSError:
+            return params_list
+        for entry in entries:
+            new_path = os.path.join(dir_path, entry)
+            if entry.startswith('.'):
+                continue
+            elif entry.endswith(ignore_suffix):
+                continue
+            elif os.path.isdir(new_path):
+                params_list.extend(
+                    self.discover_directory(new_path))
+            else:
+                params_list.append({'id': new_path,
+                                    'omit_non_tests': True})
+        return params_list
+
+    def discover_url(self, url):
+        """
+        Discover (possible) test from test url.
+
+        :params url: the test url to discover.
+        :type url: str
+        :return: a list of test params (each one a dictionary).
+        """
+        if os.path.isdir(os.path.abspath(url)):
+            return self.discover_directory(url)
+        else:
+            return [{'id': url}]
+
+    def discover_urls(self, urls):
+        """
+        Discover (possible) tests from test urls.
+
+        :param urls: a list of tests urls.
+        :type urls: list
+        :return: a list of test params (each one a dictionary).
+        """
+        params_list = []
+        for url in urls:
+            if url == '':
+                continue
+            params_list.extend(self.discover_url(url))
+        return params_list
+
+    def discover(self, params_list):
         """
         Discover tests for test suite.
 
         :param params_list: a list of test parameters.
         :type params_list: list
-        :param queue: a queue for communicating with the test runner.
-        :type queue: an instance of :class:`multiprocessing.Queue`
         :return: a test suite (a list of test factories).
         """
         test_suite = []
         for params in params_list:
-            test_class, test_parameters = self.discover_test(params, queue)
-            test_suite.append((test_class, test_parameters))
+            test_factory = self.discover_test(params)
+            if test_factory is None:
+                continue
+            test_class, test_parameters = test_factory
+            if test_class == test.NotATest:
+                if not params.get('omit_non_tests'):
+                    test_suite.append((test_class, test_parameters))
+            else:
+                test_suite.append((test_class, test_parameters))
         return test_suite
+
+    @staticmethod
+    def validate(test_suite):
+        """
+        Find missing files/non-tests provided by the user in the input.
+
+        Used mostly for user input validation.
+
+        :param test_suite: List with tuples (test_class, test_params)
+        :return: list of missing files.
+        """
+        missing_tests = []
+        not_tests = []
+        for suite in test_suite:
+            if suite[0] == test.MissingTest:
+                missing_tests.append(suite)
+            elif suite[0] == test.NotATest:
+                not_tests.append(suite)
+        missing_files = []
+        not_test_files = []
+        if missing_tests:
+            for suite in missing_tests:
+                cls, params = suite
+                missing_file = params['params']['id']
+                missing_files.append(missing_file)
+        if not_tests:
+            for suite in not_tests:
+                cls, params = suite
+                not_test_file = params['params']['id']
+                not_test_files.append(not_test_file)
+
+        return missing_files, not_test_files
+
+    def validate_ui(self, test_suite, ignore_missing=False,
+                    ignore_not_test=False):
+        """
+        Validate test suite and deliver error messages to the UI
+        :param test_suite: List of tuples (test_class, test_params)
+        :type test_suite: list
+        :return: List with error messages
+        :rtype: list
+        """
+        missing_files, not_test_files = self.validate(test_suite)
+        missing_msg = ''
+        if (not ignore_missing) and missing_files:
+            if len(missing_files) == 1:
+                missing_msg = ("Cannot access '%s': File not found" %
+                               ", ".join(missing_files))
+            elif len(missing_files) > 1:
+                missing_msg = ("Cannot access '%s': Files not found" %
+                               ", ".join(missing_files))
+        not_test_msg = ''
+        if (not ignore_not_test) and not_test_files:
+            if len(not_test_files) == 1:
+                not_test_msg = ("File '%s' is not an avocado test" %
+                                ", ".join(not_test_files))
+            elif len(not_test_files) > 1:
+                not_test_msg = ("Files '%s' are not avocado tests" %
+                                ", ".join(not_test_files))
+
+        return [msg for msg in [missing_msg, not_test_msg] if msg]
 
     def load_test(self, test_factory):
         """
