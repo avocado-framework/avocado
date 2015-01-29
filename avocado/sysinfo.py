@@ -208,13 +208,12 @@ class Command(Loggable):
             env["PATH"] = "/usr/bin:/bin"
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
-        stderr = open(os.devnull, "w")
         stdout = open(logf_path, "w")
         try:
             subprocess.call(self.cmd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=True, env=env)
+                            stderr=subprocess.STDOUT, shell=True, env=env)
         finally:
-            for f in (stdin, stdout, stderr):
+            for f in (stdin, stdout):
                 f.close()
             if self._compress_log and os.path.exists(logf_path):
                 utils.process.run('gzip -9 "%s"' % logf_path,
