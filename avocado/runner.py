@@ -77,6 +77,8 @@ class TestRunner(object):
 
         try:
             instance = self.job.test_loader.load_test(test_factory)
+            if instance.runner_queue is None:
+                instance.runner_queue = queue
             runtime.CURRENT_TEST = instance
             early_state = instance.get_state()
             queue.put(early_state)
@@ -113,11 +115,11 @@ class TestRunner(object):
             test_state['text_output'] = log_file_obj.read()
         return test_state
 
-    def run_suite(self, params_list):
+    def run_suite(self, test_suite):
         """
         Run one or more tests and report with test result.
 
-        :param params_list: a list of param dicts.
+        :param test_suite: a list of tests to run.
 
         :return: a list of test failures.
         """
@@ -125,7 +127,6 @@ class TestRunner(object):
         self.sysinfo.start_job_hook()
         self.result.start_tests()
         q = queues.SimpleQueue()
-        test_suite = self.job.test_loader.discover(params_list, q)
 
         for test_factory in test_suite:
             p = multiprocessing.Process(target=self.run_test,

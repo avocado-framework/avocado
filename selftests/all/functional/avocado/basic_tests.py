@@ -84,7 +84,7 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run bogustest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         unexpected_rc = 3
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
@@ -171,10 +171,9 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run sbrubles'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('NOT_FOUND', result.stdout)
-        self.assertIn('NOT FOUND  : 1', result.stdout)
+        self.assertIn('File not found', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --force-job-id foobar skiptest'
@@ -443,13 +442,6 @@ class PluginsXunitTest(PluginsTest):
     def test_xunit_plugin_errortest(self):
         self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
 
-    def test_xunit_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 1, 0, 0, 0)
-
-    def test_xunit_plugin_mixedtest(self):
-        self.run_and_check('passtest failtest skiptest errortest sbrubles',
-                           1, 5, 2, 0, 1, 1)
-
 
 class ParseJSONError(Exception):
     pass
@@ -457,7 +449,7 @@ class ParseJSONError(Exception):
 
 class PluginsJSONTest(PluginsTest):
 
-    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors, e_nnotfound,
+    def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nfailures, e_nskip):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --json - --archive %s' % testname
@@ -480,9 +472,6 @@ class PluginsJSONTest(PluginsTest):
         n_errors = json_data['errors']
         self.assertEqual(n_errors, e_nerrors,
                          "Different number of expected tests")
-        n_not_found = json_data['not_found']
-        self.assertEqual(n_not_found, e_nnotfound,
-                         "Different number of not found tests")
         n_failures = json_data['failures']
         self.assertEqual(n_failures, e_nfailures,
                          "Different number of expected tests")
@@ -491,23 +480,16 @@ class PluginsJSONTest(PluginsTest):
                          "Different number of skipped tests")
 
     def test_json_plugin_passtest(self):
-        self.run_and_check('passtest', 0, 1, 0, 0, 0, 0)
+        self.run_and_check('passtest', 0, 1, 0, 0, 0)
 
     def test_json_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
+        self.run_and_check('failtest', 1, 1, 0, 1, 0)
 
     def test_json_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
+        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
-
-    def test_json_plugin_notfoundtest(self):
-        self.run_and_check('sbrubles', 1, 1, 0, 1, 0, 0)
-
-    def test_json_plugin_mixedtest(self):
-        self.run_and_check('passtest failtest skiptest errortest sbrubles',
-                           1, 5, 1, 1, 1, 1)
+        self.run_and_check('errortest', 1, 1, 1, 0, 0)
 
 if __name__ == '__main__':
     unittest.main()
