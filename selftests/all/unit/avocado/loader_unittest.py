@@ -73,8 +73,7 @@ class LoaderTest(unittest.TestCase):
                                              'avocado_loader_unittest')
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': simple_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': simple_test.path}))
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         tc.action()
@@ -86,8 +85,7 @@ class LoaderTest(unittest.TestCase):
                                              mode=0664)
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': simple_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': simple_test.path}))
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.action)
@@ -99,8 +97,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_pass_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_pass_test.path}))
         self.assertTrue(str(test_class) == "<class 'passtest.PassTest'>",
                         str(test_class))
         self.assertTrue(issubclass(test_class, test.Test))
@@ -114,8 +111,7 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_buggy_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_buggy_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_buggy_test.path}))
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.TestFail, tc.action)
@@ -128,8 +124,7 @@ class LoaderTest(unittest.TestCase):
                                                     mode=0664)
         avocado_buggy_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_buggy_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_buggy_test.path}))
         self.assertTrue(test_class == test.BuggyTest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(ImportError, tc.action)
@@ -142,8 +137,7 @@ class LoaderTest(unittest.TestCase):
                                                     mode=0664)
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_not_a_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_not_a_test.path}))
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.action)
@@ -154,8 +148,7 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_not_a_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_not_a_test.path}))
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
@@ -169,8 +162,7 @@ class LoaderTest(unittest.TestCase):
                                                      'avocado_loader_unittest')
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_simple_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_simple_test.path}))
         self.assertTrue(test_class == test.SimpleTest)
         tc = test_class(**test_parameters)
         tc.action()
@@ -183,8 +175,7 @@ class LoaderTest(unittest.TestCase):
                                                      mode=0664)
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_simple_test.path},
-                                      queue=self.queue))
+            self.loader.discover_test(params={'id': avocado_simple_test.path}))
         self.assertTrue(test_class == test.NotATest)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.action)

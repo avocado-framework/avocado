@@ -64,7 +64,6 @@ Once everything is verified and covered, you may run your test. Example::
     (2/2) examples/tests/failtest.py: FAIL (0.00 s)
     PASS      : 1
     ERROR     : 0
-    NOT FOUND : 0
     FAIL      : 1
     SKIP      : 0
     WARN      : 0
