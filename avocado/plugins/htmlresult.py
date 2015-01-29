@@ -96,8 +96,6 @@ class ReportModel(object):
         mapping = {"TEST_NA": "warning",
                    "ABORT": "danger",
                    "ERROR": "danger",
-                   "NOT_FOUND": "warning",
-                   "NOT_A_TEST": "warning",
                    "FAIL": "danger",
                    "WARN": "warning",
                    "PASS": "success",
@@ -199,7 +197,6 @@ class HTMLTestResult(TestResult):
             'total': len(self.json['tests']),
             'pass': len(self.passed),
             'errors': len(self.errors),
-            'not_found': len(self.not_found),
             'failures': len(self.failed),
             'skip': len(self.skipped),
             'time': self.total_time
