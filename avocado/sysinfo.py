@@ -31,6 +31,9 @@ from avocado.settings import settings
 log = logging.getLogger("avocado.test")
 
 
+_DEFAULT_DAEMON_START_JOB = ["journalctl -f",
+                             "vmstat 1"]
+
 _DEFAULT_COMMANDS_START_JOB = ["df -mP",
                                "dmesg -c",
                                "uname -a",
@@ -47,7 +50,8 @@ _DEFAULT_COMMANDS_START_JOB = ["df -mP",
                                "numactl --hardware show",
                                "lscpu",
                                "fdisk -l"]
-_DEFAULT_COMMANDS_END_JOB = []
+
+_DEFAULT_COMMANDS_END_JOB = _DEFAULT_COMMANDS_START_JOB
 
 _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/proc/mounts",
@@ -63,7 +67,7 @@ _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
                             "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
 
-_DEFAULT_FILES_END_JOB = []
+_DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
 
 _DEFAULT_COMMANDS_START_TEST = []
 
@@ -158,6 +162,10 @@ class Logfile(Loggable):
             except IOError:
                 log.debug("Not logging %s (lack of permissions)", self.path)
 
+    def stop(self):
+        """Not used."""
+        pass
+
 
 class Command(Loggable):
 
@@ -208,18 +216,60 @@ class Command(Loggable):
             env["PATH"] = "/usr/bin:/bin"
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
-        stderr = open(os.devnull, "w")
         stdout = open(logf_path, "w")
         try:
             subprocess.call(self.cmd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=True, env=env)
+                            stderr=subprocess.STDOUT, shell=True, env=env)
         finally:
-            for f in (stdin, stdout, stderr):
+            for f in (stdin, stdout):
                 f.close()
             if self._compress_log and os.path.exists(logf_path):
                 utils.process.run('gzip -9 "%s"' % logf_path,
                                   ignore_status=True,
                                   verbose=False)
+
+    def stop(self):
+        """Not used."""
+        pass
+
+
+class Daemon(Command):
+
+    """
+    Loggable daemon.
+
+    :param cmd: String with the daemon command.
+    :param logf: Basename of the file where output is logged (optional).
+    :param compress_logf: Wether to compress the output of the command.
+    """
+
+    def run(self, logdir):
+        """
+        Execute the daemon as a subprocess and log its output in logdir.
+
+        :param logdir: Path to a log directory.
+        """
+        env = os.environ.copy()
+        if "PATH" not in env:
+            env["PATH"] = "/usr/bin:/bin"
+        logf_path = os.path.join(logdir, self.logf)
+        stdin = open(os.devnull, "r")
+        stdout = open(logf_path, "w")
+        self.pipe = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
+                                     stderr=subprocess.STDOUT, shell=True, env=env)
+
+    def stop(self):
+        """
+        Stop daemon execution.
+        """
+        retcode = self.pipe.poll()
+        if retcode is None:
+            self.pipe.terminate()
+            retcode = self.pipe.wait()
+        else:
+            log.debug("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
+                      self.cmd, self.pipe.pid, retcode)
+        return retcode
 
 
 class LogWatcher(Loggable):
@@ -325,7 +375,7 @@ class SysInfo(object):
     * end_job
     """
 
-    def __init__(self, basedir=None, log_packages=None):
+    def __init__(self, basedir=None, log_packages=None, log_daemons=None):
         """
         Set sysinfo loggables.
 
@@ -334,6 +384,9 @@ class SysInfo(object):
                              logging packages is a costly operation). If not
                              given explicitly, tries to look in the config
                              files, and if not found, defaults to False.
+        :param log_daemons: Wether to log daemons. If not given explicitly,
+                            tries to look in the config files, and if not found,
+                            defaults to True.
         """
         if basedir is None:
             basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
@@ -348,6 +401,22 @@ class SysInfo(object):
                                                    default=False)
         else:
             self.log_packages = log_packages
+
+        if log_daemons is None:
+            self.log_daemons = settings.get_value('sysinfo.collect',
+                                                  'profile_daemons',
+                                                  key_type='bool',
+                                                  default=True)
+            daemons_list = settings.get_value('sysinfo.collect',
+                                              'profile_daemons_list',
+                                              key_type='str',
+                                              default='')
+            if daemons_list == '':
+                self.start_daemons = _DEFAULT_DAEMON_START_JOB
+            else:
+                self.start_daemons = [x for x in daemons_list.split(':') if x != '']
+        else:
+            self.log_daemons = log_daemons
 
         self.start_job_loggables = set()
         self.end_job_loggables = set()
@@ -364,6 +433,10 @@ class SysInfo(object):
                              'end_test': self.end_test_loggables,
                              'start_iteration': self.start_iteration_loggables,
                              'end_iteration': self.end_iteration_loggables}
+
+        self.pre_dir = utils.path.init_dir(self.basedir, 'pre')
+        self.post_dir = utils.path.init_dir(self.basedir, 'post')
+        self.profile_dir = utils.path.init_dir(self.basedir, 'profile')
 
         self._set_loggables()
 
@@ -384,6 +457,10 @@ class SysInfo(object):
         return syslog_watcher
 
     def _set_loggables(self):
+        if self.log_daemons:
+            for cmd in self.start_daemons:
+                self.start_job_loggables.add(Daemon(cmd))
+
         for cmd in _DEFAULT_COMMANDS_START_JOB:
             self.start_job_loggables.add(Command(cmd))
 
@@ -495,61 +572,61 @@ class SysInfo(object):
         """
         Logging hook called whenever a job starts, and again after reboot.
         """
-        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_job_loggables:
-            log.run(pre_dir)
+            if isinstance(log, Daemon):  # log daemons in profile directory
+                log.run(self.profile_dir)
+            else:
+                log.run(self.pre_dir)
 
         if self.log_packages:
-            self._log_installed_packages(pre_dir)
+            self._log_installed_packages(self.pre_dir)
 
     def end_job_hook(self):
         """
         Logging hook called whenever a job starts, and again after reboot.
         """
-        post_dir = utils.path.init_dir(self.basedir, 'post')
+        for log in self.end_job_loggables:
+            log.run(self.post_dir)
+        # Stop daemon(s) started previously
         for log in self.start_job_loggables:
-            log.run(post_dir)
+            log.stop()
 
         if self.log_packages:
-            self._log_modified_packages(post_dir)
+            self._log_modified_packages(self.post_dir)
 
     def start_test_hook(self):
         """
         Logging hook called before a test starts.
         """
-        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_test_loggables:
-            log.run(pre_dir)
+            log.run(self.pre_dir)
 
         if self.log_packages:
-            self._log_installed_packages(pre_dir)
+            self._log_installed_packages(self.pre_dir)
 
     def end_test_hook(self):
         """
         Logging hook called after a test finishes.
         """
-        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.end_test_loggables:
-            log.run(post_dir)
+            log.run(self.post_dir)
 
         if self.log_packages:
-            self._log_modified_packages(post_dir)
+            self._log_modified_packages(self.post_dir)
 
     def start_iteration_hook(self):
         """
         Logging hook called before a test iteration
         """
-        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_iteration_loggables:
-            log.run(pre_dir)
+            log.run(self.pre_dir)
 
     def end_iteration_hook(self, test, iteration=None):
         """
         Logging hook called after a test iteration
         """
-        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.end_iteration_loggables:
-            log.run(post_dir)
+            log.run(self.post_dir)
 
 
 def collect_sysinfo(args):
@@ -568,4 +645,5 @@ def collect_sysinfo(args):
 
     sysinfo_logger = SysInfo(basedir=basedir, log_packages=True)
     sysinfo_logger.start_job_hook()
+    sysinfo_logger.end_job_hook()
     log.info("Logged system information to %s", basedir)
