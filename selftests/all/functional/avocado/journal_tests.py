@@ -17,7 +17,7 @@ class JournalPluginTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(basedir)
-        self.cmd_line = './scripts/avocado run --json - --journal examples/tests/passtest.py'
+        self.cmd_line = './scripts/avocado run --sysinfo=off --json - --journal examples/tests/passtest.py'
         self.result = process.run(self.cmd_line, ignore_status=True)
         data = json.loads(self.result.stdout)
         self.job_id = data['job_id']
