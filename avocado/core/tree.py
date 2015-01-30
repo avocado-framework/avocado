@@ -460,6 +460,9 @@ def create_from_yaml(paths, debug=False):
         for path in paths:
             merge(data, path)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
+        if 'mapping values are not allowed in this context' in str(err):
+            err = ("%s\n\nMake sure !tags and colons are separated by a space "
+                   "(eg. !include :)" % err)
         raise SyntaxError(err)
     return data
 
