@@ -60,6 +60,10 @@ class TestRunner(plugin.Plugin):
                                        'server. You should not use this option '
                                        'unless you know exactly what you\'re doing'))
 
+        self.parser.add_argument('--disable-sysinfo', action='store_true', default=False,
+                                 help=('Disable sysinfo report. Used to disable '
+                                       'the execution of profilers and other system loggings'))
+
         out = self.parser.add_argument_group('output related arguments')
 
         out.add_argument('-s', '--silent', action='store_true', default=False,
