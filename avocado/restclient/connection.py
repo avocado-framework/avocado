@@ -17,7 +17,7 @@ __all__ = ['get_default', 'Connection']
 
 
 #: Minimum required version of server side API
-MIN_REQUIRED_VERSION = (0, 1, 0)
+MIN_REQUIRED_VERSION = (0, 2, 0)
 
 
 class InvalidConnectionError(Exception):
@@ -180,6 +180,12 @@ class Connection(object):
         except:
             return False
         return True
+
+    def get_api_list(self):
+        """
+        Gets the list of APIs the server makes availble to the current user
+        """
+        return self.request('')
 
 
 #: Global, default connection for ease of use by apps
