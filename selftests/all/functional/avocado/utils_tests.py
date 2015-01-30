@@ -79,8 +79,8 @@ class FakeVMStat(object):
         return 0
 
     def start(self):
-        print "procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----"
-        print " r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st"
+        print("procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----")
+        print(" r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st")
         while True:
             r = self.get_r()
             b = self.get_b()
@@ -99,9 +99,9 @@ class FakeVMStat(object):
             m_id = self.get_id()
             wa = self.get_wa()
             st = self.get_st()
-            print ("%2d %2d  %2d   %7d %6d %7d    %1d    %1d    %2d  %3d %4d %2d %2d %1d  %3d  %1d  %1d" %
-                   (r, b, swpd, free, buff, cache, si, so, bi, bo, m_in, cs,
-                    us, sy, m_id, wa, st))
+            print("%2d %2d  %2d   %7d %6d %7d    %1d    %1d    %2d  %3d %4d %2d %2d %1d  %3d  %1d  %1d" %
+                  (r, b, swpd, free, buff, cache, si, so, bi, bo, m_in, cs,
+                   us, sy, m_id, wa, st))
             time.sleep(self.interval)
 
 if __name__ == '__main__':
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
 FAKE_UPTIME_CONTENTS = """#!/usr/bin/python
 if __name__ == '__main__':
-    print "17:56:34 up  8:06,  7 users,  load average: 0.26, 0.20, 0.21"
+    print("17:56:34 up  8:06,  7 users,  load average: 0.26, 0.20, 0.21")
 
 """
 

@@ -44,7 +44,7 @@ class HelloWorld(Plugin):
         self.parser = parser.subcommands.add_parser('hello')
         super(HelloWorld, self).configure(self.parser)
     def run(self, args):
-        print 'Hello World!'
+        print('Hello World!')
 """
 
 

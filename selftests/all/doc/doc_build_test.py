@@ -35,7 +35,7 @@ def test_build_docs():
         ignore_msg = False
         for ignore in ignore_list:
             if ignore in line:
-                print 'Expected warning ignored: %s' % line
+                print('Expected warning ignored: %s' % line)
                 ignore_msg = True
         if ignore_msg:
             continue
