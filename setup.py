@@ -113,8 +113,11 @@ if __name__ == '__main__':
                     'avocado.linux',
                     'avocado.utils',
                     'avocado.plugins',
-                    'avocado.restclient'],
+                    'avocado.restclient',
+                    'avocado.restclient.cli',
+                    'avocado.restclient.cli.args'],
           package_data={'avocado.plugins': _get_plugin_resource_files(
               'avocado/plugins/resources')},
           data_files=get_data_files(),
-          scripts=['scripts/avocado'])
+          scripts=['scripts/avocado',
+                   'scripts/avocado-rest-client'])

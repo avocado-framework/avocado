@@ -34,6 +34,7 @@ these days a framework) to perform automated testing.
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %{_bindir}/avocado
+%{_bindir}/avocado-rest-client
 %exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
 %exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
 %{python_sitelib}/avocado*
