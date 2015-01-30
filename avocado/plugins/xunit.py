@@ -184,7 +184,7 @@ class xUnitTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
-        if state['status'] == 'PASS':
+        if state['status'] in ('PASS', 'WARN'):
             self.xml.add_success(state)
         elif state['status'] == 'TEST_NA':
             self.xml.add_skip(state)
