@@ -67,9 +67,17 @@ The ending nodes (the leafs on the tree) will become part of all lower-level
 However, the precedence is evaluated in top-down or ``last defined`` order.
 In other words, the last parsed has precedence over earlier definitions.
 
-It's also possible to remove node using python's regexp, which can be useful
-when extending upstream file using downstream yaml files. This is done by
-`!remove_node : $value_name` directive::
+When you provide multiple files they are processed and merged together using
+the common root (`/`). When certain path overlaps (`$file1:/my/path`,
+`$file2:/my/path`), we first create the tree of `$file1` and then process
+`$file2`. This means all children of `/my/path` of the first file are in
+correct order and `$file2` either updates values or appends new children
+as next ones. This ofcorse happens recursively so you update valures and add
+children of all the nodes beneath.
+
+During this merge it's also possible to remove node using python's regexp,
+which can be useful when extending upstream file using downstream yaml files.
+This is done by `!remove_node : $value_name` directive::
 
     os:
         fedora:
