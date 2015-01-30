@@ -81,10 +81,6 @@ class TestResultProxy(object):
         for output_plugin in self.output_plugins:
             output_plugin.add_error(state)
 
-    def add_not_found(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.add_not_found(state)
-
     def add_fail(self, state):
         for output_plugin in self.output_plugins:
             output_plugin.add_fail(state)
@@ -127,8 +123,6 @@ class TestResult(object):
         self.total_time = 0.0
         self.passed = []
         self.errors = []
-        self.not_found = []
-        self.not_a_test = []
         self.failed = []
         self.skipped = []
         self.warned = []
@@ -189,28 +183,6 @@ class TestResult(object):
         """
         self.errors.append(state)
 
-    def add_not_found(self, state):
-        """
-        Called when a test was not found.
-
-        Causes: non existing path or could not resolve alias.
-
-        :param state: result of :class:`avocado.test.Test.get_state`.
-        :type state: dict
-        """
-        self.not_found.append(state)
-
-    def add_not_a_test(self, state):
-        """
-        Called when a file is not an avocado test
-
-        Causes: Non python, non executable file or python file non executable with no avocado test class in it.
-
-        :param state: result of :class:`avocado.test.Test.get_state`.
-        :type state: dict
-        """
-        self.not_a_test.append(state)
-
     def add_fail(self, state):
         """
         Called when a test fails.
@@ -245,8 +217,6 @@ class TestResult(object):
         """
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
-                      'NOT_FOUND': self.add_not_found,
-                      'NOT_A_TEST': self.add_not_a_test,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn}
@@ -285,8 +255,6 @@ class HumanTestResult(TestResult):
         self.stream.notify(event="message", msg="FAIL       : %d" % len(self.failed))
         self.stream.notify(event="message", msg="SKIP       : %d" % len(self.skipped))
         self.stream.notify(event="message", msg="WARN       : %d" % len(self.warned))
-        self.stream.notify(event="message", msg="NOT FOUND  : %d" % len(self.not_found))
-        self.stream.notify(event="message", msg="NOT A TEST : %d" % len(self.not_a_test))
         self.stream.notify(event="message", msg="TIME       : %.2f s" % self.total_time)
 
     def start_test(self, state):
@@ -326,26 +294,6 @@ class HumanTestResult(TestResult):
         """
         TestResult.add_error(self, state)
         self.stream.set_test_status(status='ERROR', state=state)
-
-    def add_not_found(self, state):
-        """
-        Called when a test was not found.
-
-        :param state: result of :class:`avocado.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_not_found(self, state)
-        self.stream.set_test_status(status='NOT_FOUND', state=state)
-
-    def add_not_a_test(self, state):
-        """
-        Called when a given file is not a test.
-
-        :param state: result of :class:`avocado.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_not_a_test(self, state)
-        self.stream.set_test_status(status='NOT_A_TEST', state=state)
 
     def add_fail(self, state):
         """
