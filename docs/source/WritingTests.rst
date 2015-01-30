@@ -354,7 +354,6 @@ option --output-check-record all to the test runner::
     FAIL      : 0
     SKIP      : 0
     WARN      : 0
-    NOT FOUND : 0
     TIME      : 2.20 s
 
 
@@ -388,7 +387,6 @@ Let's record the output for this one::
     FAIL      : 0
     SKIP      : 0
     WARN      : 0
-    NOT FOUND : 0
     TIME      : 0.01 s
 
 After this is done, you'll notice that a the test data directory
@@ -418,7 +416,6 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, avocado!`
     FAIL      : 1
     SKIP      : 0
     WARN      : 0
-    NOT FOUND : 0
     TIME      : 0.02 s
 
 Verifying the failure reason::
