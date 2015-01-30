@@ -141,6 +141,12 @@ stdout. Even if you specify things like --show-job-log in the CLI, --silent
 will have precedence and you will not get application stdout. Note that --silent
 does not affect on disk job logs, those continue to be generated normally.
 
+SILENCING SYSINFO REPORT
+========================
+
+You may specify --disable-sysinfo and avocado will not run profilers
+and other commands related to the sysinfo report, inside the job result
+directory.
 
 LISTING TESTS
 =============
