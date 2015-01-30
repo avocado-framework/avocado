@@ -460,6 +460,10 @@ def create_from_yaml(paths, debug=False):
         for path in paths:
             merge(data, path)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
+        if 'mapping values are not allowed in this context' in str(err):
+            err = ("%s\n\nProbably you used one of the !include/!using/!remove"
+                   "_* tags with ':' directly after it. This is not possible "
+                   "due to pyyaml limitation. Use '$tag : ...' instead." % err)
         raise SyntaxError(err)
     return data
 
