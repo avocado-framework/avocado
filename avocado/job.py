@@ -29,6 +29,7 @@ from avocado import test
 from avocado import runner
 from avocado import loader
 from avocado import runtime
+from avocado import sysinfo
 from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import exceptions
@@ -37,6 +38,7 @@ from avocado.core import output
 from avocado.plugins import jsonresult
 from avocado.plugins import xunit
 from avocado.utils import archive
+from avocado.utils import path
 
 
 try:
@@ -104,6 +106,11 @@ class Job(object):
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
         self.view = output.View(app_args=self.args)
+        self.sysinfo = None
+        if hasattr(self.args, 'sysinfo'):
+            if self.args.sysinfo == 'on':
+                sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
+                self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
     def _make_test_loader(self):
         if hasattr(self.args, 'test_loader'):
