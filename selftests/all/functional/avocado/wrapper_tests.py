@@ -40,7 +40,7 @@ class WrapperTest(unittest.TestCase):
 
     def test_global_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --wrapper %s '
+        cmd_line = ('./scripts/avocado run --disable-sysinfo --wrapper %s '
                     'examples/tests/datadir.py' % self.script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
@@ -54,7 +54,7 @@ class WrapperTest(unittest.TestCase):
 
     def test_process_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --wrapper %s:*/datadir '
+        cmd_line = ('./scripts/avocado run --disable-sysinfo --wrapper %s:*/datadir '
                     'examples/tests/datadir.py' % self.script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
@@ -68,7 +68,7 @@ class WrapperTest(unittest.TestCase):
 
     def test_both_wrappers(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --wrapper %s --wrapper %s:*/datadir '
+        cmd_line = ('./scripts/avocado run --disable-sysinfo --wrapper %s --wrapper %s:*/datadir '
                     'examples/tests/datadir.py' % (self.dummy.path,
                                                    self.script.path))
         result = process.run(cmd_line, ignore_status=True)
