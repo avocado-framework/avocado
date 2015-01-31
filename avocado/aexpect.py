@@ -184,7 +184,7 @@ if __name__ == "__main__":
         fileobj.close()
 
         # Print something to stdout so the client can start working
-        print "Server %s ready" % a_id
+        print("Server %s ready" % a_id)
         sys.stdout.flush()
 
         # Initialize buffers

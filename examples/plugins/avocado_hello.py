@@ -23,4 +23,4 @@ class HelloWorld(plugin.Plugin):
         """
         This method is called whenever we use the command 'hello'.
         """
-        print self.__doc__
+        print(self.__doc__)

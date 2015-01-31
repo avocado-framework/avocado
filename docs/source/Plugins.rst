@@ -49,7 +49,7 @@ runner, ``hello``. This is how you'd do it::
             super(HelloWorld, self).configure(self.parser)
 
         def run(self, args):
-            print self.__doc__
+            print(self.__doc__)
 
 As you can see, plugins inherit from :class:`avocado.plugins.plugin.Plugin`,
 that have the methods :func:`avocado.plugins.plugin.Plugin.configure` and
