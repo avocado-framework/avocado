@@ -480,17 +480,23 @@ the following entities:
 * The test expected stdout
 * The test expected stderr
 
-The first one is used for debugging and informational purposes. The framework
-machinery uses logs to give you more detailed info about your test, so they
-are not the most reliable source to compare stdout/err. You may log something
-into the test logs using the methods in :mod:`avocado.test.Test.log` class
-attributes. Consider
-the example::
+The first one is used for debugging and informational purposes. This log can
+also be used to mark unexpected situation not critical to the test. When
+you write something into log.warning() it'll be recorded and when everything
+else goes well the test finishes as WARN. By definition this means the test
+passed but there were non-related unexpected situations described in
+warning log.
+
+You may log something into the test logs using the methods in
+:mod:`avocado.test.Test.log` class attributes. Consider the example::
 
     class output_test(test.Test):
 
         def action(self):
             self.log.info('This goes to the log and it is only informational')
+            self.log.warn('Oh, something unexpected, non-critical happened, '
+                          'the test will finish as WARN instead of PASS')
+            self.log.debug('Everybody look, I had a good lunch today...')
 
 If you need to write directly to the test stdout and stderr streams, there
 are another 2 class attributes for that, :mod:`avocado.test.Test.stdout_log`
