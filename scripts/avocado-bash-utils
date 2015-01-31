@@ -1,0 +1,24 @@
+#!/bin/bash
+# Avocado BASH utils
+
+# Debug mode...
+[ -z $AVOCADO_TEST_LOGFILE ] && export AVOCADO_TEST_LOGFILE=/dev/stdout
+if [ -z $AVOCADO_TESTSUITE_LOGDIR ]; then
+    export AVOCADO_TESTSUITE_JOBLOG=/dev/null
+else
+    export AVOCADO_TESTSUITE_JOBLOG=$AVOCADO_TESTSUITE_LOGDIR/job.log
+fi
+
+# Write to avocado_log
+# First argument has to be log level
+function avocado_log {
+    LEVEL=`printf '%-5s' $1`
+    shift
+    echo `date '+%H:%M:%S'`" bash             $LEVEL| $*" >> $AVOCADO_TEST_LOGFILE
+    echo `date '+%H:%M:%S'`" bash             $LEVEL| $*" >> $AVOCADO_TESTSUITE_JOBLOG
+}
+
+function avocado_debug { avocado_log DEBUG $*; }
+function avocado_info { avocado_log INFO $*; }
+function avocado_warn { avocado_log WARN $*; }
+function avocado_error { avocado_log ERROR $*; }

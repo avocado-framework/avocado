@@ -529,6 +529,10 @@ class SimpleTest(Test):
                                                  'stdout.expected')
         self.expected_stderr_file = os.path.join(self.datadir,
                                                  'stderr.expected')
+        # Simple test might need to write directly to main log
+        if base_logdir is None:
+            base_logdir = self.logdir[:-len(self.name)]
+        os.environ['AVOCADO_TESTSUITE_LOGDIR'] = base_logdir
 
     def _log_detailed_cmd_info(self, result):
         """
@@ -552,6 +556,14 @@ class SimpleTest(Test):
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
+
+    def runTest(self, result=None):
+        super(SimpleTest, self).runTest(result)
+        for line in open(self.logfile):
+            if line[26:30] == 'WARN':
+                raise exceptions.TestWarn("Test passed but there were warnings"
+                                          "during execution. Check the log for"
+                                          " details.")
 
 
 class MissingTest(Test):
