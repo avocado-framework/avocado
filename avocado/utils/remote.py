@@ -73,7 +73,7 @@ class Remote(object):
     def _setup_environment(self, **kwargs):
         fabric.api.env.update(kwargs)
 
-    def run(self, command, ignore_status=False):
+    def run(self, command, ignore_status=False, timeout=60):
         """
         Run a remote command.
 
@@ -81,6 +81,7 @@ class Remote(object):
 
         :return: the result of the remote program's output.
         :rtype: :class:`avocado.utils.process.CmdResult`.
+        :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
         if not self.quiet:
             log.info('[%s] Running command %s', self.hostname, command)
@@ -92,7 +93,8 @@ class Remote(object):
                                               quiet=self.quiet,
                                               stdout=stdout,
                                               stderr=stderr,
-                                              warn_only=True)
+                                              warn_only=True,
+                                              timeout=timeout)
         end_time = time.time()
         duration = end_time - start_time
         result.command = command
