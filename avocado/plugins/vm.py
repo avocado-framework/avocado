@@ -71,6 +71,7 @@ class VMTestResult(RemoteTestResult):
             self.args.remote_hostname = self.args.vm_hostname
             self.args.remote_username = self.args.vm_username
             self.args.remote_password = self.args.vm_password
+            self.args.remote_no_copy = self.args.vm_no_copy
             super(VMTestResult, self).setup()
         except Exception:
             self.tear_down()
@@ -122,6 +123,11 @@ class RunVM(plugin.Plugin):
                                     default=False,
                                     help='Restore VM to a previous state, '
                                     'before running tests')
+        self.vm_parser.add_argument('--vm-no-copy',
+                                    dest='vm_no_copy',
+                                    action='store_true',
+                                    help="Don't copy tests and use the "
+                                    "exact uri on VM machine.")
         self.configured = True
 
     @staticmethod

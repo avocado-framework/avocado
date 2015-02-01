@@ -122,6 +122,8 @@ class RemoteTestResult(HumanTestResult):
         """
         # TODO: Use `avocado.loader.TestLoader` instead
         self.remote.makedir(self.remote_test_dir)
+        if self.args.remote_no_copy:    # Leave everytihng as is
+            return
         paths = set()
         for i in xrange(len(self.urls)):
             url = self.urls[i]
@@ -194,6 +196,11 @@ class RunRemote(plugin.Plugin):
                                         dest='remote_password', default=None,
                                         help='Specify the password to login on'
                                         ' remote machine')
+        self.remote_parser.add_argument('--remote-no-copy',
+                                        dest='remote_no_copy',
+                                        action='store_true',
+                                        help="Don't copy tests and use the "
+                                        "exact uri on guest machine.")
         self.configured = True
 
     @staticmethod
