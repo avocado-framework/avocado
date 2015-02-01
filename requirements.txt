@@ -9,3 +9,5 @@ libvirt-python>=1.2.9
 pyliblzma>=0.5.3
 # HTML report plugin (avocado.plugins.htmlresult)
 pystache>=0.5.3
+# REST client (avocado.restclient)
+requests>=1.2.3

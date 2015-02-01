@@ -34,6 +34,7 @@ these days a framework) to perform automated testing.
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %{_bindir}/avocado
+%{_bindir}/avocado-rest-client
 %exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
 %exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
 %{python_sitelib}/avocado*
@@ -64,6 +65,7 @@ examples of how to write tests on your own.
 %files examples
 %{_datadir}/avocado/tests
 %{_datadir}/avocado/wrappers
+%{_datadir}/avocado/api
 
 %changelog
 * Mon Dec 15 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.17.0-1
