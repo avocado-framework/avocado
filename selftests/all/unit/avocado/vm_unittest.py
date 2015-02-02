@@ -2,7 +2,6 @@ import unittest
 import os
 import sys
 import json
-import argparse
 
 # simple magic for using scripts within a source tree
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,7 +11,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado.core import status
 from avocado.core import job_id
-from avocado.plugins import vm
+from avocado.plugins import vm, remote
 
 
 class _Stream(object):
@@ -37,13 +36,17 @@ class _Stream(object):
         pass
 
 
+class Args(list):
+    def __init__(self):
+        self.url = 'sleeptest'
+
+
 class VMResultTest(unittest.TestCase):
 
     def setUp(self):
-        args = argparse.Namespace()
         stream = _Stream()
         stream.logfile = 'debug.log'
-        self.test_result = vm.VMTestResult(stream, args)
+        self.test_result = vm.VMTestResult(stream, Args())
         j = '''{"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS",
                 "time": 1.23, "start": 0.0, "end": 1.23}],
                 "debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.37/debug.log",
@@ -55,7 +58,7 @@ class VMResultTest(unittest.TestCase):
         failures = []
         self.test_result.start_tests()
         for tst in self.results['tests']:
-            test = vm.RemoteTest(name=tst['test'],
+            test = remote.RemoteTest(name=tst['test'],
                                  time=tst['time'],
                                  start=tst['start'],
                                  end=tst['end'],
