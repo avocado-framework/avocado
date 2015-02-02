@@ -51,6 +51,7 @@ YAML_INCLUDE = 0
 YAML_USING = 1
 YAML_REMOVE_NODE = 2
 YAML_REMOVE_VALUE = 3
+YAML_JOIN = 4
 
 
 class Control(object):  # Few methods pylint: disable=R0903
@@ -79,6 +80,7 @@ class TreeNode(object):
         self.children = []
         self._environment = None
         self.ctrl = []
+        self.multiplex = True
         for child in children:
             self.add_child(child)
 
@@ -148,6 +150,7 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
+        self.multiplex &= other.multiplex
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -331,6 +334,14 @@ class Value(tuple):     # Few methods pylint: disable=R0903
     pass
 
 
+class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
+
+    """
+    Used to mark list as list of objects from whose node is going to be created
+    """
+    pass
+
+
 def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
@@ -362,32 +373,47 @@ def _create_from_yaml(path, cls_node=TreeNode):
                 elif value[0].code == YAML_REMOVE_VALUE:
                     value[0].value = value[1]   # set the name
                     node.ctrl.append(value[0])
+                elif value[0].code == YAML_JOIN:
+                    node.multiplex = False
             else:
                 node.value[value[0]] = value[1]
         if using:
-            for name in using.split('/')[::-1]:
-                node = cls_node(name, children=[node])
+            if name is not '':
+                for name in using.split('/')[::-1]:
+                    node = cls_node(name, children=[node])
+            else:
+                using = using.split('/')[::-1]
+                node.name = using.pop()
+                while True:
+                    if not using:
+                        break
+                    name = using.pop()  # 'using' is list pylint: disable=E1101
+                    node = cls_node(name, children=[node])
+                node = cls_node('', children=[node])
         return node
 
     def mapping_to_tree_loader(loader, node):
         """ Maps yaml mapping tag to TreeNode structure """
-        def is_node(values):
-            """ Whether these values represent node or just random values """
-            if (isinstance(values, list) and values
-                    and isinstance(values[0], (Value, TreeNode))):
-                # When any value is TreeNode or Value, all of them are already
-                # parsed and we can wrap them into self
-                return True
-
         _value = loader.construct_pairs(node)
-        objects = []
+        objects = ListOfNodeObjects()
         for name, values in _value:
-            if is_node(values):    # New node
+            if isinstance(values, ListOfNodeObjects):   # New node from list
                 objects.append(tree_node_from_values(name, values))
             elif values is None:            # Empty node
                 objects.append(cls_node(str(name)))
             else:                           # Values
                 objects.append(Value((name, values)))
+        return objects
+
+    def join_loader(loader, obj):
+        """
+        Special !join loader which allows to tag node as 'multiplex = False'.
+        """
+        if not isinstance(obj, yaml.ScalarNode):
+            objects = mapping_to_tree_loader(loader, obj)
+        else:   # This means it's empty node. Don't call mapping_to_tree_loader
+            objects = ListOfNodeObjects()
+        objects.append((Control(YAML_JOIN), None))
         return objects
 
     Loader.add_constructor(u'!include',
@@ -398,6 +424,7 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
                            lambda loader, node: Control(YAML_REMOVE_VALUE))
+    Loader.add_constructor(u'!join', join_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 
@@ -433,6 +460,10 @@ def create_from_yaml(paths, debug=False):
         for path in paths:
             merge(data, path)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
+        if 'mapping values are not allowed in this context' in str(err):
+            err = ("%s\n\nProbably you used one of the !include/!using/!remove"
+                   "_* tags with ':' directly after it. This is not possible "
+                   "due to pyyaml limitation. Use '$tag : ...' instead." % err)
         raise SyntaxError(err)
     return data
 

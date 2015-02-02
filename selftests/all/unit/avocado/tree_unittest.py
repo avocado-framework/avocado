@@ -155,6 +155,7 @@ class TestTree(unittest.TestCase):
         act = tree2.get_leaves()
         oldroot = tree2.children[0]
         self.assertEqual(exp, act)
+        self.assertEqual(tree2.children[0].children[0].path, "/virt/hw")
         self.assertEqual({'enterprise': True},
                          oldroot.children[1].children[1].value)
         self.assertEqual({'new_init': 'systemd'},
@@ -163,6 +164,21 @@ class TestTree(unittest.TestCase):
                          oldroot.children[1].children[2].value)
         self.assertEqual({'new_value': 'something'},
                          oldroot.children[3].children[0].children[0].value)
+        # multiplex root (always True)
+        self.assertEqual(tree2.multiplex, True)
+        # multiplex /virt/
+        self.assertEqual(tree2.children[0].multiplex, True)
+        # multiplex /virt/hw
+        self.assertEqual(tree2.children[0].children[0].multiplex, True)
+        # multiplex /virt/distro
+        self.assertEqual(tree2.children[0].children[1].multiplex, False)
+        # multiplex /virt/env
+        self.assertEqual(tree2.children[0].children[2].multiplex, False)
+        # multiplex /virt/absolutly
+        self.assertEqual(tree2.children[0].children[3].multiplex, True)
+        # multiplex /virt/distro/fedora
+        self.assertEqual(tree2.children[0].children[1].children[0].multiplex,
+                         True)
 
 
 class TestPathParent(unittest.TestCase):
