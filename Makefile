@@ -50,11 +50,13 @@ clean:
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES
 	find . -name '*.pyc' -delete
 	rm -f man/avocado.1
+	rm -f man/avocado-rest-client.1
 
 check:
 	selftests/checkall
 
 man:
 	rst2man man/avocado.rst man/avocado.1
+	rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
 
 .PHONY: source install clean check man
