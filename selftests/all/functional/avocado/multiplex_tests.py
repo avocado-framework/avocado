@@ -69,12 +69,12 @@ class MultiplexTests(unittest.TestCase):
         self.assertIn(DEBUG_OUT, out)
 
     def test_run_mplex_noid(self):
-        cmd_line = './scripts/avocado run --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run --disable-sysinfo --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 2
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):
-        cmd_line = './scripts/avocado run passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run --disable-sysinfo passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
         # A typical pass has about 14 lines of output,
         # so we expect the full job log has at least 4 times
@@ -83,17 +83,17 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14 * 4)
 
     def test_run_mplex_doublepass(self):
-        cmd_line = './scripts/avocado run passtest passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run --disable-sysinfo passtest passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         # Should run 2-times 4 variants of pass test
         self.run_and_check(cmd_line, expected_rc=0, expected_lines=2 * 4 * 14)
 
     def test_run_mplex_failtest(self):
-        cmd_line = './scripts/avocado run passtest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado run --disable-sysinfo passtest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_double_mplex(self):
-        cmd_line = ('./scripts/avocado run passtest --multiplex '
+        cmd_line = ('./scripts/avocado run --disable-sysinfo passtest --multiplex '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml')
         expected_rc = 0
@@ -104,7 +104,7 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 14 * 4)
 
     def test_run_mplex_params(self):
-        cmd_line = ('./scripts/avocado run examples/tests/env_variables.sh '
+        cmd_line = ('./scripts/avocado run --disable-sysinfo examples/tests/env_variables.sh '
                     '--multiplex examples/tests/env_variables.sh.data'
                     '/env_variables.yaml '
                     '--show-job-log')

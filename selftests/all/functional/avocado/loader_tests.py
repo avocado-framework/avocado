@@ -61,7 +61,7 @@ class LoaderTestFunctional(unittest.TestCase):
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
                                              'avocado_loader_unittest')
         simple_test.save()
-        cmd_line = './scripts/avocado run %s' % simple_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % simple_test.path
         process.run(cmd_line)
         simple_test.remove()
 
@@ -71,7 +71,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                              'avocado_loader_unittest',
                                              mode=0664)
         simple_test.save()
-        cmd_line = './scripts/avocado run %s' % simple_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % simple_test.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -85,7 +85,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                                    AVOCADO_TEST_OK,
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
-        cmd_line = './scripts/avocado run %s' % avocado_pass_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % avocado_pass_test.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -97,7 +97,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                                     AVOCADO_TEST_BUGGY,
                                                     'avocado_loader_unittest')
         avocado_buggy_test.save()
-        cmd_line = './scripts/avocado run %s' % avocado_buggy_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % avocado_buggy_test.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -110,7 +110,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                                     'avocado_loader_unittest',
                                                     mode=0664)
         avocado_buggy_test.save()
-        cmd_line = './scripts/avocado run %s' % avocado_buggy_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % avocado_buggy_test.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -122,7 +122,7 @@ class LoaderTestFunctional(unittest.TestCase):
         avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
                                                     'avocado_loader_unittest')
         avocado_not_a_test.save()
-        cmd_line = './scripts/avocado run %s' % avocado_not_a_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % avocado_not_a_test.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -135,7 +135,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                                     'avocado_loader_unittest',
                                                     mode=0664)
         avocado_not_a_test.save()
-        cmd_line = './scripts/avocado run %s' % avocado_not_a_test.path
+        cmd_line = './scripts/avocado run --disable-sysinfo %s' % avocado_not_a_test.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
