@@ -37,13 +37,17 @@ class _Stream(object):
         pass
 
 
+class Args(list):
+    def __init__(self):
+        self.url = 'sleeptest'
+
+
 class RemoteResultTest(unittest.TestCase):
 
     def setUp(self):
-        args = argparse.Namespace()
         stream = _Stream()
         stream.logfile = 'debug.log'
-        self.test_result = remote.RemoteTestResult(stream, args)
+        self.test_result = remote.RemoteTestResult(stream, Args())
         j = '''{"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS",
                 "time": 1.23, "start": 0, "end": 1.23}],
                 "debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.37/debug.log",
