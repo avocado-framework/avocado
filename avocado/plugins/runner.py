@@ -18,6 +18,7 @@ Base Test Runner Plugins.
 
 import sys
 
+from avocado.settings import settings
 from avocado.core import exit_codes
 from avocado.plugins import plugin
 from avocado.core import output
@@ -59,6 +60,16 @@ class TestRunner(plugin.Plugin):
                                        'internally when interacting with an avocado '
                                        'server. You should not use this option '
                                        'unless you know exactly what you\'re doing'))
+
+        sysinfo_default = settings.get_value('sysinfo.collect',
+                                             'enabled',
+                                             key_type='bool',
+                                             default=True)
+        sysinfo_default = 'on' if sysinfo_default is True else 'off'
+        self.parser.add_argument('--sysinfo', choices=('on', 'off'), default=sysinfo_default,
+                                 help=('Enable or disable system information '
+                                       '(hardware details, profilers, etc.). '
+                                       'Current:  %(default)s'))
 
         out = self.parser.add_argument_group('output related arguments')
 

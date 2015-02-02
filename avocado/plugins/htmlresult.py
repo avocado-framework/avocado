@@ -86,6 +86,8 @@ class ReportModel(object):
                 sysinfo_contents = sysinfo_file.read()
         except OSError, details:
             sysinfo_contents = "Error reading %s: %s" % (sysinfo_path, details)
+        except IOError, details:
+            sysinfo_contents = os.uname()[1]
         return sysinfo_contents
 
     def hostname(self):
@@ -122,10 +124,13 @@ class ReportModel(object):
         return test_info
 
     def sysinfo(self):
-        base_path = os.path.join(self._results_dir(relative_links=False), 'sysinfo', 'pre')
-        sysinfo_files = os.listdir(base_path)
-        sysinfo_files.sort()
         sysinfo_list = []
+        base_path = os.path.join(self._results_dir(relative_links=False), 'sysinfo', 'pre')
+        try:
+            sysinfo_files = os.listdir(base_path)
+        except OSError:
+            return sysinfo_list
+        sysinfo_files.sort()
         s_id = 1
         for s_f in sysinfo_files:
             sysinfo_dict = {}

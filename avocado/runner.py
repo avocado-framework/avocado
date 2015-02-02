@@ -26,7 +26,6 @@ import sys
 import time
 
 from avocado import runtime
-from avocado import sysinfo
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
@@ -52,8 +51,6 @@ class TestRunner(object):
         """
         self.job = job
         self.result = test_result
-        sysinfo_dir = path.init_dir(self.job.logdir, 'sysinfo')
-        self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
     def run_test(self, test_factory, queue):
         """
@@ -122,7 +119,8 @@ class TestRunner(object):
         :return: a list of test failures.
         """
         failures = []
-        self.sysinfo.start_job_hook()
+        if self.job.sysinfo is not None:
+            self.job.sysinfo.start_job_hook()
         self.result.start_tests()
         q = queues.SimpleQueue()
         test_suite = self.job.test_loader.discover(params_list, q)
@@ -233,5 +231,6 @@ class TestRunner(object):
                 failures.append(test_state['name'])
         runtime.CURRENT_TEST = None
         self.result.end_tests()
-        self.sysinfo.end_job_hook()
+        if self.job.sysinfo is not None:
+            self.job.sysinfo.end_job_hook()
         return failures
