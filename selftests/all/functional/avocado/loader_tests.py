@@ -73,11 +73,11 @@ class LoaderTestFunctional(unittest.TestCase):
         simple_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % simple_test.path
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('NOT_A_TEST', result.stdout)
+        self.assertIn('is not an avocado test', result.stdout)
         simple_test.remove()
 
     def test_pass(self):
@@ -137,11 +137,11 @@ class LoaderTestFunctional(unittest.TestCase):
         avocado_not_a_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_not_a_test.path
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('NOT_A_TEST', result.stdout)
+        self.assertIn('is not an avocado test', result.stdout)
         avocado_not_a_test.remove()
 
 if __name__ == '__main__':

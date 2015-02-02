@@ -43,23 +43,78 @@ Using the avocado test runner
 The test runner is designed to conveniently run tests on your laptop. The tests
 you can run are:
 
-* Tests written in python, using the avocado API, which we'll call `native`.
+* Tests written in python, using the avocado API, which we'll call
+  `instrumented`.
 * Any executable in your box, really. The criteria for PASS/FAIL is the return
   code of the executable. If it returns 0, the test PASSed, if it returned
-  != 0, it FAILed. We'll call those tests `simple tests`.
+  != 0, it FAILed. We'll call those tests `simple tests`. There is another type
+  of tests that we'll discuss in the next section.
 
-Native tests
-------------
+Listing tests
+-------------
 
-Avocado looks for avocado "native" tests in some locations, the main one is in
-the config file ``/etc/avocado/avocado.conf``, section ``runner``, ``test_dir``
-key. You can list tests by::
+The ``avocado`` command line tool also has a ``list`` command, that lists the
+known tests in a given path, be it a path to an individual test, or a path
+to a directory. If no arguments provided, avocado will inspect the contents
+of the test location being used by avocado (if you are in doubt about which
+one is that, you may use ``avocado config --datadir``). The output looks like::
 
     $ avocado list
-    Tests available:
-        failtest
-        sleeptest
-        synctest
+    INSTRUMENTED /usr/share/avocado/tests/abort.py
+    INSTRUMENTED /usr/share/avocado/tests/datadir.py
+    INSTRUMENTED /usr/share/avocado/tests/doublefail.py
+    INSTRUMENTED /usr/share/avocado/tests/doublefree.py
+    INSTRUMENTED /usr/share/avocado/tests/errortest.py
+    INSTRUMENTED /usr/share/avocado/tests/failtest.py
+    INSTRUMENTED /usr/share/avocado/tests/fiotest.py
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py
+    INSTRUMENTED /usr/share/avocado/tests/gendata.py
+    INSTRUMENTED /usr/share/avocado/tests/linuxbuild.py
+    INSTRUMENTED /usr/share/avocado/tests/multiplextest.py
+    INSTRUMENTED /usr/share/avocado/tests/passtest.py
+    INSTRUMENTED /usr/share/avocado/tests/skiptest.py
+    INSTRUMENTED /usr/share/avocado/tests/sleeptenmin.py
+    INSTRUMENTED /usr/share/avocado/tests/sleeptest.py
+    INSTRUMENTED /usr/share/avocado/tests/synctest.py
+    INSTRUMENTED /usr/share/avocado/tests/timeouttest.py
+    INSTRUMENTED /usr/share/avocado/tests/trinity.py
+    INSTRUMENTED /usr/share/avocado/tests/warntest.py
+    INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
+
+Here, ``INSTRUMENTED`` means that the files there are python files with an
+avocado
+test class in them This means those tests have access to all avocado APIs and
+facilities. Let's try to list a directory with a bunch of executable shell
+scripts::
+
+    $ avocado list examples/wrappers/
+    SIMPLE examples/wrappers/dummy.sh
+    SIMPLE examples/wrappers/ltrace.sh
+    SIMPLE examples/wrappers/perf.sh
+    SIMPLE examples/wrappers/strace.sh
+    SIMPLE examples/wrappers/time.sh
+    SIMPLE examples/wrappers/valgrind.sh
+
+Here, as covered in the previous section, ``SIMPLE`` means that those files are
+executables, that avocado will simply execute and return PASS or FAIL
+depending on their return codes (PASS -> 0, FAIL -> any integer different
+than 0). You can also provide the ``--verbose``, or ``-V`` flag to display files
+that were detected but are not avocado tests, along with summary information::
+
+    $ avocado list examples/gdb-prerun-scripts/ -V
+    Type       file
+    NOT_A_TEST examples/gdb-prerun-scripts/README
+    NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
+
+    SIMPLE: 0
+    INSTRUMENTED: 0
+    BUGGY: 0
+    MISSING: 0
+    NOT_A_TEST: 2
+
+
+Running Tests
+-------------
 
 You can run them using the subcommand ``run``::
 
@@ -76,7 +131,7 @@ You can run them using the subcommand ``run``::
     TIME : 1.01 s
 
 Job ID
-------
+======
 
 The Job ID is a SHA1 string that has some information encoded:
 
@@ -89,7 +144,7 @@ the purposes of joining on a single database results obtained by jobs run
 on different systems.
 
 Simple Tests
-------------
+============
 
 You can run any number of test in an arbitrary order, as well as mix and match
 native tests and simple tests::
@@ -115,7 +170,7 @@ native tests and simple tests::
     TIME : 1.04 s
 
 Debugging tests
----------------
+===============
 
 When developing new tests, you frequently want to look at the straight
 output of the job log in the stdout, without having to tail the job log.
