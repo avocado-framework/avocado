@@ -44,7 +44,8 @@ class RemoteTestRunner(TestRunner):
                        '--archive %s' % (self.remote_test_dir,
                                          self.result.stream.job_unique_id,
                                          " ".join(urls)))
-        result = self.result.remote.run(avocado_cmd, ignore_status=True)
+        result = self.result.remote.run(avocado_cmd, ignore_status=True,
+                                        timeout=None)
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
             if json_output.startswith('{') and json_output.endswith('}'):
