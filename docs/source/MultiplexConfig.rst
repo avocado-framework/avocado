@@ -28,6 +28,7 @@ Here is how a simple and valid multiplex configuration looks like::
         sleep_length: 600
 
 The key concepts here are ``nodes`` (provides context and scope), ``keys`` (think of variables) and ``values`` (scalar or lists).
+
 In the next section, we will describe these concepts in more details.
 
 .. _nodes:
@@ -66,9 +67,17 @@ The ending nodes (the leafs on the tree) will become part of all lower-level
 However, the precedence is evaluated in top-down or ``last defined`` order.
 In other words, the last parsed has precedence over earlier definitions.
 
-It's also possible to remove node using python's regexp, which can be useful
-when extending upstream file using downstream yaml files. This is done by
-`!remove_node : $value_name` directive::
+When you provide multiple files they are processed and merged together using
+the common root (`/`). When certain paths overlap (`$file1:/my/path`,
+`$file2:/my/path`), we first create the tree of `$file1` and then process
+`$file2`. This means all children of `/my/path` of the first file are in
+correct order and `$file2` either updates values or appends new children
+as next ones. This of course happens recursively so you update valures and add
+children of all the nodes beneath.
+
+During this merge it's also possible to remove nodes using python regular
+expressions, which can be useful when extending upstream file using downstream
+yaml files. This is done by `!remove_node : $value_name` directive::
 
     os:
         fedora:
@@ -265,30 +274,105 @@ Whole file is __merged__ into the node where it's defined.
 Variants
 ========
 
-To be written.
+When tree parsing and filtering is finished, we create set of variants.
+Each variant uses one leaf of each sibling group. For example::
 
-Avocado comes equipped with a plugin to parse multiplex files. The appropriate
-subcommand is::
+    cpu:
+        intel:
+        amd:
+        arm:
+    fmt:
+        qcow2:
+        raw:
+
+Produces 2 groups `[intel, amd, arm]` and `[qcow2, raw]`, which results in
+6 variants (all combinations; product of the groups)
+
+It's also possible to join current node and its children by `!join` tag::
+
+    fmt: !join
+        qcow:
+            2:
+            2v3:
+        raw:
+
+Without the join this would produce 2 groups `[2, 2v3]` and `[raw]` resulting
+in 2 variants `[2, raw]` and `[2v3, raw]`, which is really not useful.
+But we said that `fmt` children should join this sibling group
+so it results in one group `[qcow/2, qcow/2v3, raw]` resulting in 3 variants
+each of different fmt. This is useful when some
+of the variants share some common key. These keys are set inside the
+parent, for example here `qcow2.0` and `qcow2.2v3` share the same key
+`type: qcow2` and `qcow2.2v3` adds `extra_params` into his params::
+
+    fmt:
+        qcow2:
+            type: qcow2
+            0:
+            v3:
+                extra_params: "compat=1.1"
+        raw:
+            type: raw
+
+Complete example::
+
+    hw:
+        cpu:
+            intel:
+            amd:
+            arm:
+        fmt: !join
+            qcow:
+                qcow2:
+                qcow2v3:
+            raw:
+    os: !join
+        linux: !join
+            Fedora:
+                19:
+            Gentoo:
+        windows:
+            3.11:
+
+While preserving names and environment values. Then all combinations are
+created resulting into 27 unique variants covering all possible combinations
+of given tree::
+
+    Variant 1:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 2:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
+	Variant 3:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/windows/3.11
+	Variant 4:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
+	Variant 5:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
+	Variant 6:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
+	Variant 7:    /hw/cpu/intel, /hw/fmt/raw, /os/linux/Fedora/19
+	Variant 8:    /hw/cpu/intel, /hw/fmt/raw, /os/linux/Gentoo
+	Variant 9:    /hw/cpu/intel, /hw/fmt/raw, /os/windows/3.11
+	Variant 10:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 11:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
+	Variant 12:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/windows/3.11
+	Variant 13:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
+	Variant 14:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
+	Variant 15:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
+	Variant 16:    /hw/cpu/amd, /hw/fmt/raw, /os/linux/Fedora/19
+	Variant 17:    /hw/cpu/amd, /hw/fmt/raw, /os/linux/Gentoo
+	Variant 18:    /hw/cpu/amd, /hw/fmt/raw, /os/windows/3.11
+	Variant 19:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 20:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
+	Variant 21:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/windows/3.11
+	Variant 22:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
+	Variant 23:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
+	Variant 24:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
+	Variant 25:    /hw/cpu/arm, /hw/fmt/raw, /os/linux/Fedora/19
+	Variant 26:    /hw/cpu/arm, /hw/fmt/raw, /os/linux/Gentoo
+	Variant 27:    /hw/cpu/arm, /hw/fmt/raw, /os/windows/3.11
+
+You can generate this list yourself by executing::
 
     avocado multiplex /path/to/multiplex.yaml [-c]
 
 Note that there's no need to put extensions to a multiplex file, although
 doing so helps with organization. The optional -c param is used to provide
 the contents of the dictionaries generated, not only their shortnames.
-
-``avocado multiplex`` against the content above produces the following
-combinations and names::
-
-    Dictionaries generated:
-        dict 1:    four.one
-        dict 2:    four.two
-        dict 3:    four.three
-        dict 4:    five.one
-        dict 5:    five.two
-        dict 6:    five.three
-        dict 7:    six.one
-        dict 8:    six.two
-        dict 9:    six.three
 
 With Nodes, Keys, Values & Filters, we have most of what you
 actually need to construct most multiplex files.

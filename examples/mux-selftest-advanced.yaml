@@ -19,6 +19,15 @@ distro:
         # And this removes the original 'is_cool'
         # Setting happens after ctrl so it should be created'
         !remove_value : is_cool
+# Following node is an empty node with only Control object. During merge
+# it setls /env node as !join (disable multiplexation)
+env: !join
+distro: !join
+    # Set !join here, it won't be overwritten below as it's defined as
+    # &=.
+    mint:   # This won't change anything
+distro:
+    gentoo:     # This won't change anything
 # This creates new branch the usual way
 new_node:
     # Put this new_node into /absolutely/fresh/ ('/' are automatically
