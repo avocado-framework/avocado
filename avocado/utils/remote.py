@@ -143,8 +143,8 @@ class Remote(object):
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
-                fabric.operations.put(local_path,
-                                      remote_path)
+                fabric.operations.put(local_path, remote_path,
+                                      mirror_local_mode=True)
             except ValueError:
                 return False
         return True
