@@ -29,7 +29,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
         Remote = flexmock()
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
                 "--json - --archive sleeptest")
-        (Remote.should_receive('run').with_args(args, ignore_status=True)
+        (Remote.should_receive('run')
+         .with_args(args, timeout=None, ignore_status=True)
          .once().and_return(test_results))
         Results = flexmock(remote=Remote, urls=['sleeptest'],
                            stream=stream)
