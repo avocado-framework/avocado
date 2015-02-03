@@ -238,6 +238,7 @@ class RunRemote(plugin.Plugin):
 
     name = 'run_remote'
     enabled = True
+    remote_parser = None
 
     def configure(self, parser):
         if remote.REMOTE_CAPABLE is False:

@@ -85,6 +85,7 @@ class RunVM(plugin.Plugin):
 
     name = 'run_vm'
     enabled = True
+    vm_parser = None
 
     def configure(self, parser):
         if virt.VIRT_CAPABLE is False:
