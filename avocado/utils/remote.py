@@ -20,6 +20,10 @@ import getpass
 import logging
 import time
 
+from avocado.core import exceptions
+from avocado.core import output
+from avocado.utils import process
+
 LOG = logging.getLogger('avocado.test')
 
 try:
@@ -30,10 +34,6 @@ except ImportError:
     LOG.info('Remote module is disabled: could not import fabric')
 else:
     REMOTE_CAPABLE = True
-
-from avocado.core import output
-from avocado.core import exceptions
-from avocado.utils import process
 
 
 class Remote(object):
@@ -72,6 +72,7 @@ class Remote(object):
 
     @staticmethod
     def _setup_environment(**kwargs):
+        """ Setup fabric environemnt """
         fabric.api.env.update(kwargs)
 
     def run(self, command, ignore_status=False, timeout=60):
