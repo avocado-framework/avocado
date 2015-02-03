@@ -70,7 +70,8 @@ class Remote(object):
                                 connection_attempts=attempts,
                                 linewise=True)
 
-    def _setup_environment(self, **kwargs):
+    @staticmethod
+    def _setup_environment(**kwargs):
         fabric.api.env.update(kwargs)
 
     def run(self, command, ignore_status=False, timeout=60):
