@@ -221,9 +221,6 @@ class Job(object):
                 if url.startswith(os.path.pardir):
                     url = os.path.abspath(url)
                 params_list.append({'id': url})
-        else:
-            e_msg = "Empty test ID. A test path or alias must be provided"
-            raise exceptions.OptionValidationError(e_msg)
 
         if multiplex_files is None:
             if self.args and self.args.multiplex_files is not None:
