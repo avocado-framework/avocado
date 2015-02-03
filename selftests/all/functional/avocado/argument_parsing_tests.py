@@ -66,5 +66,8 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
     def test_whacky_option(self):
         self.run_but_fail_before_create_job_dir('--whacky-option passtest')
 
+    def test_empty_option(self):
+        self.run_but_fail_before_create_job_dir('')
+
 if __name__ == '__main__':
     unittest.main()
