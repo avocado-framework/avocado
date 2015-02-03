@@ -45,7 +45,7 @@ class TestRunner(plugin.Plugin):
             'run',
             help='Run one or more tests (native test, test alias, binary or script)')
 
-        self.parser.add_argument('url', type=str, default=[], nargs='*',
+        self.parser.add_argument('url', type=str, default=[], nargs='+',
                                  help='List of test IDs (aliases or paths)')
 
         self.parser.add_argument('-z', '--archive', action='store_true', default=False,
