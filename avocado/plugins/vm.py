@@ -87,7 +87,7 @@ class RunVM(plugin.Plugin):
     enabled = True
 
     def configure(self, parser):
-        if virt.virt_capable is False:
+        if virt.VIRT_CAPABLE is False:
             self.enabled = False
             return
         username = getpass.getuser()

@@ -20,16 +20,16 @@ import getpass
 import logging
 import time
 
-log = logging.getLogger('avocado.test')
+LOG = logging.getLogger('avocado.test')
 
 try:
     import fabric.api
     import fabric.operations
 except ImportError:
-    remote_capable = False
-    log.info('Remote module is disabled: could not import fabric')
+    REMOTE_CAPABLE = False
+    LOG.info('Remote module is disabled: could not import fabric')
 else:
-    remote_capable = True
+    REMOTE_CAPABLE = True
 
 from avocado.core import output
 from avocado.core import exceptions
@@ -84,7 +84,7 @@ class Remote(object):
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
         if not self.quiet:
-            log.info('[%s] Running command %s', self.hostname, command)
+            LOG.info('[%s] Running command %s', self.hostname, command)
         result = process.CmdResult()
         stdout = output.LoggingFile(logger=logging.getLogger('avocado.test'))
         stderr = output.LoggingFile(logger=logging.getLogger('avocado.test'))
@@ -137,7 +137,7 @@ class Remote(object):
         :param remote_path: the remote path.
         """
         if not self.quiet:
-            log.info('[%s] Receive remote files %s -> %s', self.hostname,
+            LOG.info('[%s] Sending files %s -> %s', self.hostname,
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:
@@ -155,7 +155,7 @@ class Remote(object):
         :param remote_path: the remote path.
         """
         if not self.quiet:
-            log.info('[%s] Receive remote files %s -> %s', self.hostname,
+            LOG.info('[%s] Receive remote files %s -> %s', self.hostname,
                      local_path, remote_path)
         with fabric.context_managers.quiet():
             try:

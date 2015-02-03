@@ -240,7 +240,7 @@ class RunRemote(plugin.Plugin):
     enabled = True
 
     def configure(self, parser):
-        if remote.remote_capable is False:
+        if remote.REMOTE_CAPABLE is False:
             self.enabled = False
             return
         username = getpass.getuser()
