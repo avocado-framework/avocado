@@ -364,7 +364,7 @@ class SysInfo(object):
     * end_job
     """
 
-    def __init__(self, basedir=None, log_packages=None):
+    def __init__(self, basedir=None, log_packages=None, profilers=None):
         """
         Set sysinfo loggables.
 
@@ -373,6 +373,8 @@ class SysInfo(object):
                              logging packages is a costly operation). If not
                              given explicitly, tries to look in the config
                              files, and if not found, defaults to False.
+        :param profilers: Wether to use the profiler. If not given explicitly,
+                          tries to look in the config files.
         """
         if basedir is None:
             basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
@@ -387,6 +389,30 @@ class SysInfo(object):
                                                    default=False)
         else:
             self.log_packages = log_packages
+
+        if profilers is None:
+            self.profiler = settings.get_value('sysinfo.collect',
+                                               'profiler',
+                                               key_type='bool',
+                                               default=False)
+            profiler_commands = settings.get_value('sysinfo.collect',
+                                                   'profiler_commands',
+                                                   key_type='str',
+                                                   default='')
+        else:
+            self.profiler = True
+            profiler_commands = profilers
+
+        self.profiler_commands = [x for x in profiler_commands.split(':') if x.strip()]
+        log.info('Profilers declared: %s', self.profiler_commands)
+        if not self.profiler_commands:
+            self.profiler = False
+
+        if self.profiler is False:
+            if not self.profiler_commands:
+                log.info('Profiler disabled: no profiler commands configured')
+            else:
+                log.info('Profiler disabled')
 
         self.start_job_loggables = set()
         self.end_job_loggables = set()
@@ -427,6 +453,10 @@ class SysInfo(object):
         return syslog_watcher
 
     def _set_loggables(self):
+        if self.profiler:
+            for cmd in self.profiler_commands:
+                self.start_job_loggables.add(Daemon(cmd))
+
         for cmd in _DEFAULT_COMMANDS_START_JOB:
             self.start_job_loggables.add(Command(cmd))
 
@@ -539,7 +569,10 @@ class SysInfo(object):
         Logging hook called whenever a job starts.
         """
         for log in self.start_job_loggables:
-            log.run(pre_dir)
+            if isinstance(log, Daemon):  # log daemons in profile directory
+                log.run(self.profile_dir)
+            else:
+                log.run(self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
@@ -552,7 +585,8 @@ class SysInfo(object):
             log.run(self.post_dir)
         # Stop daemon(s) started previously
         for log in self.start_job_loggables:
-            log.run(post_dir)
+            if isinstance(log, Daemon):
+                log.stop()
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)

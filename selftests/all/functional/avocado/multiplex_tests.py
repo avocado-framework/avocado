@@ -41,7 +41,7 @@ class MultiplexTests(unittest.TestCase):
                                     'The multiplexed job log output has less '
                                     'lines than expected\n%s' %
                                     "".join(job_log_lines))
-            self.assertLess(lines_output, expected_lines * 1.1,
+            self.assertLess(lines_output, expected_lines * 1.2,
                             'The multiplexed job log output has more '
                             'lines than expected\n%s'
                             % "".join(job_log_lines))
