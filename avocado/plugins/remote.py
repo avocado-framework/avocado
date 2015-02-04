@@ -150,7 +150,7 @@ class RemoteTestResult(HumanTestResult):
     def setup(self):
         """ Setup remote environment and copy test's directories """
         self.stream.notify(event='message',
-                           msg=("REMOTE LOGIN  : %s@%s:%d"
+                           msg=("LOGIN      : %s@%s:%d"
                                 % (self.args.remote_username,
                                    self.args.remote_hostname,
                                    self.args.remote_port)))

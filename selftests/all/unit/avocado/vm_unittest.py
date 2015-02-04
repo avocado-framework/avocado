@@ -27,7 +27,7 @@ class VMTestResultTest(unittest.TestCase):
          .and_return('/current/directory').once().ordered())
         # vm.VMTestResult.setup()
         (Stream.should_receive('notify')
-         .with_args(msg="VM DOMAIN : domain", event="message"))
+         .with_args(msg="DOMAIN     : domain", event="message"))
         mock_vm = flexmock(snapshot=True,
                            domain=flexmock(isActive=lambda: True))
         virt = flexmock(vm.virt)

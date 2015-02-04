@@ -46,7 +46,7 @@ class VMTestResult(RemoteTestResult):
                      '--vm-hostname.')
             self.stream.notify(event='error', msg=e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        self.stream.notify(event='message', msg="VM DOMAIN : %s"
+        self.stream.notify(event='message', msg="DOMAIN     : %s"
                            % self.args.vm_domain)
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
