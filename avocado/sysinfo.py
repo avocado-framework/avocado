@@ -222,6 +222,45 @@ class Command(Loggable):
                                   verbose=False)
 
 
+class Daemon(Command):
+
+    """
+    Loggable daemon.
+
+    :param cmd: String with the daemon command.
+    :param logf: Basename of the file where output is logged (optional).
+    :param compress_logf: Wether to compress the output of the command.
+    """
+
+    def run(self, logdir):
+        """
+        Execute the daemon as a subprocess and log its output in logdir.
+
+        :param logdir: Path to a log directory.
+        """
+        env = os.environ.copy()
+        if "PATH" not in env:
+            env["PATH"] = "/usr/bin:/bin"
+        logf_path = os.path.join(logdir, self.logf)
+        stdin = open(os.devnull, "r")
+        stdout = open(logf_path, "w")
+        self.pipe = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
+                                     stderr=subprocess.STDOUT, shell=True, env=env)
+
+    def stop(self):
+        """
+        Stop daemon execution.
+        """
+        retcode = self.pipe.poll()
+        if retcode is None:
+            self.pipe.terminate()
+            retcode = self.pipe.wait()
+        else:
+            log.debug("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
+                      self.cmd, self.pipe.pid, retcode)
+        return retcode
+
+
 class LogWatcher(Loggable):
 
     """
