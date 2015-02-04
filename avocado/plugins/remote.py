@@ -20,6 +20,7 @@ import os
 
 from avocado.core import data_dir
 from avocado.core import status
+from avocado.core import exceptions
 from avocado.plugins import plugin
 from avocado.result import HumanTestResult
 from avocado.runner import TestRunner
@@ -53,6 +54,10 @@ class RemoteTestRunner(TestRunner):
                     return json.loads(json_output)
                 except ValueError:
                     pass
+
+        if 'avocado: command not found' in result.stdout:
+            raise exceptions.JobError('Remote machine does not have avocado '
+                                      'installed')
         raise ValueError("Can't parse json out of remote's avocado output:"
                          "\n%s" % result.stdout)
 
