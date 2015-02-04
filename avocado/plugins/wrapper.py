@@ -35,8 +35,10 @@ class Wrapper(plugin.Plugin):
         self.configured = True
 
     def activate(self, app_args):
-        view = output.View(app_args=app_args)
         try:
+            if not app_args.wrapper:    # Not enabled
+                return
+            view = output.View(app_args=app_args)
             for wrap in app_args.wrapper:
                 if ':' not in wrap:
                     if runtime.WRAP_PROCESS is None:
