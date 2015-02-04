@@ -47,7 +47,8 @@ _DEFAULT_COMMANDS_START_JOB = ["df -mP",
                                "numactl --hardware show",
                                "lscpu",
                                "fdisk -l"]
-_DEFAULT_COMMANDS_END_JOB = []
+
+_DEFAULT_COMMANDS_END_JOB = _DEFAULT_COMMANDS_START_JOB
 
 _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/proc/mounts",
@@ -63,7 +64,7 @@ _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
                             "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
                             "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
 
-_DEFAULT_FILES_END_JOB = []
+_DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
 
 _DEFAULT_COMMANDS_START_TEST = []
 
@@ -496,7 +497,7 @@ class SysInfo(object):
 
     def start_job_hook(self):
         """
-        Logging hook called whenever a job starts, and again after reboot.
+        Logging hook called whenever a job starts.
         """
         for log in self.start_job_loggables:
             log.run(pre_dir)
@@ -506,9 +507,11 @@ class SysInfo(object):
 
     def end_job_hook(self):
         """
-        Logging hook called whenever a job starts, and again after reboot.
+        Logging hook called whenever a job finishes.
         """
-        post_dir = utils.path.init_dir(self.basedir, 'post')
+        for log in self.end_job_loggables:
+            log.run(self.post_dir)
+        # Stop daemon(s) started previously
         for log in self.start_job_loggables:
             log.run(post_dir)
 
@@ -566,4 +569,5 @@ def collect_sysinfo(args):
 
     sysinfo_logger = SysInfo(basedir=basedir, log_packages=True)
     sysinfo_logger.start_job_hook()
+    sysinfo_logger.end_job_hook()
     log.info("Logged system information to %s", basedir)
