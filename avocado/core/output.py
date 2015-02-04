@@ -71,15 +71,18 @@ class Paginator(object):
             self.pipe = os.popen(paginator, 'w')
 
     def __del__(self):
+        self.close()
+
+    def close(self):
         try:
             self.pipe.close()
-        except IOError:
+        except:
             pass
 
     def write(self, msg):
         try:
             self.pipe.write(msg)
-        except IOError:
+        except:
             pass
 
 
@@ -365,6 +368,10 @@ class View(object):
             self.paginator = None
         self.throbber = Throbber()
         self.tests_info = {}
+
+    def cleanup(self):
+        if self.use_paginator:
+            self.paginator.close()
 
     def notify(self, event='message', msg=None):
         mapping = {'message': self._log_ui_header,
