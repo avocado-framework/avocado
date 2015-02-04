@@ -20,6 +20,7 @@ import os
 
 from avocado.core import data_dir
 from avocado.core import status
+from avocado.core import exceptions
 from avocado.plugins import plugin
 from avocado.result import HumanTestResult
 from avocado.runner import TestRunner
@@ -46,6 +47,9 @@ class RemoteTestRunner(TestRunner):
                                          " ".join(urls)))
         result = self.result.remote.run(avocado_cmd, ignore_status=True,
                                         timeout=None)
+        if result.exit_status == 127:
+            raise exceptions.JobError('Remote machine does not have avocado '
+                                      'installed')
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
             if json_output.startswith('{') and json_output.endswith('}'):
