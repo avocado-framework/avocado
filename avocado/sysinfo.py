@@ -364,6 +364,10 @@ class SysInfo(object):
                              'start_iteration': self.start_iteration_loggables,
                              'end_iteration': self.end_iteration_loggables}
 
+        self.pre_dir = utils.path.init_dir(self.basedir, 'pre')
+        self.post_dir = utils.path.init_dir(self.basedir, 'post')
+        self.profile_dir = utils.path.init_dir(self.basedir, 'profile')
+
         self._set_loggables()
 
     def _get_syslog_watcher(self):
@@ -494,12 +498,11 @@ class SysInfo(object):
         """
         Logging hook called whenever a job starts, and again after reboot.
         """
-        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_job_loggables:
             log.run(pre_dir)
 
         if self.log_packages:
-            self._log_installed_packages(pre_dir)
+            self._log_installed_packages(self.pre_dir)
 
     def end_job_hook(self):
         """
@@ -510,45 +513,41 @@ class SysInfo(object):
             log.run(post_dir)
 
         if self.log_packages:
-            self._log_modified_packages(post_dir)
+            self._log_modified_packages(self.post_dir)
 
     def start_test_hook(self):
         """
         Logging hook called before a test starts.
         """
-        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_test_loggables:
-            log.run(pre_dir)
+            log.run(self.pre_dir)
 
         if self.log_packages:
-            self._log_installed_packages(pre_dir)
+            self._log_installed_packages(self.pre_dir)
 
     def end_test_hook(self):
         """
         Logging hook called after a test finishes.
         """
-        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.end_test_loggables:
-            log.run(post_dir)
+            log.run(self.post_dir)
 
         if self.log_packages:
-            self._log_modified_packages(post_dir)
+            self._log_modified_packages(self.post_dir)
 
     def start_iteration_hook(self):
         """
         Logging hook called before a test iteration
         """
-        pre_dir = utils.path.init_dir(self.basedir, 'pre')
         for log in self.start_iteration_loggables:
-            log.run(pre_dir)
+            log.run(self.pre_dir)
 
     def end_iteration_hook(self, test, iteration=None):
         """
         Logging hook called after a test iteration
         """
-        post_dir = utils.path.init_dir(self.basedir, 'post')
         for log in self.end_iteration_loggables:
-            log.run(post_dir)
+            log.run(self.post_dir)
 
 
 def collect_sysinfo(args):
