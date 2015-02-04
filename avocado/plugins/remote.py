@@ -58,7 +58,7 @@ class RemoteTestRunner(TestRunner):
         if 'avocado: command not found' in result.stdout:
             raise exceptions.JobError('Remote machine does not have avocado '
                                       'installed')
-        raise ValueError("Can't parse json out of remote's avocado output:"
+        raise ValueError("Could not parse JSON from avocado remote output:"
                          "\n%s" % result.stdout)
 
     def run_suite(self, test_suite):
