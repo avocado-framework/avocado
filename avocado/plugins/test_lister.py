@@ -62,7 +62,7 @@ class TestLister(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        self.view = output.View(app_args=args)
+        self.view = output.View(app_args=args, use_paginator=True)
 
         paths = [data_dir.get_test_dir()]
         if args.paths:
@@ -154,13 +154,16 @@ class TestLister(plugin.Plugin):
                                                    stats['broken_symlink']))
 
     def run(self, args):
+        rc = 0
         try:
             self._run(args)
         except KeyboardInterrupt:
+            rc = exit_codes.AVOCADO_FAIL
             msg = ('Command interrupted by '
                    'user...')
             if self.view is not None:
                 self.view.notify(event='error', msg=msg)
             else:
                 sys.stderr.write(msg)
-            sys.exit(exit_codes.AVOCADO_FAIL)
+        self.view.cleanup()
+        sys.exit(rc)
