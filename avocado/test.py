@@ -28,7 +28,7 @@ import unittest
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import io
-from avocado.utils import path
+from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils import stacktrace
 from avocado.utils.params import Params
@@ -90,8 +90,8 @@ class Test(unittest.TestCase):
         self.expected_stderr_file = os.path.join(self.datadir,
                                                  'stderr.expected')
 
-        self.workdir = path.init_dir(tmpdir, basename)
-        self.srcdir = path.init_dir(self.workdir, 'src')
+        self.workdir = utils_path.init_dir(tmpdir, basename)
+        self.srcdir = utils_path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.get_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
@@ -103,15 +103,15 @@ class Test(unittest.TestCase):
         if tagged_name.startswith('/'):
             tagged_name = tagged_name[1:]
 
-        self.logdir = path.init_dir(base_logdir, tagged_name)
+        self.logdir = utils_path.init_dir(base_logdir, tagged_name)
         io.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
 
         self.stdout_file = os.path.join(self.logdir, 'stdout')
         self.stderr_file = os.path.join(self.logdir, 'stderr')
 
-        self.outputdir = path.init_dir(self.logdir, 'data')
-        self.sysinfodir = path.init_dir(self.logdir, 'sysinfo')
+        self.outputdir = utils_path.init_dir(self.logdir, 'data')
+        self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")
@@ -341,13 +341,11 @@ class Test(unittest.TestCase):
         pass
 
     def record_reference_stdout(self):
-        if not os.path.isdir(self.datadir):
-            os.makedirs(self.datadir)
+        utils_path.init_dir(self.datadir)
         shutil.copyfile(self.stdout_file, self.expected_stdout_file)
 
     def record_reference_stderr(self):
-        if not os.path.isdir(self.datadir):
-            os.makedirs(self.datadir)
+        utils_path.init_dir(self.datadir)
         shutil.copyfile(self.stderr_file, self.expected_stderr_file)
 
     def check_reference_stdout(self):

@@ -20,8 +20,7 @@ import logging
 import os
 import time
 
-from avocado.utils import path as apath
-
+from avocado.utils import path as utils_path
 
 log = logging.getLogger('avocado.test')
 
@@ -40,13 +39,13 @@ def log_line(filename, line):
     """
     global _open_log_files, _log_file_dir
 
-    path = apath.get_path(_log_file_dir, filename)
+    path = utils_path.get_path(_log_file_dir, filename)
     if path not in _open_log_files:
         # First, let's close the log files opened in old directories
         close_log_file(filename)
         # Then, let's open the new file
         try:
-            os.makedirs(os.path.dirname(path))
+            utils_path.init_dir(os.path.dirname(path))
         except OSError:
             pass
         _open_log_files[path] = open(path, "w")

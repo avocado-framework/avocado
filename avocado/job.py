@@ -22,6 +22,8 @@ import logging
 import os
 import sys
 import traceback
+import tempfile
+import shutil
 
 from avocado import multiplexer
 from avocado import result
@@ -59,21 +61,27 @@ class Job(object):
     along with setup operations and event recording.
     """
 
-    def __init__(self, args=None):
+    def __init__(self, args=None, standalone=False):
         """
         Creates an instance of Job class.
 
         :param args: an instance of :class:`argparse.Namespace`.
+        :param standalone: do not create any content and present the job log
+                           on the output.
         """
         self.args = args
+        self.standalone = standalone
         if args is not None:
             self.unique_id = args.unique_job_id or job_id.create_unique_job_id()
         else:
             self.unique_id = job_id.create_unique_job_id()
-        self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
+
+        if standalone:
+            self.logdir = tempfile.mkdtemp()
+        else:
+            self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
         self.logfile = os.path.join(self.logdir, "job.log")
         self.idfile = os.path.join(self.logdir, "id")
-
         with open(self.idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
 
@@ -96,6 +104,12 @@ class Job(object):
             self.multiplex_files = None
             self.show_job_log = False
             self.silent = False
+
+        if standalone:
+            self.show_job_log = True
+            if self.args is not None:
+                setattr(self.args, 'show_job_log', True)
+
         if self.show_job_log:
             if not self.silent:
                 test_logger = logging.getLogger('avocado.test')
@@ -191,7 +205,7 @@ class Job(object):
             self.view.notify(event='error', msg=msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
-        if not op_set_stdout:
+        if not op_set_stdout and not self.standalone:
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
@@ -365,9 +379,10 @@ class TestModuleRunner(object):
 
     def __init__(self):
         self.url = sys.argv[0]
-        self.job = Job()
+        self.job = Job(standalone=True)
         if self.url is not None:
             sys.exit(self.job.run(urls=[self.url]))
+        shutil.rmtree(self.job.logdir)
         sys.exit(exit_codes.AVOCADO_ALL_OK)
 
 main = TestModuleRunner
