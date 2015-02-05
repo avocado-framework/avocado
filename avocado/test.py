@@ -205,18 +205,20 @@ class Test(unittest.TestCase):
         """
         if self.running and self.time_start:
             self.update_time_elapsed()
-
         orig = dict(self.__dict__)
         d = {}
-        preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_class',
+        preserve_attr = ['basedir', 'debugdir', 'depsdir',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg']
+        convert_attr = ['fail_class']
         for key in sorted(orig):
             if key in preserve_attr:
                 d[key] = orig[key]
+            elif key in convert_attr:
+                d[key] = str(orig[key])
         d['params'] = dict(orig['params'])
         d['class_name'] = self.__class__.__name__
         d['job_logdir'] = self.job.logdir
