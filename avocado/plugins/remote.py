@@ -57,7 +57,7 @@ class RemoteTestRunner(TestRunner):
                     return json.loads(json_output)
                 except ValueError:
                     pass
-        raise ValueError("Can't parse json out of remote's avocado output:"
+        raise ValueError("Could not parse JSON from avocado remote output:"
                          "\n%s" % result.stdout)
 
     def run_suite(self, test_suite):
