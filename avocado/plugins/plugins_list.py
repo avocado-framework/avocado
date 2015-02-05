@@ -49,3 +49,4 @@ class PluginsList(plugin.Plugin):
             else:
                 status = "(Disabled)"
             view.notify(event='minor', msg=format_str % (plug.name, plug.description, status))
+        view.cleanup()

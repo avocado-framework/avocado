@@ -20,6 +20,7 @@ import os
 
 from avocado.core import data_dir
 from avocado.core import status
+from avocado.core import exceptions
 from avocado.plugins import plugin
 from avocado.result import HumanTestResult
 from avocado.runner import TestRunner
@@ -46,6 +47,9 @@ class RemoteTestRunner(TestRunner):
                                          " ".join(urls)))
         result = self.result.remote.run(avocado_cmd, ignore_status=True,
                                         timeout=None)
+        if result.exit_status == 127:
+            raise exceptions.JobError('Remote machine does not have avocado '
+                                      'installed')
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
             if json_output.startswith('{') and json_output.endswith('}'):
@@ -53,7 +57,7 @@ class RemoteTestRunner(TestRunner):
                     return json.loads(json_output)
                 except ValueError:
                     pass
-        raise ValueError("Can't parse json out of remote's avocado output:"
+        raise ValueError("Could not parse JSON from avocado remote output:"
                          "\n%s" % result.stdout)
 
     def run_suite(self, test_suite):
@@ -145,7 +149,7 @@ class RemoteTestResult(HumanTestResult):
     def setup(self):
         """ Setup remote environment and copy test's directories """
         self.stream.notify(event='message',
-                           msg=("REMOTE LOGIN  : %s@%s:%d"
+                           msg=("LOGIN      : %s@%s:%d"
                                 % (self.args.remote_username,
                                    self.args.remote_hostname,
                                    self.args.remote_port)))
@@ -219,7 +223,7 @@ class RunRemote(plugin.Plugin):
         if missing:
             from avocado.core import output, exit_codes
             import sys
-            view = output.View(app_args=app_args, use_paginator=True)
+            view = output.View(app_args=app_args)
             e_msg = ('Use of %s requires %s arguments to be set. Please set %s'
                      '.' % (enable_arg, ', '.join(required_args),
                             ', '.join(missing)))

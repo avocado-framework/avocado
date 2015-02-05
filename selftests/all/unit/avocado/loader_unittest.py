@@ -2,6 +2,8 @@ import os
 import sys
 import unittest
 import multiprocessing
+import tempfile
+import shutil
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
@@ -59,13 +61,14 @@ true
 
 
 class _DebugJob(object):
-    logdir = '.'
+    logdir = tempfile.mkdtemp()
 
 
 class LoaderTest(unittest.TestCase):
 
     def setUp(self):
-        self.loader = loader.TestLoader(job=_DebugJob)
+        self.job = _DebugJob
+        self.loader = loader.TestLoader(job=self.job)
         self.queue = multiprocessing.Queue()
 
     def test_load_simple(self):
@@ -180,6 +183,9 @@ class LoaderTest(unittest.TestCase):
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.action)
         avocado_simple_test.remove()
+
+    def tearDown(self):
+        shutil.rmtree(self.job.logdir)
 
 if __name__ == '__main__':
     unittest.main()

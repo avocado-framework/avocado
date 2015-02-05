@@ -23,7 +23,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
     def setUp(self):
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
         self.remote = remote.RemoteTestRunner(None, None)
-        test_results = flexmock(stdout=JSON_RESULTS)
+        test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
         stream = flexmock(job_unique_id='sleeptest.1',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
