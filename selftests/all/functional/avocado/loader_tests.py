@@ -59,7 +59,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_simple(self):
         os.chdir(basedir)
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
-                                             'avocado_loader_unittest')
+                                             'avocado_loader_test')
         simple_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % simple_test.path
         process.run(cmd_line)
@@ -68,7 +68,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_simple_not_exec(self):
         os.chdir(basedir)
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
-                                             'avocado_loader_unittest',
+                                             'avocado_loader_test',
                                              mode=0664)
         simple_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % simple_test.path
@@ -83,7 +83,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_pass(self):
         avocado_pass_test = script.TemporaryScript('passtest.py',
                                                    AVOCADO_TEST_OK,
-                                                   'avocado_loader_unittest')
+                                                   'avocado_loader_test')
         avocado_pass_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_pass_test.path
         result = process.run(cmd_line, ignore_status=True)
@@ -95,7 +95,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_buggy_exec(self):
         avocado_buggy_test = script.TemporaryScript('buggytest.py',
                                                     AVOCADO_TEST_BUGGY,
-                                                    'avocado_loader_unittest')
+                                                    'avocado_loader_test')
         avocado_buggy_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_buggy_test.path
         result = process.run(cmd_line, ignore_status=True)
@@ -107,7 +107,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_buggy_not_exec(self):
         avocado_buggy_test = script.TemporaryScript('buggytest.py',
                                                     AVOCADO_TEST_BUGGY,
-                                                    'avocado_loader_unittest',
+                                                    'avocado_loader_test',
                                                     mode=0664)
         avocado_buggy_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_buggy_test.path
@@ -120,7 +120,7 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_load_not_a_test(self):
         avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
-                                                    'avocado_loader_unittest')
+                                                    'avocado_loader_test')
         avocado_not_a_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_not_a_test.path
         result = process.run(cmd_line, ignore_status=True)
@@ -132,7 +132,7 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_load_not_a_test_not_exec(self):
         avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
-                                                    'avocado_loader_unittest',
+                                                    'avocado_loader_test',
                                                     mode=0664)
         avocado_not_a_test.save()
         cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_not_a_test.path
