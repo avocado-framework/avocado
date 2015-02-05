@@ -125,7 +125,7 @@ class TestRunner(plugin.Plugin):
 
         :param args: Command line args received from the run subparser.
         """
-        view = output.View(app_args=args, use_paginator=True)
+        view = output.View(app_args=args)
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)

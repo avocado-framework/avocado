@@ -46,7 +46,7 @@ class VMTestResult(RemoteTestResult):
                      '--vm-hostname.')
             self.stream.notify(event='error', msg=e_msg)
             raise exceptions.TestSetupFail(e_msg)
-        self.stream.notify(event='message', msg="VM DOMAIN : %s"
+        self.stream.notify(event='message', msg="DOMAIN     : %s"
                            % self.args.vm_domain)
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
@@ -146,7 +146,7 @@ class RunVM(plugin.Plugin):
         if missing:
             from avocado.core import output, exit_codes
             import sys
-            view = output.View(app_args=app_args, use_paginator=True)
+            view = output.View(app_args=app_args)
             e_msg = ('Use of %s requires %s arguments to be set. Please set %s'
                      '.' % (enable_arg, ', '.join(required_args),
                             ', '.join(missing)))
