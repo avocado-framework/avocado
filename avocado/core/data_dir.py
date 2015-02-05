@@ -34,7 +34,7 @@ import time
 import tempfile
 
 from avocado.core import job_id
-from avocado.utils import path
+from avocado.utils import path as utils_path
 from avocado.utils.data_structures import Borg
 from avocado.settings import settings
 
@@ -81,7 +81,7 @@ def _usable_rw_dir(directory):
             pass
     else:
         try:
-            os.makedirs(directory)
+            utils_path.init_dir(directory)
             return True
         except OSError:
             pass
@@ -108,7 +108,7 @@ def _usable_ro_dir(directory):
             pass
     else:
         try:
-            os.makedirs(directory)
+            utils_path.init_dir(directory)
             return True
         except OSError:
             pass
@@ -223,7 +223,7 @@ def get_job_logs_dir(args=None, unique_id=None):
         unique_id = job_id.create_unique_job_id()
 
     debugbase = 'job-%s-%s' % (start_time, unique_id[:7])
-    debugdir = path.init_dir(logdir, debugbase)
+    debugdir = utils_path.init_dir(logdir, debugbase)
     latestdir = os.path.join(logdir, "latest")
     try:
         os.unlink(latestdir)

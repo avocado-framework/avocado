@@ -20,6 +20,8 @@ import os
 import tempfile
 import shutil
 
+from avocado.utils import path as utils_path
+
 
 class Script(object):
 
@@ -64,8 +66,8 @@ class Script(object):
 
         :return: `True` if script has been stored, otherwise `False`.
         """
-        if not os.path.isdir(os.path.dirname(self.path)):
-            os.makedirs(os.path.dirname(self.path))
+        dirname = os.path.dirname(self.path)
+        utils_path.init_dir(dirname)
         with open(self.path, 'w') as fd:
             fd.write(self.content)
             os.chmod(self.path, self.mode)

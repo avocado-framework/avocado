@@ -15,6 +15,8 @@ import tempfile
 import logging
 import shutil
 
+from avocado.utils import path as utils_path
+
 BASE_DIR = os.environ.get('TMPDIR', '/tmp')
 # If you want to debug problems with your aexpect instances, setting
 # DEBUG = True will leave the temporary files created by aexpect around
@@ -527,7 +529,7 @@ class Spawn(object):
 
         # Define filenames for communication with server
         try:
-            os.makedirs(base_dir)
+            utils_path.init_dir(base_dir)
         except Exception:
             pass
         (self.shell_pid_filename,

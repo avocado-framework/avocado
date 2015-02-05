@@ -28,6 +28,7 @@ from avocado.core import exit_codes
 from avocado.core import output
 from avocado.plugins import plugin
 from avocado.result import TestResult
+from avocado.utils import path as utils_path
 
 
 class ReportModel(object):
@@ -226,8 +227,7 @@ class HTMLTestResult(TestResult):
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         else:
             output_dir = os.path.dirname(os.path.abspath(self.output))
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+            utils_path.init_dir(output_dir)
             for resource_dir in os.listdir(static_basedir):
                 res_dir = os.path.join(static_basedir, resource_dir)
                 out_dir = os.path.join(output_dir, resource_dir)
