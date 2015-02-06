@@ -1,6 +1,6 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.20.0
+Version: 0.20.1
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -66,6 +66,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Fri Feb 6 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.1-1
+- Update to upstream version 0.20.1
+
 * Mon Feb 3 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.0-1
 - Update to upstream version 0.20.0
 
