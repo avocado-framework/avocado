@@ -43,25 +43,6 @@ stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
 
 
-class CmdNotFoundError(Exception):
-
-    """
-    Indicates that the command was not found in the system after a search.
-
-    :param cmd: String with the command.
-    :param paths: List of paths where we looked after.
-    """
-
-    def __init__(self, cmd, paths):
-        super(CmdNotFoundError, self)
-        self.cmd = cmd
-        self.paths = paths
-
-    def __str__(self):
-        return ("Command '%s' could not be found in any of the PATH dirs: %s" %
-                (self.cmd, self.paths))
-
-
 class GDBInferiorProcessExitedError(exceptions.TestNAError):
 
     """
@@ -74,30 +55,6 @@ class GDBInferiorProcessExitedError(exceptions.TestNAError):
     test will be skipped.
     """
     pass
-
-
-def find_command(cmd):
-    """
-    Try to find a command in the PATH, paranoid version.
-
-    :param cmd: Command to be found.
-    :raise: :class:`avocado.utils.process.CmdNotFoundError` in case the
-            command was not found.
-    """
-    common_bin_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
-                        "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
-    try:
-        path_paths = os.environ['PATH'].split(":")
-    except IndexError:
-        path_paths = []
-    path_paths = list(set(common_bin_paths + path_paths))
-
-    for dir_path in path_paths:
-        cmd_path = os.path.join(dir_path, cmd)
-        if os.path.isfile(cmd_path):
-            return os.path.abspath(cmd_path)
-
-    raise CmdNotFoundError(cmd, path_paths)
 
 
 def pid_exists(pid):

@@ -19,7 +19,7 @@ import logging
 import os
 import sys
 
-from avocado.utils import process
+from avocado.utils import path as utils_path
 
 
 class ProgressStreamHandler(logging.StreamHandler):
@@ -59,8 +59,8 @@ class Paginator(object):
 
     def __init__(self):
         try:
-            paginator = "%s -FRSX" % process.find_command('less')
-        except process.CmdNotFoundError:
+            paginator = "%s -FRSX" % utils_path.find_command('less')
+        except utils_path.CmdNotFoundError:
             paginator = None
 
         paginator = os.environ.get('PAGER', paginator)
