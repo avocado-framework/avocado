@@ -737,7 +737,7 @@ class AptBackend(DpkgBackend):
         """
         try:
             command = process.find_command('apt-file')
-        except ValueError:
+        except process.CmdNotFoundError:
             self.install('apt-file')
             command = process.find_command('apt-file')
 
