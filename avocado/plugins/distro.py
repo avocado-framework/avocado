@@ -21,6 +21,7 @@ from avocado.core import output
 from avocado.core import exit_codes
 from avocado.plugins import plugin
 from avocado.utils import process
+from avocado.utils import path as utils_path
 from avocado.linux import distro as distro_utils
 
 
@@ -168,9 +169,9 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
     def __init__(self, path):
         super(DistroPkgInfoLoaderRpm, self).__init__(path)
         try:
-            process.find_command('rpm')
+            utils_path.find_command('rpm')
             self.capable = True
-        except process.CmdNotFoundError:
+        except utils_path.CmdNotFoundError:
             self.capable = False
 
     def is_software_package(self, path):
@@ -198,9 +199,9 @@ class DistroPkgInfoLoaderDeb(DistroPkgInfoLoader):
     def __init__(self, path):
         super(DistroPkgInfoLoaderDeb, self).__init__(path)
         try:
-            process.find_command('dpkg-deb')
+            utils_path.find_command('dpkg-deb')
             self.capable = True
-        except process.CmdNotFoundError:
+        except utils_path.CmdNotFoundError:
             self.capable = False
 
     def is_software_package(self, path):

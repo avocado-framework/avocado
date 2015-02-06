@@ -50,6 +50,7 @@ from avocado.utils import process
 from avocado.utils import data_factory
 from avocado.linux import distro
 from avocado.core import exceptions
+from avocado.utils import path as utils_path
 
 log = logging.getLogger('avocado.test')
 
@@ -81,9 +82,9 @@ class SystemInspector(object):
         list_supported = []
         for high_level_pm in SUPPORTED_PACKAGE_MANAGERS:
             try:
-                process.find_command(high_level_pm)
+                utils_path.find_command(high_level_pm)
                 list_supported.append(high_level_pm)
-            except process.CmdNotFoundError:
+            except utils_path.CmdNotFoundError:
                 pass
 
         pm_supported = None
@@ -184,7 +185,7 @@ class RpmBackend(BaseBackend):
         '%{NAME} %{VERSION} %{RELEASE} %{SIGMD5} %{ARCH}')
 
     def __init__(self):
-        self.lowlevel_base_cmd = process.find_command('rpm')
+        self.lowlevel_base_cmd = utils_path.find_command('rpm')
 
     def _check_installed_version(self, name, version):
         """
@@ -290,7 +291,7 @@ class DpkgBackend(BaseBackend):
     INSTALLED_OUTPUT = 'install ok installed'
 
     def __init__(self):
-        self.lowlevel_base_cmd = process.find_command('dpkg')
+        self.lowlevel_base_cmd = utils_path.find_command('dpkg')
 
     def check_installed(self, name):
         if os.path.isfile(name):
@@ -350,7 +351,7 @@ class YumBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super(YumBackend, self).__init__()
-        executable = process.find_command('yum')
+        executable = utils_path.find_command('yum')
         base_arguments = '-y'
         self.base_command = executable + ' ' + base_arguments
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
@@ -496,7 +497,7 @@ class ZypperBackend(RpmBackend):
         Initializes the base command and the yum package repository.
         """
         super(ZypperBackend, self).__init__()
-        self.base_command = process.find_command('zypper') + ' -n'
+        self.base_command = utils_path.find_command('zypper') + ' -n'
         z_cmd = self.base_command + ' --version'
         cmd_result = process.run(z_cmd, ignore_status=True,
                                  verbose=False)
@@ -623,7 +624,7 @@ class AptBackend(DpkgBackend):
         Initializes the base command and the debian package repository.
         """
         super(AptBackend, self).__init__()
-        executable = process.find_command('apt-get')
+        executable = utils_path.find_command('apt-get')
         self.base_command = executable + ' -y'
         self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'
         cmd_result = process.run('apt-get -v | head -1',
@@ -736,10 +737,10 @@ class AptBackend(DpkgBackend):
         :param path: File path.
         """
         try:
-            command = process.find_command('apt-file')
-        except process.CmdNotFoundError:
+            command = utils_path.find_command('apt-file')
+        except utils_path.CmdNotFoundError:
             self.install('apt-file')
-            command = process.find_command('apt-file')
+            command = utils_path.find_command('apt-file')
 
         cache_update_cmd = command + ' update'
         try:

@@ -16,6 +16,7 @@
 
 from avocado import runtime
 from avocado.utils import process
+from avocado.utils import path as utils_path
 from avocado.plugins import plugin
 
 
@@ -54,8 +55,8 @@ class GDB(plugin.Plugin):
 
         default_gdb_path = '/usr/bin/gdb'
         try:
-            system_gdb_path = process.find_command('gdb')
-        except process.CmdNotFoundError:
+            system_gdb_path = utils_path.find_command('gdb')
+        except utils_path.CmdNotFoundError:
             system_gdb_path = default_gdb_path
         gdb_grp.add_argument('--gdb-path',
                              default=system_gdb_path, metavar='PATH',
@@ -65,8 +66,8 @@ class GDB(plugin.Plugin):
 
         default_gdbserver_path = '/usr/bin/gdbserver'
         try:
-            system_gdbserver_path = process.find_command('gdbserver')
-        except process.CmdNotFoundError:
+            system_gdbserver_path = utils_path.find_command('gdbserver')
+        except utils_path.CmdNotFoundError:
             system_gdbserver_path = default_gdbserver_path
         gdb_grp.add_argument('--gdbserver-path',
                              default=system_gdbserver_path, metavar='PATH',

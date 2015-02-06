@@ -10,10 +10,11 @@ root_path = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, root_path)
 
 import avocado.version
+from avocado.utils import path
 from avocado.utils import process
 
 # Auto generate API documentation
-_sphinx_apidoc = process.find_command('sphinx-apidoc')
+_sphinx_apidoc = path.find_command('sphinx-apidoc')
 _output_dir = os.path.join(root_path, 'docs', 'source', 'api')
 _api_dir = os.path.join(root_path, 'avocado')
 process.run("%s -o %s %s" % (_sphinx_apidoc, _output_dir, _api_dir))
