@@ -5,6 +5,7 @@ import os
 from avocado import test
 from avocado import gdb
 from avocado import runtime
+from avocado import job
 from avocado.utils import process
 
 
@@ -433,3 +434,6 @@ class GdbTest(test.Test):
         self.test_server_stdout()
         self.test_interactive_stdout()
         self.test_remote()
+
+if __name__ == '__main__':
+    job.main()
