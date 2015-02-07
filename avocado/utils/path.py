@@ -75,13 +75,15 @@ def init_dir(*args):
     return directory
 
 
-def find_command(cmd):
+def find_command(cmd, default=None):
     """
     Try to find a command in the PATH, paranoid version.
 
     :param cmd: Command to be found.
+    :param default: Command path to use as a fallback if not found
+                    in the standard directories.
     :raise: :class:`avocado.utils.path.CmdNotFoundError` in case the
-            command was not found.
+            command was not found and no default was given.
     """
     common_bin_paths = ["/usr/libexec", "/usr/local/sbin", "/usr/local/bin",
                         "/usr/sbin", "/usr/bin", "/sbin", "/bin"]
@@ -96,7 +98,10 @@ def find_command(cmd):
         if os.path.isfile(cmd_path):
             return os.path.abspath(cmd_path)
 
-    raise CmdNotFoundError(cmd, path_paths)
+    if default is not None:
+        return default
+    else:
+        raise CmdNotFoundError(cmd, path_paths)
 
 
 class PathInspector(object):
