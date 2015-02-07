@@ -65,6 +65,11 @@ class Test(unittest.TestCase):
                     'sleeptest.long' and 'sleeptest.short'.
         :param job: The job that this test is part of.
         """
+        def record_and_warn(*args, **kwargs):
+            """ Record call to this function and log warning """
+            self.__log_warn_used = True
+            return original_log_warn(*args, **kwargs)
+
         if name is not None:
             self.name = name
         else:
@@ -115,6 +120,9 @@ class Test(unittest.TestCase):
         self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")
+        original_log_warn = self.log.warning
+        self.__log_warn_used = False
+        self.log.warn = self.log.warning = record_and_warn
 
         self.stdout_log = logging.getLogger("avocado.test.stdout")
         self.stderr_log = logging.getLogger("avocado.test.stderr")
@@ -431,6 +439,10 @@ class Test(unittest.TestCase):
             raise stdout_check_exception
         elif stderr_check_exception is not None:
             raise stderr_check_exception
+        elif self.__log_warn_used:
+            raise exceptions.TestWarn("Test passed but there were warnings "
+                                      "during execution. Check the log for "
+                                      "details.")
 
         self.status = 'PASS'
         self.sysinfo_logger.end_test_hook()
@@ -517,6 +529,10 @@ class SimpleTest(Test):
                                                  'stdout.expected')
         self.expected_stderr_file = os.path.join(self.datadir,
                                                  'stderr.expected')
+        # Simple test might need to write directly to main log
+        if base_logdir is None:
+            base_logdir = self.logdir[:-len(self.name)]
+        os.environ['AVOCADO_TESTSUITE_LOGDIR'] = base_logdir
 
     def _log_detailed_cmd_info(self, result):
         """
@@ -540,6 +556,14 @@ class SimpleTest(Test):
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
+
+    def runTest(self, result=None):
+        super(SimpleTest, self).runTest(result)
+        for line in open(self.logfile):
+            if line[26:30] == 'WARN':
+                raise exceptions.TestWarn("Test passed but there were warnings"
+                                          "during execution. Check the log for"
+                                          " details.")
 
 
 class MissingTest(Test):
