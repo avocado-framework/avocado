@@ -53,22 +53,15 @@ class GDB(plugin.Plugin):
                                    ' inferior process received a fatal signal '
                                    'such as SIGSEGV or SIGABRT'))
 
-        default_gdb_path = '/usr/bin/gdb'
-        try:
-            system_gdb_path = utils_path.find_command('gdb')
-        except utils_path.CmdNotFoundError:
-            system_gdb_path = default_gdb_path
+        system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
         gdb_grp.add_argument('--gdb-path',
                              default=system_gdb_path, metavar='PATH',
                              help=('Path to the GDB executable, should you '
                                    'need to use a custom GDB version. Current: '
                                    '"%(default)s"'))
 
-        default_gdbserver_path = '/usr/bin/gdbserver'
-        try:
-            system_gdbserver_path = utils_path.find_command('gdbserver')
-        except utils_path.CmdNotFoundError:
-            system_gdbserver_path = default_gdbserver_path
+        system_gdbserver_path = utils_path.find_command('gdbserver',
+                                                        '/usr/bin/gdbserver')
         gdb_grp.add_argument('--gdbserver-path',
                              default=system_gdbserver_path, metavar='PATH',
                              help=('Path to the gdbserver executable, should you '
