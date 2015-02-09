@@ -126,6 +126,10 @@ class TestRunner(plugin.Plugin):
         :param args: Command line args received from the run subparser.
         """
         view = output.View(app_args=args)
+        if not args.url:
+            self.parser.print_help()
+            view.notify(event='error', msg='Empty test ID. A test path or alias must be provided')
+            return exit_codes.AVOCADO_FAIL
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
@@ -133,11 +137,8 @@ class TestRunner(plugin.Plugin):
                     raise ValueError
             except ValueError:
                 view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
-                return sys.exit(exit_codes.AVOCADO_FAIL)
+                return exit_codes.AVOCADO_FAIL
 
         job_instance = job.Job(args)
         rc = job_instance.run()
-        if not args.url:
-            self.parser.print_help()
-
         return rc
