@@ -158,7 +158,7 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = 3
         expected_output = 'Empty test ID. A test path or alias must be provided'
         expected_output_2 = 'usage:'
         self.assertEqual(result.exit_status, expected_rc)
