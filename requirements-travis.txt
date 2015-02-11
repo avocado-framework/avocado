@@ -4,4 +4,4 @@ nose==1.3.4
 pystache==0.5.4
 Sphinx==1.3b1
 flexmock==0.9.7
-inspektor==0.1.12
+inspektor==0.1.14
