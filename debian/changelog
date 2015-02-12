@@ -1,3 +1,9 @@
+avocado (0.20.1) trusty; urgency=medium
+
+  * Automated (make builddeb) build.
+
+ -- Lucas Meneghel Rodrigues (lmr) <lookkas@gmail.com>  Thu, 12 Feb 2015 11:40:36 -0200
+
 avocado (0.14.0) trusty; urgency=medium
 
   * Add new upstream version 0.14.0.
