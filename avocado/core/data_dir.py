@@ -207,8 +207,6 @@ def get_job_logs_dir(args=None, unique_id=None):
     """
     Create a log directory for a job, or a stand alone execution of a test.
 
-    Also, symlink the created dir with [avocado-logs-dir]/latest.
-
     :param args: :class:`argparse.Namespace` instance with cmdline arguments
                  (optional).
     :rtype: basestring
@@ -224,13 +222,23 @@ def get_job_logs_dir(args=None, unique_id=None):
 
     debugbase = 'job-%s-%s' % (start_time, unique_id[:7])
     debugdir = utils_path.init_dir(logdir, debugbase)
-    latestdir = os.path.join(logdir, "latest")
+    return debugdir
+
+
+def update_latest_job_logs_dir(debugdir):
+    """
+    Update the latest job result symbolic link [avocado-logs-dir]/latest.
+
+    :param debubdir: full path for the current job result.
+    """
+    basedir = os.path.dirname(debugdir)
+    basename = os.path.basename(debugdir)
+    latest = os.path.join(basedir, "latest")
     try:
-        os.unlink(latestdir)
+        os.unlink(latest)
     except OSError:
         pass
-    os.symlink(debugbase, latestdir)
-    return debugdir
+    os.symlink(basename, latest)
 
 
 class _TmpDirTracker(Borg):
