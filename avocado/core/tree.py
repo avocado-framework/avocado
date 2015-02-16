@@ -214,8 +214,8 @@ class TreeNode(object):
                                  if self.parent else {})
             for key, value in self.value.iteritems():
                 if isinstance(value, list):
-                    if (key in self._environment
-                            and isinstance(self._environment[key], list)):
+                    if (key in self._environment and
+                            isinstance(self._environment[key], list)):
                         self._environment[key] = self._environment[key] + value
                     else:
                         self._environment[key] = value
@@ -308,8 +308,8 @@ class TreeNode(object):
             if not compact:
                 result.pop()
             (low, high, end) = (mids[0], mids[-1], len(result))
-            prefixes = ([pad] * (low + 1) + [_pad + '|'] * (high - low - 1)
-                        + [pad] * (end - high))
+            prefixes = ([pad] * (low + 1) + [_pad + '|'] * (high - low - 1) +
+                        [pad] * (end - high))
             mid = (low + high) / 2
             prefixes[mid] = char1 + '-' * (length - 2) + prefixes[mid][-1]
             result = [p + l for (p, l) in zip(prefixes, result)]

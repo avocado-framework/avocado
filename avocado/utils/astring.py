@@ -93,8 +93,8 @@ def strip_console_codes(output, custom_codes=None):
     while index < len(output):
         tmp_index = 0
         tmp_word = ""
-        while (len(re.findall("\x1b", tmp_word)) < 2
-               and index + tmp_index < len(output)):
+        while (len(re.findall("\x1b", tmp_word)) < 2 and
+               index + tmp_index < len(output)):
             tmp_word += output[index + tmp_index]
             tmp_index += 1
 
