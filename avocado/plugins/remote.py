@@ -213,8 +213,8 @@ class RunRemote(plugin.Plugin):
         :return: True when enable_arg enabled and all required args are set
         :raise sys.exit: When missing required argument.
         """
-        if (not hasattr(app_args, enable_arg)
-                or not getattr(app_args, enable_arg)):
+        if (not hasattr(app_args, enable_arg) or
+                not getattr(app_args, enable_arg)):
             return False
         missing = []
         for arg in required_args:

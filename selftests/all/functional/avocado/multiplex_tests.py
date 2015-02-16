@@ -111,8 +111,8 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = 0
         output = self.run_and_check(cmd_line, expected_rc)
         for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
-            msg = ('[stdout] Custom variable: '
-                   + '\n[stdout] '.join(msg.splitlines()))
+            msg = ('[stdout] Custom variable: ' +
+                   '\n[stdout] '.join(msg.splitlines()))
             self.assertIn(msg, output, "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
                           % ("\n  ".join(msg.splitlines()),

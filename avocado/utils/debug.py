@@ -38,8 +38,8 @@ def measure_duration(func):
             return func(*args, **kwargs)
         finally:
             duration = time.time() - start
-            __MEASURE_DURATION[func] = (__MEASURE_DURATION.get(func, 0)
-                                        + duration)
+            __MEASURE_DURATION[func] = (__MEASURE_DURATION.get(func, 0) +
+                                        duration)
             LOGGER.debug("PERF: %s: (%ss, %ss)", func, duration,
                          __MEASURE_DURATION[func])
     return wrapper
