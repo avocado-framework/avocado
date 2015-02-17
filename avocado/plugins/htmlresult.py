@@ -115,11 +115,12 @@ class ReportModel(object):
             t['time'] = "%.2f" % t['time']
             t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t['time_start']))
             t['row_class'] = mapping[t['status']]
-            exibition_limit = 40
-            if len(t['fail_reason']) > exibition_limit:
+            exhibition_limit = 40
+            if len(t['fail_reason']) > exhibition_limit:
                 t['fail_reason'] = ('<a data-container="body" data-toggle="popover" '
                                     'data-placement="top" title="Error Details" data-content="%s">%s...</a>' %
-                                    (t['fail_reason'], t['fail_reason'][:exibition_limit]))
+                                    (t['fail_reason'], t['fail_reason'][
+                                                       :exhibition_limit]))
         return test_info
 
     def sysinfo(self):

@@ -245,7 +245,7 @@ class RpmBackend(BaseBackend):
         if software_components:
             cmd_format = "rpm -qa --qf '%s' | sort"
             query_format = "%s\n" % self.SOFTWARE_COMPONENT_QRY
-            cmd_format = cmd_format % query_format
+            cmd_format %= query_format
             cmd_result = process.run(cmd_format, verbose=False, shell=True)
         else:
             cmd_result = process.run('rpm -qa | sort', verbose=False,

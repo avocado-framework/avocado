@@ -338,7 +338,7 @@ While preserving names and environment values. Then all combinations are
 created resulting into 27 unique variants covering all possible combinations
 of given tree::
 
-    Variant 1:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
+	Variant 1:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
 	Variant 2:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
 	Variant 3:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/windows/3.11
 	Variant 4:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19

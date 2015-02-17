@@ -36,7 +36,7 @@ from avocado.external import gdbmi_parser
 
 GDB_PROMPT = '(gdb)'
 GDB_EXIT = '^exit'
-GDB_BREAK_CONTITIONS = [GDB_PROMPT, GDB_EXIT]
+GDB_BREAK_CONDITIONS = [GDB_PROMPT, GDB_EXIT]
 
 #: How the remote protocol signals a transmission success (in ACK mode)
 REMOTE_TRANSMISSION_SUCCESS = '+'
@@ -101,7 +101,7 @@ def parse_mi(line):
     '''
     Parse a GDB/MI line
 
-    :param line: a string supposedely comming from GDB using MI language
+    :param line: a string supposedly coming from GDB using MI language
     :type line: str
     :returns: a parsed GDB/MI response
     '''
@@ -346,7 +346,7 @@ class GDB(object):
 
     def read_gdb_response(self, timeout=0.01, max_tries=100):
         '''
-        Read raw reponses from GDB
+        Read raw responses from GDB
 
         :param timeout: the amount of time to way between read attemps
         :type timeout: float
@@ -382,7 +382,7 @@ class GDB(object):
         result = []
         while True:
             line = self.read_gdb_response()
-            if line in GDB_BREAK_CONTITIONS:
+            if line in GDB_BREAK_CONDITIONS:
                 break
             if len(result) >= max_lines:
                 break

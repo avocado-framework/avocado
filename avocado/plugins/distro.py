@@ -112,7 +112,7 @@ class DistroPkgInfoLoader(object):
 
     def get_packages_info(self):
         '''
-        This method will go throught each file, checking if it's a valid
+        This method will go through each file, checking if it's a valid
         software package file by calling :meth:`is_software_package` and
         calling :meth:`load_package_info` if it's so.
         '''

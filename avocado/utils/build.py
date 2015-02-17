@@ -22,7 +22,7 @@ def make(path, make='make', env=None, extra_args='', ignore_status=False, allow_
     Run make, adding MAKEOPTS to the list of options.
 
     :param make: what make command name to use.
-    :param env: dictioanry with environment variables to be set before
+    :param env: dictionary with environment variables to be set before
                 calling make (e.g.: CFLAGS).
     :param extra: extra command line arguments to pass to make.
     :param allow_output_check: Whether to log the command stream outputs

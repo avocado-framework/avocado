@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
     """
     Base implementation for the test class.
 
-    You'll inherit from this to write your own tests. Tipically you'll want
+    You'll inherit from this to write your own tests. Typically you'll want
     to implement setup(), action() and cleanup() methods on your own tests.
     """
     default_params = {}
@@ -448,9 +448,9 @@ class Test(unittest.TestCase):
 
     def run_avocado(self, result=None):
         """
-        Wraps the runTest metod, for execution inside the avocado runner.
+        Wraps the runTest method, for execution inside the avocado runner.
 
-        :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
+        :result: Unused param, compatibility with :class:`unittest.TestCase`.
         """
         self._setup_environment_variables()
         try:
