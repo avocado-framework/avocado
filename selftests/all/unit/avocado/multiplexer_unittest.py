@@ -1,8 +1,8 @@
 import unittest
+import itertools
 
 from avocado import multiplexer
 from avocado.core import tree
-import itertools
 
 
 TREE = tree.create_from_yaml(['examples/mux-selftest.yaml'])

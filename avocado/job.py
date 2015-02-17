@@ -27,7 +27,6 @@ import shutil
 
 from avocado import multiplexer
 from avocado import result
-from avocado import test
 from avocado import runner
 from avocado import loader
 from avocado import runtime

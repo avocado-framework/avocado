@@ -15,7 +15,6 @@
 """Run tests with GDB goodies enabled."""
 
 from avocado import runtime
-from avocado.utils import process
 from avocado.utils import path as utils_path
 from avocado.plugins import plugin
 

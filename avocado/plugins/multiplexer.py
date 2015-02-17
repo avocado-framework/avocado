@@ -14,7 +14,6 @@
 
 import os
 import sys
-import collections
 
 from avocado.plugins import plugin
 from avocado.core import output

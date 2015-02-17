@@ -17,6 +17,7 @@ import shutil
 
 from avocado.utils import path as utils_path
 
+
 BASE_DIR = os.environ.get('TMPDIR', '/tmp')
 # If you want to debug problems with your aexpect instances, setting
 # DEBUG = True will leave the temporary files created by aexpect around
