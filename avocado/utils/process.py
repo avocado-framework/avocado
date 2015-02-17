@@ -484,9 +484,9 @@ class SubProcess(object):
 
 class WrapSubProcess(SubProcess):
 
-    '''
+    """
     Wrap subprocess inside an utility program.
-    '''
+    """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
                  shell=False, env=None, wrapper=None):
@@ -503,9 +503,9 @@ class WrapSubProcess(SubProcess):
 
 class GDBSubProcess(object):
 
-    '''
+    """
     Runs a subprocess inside the GNU Debugger
-    '''
+    """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
                  shell=False, env=None):
@@ -554,14 +554,14 @@ class GDBSubProcess(object):
         return breakpoints
 
     def create_and_wait_on_resume_fifo(self, path):
-        '''
+        """
         Creates a FIFO file and waits until it's written to
 
         :param path: the path that the file will be created
         :type path: str
         :returns: first character that was written to the fifo
         :rtype: str
-        '''
+        """
         os.mkfifo(path)
         f = open(path, 'r')
         c = f.read(1)
@@ -730,9 +730,9 @@ class GDBSubProcess(object):
         return result
 
     def _run_pre_commands(self):
-        '''
+        """
         Run commands if user passed a commands file with --gdb-prerun-commands
-        '''
+        """
         binary_name = os.path.basename(self.binary)
         # The commands file can be specific to a given binary or universal,
         # start checking for specific ones first
@@ -781,7 +781,7 @@ class GDBSubProcess(object):
 
 
 def split_gdb_expr(expr):
-    '''
+    """
     Splits a GDB expr into (binary_name, breakpoint_location)
 
     Returns :attr:`avocado.gdb.GDB.DEFAULT_BREAK` as the default breakpoint
@@ -791,7 +791,7 @@ def split_gdb_expr(expr):
     :type expr: str
     :returns: a (binary_name, breakpoint_location) tuple
     :rtype: tuple
-    '''
+    """
     expr_split = expr.split(':', 1)
     if len(expr_split) == 2:
         r = tuple(expr_split)
@@ -801,11 +801,11 @@ def split_gdb_expr(expr):
 
 
 def should_run_inside_gdb(cmd):
-    '''
+    """
     Wether the given command should be run inside the GNU debugger
 
     :param cmd: the command arguments, from where we extract the binary name
-    '''
+    """
     args = shlex.split(cmd)
     cmd_binary_name = os.path.basename(args[0])
 
@@ -817,11 +817,11 @@ def should_run_inside_gdb(cmd):
 
 
 def should_run_inside_wrapper(cmd):
-    '''
+    """
     Wether the given command should be run inside the wrapper utility.
 
     :param cmd: the command arguments, from where we extract the binary name
-    '''
+    """
     runtime.CURRENT_WRAPPER = None
     args = shlex.split(cmd)
     cmd_binary_name = args[0]
@@ -840,13 +840,13 @@ def should_run_inside_wrapper(cmd):
 
 
 def get_sub_process_klass(cmd):
-    '''
+    """
     Which sub process implementation should be used
 
     Either the regular one, or the GNU Debugger version
 
     :param cmd: the command arguments, from where we extract the binary name
-    '''
+    """
     if should_run_inside_gdb(cmd):
         return GDBSubProcess
     elif should_run_inside_wrapper(cmd):

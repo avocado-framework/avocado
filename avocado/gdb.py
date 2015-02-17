@@ -59,52 +59,52 @@ REMOTE_MAX_PACKET_SIZE = 1024
 
 class UnexpectedResponseError(Exception):
 
-    '''
+    """
     A response different from the one expected was received from GDB
-    '''
+    """
     pass
 
 
 class ServerInitTimeoutError(Exception):
 
-    '''
+    """
     Server took longer than expected to initialize itself properly
-    '''
+    """
     pass
 
 
 class InvalidPacketError(Exception):
 
-    '''
+    """
     Packet received has invalid format
-    '''
+    """
     pass
 
 
 class NotConnectedError(Exception):
 
-    '''
+    """
     GDBRemote is not connected to a remote GDB server
-    '''
+    """
     pass
 
 
 class RetransmissionRequestedError(Exception):
 
-    '''
+    """
     Message integrity was not validated and retransmission is being requested
-    '''
+    """
     pass
 
 
 def parse_mi(line):
-    '''
+    """
     Parse a GDB/MI line
 
     :param line: a string supposedly coming from GDB using MI language
     :type line: str
     :returns: a parsed GDB/MI response
-    '''
+    """
     if not line.endswith('\n'):
         line = "%s\n" % line
     return gdbmi_parser.process(line)
@@ -208,14 +208,14 @@ def string_to_hex(text):
 
 
 def remote_checksum(input):
-    '''
+    """
     Calculates a remote message checksum
 
     :param input: the message input payload, without the start and end markers
     :type input: str
     :returns: two digit checksum
     :rtype: str
-    '''
+    """
     sum = 0
     for i in input:
         sum += ord(i)
@@ -345,7 +345,7 @@ class GDB(object):
         self.output_messages_queue = []
 
     def read_gdb_response(self, timeout=0.01, max_tries=100):
-        '''
+        """
         Read raw responses from GDB
 
         :param timeout: the amount of time to way between read attemps
@@ -355,7 +355,7 @@ class GDB(object):
         :type max_tries: int
         :returns: a string containing a raw response from GDB
         :rtype: str
-        '''
+        """
         current_try = 0
         while current_try < max_tries:
             try:
@@ -371,14 +371,14 @@ class GDB(object):
                 time.sleep(timeout)
 
     def read_until_break(self, max_lines=100):
-        '''
+        """
         Read lines from GDB until a break condition is reached
 
         :param max_lines: the maximum number of lines to read
         :type max_lines: int
         :returns: a list of messages read
         :rtype: list of str
-        '''
+        """
         result = []
         while True:
             line = self.read_gdb_response()
@@ -390,13 +390,13 @@ class GDB(object):
         return result
 
     def send_gdb_command(self, command):
-        '''
+        """
         Send a raw command to the GNU debugger input
 
         :param command: the GDB command, hopefully in MI language
         :type command: str
         :returns: None
-        '''
+        """
         if not command.endswith('\n'):
             command = "%s\n" % command
         self.process.stdin.write(command)

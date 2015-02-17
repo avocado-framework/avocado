@@ -773,7 +773,7 @@ class AptBackend(DpkgBackend):
 
 
 def install_distro_packages(distro_pkg_map, interactive=False):
-    '''
+    """
     Installs packages for the currently running distribution
 
     This utility function checks if the currently running distro is a
@@ -788,7 +788,7 @@ def install_distro_packages(distro_pkg_map, interactive=False):
     :param distro_pkg_map: mapping of distro name, as returned by
         utils.get_os_vendor(), to a list of package names
     :return: True if any packages were actually installed, False otherwise
-    '''
+    """
     if not interactive:
         os.environ['DEBIAN_FRONTEND'] = 'noninteractive'
 
