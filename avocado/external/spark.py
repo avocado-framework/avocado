@@ -287,7 +287,7 @@ class GenericParser:
                 if not self.rules.has_key(sym) or \
                    not self.nullable[sym]:
                     candidate = 0
-                    i = i + 1
+                    i += 1
                     continue
 
                 newrhs = list(rhs)
@@ -296,7 +296,7 @@ class GenericParser:
                 worklist.append((newrule, i + 1,
                                  candidate, oldrule))
                 candidate = 0
-                i = i + 1
+                i += 1
             else:
                 if candidate:
                     lhs = self._NULLABLE + lhs
@@ -362,7 +362,7 @@ class GenericParser:
         while pos < n:
             if not self.isnullable(rhs[pos]):
                 break
-            pos = pos + 1
+            pos += 1
         return pos
 
     def makeState(self, state, sym):
@@ -825,7 +825,7 @@ class GenericASTMatcher(GenericParser):
         for child in node:
             if children == 0:
                 self.input.insert(0, '(')
-            children = children + 1
+            children += 1
             self.match_r(child)
 
         if children > 0:
