@@ -22,6 +22,7 @@ import time
 
 from avocado.utils import path as utils_path
 
+
 log = logging.getLogger('avocado.test')
 
 

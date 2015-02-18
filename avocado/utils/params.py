@@ -70,7 +70,7 @@ class Params(UserDict.IterableUserDict):
         This method behaves as follows: the suffix '_' + obj_name is removed
         from all key names that have it.  Other key names are left unchanged.
         The values of keys with the suffix overwrite the values of their
-        suffixless versions.
+        suffix-less versions.
 
         :param obj_name: The name of the object (objects are listed by the
                 objects() method).

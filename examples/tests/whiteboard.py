@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
+import base64
+
 from avocado import test
 from avocado import job
-
-import base64
 
 
 class WhiteBoard(test.Test):

@@ -245,7 +245,7 @@ class RpmBackend(BaseBackend):
         if software_components:
             cmd_format = "rpm -qa --qf '%s' | sort"
             query_format = "%s\n" % self.SOFTWARE_COMPONENT_QRY
-            cmd_format = cmd_format % query_format
+            cmd_format %= query_format
             cmd_result = process.run(cmd_format, verbose=False, shell=True)
         else:
             cmd_result = process.run('rpm -qa | sort', verbose=False,
@@ -773,7 +773,7 @@ class AptBackend(DpkgBackend):
 
 
 def install_distro_packages(distro_pkg_map, interactive=False):
-    '''
+    """
     Installs packages for the currently running distribution
 
     This utility function checks if the currently running distro is a
@@ -788,7 +788,7 @@ def install_distro_packages(distro_pkg_map, interactive=False):
     :param distro_pkg_map: mapping of distro name, as returned by
         utils.get_os_vendor(), to a list of package names
     :return: True if any packages were actually installed, False otherwise
-    '''
+    """
     if not interactive:
         os.environ['DEBIAN_FRONTEND'] = 'noninteractive'
 

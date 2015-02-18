@@ -120,13 +120,13 @@ class RemoteTestResult(HumanTestResult):
 
     def _copy_tests(self):
         """
-        Gather test's directories and copy them recursively to
+        Gather test directories and copy them recursively to
         $remote_test_dir + $test_absolute_path.
         :note: Default tests execution is translated into absolute paths too
         """
         # TODO: Use `avocado.loader.TestLoader` instead
         self.remote.makedir(self.remote_test_dir)
-        if self.args.remote_no_copy:    # Leave everytihng as is
+        if self.args.remote_no_copy:    # Leave everything as is
             return
         paths = set()
         for i in xrange(len(self.urls)):
@@ -147,7 +147,7 @@ class RemoteTestResult(HumanTestResult):
             previous = path
 
     def setup(self):
-        """ Setup remote environment and copy test's directories """
+        """ Setup remote environment and copy test directories """
         self.stream.notify(event='message',
                            msg=("LOGIN      : %s@%s:%d"
                                 % (self.args.remote_username,

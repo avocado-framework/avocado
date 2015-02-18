@@ -20,6 +20,7 @@ import logging
 from xml.dom import minidom
 
 from avocado.utils import remote
+
 LOG = logging.getLogger('avocado.test')
 
 try:

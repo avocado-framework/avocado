@@ -15,7 +15,6 @@
 """Run tests with GDB goodies enabled."""
 
 from avocado import runtime
-from avocado.utils import process
 from avocado.utils import path as utils_path
 from avocado.plugins import plugin
 
@@ -44,7 +43,7 @@ class GDB(plugin.Plugin):
                              help=('After loading a binary in binary in GDB, '
                                    'but before actually running it, execute '
                                    'the given GDB commands in the given file.'
-                                   'BINARY_PATH is optional and if ommited '
+                                   'BINARY_PATH is optional and if omitted '
                                    'will apply to all binaries'))
 
         gdb_grp.add_argument('--gdb-enable-core', action='store_true',

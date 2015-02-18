@@ -24,6 +24,7 @@ from avocado.core import exceptions
 from avocado.core import output
 from avocado.utils import process
 
+
 LOG = logging.getLogger('avocado.test')
 
 try:

@@ -46,7 +46,7 @@ class Parser(object):
         """
         Start to parsing arguments.
 
-        At the end of this method, the support for subparses is activated.
+        At the end of this method, the support for subparsers is activated.
         Side effect: update attribute `args` (the namespace).
         """
         self.args, _ = self.application.parse_known_args()

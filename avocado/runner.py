@@ -30,7 +30,6 @@ from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
 from avocado.core import exit_codes
-from avocado.utils import path
 from avocado.utils import wait
 from avocado.utils import stacktrace
 

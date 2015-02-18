@@ -6,6 +6,7 @@ import tempfile
 
 from flexmock import flexmock
 
+
 # simple magic for using scripts within a source tree
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 basedir = os.path.dirname(basedir)

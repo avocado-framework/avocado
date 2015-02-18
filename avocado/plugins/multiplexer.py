@@ -14,7 +14,6 @@
 
 import os
 import sys
-import collections
 
 from avocado.plugins import plugin
 from avocado.core import output
@@ -49,7 +48,7 @@ class Multiplexer(plugin.Plugin):
                                  help='Shows the multiplex tree structure')
 
         self.parser.add_argument('-c', '--contents', action='store_true', default=False,
-                                 help="Shows the variant's content (variables)")
+                                 help="Shows the variant content (variables)")
         self.parser.add_argument('-d', '--debug', action='store_true',
                                  default=False, help="Debug multiplexed "
                                  "files.")

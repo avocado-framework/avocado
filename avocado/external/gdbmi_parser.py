@@ -119,7 +119,7 @@ def __private():
             spark.GenericASTBuilder.__init__(self, AST, 'output')
 
         def p_output(self, args):
-            '''
+            """
             output ::= record_list
             record_list ::= generic_record
             record_list ::= generic_record record_list
@@ -153,7 +153,7 @@ def __private():
             list ::= [ result result_list ]
             list ::= { value }
             list ::= { value value_list }
-            '''
+            """
             pass
 
         def terminal(self, token):

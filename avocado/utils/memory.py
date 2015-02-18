@@ -85,7 +85,7 @@ def rounded_memtotal():
     # have round_kbytes <= mod2n < round_kbytes*2
     # round min_kbytes up to next multiple of mod2n
     phys_kbytes = min_kbytes + mod2n - 1
-    phys_kbytes = phys_kbytes - (phys_kbytes % mod2n)  # clear low bits
+    phys_kbytes -= (phys_kbytes % mod2n)  # clear low bits
     return phys_kbytes
 
 

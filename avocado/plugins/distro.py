@@ -27,9 +27,9 @@ from avocado.linux import distro as distro_utils
 
 class SoftwarePackage(object):
 
-    '''
+    """
     Definition of relevant information on a software package
-    '''
+    """
 
     def __init__(self, name, version, release, checksum, arch):
         self.name = name
@@ -39,9 +39,9 @@ class SoftwarePackage(object):
         self.arch = arch
 
     def to_dict(self):
-        '''
+        """
         Returns the representation as a dictionary
-        '''
+        """
         return {'name': self.name,
                 'version': self.version,
                 'release': self.release,
@@ -49,22 +49,22 @@ class SoftwarePackage(object):
                 'arch': self.arch}
 
     def to_json(self):
-        '''
+        """
         Returns the representation of the distro as JSON
-        '''
+        """
         return json.dumps(self.to_dict())
 
 
 class DistroDef(distro_utils.LinuxDistro):
 
-    '''
+    """
     More complete information on a given Linux Distribution
 
     Can and should include all the software packages that ship with the distro,
     so that an analysis can be made on whether a given package that may be
     responsible for a regression is part of the official set or an external
     package.
-    '''
+    """
 
     def __init__(self, name, version, release, arch):
         super(DistroDef, self).__init__(name, version, release, arch)
@@ -76,9 +76,9 @@ class DistroDef(distro_utils.LinuxDistro):
         self.software_packages_type = 'unknown'
 
     def to_dict(self):
-        '''
+        """
         Returns the representation as a dictionary
-        '''
+        """
         d = {'name': self.name,
              'version': self.version,
              'release': self.release,
@@ -92,30 +92,30 @@ class DistroDef(distro_utils.LinuxDistro):
         return d
 
     def to_json(self):
-        '''
+        """
         Returns the representation of the distro as JSON
-        '''
+        """
         return json.dumps(self.to_dict())
 
 
 class DistroPkgInfoLoader(object):
 
-    '''
+    """
     Loads information from the distro installation tree into a DistroDef
 
     It will go through all package files and inspect them with specific
     package utilities, collecting the necessary information.
-    '''
+    """
 
     def __init__(self, path):
         self.path = path
 
     def get_packages_info(self):
-        '''
-        This method will go throught each file, checking if it's a valid
+        """
+        This method will go through each file, checking if it's a valid
         software package file by calling :meth:`is_software_package` and
         calling :meth:`load_package_info` if it's so.
-        '''
+        """
         packages_info = set()
         for dirpath, dirnames, filenames in os.walk(self.path):
             for filename in filenames:
@@ -129,7 +129,7 @@ class DistroPkgInfoLoader(object):
         return list(packages_info)
 
     def is_software_package(self, path):
-        '''
+        """
         Determines if the given file at `path` is a software package
 
         This check will be used to determine if :meth:`load_package_info`
@@ -142,11 +142,11 @@ class DistroPkgInfoLoader(object):
         :return: either True if the file is a valid software package or False
                  otherwise
         :rtype: bool
-        '''
+        """
         raise NotImplementedError
 
     def get_package_info(self, path):
-        '''
+        """
         Returns information about a given software package
 
         Should be implemented by classes inheriting from
@@ -156,15 +156,15 @@ class DistroPkgInfoLoader(object):
         :type path: str
         :returns: tuple with name, version, release, checksum and arch
         :rtype: tuple
-        '''
+        """
         raise NotImplementedError
 
 
 class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
 
-    '''
+    """
     Loads package information for RPM files
-    '''
+    """
 
     def __init__(self, path):
         super(DistroPkgInfoLoaderRpm, self).__init__(path)
@@ -175,11 +175,11 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
             self.capable = False
 
     def is_software_package(self, path):
-        '''
+        """
         Systems needs to be able to run the rpm binary in order to fetch
         information on package files. If the rpm binary is not available
         on this system, we simply ignore the rpm files found
-        '''
+        """
         return self.capable and path.endswith('.rpm')
 
     def get_package_info(self, path):
@@ -192,9 +192,9 @@ class DistroPkgInfoLoaderRpm(DistroPkgInfoLoader):
 
 class DistroPkgInfoLoaderDeb(DistroPkgInfoLoader):
 
-    '''
+    """
     Loads package information for DEB files
-    '''
+    """
 
     def __init__(self, path):
         super(DistroPkgInfoLoaderDeb, self).__init__(path)
@@ -223,7 +223,7 @@ DISTRO_PKG_INFO_LOADERS = {'rpm': DistroPkgInfoLoaderRpm,
 
 
 def save_distro(linux_distro, path):
-    '''
+    """
     Saves the linux_distro to an external file format
 
     :param linux_distro: an :class:`DistroDef` instance
@@ -231,25 +231,25 @@ def save_distro(linux_distro, path):
     :param path: the location for the output file
     :type path: str
     :return: None
-    '''
+    """
     with open(path, 'w') as output:
         output.write(bz2.compress(linux_distro.to_json()))
 
 
 def load_distro(path):
-    '''
+    """
     Loads the distro from an external file
 
     :param path: the location for the input file
     :type path: str
     :return: a dict with the distro definition data
     :rtype: dict
-    '''
+    """
     return json.loads(bz2.decompress(open(path).read()))
 
 
 def load_from_tree(name, version, release, arch, package_type, path):
-    '''
+    """
     Loads a DistroDef from an installable tree
 
     :param name: a short name that precisely distinguishes this Linux
@@ -277,7 +277,7 @@ def load_from_tree(name, version, release, arch, package_type, path):
     :type package_type: str
     :param path: top level directory of the distro installation tree files
     :type path: str
-    '''
+    """
     distro_def = DistroDef(name, version, release, arch)
 
     loader_class = DISTRO_PKG_INFO_LOADERS.get(package_type, None)
@@ -326,12 +326,12 @@ class DistroOptions(plugin.Plugin):
         super(DistroOptions, self).configure(self.parser)
 
     def get_output_file_name(self, args):
-        '''
+        """
         Adapt the output file name based on given args
 
         It's not uncommon for some distros to not have a release number, so
         adapt the output file name to that
-        '''
+        """
         if args.distro_def_release:
             return '%s-%s.%s-%s.distro' % (args.distro_def_name,
                                            args.distro_def_version,

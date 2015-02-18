@@ -8,7 +8,6 @@ basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import runtime
 from avocado.utils import process
 
 

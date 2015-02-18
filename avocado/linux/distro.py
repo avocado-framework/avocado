@@ -35,12 +35,12 @@ __all__ = ['LinuxDistro',
 # pylint: disable=R0903
 class LinuxDistro(object):
 
-    '''
+    """
     Simple collection of information for a Linux Distribution
-    '''
+    """
 
     def __init__(self, name, version, release, arch):
-        '''
+        """
         Initializes a new Linux Distro
 
         :param name: a short name that precisely distinguishes this Linux
@@ -64,7 +64,7 @@ class LinuxDistro(object):
                      32 bit code. In cases like this, this should be set to
                      the 64 bit architecture name.
         :type arch: str
-        '''
+        """
         self.name = name
         self.version = version
         self.release = release
@@ -90,9 +90,9 @@ UNKNOWN_DISTRO = LinuxDistro(UNKNOWN_DISTRO_NAME,
 
 class Probe(object):
 
-    '''
+    """
     Probes the machine and does it best to confirm it's the right distro
-    '''
+    """
     #: Points to a file that can determine if this machine is running a given
     #: Linux Distribution. This servers a first check that enables the extra
     #: checks to carry on.
@@ -115,13 +115,13 @@ class Probe(object):
         self.score = 0
 
     def check_name_for_file(self):
-        '''
+        """
         Checks if this class will look for a file and return a distro
 
         The conditions that must be true include the file that identifies the
         distro file being set (:attr:`CHECK_FILE`) and the name of the
         distro to be returned (:attr:`CHECK_FILE_DISTRO_NAME`)
-        '''
+        """
         if self.CHECK_FILE is None:
             return False
 
@@ -131,22 +131,22 @@ class Probe(object):
         return True
 
     def name_for_file(self):
-        '''
+        """
         Get the distro name if the :attr:`CHECK_FILE` is set and exists
-        '''
+        """
         if self.check_name_for_file():
             if os.path.exists(self.CHECK_FILE):
                 return self.CHECK_FILE_DISTRO_NAME
 
     def check_name_for_file_contains(self):
-        '''
+        """
         Checks if this class will look for text on a file and return a distro
 
         The conditions that must be true include the file that identifies the
         distro file being set (:attr:`CHECK_FILE`), the text to look for
         inside the distro file (:attr:`CHECK_FILE_CONTAINS`) and the name
         of the distro to be returned (:attr:`CHECK_FILE_DISTRO_NAME`)
-        '''
+        """
         if self.CHECK_FILE is None:
             return False
 
@@ -159,9 +159,9 @@ class Probe(object):
         return True
 
     def name_for_file_contains(self):
-        '''
+        """
         Get the distro if the :attr:`CHECK_FILE` is set and has content
-        '''
+        """
         if self.check_name_for_file_contains():
             if os.path.exists(self.CHECK_FILE):
                 for line in open(self.CHECK_FILE).readlines():
@@ -169,9 +169,9 @@ class Probe(object):
                         return self.CHECK_FILE_DISTRO_NAME
 
     def check_version(self):
-        '''
+        """
         Checks if this class will look for a regex in file and return a distro
-        '''
+        """
         if self.CHECK_FILE is None:
             return False
 
@@ -181,9 +181,9 @@ class Probe(object):
         return True
 
     def _get_version_match(self):
-        '''
+        """
         Returns the match result for the version regex on the file content
-        '''
+        """
         if self.check_version():
             if os.path.exists(self.CHECK_FILE):
                 version_file_content = open(self.CHECK_FILE).read()
@@ -193,9 +193,9 @@ class Probe(object):
             return self.CHECK_VERSION_REGEX.match(version_file_content)
 
     def version(self):
-        '''
+        """
         Returns the version of the distro
-        '''
+        """
         version = UNKNOWN_DISTRO_VERSION
         match = self._get_version_match()
         if match is not None:
@@ -204,16 +204,16 @@ class Probe(object):
         return version
 
     def check_release(self):
-        '''
+        """
         Checks if this has the conditions met to look for the release number
-        '''
+        """
         return (self.check_version() and
                 self.CHECK_VERSION_REGEX.groups > 1)
 
     def release(self):
-        '''
+        """
         Returns the release of the distro
-        '''
+        """
         release = UNKNOWN_DISTRO_RELEASE
         match = self._get_version_match()
         if match is not None:
@@ -222,9 +222,9 @@ class Probe(object):
         return release
 
     def get_distro(self):
-        '''
+        """
         Returns the :class:`LinuxDistro` this probe detected
-        '''
+        """
         name = None
         version = UNKNOWN_DISTRO_VERSION
         release = UNKNOWN_DISTRO_RELEASE
@@ -262,12 +262,12 @@ class Probe(object):
 
 class StdLibProbe(Probe):
 
-    '''
+    """
     Probe that uses the Python standard library builtin detection
 
     This Probe has a lower score on purporse, serving as a fallback
     if no explicit (and hopefully more accurate) probe exists.
-    '''
+    """
 
     def get_distro(self):
         name = None
@@ -297,9 +297,9 @@ class StdLibProbe(Probe):
 
 class RedHatProbe(Probe):
 
-    '''
+    """
     Probe with version checks for Red Hat Enterprise Linux systems
-    '''
+    """
     CHECK_FILE = '/etc/redhat-release'
     CHECK_FILE_CONTAINS = 'Red Hat'
     CHECK_FILE_DISTRO_NAME = 'redhat'
@@ -309,9 +309,9 @@ class RedHatProbe(Probe):
 
 class CentosProbe(RedHatProbe):
 
-    '''
+    """
     Probe with version checks for CentOS systems
-    '''
+    """
     CHECK_FILE = '/etc/redhat-release'
     CHECK_FILE_CONTAINS = 'CentOS'
     CHECK_FILE_DISTRO_NAME = 'centos'
@@ -320,9 +320,9 @@ class CentosProbe(RedHatProbe):
 
 class FedoraProbe(RedHatProbe):
 
-    '''
+    """
     Probe with version checks for Fedora systems
-    '''
+    """
     CHECK_FILE = '/etc/fedora-release'
     CHECK_FILE_CONTAINS = 'Fedora'
     CHECK_FILE_DISTRO_NAME = 'fedora'
@@ -331,9 +331,9 @@ class FedoraProbe(RedHatProbe):
 
 class DebianProbe(Probe):
 
-    '''
+    """
     Simple probe with file checks for Debian systems
-    '''
+    """
     CHECK_FILE = '/etc/debian-version'
     CHECK_FILE_DISTRO_NAME = 'debian'
 
@@ -343,9 +343,9 @@ REGISTERED_PROBES = []
 
 
 def register_probe(probe_class):
-    '''
+    """
     Register a probe to be run during autodetection
-    '''
+    """
     if probe_class not in REGISTERED_PROBES:
         REGISTERED_PROBES.append(probe_class)
 
@@ -358,12 +358,12 @@ register_probe(StdLibProbe)
 
 
 def detect():
-    '''
+    """
     Attempts to detect the Linux Distribution running on this machine
 
     :returns: the detected :class:`LinuxDistro` or :data:`UNKNOWN_DISTRO`
     :rtype: :class:`LinuxDistro`
-    '''
+    """
     results = []
 
     for probe_class in REGISTERED_PROBES:
@@ -383,9 +383,9 @@ def detect():
 
 class Spec(object):
 
-    '''
+    """
     Describes a distro, usually for setting minimum distro requirements
-    '''
+    """
 
     def __init__(self, name, min_version=None, min_release=None, arch=None):
         self.name = name

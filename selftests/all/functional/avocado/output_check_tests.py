@@ -1,7 +1,5 @@
 import os
-import shutil
 import sys
-import tempfile
 import unittest
 
 # simple magic for using scripts within a source tree

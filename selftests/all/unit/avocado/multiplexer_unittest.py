@@ -1,15 +1,15 @@
 import unittest
+import itertools
 
 from avocado import multiplexer
 from avocado.core import tree
-import itertools
 
 
 TREE = tree.create_from_yaml(['examples/mux-selftest.yaml'])
 
 
 def combine(leaves_pools):
-    ''' Joins remaining leaves and pools and create product '''
+    """ Joins remaining leaves and pools and create product """
     if leaves_pools[0]:
         leaves_pools[1].extend(leaves_pools[0])
     return itertools.product(*leaves_pools[1])

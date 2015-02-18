@@ -13,7 +13,7 @@
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 """
-Operations with strings (conversion and sanitization).
+Operations with strings (conversion and sanitation).
 
 The unusual name aims to avoid causing name clashes with the stdlib module
 string. Even with the dot notation, people may try to do things like

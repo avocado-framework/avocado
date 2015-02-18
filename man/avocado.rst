@@ -575,7 +575,7 @@ BUGS
 If you find a bug, please report it over our github page as an issue.
 
 LICENSE
-================
+=======
 
 Avocado is released under GPLv2 (explicit version)
 `http://gnu.org/licenses/gpl-2.0.html`. Even though most of the current code is
