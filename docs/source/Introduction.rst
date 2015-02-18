@@ -25,4 +25,5 @@ progressively.
 An `extensive set of slides about avocado
 <https://docs.google.com/presentation/d/1PLyOcmoYooWGAe-rS2gtjmrZ0B9J22FbfpNlQY8fIUE>`__,
 including details about its architecture, main features and status is available
-in google-drive.
+in google-drive. Mindmap from workshop (2015) demonstraing features on
+examples available `here <https://www.mindmeister.com/504616310>`__.
