@@ -16,6 +16,35 @@ remote protocol for interaction with a remote target.
 
 Please refer to :mod:`avocado.gdb` for more information.
 
+Example
+~~~~~~~
+
+Take a look at ``examples/tests/modify_variable.py`` test::
+
+    def action(self):
+        """
+        Execute 'print_variable'.
+        """
+        path = os.path.join(self.srcdir, 'print_variable')
+        app = gdb.GDB()
+        app.set_file(path)
+        app.set_break(6)
+        app.run()
+        self.log.info("\n".join(app.read_until_break()))
+        app.cmd("set variable a = 0xff")
+        app.cmd("c")
+        out = "\n".join(app.read_until_break())
+        self.log.info(out)
+        app.exit()
+        self.assertIn("MY VARIABLE 'A' IS: ff", out)
+
+You can see that instead of running the binary using ``process.run`` we invoke
+``gdb.GDB``. This allows us to automate the interaction with the GDB in means
+of setting breakpoints, executing commands and querying for output.
+
+When you check the output (``--show-job-log``) you can see that despite
+declaring the variable as 0, ff is injected and printed instead.
+
 
 Transparent Debugging Usage
 ---------------------------
