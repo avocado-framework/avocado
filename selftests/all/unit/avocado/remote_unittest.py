@@ -1,19 +1,24 @@
 #!/usr/bin/env python
 
 import unittest
+import os
 
 from flexmock import flexmock, flexmock_teardown
 
 from avocado.plugins import remote
 
+cwd = os.getcwd()
 
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"test": "sleeptest.1", "url": "sleeptest", '
+                '"fail_reason": "None", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
                 '"debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.'
                 '37/debug.log", "errors": 0, "skip": 0, "time": 1.4, '
+                '"logdir": "/local/path/test-results%s/sleeptest", '
+                '"logdir": "/local/path/test-results%s/sleeptest", '
                 '"start": 0, "end": 1.4, "pass": 1, "failures": 0, "total": '
-                '1}\nAdditional stuff other than json')
+                '1}\nAdditional stuff other than json' % (cwd, cwd))
 
 
 class RemoteTestRunnerTest(unittest.TestCase):
@@ -42,7 +47,10 @@ class RemoteTestRunnerTest(unittest.TestCase):
                 'text_output': 'Not supported yet', 'time_end': 1.23,
                 'tagged_name': u'sleeptest.1', 'time_elapsed': 1.23,
                 'fail_class': 'Not supported yet', 'job_unique_id': '',
-                'fail_reason': 'Not supported yet'}
+                'fail_reason': 'None',
+                'logdir': '/local/path/test-results%s/sleeptest' % cwd,
+                'logfile': '/local/path/test-results%s/sleeptest/debug.log' %
+                           cwd}
         Results.should_receive('start_test').once().with_args(args).ordered()
         Results.should_receive('check_test').once().with_args(args).ordered()
         (Remote.should_receive('receive_files')

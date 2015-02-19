@@ -113,10 +113,11 @@ class ReportModel(object):
         for t in test_info:
             t['logdir'] = os.path.join(self._results_dir(
                                        relative_links=self.relative_links),
-                                       'test-results', t['url'])
+                                       'test-results', t['logdir'])
             t['logfile'] = os.path.join(self._results_dir(
                                         relative_links=self.relative_links),
-                                        'test-results', t['url'], 'debug.log')
+                                        'test-results', t['logdir'],
+                                        'debug.log')
             t['logfile_basename'] = os.path.basename(t['logfile'])
             t['time'] = "%.2f" % t['time']
             t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
@@ -204,6 +205,8 @@ class HTMLTestResult(TestResult):
              'status': state['status'],
              'fail_reason': state['fail_reason'],
              'whiteboard': state['whiteboard'],
+             'logdir': state['logdir'],
+             'logfile': state['logfile']
              }
         self.json['tests'].append(t)
 
