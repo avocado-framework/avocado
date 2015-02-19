@@ -23,6 +23,8 @@ import itertools
 
 from avocado.core import tree
 
+MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
+
 
 def tree2pools(node, mux=True):
     """

@@ -23,6 +23,7 @@ from avocado.core import exit_codes
 from avocado.plugins import plugin
 from avocado.core import output
 from avocado import job
+from avocado import multiplexer
 
 
 class TestRunner(plugin.Plugin):
@@ -107,13 +108,14 @@ class TestRunner(plugin.Plugin):
                                      'present for the test. '
                                      'Current: False (output check enabled)'))
 
-        mux = self.parser.add_argument_group('multiplex arguments')
-        mux.add_argument('-m', '--multiplex-files', nargs='*', default=None,
-                         help='Path(s) to a avocado multiplex (.yaml) file(s)')
-        mux.add_argument('--filter-only', nargs='*', default=[],
-                         help='Filter only path(s) from multiplexing')
-        mux.add_argument('--filter-out', nargs='*', default=[],
-                         help='Filter out path(s) from multiplexing')
+        if multiplexer.MULTIPLEX_CAPABLE:
+            mux = self.parser.add_argument_group('multiplex arguments')
+            mux.add_argument('-m', '--multiplex-files', nargs='*', default=None,
+                             help='Path(s) to a avocado multiplex (.yaml) file(s)')
+            mux.add_argument('--filter-only', nargs='*', default=[],
+                             help='Filter only path(s) from multiplexing')
+            mux.add_argument('--filter-out', nargs='*', default=[],
+                             help='Filter out path(s) from multiplexing')
 
         super(TestRunner, self).configure(self.parser)
         # Export the test runner parser back to the main parser

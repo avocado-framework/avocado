@@ -90,7 +90,8 @@ class Job(object):
                 self.loglevel = mapping[raw_log_level]
             else:
                 self.loglevel = logging.DEBUG
-            self.multiplex_files = args.multiplex_files
+            if multiplexer.MULTIPLEX_CAPABLE:
+                self.multiplex_files = args.multiplex_files
             self.show_job_log = args.show_job_log
             self.silent = args.silent
         else:
@@ -259,13 +260,14 @@ class Job(object):
 
         params_list = self.test_loader.discover_urls(urls)
 
-        if multiplex_files is None:
-            if self.args and self.args.multiplex_files is not None:
-                multiplex_files = self.args.multiplex_files
+        if multiplexer.MULTIPLEX_CAPABLE:
+            if multiplex_files is None:
+                if self.args and self.args.multiplex_files is not None:
+                    multiplex_files = self.args.multiplex_files
 
-        if multiplex_files is not None:
-            params_list = self._multiplex_params_list(params_list,
-                                                      multiplex_files)
+            if multiplex_files is not None:
+                params_list = self._multiplex_params_list(params_list,
+                                                          multiplex_files)
 
         try:
             test_suite = self.test_loader.discover(params_list)
