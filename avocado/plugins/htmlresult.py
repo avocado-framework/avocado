@@ -19,7 +19,7 @@ import os
 import shutil
 import sys
 import time
-import webbrowser
+import subprocess
 
 import pystache
 
@@ -248,7 +248,15 @@ class HTMLTestResult(TestResult):
 
         if self.args is not None:
             if getattr(self.args, 'open_browser'):
-                webbrowser.open(self.output)
+                # if possible, put browser in separate process group, so
+                # keyboard interrupts don't affect browser as well as Python
+                setsid = getattr(os, 'setsid', None)
+                if not setsid:
+                    setsid = getattr(os, 'setpgrp', None)
+                inout = file(os.devnull, "r+")
+                cmd = ['xdg-open', self.output]
+                subprocess.Popen(cmd, close_fds=True, stdin=inout, stdout=inout,
+                                 stderr=inout, preexec_fn=setsid)
 
 
 class HTML(plugin.Plugin):
