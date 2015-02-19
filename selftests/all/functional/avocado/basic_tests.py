@@ -159,11 +159,9 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
-        expected_output = 'Empty test ID. A test path or alias must be provided'
-        expected_output_2 = 'usage:'
+        expected_output = 'too few arguments'
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn(expected_output, result.stdout)
-        self.assertIn(expected_output_2, result.stdout)
+        self.assertIn(expected_output, result.stderr)
 
     def test_not_found(self):
         os.chdir(basedir)
