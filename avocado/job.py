@@ -74,16 +74,8 @@ class Job(object):
             self.unique_id = args.unique_job_id or job_id.create_unique_job_id()
         else:
             self.unique_id = job_id.create_unique_job_id()
-
-        if standalone:
-            self.logdir = tempfile.mkdtemp()
-        else:
-            self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
-        self.logfile = os.path.join(self.logdir, "job.log")
-        self.idfile = os.path.join(self.logdir, "id")
-        with open(self.idfile, 'w') as id_file_obj:
-            id_file_obj.write("%s\n" % self.unique_id)
-
+        self.view = output.View(app_args=self.args)
+        self.logdir = None
         if self.args is not None:
             raw_log_level = args.job_log_level
             mapping = {'info': logging.INFO,
@@ -118,12 +110,29 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-        self.view = output.View(app_args=self.args)
         self.sysinfo = None
+
+    def _setup_job_results(self):
+        if self.standalone:
+            self.logdir = tempfile.mkdtemp()
+        else:
+            self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
+        self.logfile = os.path.join(self.logdir, "job.log")
+        self.idfile = os.path.join(self.logdir, "id")
+        with open(self.idfile, 'w') as id_file_obj:
+            id_file_obj.write("%s\n" % self.unique_id)
+
+    def _update_latest_link(self):
+        data_dir.update_latest_job_logs_dir(self.logdir)
+
+    def _start_sysinfo(self):
         if hasattr(self.args, 'sysinfo'):
             if self.args.sysinfo == 'on':
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
+
+    def _remove_job_results(self):
+        shutil.rmtree(self.logdir, ignore_errors=True)
 
     def _make_test_loader(self):
         if hasattr(self.args, 'test_loader'):
@@ -272,6 +281,8 @@ class Job(object):
             params_list = self._multiplex_params_list(params_list,
                                                       multiplex_files)
 
+        self._setup_job_results()
+
         try:
             test_suite = self.test_loader.discover(params_list)
             error_msg_parts = self.test_loader.validate_ui(test_suite)
@@ -279,6 +290,7 @@ class Job(object):
             raise exceptions.JobError('Command interrupted by user...')
 
         if error_msg_parts:
+            self._remove_job_results()
             e_msg = '\n'.join(error_msg_parts)
             raise exceptions.OptionValidationError(e_msg)
 
@@ -292,6 +304,7 @@ class Job(object):
 
         self._make_test_result()
         self._make_test_runner()
+        self._start_sysinfo()
 
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
@@ -299,6 +312,7 @@ class Job(object):
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite)
         self.view.stop_file_logging()
+        self._update_latest_link()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
