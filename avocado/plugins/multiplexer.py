@@ -32,6 +32,9 @@ class Multiplexer(plugin.Plugin):
     enabled = True
 
     def configure(self, parser):
+        if multiplexer.MULTIPLEX_CAPABLE is False:
+            self.enabled = False
+            return
         self.parser = parser.subcommands.add_parser(
             'multiplex',
             help='Generate a list of dictionaries with params from a multiplex file')

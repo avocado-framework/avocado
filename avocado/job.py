@@ -40,14 +40,9 @@ from avocado.plugins import jsonresult
 from avocado.plugins import xunit
 from avocado.utils import archive
 from avocado.utils import path
+from avocado.plugins import htmlresult
 
-
-try:
-    from avocado.plugins import htmlresult
-    HTML_REPORT_SUPPORT = True
-except ImportError:
-    HTML_REPORT_SUPPORT = False
-
+HTML_REPORT_SUPPORT = htmlresult.HTML_REPORT_CAPABLE
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
 
@@ -87,7 +82,8 @@ class Job(object):
                 self.loglevel = mapping[raw_log_level]
             else:
                 self.loglevel = logging.DEBUG
-            self.multiplex_files = args.multiplex_files
+            if multiplexer.MULTIPLEX_CAPABLE:
+                self.multiplex_files = args.multiplex_files
             self.show_job_log = args.show_job_log
             self.silent = args.silent
         else:
@@ -273,13 +269,14 @@ class Job(object):
 
         params_list = self.test_loader.discover_urls(urls)
 
-        if multiplex_files is None:
-            if self.args and self.args.multiplex_files is not None:
-                multiplex_files = self.args.multiplex_files
+        if multiplexer.MULTIPLEX_CAPABLE:
+            if multiplex_files is None:
+                if self.args and self.args.multiplex_files is not None:
+                    multiplex_files = self.args.multiplex_files
 
-        if multiplex_files is not None:
-            params_list = self._multiplex_params_list(params_list,
-                                                      multiplex_files)
+            if multiplex_files is not None:
+                params_list = self._multiplex_params_list(params_list,
+                                                          multiplex_files)
 
         self._setup_job_results()
 

@@ -21,7 +21,12 @@ import sys
 import time
 import webbrowser
 
-import pystache
+try:
+    import pystache
+except ImportError:
+    HTML_REPORT_CAPABLE = False
+else:
+    HTML_REPORT_CAPABLE = True
 
 from avocado import runtime
 from avocado.core import exit_codes
@@ -248,6 +253,9 @@ class HTML(plugin.Plugin):
     enabled = True
 
     def configure(self, parser):
+        if HTML_REPORT_CAPABLE is False:
+            self.enabled = False
+            return
         self.parser = parser
         self.parser.runner.add_argument(
             '--html', type=str,

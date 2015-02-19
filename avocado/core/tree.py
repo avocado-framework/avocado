@@ -37,13 +37,18 @@ import collections
 import os
 import re
 
-import yaml
-
-
 try:
-    from yaml import CLoader as Loader
+    import yaml
 except ImportError:
-    from yaml import Loader
+    MULTIPLEX_CAPABLE = False
+else:
+    MULTIPLEX_CAPABLE = True
+
+if MULTIPLEX_CAPABLE:
+    try:
+        from yaml import CLoader as Loader
+    except ImportError:
+        from yaml import Loader
 
 
 # Mapping for yaml flags
