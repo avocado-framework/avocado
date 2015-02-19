@@ -111,13 +111,13 @@ class ReportModel(object):
                    "INTERRUPTED": "danger"}
         test_info = self.json['tests']
         for t in test_info:
-            t['link'] = os.path.join(self._results_dir(
-                                     relative_links=self.relative_links),
-                                     'test-results', t['url'], 'debug.log')
-            t['link_basename'] = os.path.basename(t['link'])
-            t['dir_link'] = os.path.join(self._results_dir(
-                                         relative_links=self.relative_links),
-                                         'test-results', t['url'])
+            t['logdir'] = os.path.join(self._results_dir(
+                                       relative_links=self.relative_links),
+                                       'test-results', t['url'])
+            t['logfile'] = os.path.join(self._results_dir(
+                                        relative_links=self.relative_links),
+                                        'test-results', t['url'], 'debug.log')
+            t['logfile_basename'] = os.path.basename(t['logfile'])
             t['time'] = "%.2f" % t['time']
             t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
                                             time.localtime(t['time_start']))
