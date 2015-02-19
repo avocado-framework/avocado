@@ -49,9 +49,37 @@ declaring the variable as 0, ff is injected and printed instead.
 Transparent Debugging Usage
 ---------------------------
 
-This feature is implemented as a plugin, that adds the `--gdb-run-bin` option
-to the avocado `run` command. For a detailed explanation please consult the
-avocado man page.
+This feature is implemented as a plugin, that adds the ``--gdb-run-bin``
+option to the avocado ``run`` command.
+
+Example
+~~~~~~~
+
+The simplest way is to just run
+``avocado run --gdb-run-bin=doublefree examples/doublefree.py``, which wraps 
+each executed binary with name ``doublefree`` inside GDB server and stops
+at the binary entry point.
+
+Optionally you can specify single breakpoint using
+``--gdb-run-bin=doublefree:$breakpoint`` (eg: ``doublefree:1``) or just
+``doublefree:`` to stop only when an interruption happens (eg: SIGABRT).
+
+It's worth mentioning that when breakpoint is not reached, the test finishes
+without any interruption. This is helpful when you identify regions where you
+should never get in your code, or places which interests you and you can run
+your code in production and gdb variants. If after a long time you get to this
+place, the test notifies you and you can investigate the problem. This is
+demonstrated in ``examples/tests/doublefree_nasty.py`` test. To unveil the
+power of Avocadu, run this test using
+``avocado run --gdb-run-bin=doublefree: examples/tests/doublefree_nasty.py --gdb-prerun-commands examples/tests/doublefree_nasty.py.data/gdb_pre --multiplex examples/tests/doublefree_nasty.py.data/iterations.yaml``,
+which executes 100 iterations of this test while setting all breakpoints from
+the ``examples/tests/doublefree_nasty.py.data/gdb_pre`` file (you can specify
+whatever GDB supports, not only breakpoints).
+
+As you can see this test usually passes, but once in a while it gets into
+the problematic area. Imagine this is very hard to spot (dependent on HW
+registers, ...) and this is one way to combine regular testing and the
+possibility of debugging hard-to-get parts of your code.
 
 Caveats
 ~~~~~~~
