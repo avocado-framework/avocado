@@ -20,6 +20,7 @@ import os
 import sys
 
 from avocado.utils import path as utils_path
+from avocado.settings import settings
 
 
 class ProgressStreamHandler(logging.StreamHandler):
@@ -148,7 +149,10 @@ class TermSupport(object):
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
         term = os.environ.get("TERM")
-        if (not os.isatty(1)) or (term not in self.allowed_terms):
+        colored = settings.get_value('runner.output', 'colored',
+                                     key_type='bool')
+        if ((not colored) or (not os.isatty(1)) or
+                (term not in self.allowed_terms)):
             self.disable()
 
     def disable(self):
