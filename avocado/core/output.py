@@ -90,9 +90,10 @@ def get_paginator():
     """
     Get a paginator.
 
-    The paginator is whatever the user sets as $PAGER, or 'less', or if all else fails, sys.stdout.
-    It is a useful feature inspired in programs such as git, since it lets you scroll up and down
-    large buffers of text, increasing the program's usability.
+    The paginator is whatever the user sets as $PAGER, or 'less', or if all
+    else fails, sys.stdout. It is a useful feature inspired in programs such
+    as git, since it lets you scroll up and down large buffers of text,
+    increasing the program's usability.
     """
     return Paginator()
 
@@ -122,7 +123,8 @@ class TermSupport(object):
     MOVE_BACK = '\033[1D'
     MOVE_FORWARD = '\033[1C'
 
-    ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
+    ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED,
+                    COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
 
     """
     Class to help applications to colorize their outputs for terminals.
@@ -348,11 +350,13 @@ class View(object):
     Takes care of both disk logs and stdout/err logs.
     """
 
-    def __init__(self, app_args=None, console_logger='avocado.app', use_paginator=False):
+    def __init__(self, app_args=None, console_logger='avocado.app',
+                 use_paginator=False):
         """
         Set up the console logger and the paginator mode.
 
-        :param console_logger: logging.Logger identifier for the main app logger.
+        :param console_logger: logging.Logger identifier for the main app
+                               logger.
         :type console_logger: str
         :param use_paginator: Whether to use paginator mode. Set it to True if
                               the program is supposed to output a large list of
@@ -566,7 +570,8 @@ class View(object):
         self.file_handler = logging.FileHandler(filename=logfile)
         self.file_handler.setLevel(loglevel)
 
-        fmt = '%(asctime)s %(module)-10.10s L%(lineno)-.4d %(levelname)-5.5s| %(message)s'
+        fmt = ('%(asctime)s %(module)-10.10s L%(lineno)-.4d %('
+               'levelname)-5.5s| %(message)s')
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
         self.file_handler.setFormatter(formatter)
