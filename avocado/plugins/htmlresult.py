@@ -19,7 +19,7 @@ import os
 import shutil
 import sys
 import time
-import webbrowser
+import subprocess
 
 try:
     import pystache
@@ -31,9 +31,9 @@ else:
 from avocado import runtime
 from avocado.core import exit_codes
 from avocado.core import output
-from avocado.plugins import plugin
 from avocado.result import TestResult
 from avocado.utils import path as utils_path
+from avocado.plugins import plugin
 
 
 class ReportModel(object):
@@ -57,7 +57,8 @@ class ReportModel(object):
         return "%.2f" % self.json['time']
 
     def _results_dir(self, relative_links=True):
-        debuglog_abspath = os.path.abspath(os.path.dirname(self.json['debuglog']))
+        debuglog_abspath = os.path.abspath(os.path.dirname(
+            self.json['debuglog']))
         html_output_abspath = os.path.abspath(os.path.dirname(self.html_output))
         if relative_links:
             return os.path.relpath(debuglog_abspath, html_output_abspath)
@@ -86,7 +87,8 @@ class ReportModel(object):
         return "%.2f" % pr
 
     def _get_sysinfo(self, sysinfo_file):
-        sysinfo_path = os.path.join(self._results_dir(relative_links=False), 'sysinfo', 'pre', sysinfo_file)
+        sysinfo_path = os.path.join(self._results_dir(relative_links=False),
+                                    'sysinfo', 'pre', sysinfo_file)
         try:
             with open(sysinfo_path, 'r') as sysinfo_file:
                 sysinfo_contents = sysinfo_file.read()
@@ -114,23 +116,33 @@ class ReportModel(object):
                    "INTERRUPTED": "danger"}
         test_info = self.json['tests']
         for t in test_info:
-            t['link'] = os.path.join(self._results_dir(relative_links=self.relative_links), 'test-results', t['url'], 'debug.log')
-            t['link_basename'] = os.path.basename(t['link'])
-            t['dir_link'] = os.path.join(self._results_dir(relative_links=self.relative_links), 'test-results', t['url'])
+            t['logdir'] = os.path.join(self._results_dir(
+                                       relative_links=self.relative_links),
+                                       'test-results', t['logdir'])
+            t['logfile'] = os.path.join(self._results_dir(
+                                        relative_links=self.relative_links),
+                                        'test-results', t['logdir'],
+                                        'debug.log')
+            t['logfile_basename'] = os.path.basename(t['logfile'])
             t['time'] = "%.2f" % t['time']
-            t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t['time_start']))
+            t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
+                                            time.localtime(t['time_start']))
             t['row_class'] = mapping[t['status']]
             exhibition_limit = 40
             if len(t['fail_reason']) > exhibition_limit:
-                t['fail_reason'] = ('<a data-container="body" data-toggle="popover" '
-                                    'data-placement="top" title="Error Details" data-content="%s">%s...</a>' %
-                                    (t['fail_reason'], t['fail_reason'][
-                                                       :exhibition_limit]))
+                t['fail_reason'] = ('<a data-container="body" '
+                                    'data-toggle="popover" '
+                                    'data-placement="top" '
+                                    'title="Error Details" '
+                                    'data-content="%s">%s...</a>' %
+                                    (t['fail_reason'],
+                                     t['fail_reason'][:exhibition_limit]))
         return test_info
 
     def sysinfo(self):
         sysinfo_list = []
-        base_path = os.path.join(self._results_dir(relative_links=False), 'sysinfo', 'pre')
+        base_path = os.path.join(self._results_dir(relative_links=False),
+                                 'sysinfo', 'pre')
         try:
             sysinfo_files = os.listdir(base_path)
         except OSError:
@@ -147,7 +159,8 @@ class ReportModel(object):
                     sysinfo_dict['element_id'] = 'heading_%s' % s_id
                     sysinfo_dict['collapse_id'] = 'collapse_%s' % s_id
             except OSError:
-                sysinfo_dict[s_f] = 'Error reading sysinfo file %s' % sysinfo_path
+                sysinfo_dict[s_f] = ('Error reading sysinfo file %s' %
+                                     sysinfo_path)
             sysinfo_list.append(sysinfo_dict)
             s_id += 1
         return sysinfo_list
@@ -197,6 +210,8 @@ class HTMLTestResult(TestResult):
              'status': state['status'],
              'fail_reason': state['fail_reason'],
              'whiteboard': state['whiteboard'],
+             'logdir': state['logdir'],
+             'logfile': state['logfile']
              }
         self.json['tests'].append(t)
 
@@ -221,7 +236,8 @@ class HTMLTestResult(TestResult):
         else:
             relative_links = False
 
-        context = ReportModel(json_input=self.json, html_output=self.output, relative_links=relative_links)
+        context = ReportModel(json_input=self.json, html_output=self.output,
+                              relative_links=relative_links)
         renderer = pystache.Renderer('utf-8', 'utf-8')
         html = HTML()
         template = html.get_resource_path('templates', 'report.mustache')
@@ -240,7 +256,15 @@ class HTMLTestResult(TestResult):
 
         if self.args is not None:
             if getattr(self.args, 'open_browser'):
-                webbrowser.open(self.output)
+                # if possible, put browser in separate process group, so
+                # keyboard interrupts don't affect browser as well as Python
+                setsid = getattr(os, 'setsid', None)
+                if not setsid:
+                    setsid = getattr(os, 'setpgrp', None)
+                inout = file(os.devnull, "r+")
+                cmd = ['xdg-open', self.output]
+                subprocess.Popen(cmd, close_fds=True, stdin=inout, stdout=inout,
+                                 stderr=inout, preexec_fn=setsid)
 
 
 class HTML(plugin.Plugin):
@@ -260,25 +284,27 @@ class HTML(plugin.Plugin):
         self.parser.runner.add_argument(
             '--html', type=str,
             dest='html_output',
-            help=('Enable HTML output to the file where the result should be written. '
-                  'The option - is not supported since not all HTML resources can be '
-                  'embedded into a single file (page resources will be copied to the '
+            help=('Enable HTML output to the file where the result should be '
+                  'written. The value - (output to stdout) is not supported '
+                  'since not all HTML resources can be embedded into a '
+                  'single file (page resources will be copied to the '
                   'output file dir)'))
         self.parser.runner.add_argument(
             '--relative-links',
             dest='relative_links',
             action='store_true',
             default=False,
-            help=('On the HTML report, generate anchor links with relative instead of absolute paths. Current: %s' %
-                  False))
+            help=('On the HTML report, generate anchor links with relative '
+                  'instead of absolute paths. Current: %s' % False))
         self.parser.runner.add_argument(
             '--open-browser',
             dest='open_browser',
             action='store_true',
             default=False,
             help='Open the generated report on your preferred browser. '
-                 'This works even if --html was not explicitly passed, since an HTML '
-                 'report is always generated on the job results dir. Current: %s' % False)
+                 'This works even if --html was not explicitly passed, '
+                 'since an HTML report is always generated on the job '
+                 'results dir. Current: %s' % False)
         self.configured = True
 
     def activate(self, app_args):
@@ -287,10 +313,12 @@ class HTML(plugin.Plugin):
                 if app_args.html_output == '-':
                     view = output.View(app_args=app_args)
                     view.notify(event='error',
-                                msg="HTML to stdout not supported "
-                                    "(not all HTML resources can be embedded to a single file)")
+                                msg='HTML to stdout not supported '
+                                    '(not all HTML resources can be embedded '
+                                    'on a single file)')
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
-                    self.parser.application.set_defaults(html_result=HTMLTestResult)
+                    self.parser.application.set_defaults(
+                        html_result=HTMLTestResult)
         except AttributeError:
             pass

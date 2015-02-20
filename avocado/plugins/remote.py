@@ -50,15 +50,27 @@ class RemoteTestRunner(TestRunner):
         if result.exit_status == 127:
             raise exceptions.JobError('Remote machine does not have avocado '
                                       'installed')
+        json_result = None
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
             if json_output.startswith('{') and json_output.endswith('}'):
                 try:
-                    return json.loads(json_output)
+                    json_result = json.loads(json_output)
                 except ValueError:
                     pass
-        raise ValueError("Could not parse JSON from avocado remote output:"
-                         "\n%s" % result.stdout)
+
+        if json_result is None:
+            raise ValueError("Could not parse JSON from avocado remote output:"
+                             "\n%s" % result.stdout)
+
+        for t_dict in json_result['tests']:
+            logdir = os.path.dirname(self.result.stream.debuglog)
+            logdir = os.path.join(logdir, 'test-results')
+            logdir = os.path.join(logdir, os.path.relpath(t_dict['url'], '/'))
+            t_dict['logdir'] = logdir
+            t_dict['logfile'] = os.path.join(logdir, 'debug.log')
+
+        return json_result
 
     def run_suite(self, test_suite):
         """
@@ -79,7 +91,11 @@ class RemoteTestRunner(TestRunner):
                               time=tst['time'],
                               start=tst['start'],
                               end=tst['end'],
-                              status=tst['status'])
+                              status=tst['status'],
+                              logdir=tst['logdir'],
+                              logfile=tst['logfile'],
+                              fail_reason=tst['fail_reason']
+                              )
             state = test.get_state()
             self.result.start_test(state)
             self.result.check_test(state)

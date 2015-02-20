@@ -68,11 +68,11 @@
             {{#tests}}
                 <tr class="{{row_class}}">
                     <td>{{time_start}}</td>
-                    <td><a href="{{dir_link}}">{{url}}</a></td>
+                    <td><a href="{{logdir}}">{{url}}</a></td>
                     <td>{{status}}</td>
                     <td>{{time}}</td>
                     <td>{{& fail_reason}}</td>
-                    <td><a href="{{link}}">{{link_basename}}</a></td>
+                    <td><a href="{{logfile}}">{{logfile_basename}}</a></td>
                 </tr>
             {{/tests}}
             </table>

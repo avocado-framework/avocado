@@ -612,7 +612,8 @@ class RemoteTest(object):
     Mimics :class:`avocado.test.Test` for remote tests.
     """
 
-    def __init__(self, name, status, time, start, end):
+    def __init__(self, name, status, time, start, end, fail_reason, logdir,
+                 logfile):
         note = "Not supported yet"
         self.name = name
         self.tagged_name = name
@@ -623,9 +624,11 @@ class RemoteTest(object):
         self.fail_class = note
         self.traceback = note
         self.text_output = note
-        self.fail_reason = note
+        self.fail_reason = fail_reason
         self.whiteboard = ''
         self.job_unique_id = ''
+        self.logdir = logdir
+        self.logfile = logfile
 
     def get_state(self):
         """

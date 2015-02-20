@@ -61,6 +61,9 @@ class JSONTestResult(TestResult):
              'time': state['time_elapsed'],
              'status': state['status'],
              'whiteboard': state['whiteboard'],
+             'logdir': state['logdir'],
+             'logfile': state['logfile'],
+             'fail_reason': str(state['fail_reason'])
              }
         self.json['tests'].append(t)
 
