@@ -65,8 +65,7 @@ tests you can run are:
 * Tests written in Python, using the avocado API, which we'll call `instrumented`.
 * Any executable in your box, really. The criteria for PASS/FAIL is the return
   code of the executable. If it returns 0, the test PASSes, if it returns anything
-  else, it FAILs. We'll call those tests `simple tests`. There is another type
-  of tests that we'll discuss in the next section.
+  else, it FAILs. We'll call those tests `simple tests`.
 
 Listing tests
 -------------
