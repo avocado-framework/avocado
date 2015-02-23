@@ -21,7 +21,7 @@ mem=malloc
 [file2]
 stonewall
 size=100M
-ioengine=aio
+ioengine=posixaio
 mem=shm
 iodepth=4
 
