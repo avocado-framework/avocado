@@ -59,14 +59,13 @@ For Debian users, use `apt-get` to install the proper dependencies that `yum` in
 Using the avocado test runner
 =============================
 
-The test runner is designed to conveniently run tests on your laptop. The tests
-you can run are:
+The test runner is designed to conveniently run tests on your local machine. The types of
+tests you can run are:
 
-* Tests written in python, using the avocado API, which we'll call
-  `instrumented`.
+* Tests written in Python, using the avocado API, which we'll call `instrumented`.
 * Any executable in your box, really. The criteria for PASS/FAIL is the return
-  code of the executable. If it returns 0, the test PASSed, if it returned
-  != 0, it FAILed. We'll call those tests `simple tests`. There is another type
+  code of the executable. If it returns 0, the test PASSes, if it returns anything
+  else, it FAILs. We'll call those tests `simple tests`. There is another type
   of tests that we'll discuss in the next section.
 
 Listing tests
