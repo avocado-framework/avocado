@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import shutil
 
 from avocado import test
 from avocado import job
@@ -20,9 +21,10 @@ class DoubleFreeTest(test.Test):
         """
         Build 'doublefree'.
         """
-        self.cwd = os.getcwd()
         c_file = self.get_data_path(self.params.source)
-        self.srcdir = os.path.dirname(c_file)
+        c_file_name = os.path.basename(c_file)
+        dest_c_file = os.path.join(self.srcdir, c_file_name)
+        shutil.copy(c_file, dest_c_file)
         build.make(self.srcdir,
                    env={'CFLAGS': '-g -O0'},
                    extra_args='doublefree')
@@ -34,12 +36,6 @@ class DoubleFreeTest(test.Test):
         cmd = os.path.join(self.srcdir, 'doublefree')
         cmd_result = process.run(cmd)
         self.log.info(cmd_result)
-
-    def cleanup(self):
-        """
-        Clean up 'doublefree'.
-        """
-        os.unlink(os.path.join(self.srcdir, 'doublefree'))
 
 if __name__ == "__main__":
     job.main()
