@@ -24,6 +24,8 @@ You can install the rpm package by performing the following commands::
     sudo yum update
     sudo yum install avocado
 
+Don't mind the Fedora version here, the same repo file should work for newer distros.
+
 Installing avocado - Ubuntu
 ===========================
 
