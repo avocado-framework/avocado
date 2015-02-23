@@ -18,7 +18,7 @@ class FioTest(test.Test):
     :see: http://freecode.com/projects/fio
     """
 
-    default_params = {'fio_tarball': 'fio-2.1.7.tar.bz2',
+    default_params = {'fio_tarball': 'fio-2.1.10.tar.bz2',
                       'fio_job': 'fio-mixed.job'}
 
     def setup(self):
