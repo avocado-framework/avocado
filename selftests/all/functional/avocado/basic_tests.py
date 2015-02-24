@@ -169,19 +169,19 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('File not found', result.stdout)
+        self.assertIn('File not found', result.stderr)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id foobar skiptest'
         result = process.run(cmd_line, ignore_status=True)
         self.assertNotEqual(0, result.exit_status)
-        self.assertIn('needs to be a 40 digit hex', result.stdout)
+        self.assertIn('needs to be a 40 digit hex', result.stderr)
 
     def test_valid_unique_id(self):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 skiptest'
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(0, result.exit_status)
-        self.assertNotIn('needs to be a 40 digit hex', result.stdout)
+        self.assertNotIn('needs to be a 40 digit hex', result.stderr)
         self.assertIn('SKIP', result.stdout)
 
     def test_automatic_unique_id(self):

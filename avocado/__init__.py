@@ -21,6 +21,14 @@ DEFAULT_LOGGING = {
             'format': '%(message)s',
         },
     },
+    'filters': {
+        'error': {
+            '()': 'avocado.core.output.FilterError',
+            },
+        'info': {
+            '()': 'avocado.core.output.FilterInfo',
+            },
+        },
     'handlers': {
         'null': {
             'level': 'INFO',
@@ -35,8 +43,15 @@ DEFAULT_LOGGING = {
             'level': 'INFO',
             'class': 'avocado.core.output.ProgressStreamHandler',
             'formatter': 'brief',
+            'filters': ['info'],
             'stream': 'ext://sys.stdout',
         },
+        'error': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'brief',
+            'filters': ['error'],
+            },
         'debug': {
             'level': 'DEBUG',
             'class': 'avocado.core.output.ProgressStreamHandler',
@@ -49,7 +64,7 @@ DEFAULT_LOGGING = {
             'handlers': ['console'],
         },
         'avocado.app': {
-            'handlers': ['app'],
+            'handlers': ['app', 'error'],
             'level': 'INFO',
             'propagate': False,
         },

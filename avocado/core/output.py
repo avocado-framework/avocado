@@ -23,6 +23,18 @@ from avocado.utils import path as utils_path
 from avocado.settings import settings
 
 
+class FilterError(logging.Filter):
+
+    def filter(self, record):
+        return record.levelno >= logging.ERROR
+
+
+class FilterInfo(logging.Filter):
+
+    def filter(self, record):
+        return record.levelno == logging.INFO
+
+
 class ProgressStreamHandler(logging.StreamHandler):
 
     """
