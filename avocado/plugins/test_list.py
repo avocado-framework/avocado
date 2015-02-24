@@ -78,6 +78,7 @@ class TestList(plugin.Plugin):
         if error_msg_parts:
             for error_msg in error_msg_parts:
                 self.view.notify(event='error', msg=error_msg)
+            self.view.cleanup()
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         test_matrix = []
