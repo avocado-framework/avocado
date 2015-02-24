@@ -78,6 +78,7 @@ class LoaderTestFunctional(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertIn('is not an avocado test', result.stderr)
+        self.assertNotIn('is not an avocado test', result.stdout)
         simple_test.remove()
 
     def test_pass(self):
