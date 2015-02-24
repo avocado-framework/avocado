@@ -28,9 +28,8 @@ class MultiplexTests(unittest.TestCase):
     def run_and_check(self, cmd_line, expected_rc, expected_lines=None):
         os.chdir(basedir)
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
         if expected_lines is not None:
-            for line in output.splitlines():
+            for line in result.stdout.splitlines():
                 if 'JOB LOG' in line:
                     debug_log = line.split()[-1]
                     debug_log_obj = open(debug_log, 'r')
@@ -48,7 +47,7 @@ class MultiplexTests(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
-        return output
+        return result
 
     def test_mplex_plugin(self):
         cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
@@ -58,15 +57,16 @@ class MultiplexTests(unittest.TestCase):
     def test_mplex_plugin_nonexistent(self):
         cmd_line = './scripts/avocado multiplex nonexist'
         expected_rc = 2
-        self.run_and_check(cmd_line, expected_rc)
+        result = self.run_and_check(cmd_line, expected_rc)
+        self.assertIn('Invalid multiplex file', result.stderr)
 
     def test_mplex_debug(self):
         cmd_line = ('./scripts/avocado multiplex -c -d '
                     'examples/mux-selftest.yaml examples/mux-environment.yaml '
                     'examples/mux-selftest.yaml examples/mux-environment.yaml')
         expected_rc = 0
-        out = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn(DEBUG_OUT, out)
+        result = self.run_and_check(cmd_line, expected_rc)
+        self.assertIn(DEBUG_OUT, result.stdout)
 
     def test_run_mplex_noid(self):
         cmd_line = './scripts/avocado run --sysinfo=off --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
@@ -109,14 +109,15 @@ class MultiplexTests(unittest.TestCase):
                     '/env_variables.yaml '
                     '--show-job-log')
         expected_rc = 0
-        output = self.run_and_check(cmd_line, expected_rc)
+        result = self.run_and_check(cmd_line, expected_rc)
         for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
             msg = ('[stdout] Custom variable: ' +
                    '\n[stdout] '.join(msg.splitlines()))
-            self.assertIn(msg, output, "Multiplexed variable should produce:"
+            self.assertIn(msg, result.stderr, "Multiplexed variable should "
+                                              "produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
                           % ("\n  ".join(msg.splitlines()),
-                             "\n  ".join(output.splitlines())))
+                             "\n  ".join(result.stderr.splitlines())))
 
 if __name__ == '__main__':
     unittest.main()
