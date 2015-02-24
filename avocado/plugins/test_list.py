@@ -23,7 +23,7 @@ from avocado.utils import astring
 from avocado.plugins import plugin
 
 
-class TestLister(plugin.Plugin):
+class TestList(plugin.Plugin):
 
     """
     Implements the avocado 'list' subcommand
@@ -54,7 +54,7 @@ class TestLister(plugin.Plugin):
                                  help='Whether to show extra information '
                                       '(headers and summary). Current: %('
                                       'default)s')
-        super(TestLister, self).configure(self.parser)
+        super(TestList, self).configure(self.parser)
 
     def _run(self, args):
         """
@@ -78,6 +78,7 @@ class TestLister(plugin.Plugin):
         if error_msg_parts:
             for error_msg in error_msg_parts:
                 self.view.notify(event='error', msg=error_msg)
+            self.view.cleanup()
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         test_matrix = []
