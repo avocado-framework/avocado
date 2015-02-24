@@ -334,6 +334,17 @@ class PluginsTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('No tests were found on current tests dir', output)
 
+    def test_list_error_output(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado list sbrubles'
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stderr
+        expected_rc = 3
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn("File not found", output)
+
     def test_plugin_list(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado plugins'
