@@ -17,7 +17,7 @@ from avocado.plugins.manager import get_plugin_manager
 from avocado.core import output
 
 
-class PluginsList(plugin.Plugin):
+class PluginList(plugin.Plugin):
 
     """
     Implements the avocado 'plugins' subcommand
@@ -30,7 +30,7 @@ class PluginsList(plugin.Plugin):
         self.parser = parser.subcommands.add_parser(
             'plugins',
             help='List all plugins loaded')
-        super(PluginsList, self).configure(self.parser)
+        super(PluginList, self).configure(self.parser)
 
     def run(self, args):
         view = output.View(app_args=args, use_paginator=True)
