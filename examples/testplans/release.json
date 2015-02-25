@@ -1,0 +1,18 @@
+{
+    "name": "Release Test Plan",
+    "description": "Test Plan to be performed before a release is cut",
+
+    "tests": [
+	{"name": "Avocado RPM build",
+	 "description": "On your development machine, try to build the Avocado RPM packages using: $ make build-rpm-all"},
+
+	{"name": "Avocado RPM install",
+	 "description": "On a fresh machine (usually a new, virtual machine), perform the installation of Avocado using the packages built on test 'Avocado RPM build'"},
+
+	{"name": "Avocado Server Development Run",
+	 "description": "On a fresh machine checkout a copy of the avocado-server repository. Then run the quick and dirty script to get it running ./reset-and-run.sh. Expected result: \"Starting development server at http://0.0.0.0:9405/\""},
+
+	{"name": "Avocado Server Functional Test",
+	 "description": "Run the selftests/all/functional/avocadoserver/api.py on the previously started Avocado Server"}
+    ]
+}
