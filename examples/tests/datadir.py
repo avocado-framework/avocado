@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import shutil
 
 from avocado import test
 from avocado import job
@@ -20,10 +21,13 @@ class DataDirTest(test.Test):
         """
         Build 'datadir'.
         """
-        self.cwd = os.getcwd()
         c_file = self.get_data_path(self.params.source)
-        self.srcdir = os.path.dirname(c_file)
-        build.make(self.srcdir, extra_args='datadir')
+        c_file_name = os.path.basename(c_file)
+        dest_c_file = os.path.join(self.srcdir, c_file_name)
+        shutil.copy(c_file, dest_c_file)
+        build.make(self.srcdir,
+                   env={'CFLAGS': '-g -O0'},
+                   extra_args='datadir')
 
     def action(self):
         """
@@ -33,11 +37,6 @@ class DataDirTest(test.Test):
         cmd_result = process.run(cmd)
         self.log.info(cmd_result)
 
-    def cleanup(self):
-        """
-        Clean up 'datadir'.
-        """
-        os.unlink(os.path.join(self.srcdir, 'datadir'))
 
 if __name__ == "__main__":
     job.main()
