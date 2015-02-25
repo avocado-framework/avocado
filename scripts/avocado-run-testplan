@@ -1,0 +1,150 @@
+#!/usr/bin/env python
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; specifically version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: RedHat 2015
+# Author: Cleber Rosa <cleber@redhat.com>
+
+
+import os
+import sys
+import json
+import getpass
+import argparse
+import datetime
+
+
+class Parser(argparse.ArgumentParser):
+
+    def __init__(self):
+        super(Parser, self).__init__(
+            prog='avocado-run-testplan',
+            description='Tracks manual test plans progress and results')
+
+        self.add_argument('-t', '--template', type=file,
+                          help='Template file with the predefined test plan')
+
+        self.add_argument('-o', '--output',
+                          help='Output (test plan results) file location')
+
+        self.add_argument('-i', '--input', type=file,
+                          help=('A previously saved result file to use. This '
+                                'will show a human readable report for the '
+                                'given result file'))
+
+RESULT_MAP = {"P": "PASS",
+              "p": "PASS",
+              "F": "FAIL",
+              "f": "FAIL",
+              "S": "SKIP",
+              "s": "SKIP"}
+
+
+class App(object):
+
+    def __init__(self):
+        self.parser = Parser()
+
+    def run(self):
+        self.args, _ = self.parser.parse_known_args()
+        if not (self.args.template or self.args.input):
+            self.parser.print_usage()
+            sys.exit(0)
+
+        if self.args.input:
+            self.report()
+        else:
+            self.run_test_plan()
+
+    def run_test_plan(self):
+        self.json = json.load(self.args.template)
+        self.user_identification = None
+        self.datetime = datetime.datetime.now()
+        self.results = []
+
+        print("Name: %s" % self.json.get("name"))
+        print("Description: %s\n" % self.json.get("description"))
+
+        test_count = len(self.json.get("tests"))
+        current = 1
+        for test in self.json.get("tests"):
+            print("Test %d/%d: %s" % (current, test_count, test.get("name")))
+            print("Description: %s\n" % test.get("description"))
+            current += 1
+
+            result = None
+            while True:
+                result = raw_input("Result ([P]ass, [F]ail, [S]kip): ")
+                if result in RESULT_MAP.keys():
+                    notes = raw_input("Additional Notes: ")
+                    break
+            print("")
+
+            self.results.append({"name": test.get("name"),
+                                 "result": RESULT_MAP.get(result),
+                                 "notes": notes.strip()})
+
+        user = raw_input("Your identification [%s]: " % getpass.getuser())
+        if not user:
+            user = getpass.getuser()
+        self.user_identification = user
+
+        self.save()
+
+    def get_output_file_name(self, suffix='json'):
+        """
+        Return the user given or default output file name
+        """
+        if self.args.output:
+            return self.args.output
+
+        name = self.json.get("name")
+        name = name.strip()
+        name = name.replace(" ", "_")
+        return "%s_%s_%s.%s" % (name,
+                                self.user_identification,
+                                self.datetime.isoformat(),
+                                suffix)
+
+    def result_to_output_format(self):
+        return {"name": self.json.get("name"),
+                "user_identification": self.user_identification,
+                "datetime": self.datetime.isoformat(),
+                "results": self.results}
+
+    def save(self):
+        """
+        Save the test plan execution result to a file
+        """
+        filename = self.get_output_file_name()
+        with open(filename, 'w') as output:
+            json.dump(self.result_to_output_format(), output)
+        print("Wrote results to: %s" % filename)
+
+    def report(self):
+        """
+        Write the test plan execution result to a human readable report
+        """
+        if self.args.input:
+            data = json.load(self.args.input)
+        else:
+            data = self.result_to_output_format()
+
+        print("Test Plan: %s" % data.get("name"))
+        print("Run by '%s' at %s" % (data.get("user_identification"),
+                                     data.get("datetime")))
+        for result in data.get("results"):
+            print("- %s: %s" % (result.get("name"),
+                                result.get("result")))
+
+if __name__ == '__main__':
+    app = App()
+    sys.exit(app.run())
