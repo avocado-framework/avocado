@@ -15,7 +15,7 @@ class WarnTest(test.Test):
         """
         This should throw a TestWarn.
         """
-        raise exceptions.TestWarn('This should throw a TestWarn')
+        self.log.warn("This marks test as WARN")
 
 if __name__ == "__main__":
     job.main()
