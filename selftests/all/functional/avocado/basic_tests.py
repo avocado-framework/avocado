@@ -262,6 +262,24 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    def test_simplewarning(self):
+        """
+        simplewarning.sh uses the avocado-bash-utils
+        """
+        os.chdir(basedir)
+        cmd_line = ('./scripts/avocado run --sysinfo=off '
+                    'examples/tests/simplewarning.sh --show-job-log')
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(result.exit_status, 1,
+                         "Avocado did not return rc 1:\n%s" %
+                         (result))
+        self.assertIn('DEBUG| Debug message', result.stderr, result)
+        self.assertIn('INFO | Info message', result.stderr)
+        self.assertIn('WARN | Warning message (should cause this test to '
+                      'finish with warning)', result.stderr, result)
+        self.assertIn('ERROR| Error message (ordinary message not changing '
+                      'the results)', result.stderr, result)
+
     def tearDown(self):
         self.pass_script.remove()
         self.fail_script.remove()
