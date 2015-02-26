@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import unittest
 import os
+import re
 import sys
+import unittest
 
+from avocado.utils import process
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
                        '..', '..')
@@ -11,7 +13,6 @@ basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.utils import process
 
 DEBUG_OUT = """Variant 16:    amd@examples/mux-environment.yaml, virtio@examples/mux-environment.yaml, mint@examples/mux-environment.yaml, debug@examples/mux-environment.yaml
     corruptlist: nonlist@examples/mux-selftest.yaml:/hw/disk
@@ -111,13 +112,14 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = 0
         result = self.run_and_check(cmd_line, expected_rc)
         for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
-            msg = ('[stdout] Custom variable: ' +
-                   '\n[stdout] '.join(msg.splitlines()))
-            self.assertIn(msg, result.stderr, "Multiplexed variable should "
-                                              "produce:"
-                          "\n  %s\nwhich is not present in the output:\n  %s"
-                          % ("\n  ".join(msg.splitlines()),
-                             "\n  ".join(result.stderr.splitlines())))
+            msg = ('\nCustom variable: ' +
+                   '\n'.join(msg.splitlines()))
+            found = re.findall(msg, result.stderr)
+            self.assertTrue(bool(found), "Multiplexed variable should "
+                            "produce:\n  %s\nwhich is not present in the "
+                            "output:\n  %s"
+                            % ("\n  ".join(msg.splitlines()),
+                               "\n  ".join(result.stderr.splitlines())))
 
 if __name__ == '__main__':
     unittest.main()
