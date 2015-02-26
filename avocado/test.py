@@ -535,7 +535,7 @@ class SimpleTest(Test):
         try:
             test_params = {str(key): str(val)
                            for key, val in self.params.iteritems()}
-            result = process.run(self.path, verbose=True, env=test_params)
+            result = process.run(self.path, verbose=False, env=test_params)
             self._log_detailed_cmd_info(result)
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
