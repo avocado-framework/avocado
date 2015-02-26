@@ -1,0 +1,18 @@
+sigint:
+    signal_number: 2
+siguser1:
+    signal_number: 10
+sigterm:
+    signal_number: 15
+sigkill:
+    signal_number: 9
+sigquit:
+    signal_number: 3
+sigsegv:
+    signal_number: 11
+invalid:
+    signal_number: 1024
+invalid_negative:
+    signal_number: -1
+is_alive:
+    signal_number: 0

@@ -9,17 +9,17 @@ from avocado.utils import build
 from avocado.utils import process
 
 
-class DataDirTest(test.Test):
+class CAbort(test.Test):
 
     """
-    Test that uses resources from the data dir.
+    A test that calls C standard lib function abort().
     """
 
-    default_params = {'source': 'datadir.c'}
+    default_params = {'source': 'abort.c'}
 
     def setup(self):
         """
-        Build 'datadir'.
+        Build 'abort'.
         """
         c_file = self.get_data_path(self.params.source)
         c_file_name = os.path.basename(c_file)
@@ -27,15 +27,17 @@ class DataDirTest(test.Test):
         shutil.copy(c_file, dest_c_file)
         build.make(self.srcdir,
                    env={'CFLAGS': '-g -O0'},
-                   extra_args='datadir')
+                   extra_args='abort')
 
     def action(self):
         """
-        Execute 'datadir'.
+        Execute 'abort'.
         """
-        cmd = os.path.join(self.srcdir, 'datadir')
-        cmd_result = process.run(cmd)
+        cmd = os.path.join(self.srcdir, 'abort')
+        cmd_result = process.run(cmd, ignore_status=True)
         self.log.info(cmd_result)
+        expected_result = -6  # SIGABRT = 6
+        self.assertEqual(cmd_result.exit_status, expected_result)
 
 
 if __name__ == "__main__":
