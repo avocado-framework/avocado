@@ -703,6 +703,24 @@ Here are the current variables that Avocado exports to the tests:
 | *                       | All variables from --multiplex-file   | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
+
+Simple Tests BASH extensions
+============================
+
+To simplify the usage of Simple Tests written in BASH, you can use BASH avocado
+library. It can be found inside ``$AVOCADO/scripts/avocado-bash-utils``
+or in ``/usr/bin/avocado-bash-utils`` when avocado is installed. When you
+include this file in your scripts, you can use some of the advanced autotest
+features in BASH. Take a look at ``examples/tests/simplewarning.sh`` for
+inspiration.
+
+*  ``avocado_debug`` - write into DEBUG log
+*  ``avocado_info`` - write into INFO log
+*  ``avocado_warn`` - write into WARN log (similarly to python tests this marks
+   the test dirty and finish with WARN if everything else goes well)
+*  ``avocado_error`` - log into ERROR log
+
+
 Wrap Up
 =======
 
