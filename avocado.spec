@@ -20,11 +20,13 @@ these days a framework) to perform automated testing.
 %build
 %{__python} setup.py build
 %{__python2} /usr/bin/rst2man man/avocado.rst man/avocado.1
+%{__python2} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
+%{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
 %files
 %defattr(-,root,root,-)
@@ -34,10 +36,12 @@ these days a framework) to perform automated testing.
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %{_bindir}/avocado
+%{_bindir}/avocado-rest-client
 %exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
 %exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
 %{python_sitelib}/avocado*
 %{_mandir}/man1/avocado.1.gz
+%{_mandir}/man1/avocado-rest-client.1.gz
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
@@ -64,8 +68,12 @@ examples of how to write tests on your own.
 %files examples
 %{_datadir}/avocado/tests
 %{_datadir}/avocado/wrappers
+%{_datadir}/avocado/api
 
 %changelog
+* Mon Feb 23 2015 Cleber Rosa <cleber@redhat.com> - 0.20.1-1
+- Added avocado-rest-client modules, script, man page and API examples
+
 * Fri Feb 6 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.1-1
 - Update to upstream version 0.20.1
 

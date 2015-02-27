@@ -58,6 +58,15 @@ def get_wrappers_dir():
         return settings_system_wide
 
 
+def get_api_dir():
+    settings_system_wide = os.path.join('/usr', 'share', 'avocado', 'api')
+    settings_local_install = 'api'
+    if 'VIRTUAL_ENV' in os.environ:
+        return settings_local_install
+    else:
+        return settings_system_wide
+
+
 def get_data_files():
     data_files = [(get_settings_dir(), ['etc/avocado/avocado.conf'])]
     data_files += [(os.path.join(get_settings_dir(), 'conf.d'), ['etc/avocado/conf.d/README'])]
@@ -66,8 +75,9 @@ def get_data_files():
         fmt_str = '%s/*' % data_dir
         for f in glob.glob(fmt_str):
             data_files += [(os.path.join(get_tests_dir(), os.path.basename(data_dir)), [f])]
-    data_files.append((get_docs_dir(), ['man/avocado.rst']))
+    data_files.append((get_docs_dir(), ['man/avocado.rst', 'man/avocado-rest-client.rst']))
     data_files += [(get_wrappers_dir(), glob.glob('examples/wrappers/*.sh'))]
+    data_files += [(get_api_dir(), glob.glob('examples/api/*/*.py'))]
     return data_files
 
 
@@ -102,8 +112,12 @@ if __name__ == '__main__':
                     'avocado.external',
                     'avocado.linux',
                     'avocado.utils',
-                    'avocado.plugins'],
+                    'avocado.plugins',
+                    'avocado.restclient',
+                    'avocado.restclient.cli',
+                    'avocado.restclient.cli.args'],
           package_data={'avocado.plugins': _get_plugin_resource_files(
               'avocado/plugins/resources')},
           data_files=get_data_files(),
-          scripts=['scripts/avocado'])
+          scripts=['scripts/avocado',
+                   'scripts/avocado-rest-client'])
