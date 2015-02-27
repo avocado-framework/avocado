@@ -37,6 +37,11 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'skiptest')
 
+    def test_warntest(self):
+        cmd_line = './examples/tests/warntest.py'
+        expected_rc = 0
+        self.run_and_check(cmd_line, expected_rc, 'warntest')
+
     def test_failtest(self):
         cmd_line = './examples/tests/failtest.py'
         expected_rc = 1
@@ -46,11 +51,6 @@ class StandaloneTests(unittest.TestCase):
         cmd_line = './examples/tests/errortest.py'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'errortest')
-
-    def test_warntest(self):
-        cmd_line = './examples/tests/warntest.py'
-        expected_rc = 1
-        self.run_and_check(cmd_line, expected_rc, 'warntest')
 
 if __name__ == '__main__':
     unittest.main()
