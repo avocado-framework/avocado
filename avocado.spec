@@ -64,6 +64,7 @@ examples of how to write tests on your own.
 %files examples
 %{_datadir}/avocado/tests
 %{_datadir}/avocado/wrappers
+%{_datadir}/avocado/api
 
 %changelog
 * Fri Feb 6 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.1-1
