@@ -309,7 +309,8 @@ class Job(object):
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite)
         self.view.stop_file_logging()
-        self._update_latest_link()
+        if not self.standalone:
+            self._update_latest_link()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -381,18 +382,35 @@ class Job(object):
             return exit_codes.AVOCADO_FAIL
 
 
-class TestModuleRunner(object):
+class TestProgram(object):
 
     """
     Convenience class to make avocado test modules executable.
     """
 
     def __init__(self):
-        self.url = sys.argv[0]
-        self.job = Job(standalone=True)
-        if self.url is not None:
-            sys.exit(self.job.run(urls=[self.url]))
-        shutil.rmtree(self.job.logdir)
-        sys.exit(exit_codes.AVOCADO_ALL_OK)
+        self.defaultTest = sys.argv[0]
+        self.progName = os.path.basename(sys.argv[0])
+        self.parseArgs(sys.argv[1:])
+        self.runTests()
 
-main = TestModuleRunner
+    def parseArgs(self, argv):
+        self.parser = argparse.ArgumentParser(prog=self.progName)
+        self.parser.add_argument('-k', '--keep-logs', action='store_true',
+                                 help='keep log files after test execution. '
+                                      'Current: %(default)s')
+        self.args = self.parser.parse_args(argv)
+
+    def runTests(self):
+        exist_status = exit_codes.AVOCADO_ALL_OK
+        self.job = Job(standalone=True)
+        if self.defaultTest is not None:
+            exit_status = self.job.run(urls=[self.defaultTest])
+        if self.args.keep_logs is True:
+            print('Test results available in %s' % self.job.logdir)
+        else:
+            shutil.rmtree(self.job.logdir)
+        sys.exit(exit_status)
+
+
+main = TestProgram
