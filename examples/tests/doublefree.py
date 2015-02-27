@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import signal
 
 from avocado import test
 from avocado import job
@@ -34,8 +35,13 @@ class DoubleFreeTest(test.Test):
         Execute 'doublefree'.
         """
         cmd = os.path.join(self.srcdir, 'doublefree')
-        cmd_result = process.run(cmd)
+        cmd_result = process.run(cmd, ignore_status=True)
         self.log.info(cmd_result)
+        expected_exit_status = -signal.SIGABRT
+        output = cmd_result.stdout + cmd_result.stderr
+        self.assertEqual(cmd_result.exit_status, expected_exit_status)
+        self.assertIn('double free or corruption', output)
+
 
 if __name__ == "__main__":
     job.main()
