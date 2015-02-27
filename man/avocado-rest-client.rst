@@ -36,6 +36,18 @@ on them being loaded::
  --username USERNAME  Username to authenticate to avocado server
  --password PASSWORD  Password to give to avocado server
 
+Real use of avocado depends on running avocado subcommands. This the current list
+of subcommands::
+
+   server             inspects the server status and available functionality
+
+To get usage instructions for a given subcommand, run it with `--help`. Example::
+
+ $ avocado-rest-client server --help
+
+  -l, --list-brief     list all records briefly
+  -s, --status         shows the avocado-server status
+
 FILES
 =====
 
