@@ -22,7 +22,7 @@ class OutputTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off doublefree'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = 0
         output = result.stdout + result.stderr
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
