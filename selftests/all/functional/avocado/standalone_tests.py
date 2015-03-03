@@ -26,6 +26,7 @@ class StandaloneTests(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Stand alone %s did not return rc "
                          "%d:\n%s" % (tstname, expected_rc, result))
+        return result
 
     def test_passtest(self):
         cmd_line = './examples/tests/passtest.py'
@@ -46,6 +47,23 @@ class StandaloneTests(unittest.TestCase):
         cmd_line = './examples/tests/failtest.py'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'failtest')
+
+    def test_failtest_nasty(self):
+        cmd_line = './examples/tests/failtest_nasty.py'
+        expected_rc = 1
+        result = self.run_and_check(cmd_line, expected_rc, 'failtest_nasty')
+        exc = "NastyException: Nasty-string-like-exception"
+        count = result.stderr.count("\n%s" % exc)
+        self.assertEqual(count, 2, "Exception \\n%s should be present twice in"
+                         "the log (once from the log, second time when parsing"
+                         "exception details." % (exc))
+
+    def test_failtest_nasty2(self):
+        cmd_line = './examples/tests/failtest_nasty2.py'
+        expected_rc = 1
+        result = self.run_and_check(cmd_line, expected_rc, 'failtest_nasty2')
+        self.assertIn("Exception: Unable to get exception, check the traceback"
+                      " for details.", result.stderr)
 
     def test_errortest(self):
         cmd_line = './examples/tests/errortest.py'

@@ -213,25 +213,19 @@ class Test(unittest.TestCase):
         """
         if self.running and self.time_start:
             self.update_time_elapsed()
-        orig = dict(self.__dict__)
-        d = {}
         preserve_attr = ['basedir', 'debugdir', 'depsdir',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
-                         'time_end', 'running', 'paused', 'paused_msg']
-        convert_attr = ['fail_class']
-        for key in sorted(orig):
-            if key in preserve_attr:
-                d[key] = orig[key]
-            elif key in convert_attr:
-                d[key] = str(orig[key])
-        d['params'] = dict(orig['params'])
-        d['class_name'] = self.__class__.__name__
-        d['job_logdir'] = self.job.logdir
-        d['job_unique_id'] = self.job.unique_id
-        return d
+                         'time_end', 'running', 'paused', 'paused_msg',
+                         'fail_class']
+        state = {key: self.__dict__.get(key) for key in preserve_attr}
+        state['params'] = dict(self.__dict__['params'])
+        state['class_name'] = self.__class__.__name__
+        state['job_logdir'] = self.job.logdir
+        state['job_unique_id'] = self.job.unique_id
+        return state
 
     def _set_default(self, key, default):
         try:
@@ -480,10 +474,15 @@ class Test(unittest.TestCase):
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception, detail:
             self.status = 'FAIL'
-            self.fail_class = detail.__class__.__name__
-            self.fail_reason = detail
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            try:
+                self.fail_class = str(detail.__class__.__name__)
+                self.fail_reason = str(detail)
+            except TypeError:
+                self.fail_class = "Exception"
+                self.fail_reason = ("Unable to get exception, check the "
+                                    "traceback for details.")
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
@@ -501,7 +500,7 @@ class Test(unittest.TestCase):
         if self.fail_reason is not None:
             self.log.error("%s %s -> %s: %s", self.status,
                            self.tagged_name,
-                           self.fail_reason.__class__.__name__,
+                           self.fail_class,
                            self.fail_reason)
 
         else:
