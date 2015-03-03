@@ -9,78 +9,17 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2014
+# Copyright: Red Hat Inc. 2014-2015
 # Author: Ruda Moura <rmoura@redhat.com>
 
 """Run tests on Virtual Machine."""
 
 import getpass
 
-from avocado.core import exceptions
 from avocado.plugins import plugin
-from avocado.plugins.remote import RemoteTestResult
-from avocado.plugins.remote import RemoteTestRunner
+from avocado.remote import VMTestResult
+from avocado.remote import RemoteTestRunner
 from avocado.utils import virt
-
-
-class VMTestResult(RemoteTestResult):
-
-    """
-    Virtual Machine Test Result class.
-    """
-
-    def __init__(self, stream, args):
-        super(VMTestResult, self).__init__(stream, args)
-        self.vm = None
-        self.command_line_arg_name = '--vm-domain'
-
-    def setup(self):
-        # Super called after VM is found and initialized
-        if self.args.vm_domain is None:
-            e_msg = ('Please set Virtual Machine Domain with option '
-                     '--vm-domain.')
-            self.stream.notify(event='error', msg=e_msg)
-            raise exceptions.TestSetupFail(e_msg)
-        if self.args.vm_hostname is None:
-            e_msg = ('Please set Virtual Machine hostname with option '
-                     '--vm-hostname.')
-            self.stream.notify(event='error', msg=e_msg)
-            raise exceptions.TestSetupFail(e_msg)
-        self.stream.notify(event='message', msg="DOMAIN     : %s"
-                           % self.args.vm_domain)
-        self.vm = virt.vm_connect(self.args.vm_domain,
-                                  self.args.vm_hypervisor_uri)
-        if self.vm is None:
-            self.stream.notify(event='error',
-                               msg="Could not connect to VM '%s'"
-                               % self.args.vm_domain)
-            raise exceptions.TestSetupFail()
-        if self.vm.start() is False:
-            self.stream.notify(event='error', msg="Could not start VM '%s'"
-                               % self.args.vm_domain)
-            raise exceptions.TestSetupFail()
-        assert self.vm.domain.isActive() is not False
-        if self.args.vm_cleanup is True:
-            self.vm.create_snapshot()
-            if self.vm.snapshot is None:
-                self.stream.notify(event='error', msg="Could not create "
-                                   "snapshot on VM '%s'" % self.args.vm_domain)
-                raise exceptions.TestSetupFail()
-        try:
-            # Finish remote setup and copy the tests
-            self.args.remote_hostname = self.args.vm_hostname
-            self.args.remote_username = self.args.vm_username
-            self.args.remote_password = self.args.vm_password
-            self.args.remote_no_copy = self.args.vm_no_copy
-            super(VMTestResult, self).setup()
-        except Exception:
-            self.tear_down()
-            raise
-
-    def tear_down(self):
-        super(VMTestResult, self).tear_down()
-        if self.args.vm_cleanup is True and self.vm.snapshot is not None:
-            self.vm.restore_snapshot()
 
 
 class RunVM(plugin.Plugin):

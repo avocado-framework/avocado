@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import unittest
+import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.plugins import vm, remote
+from avocado.remote import VMTestResult, RemoteTestResult
+from avocado.utils import virt
 
 
 JSON_RESULTS = ('Something other than json\n'
@@ -23,19 +25,17 @@ class VMTestResultTest(unittest.TestCase):
     def setUp(self):
         # remote.RemoteTestResult.__init__()
         Stream = flexmock()
-        (flexmock(remote.os).should_receive('getcwd')
+        (flexmock(os).should_receive('getcwd')
          .and_return('/current/directory').once().ordered())
         # vm.VMTestResult.setup()
         (Stream.should_receive('notify')
          .with_args(msg="DOMAIN     : domain", event="message"))
         mock_vm = flexmock(snapshot=True,
                            domain=flexmock(isActive=lambda: True))
-        virt = flexmock(vm.virt)
-        virt.should_receive('vm_connect').and_return(mock_vm).once().ordered()
+        flexmock(virt).should_receive('vm_connect').and_return(mock_vm).once().ordered()
         mock_vm.should_receive('start').and_return(True).once().ordered()
         mock_vm.should_receive('create_snapshot').once().ordered()
-        RemoteTestResult = flexmock(remote.RemoteTestResult)
-        RemoteTestResult.should_receive('setup').once().ordered()
+        flexmock(RemoteTestResult).should_receive('setup').once().ordered()
         # vm.RemoteTestResult()
         Args = flexmock(test_result_total=1,
                         url=['/tests/sleeptest', '/tests/other/test',
@@ -48,7 +48,7 @@ class VMTestResultTest(unittest.TestCase):
                         vm_cleanup=True,
                         vm_no_copy=False,
                         vm_hypervisor_uri='my_hypervisor_uri')
-        self.remote = vm.VMTestResult(Stream, Args)
+        self.remote = VMTestResult(Stream, Args)
         # vm.RemoteTestResult.tear_down()
         RemoteTestResult.should_receive('tear_down').once().ordered()
         mock_vm.should_receive('restore_snapshot').once().ordered()

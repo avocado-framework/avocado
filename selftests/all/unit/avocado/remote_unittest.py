@@ -5,7 +5,10 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.plugins import remote
+from avocado import remote
+from avocado.utils import archive
+from avocado.utils import remote as utils_remote
+from avocado.core import data_dir
 
 cwd = os.getcwd()
 
@@ -56,10 +59,10 @@ class RemoteTestRunnerTest(unittest.TestCase):
         (Remote.should_receive('receive_files')
          .with_args('/local/path', '/home/user/avocado/logs/run-2014-05-26-'
                     '15.45.37.zip')).once().ordered()
-        (flexmock(remote.archive).should_receive('uncompress')
+        (flexmock(archive).should_receive('uncompress')
          .with_args('/local/path/run-2014-05-26-15.45.37.zip', '/local/path')
          .once().ordered())
-        (flexmock(remote.os).should_receive('remove')
+        (flexmock(os).should_receive('remove')
          .with_args('/local/path/run-2014-05-26-15.45.37.zip').once()
          .ordered())
         Results.should_receive('end_tests').once().ordered()
@@ -82,23 +85,23 @@ class RemoteTestResultTest(unittest.TestCase):
     def setUp(self):
         Remote = flexmock()
         Stream = flexmock()
-        (flexmock(remote.os).should_receive('getcwd')
+        (flexmock(os).should_receive('getcwd')
          .and_return('/current/directory').ordered())
         Stream.should_receive('notify').once().ordered()
-        remote_remote = flexmock(remote.remote)
+        remote_remote = flexmock(utils_remote)
         (remote_remote.should_receive('Remote')
          .with_args('hostname', 'username', 'password', 22, quiet=True)
          .once().ordered()
          .and_return(Remote))
         (Remote.should_receive('makedir').with_args('~/avocado/tests')
          .once().ordered())
-        (flexmock(remote.os.path).should_receive('exists')
+        (flexmock(os.path).should_receive('exists')
          .with_args('/tests/sleeptest').once().and_return(True).ordered())
-        (flexmock(remote.os.path).should_receive('exists')
+        (flexmock(os.path).should_receive('exists')
          .with_args('/tests/other/test').once().and_return(True).ordered())
-        (flexmock(remote.os.path).should_receive('exists')
+        (flexmock(os.path).should_receive('exists')
          .with_args('passtest').once().and_return(False).ordered())
-        (flexmock(remote.data_dir).should_receive('get_test_dir').once()
+        (flexmock(data_dir).should_receive('get_test_dir').once()
          .and_return('/path/to/default/tests/location').ordered())
         (Remote.should_receive('makedir')
          .with_args("~/avocado/tests/path/to/default/tests/location")
