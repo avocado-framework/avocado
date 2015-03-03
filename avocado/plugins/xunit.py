@@ -38,7 +38,13 @@ class XmlResult(object):
         return quoteattr(attrib)
 
     def _escape_cdata(self, cdata):
-        return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
+        try:
+            return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
+        except AttributeError:
+            try:
+                str(cdata).replace(']]>', ']]>]]&gt;<![CDATA[')
+            except TypeError:
+                return 'ERROR: UnparsableObject'
 
     def get_contents(self):
         return '\n'.join(self.xml)
