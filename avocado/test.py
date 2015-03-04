@@ -59,7 +59,7 @@ class Test(unittest.TestCase):
                      reserved for running random executables as tests.
         :param base_logdir: Directory where test logs should go. If None
                             provided, it'll use
-                            :func:`avocado.core.data_dir.get_job_logs_dir`.
+                            :func:`avocado.core.data_dir.create_job_logs_dir`.
         :param tag: Tag that differentiates 2 executions of the same test name.
                     Example: 'long', 'short', so we can differentiate
                     'sleeptest.long' and 'sleeptest.short'.
@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
         self.workdir = utils_path.init_dir(tmpdir, basename)
         self.srcdir = utils_path.init_dir(self.workdir, 'src')
         if base_logdir is None:
-            base_logdir = data_dir.get_job_logs_dir()
+            base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
         self.tagged_name = self.get_tagged_name(base_logdir)
 
@@ -399,11 +399,14 @@ class Test(unittest.TestCase):
         io.write_file(whiteboard_file, self.whiteboard)
 
         if self.job is not None:
-            job_standalone = self.job.args is None
+            job_standalone = getattr(self.job.args, 'standalone', False)
+            output_check_record = getattr(self.job.args,
+                                          'output_check_record', 'none')
             no_record_mode = (not job_standalone and
-                              self.job.args.output_check_record == 'none')
+                              output_check_record == 'none')
             disable_output_check = (not job_standalone and
-                                    self.job.args.disable_output_check)
+                                    getattr(self.job.args,
+                                            'disable_output_check', False))
 
             if job_standalone or no_record_mode:
                 if not disable_output_check:
@@ -417,11 +420,10 @@ class Test(unittest.TestCase):
                     except Exception, details:
                         stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                         stderr_check_exception = details
-
             elif not job_standalone:
-                if self.job.args.output_check_record in ['all', 'stdout']:
+                if output_check_record in ['all', 'stdout']:
                     self.record_reference_stdout()
-                if self.job.args.output_check_record in ['all', 'stderr']:
+                if output_check_record in ['all', 'stderr']:
                     self.record_reference_stderr()
 
         # pylint: disable=E0702

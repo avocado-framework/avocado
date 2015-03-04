@@ -11,7 +11,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
+# Copyright: Red Hat Inc. 2013-2015
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 """
@@ -203,18 +203,16 @@ def get_logs_dir():
     return _get_rw_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
 
 
-def get_job_logs_dir(args=None, unique_id=None):
+def create_job_logs_dir(logdir=None, unique_id=None):
     """
     Create a log directory for a job, or a stand alone execution of a test.
 
-    :param args: :class:`argparse.Namespace` instance with cmdline arguments
-                 (optional).
+    :param logdir: Base log directory, if `None`, use value from configuration.
+    :param unique_id: The unique identification. If `None`, create one.
     :rtype: basestring
     """
     start_time = time.strftime('%Y-%m-%dT%H.%M')
-    if args is not None:
-        logdir = args.logdir or get_logs_dir()
-    else:
+    if logdir is None:
         logdir = get_logs_dir()
     # Stand alone tests handling
     if unique_id is None:

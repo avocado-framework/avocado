@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
+# Copyright: Red Hat Inc. 2013-2015
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 #          Ruda Moura <rmoura@redhat.com>
 
@@ -60,44 +60,41 @@ class Job(object):
     along with setup operations and event recording.
     """
 
-    def __init__(self, args=None, standalone=False):
+    def __init__(self, args=None):
         """
         Creates an instance of Job class.
 
         :param args: an instance of :class:`argparse.Namespace`.
-        :param standalone: do not create any content and present the job log
-                           on the output.
         """
+        if args is None:
+            args = argparse.Namespace()
         self.args = args
-        self.standalone = standalone
-        if args is not None:
-            self.unique_id = args.unique_job_id or job_id.create_unique_job_id()
-        else:
-            self.unique_id = job_id.create_unique_job_id()
+        self.standalone = getattr(self.args, 'standalone', False)
+        unique_id = getattr(self.args, 'unique_job_id', None)
+        if unique_id is None:
+            unique_id = job_id.create_unique_job_id()
+        self.unique_id = unique_id
         self.view = output.View(app_args=self.args)
         self.logdir = None
-        if self.args is not None:
-            raw_log_level = args.job_log_level
-            mapping = {'info': logging.INFO,
-                       'debug': logging.DEBUG,
-                       'warning': logging.WARNING,
-                       'error': logging.ERROR,
-                       'critical': logging.CRITICAL}
-            if raw_log_level is not None and raw_log_level in mapping:
-                self.loglevel = mapping[raw_log_level]
-            else:
-                self.loglevel = logging.DEBUG
-            if multiplexer.MULTIPLEX_CAPABLE:
-                self.multiplex_files = args.multiplex_files
-            self.show_job_log = args.show_job_log
-            self.silent = args.silent
+        raw_log_level = getattr(self.args, 'job_log_level', None)
+        mapping = {'info': logging.INFO,
+                   'debug': logging.DEBUG,
+                   'warning': logging.WARNING,
+                   'error': logging.ERROR,
+                   'critical': logging.CRITICAL}
+        if raw_log_level in mapping:
+            self.loglevel = mapping[raw_log_level]
         else:
             self.loglevel = logging.DEBUG
-            self.multiplex_files = None
-            self.show_job_log = False
-            self.silent = False
+        self.show_job_log = getattr(self.args, 'show_job_log', False)
+        self.silent = getattr(self.args, 'silent', False)
 
-        if standalone:
+        if multiplexer.MULTIPLEX_CAPABLE:
+            self.multiplex_files = getattr(self.args, 'multiplex_files', None)
+        else:
+            self.multiplex_files = None
+
+        if self.standalone:
             self.show_job_log = True
             if self.args is not None:
                 setattr(self.args, 'show_job_log', True)
@@ -117,7 +114,7 @@ class Job(object):
         if self.standalone:
             self.logdir = tempfile.mkdtemp()
         else:
-            self.logdir = data_dir.get_job_logs_dir(self.args, self.unique_id)
+            self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
         self.logfile = os.path.join(self.logdir, "job.log")
         self.idfile = os.path.join(self.logdir, "id")
         with open(self.idfile, 'w') as id_file_obj:
@@ -196,10 +193,7 @@ class Job(object):
             html_file = os.path.join(self.logdir, 'html', 'results.html')
             args = argparse.Namespace()
             args.html_output = html_file
-            if self.args is not None:
-                args.open_browser = getattr(self.args, 'open_browser')
-            else:
-                args.open_browser = False
+            args.open_browser = getattr(self.args, 'open_browser', False)
             args.relative_links = True
             html_plugin = htmlresult.HTMLTestResult(self.view, args)
             self.result_proxy.add_output_plugin(html_plugin)
@@ -260,8 +254,7 @@ class Job(object):
                 that configure a job failure.
         """
         if urls is None:
-            if self.args and self.args.url is not None:
-                urls = self.args.url
+            urls = getattr(self.args, 'url', None)
 
         if isinstance(urls, str):
             urls = urls.split()
@@ -276,8 +269,7 @@ class Job(object):
 
         if multiplexer.MULTIPLEX_CAPABLE:
             if multiplex_files is None:
-                if self.args and self.args.multiplex_files is not None:
-                    multiplex_files = self.args.multiplex_files
+                multiplex_files = getattr(self.args, 'multiplex_files', None)
 
             if multiplex_files is not None:
                 params_list = self._multiplex_params_list(params_list,
@@ -301,8 +293,7 @@ class Job(object):
                      "(Possible reasons: File ownership, permissions, typos)")
             raise exceptions.OptionValidationError(e_msg)
 
-        if self.args is not None:
-            self.args.test_result_total = len(test_suite)
+        self.args.test_result_total = len(test_suite)
 
         self._make_test_result()
         self._make_test_runner()
@@ -314,17 +305,17 @@ class Job(object):
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite)
         self.view.stop_file_logging()
-        self._update_latest_link()
+        if not self.standalone:
+            self._update_latest_link()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
         # Let's clean up test artifacts
-        if self.args is not None:
-            if self.args.archive:
-                filename = self.logdir + '.zip'
-                archive.create(filename, self.logdir)
-            if not self.args.keep_tmp_files:
-                data_dir.clean_tmp_files()
+        if getattr(self.args, 'archive', False):
+            filename = self.logdir + '.zip'
+            archive.create(filename, self.logdir)
+        if not getattr(self.args, 'keep_tmp_files', False):
+            data_dir.clean_tmp_files()
 
         tests_status = not bool(failures)
         if tests_status:
@@ -386,18 +377,36 @@ class Job(object):
             return exit_codes.AVOCADO_FAIL
 
 
-class TestModuleRunner(object):
+class TestProgram(object):
 
     """
     Convenience class to make avocado test modules executable.
     """
 
     def __init__(self):
-        self.url = sys.argv[0]
-        self.job = Job(standalone=True)
-        if self.url is not None:
-            sys.exit(self.job.run(urls=[self.url]))
-        shutil.rmtree(self.job.logdir)
-        sys.exit(exit_codes.AVOCADO_ALL_OK)
+        self.defaultTest = sys.argv[0]
+        self.progName = os.path.basename(sys.argv[0])
+        self.parseArgs(sys.argv[1:])
+        self.runTests()
 
-main = TestModuleRunner
+    def parseArgs(self, argv):
+        self.parser = argparse.ArgumentParser(prog=self.progName)
+        self.parser.add_argument('-k', '--keep-logs', action='store_true',
+                                 help='keep log files after test execution. '
+                                      'Current: %(default)s')
+        self.args = self.parser.parse_args(argv)
+
+    def runTests(self):
+        exist_status = exit_codes.AVOCADO_ALL_OK
+        self.args.standalone = True
+        self.job = Job(self.args)
+        if self.defaultTest is not None:
+            exit_status = self.job.run(urls=[self.defaultTest])
+        if self.args.keep_logs is True:
+            print('Test results available in %s' % self.job.logdir)
+        else:
+            shutil.rmtree(self.job.logdir)
+        sys.exit(exit_status)
+
+
+main = TestProgram
