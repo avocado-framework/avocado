@@ -11,6 +11,7 @@
 # This code was inspired in the autotest project,
 # client/shared/test.py
 # Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
+import re
 
 """
 Contains the base test implementation, used as a base for the actual
@@ -518,6 +519,9 @@ class SimpleTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
+    re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d INFO \|'
+                                r' \d\d:\d\d:\d\d WARN \|')
+
     def __init__(self, path, params=None, base_logdir=None, tag=None, job=None):
         self.path = os.path.abspath(path)
         super(SimpleTest, self).__init__(name=path, base_logdir=base_logdir,
@@ -548,11 +552,19 @@ class SimpleTest(Test):
         try:
             test_params = {str(key): str(val)
                            for key, val in self.params.iteritems()}
-            result = process.run(self.path, verbose=True, env=test_params)
+            result = process.run(self.path, verbose=False, env=test_params)
             self._log_detailed_cmd_info(result)
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
+
+    def runTest(self, result=None):
+        super(SimpleTest, self).runTest(result)
+        for line in open(self.logfile):
+            if self.re_avocado_log.match(line):
+                raise exceptions.TestWarn("Test passed but there were warnings"
+                                          " on stdout during execution. Check "
+                                          "the log for details.")
 
 
 class MissingTest(Test):
