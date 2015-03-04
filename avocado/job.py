@@ -40,9 +40,14 @@ from avocado.plugins import jsonresult
 from avocado.plugins import xunit
 from avocado.utils import archive
 from avocado.utils import path
-from avocado.plugins import htmlresult
 
-HTML_REPORT_SUPPORT = htmlresult.HTML_REPORT_CAPABLE
+try:
+    from avocado.plugins import htmlresult
+except ImportError:
+    HTML_REPORT_SUPPORT = False
+else:
+    HTML_REPORT_SUPPORT = htmlresult.HTML_REPORT_CAPABLE
+
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
 
