@@ -70,8 +70,10 @@ should never get in your code, or places which interests you and you can run
 your code in production and gdb variants. If after a long time you get to this
 place, the test notifies you and you can investigate the problem. This is
 demonstrated in ``examples/tests/doublefree_nasty.py`` test. To unveil the
-power of Avocadu, run this test using
-``avocado run --gdb-run-bin=doublefree: examples/tests/doublefree_nasty.py --gdb-prerun-commands examples/tests/doublefree_nasty.py.data/gdb_pre --multiplex examples/tests/doublefree_nasty.py.data/iterations.yaml``,
+power of Avocado, run this test using::
+
+    avocado run --gdb-run-bin=doublefree: examples/tests/doublefree_nasty.py --gdb-prerun-commands examples/tests/doublefree_nasty.py.data/gdb_pre --multiplex examples/tests/doublefree_nasty.py.data/iterations.yaml
+
 which executes 100 iterations of this test while setting all breakpoints from
 the ``examples/tests/doublefree_nasty.py.data/gdb_pre`` file (you can specify
 whatever GDB supports, not only breakpoints).
