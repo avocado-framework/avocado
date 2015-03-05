@@ -35,6 +35,18 @@ class RemoteTestRunnerTest(unittest.TestCase):
         stream = flexmock(job_unique_id='sleeptest.1',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
+        args = ('avocado -v')
+        version_result = flexmock(stdout='Avocado 1.2.3', exit_status=0)
+        (Remote.should_receive('run')
+         .with_args(args, ignore_status=True, timeout=None)
+         .once().and_return(version_result))
+
+        args = 'cd ~/avocado/tests; avocado list sleeptest'
+        urls_result = flexmock(exit_status=0)
+        (Remote.should_receive('run')
+         .with_args(args, timeout=None, ignore_status=True)
+         .once().and_return(urls_result))
+
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
                 "--json - --archive sleeptest")
         (Remote.should_receive('run')
