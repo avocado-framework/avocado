@@ -68,10 +68,19 @@ class RemoteTestRunner(TestRunner):
             raise exceptions.JobError('Remote machine does not seem to have '
                                       'avocado installed')
 
+        urls_str = " ".join(urls)
+        avocado_check_urls_cmd = 'cd %s; avocado list %s' % (self.remote_test_dir,
+                                                             urls_str)
+        check_urls_result = self.result.remote.run(avocado_check_urls_cmd,
+                                                   ignore_status=True,
+                                                   timeout=None)
+        if check_urls_result.exit_status != 0:
+            raise exceptions.JobError(check_urls_result.stdout)
+
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s' % (self.remote_test_dir,
                                          self.result.stream.job_unique_id,
-                                         " ".join(urls)))
+                                         urls_str))
         result = self.result.remote.run(avocado_cmd, ignore_status=True,
                                         timeout=None)
         json_result = None
