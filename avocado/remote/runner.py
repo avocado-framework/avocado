@@ -16,6 +16,7 @@
 
 import json
 import os
+import re
 
 from avocado.core import status
 from avocado.core import exceptions
@@ -29,6 +30,30 @@ class RemoteTestRunner(TestRunner):
     """ Tooled TestRunner to run on remote machine using ssh """
     remote_test_dir = '~/avocado/tests'
 
+    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\.(\d+)$')
+
+    def check_remote_avocado(self):
+        """
+        Checks if the remote system appears to have avocado installed
+
+        The "appears to have" description is justified by the fact that the
+        check is rather simplistic, it attempts to run an `avocado -v` command
+        and checks if the output looks like what avocado would print out.
+
+        :rtype: bool
+        :returns: True if avocado appears to be installed and False otherwise
+        """
+        result = self.result.remote.run('avocado -v',
+                                        ignore_status=True,
+                                        timeout=None)
+        if result.exit_status == 127:
+            return False
+
+        if not self.remote_version_re.match(result.stdout):
+            return False
+
+        return True
+
     def run_test(self, urls):
         """
         Run tests.
@@ -36,15 +61,16 @@ class RemoteTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
+        if not self.check_remote_avocado():
+            raise exceptions.JobError('Remote machine does not seem to have '
+                                      'avocado installed')
+
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s' % (self.remote_test_dir,
                                          self.result.stream.job_unique_id,
                                          " ".join(urls)))
         result = self.result.remote.run(avocado_cmd, ignore_status=True,
                                         timeout=None)
-        if result.exit_status == 127:
-            raise exceptions.JobError('Remote machine does not have avocado '
-                                      'installed')
         json_result = None
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
