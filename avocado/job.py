@@ -279,7 +279,13 @@ class Job(object):
 
         try:
             test_suite = self.test_loader.discover(params_list)
-            error_msg_parts = self.test_loader.validate_ui(test_suite)
+            # Do not attempt to validate the tests given on the command line if
+            # the tests will not be copied from this system to a remote one
+            # using the remote plugin features
+            if not getattr(self.args, 'remote_no_copy', False):
+                error_msg_parts = self.test_loader.validate_ui(test_suite)
+            else:
+                error_msg_parts = []
         except KeyboardInterrupt:
             raise exceptions.JobError('Command interrupted by user...')
 
