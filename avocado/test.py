@@ -67,7 +67,8 @@ class Test(unittest.TestCase):
         """
         def record_and_warn(*args, **kwargs):
             """ Record call to this function and log warning """
-            self.__log_warn_used = True
+            if not self.__log_warn_used:
+                self.__log_warn_used = True
             return original_log_warn(*args, **kwargs)
 
         if name is not None:
