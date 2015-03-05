@@ -20,11 +20,13 @@ framework tests.
 import inspect
 import logging
 import os
+import pipes
 import shutil
 import sys
 import time
 import unittest
 
+from avocado import sysinfo
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import io
@@ -32,7 +34,6 @@ from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils import stacktrace
 from avocado.utils.params import Params
-from avocado import sysinfo
 from avocado.version import VERSION
 
 
@@ -548,7 +549,9 @@ class SimpleTest(Test):
         try:
             test_params = {str(key): str(val)
                            for key, val in self.params.iteritems()}
-            result = process.run(self.path, verbose=True, env=test_params)
+            # process.run uses shlex.split(), the self.path needs to be escaped
+            result = process.run(pipes.quote(self.path), verbose=True,
+                                 env=test_params)
             self._log_detailed_cmd_info(result)
         except exceptions.CmdError, details:
             self._log_detailed_cmd_info(details.result)
