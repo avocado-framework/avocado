@@ -52,12 +52,20 @@ clean:
 	rm -f man/avocado.1
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
+	test -L avocado/virt && rm -f avocado/virt || true
+	test -L avocado/plugins/virt.py && rm -f avocado/plugins/virt.py || true
+	test -L avocado/plugins/virt_bootstrap.py && rm -f avocado/plugins/virt_bootstrap.py || true
 
 check:
 	selftests/checkall
+
+link:
+	test -d ../avocado-virt/avocado/virt && ln -s ../../avocado-virt/avocado/virt avocado || true
+	test -f ../avocado-virt/avocado/plugins/virt.py && ln -s ../../../avocado-virt/avocado/plugins/virt.py avocado/plugins/ || true
+	test -f ../avocado-virt/avocado/plugins/virt_bootstrap.py && ln -s ../../../avocado-virt/avocado/plugins/virt_bootstrap.py avocado/plugins/ || true
 
 man:
 	rst2man man/avocado.rst man/avocado.1
 	rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
 
-.PHONY: source install clean check man
+.PHONY: source install clean check link man
