@@ -111,7 +111,8 @@ class TestRunner(plugin.Plugin):
         if multiplexer.MULTIPLEX_CAPABLE:
             mux = self.parser.add_argument_group('multiplex arguments')
             mux.add_argument('-m', '--multiplex-files', nargs='*', default=None,
-                             help='Path(s) to a avocado multiplex (.yaml) file(s)')
+                             help='Path(s) to a avocado multiplex (.yaml) '
+                             'file(s) (order dependant)')
             mux.add_argument('--filter-only', nargs='*', default=[],
                              help='Filter only path(s) from multiplexing')
             mux.add_argument('--filter-out', nargs='*', default=[],
