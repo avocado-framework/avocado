@@ -2,11 +2,9 @@
 
 import os
 
-from avocado import test
-from avocado import job
+import avocado
 
-
-class AbortTest(test.Test):
+class AbortTest(avocado.Test):
 
     """
     A test that just calls abort() (and abort).
@@ -18,4 +16,4 @@ class AbortTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

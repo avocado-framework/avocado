@@ -3,13 +3,13 @@
 import os
 import shutil
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import build
 from avocado.utils import process
 
 
-class Raise(test.Test):
+class Raise(avocado.Test):
 
     """
     A test that calls raise() to signals to itself.
@@ -50,4 +50,4 @@ class Raise(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

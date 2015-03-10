@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.core import exceptions
 
 
-class ErrorTest(test.Test):
+class ErrorTest(avocado.Test):
 
     """
     Functional test for avocado. Throw a TestError.
@@ -18,4 +18,4 @@ class ErrorTest(test.Test):
         raise exceptions.TestError('This should throw a TestError')
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

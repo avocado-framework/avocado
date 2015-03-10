@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
-from avocado import job
-from avocado import test
+import avocado
 
 
-class PassTest(test.Test):
+class PassTest(avocado.Test):
 
     """
     Example test that passes.
@@ -18,4 +17,4 @@ class PassTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

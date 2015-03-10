@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.linux import kernel_build
 
 
-class LinuxBuildTest(test.Test):
+class LinuxBuildTest(avocado.Test):
 
     """
     Execute the Linux Build test.
@@ -28,4 +28,4 @@ class LinuxBuildTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

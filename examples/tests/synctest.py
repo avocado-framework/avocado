@@ -2,14 +2,14 @@
 
 import os
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
 
 
-class SyncTest(test.Test):
+class SyncTest(avocado.Test):
 
     """
     Execute the synctest test suite.
@@ -47,4 +47,4 @@ class SyncTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

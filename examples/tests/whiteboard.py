@@ -2,11 +2,10 @@
 
 import base64
 
-from avocado import test
-from avocado import job
+import avocado
 
 
-class WhiteBoard(test.Test):
+class WhiteBoard(avocado.Test):
 
     """
     Simple test that saves test custom data to the test whiteboard
@@ -35,4 +34,4 @@ class WhiteBoard(test.Test):
         self.whiteboard = base64.encodestring(result)
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

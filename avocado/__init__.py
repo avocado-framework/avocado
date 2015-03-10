@@ -13,6 +13,10 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
+from avocado.test import Test
+from avocado.job import main
+
+
 DEFAULT_LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -93,3 +97,5 @@ DEFAULT_LOGGING = {
 
 from logging import config
 config.dictConfig(DEFAULT_LOGGING)
+
+del config

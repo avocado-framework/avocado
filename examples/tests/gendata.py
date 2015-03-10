@@ -2,11 +2,10 @@
 
 import os
 
-from avocado import test
-from avocado import job
+import avocado
 
 
-class GenDataTest(test.Test):
+class GenDataTest(avocado.Test):
 
     """
     Simple test that generates data to be persisted after the test is run
@@ -46,4 +45,4 @@ class GenDataTest(test.Test):
         self.generate_json()
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

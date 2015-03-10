@@ -2,15 +2,15 @@
 
 import os
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
 from avocado.utils import data_factory
 
 
-class TrinityTest(test.Test):
+class TrinityTest(avocado.Test):
 
     """
     Trinity syscall fuzzer wrapper.
@@ -56,4 +56,4 @@ class TrinityTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

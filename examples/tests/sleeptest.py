@@ -2,11 +2,10 @@
 
 import time
 
-from avocado import job
-from avocado import test
+import avocado
 
 
-class SleepTest(test.Test):
+class SleepTest(avocado.Test):
 
     """
     Example test for avocado.
@@ -22,4 +21,4 @@ class SleepTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

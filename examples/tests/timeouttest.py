@@ -2,11 +2,10 @@
 
 import time
 
-from avocado import test
-from avocado import job
+import avocado
 
 
-class TimeoutTest(test.Test):
+class TimeoutTest(avocado.Test):
 
     """
     Functional test for avocado. Throw a TestTimeoutError.
@@ -24,4 +23,4 @@ class TimeoutTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

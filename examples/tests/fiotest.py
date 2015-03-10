@@ -2,14 +2,14 @@
 
 import os
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
 
 
-class FioTest(test.Test):
+class FioTest(avocado.Test):
 
     """
     fio is an I/O tool meant to be used both for benchmark and
@@ -41,4 +41,4 @@ class FioTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()
