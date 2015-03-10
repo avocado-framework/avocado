@@ -15,13 +15,13 @@ class GDBPluginTest(unittest.TestCase):
 
     def test_gdb_prerun_commands(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --gdb-prerun-commands=/dev/null sleeptest'
+        cmd_line = './scripts/avocado run --sysinfo=off --gdb-prerun-commands=/dev/null passtest'
         process.run(cmd_line)
 
     def test_gdb_multiple_prerun_commands(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --gdb-prerun-commands=/dev/null '
-                    '--gdb-prerun-commands=foo:/dev/null sleeptest')
+                    '--gdb-prerun-commands=foo:/dev/null passtest')
         process.run(cmd_line)
 
 if __name__ == '__main__':
