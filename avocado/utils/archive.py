@@ -17,10 +17,15 @@
 Module to help extract and create compressed archives.
 """
 
-import lzma
 import os
 import tarfile
 import zipfile
+
+try:
+    import lzma
+    LZMA_CAPABLE = True
+except ImportError:
+    LZMA_CAPABLE = False
 
 
 class ArchiveException(Exception):
@@ -79,8 +84,10 @@ class ArchiveFile(object):
         '.tar.gz': (False, True, tarfile.open, ':gz'),
         '.tgz': (False, True, tarfile.open, ':gz'),
         '.tar.bz2': (False, True, tarfile.open, ':bz2'),
-        '.tbz2': (False, True, tarfile.open, ':bz2'),
-        '.xz': (False, True, _WrapLZMA.open, '')}
+        '.tbz2': (False, True, tarfile.open, ':bz2')}
+
+    if LZMA_CAPABLE:
+        _extension_table['.xz'] = (False, True, _WrapLZMA.open, '')
 
     def __init__(self, filename, mode='r'):
         """
