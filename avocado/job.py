@@ -112,7 +112,13 @@ class Job(object):
 
     def _setup_job_results(self):
         if self.standalone:
-            self.logdir = tempfile.mkdtemp()
+            logdir = getattr(self.args, 'logdir', None)
+            if logdir is not None:
+                logdir = os.path.abspath(logdir)
+                self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
+                                                           unique_id=self.unique_id)
+            else:
+                self.logdir = tempfile.mkdtemp(prefix='avocado-')
         else:
             self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
         self.logfile = os.path.join(self.logdir, "job.log")
@@ -397,9 +403,11 @@ class TestProgram(object):
 
     def parseArgs(self, argv):
         self.parser = argparse.ArgumentParser(prog=self.progName)
-        self.parser.add_argument('-k', '--keep-logs', action='store_true',
-                                 help='keep log files after test execution. '
-                                      'Current: %(default)s')
+        self.parser.add_argument('-r', '--remove-test-results', action='store_true',
+                                 help='remove all test results files after test execution')
+        self.parser.add_argument('-d', '--test-results-dir', dest='logdir', default=None,
+                                 metavar='TEST_RESULTS_DIR',
+                                 help='use an alternative test results directory')
         self.args = self.parser.parse_args(argv)
 
     def runTests(self):
@@ -408,10 +416,10 @@ class TestProgram(object):
         self.job = Job(self.args)
         if self.defaultTest is not None:
             exit_status = self.job.run(urls=[self.defaultTest])
-        if self.args.keep_logs is True:
-            print('Test results available in %s' % self.job.logdir)
-        else:
+        if self.args.remove_test_results is True:
             shutil.rmtree(self.job.logdir)
+        else:
+            print('Test results available in %s' % self.job.logdir)
         sys.exit(exit_status)
 
 
