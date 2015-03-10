@@ -194,7 +194,6 @@ output of the job log in the stdout, without having to tail the job log.
 In order to do that, you can use --show-job-log to the avocado test runner::
 
     $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
-    Not logging /proc/slabinfo (lack of permissions)
     START examples/tests/sleeptest.py
 
     Test instance parameters:
@@ -206,10 +205,8 @@ In order to do that, you can use --show-job-log to the avocado test runner::
     Test instance params override defaults whenever available
 
     Sleeping for 1.00 seconds
-    Not logging /var/log/messages (lack of permissions)
+    END examples/tests/sleeptest.py
     PASS examples/tests/sleeptest.py
-
-    Not logging /proc/slabinfo (lack of permissions)
 
 As you can see, the UI output is suppressed and only the job log goes to
 stdout, making this a useful feature for test development/debugging. Some more

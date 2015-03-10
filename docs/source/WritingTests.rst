@@ -455,6 +455,7 @@ Verifying the failure reason::
     20:52:38 test       L0063 ERROR| Hello, avocado!
     20:52:38 test       L0063 ERROR|
     20:52:38 test       L0064 ERROR|
+    20:52:38 test       L0195 INFO | END home/$USER/Code/avocado/output_record.sh
     20:52:38 test       L0529 ERROR| FAIL home/$USER/Code/avocado/output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
     Actual:
     Hello, world!
@@ -591,6 +592,7 @@ impact your test grid. You can account for that possibility and set up a
     15:52:54 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:52:54 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for sleeptest to end
     15:52:54 test       L0061 ERROR|
+    15:52:54 test       L0195 INFO | END sleeptest.1
     15:52:54 test       L0400 ERROR| ERROR sleeptest.1 -> TestTimeoutError: Timeout reached waiting for sleeptest to end
     15:52:54 test       L0387 INFO |
 
@@ -673,6 +675,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     15:54:31 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:54:31 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for timeouttest to end
     15:54:31 test       L0061 ERROR|
+    15:54:31 test       L0195 INFO | END timeouttest.1
     15:54:31 test       L0400 ERROR| ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end
     15:54:31 test       L0387 INFO |
 
