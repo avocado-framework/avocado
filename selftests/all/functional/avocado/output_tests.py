@@ -75,7 +75,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup_3(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --html - sleeptest'
+        cmd_line = './scripts/avocado run --sysinfo=off --html - passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
