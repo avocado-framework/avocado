@@ -83,6 +83,11 @@ DEFAULT_LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'avocado.sysinfo': {
+            'handlers': ['error'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
         'avocado.debug': {
             'handlers': ['debug'],
             'level': 'DEBUG',

@@ -28,7 +28,7 @@ from avocado.linux import software_manager
 from avocado.core import output
 from avocado.settings import settings
 
-log = logging.getLogger("avocado.test")
+log = logging.getLogger("avocado.sysinfo")
 
 
 _DEFAULT_COMMANDS_START_JOB = ["df -mP",
@@ -256,7 +256,7 @@ class Daemon(Command):
             self.pipe.terminate()
             retcode = self.pipe.wait()
         else:
-            log.debug("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
+            log.error("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
                       self.cmd, self.pipe.pid, retcode)
         return retcode
 
