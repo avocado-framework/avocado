@@ -193,6 +193,7 @@ class Test(unittest.TestCase):
         self.time_end = time.time()
         # for consistency sake, always use the same stupid method
         self.update_time_elapsed(self.time_end)
+        self.log.info('END %s', self.tagged_name)
 
     def update_time_elapsed(self, current_time=None):
         if current_time is None:
