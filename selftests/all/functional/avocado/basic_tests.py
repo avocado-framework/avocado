@@ -1,11 +1,15 @@
 import json
-import unittest
 import os
 import shutil
 import time
 import sys
 import tempfile
 import xml.dom.minidom
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
