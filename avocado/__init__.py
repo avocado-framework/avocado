@@ -12,6 +12,12 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import logging
+
+if hasattr(logging, 'NullHandler'):
+    NULL_HANDLER = 'logging.NullHandler'
+else:
+    NULL_HANDLER = 'logutils.NullHandler'
 
 DEFAULT_LOGGING = {
     'version': 1,
@@ -32,7 +38,7 @@ DEFAULT_LOGGING = {
     'handlers': {
         'null': {
             'level': 'INFO',
-            'class': 'logging.NullHandler',
+            'class': NULL_HANDLER,
         },
         'console': {
             'level': 'INFO',
@@ -97,4 +103,11 @@ DEFAULT_LOGGING = {
 }
 
 from logging import config
-config.dictConfig(DEFAULT_LOGGING)
+
+if not hasattr(config, 'dictConfig'):
+    from logutils import dictconfig
+    cfg_func = dictconfig.dictConfig
+else:
+    cfg_func = config.dictConfig
+
+cfg_func(DEFAULT_LOGGING)
