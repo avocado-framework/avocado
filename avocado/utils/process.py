@@ -238,7 +238,7 @@ class SubProcess(object):
             rc = '(running)'
         else:
             rc = '(finished with exit status=%d)' % self.result.exit_status
-        return '%s %s' % (self.cmd,  rc)
+        return '%s %s' % (self.cmd, rc)
 
     def _init_subprocess(self):
         if self._popen is None:

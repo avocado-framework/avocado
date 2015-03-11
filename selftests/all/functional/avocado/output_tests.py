@@ -261,7 +261,7 @@ class OutputPluginTest(unittest.TestCase):
             with open(redirected_output_path, 'r') as redirected_output_file_obj:
                 redirected_output = redirected_output_file_obj.read()
                 for code in TermSupport.ESCAPE_CODES:
-                    self.assertNotIn(code,  redirected_output,
+                    self.assertNotIn(code, redirected_output,
                                      'Found terminal support code %s in redirected output\n%s' %
                                      (code, redirected_output))
         finally:

@@ -24,11 +24,11 @@ DEFAULT_LOGGING = {
     'filters': {
         'error': {
             '()': 'avocado.core.output.FilterError',
-            },
+        },
         'info': {
             '()': 'avocado.core.output.FilterInfo',
-            },
         },
+    },
     'handlers': {
         'null': {
             'level': 'INFO',
@@ -51,7 +51,7 @@ DEFAULT_LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'brief',
             'filters': ['error'],
-            },
+        },
         'debug': {
             'level': 'DEBUG',
             'class': 'avocado.core.output.ProgressStreamHandler',
