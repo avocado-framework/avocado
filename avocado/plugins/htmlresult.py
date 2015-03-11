@@ -50,6 +50,13 @@ class ReportModel(object):
         self.relative_links = relative_links
         self.html_output = html_output
 
+    def get(self, key, default):
+        value = getattr(self, key, default)
+        if callable(value):
+            return value()
+        else:
+            return value
+
     def job_id(self):
         return self.json['job_id']
 
@@ -238,10 +245,18 @@ class HTMLTestResult(TestResult):
 
         context = ReportModel(json_input=self.json, html_output=self.output,
                               relative_links=relative_links)
-        renderer = pystache.Renderer('utf-8', 'utf-8')
         html = HTML()
         template = html.get_resource_path('templates', 'report.mustache')
-        report_contents = renderer.render(open(template, 'r').read(), context)
+
+        # pylint: disable=E0611
+        if hasattr(pystache, 'Renderer'):
+            renderer = pystache.Renderer('utf-8', 'utf-8')
+            report_contents = renderer.render(open(template, 'r').read(), context)
+        else:
+            from pystache import view
+            v = view.View(open(template, 'r').read(), context)
+            report_contents = v.render('utf8')
+
         static_basedir = html.get_resource_path('static')
         output_dir = os.path.dirname(os.path.abspath(self.output))
         utils_path.init_dir(output_dir)
