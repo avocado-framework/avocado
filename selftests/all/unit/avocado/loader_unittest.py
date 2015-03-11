@@ -59,6 +59,18 @@ SIMPLE_TEST = """#!/bin/sh
 true
 """
 
+AVOCADO_BASE_CLASS_TEST = """from avocado import test
+
+class MyBaseTest(test.Test):
+    pass
+"""
+
+AVOCADO_INHERITED_CLASS_TEST = """from base import MyBaseTest
+
+class MyInheritedTest(MyBaseTest):
+    pass
+"""
+
 
 class _DebugJob(object):
     logdir = tempfile.mkdtemp()
@@ -107,6 +119,27 @@ class LoaderTest(unittest.TestCase):
         tc = test_class(**test_parameters)
         tc.action()
         avocado_pass_test.remove()
+
+    def test_load_inherited(self):
+        avocado_base_test = script.TemporaryScript('base.py',
+                                                   AVOCADO_BASE_CLASS_TEST,
+                                                   'avocado_loader_unittest')
+        avocado_base_test.save()
+        test_class, test_parameters = (
+            self.loader.discover_test(params={'id': avocado_base_test.path}))
+        self.assertTrue(str(test_class) == "<class 'base.MyBaseTest'>",
+                        str(test_class))
+
+        avocado_inherited_test = script.TemporaryScript('inherited.py',
+                                                        AVOCADO_INHERITED_CLASS_TEST,
+                                                        'avocado_loader_unittest')
+        avocado_inherited_test.save()
+        test_class, test_parameters = (
+            self.loader.discover_test(params={'id': avocado_inherited_test.path}))
+        self.assertTrue(str(test_class) == "<class 'inherited.MyInheritedTest'>",
+                        str(test_class))
+        avocado_base_test.remove()
+        avocado_inherited_test.remove()
 
     def test_load_buggy_exec(self):
         avocado_buggy_test = script.TemporaryScript('buggytest.py',
@@ -185,7 +218,8 @@ class LoaderTest(unittest.TestCase):
         avocado_simple_test.remove()
 
     def tearDown(self):
-        shutil.rmtree(self.job.logdir)
+        if os.path.isdir(self.job.logdir):
+            shutil.rmtree(self.job.logdir)
 
 if __name__ == '__main__':
     unittest.main()
