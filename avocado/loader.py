@@ -96,7 +96,7 @@ class TestLoader(object):
             test_module = imp.load_module(module_name, f, p, d)
             f.close()
             for name, obj in inspect.getmembers(test_module):
-                if inspect.isclass(obj):
+                if inspect.isclass(obj) and inspect.getmodule(obj) == test_module:
                     if issubclass(obj, test.Test):
                         test_class = obj
                         break
