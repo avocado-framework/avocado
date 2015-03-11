@@ -66,5 +66,9 @@ class AvocadoTestRunner(Plugin):
         loader.selector = AvocadoTestSelector(loader.config)
 
 if __name__ == '__main__':
-    nose.main(addplugins=[AvocadoTestRunner(),
-                          AttributeSelector()])
+    try:
+        nose.main(addplugins=[AvocadoTestRunner(),
+                              AttributeSelector()])
+    except TypeError:
+        nose.main(plugins=[AvocadoTestRunner(),
+                           AttributeSelector()])
