@@ -1,6 +1,7 @@
 language: python
 python:
     - "2.7"
+    - "2.6"
 
 branches:
     only:
@@ -15,6 +16,7 @@ before_install:
 
 install:
     - pip install -r requirements-travis.txt
+    - pip install -r requirements-travis-python26.txt
 
 script:
     - inspekt lint
