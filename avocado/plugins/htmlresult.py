@@ -248,6 +248,7 @@ class HTMLTestResult(TestResult):
         html = HTML()
         template = html.get_resource_path('templates', 'report.mustache')
 
+        # pylint: disable=E0611
         if hasattr(pystache, 'Renderer'):
             renderer = pystache.Renderer('utf-8', 'utf-8')
             report_contents = renderer.render(open(template, 'r').read(), context)
@@ -255,7 +256,7 @@ class HTMLTestResult(TestResult):
             from pystache import view
             v = view.View(open(template, 'r').read(), context)
             report_contents = v.render('utf8')
- 
+
         static_basedir = html.get_resource_path('static')
         output_dir = os.path.dirname(os.path.abspath(self.output))
         utils_path.init_dir(output_dir)
