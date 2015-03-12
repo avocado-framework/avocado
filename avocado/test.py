@@ -29,7 +29,7 @@ import unittest
 from avocado import sysinfo
 from avocado.core import data_dir
 from avocado.core import exceptions
-from avocado.utils import io
+from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils import stacktrace
@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
             tagged_name = tagged_name[1:]
 
         self.logdir = utils_path.init_dir(base_logdir, tagged_name)
-        io.set_log_file_dir(self.logdir)
+        genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
 
         self.stdout_file = os.path.join(self.logdir, 'stdout')
@@ -354,16 +354,16 @@ class Test(unittest.TestCase):
 
     def check_reference_stdout(self):
         if os.path.isfile(self.expected_stdout_file):
-            expected = io.read_file(self.expected_stdout_file)
-            actual = io.read_file(self.stdout_file)
+            expected = genio.read_file(self.expected_stdout_file)
+            actual = genio.read_file(self.stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
     def check_reference_stderr(self):
         if os.path.isfile(self.expected_stderr_file):
-            expected = io.read_file(self.expected_stderr_file)
-            actual = io.read_file(self.stderr_file)
+            expected = genio.read_file(self.expected_stderr_file)
+            actual = genio.read_file(self.stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
@@ -398,7 +398,7 @@ class Test(unittest.TestCase):
                 cleanup_exception = details
 
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
-        io.write_file(whiteboard_file, self.whiteboard)
+        genio.write_file(whiteboard_file, self.whiteboard)
 
         if self.job is not None:
             job_standalone = getattr(self.job.args, 'standalone', False)
