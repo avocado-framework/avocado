@@ -65,8 +65,8 @@ def tree2pools(node, mux=True):
     return leaves, pools
 
 
-def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
-                    debug=False):
+def parse_yamls(input_yamls, filter_only=None, filter_out=None,
+                debug=False):
     if filter_only is None:
         filter_only = []
     if filter_out is None:
@@ -77,4 +77,14 @@ def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
     leaves, pools = tree2pools(final_tree, final_tree.multiplex)
     if leaves:  # Add remaining leaves (they are not variants, only endpoints
         pools.extend(leaves)
+    return pools
+
+
+def multiplex_pools(pools):
     return itertools.product(*pools)    # *magic required pylint: disable=W0142
+
+
+def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
+                    debug=False):
+    pools = parse_yamls(input_yamls, filter_only, filter_out, debug)
+    return multiplex_pools(pools)
