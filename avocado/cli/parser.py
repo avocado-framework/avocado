@@ -32,9 +32,10 @@ class Parser(object):
     def __init__(self):
         self.application = argparse.ArgumentParser(
             prog='avocado',
-            version='Avocado %s' % VERSION,
             add_help=False,  # see parent parsing
             description='Avocado Test Runner')
+        self.application.add_argument('-v', '--version', action='version',
+                                      version='Avocado %s' % VERSION)
         self.application.add_argument('--logdir', action='store',
                                       help='Alternate logs directory',
                                       dest='logdir', default='')
