@@ -106,7 +106,7 @@ class Loggable(object):
         """
         path = os.path.join(logdir, self.logf)
         if os.path.exists(path):
-            return utils.io.read_one_line(path)
+            return utils.genio.read_one_line(path)
         else:
             return ""
 
@@ -549,7 +549,7 @@ class SysInfo(object):
     def _log_installed_packages(self, path):
         installed_path = os.path.join(path, "installed_packages")
         installed_packages = "\n".join(self._get_installed_packages()) + "\n"
-        utils.io.write_file(installed_path, installed_packages)
+        utils.genio.write_file(installed_path, installed_packages)
 
     def _log_modified_packages(self, path):
         """
@@ -559,10 +559,10 @@ class SysInfo(object):
         new_packages = set(self._get_installed_packages())
         added_path = os.path.join(path, "added_packages")
         added_packages = "\n".join(new_packages - old_packages) + "\n"
-        utils.io.write_file(added_path, added_packages)
+        utils.genio.write_file(added_path, added_packages)
         removed_path = os.path.join(self.basedir, "removed_packages")
         removed_packages = "\n".join(old_packages - new_packages) + "\n"
-        utils.io.write_file(removed_path, removed_packages)
+        utils.genio.write_file(removed_path, removed_packages)
 
     def start_job_hook(self):
         """

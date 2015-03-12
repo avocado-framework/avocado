@@ -15,6 +15,7 @@ import tempfile
 import logging
 import shutil
 
+from avocado.utils import genio
 from avocado.utils import path as utils_path
 
 
@@ -275,7 +276,6 @@ except ImportError:
 
 from avocado.utils import astring
 from avocado.utils import data_factory
-from avocado.utils import io
 from avocado.utils import process
 from avocado.utils import wait
 
@@ -957,7 +957,7 @@ class Tail(Spawn):
 
     def _close_log_file(self):
         if self.log_file is not None:
-            io.close_log_file(self.log_file)
+            genio.close_log_file(self.log_file)
 
     def _tail(self):
         def print_line(text):
