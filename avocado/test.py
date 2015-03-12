@@ -11,6 +11,7 @@
 # This code was inspired in the autotest project,
 # client/shared/test.py
 # Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
+from avocado.params import AvocadoParams
 
 """
 Contains the base test implementation, used as a base for the actual
@@ -71,11 +72,11 @@ class Test(unittest.TestCase):
             self.name = self.__class__.__name__
 
         if params is None:
-            params = {}
-        self.params = Params(params)
+            params = AvocadoParams([], self, '', tag)
+        self.params = params
         self._raw_params = params
 
-        self.tag = tag or self.params.get('tag')
+        self.tag = tag or self.params.tag
         self.job = job
 
         basename = os.path.basename(self.name)
@@ -123,14 +124,14 @@ class Test(unittest.TestCase):
         self.log.debug('')
         self.log.debug('Test instance parameters:')
 
-        # Set the helper set_default to the params object
-        setattr(self.params, 'set_default', self._set_default)
-
         # Apply what comes from the params dict
+        '''
         for key in sorted(self.params.keys()):
             self.log.debug('    %s = %s', key, self.params.get(key))
         self.log.debug('')
+        '''
 
+        '''
         # Apply what comes from the default_params dict
         self.log.debug('Default parameters:')
         for key in sorted(self.default_params.keys()):
@@ -139,12 +140,13 @@ class Test(unittest.TestCase):
         self.log.debug('')
         self.log.debug('Test instance params override defaults whenever available')
         self.log.debug('')
+        '''
 
         # If there's a timeout set, log a timeout reminder
-        if self.params.timeout:
+        if self.params.get('*', 'timeout'):
             self.log.info('Test timeout set. Will wait %.2f s for '
                           'PID %s to end',
-                          float(self.params.timeout), os.getpid())
+                          float(self.params.get('*', 'timeout')), os.getpid())
             self.log.info('')
 
         self.debugdir = None
@@ -219,17 +221,11 @@ class Test(unittest.TestCase):
                 d[key] = orig[key]
             elif key in convert_attr:
                 d[key] = str(orig[key])
-        d['params'] = dict(orig['params'])
+        d['params'] = orig['params']
         d['class_name'] = self.__class__.__name__
         d['job_logdir'] = self.job.logdir
         d['job_unique_id'] = self.job.unique_id
         return d
-
-    def _set_default(self, key, default):
-        try:
-            self.params[key]
-        except Exception:
-            self.params[key] = default
 
     def get_data_path(self, basename):
         """

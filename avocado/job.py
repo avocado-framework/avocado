@@ -31,7 +31,7 @@ from avocado import runner
 from avocado import loader
 from avocado import runtime
 from avocado import sysinfo
-from avocado.core import data_dir
+from avocado.core import data_dir, tree
 from avocado.core import exit_codes
 from avocado.core import exceptions
 from avocado.core import job_id
@@ -275,8 +275,13 @@ class Job(object):
                     multiplex_files = self.args.multiplex_files
 
             if multiplex_files is not None:
-                params_list = self._multiplex_params_list(params_list,
-                                                          multiplex_files)
+                mpx_pools = multiplexer.parse_yamls(multiplex_files,
+                                                    self.args.filter_only,
+                                                    self.args.filter_out)
+            else:
+                mpx_pools = [[tree.TreeNode()]]
+        else:
+            mpx_pools = [[tree.TreeNode()]]    # void multiplex params
 
         self._setup_job_results()
 
@@ -307,7 +312,8 @@ class Job(object):
                                      self.loglevel,
                                      self.unique_id)
         self.view.logfile = self.logfile
-        failures = self.test_runner.run_suite(test_suite)
+        failures = self.test_runner.run_suite(test_suite, mpx_pools,
+                                              self.args.mux_entry)
         self.view.stop_file_logging()
         self._update_latest_link()
         # If it's all good so far, set job status to 'PASS'

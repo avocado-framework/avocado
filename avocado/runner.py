@@ -25,7 +25,7 @@ import signal
 import sys
 import time
 
-from avocado import runtime
+from avocado import runtime, multiplexer, params
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
@@ -111,7 +111,110 @@ class TestRunner(object):
             test_state['text_output'] = log_file_obj.read()
         return test_state
 
-    def run_suite(self, test_suite):
+    def _execute_variant(self, test_factory, q, failures):
+        p = multiprocessing.Process(target=self.run_test,
+                                    args=(test_factory, q,))
+
+        cycle_timeout = 1
+        time_started = time.time()
+        test_state = None
+
+        p.start()
+
+        early_state = q.get()
+
+        if 'load_exception' in early_state:
+            self.job.view.notify(event='error',
+                                 msg='Avocado crashed during test load. '
+                                     'Some reports might have not been '
+                                     'generated. Aborting...')
+            sys.exit(exit_codes.AVOCADO_FAIL)
+
+        # At this point, the test is already initialized and we know
+        # for sure if there's a timeout set.
+        timeout = early_state['params'].get('/self', 'timeout',
+                                            self.DEFAULT_TIMEOUT)
+        time_deadline = time_started + timeout
+
+        ctrl_c_count = 0
+        ignore_window = 2.0
+        ignore_time_started = time.time()
+        stage_1_msg_displayed = False
+        stage_2_msg_displayed = False
+
+        while True:
+            try:
+                if time.time() >= time_deadline:
+                    os.kill(p.pid, signal.SIGUSR1)
+                    break
+                wait.wait_for(lambda: not q.empty() or not p.is_alive(),
+                              cycle_timeout, first=0.01, step=0.1)
+                if not q.empty():
+                    test_state = q.get()
+                    if not test_state['running']:
+                        break
+                    else:
+                        self.job.result_proxy.notify_progress(True)
+                        if test_state['paused']:
+                            msg = test_state['paused_msg']
+                            if msg:
+                                self.job.view.notify(event='partial', msg=msg)
+
+                elif p.is_alive():
+                    if ctrl_c_count == 0:
+                        self.job.result_proxy.notify_progress()
+                else:
+                    break
+
+            except KeyboardInterrupt:
+                time_elapsed = time.time() - ignore_time_started
+                ctrl_c_count += 1
+                if ctrl_c_count == 2:
+                    if not stage_1_msg_displayed:
+                        k_msg_1 = ("SIGINT sent to tests, waiting for their "
+                                   "reaction")
+                        k_msg_2 = ("Ignoring Ctrl+C during the next "
+                                   "%d seconds so they can try to finish" %
+                                   ignore_window)
+                        k_msg_3 = ("A new Ctrl+C sent after that will send a "
+                                   "SIGKILL to them")
+                        self.job.view.notify(event='message', msg=k_msg_1)
+                        self.job.view.notify(event='message', msg=k_msg_2)
+                        self.job.view.notify(event='message', msg=k_msg_3)
+                        stage_1_msg_displayed = True
+                    ignore_time_started = time.time()
+                if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
+                    if not stage_2_msg_displayed:
+                        k_msg_3 = ("Ctrl+C received after the ignore window. "
+                                   "Killing all active tests")
+                        self.job.view.notify(event='message', msg=k_msg_3)
+                        stage_2_msg_displayed = True
+                    os.kill(p.pid, signal.SIGKILL)
+
+        # If test_state is None, the test was aborted before it ended.
+        if test_state is None:
+            if p.is_alive() and wait.wait_for(lambda: not q.empty(),
+                                              cycle_timeout, first=0.01, step=0.1):
+                test_state = q.get()
+            else:
+                early_state['time_elapsed'] = time.time() - time_started
+                test_state = self._fill_aborted_test_state(early_state)
+                test_log = logging.getLogger('avocado.test')
+                test_log.error('ERROR %s -> TestAbortedError: '
+                               'Test aborted unexpectedly',
+                               test_state['name'])
+
+        # don't process other tests from the list
+        if ctrl_c_count > 0:
+            self.job.view.notify(event='minor', msg='')
+            return False
+
+        self.result.check_test(test_state)
+        if not status.mapping[test_state['status']]:
+            failures.append(test_state['name'])
+        return True
+
+    def run_suite(self, test_suite, multiplex_pools, mux_entry):
         """
         Run one or more tests and report with test result.
 
@@ -119,116 +222,28 @@ class TestRunner(object):
 
         :return: a list of test failures.
         """
+        if mux_entry is None:
+            mux_entry = ['/test/*']
         failures = []
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
         self.result.start_tests()
         q = queues.SimpleQueue()
 
-        for test_factory in test_suite:
-            p = multiprocessing.Process(target=self.run_test,
-                                        args=(test_factory, q,))
-
-            cycle_timeout = 1
-            time_started = time.time()
-            test_state = None
-
-            p.start()
-
-            early_state = q.get()
-
-            if 'load_exception' in early_state:
-                self.job.view.notify(event='error',
-                                     msg='Avocado crashed during test load. '
-                                         'Some reports might have not been '
-                                         'generated. Aborting...')
-                sys.exit(exit_codes.AVOCADO_FAIL)
-
-            # At this point, the test is already initialized and we know
-            # for sure if there's a timeout set.
-            if 'timeout' in early_state['params'].keys():
-                timeout = float(early_state['params']['timeout'])
-            else:
-                timeout = self.DEFAULT_TIMEOUT
-
-            time_deadline = time_started + timeout
-
-            ctrl_c_count = 0
-            ignore_window = 2.0
-            ignore_time_started = time.time()
-            stage_1_msg_displayed = False
-            stage_2_msg_displayed = False
-
-            while True:
-                try:
-                    if time.time() >= time_deadline:
-                        os.kill(p.pid, signal.SIGUSR1)
-                        break
-                    wait.wait_for(lambda: not q.empty() or not p.is_alive(),
-                                  cycle_timeout, first=0.01, step=0.1)
-                    if not q.empty():
-                        test_state = q.get()
-                        if not test_state['running']:
-                            break
-                        else:
-                            self.job.result_proxy.notify_progress(True)
-                            if test_state['paused']:
-                                msg = test_state['paused_msg']
-                                if msg:
-                                    self.job.view.notify(event='partial', msg=msg)
-
-                    elif p.is_alive():
-                        if ctrl_c_count == 0:
-                            self.job.result_proxy.notify_progress()
-                    else:
-                        break
-
-                except KeyboardInterrupt:
-                    time_elapsed = time.time() - ignore_time_started
-                    ctrl_c_count += 1
-                    if ctrl_c_count == 2:
-                        if not stage_1_msg_displayed:
-                            k_msg_1 = ("SIGINT sent to tests, waiting for their "
-                                       "reaction")
-                            k_msg_2 = ("Ignoring Ctrl+C during the next "
-                                       "%d seconds so they can try to finish" %
-                                       ignore_window)
-                            k_msg_3 = ("A new Ctrl+C sent after that will send a "
-                                       "SIGKILL to them")
-                            self.job.view.notify(event='message', msg=k_msg_1)
-                            self.job.view.notify(event='message', msg=k_msg_2)
-                            self.job.view.notify(event='message', msg=k_msg_3)
-                            stage_1_msg_displayed = True
-                        ignore_time_started = time.time()
-                    if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
-                        if not stage_2_msg_displayed:
-                            k_msg_3 = ("Ctrl+C received after the ignore window. "
-                                       "Killing all active tests")
-                            self.job.view.notify(event='message', msg=k_msg_3)
-                            stage_2_msg_displayed = True
-                        os.kill(p.pid, signal.SIGKILL)
-
-            # If test_state is None, the test was aborted before it ended.
-            if test_state is None:
-                if p.is_alive() and wait.wait_for(lambda: not q.empty(),
-                                                  cycle_timeout, first=0.01, step=0.1):
-                    test_state = q.get()
-                else:
-                    early_state['time_elapsed'] = time.time() - time_started
-                    test_state = self._fill_aborted_test_state(early_state)
-                    test_log = logging.getLogger('avocado.test')
-                    test_log.error('ERROR %s -> TestAbortedError: '
-                                   'Test aborted unexpectedly',
-                                   test_state['name'])
-
-            # don't process other tests from the list
-            if ctrl_c_count > 0:
-                self.job.view.notify(event='minor', msg='')
+        ctrl_c = False
+        for _test_factory in test_suite:
+            for i, variant in enumerate(multiplexer.multiplex_pools(multiplex_pools)):
+                test_factory = [_test_factory[0], _test_factory[1].copy()]
+                tparams = params.AvocadoParams(variant,
+                                               test_factory[1]['params']['id'],
+                                               i, mux_entry)
+                test_factory[1]['params'] = tparams
+                if not self._execute_variant(test_factory, q, failures):
+                    ctrl_c = True
+                    break
+            if ctrl_c:
                 break
 
-            self.result.check_test(test_state)
-            if not status.mapping[test_state['status']]:
-                failures.append(test_state['name'])
         runtime.CURRENT_TEST = None
         self.result.end_tests()
         if self.job.sysinfo is not None:
