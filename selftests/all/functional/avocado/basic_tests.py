@@ -358,7 +358,8 @@ class PluginsTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertNotIn('Disabled', output)
+        if sys.version_info[:2] >= (2, 7, 0):
+            self.assertNotIn('Disabled', output)
 
     def test_config_plugin(self):
         os.chdir(basedir)
