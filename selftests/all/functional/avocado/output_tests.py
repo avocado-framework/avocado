@@ -64,21 +64,6 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --vm-domain aaa '
-                    '--vm-hostname host --json - passtest')
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
-        output = result.stdout + result.stderr
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        error_excerpt = ("Options --json --vm-domain are trying to use "
-                         "stdout simultaneously")
-        self.assertIn(error_excerpt, output,
-                      "Missing excerpt error message from output:\n%s" % output)
-
-    def test_output_incompatible_setup_3(self):
-        os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --html - passtest'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
