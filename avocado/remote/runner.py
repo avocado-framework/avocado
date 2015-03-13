@@ -99,7 +99,8 @@ class RemoteTestRunner(TestRunner):
         for t_dict in json_result['tests']:
             logdir = os.path.dirname(self.result.stream.debuglog)
             logdir = os.path.join(logdir, 'test-results')
-            logdir = os.path.join(logdir, os.path.relpath(t_dict['url'], '/'))
+            relative_path = t_dict['url'].lstrip('/')
+            logdir = os.path.join(logdir, relative_path)
             t_dict['logdir'] = logdir
             t_dict['logfile'] = os.path.join(logdir, 'debug.log')
 
