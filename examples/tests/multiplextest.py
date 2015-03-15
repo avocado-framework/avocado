@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
 
 
-class MultiplexTest(test.Test):
+class MultiplexTest(avocado.Test):
 
     """
     Execute a test that uses provided parameters (for multiplexing testing).
@@ -74,4 +73,4 @@ class MultiplexTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

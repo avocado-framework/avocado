@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.core import exceptions
 
 
-class DoubleFail(test.Test):
+class DoubleFail(avocado.Test):
 
     """
     Functional test for avocado. Straight up fail the test.
@@ -25,4 +25,4 @@ class DoubleFail(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

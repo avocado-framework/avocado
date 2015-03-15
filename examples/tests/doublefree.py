@@ -4,13 +4,13 @@ import os
 import shutil
 import signal
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import build
 from avocado.utils import process
 
 
-class DoubleFreeTest(test.Test):
+class DoubleFreeTest(avocado.Test):
 
     """
     Double free test case.
@@ -44,4 +44,4 @@ class DoubleFreeTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

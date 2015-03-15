@@ -3,13 +3,13 @@
 import os
 import shutil
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import build
 from avocado.utils import process
 
 
-class DataDirTest(test.Test):
+class DataDirTest(avocado.Test):
 
     """
     Test that uses resources from the data dir.
@@ -39,4 +39,4 @@ class DataDirTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.core import exceptions
 
 
-class WarnTest(test.Test):
+class WarnTest(avocado.Test):
 
     """
     Functional test for avocado. Throw a TestWarn.
@@ -18,4 +18,4 @@ class WarnTest(test.Test):
         self.log.warn("This marks test as WARN")
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

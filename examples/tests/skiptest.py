@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.core import exceptions
 
 
-class SkipTest(test.Test):
+class SkipTest(avocado.Test):
 
     """
     Functional test for avocado. Throw a TestNAError (skips the test).
@@ -18,4 +18,4 @@ class SkipTest(test.Test):
         raise exceptions.TestNAError('This test should be skipped')
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

@@ -3,13 +3,13 @@
 import os
 import shutil
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.utils import build
 from avocado.utils import process
 
 
-class CAbort(test.Test):
+class CAbort(avocado.Test):
 
     """
     A test that calls C standard lib function abort().
@@ -41,4 +41,4 @@ class CAbort(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

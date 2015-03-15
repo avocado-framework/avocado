@@ -3,13 +3,13 @@
 import os
 import shutil
 
-from avocado import job
-from avocado import test
+import avocado
+
 from avocado.utils import build
 from avocado.utils import process
 
 
-class DoubleFreeTest(test.Test):
+class DoubleFreeTest(avocado.Test):
 
     """
     10% chance to execute double free exception.
@@ -38,4 +38,4 @@ class DoubleFreeTest(test.Test):
         self.log.info(cmd_result)
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

@@ -3,13 +3,13 @@
 import os
 import shutil
 
-from avocado import gdb
-from avocado import job
-from avocado import test
+import avocado
+
+import avocado import gdb
 from avocado.utils import build
 
 
-class PrintVariableTest(test.Test):
+class PrintVariableTest(avocado.Test):
 
     """
     This demonstrates the GDB API
@@ -51,4 +51,4 @@ class PrintVariableTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

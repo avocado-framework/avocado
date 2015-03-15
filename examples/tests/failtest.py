@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
-from avocado import job
+import avocado
+
 from avocado.core import exceptions
 
 
-class FailTest(test.Test):
+class FailTest(avocado.Test):
 
     """
     Functional test for avocado. Straight up fail the test.
@@ -19,4 +19,4 @@ class FailTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    avocado.main()

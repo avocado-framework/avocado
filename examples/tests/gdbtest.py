@@ -2,13 +2,14 @@
 
 import os
 
-from avocado import test
+import avocado
+
 from avocado import gdb
 from avocado import job
 from avocado.utils import process
 
 
-class GdbTest(test.Test):
+class GdbTest(avocado.Test):
 
     """
     Execute the gdb test
@@ -435,4 +436,4 @@ class GdbTest(test.Test):
         self.test_remote()
 
 if __name__ == '__main__':
-    job.main()
+    avocado.main()
