@@ -31,7 +31,14 @@ class Wrapper(plugin.Plugin):
         wrap_group = self.parser.runner.add_argument_group(
             'Wrap avocado.utils.process module')
         wrap_group.add_argument('--wrapper', action='append', default=[],
-                                help='')
+                                metavar='SCRIPT[:PROCESS]',
+                                help='Use a script to wrap the execution of '
+                                'process created by the test. The wrapper is '
+                                'either a path to a script (aka global wrap) or '
+                                'a path to a script followed by colon symbol (:), '
+                                'plus a shell like glob to the target process. '
+                                'Multiple wrap lines are allowed, but only one global '
+                                'wrap can be defined.')
         self.configured = True
 
     def activate(self, app_args):
