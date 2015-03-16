@@ -361,7 +361,7 @@ After the reference files are added, the check process is transparent, in the se
 that you do not need to provide special flags to the test runner.
 Now, every time the test is executed, after it is done running, it will check
 if the outputs are exactly right before considering the test as PASSed. If you want to override the default
-behavior and skip output check entirely, you may provide the flag ``--disable-output-check`` to the test runner.
+behavior and skip output check entirely, you may provide the flag ``--output-check=off`` to the test runner.
 
 The :mod:`avocado.utils.process` APIs have a parameter ``allow_output_check`` (defaults to ``all``), so that you
 can select which process outputs will go to the reference files, should you chose to record them. You may choose

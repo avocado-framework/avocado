@@ -97,7 +97,7 @@ class RunnerSimpleTest(unittest.TestCase):
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = './scripts/avocado run --sysinfo=off %s --disable-output-check --xunit -' % self.output_script.path
+        cmd_line = './scripts/avocado run --sysinfo=off %s --output-check=off --xunit -' % self.output_script.path
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
