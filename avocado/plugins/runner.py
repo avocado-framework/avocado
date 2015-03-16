@@ -90,7 +90,10 @@ class TestRunner(plugin.Plugin):
 
         out_check = self.parser.add_argument_group('output check arguments')
 
-        out_check.add_argument('--output-check-record', type=str,
+        out_check.add_argument('--output-check-record', choices=('none',
+                                                                 'all',
+                                                                 'stdout',
+                                                                 'stderr'),
                                default='none',
                                help=('Record output streams of your tests '
                                      'to reference files (valid options: '
@@ -98,15 +101,15 @@ class TestRunner(plugin.Plugin):
                                      'all (record both stdout and stderr), '
                                      'stdout (record only stderr), '
                                      'stderr (record only stderr). '
-                                     'Current: none'))
+                                     'Current: %(default)s'))
 
-        out_check.add_argument('--disable-output-check', action='store_true',
-                               default=False,
-                               help=('Disable test output (stdout/stderr) check. '
-                                     'If this option is selected, no output will '
+        out_check.add_argument('--output-check', choices=('on', 'off'),
+                               default='on',
+                               help=('Enable or disable test output (stdout/stderr) check. '
+                                     'If this option is off, no output will '
                                      'be checked, even if there are reference files '
                                      'present for the test. '
-                                     'Current: False (output check enabled)'))
+                                     'Current: on (output check enabled)'))
 
         if multiplexer.MULTIPLEX_CAPABLE:
             mux = self.parser.add_argument_group('multiplex arguments')
