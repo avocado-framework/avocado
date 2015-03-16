@@ -6,9 +6,15 @@ License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
-BuildRequires: python2-devel, python-docutils, python-yaml
 BuildArch: noarch
-Requires: python, python-requests, python-yaml, fabric, pyliblzma
+
+%if "%{?dist}" == ".el6"
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, PyYAML, python-argparse, python-unittest2, python-logutils, python-importlib
+BuildRequires: python2-devel, python-docutils, PyYAML, python-logutils
+%else
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, python-yaml
+BuildRequires: python2-devel, python-docutils, python-yaml
+%endif
 
 %description
 Avocado is a set of tools and libraries (what people call
@@ -19,8 +25,13 @@ these days a framework) to perform automated testing.
 
 %build
 %{__python} setup.py build
+%if "%{?dist}" == ".el6"
+%{__python} /usr/bin/rst2man man/avocado.rst man/avocado.1
+%{__python} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
+%else
 %{__python2} /usr/bin/rst2man man/avocado.rst man/avocado.1
 %{__python2} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
+%endif
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
@@ -35,13 +46,15 @@ these days a framework) to perform automated testing.
 %dir /etc/avocado/conf.d
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
+%{python_sitelib}/avocado*
 %{_bindir}/avocado
 %{_bindir}/avocado-rest-client
-%exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
-%exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
-%{python_sitelib}/avocado*
 %{_mandir}/man1/avocado.1.gz
 %{_mandir}/man1/avocado-rest-client.1.gz
+%{_docdir}/avocado/avocado.rst
+%{_docdir}/avocado/avocado-rest-client.rst
+%exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
+%exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
@@ -77,7 +90,7 @@ examples of how to write tests on your own.
 * Fri Feb 6 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.1-1
 - Update to upstream version 0.20.1
 
-* Mon Feb 3 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.0-1
+* Tue Feb 3 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.20.0-1
 - Update to upstream version 0.20.0
 
 * Mon Dec 15 2014 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.17.0-1
