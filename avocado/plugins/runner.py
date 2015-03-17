@@ -62,6 +62,11 @@ class TestRunner(plugin.Plugin):
                                        'server. You should not use this option '
                                        'unless you know exactly what you\'re doing'))
 
+        self.parser.add_argument('--job-results-dir', action='store',
+                                 dest='logdir', default=None, metavar='DIRECTORY',
+                                 help=('Forces to use of an alternate job '
+                                       'results directory.'))
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
