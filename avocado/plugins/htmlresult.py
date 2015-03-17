@@ -296,7 +296,7 @@ class HTML(plugin.Plugin):
             self.enabled = False
             return
         self.parser = parser
-        self.parser.runner.add_argument(
+        self.parser.runner.output.add_argument(
             '--html', type=str,
             dest='html_output',
             help=('Enable HTML output to the file where the result should be '
@@ -304,14 +304,14 @@ class HTML(plugin.Plugin):
                   'since not all HTML resources can be embedded into a '
                   'single file (page resources will be copied to the '
                   'output file dir)'))
-        self.parser.runner.add_argument(
+        self.parser.runner.output.add_argument(
             '--relative-links',
             dest='relative_links',
             action='store_true',
             default=False,
             help=('On the HTML report, generate anchor links with relative '
                   'instead of absolute paths. Current: %s' % False))
-        self.parser.runner.add_argument(
+        self.parser.runner.output.add_argument(
             '--open-browser',
             dest='open_browser',
             action='store_true',
