@@ -6,7 +6,7 @@
 SYNOPSIS
 ========
 
- avocado [-h] [-v] [--logdir LOGDIR] [--loglevel LOG_LEVEL] [--plugins PLUGINS_DIR]
+ avocado [-h] [-v] [--plugins PLUGINS_DIR]
  {run,list,sysinfo,multiplex,plugins,datadir} ...
 
 DESCRIPTION
@@ -30,7 +30,6 @@ on them being loaded::
 
  -h, --help             show this help message and exit
  -v, --version          show program's version number and exit
- --logdir LOGDIR        Alternate logs directory
  --plugins PLUGINS_DIR  Load extra plugins from directory
 
 Real use of avocado depends on running avocado subcommands. This a typical list

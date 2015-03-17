@@ -36,9 +36,6 @@ class Parser(object):
             description='Avocado Test Runner')
         self.application.add_argument('-v', '--version', action='version',
                                       version='Avocado %s' % VERSION)
-        self.application.add_argument('--logdir', action='store',
-                                      help='Alternate logs directory',
-                                      dest='logdir', default='')
         self.application.add_argument('--plugins', action='store',
                                       help='Load extra plugins from directory',
                                       dest='plugins_dir', default='')
