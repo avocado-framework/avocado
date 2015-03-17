@@ -54,6 +54,10 @@ class TestList(plugin.Plugin):
                                  help='Whether to show extra information '
                                       '(headers and summary). Current: %('
                                       'default)s')
+        self.parser.add_argument('--disable-paginator',
+                                 dest='disable_paginator',
+                                 action='store_true',
+                                 help='Disable paginator usage')
         super(TestList, self).configure(self.parser)
 
     def _run(self, args):
@@ -62,7 +66,8 @@ class TestList(plugin.Plugin):
 
         :param args: Command line args received from the list subparser.
         """
-        self.view = output.View(app_args=args, use_paginator=True)
+        self.view = output.View(app_args=args,
+                                use_paginator=not args.disable_paginator)
 
         paths = [data_dir.get_test_dir()]
         if args.paths:
