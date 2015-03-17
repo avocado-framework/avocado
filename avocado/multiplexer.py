@@ -77,4 +77,4 @@ def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
     leaves, pools = tree2pools(final_tree, final_tree.multiplex)
     if leaves:  # Add remaining leaves (they are not variants, only endpoints
         pools.extend(leaves)
-    return itertools.product(*pools)    # *magic required pylint: disable=W0142
+    return itertools.product(*pools)
