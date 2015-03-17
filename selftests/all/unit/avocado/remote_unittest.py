@@ -41,7 +41,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
          .with_args(args, ignore_status=True, timeout=None)
          .once().and_return(version_result))
 
-        args = 'cd ~/avocado/tests; avocado list sleeptest'
+        args = 'cd ~/avocado/tests; avocado list sleeptest --disable-paginator'
         urls_result = flexmock(exit_status=0)
         (Remote.should_receive('run')
          .with_args(args, timeout=None, ignore_status=True)
