@@ -62,6 +62,11 @@ class TestRunner(plugin.Plugin):
                                        'server. You should not use this option '
                                        'unless you know exactly what you\'re doing'))
 
+        self.parser.add_argument('--job-results-dir', action='store',
+                                 dest='logdir', default=None, metavar='DIRECTORY',
+                                 help=('Forces to use of an alternate job '
+                                       'results directory.'))
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
@@ -72,25 +77,31 @@ class TestRunner(plugin.Plugin):
                                        '(hardware details, profilers, etc.). '
                                        'Current:  %(default)s'))
 
-        out = self.parser.add_argument_group('output related arguments')
+        self.parser.output = self.parser.add_argument_group('output related arguments')
 
-        out.add_argument('-s', '--silent', action='store_true', default=False,
-                         help='Silence stdout')
+        self.parser.output.add_argument(
+            '-s', '--silent', action='store_true', default=False,
+            help='Silence stdout')
 
-        out.add_argument('--show-job-log', action='store_true', default=False,
-                         help=('Display only the job log on stdout. Useful '
-                               'for test debugging purposes. No output will '
-                               'be displayed if you also specify --silent'))
+        self.parser.output.add_argument(
+            '--show-job-log', action='store_true', default=False,
+            help=('Display only the job log on stdout. Useful '
+                  'for test debugging purposes. No output will '
+                  'be displayed if you also specify --silent'))
 
-        out.add_argument('--job-log-level', action='store',
-                         help=("Log level of the job log. Options: "
-                               "'debug', 'info', 'warning', 'error', "
-                               "'critical'. Current: debug"),
-                         default='debug')
+        self.parser.output.add_argument(
+            '--job-log-level', action='store',
+            help=("Log level of the job log. Options: "
+                  "'debug', 'info', 'warning', 'error', "
+                  "'critical'. Current: debug"),
+            default='debug')
 
         out_check = self.parser.add_argument_group('output check arguments')
 
-        out_check.add_argument('--output-check-record', type=str,
+        out_check.add_argument('--output-check-record', choices=('none',
+                                                                 'all',
+                                                                 'stdout',
+                                                                 'stderr'),
                                default='none',
                                help=('Record output streams of your tests '
                                      'to reference files (valid options: '
@@ -98,15 +109,15 @@ class TestRunner(plugin.Plugin):
                                      'all (record both stdout and stderr), '
                                      'stdout (record only stderr), '
                                      'stderr (record only stderr). '
-                                     'Current: none'))
+                                     'Current: %(default)s'))
 
-        out_check.add_argument('--disable-output-check', action='store_true',
-                               default=False,
-                               help=('Disable test output (stdout/stderr) check. '
-                                     'If this option is selected, no output will '
+        out_check.add_argument('--output-check', choices=('on', 'off'),
+                               default='on',
+                               help=('Enable or disable test output (stdout/stderr) check. '
+                                     'If this option is off, no output will '
                                      'be checked, even if there are reference files '
                                      'present for the test. '
-                                     'Current: False (output check enabled)'))
+                                     'Current: on (output check enabled)'))
 
         if multiplexer.MULTIPLEX_CAPABLE:
             mux = self.parser.add_argument_group('multiplex arguments')

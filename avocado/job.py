@@ -111,8 +111,8 @@ class Job(object):
         self.sysinfo = None
 
     def _setup_job_results(self):
+        logdir = getattr(self.args, 'logdir', None)
         if self.standalone:
-            logdir = getattr(self.args, 'logdir', None)
             if logdir is not None:
                 logdir = os.path.abspath(logdir)
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
@@ -120,7 +120,12 @@ class Job(object):
             else:
                 self.logdir = tempfile.mkdtemp(prefix='avocado-')
         else:
-            self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
+            if logdir is None:
+                self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
+            else:
+                logdir = os.path.abspath(logdir)
+                self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
+                                                           unique_id=self.unique_id)
         self.logfile = os.path.join(self.logdir, "job.log")
         self.idfile = os.path.join(self.logdir, "id")
         with open(self.idfile, 'w') as id_file_obj:
