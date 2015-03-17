@@ -77,21 +77,24 @@ class TestRunner(plugin.Plugin):
                                        '(hardware details, profilers, etc.). '
                                        'Current:  %(default)s'))
 
-        out = self.parser.add_argument_group('output related arguments')
+        self.parser.output = self.parser.add_argument_group('output related arguments')
 
-        out.add_argument('-s', '--silent', action='store_true', default=False,
-                         help='Silence stdout')
+        self.parser.output.add_argument(
+            '-s', '--silent', action='store_true', default=False,
+            help='Silence stdout')
 
-        out.add_argument('--show-job-log', action='store_true', default=False,
-                         help=('Display only the job log on stdout. Useful '
-                               'for test debugging purposes. No output will '
-                               'be displayed if you also specify --silent'))
+        self.parser.output.add_argument(
+            '--show-job-log', action='store_true', default=False,
+            help=('Display only the job log on stdout. Useful '
+                  'for test debugging purposes. No output will '
+                  'be displayed if you also specify --silent'))
 
-        out.add_argument('--job-log-level', action='store',
-                         help=("Log level of the job log. Options: "
-                               "'debug', 'info', 'warning', 'error', "
-                               "'critical'. Current: debug"),
-                         default='debug')
+        self.parser.output.add_argument(
+            '--job-log-level', action='store',
+            help=("Log level of the job log. Options: "
+                  "'debug', 'info', 'warning', 'error', "
+                  "'critical'. Current: debug"),
+            default='debug')
 
         out_check = self.parser.add_argument_group('output check arguments')
 

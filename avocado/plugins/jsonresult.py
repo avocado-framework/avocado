@@ -102,7 +102,7 @@ class JSON(plugin.Plugin):
 
     def configure(self, parser):
         self.parser = parser
-        self.parser.runner.add_argument(
+        self.parser.runner.output.add_argument(
             '--json', type=str,
             dest='json_output',
             help='Enable JSON output to the file where the result should be written. '

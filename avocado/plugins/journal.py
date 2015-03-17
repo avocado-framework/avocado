@@ -123,7 +123,7 @@ class Journal(plugin.Plugin):
 
     def configure(self, parser):
         self.parser = parser
-        self.parser.runner.add_argument(
+        self.parser.runner.output.add_argument(
             '--journal', action='store_true',
             help='Records test status changes')
         self.configured = True
