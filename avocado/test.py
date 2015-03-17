@@ -408,7 +408,7 @@ class Test(unittest.TestCase):
                               output_check_record == 'none')
             disable_output_check = (not job_standalone and
                                     getattr(self.job.args,
-                                            'disable_output_check', False))
+                                            'output_check', 'on') == 'off')
 
             if job_standalone or no_record_mode:
                 if not disable_output_check:
