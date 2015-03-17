@@ -24,7 +24,11 @@ import pipes
 import shutil
 import sys
 import time
-import unittest
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado import sysinfo
 from avocado.core import data_dir
@@ -222,7 +226,7 @@ class Test(unittest.TestCase):
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class']
-        state = {key: self.__dict__.get(key) for key in preserve_attr}
+        state = dict([(key, self.__dict__.get(key)) for key in preserve_attr])
         state['params'] = dict(self.__dict__['params'])
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
@@ -548,8 +552,8 @@ class SimpleTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
-            test_params = {str(key): str(val)
-                           for key, val in self.params.iteritems()}
+            test_params = dict([(str(key), str(val)) for key, val in
+                                self.params.iteritems()])
             # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(pipes.quote(self.path), verbose=True,
                                  env=test_params)

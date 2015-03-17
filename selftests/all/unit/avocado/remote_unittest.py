@@ -18,10 +18,10 @@ JSON_RESULTS = ('Something other than json\n'
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
                 '"debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.'
                 '37/debug.log", "errors": 0, "skip": 0, "time": 1.4, '
-                '"logdir": "/local/path/test-results%s/sleeptest", '
-                '"logdir": "/local/path/test-results%s/sleeptest", '
+                '"logdir": "/local/path/test-results/sleeptest", '
+                '"logdir": "/local/path/test-results/sleeptest", '
                 '"start": 0, "end": 1.4, "pass": 1, "failures": 0, "total": '
-                '1}\nAdditional stuff other than json' % (cwd, cwd))
+                '1}\nAdditional stuff other than json')
 
 
 class RemoteTestRunnerTest(unittest.TestCase):
@@ -63,9 +63,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
                 'tagged_name': u'sleeptest.1', 'time_elapsed': 1.23,
                 'fail_class': 'Not supported yet', 'job_unique_id': '',
                 'fail_reason': 'None',
-                'logdir': '/local/path/test-results%s/sleeptest' % cwd,
-                'logfile': '/local/path/test-results%s/sleeptest/debug.log' %
-                           cwd}
+                'logdir': '/local/path/test-results/sleeptest',
+                'logfile': '/local/path/test-results/sleeptest/debug.log'}
         Results.should_receive('start_test').once().with_args(args).ordered()
         Results.should_receive('check_test').once().with_args(args).ordered()
         (Remote.should_receive('receive_files')

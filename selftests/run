@@ -66,5 +66,12 @@ class AvocadoTestRunner(Plugin):
         loader.selector = AvocadoTestSelector(loader.config)
 
 if __name__ == '__main__':
-    nose.main(addplugins=[AvocadoTestRunner(),
-                          AttributeSelector()])
+    if 'addplugins' in nose.main.__init__.func_code.co_varnames:
+        nose.main(addplugins=[AvocadoTestRunner(),
+                              AttributeSelector()])
+    elif 'plugins' in nose.main.__init__.func_code.co_varnames:
+        nose.main(plugins=[AvocadoTestRunner(),
+                           AttributeSelector()])
+    else:
+        print("Unsupported nose API, can't proceed with testing...")
+        sys.exit(1)

@@ -1,20 +1,19 @@
 language: python
 python:
-    - "2.7"
+    - "2.7_with_system_site_packages"
+    - "2.6"
 
 branches:
     only:
         - master
 
-virtualenv:
-    system_site_packages: true
-
 before_install:
     - sudo apt-get update
-    - sudo apt-get -y --force-yes install python-libvirt python-lzma python-yaml
+    - sudo apt-get -y --force-yes install python-libvirt python-lzma libyaml-dev
 
 install:
     - pip install -r requirements-travis.txt
+    - if [ $TRAVIS_PYTHON_VERSION == '2.6' ]; then pip install -r requirements-travis-python26.txt; fi
 
 script:
     - inspekt lint
