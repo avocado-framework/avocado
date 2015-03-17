@@ -1,5 +1,10 @@
-import unittest
 import itertools
+import sys
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado import multiplexer
 from avocado.core import tree

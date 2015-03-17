@@ -1,10 +1,14 @@
 import json
 import tempfile
-import unittest
 import os
 import sys
 import shutil
 from xml.dom import minidom
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -59,21 +63,6 @@ class OutputPluginTest(unittest.TestCase):
                       "Missing excerpt error message from output:\n%s" % output)
 
     def test_output_incompatible_setup_2(self):
-        os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --vm-domain aaa '
-                    '--vm-hostname host --json - passtest')
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
-        output = result.stdout + result.stderr
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        error_excerpt = ("Options --json --vm-domain are trying to use "
-                         "stdout simultaneously")
-        self.assertIn(error_excerpt, output,
-                      "Missing excerpt error message from output:\n%s" % output)
-
-    def test_output_incompatible_setup_3(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --html - passtest'
         result = process.run(cmd_line, ignore_status=True)
