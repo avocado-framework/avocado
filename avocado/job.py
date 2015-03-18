@@ -50,6 +50,8 @@ else:
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
+_TEST_LOGGER = logging.getLogger('avocado.test')
+
 
 class Job(object):
 
@@ -101,9 +103,9 @@ class Job(object):
 
         if self.show_job_log:
             if not self.silent:
-                test_logger = logging.getLogger('avocado.test')
-                output.add_console_handler(test_logger)
-                test_logger.setLevel(self.loglevel)
+                output.add_console_handler(_TEST_LOGGER)
+                _TEST_LOGGER.setLevel(self.loglevel)
+
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
@@ -314,6 +316,9 @@ class Job(object):
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id)
+        _TEST_LOGGER.info('Job ID: %s', self.unique_id)
+        _TEST_LOGGER.info('')
+
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite)
         self.view.stop_file_logging()

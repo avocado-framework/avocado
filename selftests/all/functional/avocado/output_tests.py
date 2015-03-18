@@ -1,6 +1,7 @@
 import json
 import tempfile
 import os
+import re
 import sys
 import shutil
 from xml.dom import minidom
@@ -185,6 +186,12 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
+        job_id_list = re.findall('Job ID: (.*)', result.stdout,
+                                 re.MULTILINE)
+        self.assertTrue(job_id_list, 'No Job ID in stdout:\n%s' %
+                        result.stdout)
+        job_id = job_id_list[0]
+        self.assertEqual(len(job_id), 40)
 
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
