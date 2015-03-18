@@ -117,7 +117,7 @@ def add_console_handler(logger):
 
     :param logger: `logging.Logger` instance.
     """
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter(fmt='%(message)s')
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
