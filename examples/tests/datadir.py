@@ -1,15 +1,8 @@
 #!/usr/bin/python
 
-import os
-import shutil
+from avocado import api
 
-from avocado import test
-from avocado import job
-from avocado.utils import build
-from avocado.utils import process
-
-
-class DataDirTest(test.Test):
+class DataDirTest(api.Test):
 
     """
     Test that uses resources from the data dir.
@@ -22,21 +15,21 @@ class DataDirTest(test.Test):
         Build 'datadir'.
         """
         c_file = self.get_data_path(self.params.source)
-        c_file_name = os.path.basename(c_file)
-        dest_c_file = os.path.join(self.srcdir, c_file_name)
-        shutil.copy(c_file, dest_c_file)
-        build.make(self.srcdir,
-                   env={'CFLAGS': '-g -O0'},
-                   extra_args='datadir')
+        c_file_name = api.path.basename(c_file)
+        dest_c_file = api.path.join(self.srcdir, c_file_name)
+        api.copy(c_file, dest_c_file)
+        api.make(self.srcdir,
+                 env={'CFLAGS': '-g -O0'},
+                 extra_args='datadir')
 
     def action(self):
         """
         Execute 'datadir'.
         """
-        cmd = os.path.join(self.srcdir, 'datadir')
-        cmd_result = process.run(cmd)
+        cmd = api.path.join(self.srcdir, 'datadir')
+        cmd_result = api.run(cmd)
         self.log.info(cmd_result)
 
 
 if __name__ == "__main__":
-    job.main()
+    api.main()
