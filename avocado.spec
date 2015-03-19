@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.20.1
-Release: 2%{?dist}
+Version: 0.21.0
+Release: 4%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -84,6 +84,21 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/api
 
 %changelog
+* Thu Mar 19 2015 Lucas Meneghel Rodrigues - 0.21.0-4
+- COPR build fixes
+
+* Mon Mar 16 2015 Lucas Meneghel Rodrigues - 0.21.0-3
+- COPR build fixes
+
+* Mon Mar 16 2015 Lucas Meneghel Rodrigues - 0.21.0-2
+- COPR build fixes
+
+* Mon Mar 16 2015 Lucas Meneghel Rodrigues - 0.21.0-1
+- COPR build fixes
+
+* Mon Mar 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.21.0-0
+- Update to upstream version 0.21.0
+
 * Mon Feb 23 2015 Cleber Rosa <cleber@redhat.com> - 0.20.1-2
 - Added avocado-rest-client modules, script, man page and API examples
 
