@@ -46,8 +46,8 @@ class GDB(plugin.Plugin):
                                    'BINARY_PATH is optional and if omitted '
                                    'will apply to all binaries'))
 
-        gdb_grp.add_argument('--gdb-enable-core', action='store_true',
-                             default=False,
+        gdb_grp.add_argument('--gdb-coredump', choices=('on', 'off'),
+                             default='off',
                              help=('Automatically generate a core dump when the'
                                    ' inferior process received a fatal signal '
                                    'such as SIGSEGV or SIGABRT'))
@@ -79,8 +79,7 @@ class GDB(plugin.Plugin):
                     runtime.GDB_PRERUN_COMMANDS['binary'] = commands_path
                 else:
                     runtime.GDB_PRERUN_COMMANDS[''] = commands
-            if app_args.gdb_enable_core:
-                runtime.GDB_ENABLE_CORE = True
+            runtime.GDB_ENABLE_CORE = True if app_args.gdb_coredump == 'on' else False
             runtime.GDB_PATH = app_args.gdb_path
             runtime.GDBSERVER_PATH = app_args.gdbserver_path
         except AttributeError:
