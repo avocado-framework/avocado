@@ -64,8 +64,10 @@ link:
 	test -f ../avocado-virt/avocado/plugins/virt.py && ln -s ../../../avocado-virt/avocado/plugins/virt.py avocado/plugins/ || true
 	test -f ../avocado-virt/avocado/plugins/virt_bootstrap.py && ln -s ../../../avocado-virt/avocado/plugins/virt_bootstrap.py avocado/plugins/ || true
 
-man:
-	rst2man man/avocado.rst man/avocado.1
-	rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
+man: man/avocado.1 man/avocado-rest-client.1
 
-.PHONY: source install clean check link man
+.PHONY: source install clean check link
+
+# implicit rule/recipe for man page creation
+%.1: %.rst
+	rst2man $< $@
