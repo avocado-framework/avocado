@@ -30,15 +30,15 @@ class PluginList(plugin.Plugin):
         self.parser = parser.subcommands.add_parser(
             'plugins',
             help='List all plugins loaded')
-        self.parser.add_argument('--disable-paginator',
-                                 dest='disable_paginator',
-                                 action='store_true',
-                                 help='Disable paginator usage')
+        self.parser.add_argument('--paginator',
+                                 choices=('on', 'off'), default='on',
+                                 help='Turn the paginator on/off. '
+                                      'Current: %(default)s')
         super(PluginList, self).configure(self.parser)
 
     def run(self, args):
         view = output.View(app_args=args,
-                           use_paginator=not args.disable_paginator)
+                           use_paginator=args.paginator == 'on')
         pm = get_plugin_manager()
         view.notify(event='message', msg='Plugins loaded:')
         blength = 0
