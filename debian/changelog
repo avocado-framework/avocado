@@ -1,3 +1,9 @@
+avocado (0.21.0) utopic; urgency=medium
+
+  * Automated (make builddeb) build.
+
+ -- Lucas Meneghel Rodrigues (lmr) <lookkas@gmail.com>  Thu, 19 Mar 2015 15:48:56 -0300
+
 avocado (0.20.1) trusty; urgency=medium
 
   * Automated (make builddeb) build.
