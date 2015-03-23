@@ -70,8 +70,8 @@ class RemoteTestRunner(TestRunner):
 
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
-                                  '--disable-paginator' % (self.remote_test_dir,
-                                                           urls_str))
+                                  '--paginator=off' % (self.remote_test_dir,
+                                                       urls_str))
         check_urls_result = self.result.remote.run(avocado_check_urls_cmd,
                                                    ignore_status=True,
                                                    timeout=None)
