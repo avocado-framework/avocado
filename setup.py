@@ -64,6 +64,8 @@ def get_data_files():
                     glob.glob('examples/wrappers/*.sh'))]
     data_files += [(get_dir(['usr', 'share', 'avocado', 'api'], ['api']),
                     glob.glob('examples/api/*/*.py'))]
+    data_files.append((get_dir(['usr', 'libexec', 'avocado'], ['libexec']),
+                       glob.glob('libexec/*')))
     return data_files
 
 
