@@ -1,0 +1,4 @@
+#!/bin/sh
+. avocado-bash-utils
+
+avocado_log ERROR $*
