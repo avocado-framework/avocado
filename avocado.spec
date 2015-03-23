@@ -55,6 +55,11 @@ these days a framework) to perform automated testing.
 %{_docdir}/avocado/avocado-rest-client.rst
 %exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
 %exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
+%{_libexecdir}/avocado/avocado-bash-utils
+%{_libexecdir}/avocado/avocado_debug
+%{_libexecdir}/avocado/avocado_error
+%{_libexecdir}/avocado/avocado_info
+%{_libexecdir}/avocado/avocado_warn
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin

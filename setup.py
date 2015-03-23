@@ -48,6 +48,15 @@ def get_tests_dir():
     return get_dir(['usr', 'share', 'avocado', 'tests'], ['tests'])
 
 
+def get_avocado_libexec_dir():
+    if VIRTUAL_ENV:
+        return get_dir(['libexec'])
+    elif os.path.exists('/usr/libexec'):    # RHEL-like distro
+        return get_dir(['usr', 'libexec', 'avocado'])
+    else:                                   # Debian-like distro
+        return get_dir(['usr', 'lib', 'avocado'])
+
+
 def get_data_files():
     data_files = [(get_dir(['etc', 'avocado']), ['etc/avocado/avocado.conf'])]
     data_files += [(get_dir(['etc', 'avocado', 'conf.d']),
@@ -65,6 +74,7 @@ def get_data_files():
                     glob.glob('examples/wrappers/*.sh'))]
     data_files += [(get_dir(['usr', 'share', 'avocado', 'api'], ['api']),
                     glob.glob('examples/api/*/*.py'))]
+    data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
     return data_files
 
 
