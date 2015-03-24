@@ -23,6 +23,7 @@ import itertools
 
 from avocado.core import tree
 
+
 MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
 
 
@@ -65,8 +66,8 @@ def tree2pools(node, mux=True):
     return leaves, pools
 
 
-def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
-                    debug=False):
+def parse_yamls(input_yamls, filter_only=None, filter_out=None,
+                debug=False):
     if filter_only is None:
         filter_only = []
     if filter_out is None:
@@ -77,4 +78,42 @@ def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
     leaves, pools = tree2pools(final_tree, final_tree.multiplex)
     if leaves:  # Add remaining leaves (they are not variants, only endpoints
         pools.extend(leaves)
+    return pools
+
+
+def multiplex_pools(pools):
     return itertools.product(*pools)
+
+
+def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
+                    debug=False):
+    pools = parse_yamls(input_yamls, filter_only, filter_out, debug)
+    return multiplex_pools(pools)
+
+
+class Mux(object):
+    def __init__(self, args):
+        mux_files = getattr(args, 'multiplex_files', None)
+        filter_only = getattr(args, 'filter_only', None)
+        filter_out = getattr(args, 'filter_out', None)
+        if mux_files:
+            self.pools = parse_yamls(mux_files, filter_only, filter_out)
+        else:   # no variants
+            self.pools = None
+
+    def itertests(self, template):
+        if self.pools:  # Copy template and modify it's params
+            i = None
+            for i, variant in enumerate(multiplex_pools(self.pools)):
+                test_factory = [template[0], template[1].copy()]
+                params = template[1]['params'].copy()
+                for node in variant:
+                    params.update(node.environment)
+                params.update({'tag': i})
+                params.update({'id': template[1]['params']['id'] + str(i)})
+                test_factory[1]['params'] = params
+                yield test_factory
+            if i is None:   # No variants, use template
+                yield template
+        else:   # No variants, use template
+            yield template
