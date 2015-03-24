@@ -22,62 +22,59 @@ from distutils.core import setup
 import avocado.version
 
 
-def get_settings_dir():
-    settings_system_wide = os.path.join('/etc', 'avocado')
-    settings_local_install = os.path.join('etc', 'avocado')
-    if 'VIRTUAL_ENV' in os.environ:
-        return settings_local_install
+VIRTUAL_ENV = 'VIRTUAL_ENV' in os.environ
+
+
+def get_dir(system_path=None, virtual_path=None):
+    """
+    Retrieve VIRTUAL_ENV friendly path
+    :param system_path: Relative system path
+    :param virtual_path: Overrides system_path for virtual_env only
+    :return: VIRTUAL_ENV friendly path
+    """
+    if VIRTUAL_ENV:
+        if virtual_path is None:
+            if system_path is None:
+                virtual_path = ['']
+            else:
+                virtual_path = system_path
+        return os.path.join(*virtual_path)
     else:
-        return settings_system_wide
+        if system_path is None:
+            system_path = ['']
+        return os.path.join(*(['/'] + system_path))
 
 
 def get_tests_dir():
-    settings_system_wide = os.path.join('/usr', 'share', 'avocado', 'tests')
-    settings_local_install = os.path.join('tests')
-    if 'VIRTUAL_ENV' in os.environ:
-        return settings_local_install
-    else:
-        return settings_system_wide
+    return get_dir(['usr', 'share', 'avocado', 'tests'], ['tests'])
 
 
-def get_docs_dir():
-    settings_system_wide = os.path.join('/usr', 'share', 'doc', 'avocado')
-    settings_local_install = ''
-    if 'VIRTUAL_ENV' in os.environ:
-        return settings_local_install
-    else:
-        return settings_system_wide
-
-
-def get_wrappers_dir():
-    settings_system_wide = os.path.join('/usr', 'share', 'avocado', 'wrappers')
-    settings_local_install = 'wrappers'
-    if 'VIRTUAL_ENV' in os.environ:
-        return settings_local_install
-    else:
-        return settings_system_wide
-
-
-def get_api_dir():
-    settings_system_wide = os.path.join('/usr', 'share', 'avocado', 'api')
-    settings_local_install = 'api'
-    if 'VIRTUAL_ENV' in os.environ:
-        return settings_local_install
-    else:
-        return settings_system_wide
+def get_avocado_libexec_dir():
+    if VIRTUAL_ENV:
+        return get_dir(['libexec'])
+    elif os.path.exists('/usr/libexec'):    # RHEL-like distro
+        return get_dir(['usr', 'libexec', 'avocado'])
+    else:                                   # Debian-like distro
+        return get_dir(['usr', 'lib', 'avocado'])
 
 
 def get_data_files():
-    data_files = [(get_settings_dir(), ['etc/avocado/avocado.conf'])]
-    data_files += [(os.path.join(get_settings_dir(), 'conf.d'), ['etc/avocado/conf.d/README'])]
+    data_files = [(get_dir(['etc']), ['etc/avocado/avocado.conf'])]
+    data_files += [(get_dir(['etc', 'conf.d']), ['etc/avocado/conf.d/README'])]
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
     for data_dir in glob.glob('examples/tests/*.data'):
         fmt_str = '%s/*' % data_dir
         for f in glob.glob(fmt_str):
-            data_files += [(os.path.join(get_tests_dir(), os.path.basename(data_dir)), [f])]
-    data_files.append((get_docs_dir(), ['man/avocado.rst', 'man/avocado-rest-client.rst']))
-    data_files += [(get_wrappers_dir(), glob.glob('examples/wrappers/*.sh'))]
-    data_files += [(get_api_dir(), glob.glob('examples/api/*/*.py'))]
+            data_files += [(os.path.join(get_tests_dir(),
+                                         os.path.basename(data_dir)), [f])]
+    data_files.append((get_dir(['usr', 'share', 'doc', 'avocado'], []),
+                       ['man/avocado.rst', 'man/avocado-rest-client.rst']))
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'wrappers'],
+                            ['wrappers']),
+                    glob.glob('examples/wrappers/*.sh'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'api'], ['api']),
+                    glob.glob('examples/api/*/*.py'))]
+    data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
     return data_files
 
 
