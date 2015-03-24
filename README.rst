@@ -1,4 +1,4 @@
-Avocado Test Framework
+Aavocado Test Framework
 ======================
 
 Avocado is a test framework that is built on the experience accumulated with
