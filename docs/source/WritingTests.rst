@@ -711,6 +711,20 @@ Here are the current variables that Avocado exports to the tests:
 | *                       | All variables from --multiplex-file   | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
+
+Simple Tests BASH extensions
+============================
+
+To enhance simple tests one can use supported set of libraries we created. The
+only requirement is to use::
+
+    PATH=$(avocado "exec-path"):$PATH
+
+which injects path to avocado utils into shell PATH. Take a look into
+``avocado exec-path`` to see list of available functions and take a look at
+``examples/tests/simplewarning.sh`` for inspiration.
+
+
 Wrap Up
 =======
 
