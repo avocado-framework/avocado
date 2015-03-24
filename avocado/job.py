@@ -333,6 +333,7 @@ class Job(object):
             archive.create(filename, self.logdir)
         if not getattr(self.args, 'keep_tmp_files', False):
             data_dir.clean_tmp_files()
+        _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
         tests_status = not bool(failures)
         if tests_status:
@@ -416,15 +417,13 @@ class TestProgram(object):
         self.args = self.parser.parse_args(argv)
 
     def runTests(self):
-        exist_status = exit_codes.AVOCADO_ALL_OK
+        exit_status = exit_codes.AVOCADO_ALL_OK
         self.args.standalone = True
         self.job = Job(self.args)
         if self.defaultTest is not None:
             exit_status = self.job.run(urls=[self.defaultTest])
         if self.args.remove_test_results is True:
             shutil.rmtree(self.job.logdir)
-        else:
-            print('Test results available in %s' % self.job.logdir)
         sys.exit(exit_status)
 
 
