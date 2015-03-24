@@ -90,18 +90,16 @@ class TestRunner(plugin.Plugin):
                   'be displayed if you also specify --silent'))
 
         self.parser.output.add_argument(
-            '--job-log-level', action='store',
+            '--job-log-level', default='debug',
+            choices=('debug', 'info', 'warning', 'error', 'critical'),
             help=("Log level of the job log. Options: "
                   "'debug', 'info', 'warning', 'error', "
-                  "'critical'. Current: debug"),
-            default='debug')
+                  "'critical'. Current: %(default)s"))
 
         out_check = self.parser.add_argument_group('output check arguments')
 
-        out_check.add_argument('--output-check-record', choices=('none',
-                                                                 'all',
-                                                                 'stdout',
-                                                                 'stderr'),
+        out_check.add_argument('--output-check-record',
+                               choices=('none', 'all', 'stdout', 'stderr'),
                                default='none',
                                help=('Record output streams of your tests '
                                      'to reference files (valid options: '
