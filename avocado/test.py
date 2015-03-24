@@ -291,28 +291,23 @@ class Test(unittest.TestCase):
         """
         Get a test tagged name.
 
-        If a test tag is defined, just return name.tag. If tag is absent,
-        it'll try to find a tag that is not already taken (so there are no
-        clashes in the results directory).
+        Combines name + tag (if present) to obtain unique name. When associated
+        directory already exists, appends ".$number" until unused name
+        is generated to avoid clashes.
 
         :param logdir: Log directory being in use for result storage.
 
-        :return: String `test.tag`.
+        :return: Unique test name
         """
+        name = self.name
         if self.tag is not None:
-            return "%s.%s" % (self.name, self.tag)
-
+            name += ".%s" % self.tag
         tag = 0
-        if tag == 0:
-            tagged_name = self.name
-        else:
-            tagged_name = "%s.%s" % (self.name, tag)
-        test_logdir = os.path.join(logdir, tagged_name)
-        while os.path.isdir(test_logdir):
+        tagged_name = name
+        while os.path.isdir(os.path.join(logdir, tagged_name)):
             tag += 1
-            tagged_name = "%s.%s" % (self.name, tag)
-            test_logdir = os.path.join(logdir, tagged_name)
-        self.tag = str(tag)
+            tagged_name = "%s.%s" % (name, tag)
+        self.tag = "%s.%s" % (self.tag, tag) if self.tag else str(tag)
 
         return tagged_name
 
