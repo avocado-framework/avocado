@@ -91,11 +91,6 @@ class Job(object):
         self.show_job_log = getattr(self.args, 'show_job_log', False)
         self.silent = getattr(self.args, 'silent', False)
 
-        if multiplexer.MULTIPLEX_CAPABLE:
-            self.multiplex_files = getattr(self.args, 'multiplex_files', None)
-        else:
-            self.multiplex_files = None
-
         if self.standalone:
             self.show_job_log = True
             if self.args is not None:
@@ -220,34 +215,7 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
-    def _multiplex_params_list(self, params_list, multiplex_files):
-        for mux_file in multiplex_files:
-            if not os.path.exists(mux_file):
-                e_msg = "Multiplex file %s doesn't exist." % mux_file
-                raise exceptions.OptionValidationError(e_msg)
-        result = []
-        for params in params_list:
-            try:
-                variants = multiplexer.multiplex_yamls(multiplex_files,
-                                                       self.args.filter_only,
-                                                       self.args.filter_out)
-            except SyntaxError:
-                variants = None
-            if variants:
-                tag = 1
-                for variant in variants:
-                    env = {}
-                    for t in variant:
-                        env.update(dict(t.environment))
-                    env.update({'tag': tag})
-                    env.update({'id': params['id']})
-                    result.append(env)
-                    tag += 1
-            else:
-                result.append(params)
-        return result
-
-    def _run(self, urls=None, multiplex_files=None):
+    def _run(self, urls=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
@@ -275,14 +243,7 @@ class Job(object):
 
         params_list = self.test_loader.discover_urls(urls)
 
-        if multiplexer.MULTIPLEX_CAPABLE:
-            if multiplex_files is None:
-                multiplex_files = getattr(self.args, 'multiplex_files', None)
-
-            if multiplex_files is not None:
-                params_list = self._multiplex_params_list(params_list,
-                                                          multiplex_files)
-
+        mux = multiplexer.Mux(self.args)
         self._setup_job_results()
 
         try:
@@ -307,7 +268,7 @@ class Job(object):
                      "(Possible reasons: File ownership, permissions, typos)")
             raise exceptions.OptionValidationError(e_msg)
 
-        self.args.test_result_total = len(test_suite)
+        self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
         self._make_test_runner()
@@ -320,7 +281,7 @@ class Job(object):
         _TEST_LOGGER.info('')
 
         self.view.logfile = self.logfile
-        failures = self.test_runner.run_suite(test_suite)
+        failures = self.test_runner.run_suite(test_suite, mux)
         self.view.stop_file_logging()
         if not self.standalone:
             self._update_latest_link()
@@ -341,7 +302,7 @@ class Job(object):
         else:
             return exit_codes.AVOCADO_TESTS_FAIL
 
-    def run(self, urls=None, multiplex_files=None):
+    def run(self, urls=None):
         """
         Handled main job method. Runs a list of test URLs to its completion.
 
@@ -366,7 +327,7 @@ class Job(object):
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run(urls, multiplex_files)
+            return self._run(urls)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
