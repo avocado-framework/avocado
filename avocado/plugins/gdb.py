@@ -17,6 +17,7 @@
 from avocado import runtime
 from avocado.utils import path as utils_path
 from avocado.plugins import plugin
+from avocado.settings import settings
 
 
 class GDB(plugin.Plugin):
@@ -52,21 +53,6 @@ class GDB(plugin.Plugin):
                                    ' inferior process received a fatal signal '
                                    'such as SIGSEGV or SIGABRT'))
 
-        system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
-        gdb_grp.add_argument('--gdb-path',
-                             default=system_gdb_path, metavar='PATH',
-                             help=('Path to the GDB executable, should you '
-                                   'need to use a custom GDB version. Current: '
-                                   '"%(default)s"'))
-
-        system_gdbserver_path = utils_path.find_command('gdbserver',
-                                                        '/usr/bin/gdbserver')
-        gdb_grp.add_argument('--gdbserver-path',
-                             default=system_gdbserver_path, metavar='PATH',
-                             help=('Path to the gdbserver executable, should you '
-                                   'need to use a custom version. Current: '
-                                   '"%(default)s"'))
-
         self.configured = True
 
     def activate(self, app_args):
@@ -80,7 +66,13 @@ class GDB(plugin.Plugin):
                 else:
                     runtime.GDB_PRERUN_COMMANDS[''] = commands
             runtime.GDB_ENABLE_CORE = True if app_args.gdb_coredump == 'on' else False
-            runtime.GDB_PATH = app_args.gdb_path
-            runtime.GDBSERVER_PATH = app_args.gdbserver_path
+            system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
+            runtime.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
+                                                  default=system_gdb_path)
+            system_gdbserver_path = utils_path.find_command('gdbserver',
+                                                            '/usr/bin/gdbserver')
+            runtime.GDBSERVER_PATH = settings.get_value('gdb.paths',
+                                                        'gdbserver',
+                                                        default=system_gdbserver_path)
         except AttributeError:
             pass
