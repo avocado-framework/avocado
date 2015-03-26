@@ -79,7 +79,8 @@ class Job(object):
         self.unique_id = unique_id
         self.view = output.View(app_args=self.args)
         self.logdir = None
-        raw_log_level = getattr(self.args, 'job_log_level', None)
+        raw_log_level = settings.get_value('job.output', 'loglevel',
+                                           default='debug')
         mapping = {'info': logging.INFO,
                    'debug': logging.DEBUG,
                    'warning': logging.WARNING,
