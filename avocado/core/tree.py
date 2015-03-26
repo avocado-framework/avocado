@@ -43,8 +43,6 @@ except ImportError:
     MULTIPLEX_CAPABLE = False
 else:
     MULTIPLEX_CAPABLE = True
-
-if MULTIPLEX_CAPABLE:
     try:
         from yaml import CLoader as Loader
     except ImportError:
