@@ -116,10 +116,16 @@ In order to do that, you can use --show-job-log to the avocado test runner::
 
 Let's say you are debugging a test particularly large, with lots of debug
 output and you want to reduce this output to only messages with level 'INFO'
-and higher. You can use the option --job-log-level info to reduce the output.
-Running the same example with this option::
+and higher. You can set job-log-level to info to reduce the amount of output.
 
-    $ scripts/avocado run sleeptest --show-job-log --job-log-level info
+Edit your `~/.config/avocado/avocado.conf` file and add::
+
+    [job.output]
+    loglevel = info
+
+Running the same example with this option will give you::
+
+    $ scripts/avocado run sleeptest --show-job-log
     START sleeptest.py
     PASS sleeptest.py
 
