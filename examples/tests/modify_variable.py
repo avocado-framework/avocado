@@ -18,16 +18,16 @@ class PrintVariableTest(test.Test):
     3) checks the output
     """
 
-    default_params = {'source': 'print_variable.c'}
     __binary = None    # filename of the compiled program
 
     def setup(self):
         """
         Build 'print_variable'.
         """
-        c_file = self.get_data_path(self.params.source)
+        source = self.params.get('source', 'print_variable.c')
+        c_file = self.get_data_path(source)
         shutil.copy(c_file, self.srcdir)
-        self.__binary = self.params['source'].rsplit('.', 1)[0]
+        self.__binary = source.rsplit('.', 1)[0]
         build.make(self.srcdir,
                    env={'CFLAGS': '-g -O0'},
                    extra_args=self.__binary)

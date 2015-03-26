@@ -9,18 +9,6 @@ class MultiplexTest(test.Test):
     """
     Execute a test that uses provided parameters (for multiplexing testing).
     """
-    default_params = {'os_type': 'linux',
-                      'gcc_flags': '-O2',
-                      'huge_pages': 'yes',
-                      'numa_balancing': 'yes',
-                      'numa_balancing_migrate_deferred': 'no',
-                      'drive_format': 'virtio_blk',
-                      'nic_model': 'virtio_net',
-                      'enable_msx_vectors': 'yes',
-                      'sync_timeout': 12,
-                      'sync_tries': 3,
-                      'ping_timeout': 10,
-                      'ping_tries': 5}
 
     def setup(self):
         self.compile_code()
@@ -28,47 +16,57 @@ class MultiplexTest(test.Test):
         self.set_numa_balance()
         self.assembly_vm()
 
-        if self.params.os_type == 'windows':
-            self.log.info('Preparing VM with Windows (%s)', self.params.win)
-        if self.params.os_type == 'linux':
-            self.log.info('Preparing VM with Linux (%s)', self.params.distro)
+        os_type = self.params.get('os_type', 'linux')
+        if os_type == 'windows':
+            self.log.info('Preparing VM with Windows (%s)',
+                          self.params.get('win'))
+        if os_type == 'linux':
+            self.log.info('Preparing VM with Linux (%s)',
+                          self.params.get('distro'))
 
     def compile_code(self):
         self.log.info('Compile code')
-        self.log.info('gcc %s %s', self.params.gcc_flags, 'code.c')
+        self.log.info('gcc %s %s', self.params.get('gcc_flags', '-O2'),
+                      'code.c')
 
     def set_hugepages(self):
-        if self.params.huge_pages == 'yes':
+        if self.params.get('huge_pages', 'yes') == 'yes':
             self.log.info('Setting hugepages')
 
     def set_numa_balance(self):
-        if self.params.numa_balance:
-            self.log.info('Numa balancing: %s', self.params.numa_balance)
-        if self.params.numa_balancing_migrate_deferred:
-            self.log.info('Numa balancing migrate deferred: %s',
-                          self.params.numa_balancing_migrate_deferred)
+        numa_balancing = self.params.get('numa_balancing', 'yes')
+        numa_migrate = self.params.get('numa_balancing_migrate_deferred', 'no')
+        if numa_balancing:
+            self.log.info('Numa balancing: %s', numa_balancing)
+        if numa_migrate:
+            self.log.info('Numa balancing migrate deferred: %s', numa_migrate)
 
     def assembly_vm(self):
         self.log.info('Assembling VM')
-        if self.params.drive_format:
-            self.log.info('Drive format: %s', self.params.drive_format)
-        if self.params.nic_model:
-            self.log.info('NIC model: %s', self.params.nic_model)
-        if self.params.enable_msx_vectors == 'yes':
+        drive_format = self.params.get('drive_format', 'virtio_blk')
+        nic_model = self.params.get('nic_model', 'virtio_net')
+        enable_msx_vectors = self.params.get('enable_msx_vectors', 'yes')
+        if drive_format:
+            self.log.info('Drive format: %s', drive_format)
+        if nic_model:
+            self.log.info('NIC model: %s', nic_model)
+        if enable_msx_vectors == 'yes':
             self.log.info('Enabling msx vectors')
 
     def action(self):
         self.log.info('Executing synctest...')
         self.log.info('synctest --timeout %s --tries %s',
-                      self.params.sync_timeout,
-                      self.params.sync_tries)
+                      self.params.get('sync_timeout', 12),
+                      self.params.get('sync_tries', 3))
 
         self.log.info('Executing ping test...')
-        cmdline = 'ping --timeout %s --tries %s' % (self.params.ping_timeout,
-                                                    self.params.ping_tries)
+        cmdline = ('ping --timeout %s --tries %s'
+                   % (self.params.get('ping_timeout', 10),
+                      self.params.get('ping_tries', 5)))
 
-        if self.params.ping_flags:
-            cmdline += ' %s' % self.params.ping_flags
+        ping_flags = self.params.get('ping_flags')
+        if ping_flags:
+            cmdline += ' %s' % ping_flags
 
         self.log.info(cmdline)
 
