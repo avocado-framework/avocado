@@ -132,7 +132,8 @@ class TestRunner(object):
 
         # At this point, the test is already initialized and we know
         # for sure if there's a timeout set.
-        timeout = early_state['params'].get('timeout', self.DEFAULT_TIMEOUT)
+        timeout = (early_state.get('params', {}).get('timeout') or
+                   self.DEFAULT_TIMEOUT)
         time_deadline = time_started + timeout
 
         ctrl_c_count = 0
