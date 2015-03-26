@@ -58,6 +58,7 @@ selftests/run selftests/all/unit
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %config(noreplace)/etc/avocado/conf.d/gdb.conf
+%config(noreplace)/etc/avocado/conf.d/virt-test.conf
 %config(noreplace)/etc/avocado/sysinfo/commands
 %config(noreplace)/etc/avocado/sysinfo/files
 %config(noreplace)/etc/avocado/sysinfo/profilers
