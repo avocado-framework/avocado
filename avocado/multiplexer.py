@@ -92,6 +92,7 @@ def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
 
 
 class Mux(object):
+
     def __init__(self, args):
         mux_files = getattr(args, 'multiplex_files', None)
         filter_only = getattr(args, 'filter_only', None)
