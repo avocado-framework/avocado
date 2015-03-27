@@ -15,6 +15,13 @@ import tempfile
 import logging
 import shutil
 
+# ATTENTION: Do not import avocado libraries in this side of the aexpect
+# module. This side of the module will be executed stand alone and will not
+# have access to the avocado libraries. If you do that, the server won't
+# start, making the client to wait indefinitely for the server and creating
+# a deadlock. Import avocado libs if necessary below, where the other avocado
+# imports are defined.
+
 BASE_DIR = os.environ.get('TMPDIR', '/tmp')
 # If you want to debug problems with your aexpect instances, setting
 # DEBUG = True will leave the temporary files created by aexpect around
