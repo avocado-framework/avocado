@@ -107,15 +107,17 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite):
+    def run_suite(self, test_suite, mux):
         """
         Run one or more tests and report with test result.
 
         :param params_list: a list of param dicts.
+        :param mux: A multiplex iterator (unused here)
 
         :return: a list of test failures.
         """
         del test_suite     # using self.result.urls instead
+        del mux            # we're not using multiplexation here
         failures = []
         self.result.setup()
         results = self.run_test(self.result.urls)

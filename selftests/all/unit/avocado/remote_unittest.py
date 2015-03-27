@@ -85,7 +85,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
 
     def test_run_suite(self):
         """ Test RemoteTestRunner.run_suite() """
-        self.remote.run_suite(None)
+        self.remote.run_suite(None, None)
         flexmock_teardown()  # Checks the expectations
 
 
