@@ -15,10 +15,6 @@ import tempfile
 import logging
 import shutil
 
-from avocado.utils import genio
-from avocado.utils import path as utils_path
-
-
 BASE_DIR = os.environ.get('TMPDIR', '/tmp')
 # If you want to debug problems with your aexpect instances, setting
 # DEBUG = True will leave the temporary files created by aexpect around
@@ -277,7 +273,9 @@ except ImportError:
 from avocado.utils import astring
 from avocado.utils import data_factory
 from avocado.utils import process
+from avocado.utils import genio
 from avocado.utils import wait
+from avocado.utils import path as utils_path
 
 
 class ExpectError(Exception):
