@@ -16,7 +16,7 @@ class WhiteBoard(test.Test):
                       'whiteboard_data_size': '10',
                       'whiteboard_writes': '1'}
 
-    def action(self):
+    def runTest(self):
         if self.params.whiteboard_data_file:
             self.log.info('Writing data to whiteboard from file: %s',
                           self.params.whiteboard_data_file)

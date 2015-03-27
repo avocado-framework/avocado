@@ -21,17 +21,17 @@ from avocado.utils import script
 @unittest.skip("This class should not be tested per se")
 class AvocadoPass(test.Test):
 
-    def action(self):
+    def runTest(self):
         variable = True
         self.assertTrue(variable)
         self.whiteboard = 'foo'
 
 
 @unittest.skip("This class should not be tested per se")
-class AvocadoFailNoAction(test.Test):
+class EmptyTest(test.Test):
 
     """
-    I don't have an action() method defined!
+    I don't have runTest() defined!
     """
     pass
 
@@ -51,19 +51,14 @@ class TestClassTest(unittest.TestCase):
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass.run_avocado()
 
-    def testFailNoActionRunTest(self):
-        tst_instance = AvocadoFailNoAction()
-        try:
-            tst_instance.action()
-            raise AssertionError("Test instance did not raise NotImplementedError")
-        except NotImplementedError:
-            pass
+    def testRunTest(self):
+        tst = EmptyTest()
+        self.assertEqual(tst.runTest(), None)
 
-    def testFailNoActionRunAvocado(self):
-        tst_instance = AvocadoFailNoAction()
-        tst_instance.run_avocado()
-        self.assertEqual(tst_instance.status, 'FAIL')
-        self.assertEqual(tst_instance.fail_class, 'NotImplementedError')
+    def testRunAvocado(self):
+        tst = EmptyTest()
+        tst.run_avocado()
+        self.assertEqual(tst.status, 'PASS')
 
     def testClassAttributesName(self):
         self.assertEqual(self.tst_instance_pass.name, 'AvocadoPass')

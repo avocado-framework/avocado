@@ -104,7 +104,7 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("TestError: Failing during cleanup. Yay!", output,
+        self.assertIn("TestError: Failing during tearDown. Yay!", output,
                       "Cleanup exception not printed to log output")
         self.assertIn("TestFail: This test is supposed to fail",
                       output,
