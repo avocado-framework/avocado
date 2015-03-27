@@ -13,7 +13,7 @@ class LinuxBuildTest(test.Test):
     default_params = {'linux_version': '3.14.5',
                       'linux_config': 'config'}
 
-    def setup(self):
+    def setUp(self):
         kernel_version = self.params.linux_version
         config_path = self.get_data_path('config')
         self.linux_build = kernel_build.KernelBuild(kernel_version,
@@ -23,7 +23,7 @@ class LinuxBuildTest(test.Test):
         self.linux_build.uncompress()
         self.linux_build.configure()
 
-    def action(self):
+    def runTest(self):
         self.linux_build.build()
 
 

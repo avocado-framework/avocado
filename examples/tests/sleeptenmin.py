@@ -16,7 +16,7 @@ class SleepTenMin(test.Test):
                       'sleep_cycles': 1,
                       'sleep_method': 'builtin'}
 
-    def action(self):
+    def runTest(self):
         """
         Sleep for length seconds.
         """

@@ -17,7 +17,7 @@ class DataDirTest(test.Test):
 
     default_params = {'source': 'datadir.c'}
 
-    def setup(self):
+    def setUp(self):
         """
         Build 'datadir'.
         """
@@ -29,7 +29,7 @@ class DataDirTest(test.Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='datadir')
 
-    def action(self):
+    def runTest(self):
         """
         Execute 'datadir'.
         """

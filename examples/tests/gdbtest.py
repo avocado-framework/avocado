@@ -26,7 +26,7 @@ class GdbTest(test.Test):
                     "-find-me-the-bug",
                     "-auto-debug-it"]
 
-    def setup(self):
+    def setUp(self):
         self.return99_binary_path = os.path.join(self.outputdir, 'return99')
         return99_source_path = self.get_data_path('return99.c')
         process.system('gcc -O0 -g %s -o %s' % (return99_source_path,
@@ -407,7 +407,7 @@ class GdbTest(test.Test):
         r.cmd("qfThreadInfo")
         s.exit()
 
-    def action(self):
+    def runTest(self):
         """
         Execute tests
         """

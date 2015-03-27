@@ -41,7 +41,7 @@ class GenDataTest(test.Test):
                   "outputdir": self.outputdir}
         json.dump(output, open(output_path, "w"))
 
-    def action(self):
+    def runTest(self):
         self.generate_bsod()
         self.generate_json()
 

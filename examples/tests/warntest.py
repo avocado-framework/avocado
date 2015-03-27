@@ -11,7 +11,7 @@ class WarnTest(test.Test):
     Functional test for avocado. Throw a TestWarn.
     """
 
-    def action(self):
+    def runTest(self):
         """
         This should throw a TestWarn.
         """
