@@ -22,6 +22,9 @@ import argparse
 
 from avocado.version import VERSION
 
+PROG = 'avocado'
+DESCRIPTION = 'Avocado Test Runner'
+
 
 class Parser(object):
 
@@ -31,9 +34,9 @@ class Parser(object):
 
     def __init__(self):
         self.application = argparse.ArgumentParser(
-            prog='avocado',
+            prog=PROG,
             add_help=False,  # see parent parsing
-            description='Avocado Test Runner')
+            description=DESCRIPTION)
         self.application.add_argument('-v', '--version', action='version',
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--plugins', action='store',
@@ -49,8 +52,10 @@ class Parser(object):
         """
         self.args, _ = self.application.parse_known_args()
 
-        # Use parent parsing to avoid to break the output of --help option
-        self.application = argparse.ArgumentParser(parents=[self.application])
+        # Use parent parsing to avoid breaking the output of --help option
+        self.application = argparse.ArgumentParser(prog=PROG,
+                                                   description=DESCRIPTION,
+                                                   parents=[self.application])
 
         # Subparsers where Avocado subcommands are plugged
         self.subcommands = self.application.add_subparsers(

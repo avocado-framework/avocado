@@ -2,6 +2,7 @@
 
 import sys
 import os
+import shutil
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -13,10 +14,22 @@ import avocado.version
 from avocado.utils import path
 from avocado.utils import process
 
+# Flag that tells if the docs are being built on readthedocs.org
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
 # Auto generate API documentation
 _sphinx_apidoc = path.find_command('sphinx-apidoc')
 _output_dir = os.path.join(root_path, 'docs', 'source', 'api')
 _api_dir = os.path.join(root_path, 'avocado')
+
+if ON_RTD:
+    git = path.find_command('git', False)
+    if git is not False:
+        cmd = "%s clone git://github.com/avocado-framework/avocado-virt.git %s"
+        process.run(cmd % (git, os.path.join(root_path, 'avocado-virt')))
+        shutil.move(os.path.join(root_path, 'avocado-virt', 'avocado', 'virt'),
+                    _api_dir)
+
 process.run("%s -o %s %s" % (_sphinx_apidoc, _output_dir, _api_dir))
 
 extensions = ['sphinx.ext.autodoc',
@@ -31,11 +44,7 @@ copyright = u'2014, Red Hat'
 version = avocado.version.VERSION
 release = avocado.version.VERSION
 
-# on_rtd is whether we are on readthedocs.org, this line of code grabbed from
-# docs.readthedocs.org
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
+if not ON_RTD:  # only import and set the theme if we're building docs locally
     try:
         import sphinx_rtd_theme
         html_theme = 'sphinx_rtd_theme'
