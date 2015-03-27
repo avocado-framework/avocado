@@ -40,6 +40,7 @@ from avocado.plugins import jsonresult
 from avocado.plugins import xunit
 from avocado.utils import archive
 from avocado.utils import path
+from avocado.settings import settings
 
 try:
     from avocado.plugins import htmlresult
@@ -78,7 +79,8 @@ class Job(object):
         self.unique_id = unique_id
         self.view = output.View(app_args=self.args)
         self.logdir = None
-        raw_log_level = getattr(self.args, 'job_log_level', None)
+        raw_log_level = settings.get_value('job.output', 'loglevel',
+                                           default='debug')
         mapping = {'info': logging.INFO,
                    'debug': logging.DEBUG,
                    'warning': logging.WARNING,
@@ -295,7 +297,8 @@ class Job(object):
         if getattr(self.args, 'archive', False):
             filename = self.logdir + '.zip'
             archive.create(filename, self.logdir)
-        if not getattr(self.args, 'keep_tmp_files', False):
+        if not settings.get_value('runner.behavior', 'keep_tmp_files',
+                                  key_type=bool, default=False):
             data_dir.clean_tmp_files()
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
