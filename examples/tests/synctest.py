@@ -1,15 +1,9 @@
 #!/usr/bin/python
 
-import os
-
-from avocado import test
-from avocado import job
-from avocado.utils import archive
-from avocado.utils import build
-from avocado.utils import process
+from avocado import api
 
 
-class SyncTest(test.Test):
+class SyncTest(api.Test):
 
     """
     Execute the synctest test suite.
@@ -23,28 +17,28 @@ class SyncTest(test.Test):
         """
         Build the synctest suite.
         """
-        self.cwd = os.getcwd()
+        self.cwd = api.getcwd()
         tarball_path = self.get_data_path(self.params.sync_tarball)
-        archive.extract(tarball_path, self.srcdir)
-        self.srcdir = os.path.join(self.srcdir, 'synctest')
+        api.extract(tarball_path, self.srcdir)
+        self.srcdir = api.path.join(self.srcdir, 'synctest')
         if self.params.debug_symbols:
-            build.make(self.srcdir,
-                       env={'CFLAGS': '-g -O0'},
-                       extra_args='synctest')
+            api.make(self.srcdir,
+                     env={'CFLAGS': '-g -O0'},
+                     extra_args='synctest')
         else:
-            build.make(self.srcdir)
+            api.make(self.srcdir)
 
     def action(self):
         """
         Execute synctest with the appropriate params.
         """
-        os.chdir(self.srcdir)
-        path = os.path.join(os.getcwd(), 'synctest')
+        api.chdir(self.srcdir)
+        path = api.path.join(api.getcwd(), 'synctest')
         cmd = ('%s %s %s' %
                (path, self.params.sync_length, self.params.sync_loop))
-        process.system(cmd)
-        os.chdir(self.cwd)
+        api.system(cmd)
+        api.chdir(self.cwd)
 
 
 if __name__ == "__main__":
-    job.main()
+    api.main()

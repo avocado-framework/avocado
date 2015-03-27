@@ -1,16 +1,10 @@
 #!/usr/bin/python
 
-import os
-
-from avocado import test
-from avocado import job
-from avocado.utils import archive
-from avocado.utils import build
-from avocado.utils import process
+from avocado import api
 from avocado.utils import data_factory
 
 
-class TrinityTest(test.Test):
+class TrinityTest(api.Test):
 
     """
     Trinity syscall fuzzer wrapper.
@@ -32,19 +26,19 @@ class TrinityTest(test.Test):
         Build trinity.
         """
         tarball_path = self.get_data_path(self.params.tarball)
-        archive.extract(tarball_path, self.srcdir)
-        self.srcdir = os.path.join(self.srcdir, 'trinity-1.4')
-        os.chdir(self.srcdir)
-        process.run('./configure.sh')
-        build.make(self.srcdir)
-        self.victims_path = data_factory.make_dir_and_populate(self.workdir)
+        api.extract(tarball_path, self.srcdir)
+        self.srcdir = api.path.join(self.srcdir, 'trinity-1.4')
+        api.chdir(self.srcdir)
+        api.run('./configure.sh')
+        api.make(self.srcdir)
+        self.victims_path = api.make_dir_and_populate(self.workdir)
 
     def action(self):
         """
         Execute the trinity syscall fuzzer with the appropriate params.
         """
         cmd = './trinity -I'
-        process.run(cmd)
+        api.run(cmd)
         cmd = './trinity'
         if self.params.stress:
             cmd += " " + self.params.stress
@@ -52,8 +46,8 @@ class TrinityTest(test.Test):
             cmd += " -V " + self.params.victims_path
         else:
             cmd += " -V " + self.victims_path
-        process.run(cmd)
+        api.run(cmd)
 
 
 if __name__ == "__main__":
-    job.main()
+    api.main()
