@@ -17,7 +17,7 @@ class CAbort(test.Test):
 
     default_params = {'source': 'abort.c'}
 
-    def setup(self):
+    def setUp(self):
         """
         Build 'abort'.
         """
@@ -29,7 +29,7 @@ class CAbort(test.Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='abort')
 
-    def action(self):
+    def runTest(self):
         """
         Execute 'abort'.
         """

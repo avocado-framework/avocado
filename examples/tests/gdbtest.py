@@ -26,7 +26,7 @@ class GdbTest(test.Test):
                     "-find-me-the-bug",
                     "-auto-debug-it"]
 
-    def setup(self):
+    def setUp(self):
         self.return99_binary_path = os.path.join(self.outputdir, 'return99')
         return99_source_path = self.get_data_path('return99.c')
         process.system('gcc -O0 -g %s -o %s' % (return99_source_path,
@@ -407,32 +407,6 @@ class GdbTest(test.Test):
         r.cmd("qfThreadInfo")
         s.exit()
 
-    def action(self):
-        """
-        Execute tests
-        """
-        self.test_start_exit()
-        self.test_existing_commands_raw()
-        self.test_existing_commands()
-        self.test_load_set_breakpoint_run_exit_raw()
-        self.test_load_set_breakpoint_run_exit()
-        self.test_generate_core()
-        self.test_set_multiple_break()
-        self.test_disconnect_raw()
-        self.test_disconnect()
-        self.test_remote_exec()
-        self.test_stream_messages()
-        self.test_connect_multiple_clients()
-        self.test_server_exit()
-        self.test_multiple_servers()
-        self.test_interactive()
-        self.test_interactive_args()
-        self.test_exit_status()
-        self.test_server_stderr()
-        self.test_server_stderr_redirected()
-        self.test_server_stdout()
-        self.test_interactive_stdout()
-        self.test_remote()
 
 if __name__ == '__main__':
     job.main()

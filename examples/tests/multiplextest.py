@@ -22,7 +22,7 @@ class MultiplexTest(test.Test):
                       'ping_timeout': 10,
                       'ping_tries': 5}
 
-    def setup(self):
+    def setUp(self):
         self.compile_code()
         self.set_hugepages()
         self.set_numa_balance()
@@ -57,7 +57,7 @@ class MultiplexTest(test.Test):
         if self.params.enable_msx_vectors == 'yes':
             self.log.info('Enabling msx vectors')
 
-    def action(self):
+    def runTest(self):
         self.log.info('Executing synctest...')
         self.log.info('synctest --timeout %s --tries %s',
                       self.params.sync_timeout,

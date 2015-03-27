@@ -20,7 +20,7 @@ from avocado import job
 from avocado import test
 
 class PassTest(test.Test):
-    def action(self):
+    def runTest(self):
         pass
 
 if __name__ == "__main__":
@@ -33,7 +33,7 @@ from avocado import test
 import adsh
 
 class PassTest(test.Test):
-    def action(self):
+    def runTest(self):
         pass
 
 if __name__ == "__main__":

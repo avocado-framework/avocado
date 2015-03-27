@@ -21,7 +21,7 @@ class FioTest(test.Test):
     default_params = {'fio_tarball': 'fio-2.1.10.tar.bz2',
                       'fio_job': 'fio-mixed.job'}
 
-    def setup(self):
+    def setUp(self):
         """
         Build 'fio'.
         """
@@ -31,7 +31,7 @@ class FioTest(test.Test):
         self.srcdir = os.path.join(self.srcdir, fio_version)
         build.make(self.srcdir)
 
-    def action(self):
+    def runTest(self):
         """
         Execute 'fio' with appropriate parameters.
         """

@@ -18,7 +18,7 @@ class DoubleFreeTest(test.Test):
 
     default_params = {'source': 'doublefree.c'}
 
-    def setup(self):
+    def setUp(self):
         """
         Build 'doublefree'.
         """
@@ -30,7 +30,7 @@ class DoubleFreeTest(test.Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='doublefree')
 
-    def action(self):
+    def runTest(self):
         """
         Execute 'doublefree'.
         """

@@ -21,7 +21,7 @@ class FailTest(test.Test):
     Very nasty exception test
     """
 
-    def action(self):
+    def runTest(self):
         """
         Should fail.
         """
