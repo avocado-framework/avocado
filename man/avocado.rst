@@ -116,10 +116,16 @@ In order to do that, you can use --show-job-log to the avocado test runner::
 
 Let's say you are debugging a test particularly large, with lots of debug
 output and you want to reduce this output to only messages with level 'INFO'
-and higher. You can use the option --job-log-level info to reduce the output.
-Running the same example with this option::
+and higher. You can set job-log-level to info to reduce the amount of output.
 
-    $ scripts/avocado run sleeptest --show-job-log --job-log-level info
+Edit your `~/.config/avocado/avocado.conf` file and add::
+
+    [job.output]
+    loglevel = info
+
+Running the same example with this option will give you::
+
+    $ scripts/avocado run sleeptest --show-job-log
     START sleeptest.py
     PASS sleeptest.py
 
@@ -342,13 +348,14 @@ when you disconnect from and exit gdb.
 
 If, for some reason you have a custom GDB, or your system does not put
 GDB on what avocado believes to be the standard location (`/usr/bin/gdb`),
-you can override that with::
+you can override that in the section `gdb.paths` of your documentation::
 
- $ avocado run --gdb-path=~/code/gdb/gdb --gdb-run-bin=foo:main footest
+    [gdb.paths]
+    gdb = /usr/bin/gdb
+    gdbserver = /usr/bin/gdbserver
 
-The same applies to `gdbserver`, which can be chosen with a command line like::
-
- $ avocado run --gdbserver-path=~/code/gdb/gdbserver --gdb-run-bin=foo:main footest
+So running avocado after setting those will use the appropriate gdb/gdbserver
+path.
 
 If you are debugging a special application and need to setup GDB in custom
 ways by running GDB commands, you can do that with the `--gdb-prerun-commands`

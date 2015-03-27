@@ -42,13 +42,13 @@ class ReportModel(object):
     Prepares JSON that can be passed up to mustache for rendering.
     """
 
-    def __init__(self, json_input, html_output, relative_links):
+    def __init__(self, json_input, html_output):
         """
         Base JSON that comes from test results.
         """
         self.json = json_input
-        self.relative_links = relative_links
         self.html_output = html_output
+        self.html_output_dir = os.path.abspath(os.path.dirname(html_output))
 
     def get(self, key, default):
         value = getattr(self, key, default)
@@ -63,20 +63,18 @@ class ReportModel(object):
     def execution_time(self):
         return "%.2f" % self.json['time']
 
-    def _results_dir(self, relative_links=True):
-        debuglog_abspath = os.path.abspath(os.path.dirname(
-            self.json['debuglog']))
-        html_output_abspath = os.path.abspath(os.path.dirname(self.html_output))
+    def results_dir(self, relative_links=True):
+        results_dir = os.path.abspath(os.path.dirname(self.json['debuglog']))
         if relative_links:
-            return os.path.relpath(debuglog_abspath, html_output_abspath)
+            return os.path.relpath(results_dir, self.html_output_dir)
         else:
-            return debuglog_abspath
-
-    def results_dir(self):
-        return self._results_dir(relative_links=self.relative_links)
+            return results_dir
 
     def results_dir_basename(self):
-        return os.path.basename(self._results_dir(relative_links=False))
+        return os.path.basename(self.results_dir(False))
+
+    def logdir(self):
+        return os.path.relpath(self.json['logdir'], self.html_output_dir)
 
     def total(self):
         return self.json['total']
@@ -94,7 +92,7 @@ class ReportModel(object):
         return "%.2f" % pr
 
     def _get_sysinfo(self, sysinfo_file):
-        sysinfo_path = os.path.join(self._results_dir(relative_links=False),
+        sysinfo_path = os.path.join(self.results_dir(False),
                                     'sysinfo', 'pre', sysinfo_file)
         try:
             with open(sysinfo_path, 'r') as sysinfo_file:
@@ -122,15 +120,13 @@ class ReportModel(object):
                    "NOSTATUS": "info",
                    "INTERRUPTED": "danger"}
         test_info = self.json['tests']
+        results_dir = self.results_dir(False)
         for t in test_info:
-            t['logdir'] = os.path.join(self._results_dir(
-                                       relative_links=self.relative_links),
-                                       'test-results', t['logdir'])
-            t['logfile'] = os.path.join(self._results_dir(
-                                        relative_links=self.relative_links),
-                                        'test-results', t['logdir'],
-                                        'debug.log')
-            t['logfile_basename'] = os.path.basename(t['logfile'])
+            logdir = os.path.join(results_dir, 'test-results', t['logdir'])
+            t['logdir'] = os.path.relpath(logdir, self.html_output_dir)
+            logfile = os.path.join(logdir, 'debug.log')
+            t['logfile'] = os.path.relpath(logfile, self.html_output_dir)
+            t['logfile_basename'] = os.path.basename(logfile)
             t['time'] = "%.2f" % t['time']
             t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
                                             time.localtime(t['time_start']))
@@ -148,7 +144,7 @@ class ReportModel(object):
 
     def sysinfo(self):
         sysinfo_list = []
-        base_path = os.path.join(self._results_dir(relative_links=False),
+        base_path = os.path.join(self.results_dir(False),
                                  'sysinfo', 'pre')
         try:
             sysinfo_files = os.listdir(base_path)
@@ -238,13 +234,7 @@ class HTMLTestResult(TestResult):
         self._render_report()
 
     def _render_report(self):
-        if self.args is not None:
-            relative_links = getattr(self.args, 'relative_links')
-        else:
-            relative_links = False
-
-        context = ReportModel(json_input=self.json, html_output=self.output,
-                              relative_links=relative_links)
+        context = ReportModel(json_input=self.json, html_output=self.output)
         html = HTML()
         template = html.get_resource_path('templates', 'report.mustache')
 
@@ -304,13 +294,6 @@ class HTML(plugin.Plugin):
                   'since not all HTML resources can be embedded into a '
                   'single file (page resources will be copied to the '
                   'output file dir)'))
-        self.parser.runner.output.add_argument(
-            '--relative-links',
-            dest='relative_links',
-            action='store_true',
-            default=False,
-            help=('On the HTML report, generate anchor links with relative '
-                  'instead of absolute paths. Current: %s' % False))
         self.parser.runner.output.add_argument(
             '--open-browser',
             dest='open_browser',
