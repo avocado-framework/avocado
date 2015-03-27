@@ -6,8 +6,6 @@ import sys
 
 from avocado.cli.app import AvocadoApp
 
-if sys.argv[0].endswith('__main__.py'):
-    sys.argv[0] = 'python -m avocado'
-
-main = AvocadoApp()
-main.run()
+if __name__ == '__main__':
+    main = AvocadoApp()
+    sys.exit(main.run())
