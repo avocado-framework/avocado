@@ -41,6 +41,14 @@ these days a framework) to perform automated testing.
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
+# Running the unittests is currently disabled on EL6 because fabric is
+# missing on EPEL 6 and also on EL7 because python-flexmock is missing
+# on EPEL7.
+%if !0%{?rhel}
+%check
+selftests/run selftests/all/unit
+%endif
+
 %files
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
@@ -94,6 +102,7 @@ examples of how to write tests on your own.
 * Sat Mar 28 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-5
 - Change the way man pages are built, now using Makefile targets
 - Reorganized runtime and build requirements
+- Add a check section that runs unittests on Fedora
 
 * Thu Mar 19 2015 Lucas Meneghel Rodrigues - 0.21.0-4
 - COPR build fixes
