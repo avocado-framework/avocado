@@ -10,10 +10,10 @@ BuildArch: noarch
 
 %if "%{?dist}" == ".el6"
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, PyYAML, python-argparse, python-unittest2, python-logutils, python-importlib
-BuildRequires: python2-devel, python-docutils, PyYAML, python-logutils
+BuildRequires: python2-devel, python-docutils, PyYAML, python-logutils, python-unittest2, python-argparse, python-nose, python-flexmock
 %else
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, python-yaml
-BuildRequires: python2-devel, python-docutils, python-yaml
+BuildRequires: python2-devel, python-docutils, python-yaml, python-nose, python-flexmock
 %endif
 
 %description
@@ -32,6 +32,9 @@ these days a framework) to perform automated testing.
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
+
+%check
+selftests/run selftests/all/unit
 
 %files
 %defattr(-,root,root,-)
@@ -85,6 +88,7 @@ examples of how to write tests on your own.
 %changelog
 * Sat Mar 28 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-5
 - Change the way man pages are built, now using Makefile targets
+- Add a check section that runs unittests
 
 * Thu Mar 19 2015 Lucas Meneghel Rodrigues - 0.21.0-4
 - COPR build fixes
