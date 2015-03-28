@@ -43,6 +43,7 @@ class RemoteTestResult(HumanTestResult):
         self.remote = None      # Remote runner initialized during setup
         self.output = '-'
         self.command_line_arg_name = '--remote-hostname'
+        self.timeout = getattr(args, 'remote_timeout', None)
 
     def _copy_tests(self):
         """
@@ -98,6 +99,7 @@ class VMTestResult(RemoteTestResult):
     """
 
     def __init__(self, stream, args):
+        args.remote_timeout = getattr(args, 'vm_timeout', None)
         super(VMTestResult, self).__init__(stream, args)
         self.vm = None
         self.command_line_arg_name = '--vm-domain'

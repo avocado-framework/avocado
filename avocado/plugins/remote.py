@@ -61,6 +61,10 @@ class RunRemote(plugin.Plugin):
                                         action='store_true',
                                         help="Don't copy tests and use the "
                                         "exact uri on guest machine.")
+        self.remote_parser.add_argument('--remote-timeout', type=float,
+                                        help="Host timeout before the "
+                                        "connection is cut off and test "
+                                        "set as failed.")
         self.configured = True
 
     @staticmethod

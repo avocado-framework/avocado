@@ -11,18 +11,18 @@
 #
 # Copyright: Red Hat Inc. 2014-2015
 # Author: Ruda Moura <rmoura@redhat.com>
-
 """Remote test runner."""
 
 import json
 import os
 import re
 
-from avocado.core import status
 from avocado.core import exceptions
-from avocado.utils import archive
-from avocado.runner import TestRunner
+from avocado.core import status
 from avocado.remote.test import RemoteTest
+from avocado.runner import TestRunner
+from avocado.utils import archive
+from fabric.exceptions import CommandTimeout
 
 
 class RemoteTestRunner(TestRunner):
@@ -46,7 +46,7 @@ class RemoteTestRunner(TestRunner):
         """
         result = self.result.remote.run('avocado -v',
                                         ignore_status=True,
-                                        timeout=None)
+                                        timeout=60)
         if result.exit_status == 127:
             return (False, None)
 
@@ -74,7 +74,7 @@ class RemoteTestRunner(TestRunner):
                                                        urls_str))
         check_urls_result = self.result.remote.run(avocado_check_urls_cmd,
                                                    ignore_status=True,
-                                                   timeout=None)
+                                                   timeout=60)
         if check_urls_result.exit_status != 0:
             raise exceptions.JobError(check_urls_result.stdout)
 
@@ -82,8 +82,13 @@ class RemoteTestRunner(TestRunner):
                        '--archive %s' % (self.remote_test_dir,
                                          self.result.stream.job_unique_id,
                                          urls_str))
-        result = self.result.remote.run(avocado_cmd, ignore_status=True,
-                                        timeout=None)
+        try:
+            result = self.result.remote.run(avocado_cmd, ignore_status=True,
+                                            timeout=self.result.timeout)
+        except CommandTimeout:
+            raise exceptions.JobError("Remote execution took longer then "
+                                      "specified timeout (%s). Interupting."
+                                      % (self.result.timeout))
         json_result = None
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
