@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.21.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -25,13 +25,7 @@ these days a framework) to perform automated testing.
 
 %build
 %{__python} setup.py build
-%if "%{?dist}" == ".el6"
-%{__python} /usr/bin/rst2man man/avocado.rst man/avocado.1
-%{__python} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
-%else
-%{__python2} /usr/bin/rst2man man/avocado.rst man/avocado.1
-%{__python2} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
-%endif
+%{__make} man
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
@@ -89,6 +83,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/api
 
 %changelog
+* Sat Mar 28 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-5
+- Change the way man pages are built, now using Makefile targets
+
 * Thu Mar 19 2015 Lucas Meneghel Rodrigues - 0.21.0-4
 - COPR build fixes
 
