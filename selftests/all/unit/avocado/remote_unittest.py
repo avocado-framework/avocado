@@ -38,13 +38,13 @@ class RemoteTestRunnerTest(unittest.TestCase):
         args = 'avocado -v'
         version_result = flexmock(stdout='Avocado 1.2.3', exit_status=0)
         (Remote.should_receive('run')
-         .with_args(args, ignore_status=True, timeout=None)
+         .with_args(args, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
         args = 'cd ~/avocado/tests; avocado list sleeptest --paginator=off'
         urls_result = flexmock(exit_status=0)
         (Remote.should_receive('run')
-         .with_args(args, timeout=None, ignore_status=True)
+         .with_args(args, timeout=60, ignore_status=True)
          .once().and_return(urls_result))
 
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
@@ -53,7 +53,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
          .with_args(args, timeout=None, ignore_status=True)
          .once().and_return(test_results))
         Results = flexmock(remote=Remote, urls=['sleeptest'],
-                           stream=stream)
+                           stream=stream, timeout=None)
         Results.should_receive('setup').once().ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
