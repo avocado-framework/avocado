@@ -10,6 +10,7 @@ all:
 	@echo "make build-deb-src - Generate a source debian package"
 	@echo "make build-deb-bin - Generate a binary debian package"
 	@echo "make build-deb-all - Generate both source and binary debian packages"
+	@echo "make build-rpm-src - Generate a source RPM package (.srpm)"
 	@echo "make build-rpm-all - Generate both source and binary RPMs"
 	@echo "make man - Generate the avocado man page"
 	@echo "make check - Runs tree static check, unittests and functional tests"
@@ -39,6 +40,10 @@ build-deb-bin: prepare-source
 build-deb-all: prepare-source
 	# build both source and binary packages
 	dpkg-buildpackage -i -I -rfakeroot
+
+build-rpm-src: source
+	rpmbuild --define '_topdir %{getenv:PWD}' \
+		 -bs avocado.spec
 
 build-rpm-all: source
 	rpmbuild --define '_topdir %{getenv:PWD}' \
