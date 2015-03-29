@@ -7,13 +7,21 @@ Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache
+BuildRequires: python2-devel, python-docutils, python-nose
 
-%if "%{?dist}" == ".el6"
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, PyYAML, python-argparse, python-unittest2, python-logutils, python-importlib
-BuildRequires: python2-devel, python-docutils, PyYAML, python-logutils
+%if 0%{?el6}
+Requires: PyYAML
+Requires: python-argparse, python-importlib, python-logutils, python-unittest2
+BuildRequires: PyYAML
+BuildRequires: python-argparse, python-logutils, python-unittest2
 %else
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, python-yaml
-BuildRequires: python2-devel, python-docutils, python-yaml
+Requires: python-yaml
+BuildRequires: python-yaml, fabric
+%endif
+
+%if !0%{?el7}
+BuildRequires: python-flexmock
 %endif
 
 %description
@@ -85,6 +93,7 @@ examples of how to write tests on your own.
 %changelog
 * Sat Mar 28 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-5
 - Change the way man pages are built, now using Makefile targets
+- Reorganized runtime and build requirements
 
 * Thu Mar 19 2015 Lucas Meneghel Rodrigues - 0.21.0-4
 - COPR build fixes
