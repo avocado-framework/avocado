@@ -7,13 +7,21 @@ Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache
+BuildRequires: python2-devel, python-docutils, python-nose
 
-%if "%{?dist}" == ".el6"
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, PyYAML, python-argparse, python-unittest2, python-logutils, python-importlib
-BuildRequires: python2-devel, python-docutils, PyYAML, python-logutils, python-unittest2, python-argparse, python-nose, python-flexmock
+%if 0%{?el6}
+Requires: PyYAML
+Requires: python-argparse, python-importlib, python-logutils, python-unittest2
+BuildRequires: PyYAML
+BuildRequires: python-argparse, python-logutils, python-unittest2
 %else
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, python-yaml
-BuildRequires: python2-devel, python-docutils, python-yaml, python-nose, python-flexmock
+Requires: python-yaml
+BuildRequires: python-yaml
+%endif
+
+%if !0%{?el7}
+BuildRequires: python-flexmock
 %endif
 
 %description
@@ -33,8 +41,10 @@ these days a framework) to perform automated testing.
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
+%if !0%{?el7}
 %check
 selftests/run selftests/all/unit
+%endif
 
 %files
 %defattr(-,root,root,-)
