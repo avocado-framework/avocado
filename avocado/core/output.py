@@ -593,8 +593,10 @@ class View(object):
         self.file_handler.setFormatter(formatter)
         test_logger = logging.getLogger('avocado.test')
         linux_logger = logging.getLogger('avocado.linux')
+        root_logger = logging.getLogger()
         test_logger.addHandler(self.file_handler)
         linux_logger.addHandler(self.file_handler)
+        root_logger.addHandler(self.file_handler)
 
     def stop_file_logging(self):
         """
