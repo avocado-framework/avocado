@@ -1,19 +1,27 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.21.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache
+BuildRequires: python2-devel, python-docutils, python-nose
 
-%if "%{?dist}" == ".el6"
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, PyYAML, python-argparse, python-unittest2, python-logutils, python-importlib
-BuildRequires: python2-devel, python-docutils, PyYAML, python-logutils
+%if 0%{?el6}
+Requires: PyYAML
+Requires: python-argparse, python-importlib, python-logutils, python-unittest2
+BuildRequires: PyYAML
+BuildRequires: python-argparse, python-logutils, python-unittest2
 %else
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, python-yaml
-BuildRequires: python2-devel, python-docutils, python-yaml
+Requires: python-yaml
+BuildRequires: python-yaml, fabric
+%endif
+
+%if !0%{?el7}
+BuildRequires: python-flexmock
 %endif
 
 %description
@@ -25,19 +33,21 @@ these days a framework) to perform automated testing.
 
 %build
 %{__python} setup.py build
-%if "%{?dist}" == ".el6"
-%{__python} /usr/bin/rst2man man/avocado.rst man/avocado.1
-%{__python} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
-%else
-%{__python2} /usr/bin/rst2man man/avocado.rst man/avocado.1
-%{__python2} /usr/bin/rst2man man/avocado-rest-client.rst man/avocado-rest-client.1
-%endif
+%{__make} man
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
+
+# Running the unittests is currently disabled on EL6 because fabric is
+# missing on EPEL 6 and also on EL7 because python-flexmock is missing
+# on EPEL7.
+%if !0%{?rhel}
+%check
+selftests/run selftests/all/unit
+%endif
 
 %files
 %defattr(-,root,root,-)
@@ -89,6 +99,11 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/api
 
 %changelog
+* Sat Mar 28 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-5
+- Change the way man pages are built, now using Makefile targets
+- Reorganized runtime and build requirements
+- Add a check section that runs unittests on Fedora
+
 * Thu Mar 19 2015 Lucas Meneghel Rodrigues - 0.21.0-4
 - COPR build fixes
 
