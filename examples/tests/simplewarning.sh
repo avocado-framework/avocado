@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 PATH=$(avocado "exec-path"):$PATH
 
 avocado_debug "Debug message"
