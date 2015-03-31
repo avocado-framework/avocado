@@ -38,9 +38,13 @@ class AvocadoApp(object):
         self.parser = Parser()
         self.parser.start()
         self.load_plugin_manager(self.parser.args.plugins_dir)
-        self.parser.resume()
-        self.plugin_manager.activate(self.parser.args)
-        self.parser.finish()
+        self.ready = True
+        try:
+            self.parser.resume()
+            self.plugin_manager.activate(self.parser.args)
+            self.parser.finish()
+        except IOError:
+            self.ready = False
 
     def load_plugin_manager(self, plugins_dir):
         """Load Plugin Manager.
@@ -54,4 +58,5 @@ class AvocadoApp(object):
         self.plugin_manager.configure(self.parser)
 
     def run(self):
-        return self.parser.take_action()
+        if self.ready:
+            return self.parser.take_action()
