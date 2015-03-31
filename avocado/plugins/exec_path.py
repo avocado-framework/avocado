@@ -58,7 +58,16 @@ class ExecPath(plugin.Plugin):
         elif os.path.exists('/usr/lib/avocado'):
             self.view.notify(event='minor', msg='/usr/lib/avocado')
         else:
-            self.view.notify(event='error',
-                             msg="Can't locate avocado libexec path")
-            sys.exit(exit_codes.AVOCADO_FAIL)
+            for path in os.environ.get('PATH').split(':'):
+                if (os.path.exists(os.path.join(path, 'avocado')) and
+                    os.path.exists(os.path.join(os.path.dirname(path),
+                                                'libexec'))):
+                    self.view.notify(event='minor',
+                                     msg=os.path.join(os.path.dirname(path),
+                                                      'libexec'))
+                    break
+            else:
+                self.view.notify(event='error',
+                                 msg="Can't locate avocado libexec path")
+                sys.exit(exit_codes.AVOCADO_FAIL)
         return sys.exit(exit_codes.AVOCADO_ALL_OK)
