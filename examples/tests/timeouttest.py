@@ -14,7 +14,7 @@ class TimeoutTest(test.Test):
     default_params = {'timeout': 3.0,
                       'sleep_time': 5.0}
 
-    def action(self):
+    def runTest(self):
         """
         This should throw a TestTimeoutError.
         """

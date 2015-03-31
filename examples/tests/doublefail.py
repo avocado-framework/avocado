@@ -11,17 +11,17 @@ class DoubleFail(test.Test):
     Functional test for avocado. Straight up fail the test.
     """
 
-    def action(self):
+    def runTest(self):
         """
         Should fail.
         """
         raise exceptions.TestFail('This test is supposed to fail')
 
-    def cleanup(self):
+    def tearDown(self):
         """
         Should also fail.
         """
-        raise exceptions.TestError('Failing during cleanup. Yay!')
+        raise exceptions.TestError('Failing during tearDown. Yay!')
 
 
 if __name__ == "__main__":

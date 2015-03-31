@@ -19,7 +19,7 @@ class SyncTest(test.Test):
                       'sync_loop': 10,
                       'debug_symbols': True}
 
-    def setup(self):
+    def setUp(self):
         """
         Build the synctest suite.
         """
@@ -34,7 +34,7 @@ class SyncTest(test.Test):
         else:
             build.make(self.srcdir)
 
-    def action(self):
+    def runTest(self):
         """
         Execute synctest with the appropriate params.
         """
