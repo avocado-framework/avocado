@@ -94,8 +94,9 @@ class Test(unittest.TestCase):
 
         tmpdir = data_dir.get_tmp_dir()
 
-        self.basedir = os.path.dirname(inspect.getfile(self.__class__))
-        self.datadir = os.path.join(self.basedir, '%s.data' % basename)
+        self.filename = inspect.getfile(self.__class__).rstrip('co')
+        self.basedir = os.path.dirname(self.filename)
+        self.datadir = utils_path.init_dir(self.filename + '.data')
 
         self.expected_stdout_file = os.path.join(self.datadir,
                                                  'stdout.expected')
