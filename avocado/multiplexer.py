@@ -465,7 +465,10 @@ class Mux(object):
             self.pools = parse_yamls(mux_files, filter_only, filter_out)
         else:   # no variants
             self.pools = None
-        self._mux_entry = getattr(args, 'mux_entry_point', ['/test/*'])
+        self._mux_entry = getattr(args, 'mux_entry', ['/test/*'])
+        if self._mux_entry is None:
+            self._mux_entry = ['/test/*']
+        print self._mux_entry
 
     def get_number_of_tests(self, test_suite):
         # Currently number of tests is symetrical
@@ -480,7 +483,7 @@ class Mux(object):
             i = None
             for i, variant in enumerate(multiplex_pools(self.pools)):
                 test_factory = [template[0], template[1].copy()]
-                test_factory[1]['params'] = variant
+                test_factory[1]['params'] = (variant, self._mux_entry)
                 yield test_factory
             if i is None:   # No variants, use template
                 yield template
