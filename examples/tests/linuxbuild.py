@@ -10,12 +10,11 @@ class LinuxBuildTest(test.Test):
     """
     Execute the Linux Build test.
     """
-    default_params = {'linux_version': '3.14.5',
-                      'linux_config': 'config'}
 
     def setup(self):
-        kernel_version = self.params.linux_version
-        config_path = self.get_data_path('config')
+        kernel_version = self.params.get('linux_version', '3.14.5')
+        linux_config = self.params.get('linux_config', 'config')
+        config_path = self.get_data_path(linux_config)
         self.linux_build = kernel_build.KernelBuild(kernel_version,
                                                     config_path,
                                                     self.srcdir)
