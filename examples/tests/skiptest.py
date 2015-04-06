@@ -11,7 +11,7 @@ class SkipTest(test.Test):
     Functional test for avocado. Throw a TestNAError (skips the test).
     """
 
-    def action(self):
+    def runTest(self):
         """
         This should throw a TestNAError (skips the test).
         """

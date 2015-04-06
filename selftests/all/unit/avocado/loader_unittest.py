@@ -22,7 +22,7 @@ from avocado import job
 from avocado import test
 
 class PassTest(test.Test):
-    def action(self):
+    def runTest(self):
         pass
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ from avocado import test
 import adsh
 
 class PassTest(test.Test):
-    def action(self):
+    def runTest(self):
         pass
 
 if __name__ == "__main__":
@@ -71,6 +71,17 @@ class MyInheritedTest(MyBaseTest):
     pass
 """
 
+AVOCADO_MULTIPLE_TESTS = """from avocado import test
+
+class MultipleMethods(test.Test):
+    def test_one(self):
+        pass
+    def testTwo(self):
+        pass
+    def foo(self):
+        pass
+"""
+
 
 class _DebugJob(object):
     logdir = tempfile.mkdtemp()
@@ -88,10 +99,10 @@ class LoaderTest(unittest.TestCase):
                                              'avocado_loader_unittest')
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': simple_test.path}))
+            self.loader.discover_tests(params={'id': simple_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
-        tc.action()
+        tc.runTest()
         simple_test.remove()
 
     def test_load_simple_not_exec(self):
@@ -100,10 +111,10 @@ class LoaderTest(unittest.TestCase):
                                              mode=0664)
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': simple_test.path}))
+            self.loader.discover_tests(params={'id': simple_test.path})[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.NotATestError, tc.action)
+        self.assertRaises(exceptions.NotATestError, tc.runTest)
         simple_test.remove()
 
     def test_load_pass(self):
@@ -112,12 +123,12 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_pass_test.path}))
+            self.loader.discover_tests(params={'id': avocado_pass_test.path})[0])
         self.assertTrue(str(test_class) == "<class 'passtest.PassTest'>",
                         str(test_class))
         self.assertTrue(issubclass(test_class, test.Test))
         tc = test_class(**test_parameters)
-        tc.action()
+        tc.runTest()
         avocado_pass_test.remove()
 
     def test_load_inherited(self):
@@ -126,7 +137,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_base_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_base_test.path}))
+            self.loader.discover_tests(params={'id': avocado_base_test.path})[0])
         self.assertTrue(str(test_class) == "<class 'base.MyBaseTest'>",
                         str(test_class))
 
@@ -135,7 +146,7 @@ class LoaderTest(unittest.TestCase):
                                                         'avocado_loader_unittest')
         avocado_inherited_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_inherited_test.path}))
+            self.loader.discover_tests(params={'id': avocado_inherited_test.path})[0])
         self.assertTrue(str(test_class) == "<class 'inherited.MyInheritedTest'>",
                         str(test_class))
         avocado_base_test.remove()
@@ -147,10 +158,10 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_buggy_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_buggy_test.path}))
+            self.loader.discover_tests(params={'id': avocado_buggy_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.TestFail, tc.action)
+        self.assertRaises(exceptions.TestFail, tc.runTest)
         avocado_buggy_test.remove()
 
     def test_load_buggy_not_exec(self):
@@ -160,10 +171,10 @@ class LoaderTest(unittest.TestCase):
                                                     mode=0664)
         avocado_buggy_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_buggy_test.path}))
+            self.loader.discover_tests(params={'id': avocado_buggy_test.path})[0])
         self.assertTrue(test_class == test.BuggyTest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(ImportError, tc.action)
+        self.assertRaises(ImportError, tc.runTest)
         avocado_buggy_test.remove()
 
     def test_load_not_a_test(self):
@@ -173,10 +184,10 @@ class LoaderTest(unittest.TestCase):
                                                     mode=0664)
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_not_a_test.path}))
+            self.loader.discover_tests(params={'id': avocado_not_a_test.path})[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.NotATestError, tc.action)
+        self.assertRaises(exceptions.NotATestError, tc.runTest)
         avocado_not_a_test.remove()
 
     def test_load_not_a_test_exec(self):
@@ -184,12 +195,12 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_not_a_test.path}))
+            self.loader.discover_tests(params={'id': avocado_not_a_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
         # (OSError: [Errno 8] Exec format error)
-        self.assertRaises(OSError, tc.action)
+        self.assertRaises(OSError, tc.runTest)
         avocado_not_a_test.remove()
 
     def test_py_simple_test(self):
@@ -198,10 +209,10 @@ class LoaderTest(unittest.TestCase):
                                                      'avocado_loader_unittest')
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_simple_test.path}))
+            self.loader.discover_tests(params={'id': avocado_simple_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest)
         tc = test_class(**test_parameters)
-        tc.action()
+        tc.runTest()
         avocado_simple_test.remove()
 
     def test_py_simple_test_notexec(self):
@@ -211,11 +222,21 @@ class LoaderTest(unittest.TestCase):
                                                      mode=0664)
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_test(params={'id': avocado_simple_test.path}))
+            self.loader.discover_tests(params={'id': avocado_simple_test.path})[0])
         self.assertTrue(test_class == test.NotATest)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.NotATestError, tc.action)
+        self.assertRaises(exceptions.NotATestError, tc.runTest)
         avocado_simple_test.remove()
+
+    def test_multiple_methods(self):
+        avocado_multiple_tests = script.TemporaryScript('multipletests.py',
+                                                        AVOCADO_MULTIPLE_TESTS,
+                                                        'avocado_multiple_tests_unittest',
+                                                        mode=0664)
+        avocado_multiple_tests.save()
+        suite = self.loader.discover_tests(params={'id': avocado_multiple_tests.path})
+        self.assertEqual(len(suite), 2)
+        avocado_multiple_tests.remove()
 
     def tearDown(self):
         if os.path.isdir(self.job.logdir):

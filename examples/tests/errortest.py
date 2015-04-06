@@ -11,7 +11,7 @@ class ErrorTest(test.Test):
     Functional test for avocado. Throw a TestError.
     """
 
-    def action(self):
+    def runTest(self):
         """
         This should throw a TestError.
         """

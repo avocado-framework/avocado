@@ -13,7 +13,7 @@ class SleepTest(test.Test):
     """
     default_params = {'sleep_length': 1.0}
 
-    def action(self):
+    def runTest(self):
         """
         Sleep for length seconds.
         """

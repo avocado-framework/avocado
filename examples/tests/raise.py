@@ -18,7 +18,7 @@ class Raise(test.Test):
     default_params = {'source': 'raise.c',
                       'signal_number': 15}
 
-    def setup(self):
+    def setUp(self):
         """
         Build 'raise'.
         """
@@ -30,7 +30,7 @@ class Raise(test.Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='raise')
 
-    def action(self):
+    def runTest(self):
         """
         Execute 'raise'.
         """

@@ -53,6 +53,19 @@ class TestLoader(object):
             job = _DebugJob()
         self.job = job
 
+    def _is_unittests_like(self, test_class, pattern='test'):
+        for name, _ in inspect.getmembers(test_class, inspect.ismethod):
+            if name.startswith(pattern):
+                return True
+        return False
+
+    def _make_unittests_like(self, test_class, pattern='test'):
+        test_methods = []
+        for name, obj in inspect.getmembers(test_class, inspect.ismethod):
+            if name.startswith(pattern):
+                test_methods.append((name, obj))
+        return test_methods
+
     def _make_missing_test(self, test_name, params):
         test_class = test.MissingTest
         test_parameters = {'name': test_name,
@@ -77,7 +90,7 @@ class TestLoader(object):
                            'job': self.job}
         return test_class, test_parameters
 
-    def _make_test(self, test_name, test_path, params):
+    def _make_tests(self, test_name, test_path, params):
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
         sys.path.append(test_module_dir)
@@ -103,7 +116,17 @@ class TestLoader(object):
             if test_class is not None:
                 # Module is importable and does have an avocado test class
                 # inside, let's proceed.
-                test_parameters = test_parameters_name
+                if self._is_unittests_like(test_class):
+                    test_factories = []
+                    for test_method in self._make_unittests_like(test_class):
+                        copy_test_parameters_name = test_parameters_name.copy()
+                        copy_test_parameters_name['methodName'] = test_method[0]
+                        class_and_method_name = ':%s.%s' % (test_class.__name__, test_method[0])
+                        copy_test_parameters_name['name'] += class_and_method_name
+                        test_factories.append([test_class, copy_test_parameters_name])
+                    return test_factories
+                else:
+                    test_parameters = test_parameters_name
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
@@ -147,27 +170,26 @@ class TestLoader(object):
 
         sys.path.pop(sys.path.index(test_module_dir))
 
-        return test_class, test_parameters
+        return [(test_class, test_parameters)]
 
-    def discover_test(self, params):
+    def discover_tests(self, params):
         """
-        Try to discover and resolve a test.
+        Try to discover and resolve tests.
 
         :param params: dictionary with test parameters.
         :type params: dict
-        :return: a test factory (a pair of test class and test parameters)
-                 or `None`.
+        :return: a list of test factories (a pair of test class and test parameters).
         """
         test_name = test_path = params.get('id')
         if os.path.exists(test_path):
             if os.access(test_path, os.R_OK) is False:
-                return (AccessDeniedPath,
-                        {'params': {'id': test_path}})
+                return [(AccessDeniedPath, {'params': {'id': test_path}})]
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
-                test_class, test_parameters = self._make_test(test_name,
-                                                              test_path,
-                                                              params)
+                test_factories = self._make_tests(test_name,
+                                                  test_path,
+                                                  params)
+                return test_factories
             else:
                 if os.access(test_path, os.X_OK):
                     test_class, test_parameters = self._make_simple_test(test_path,
@@ -179,21 +201,20 @@ class TestLoader(object):
             if os.path.islink(test_path):
                 try:
                     if not os.path.isfile(os.readlink(test_path)):
-                        return BrokenSymlink, {'params': {'id': test_path}}
+                        return [(BrokenSymlink, {'params': {'id': test_path}})]
                 except OSError:
-                    return AccessDeniedPath, {'params': {'id': test_path}}
+                    return [(AccessDeniedPath, {'params': {'id': test_path}})]
 
             # Try to resolve test ID (keep compatibility)
             rel_path = '%s.py' % test_name
             test_path = os.path.join(data_dir.get_test_dir(), rel_path)
             if os.path.exists(test_path):
-                test_class, test_parameters = self._make_test(rel_path,
-                                                              test_path,
-                                                              params)
+                test_factories = self._make_tests(rel_path, test_path, params)
+                return test_factories
             else:
                 test_class, test_parameters = self._make_missing_test(
                     test_name, params)
-        return test_class, test_parameters
+        return [(test_class, test_parameters)]
 
     def discover_url(self, url):
         """
@@ -264,15 +285,16 @@ class TestLoader(object):
         """
         test_suite = []
         for params in params_list:
-            test_factory = self.discover_test(params)
-            if test_factory is None:
-                continue
-            test_class, test_parameters = test_factory
-            if test_class in [test.NotATest, BrokenSymlink, AccessDeniedPath]:
-                if not params.get('omit_non_tests'):
+            test_factories = self.discover_tests(params)
+            for test_factory in test_factories:
+                if test_factory is None:
+                    continue
+                test_class, test_parameters = test_factory
+                if test_class in [test.NotATest, BrokenSymlink, AccessDeniedPath]:
+                    if not params.get('omit_non_tests'):
+                        test_suite.append((test_class, test_parameters))
+                else:
                     test_suite.append((test_class, test_parameters))
-            else:
-                test_suite.append((test_class, test_parameters))
         return test_suite
 
     @staticmethod

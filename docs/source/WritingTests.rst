@@ -28,7 +28,7 @@ Now that we covered how avocado resolves tests, let's get to business.
 This section is concerned with writing an avocado test. The process is not
 hard, all you need to do is to create a test module, which is a python file
 with a class that inherits from :class:`avocado.test.Test`. This class only
-really needs to implement a method called `action`, which represents the actual
+really needs to implement a method called `runTest`, which represents the actual
 sequence of test operations.
 
 Simple example
@@ -53,7 +53,7 @@ nothing but ``time.sleep([number-seconds])``::
         """
         default_params = {'sleep_length': 1.0}
 
-        def action(self):
+        def runTest(self):
             """
             Sleep for length seconds.
             """
@@ -92,7 +92,7 @@ encoded it first (base64 is the obvious choice).
 Building on the previously demonstrated sleeptest, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
 
-        def action(self):
+        def runTest(self):
             """
             Sleep for length seconds.
             """
@@ -189,7 +189,7 @@ Since avocado tests inherit from :class:`unittest.TestCase`, you can use all
 the :func:`assert` class methods on your tests. Some silly examples::
 
     class RandomExamples(test.Test):
-        def action(self):
+        def runTest(self):
             self.log.debug("Verifying some random math...")
             four = 2 * 2
             four_ = 2 + 2
@@ -242,7 +242,7 @@ Setup and cleanup methods
 =========================
 
 If you need to perform setup actions before/after your test, you may do so
-in the ``setup`` and ``cleanup`` methods, respectively. We'll give examples
+in the ``setUp`` and ``tearDown`` methods, respectively. We'll give examples
 in the following section.
 
 Running third party test suites
@@ -275,7 +275,7 @@ an example that does that::
                           'sync_length': 100,
                           'sync_loop': 10}
 
-        def setup(self):
+        def setUp(self):
             """
             Set default params and build the synctest suite.
             """
@@ -286,7 +286,7 @@ an example that does that::
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
 
-        def action(self):
+        def runTest(self):
             """
             Execute synctest with the appropriate params.
             """
@@ -488,7 +488,7 @@ You may log something into the test logs using the methods in
 
     class output_test(test.Test):
 
-        def action(self):
+        def runTest(self):
             self.log.info('This goes to the log and it is only informational')
             self.log.warn('Oh, something unexpected, non-critical happened, '
                           'but we can continue.')
@@ -505,7 +505,7 @@ stderr streams, you can do something like::
 
     class output_test(test.Test):
 
-        def action(self):
+        def runTest(self):
             self.log.info('This goes to the log and it is only informational')
             self.stdout_log.info('This goes to the test stdout (will be recorded)')
             self.stderr_log.info('This goes to the test stderr (will be recorded)')
@@ -618,7 +618,7 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
         default_params = {'timeout': 3.0,
                           'sleep_time': 5.0}
 
-        def action(self):
+        def runTest(self):
             """
             This should throw a TestTimeoutError.
             """
