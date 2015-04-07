@@ -289,8 +289,7 @@ class TreeNode(object):
                                         for v in attributes
                                         if hasattr(self, v)]))
 
-        length = max(3, len(node_name)
-                     if not self.children or show_internal else 3)
+        length = max(2, (len(node_name) + 1) if not self.children or show_internal else 3)
         pad = ' ' * length
         _pad = ' ' * (length - 1)
         if not self.is_leaf:
@@ -298,7 +297,7 @@ class TreeNode(object):
             result = []
             for char in self.children:
                 if len(self.children) == 1:
-                    char2 = '/'
+                    char2 = '-'
                 elif char is self.children[0]:
                     char2 = '/'
                 elif char is self.children[-1]:
