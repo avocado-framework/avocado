@@ -467,8 +467,9 @@ class Mux(object):
             self.pools = None
         self._mux_entry = getattr(args, 'mux_entry', ['/test/*'])
         if self._mux_entry is None:
-            self._mux_entry = ['/test/*']
-        print self._mux_entry
+            self._mux_entry = ['//test/*']
+        else:   # Prepend the root '/' (internal representation uses //)
+            self._mux_entry = ['/' + _ for _ in self._mux_entry]
 
     def get_number_of_tests(self, test_suite):
         # Currently number of tests is symetrical
