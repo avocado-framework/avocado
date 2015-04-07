@@ -233,6 +233,12 @@ class TestLoader(object):
                          '__main__.py')
         params_list = []
 
+        # Look for filename:test_method pattern
+        if ':' in url:
+            url, filter_pattern = url.split(':', 1)
+        else:
+            filter_pattern = None
+
         def onerror(exception):
             norm_url = os.path.abspath(url)
             norm_error_filename = os.path.abspath(exception.filename)
@@ -242,6 +248,7 @@ class TestLoader(object):
                 omit_non_tests = False
 
             params_list.append({'id': exception.filename,
+                                'filter': filter_pattern,
                                 'omit_non_tests': omit_non_tests})
 
         for dirpath, dirnames, filenames in os.walk(url, onerror=onerror):
