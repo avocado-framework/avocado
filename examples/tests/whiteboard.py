@@ -11,23 +11,22 @@ class WhiteBoard(test.Test):
     """
     Simple test that saves test custom data to the test whiteboard
     """
-    default_params = {'whiteboard_data_text': 'default whiteboard text',
-                      'whiteboard_data_file': '',
-                      'whiteboard_data_size': '10',
-                      'whiteboard_writes': '1'}
 
     def runTest(self):
-        if self.params.whiteboard_data_file:
+        data_file = self.params.get('whiteboard_data_file', '')
+        data_size = self.params.get('whiteboard_data_size', '10')
+        if data_file:
             self.log.info('Writing data to whiteboard from file: %s',
-                          self.params.whiteboard_data_file)
-            whiteboard_file = open(self.params.whiteboard_data_file, 'r')
-            size = int(self.params.whiteboard_data_size)
+                          data_file)
+            whiteboard_file = open(data_file, 'r')
+            size = int(data_size)
             data = whiteboard_file.read(size)
         else:
-            offset = int(self.params.whiteboard_data_size) - 1
-            data = self.params.whiteboard_data_text[0:offset]
+            offset = int(data_size) - 1
+            data = self.params.get('whiteboard_data_text',
+                                   'default whiteboard text')[0:offset]
 
-        iterations = int(self.params.whiteboard_writes)
+        iterations = int(self.params.get('whiteboard_writes', 1))
 
         result = ''
         for _ in xrange(0, iterations):
