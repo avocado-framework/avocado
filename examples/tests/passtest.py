@@ -10,7 +10,7 @@ class PassTest(test.Test):
     Example test that passes.
     """
 
-    def action(self):
+    def runTest(self):
         """
         A test simply doesn't have to fail in order to pass
         """

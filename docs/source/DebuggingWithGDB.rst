@@ -21,7 +21,7 @@ Example
 
 Take a look at ``examples/tests/modify_variable.py`` test::
 
-    def action(self):
+    def runTest(self):
         """
         Execute 'print_variable'.
         """
@@ -102,7 +102,7 @@ test::
 
  class HelloOutputTest(test.Test):
 
-     def action(self):
+     def runTest(self):
          result = process.run("/path/to/hello", ignore_status=True)
          self.assertIn("hello\n", result.stdout)
 

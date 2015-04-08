@@ -11,7 +11,7 @@ class FailTest(test.Test):
     Functional test for avocado. Straight up fail the test.
     """
 
-    def action(self):
+    def runTest(self):
         """
         Should fail.
         """

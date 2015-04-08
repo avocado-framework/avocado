@@ -24,6 +24,7 @@ import sys
 import traceback
 import tempfile
 import shutil
+import fnmatch
 
 from avocado import multiplexer
 from avocado import result
@@ -268,9 +269,23 @@ class Job(object):
             e_msg = '\n'.join(error_msg_parts)
             raise exceptions.OptionValidationError(e_msg)
 
+        # Filter tests methods with params.filter and methodName
+        filtered_suite = []
+        for test_template in test_suite:
+            test_factory, test_parameters = test_template
+            filter_pattern = test_parameters['params'].get('filter', None)
+            method = test_parameters.get('methodName')
+            if not filter_pattern:
+                filtered_suite.append(test_template)
+            else:
+                if method and fnmatch.fnmatch(method, filter_pattern):
+                    filtered_suite.append(test_template)
+        test_suite = filtered_suite
+
         if not test_suite:
             e_msg = ("No tests found within the specified path(s) "
-                     "(Possible reasons: File ownership, permissions, typos)")
+                     "(Possible reasons: File ownership, permissions, "
+                     "filters, typos)")
             raise exceptions.OptionValidationError(e_msg)
 
         self.args.test_result_total = mux.get_number_of_tests(test_suite)

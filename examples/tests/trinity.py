@@ -27,7 +27,7 @@ class TrinityTest(test.Test):
                       'victims_path': None,
                       'stress': None}
 
-    def setup(self):
+    def setUp(self):
         """
         Build trinity.
         """
@@ -39,7 +39,7 @@ class TrinityTest(test.Test):
         build.make(self.srcdir)
         self.victims_path = data_factory.make_dir_and_populate(self.workdir)
 
-    def action(self):
+    def runTest(self):
         """
         Execute the trinity syscall fuzzer with the appropriate params.
         """

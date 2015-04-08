@@ -129,6 +129,7 @@ class TestList(plugin.Plugin):
             else:
                 if issubclass(cls, test.Test):
                     stats['instrumented'] += 1
+                    id_label = params['name']
                     type_label = self.term_support.healthy_str('INSTRUMENTED')
 
             test_matrix.append((type_label, id_label))

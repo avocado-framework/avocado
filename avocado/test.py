@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
     Base implementation for the test class.
 
     You'll inherit from this to write your own tests. Typically you'll want
-    to implement setup(), action() and cleanup() methods on your own tests.
+    to implement setUp(), runTest() and tearDown() methods on your own tests.
     """
     default_params = {}
 
@@ -94,8 +94,9 @@ class Test(unittest.TestCase):
 
         tmpdir = data_dir.get_tmp_dir()
 
-        self.basedir = os.path.dirname(inspect.getfile(self.__class__))
-        self.datadir = os.path.join(self.basedir, '%s.data' % basename)
+        self.filename = inspect.getfile(self.__class__).rstrip('co')
+        self.basedir = os.path.dirname(self.filename)
+        self.datadir = utils_path.init_dir(self.filename + '.data')
 
         self.expected_stdout_file = os.path.join(self.datadir,
                                                  'stdout.expected')
@@ -181,7 +182,7 @@ class Test(unittest.TestCase):
         self.runner_queue = runner_queue
 
         self.time_elapsed = None
-        unittest.TestCase.__init__(self)
+        unittest.TestCase.__init__(self, methodName=methodName)
 
     def __str__(self):
         return str(self.name)
@@ -312,9 +313,9 @@ class Test(unittest.TestCase):
 
         return tagged_name
 
-    def setup(self):
+    def setUp(self):
         """
-        Setup stage that the test needs before passing to the actual action.
+        Setup stage that the test needs before passing to the actual runTest.
 
         Must be implemented by tests if they want such an stage. Commonly we'll
         download/compile test suites, create files needed for a test, among
@@ -322,7 +323,7 @@ class Test(unittest.TestCase):
         """
         pass
 
-    def action(self):
+    def runTest(self):
         """
         Actual test payload. Must be implemented by tests.
 
@@ -331,14 +332,13 @@ class Test(unittest.TestCase):
         operations decide if the test pass (let the test complete) or fail
         (raise a test related exception).
         """
-        raise NotImplementedError('Test subclasses must implement an action '
-                                  'method')
+        pass
 
-    def cleanup(self):
+    def tearDown(self):
         """
-        Cleanup stage after the action is done.
+        Cleanup stage after the runTest is done.
 
-        Examples of cleanup actions are deleting temporary files, restoring
+        Examples of cleanup runTests are deleting temporary files, restoring
         firewall configurations or other system settings that were changed
         in setup.
         """
@@ -368,31 +368,32 @@ class Test(unittest.TestCase):
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
-    def runTest(self, result=None):
+    def run(self, result=None):
         """
         Run test method, for compatibility with unittest.TestCase.
 
         :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
+        testMethod = getattr(self, self._testMethodName)
         self.start_logging()
         self.sysinfo_logger.start_test_hook()
-        action_exception = None
+        runTest_exception = None
         cleanup_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
         try:
-            self.setup()
+            self.setUp()
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSetupFail(details)
         try:
-            self.action()
+            testMethod()
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            action_exception = details
+            runTest_exception = details
         finally:
             try:
-                self.cleanup()
+                self.tearDown()
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 cleanup_exception = details
@@ -429,8 +430,8 @@ class Test(unittest.TestCase):
                     self.record_reference_stderr()
 
         # pylint: disable=E0702
-        if action_exception is not None:
-            raise action_exception
+        if runTest_exception is not None:
+            raise runTest_exception
         elif cleanup_exception is not None:
             raise exceptions.TestSetupFail(cleanup_exception)
         elif stdout_check_exception is not None:
@@ -458,14 +459,14 @@ class Test(unittest.TestCase):
 
     def run_avocado(self, result=None):
         """
-        Wraps the runTest method, for execution inside the avocado runner.
+        Wraps the run method, for execution inside the avocado runner.
 
         :result: Unused param, compatibility with :class:`unittest.TestCase`.
         """
         self._setup_environment_variables()
         try:
             self.tag_start()
-            self.runTest(result)
+            self.run(result)
         except exceptions.TestBaseException, detail:
             self.status = detail.status
             self.fail_class = detail.__class__.__name__
@@ -545,7 +546,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def action(self):
+    def runTest(self):
         """
         Run the executable, and log its detailed execution.
         """
@@ -560,8 +561,8 @@ class SimpleTest(Test):
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 
-    def runTest(self, result=None):
-        super(SimpleTest, self).runTest(result)
+    def run(self, result=None):
+        super(SimpleTest, self).run(result)
         for line in open(self.logfile):
             if self.re_avocado_log.match(line):
                 raise exceptions.TestWarn("Test passed but there were warnings"
@@ -582,7 +583,7 @@ class MissingTest(Test):
                                           tag=tag, job=job,
                                           runner_queue=runner_queue)
 
-    def action(self):
+    def runTest(self):
         e_msg = ('Test %s could not be found in the test dir %s '
                  '(or test path does not exist)' %
                  (self.name, data_dir.get_test_dir()))
@@ -606,7 +607,7 @@ class BuggyTest(Test):
                                         tag=tag, job=job,
                                         runner_queue=runner_queue)
 
-    def action(self):
+    def runTest(self):
         # pylint: disable=E0702
         raise self.params.get('exception')
 
@@ -627,7 +628,7 @@ class NotATest(Test):
                                        tag=tag, job=job,
                                        runner_queue=runner_queue)
 
-    def action(self):
+    def runTest(self):
         e_msg = ('File %s is not executable and does not contain an avocado '
                  'test class in it ' % self.name)
         raise exceptions.NotATestError(e_msg)

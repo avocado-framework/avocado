@@ -139,7 +139,4 @@ class TestRunner(plugin.Plugin):
 
         job_instance = job.Job(args)
         rc = job_instance.run()
-        if not args.url:
-            self.parser.print_help()
-
         return rc
