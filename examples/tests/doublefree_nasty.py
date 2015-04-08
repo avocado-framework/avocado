@@ -15,16 +15,16 @@ class DoubleFreeTest(test.Test):
     10% chance to execute double free exception.
     """
 
-    default_params = {'source': 'doublefree.c'}
     __binary = None     # filename of the compiled program
 
     def setUp(self):
         """
         Build 'doublefree'.
         """
-        c_file = self.get_data_path(self.params.source)
+        source = self.params.get('source', 'doublefree.c')
+        c_file = self.get_data_path(source)
         shutil.copy(c_file, self.srcdir)
-        self.__binary = self.params['source'].rsplit('.', 1)[0]
+        self.__binary = source.rsplit('.', 1)[0]
         build.make(self.srcdir,
                    env={'CFLAGS': '-g -O0'},
                    extra_args=self.__binary)

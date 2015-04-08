@@ -15,13 +15,11 @@ class DataDirTest(test.Test):
     Test that uses resources from the data dir.
     """
 
-    default_params = {'source': 'datadir.c'}
-
     def setUp(self):
         """
         Build 'datadir'.
         """
-        c_file = self.get_data_path(self.params.source)
+        c_file = self.get_data_path(self.params.get('source', 'datadir.c'))
         c_file_name = os.path.basename(c_file)
         dest_c_file = os.path.join(self.srcdir, c_file_name)
         shutil.copy(c_file, dest_c_file)

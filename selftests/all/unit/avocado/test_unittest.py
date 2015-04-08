@@ -73,7 +73,7 @@ class TestClassTest(unittest.TestCase):
         self.assertEqual(self.tst_instance_pass.tag, "0")
 
     def testClassAttributesTaggedName(self):
-        self.assertEqual(self.tst_instance_pass.tagged_name, "AvocadoPass")
+        self.assertEqual(self.tst_instance_pass.tagged_name, "AvocadoPass.0")
 
     def testWhiteboardSave(self):
         whiteboard_file = os.path.join(self.tst_instance_pass.logdir, 'whiteboard')
@@ -88,7 +88,7 @@ class TestClassTest(unittest.TestCase):
         """
         new_tst_instance = AvocadoPass(base_logdir=self.base_logdir)
         new_tst_instance.run_avocado()
-        self.assertEqual(new_tst_instance.tagged_name, "AvocadoPass.1")
+        self.assertEqual(new_tst_instance.tagged_name, "AvocadoPass.0.1")
         self.assertEqual(new_tst_instance.tag, "1")
 
     def tearDown(self):

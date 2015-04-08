@@ -31,14 +31,13 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado import sysinfo
+from avocado import sysinfo, multiplexer
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils import stacktrace
-from avocado.utils.params import Params
 from avocado.version import VERSION
 
 
@@ -82,12 +81,8 @@ class Test(unittest.TestCase):
         else:
             self.name = self.__class__.__name__
 
-        if params is None:
-            params = {}
-        self.params = Params(params)
-        self._raw_params = params
+        self.tag = tag or 0
 
-        self.tag = tag or self.params.get('tag')
         self.job = job
 
         basename = os.path.basename(self.name)
@@ -135,33 +130,18 @@ class Test(unittest.TestCase):
         self.stdout_log = logging.getLogger("avocado.test.stdout")
         self.stderr_log = logging.getLogger("avocado.test.stderr")
 
+        if isinstance(params, dict):
+            self.default_params = self.default_params.copy()
+            self.default_params.update(params)
+            params = []
+        elif params is None:
+            params = []
+        self.params = multiplexer.AvocadoParams(params, self.name, self.tag,
+                                                ['/test/*'],
+                                                self.default_params)
+
         self.log.info('START %s', self.tagged_name)
         self.log.debug('')
-        self.log.debug('Test instance parameters:')
-
-        # Set the helper set_default to the params object
-        setattr(self.params, 'set_default', self._set_default)
-
-        # Apply what comes from the params dict
-        for key in sorted(self.params.keys()):
-            self.log.debug('    %s = %s', key, self.params.get(key))
-        self.log.debug('')
-
-        # Apply what comes from the default_params dict
-        self.log.debug('Default parameters:')
-        for key in sorted(self.default_params.keys()):
-            self.log.debug('    %s = %s', key, self.default_params.get(key))
-            self.params.set_default(key, self.default_params[key])
-        self.log.debug('')
-        self.log.debug('Test instance params override defaults whenever available')
-        self.log.debug('')
-
-        # If there's a timeout set, log a timeout reminder
-        if self.params.timeout:
-            self.log.info('Test timeout set. Will wait %.2f s for '
-                          'PID %s to end',
-                          float(self.params.timeout), os.getpid())
-            self.log.info('')
 
         self.debugdir = None
         self.resultsdir = None
@@ -227,19 +207,12 @@ class Test(unittest.TestCase):
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
-                         'fail_class']
+                         'fail_class', 'params']
         state = dict([(key, self.__dict__.get(key)) for key in preserve_attr])
-        state['params'] = dict(self.__dict__['params'])
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
         state['job_unique_id'] = self.job.unique_id
         return state
-
-    def _set_default(self, key, default):
-        try:
-            self.params[key]
-        except Exception:
-            self.params[key] = default
 
     def get_data_path(self, basename):
         """
