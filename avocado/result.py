@@ -132,6 +132,21 @@ class TestResult(object):
         # claimed by a result class.
         self.output = None
 
+    def _reconcile(self):
+        """
+        Make sure job results are reconciled
+
+        In situations such as job interruptions, some test results will be
+        missing, but this is no excuse for giving wrong summaries of test
+        results.
+        """
+        valid_results_count = (len(self.passed) + len(self.errors) +
+                               len(self.failed) + len(self.warned) +
+                               len(self.skipped))
+        other_skipped_count = self.tests_total - valid_results_count
+        for i in xrange(other_skipped_count):
+            self.skipped.append({})
+
     def start_tests(self):
         """
         Called once before any tests are executed.
@@ -250,6 +265,7 @@ class HumanTestResult(TestResult):
         """
         Called once after all tests are executed.
         """
+        self._reconcile()
         self.stream.notify(event="message", msg="PASS       : %d" % len(self.passed))
         self.stream.notify(event="message", msg="ERROR      : %d" % len(self.errors))
         self.stream.notify(event="message", msg="FAIL       : %d" % len(self.failed))
