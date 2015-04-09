@@ -283,7 +283,7 @@ class TreeNode(object):
         :param attributes: List of node attributes to be printed out ['name']
         :return: list of strings
         """
-        if attributes is None:
+        if not attributes:
             attributes = ["name"]
         node_name = ', '.join(map(str, [getattr(self, v)
                                         for v in attributes

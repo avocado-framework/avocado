@@ -49,7 +49,9 @@ class Multiplexer(plugin.Plugin):
 
         self.parser.add_argument('-t', '--tree', action='store_true', default=False,
                                  help='Shows the multiplex tree structure')
-
+        self.parser.add_argument('--attr', nargs='*', default=[],
+                                 help="Which attributes to show when using "
+                                 "--tree (default is 'name')")
         self.parser.add_argument('-c', '--contents', action='store_true', default=False,
                                  help="Shows the variant content (variables)")
         self.parser.add_argument('-d', '--debug', action='store_true',
@@ -64,7 +66,8 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='message', msg='Config file tree structure:')
             t = tree.create_from_yaml(multiplex_files)
             t = tree.apply_filters(t, args.filter_only, args.filter_out)
-            view.notify(event='minor', msg=t.get_ascii())
+            view.notify(event='minor',
+                        msg=t.get_ascii(attributes=args.attr))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         try:
