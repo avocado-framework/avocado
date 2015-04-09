@@ -56,6 +56,9 @@ YAML_REMOVE_NODE = 2
 YAML_REMOVE_VALUE = 3
 YAML_JOIN = 4
 
+__RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
+__RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
+
 
 class Control(object):  # Few methods pylint: disable=R0903
 
@@ -286,8 +289,7 @@ class TreeNode(object):
                                         for v in attributes
                                         if hasattr(self, v)]))
 
-        length = max(3, len(node_name)
-                     if not self.children or show_internal else 3)
+        length = max(2, (len(node_name) + 1) if not self.children or show_internal else 3)
         pad = ' ' * length
         _pad = ' ' * (length - 1)
         if not self.is_leaf:
@@ -295,7 +297,7 @@ class TreeNode(object):
             result = []
             for char in self.children:
                 if len(self.children) == 1:
-                    char2 = '/'
+                    char2 = '-'
                 elif char is self.children[0]:
                     char2 = '/'
                 elif char is self.children[-1]:
@@ -431,8 +433,30 @@ def _create_from_yaml(path, cls_node=TreeNode):
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 
+    # Parse file name ([$using:]$path)
+    path = __RE_FILE_SPLIT.split(path, 1)
+    if len(path) == 1:
+        path = __RE_FILE_SUBS.sub(':', path[0])
+        using = None
+    else:
+        using = __RE_FILE_SUBS.sub(':', path[0]).strip('/').split('/')
+        using = [_ for _ in using if _]
+        path = __RE_FILE_SUBS.sub(':', path[1])
+
+    # Load the tree
     with open(path) as stream:
-        return tree_node_from_values('', yaml.load(stream, Loader))
+        loaded_tree = yaml.load(stream, Loader)
+        loaded_tree = tree_node_from_values('', loaded_tree)
+
+    # Add prefix
+    if using:
+        loaded_tree = cls_node(using.pop(), children=loaded_tree.children)
+        while True:
+            if not using:
+                break
+            loaded_tree = cls_node(using.pop(), children=[loaded_tree])
+        loaded_tree = cls_node('', children=[loaded_tree])
+    return loaded_tree
 
 
 def create_from_yaml(paths, debug=False):
