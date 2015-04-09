@@ -223,18 +223,7 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
-    def _run(self, urls=None):
-        """
-        Unhandled job method. Runs a list of test URLs to its completion.
-
-        :param urls: String with tests to run, separated by whitespace.
-                     Optionally, a list of tests (each test a string).
-        :return: Integer with overall job status. See
-                 :mod:`avocado.core.exit_codes` for more information.
-        :raise: Any exception (avocado crashed), or
-                :class:`avocado.core.exceptions.JobBaseException` errors,
-                that configure a job failure.
-        """
+    def _handle_urls(self, urls):
         if urls is None:
             urls = getattr(self.args, 'url', None)
 
@@ -245,15 +234,26 @@ class Job(object):
             e_msg = "Empty test ID. A test path or alias must be provided"
             raise exceptions.OptionValidationError(e_msg)
 
+        return urls
+
+    def _make_test_suite(self, urls=None):
+        """
+        Prepares a test suite to be used for running tests
+
+        :param urls: String with tests to run, separated by whitespace.
+                     Optionally, a list of tests (each test a string).
+        :returns: a test suite (a list of test factories)
+        """
+        urls = self._handle_urls(urls)
+
         self._make_test_loader()
 
         params_list = self.test_loader.discover_urls(urls)
+        test_suite = self.test_loader.discover(params_list)
+        return test_suite
 
-        mux = multiplexer.Mux(self.args)
-        self._setup_job_results()
-
+    def _validate_test_suite(self, test_suite):
         try:
-            test_suite = self.test_loader.discover(params_list)
             # Do not attempt to validate the tests given on the command line if
             # the tests will not be copied from this system to a remote one
             # using the remote plugin features
@@ -269,6 +269,7 @@ class Job(object):
             e_msg = '\n'.join(error_msg_parts)
             raise exceptions.OptionValidationError(e_msg)
 
+    def _filter_test_suite(self, test_suite):
         # Filter tests methods with params.filter and methodName
         filtered_suite = []
         for test_template in test_suite:
@@ -280,14 +281,32 @@ class Job(object):
             else:
                 if method and fnmatch.fnmatch(method, filter_pattern):
                     filtered_suite.append(test_template)
-        test_suite = filtered_suite
+        return filtered_suite
 
+    def _run(self, urls=None):
+        """
+        Unhandled job method. Runs a list of test URLs to its completion.
+
+        :param urls: String with tests to run, separated by whitespace.
+                     Optionally, a list of tests (each test a string).
+        :return: Integer with overall job status. See
+                 :mod:`avocado.core.exit_codes` for more information.
+        :raise: Any exception (avocado crashed), or
+                :class:`avocado.core.exceptions.JobBaseException` errors,
+                that configure a job failure.
+        """
+        self._setup_job_results()
+
+        test_suite = self._make_test_suite(urls)
+        self._validate_test_suite(test_suite)
+        test_suite = self._filter_test_suite(test_suite)
         if not test_suite:
             e_msg = ("No tests found within the specified path(s) "
                      "(Possible reasons: File ownership, permissions, "
                      "filters, typos)")
             raise exceptions.OptionValidationError(e_msg)
 
+        mux = multiplexer.Mux(self.args)
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
