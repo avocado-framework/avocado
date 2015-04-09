@@ -146,17 +146,19 @@ You may use the avocado runner with a multiplex file to provide params and matri
 generation for sleeptest just like::
 
     $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID : d565e8dec576d6040f894841f32a836c751f968f
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
-    TESTS  : 3
+    JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
+    TESTS     : 3
     (1/3) sleeptest.short: PASS (0.50 s)
     (2/3) sleeptest.medium: PASS (1.01 s)
     (3/3) sleeptest.long: PASS (5.01 s)
-    PASS : 3
-    ERROR: 0
-    FAIL : 0
-    SKIP : 0
-    WARN : 0
+    PASS      : 3
+    ERROR     : 0
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
     TIME : 6.52 s
 
 Note that, as your multiplex file specifies all parameters for sleeptest, you
@@ -168,18 +170,20 @@ can't leave the test ID empty::
 If you want to run some tests that don't require params set by the multiplex file, you can::
 
     $ avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID : dd91ea5f8b42b2f084702315688284f7e8aa220a
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
-    TESTS  : 4
+    JOB ID    : dd91ea5f8b42b2f084702315688284f7e8aa220a
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/html/results.html
+    TESTS     : 4
     (1/4) sleeptest.short: PASS (0.50 s)
     (2/4) sleeptest.medium: PASS (1.01 s)
     (3/4) sleeptest.long: PASS (5.01 s)
     (4/4) synctest.1: ERROR (1.85 s)
-    PASS : 3
-    ERROR: 1
-    FAIL : 0
-    SKIP : 0
-    WARN : 0
+    PASS      : 3
+    ERROR     : 1
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
     TIME : 8.69 s
 
 Avocado tests are also unittests
@@ -211,16 +215,18 @@ you want to use it, don't forget to ``chmod +x`` your test.
 Executing an avocado test gives::
 
     $ examples/tests/sleeptest.py
-    JOB ID : de6c1e4c227c786dc4d926f6fca67cda34d96276
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/job.log
-    TESTS  : 1
+    JOB ID    : de6c1e4c227c786dc4d926f6fca67cda34d96276
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/html/results.html
+    TESTS     : 1
     (1/1) sleeptest.1: PASS (1.00 s)
-    PASS : 1
-    ERROR: 0
-    FAIL : 0
-    SKIP : 0
-    WARN : 0
-    TIME : 1.00 s
+    PASS      : 1
+    ERROR     : 0
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
+    TIME      : 1.00 s
 
 Running tests with nosetests
 ============================
@@ -546,16 +552,18 @@ impact your test grid. You can account for that possibility and set up a
 ::
 
     $ avocado run sleeptest --multiplex /tmp/sleeptest-example.mplx
-    JOB ID : 6d5a2ff16bb92395100fbc3945b8d253308728c9
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
-    TESTS  : 1
+    JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
+    TESTS     : 1
     (1/1) sleeptest.1: ERROR (2.97 s)
-    PASS : 0
-    ERROR: 1
-    FAIL : 0
-    SKIP : 0
-    WARN : 0
-    TIME : 2.97 s
+    PASS      : 0
+    ERROR     : 1
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
+    TIME      : 2.97 s
 
 ::
 
@@ -635,16 +643,18 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 ::
 
     $ avocado run timeouttest
-    JOB ID : d78498a54504b481192f2f9bca5ebb9bbb820b8a
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
-    TESTS  : 1
+    JOB ID    : d78498a54504b481192f2f9bca5ebb9bbb820b8a
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/html/results.html
+    TESTS     : 1
     (1/1) timeouttest.1: ERROR (2.97 s)
-    PASS : 0
-    ERROR: 1
-    FAIL : 0
-    SKIP : 0
-    WARN : 0
-    TIME : 2.97 s
+    PASS      : 0
+    ERROR     : 1
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
+    TIME      : 2.97 s
 
 
 ::

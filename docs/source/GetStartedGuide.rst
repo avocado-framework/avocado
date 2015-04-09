@@ -136,15 +136,17 @@ Running Tests
 You can run them using the subcommand ``run``::
 
     $ avocado run sleeptest
-    JOB ID : 381b849a62784228d2fd208d929cc49f310412dc
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
-    TESTS  : 1
+    JOB ID    : 381b849a62784228d2fd208d929cc49f310412dc
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
+    TESTS     : 1
     (1/1) sleeptest.1: PASS (1.01 s)
-    PASS : 1
-    ERROR: 0
-    FAIL : 0
-    SKIP : 0
-    WARN : 0
+    PASS      : 1
+    ERROR     : 0
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
     TIME : 1.01 s
 
 Job ID
@@ -170,21 +172,23 @@ native tests and simple tests::
     $ echo 'true' >> /tmp/script_that_passes.sh
     $ chmod +x /tmp/script_that_passes.sh
     $ avocado run failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh
-    JOB ID : 86911e49b5f2c36caeea41307cee4fecdcdfa121
-    JOB LOG: $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
-    TESTS  : 6
+    JOB ID    : 86911e49b5f2c36caeea41307cee4fecdcdfa121
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
+    TESTS     : 6
     (1/6) failtest.1: FAIL (0.00 s)
     (2/6) sleeptest.1: PASS (1.00 s)
     (3/6) synctest.1: ERROR (0.01 s)
     (4/6) failtest.2: FAIL (0.00 s)
     (5/6) synctest.2: ERROR (0.01 s)
     (6/6) /tmp/script_that_passes.sh.1: PASS (0.02 s)
-    PASS : 2
-    ERROR: 2
-    FAIL : 2
-    SKIP : 0
-    WARN : 0
-    TIME : 1.04 s
+    PASS      : 2
+    ERROR     : 2
+    FAIL      : 2
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
+    TIME      : 1.04 s
 
 Debugging tests
 ===============
