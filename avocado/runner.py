@@ -108,8 +108,11 @@ class TestRunner(object):
         test_state['status'] = exceptions.TestAbortError.status
         test_state['fail_class'] = exceptions.TestAbortError.__class__.__name__
         test_state['traceback'] = 'Traceback not available'
-        with open(test_state['logfile'], 'r') as log_file_obj:
-            test_state['text_output'] = log_file_obj.read()
+        try:
+            with open(test_state['logfile'], 'r') as log_file_obj:
+                test_state['text_output'] = log_file_obj.read()
+        except IOError:
+            test_state['text_output'] = ''
         return test_state
 
     def _run_test(self, test_factory, q, failures):
