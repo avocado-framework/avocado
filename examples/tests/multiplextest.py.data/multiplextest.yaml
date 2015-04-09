@@ -8,19 +8,23 @@ env:
 
 host:
     kernel_config:
-        huge_pages:
-            huge_pages:  yes
-        numa_ballance_aggressive:
-            numa_balancing:  1
-            numa_balancing_migrate_deferred:  32
-            numa_balancing_scan_size_mb:  512
-        numa_ballance_light:
-            numa_balancing:  1
-            numa_balancing_migrate_deferred:  8
-            numa_balancing_scan_size_mb:  32
+        page_size:
+            default:
+            huge_pages:
+                huge_pages:  yes
+        numa:
+            default:
+            numa_ballance_aggressive:
+                numa_balancing:  1
+                numa_balancing_migrate_deferred:  32
+                numa_balancing_scan_size_mb:  512
+            numa_ballance_light:
+                numa_balancing:  1
+                numa_balancing_migrate_deferred:  8
+                numa_balancing_scan_size_mb:  32
 
 guest:
-    os:
+    os: !join
         windows:
             os_type: windows
             xp:
