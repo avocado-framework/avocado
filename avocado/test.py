@@ -499,6 +499,7 @@ class SimpleTest(Test):
 
     def __init__(self, path, params=None, base_logdir=None, tag=None, job=None):
         self.path = os.path.abspath(path)
+        self.name = self.path
         super(SimpleTest, self).__init__(name=path, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
         basedir = os.path.dirname(self.path)
@@ -605,3 +606,27 @@ class NotATest(Test):
         e_msg = ('File %s is not executable and does not contain an avocado '
                  'test class in it ' % self.name)
         raise exceptions.NotATestError(e_msg)
+
+
+class TimeOutSkipTest(Test):
+
+    """
+    Skip test due job timeout.
+
+    This test is skipped due a job timeout.
+    It will never have a chance to execute.
+    """
+
+    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
+                 job=None, runner_queue=None, path=None):
+        if name is None and path is not None:
+            name = path
+        super(TimeOutSkipTest, self).__init__(
+            name=name,
+            base_logdir=base_logdir,
+            tag=tag, job=job,
+            runner_queue=runner_queue)
+
+    def runTest(self):
+        e_msg = 'Test skipped due a job timeout!'
+        raise exceptions.TestNAError(e_msg)

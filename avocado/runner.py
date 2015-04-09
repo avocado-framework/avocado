@@ -32,6 +32,7 @@ from avocado.core import status
 from avocado.core import exit_codes
 from avocado.utils import wait
 from avocado.utils import stacktrace
+from avocado import test
 
 
 class TestRunner(object):
@@ -107,8 +108,11 @@ class TestRunner(object):
         test_state['status'] = exceptions.TestAbortError.status
         test_state['fail_class'] = exceptions.TestAbortError.__class__.__name__
         test_state['traceback'] = 'Traceback not available'
-        with open(test_state['logfile'], 'r') as log_file_obj:
-            test_state['text_output'] = log_file_obj.read()
+        try:
+            with open(test_state['logfile'], 'r') as log_file_obj:
+                test_state['text_output'] = log_file_obj.read()
+        except IOError:
+            test_state['text_output'] = ''
         return test_state
 
     def _run_test(self, test_factory, q, failures):
@@ -197,24 +201,27 @@ class TestRunner(object):
                                               cycle_timeout, first=0.01, step=0.1):
                 test_state = q.get()
             else:
-                early_state['time_elapsed'] = time.time() - time_started
+                time_elapsed = time.time() - time_started
+                early_state['time_elapsed'] = time_elapsed
                 test_state = self._fill_aborted_test_state(early_state)
                 test_log = logging.getLogger('avocado.test')
                 test_log.error('ERROR %s -> TestAbortedError: '
                                'Test aborted unexpectedly',
                                test_state['name'])
 
+        time_elapsed = time.time() - time_started
+
         # don't process other tests from the list
         if ctrl_c_count > 0:
             self.job.view.notify(event='minor', msg='')
-            return False
+            return False, time_elapsed
 
         self.result.check_test(test_state)
         if not status.mapping[test_state['status']]:
             failures.append(test_state['name'])
-        return True
+        return True, time_elapsed
 
-    def run_suite(self, test_suite, mux):
+    def run_suite(self, test_suite, mux, timeout=0):
         """
         Run one or more tests and report with test result.
 
@@ -227,11 +234,27 @@ class TestRunner(object):
             self.job.sysinfo.start_job_hook()
         self.result.start_tests()
         q = queues.SimpleQueue()
-
         ctrl_c = False
+        skip_timeout = False
+        time_elapsed = 0
         for test_template in test_suite:
             for test_factory in mux.itertests(test_template):
-                if not self._run_test(test_factory, q, failures):
+                # Check if we should run the tests with a global timeout
+                if timeout > 0:
+                    if time_elapsed > timeout:
+                        skip_timeout = True
+                    remaing_time = timeout - time_elapsed
+                    if hasattr(test_factory[1]['params'], 'timeout'):
+                        test_timeout = test_factory[1]['params']['timeout']
+                        if test_timeout > remaing_time:
+                            test_factory[1]['params']['timeout'] = remaing_time
+                    else:
+                        test_factory[1]['params']['timeout'] = remaing_time
+                if skip_timeout:
+                    test_factory = test.TimeOutSkipTest, test_factory[1]
+                status, delta = self._run_test(test_factory, q, failures)
+                time_elapsed += delta
+                if status is False:
                     ctrl_c = True
                     break
             if ctrl_c:
