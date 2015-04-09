@@ -250,7 +250,7 @@ class TermSupport(object):
 
     def error_str(self):
         """
-        Print a not found string (yellow colored).
+        Print a error string (red colored).
 
         If the output does not support colors, just return the original string.
         """
