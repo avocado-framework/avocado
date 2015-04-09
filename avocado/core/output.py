@@ -154,6 +154,7 @@ class TermSupport(object):
         self.PASS = self.COLOR_GREEN
         self.SKIP = self.COLOR_YELLOW
         self.FAIL = self.COLOR_RED
+        self.INTERRUPT = self.COLOR_RED
         self.ERROR = self.COLOR_RED
         self.WARN = self.COLOR_YELLOW
         self.PARTIAL = self.COLOR_YELLOW
@@ -176,6 +177,7 @@ class TermSupport(object):
         self.PASS = ''
         self.SKIP = ''
         self.FAIL = ''
+        self.INTERRUPT = ''
         self.ERROR = ''
         self.WARN = ''
         self.PARTIAL = ''
@@ -206,7 +208,7 @@ class TermSupport(object):
 
         If the output does not support colors, just return the original string.
         """
-        return self.SKIP + msg + self.ENDC
+        return self.WARN + msg + self.ENDC
 
     def healthy_str(self, msg):
         """
@@ -250,11 +252,19 @@ class TermSupport(object):
 
     def error_str(self):
         """
-        Print a not found string (yellow colored).
+        Print a error string (red colored).
 
         If the output does not support colors, just return the original string.
         """
         return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
+
+    def interrupt_str(self):
+        """
+        Print an interrupt string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.INTERRUPT + 'INTERRUPT' + self.ENDC
 
     def warn_str(self):
         """
@@ -414,7 +424,8 @@ class View(object):
                    'ERROR': self._log_ui_status_error,
                    'FAIL': self._log_ui_status_fail,
                    'SKIP': self._log_ui_status_skip,
-                   'WARN': self._log_ui_status_warn}
+                   'WARN': self._log_ui_status_warn,
+                   'INTERRUPTED': self._log_ui_status_interrupt}
         mapping[status](state['time_elapsed'])
 
     def set_tests_info(self, info):
@@ -528,6 +539,15 @@ class View(object):
         :param t_elapsed: Time it took for the operation to complete.
         """
         normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
+        self._log_ui_error_base(normal_error_msg)
+
+    def _log_ui_status_interrupt(self, t_elapsed):
+        """
+        Log an INTERRUPT status message for a given operation.
+
+        :param t_elapsed: Time it took for the operation to complete.
+        """
+        normal_error_msg = term_support.interrupt_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_error_msg)
 
     def _log_ui_status_fail(self, t_elapsed):
