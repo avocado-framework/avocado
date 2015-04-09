@@ -18,16 +18,14 @@ class FioTest(test.Test):
     :see: http://freecode.com/projects/fio
     """
 
-    default_params = {'fio_tarball': 'fio-2.1.10.tar.bz2',
-                      'fio_job': 'fio-mixed.job'}
-
     def setUp(self):
         """
         Build 'fio'.
         """
-        tarball_path = self.get_data_path(self.params.fio_tarball)
+        fio_tarball = self.params.get('fio_tarball', 'fio-2.1.10.tar.bz2')
+        tarball_path = self.get_data_path(fio_tarball)
         archive.extract(tarball_path, self.srcdir)
-        fio_version = self.params.fio_tarball.split('.tar.')[0]
+        fio_version = fio_tarball.split('.tar.')[0]
         self.srcdir = os.path.join(self.srcdir, fio_version)
         build.make(self.srcdir)
 
@@ -36,7 +34,8 @@ class FioTest(test.Test):
         Execute 'fio' with appropriate parameters.
         """
         os.chdir(self.srcdir)
-        cmd = ('./fio %s' % self.get_data_path(self.params.fio_job))
+        fio_job = self.params.get('fio_job', 'fio-mixed.job')
+        cmd = ('./fio %s' % self.get_data_path(fio_job))
         process.system(cmd)
 
 

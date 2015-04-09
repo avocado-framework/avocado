@@ -15,14 +15,11 @@ class Raise(test.Test):
     A test that calls raise() to signals to itself.
     """
 
-    default_params = {'source': 'raise.c',
-                      'signal_number': 15}
-
     def setUp(self):
         """
         Build 'raise'.
         """
-        c_file = self.get_data_path(self.params.source)
+        c_file = self.get_data_path(self.params.get('source', 'raise.c'))
         c_file_name = os.path.basename(c_file)
         dest_c_file = os.path.join(self.srcdir, c_file_name)
         shutil.copy(c_file, dest_c_file)
@@ -34,10 +31,10 @@ class Raise(test.Test):
         """
         Execute 'raise'.
         """
-        cmd = os.path.join(self.srcdir, 'raise %d' % self.params.signal_number)
+        signum = self.params.get('signal_number', 15)
+        cmd = os.path.join(self.srcdir, 'raise %d' % signum)
         cmd_result = process.run(cmd, ignore_status=True)
         self.log.info(cmd_result)
-        signum = self.params.signal_number
         if signum == 0:
             expected_result = 0
             self.assertIn("I'm alive!", cmd_result.stdout)

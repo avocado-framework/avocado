@@ -80,16 +80,14 @@ class MultiplexTests(unittest.TestCase):
     def test_run_mplex_passtest(self):
         cmd_line = './scripts/avocado run --sysinfo=off passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = 0
-        # A typical pass has about 13 lines of output,
-        # so we expect the full job log has at least 4 times
-        # this value. If that is not the case, something is wrong with
-        # the output.
-        self.run_and_check(cmd_line, expected_rc, 13 * 4)
+        # Header is 2 lines + 5 lines per each test
+        self.run_and_check(cmd_line, expected_rc, 2 + 5 * 4)
 
     def test_run_mplex_doublepass(self):
         cmd_line = './scripts/avocado run --sysinfo=off passtest passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
-        # Should run 2-times 4 variants of pass test
-        self.run_and_check(cmd_line, expected_rc=0, expected_lines=2 * 4 * 13)
+        # Header is 2 lines + 5 lines per each test * 2 tests
+        self.run_and_check(cmd_line, expected_rc=0,
+                           expected_lines=2 + 2 * 5 * 4)
 
     def test_run_mplex_failtest(self):
         cmd_line = './scripts/avocado run --sysinfo=off passtest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
@@ -101,11 +99,9 @@ class MultiplexTests(unittest.TestCase):
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml')
         expected_rc = 0
-        # A typical pass has about 13 lines of output,
-        # so we expect the full job log has at least 4 times
-        # this value. If that is not the case, something is wrong with
-        # the output.
-        self.run_and_check(cmd_line, expected_rc, 13 * 4)
+        # Header is 2 lines + 5 lines per each test (mux files are merged thus
+        # only 1x4 variants are generated as in mplex_doublepass test)
+        self.run_and_check(cmd_line, expected_rc, 2 + 5 * 4)
 
     def test_run_mplex_params(self):
         cmd_line = ('./scripts/avocado run --sysinfo=off examples/tests/env_variables.sh '
