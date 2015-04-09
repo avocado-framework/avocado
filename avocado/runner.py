@@ -228,14 +228,10 @@ class TestRunner(object):
         self.result.start_tests()
         q = queues.SimpleQueue()
 
-        ctrl_c = False
         for test_template in test_suite:
             for test_factory in mux.itertests(test_template):
                 if not self._run_test(test_factory, q, failures):
-                    ctrl_c = True
                     break
-            if ctrl_c:
-                break
         runtime.CURRENT_TEST = None
         self.result.end_tests()
         if self.job.sysinfo is not None:
