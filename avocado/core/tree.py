@@ -85,6 +85,7 @@ class TreeNode(object):
         self.parent = parent
         self.children = []
         self._environment = None
+        self.environment_origin = {}
         self.ctrl = []
         self.multiplex = True
         for child in children:
@@ -218,6 +219,8 @@ class TreeNode(object):
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
                                  if self.parent else {})
+            self.environment_origin = (self.parent.environment_origin.copy()
+                                       if self.parent else {})
             for key, value in self.value.iteritems():
                 if isinstance(value, list):
                     if (key in self._environment and
@@ -227,6 +230,7 @@ class TreeNode(object):
                         self._environment[key] = value
                 else:
                     self._environment[key] = value
+                self.environment_origin[key] = self
         return self._environment
 
     def set_environment_dirty(self):

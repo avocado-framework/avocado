@@ -244,10 +244,6 @@ class AvocadoParams(object):
 
         As old and new API overlaps, you must use all 3 arguments or
         explicitely use key argument "path" or "default".
-
-        Concerning params clashes this version only validates that only single
-        param or multiple params of the same values are retrieved. This will
-        be replaced with proper origin check in the future.
         """
         def compatibility(args, kwargs):
             """
@@ -428,22 +424,20 @@ class AvocadoParam(object):
         :raise NoMatchError: When no matches
         :raise KeyError: When value is not certain (multiple matches)
         """
-        # TODO: Implement clash detection based on origin rather than value
         leaves = self._get_leaves(path)
-        ret = [leaf.environment[key]
+        ret = [(leaf.environment[key], leaf.environment_origin[key])
                for leaf in leaves
                if key in leaf.environment]
-        if len(ret) == 1:
-            return ret[0]
-        elif not ret:
+        if not ret:
             raise NoMatchError("No matches to %s => %s in %s"
                                % (path.pattern, key, self.str_leaves_variant))
+        if len(set([_[1] for _ in ret])) == 1:  # single source of results
+            return ret[0][0]
         else:
             raise ValueError("Multiple %s leaves contain the key '%s'; %s"
                              % (path.pattern, key,
-                                ["%s=>%s" % (leaf.name, leaf.environment[key])
-                                 for leaf in leaves
-                                 if key in leaf.environment]))
+                                ["%s=>%s" % (_[1].path, _[0])
+                                 for _ in ret]))
 
     def iteritems(self):
         """
