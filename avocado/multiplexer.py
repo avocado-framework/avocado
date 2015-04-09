@@ -105,17 +105,11 @@ class AvocadoParams(object):
     absolute and relative paths. For relative paths one can define multiple
     paths to search for the value.
     It contains compatibility wrapper to act as the original avocado Params,
-    but by special useage you can utilize the new API. See ``get()``
+    but by special usage you can utilize the new API. See ``get()``
     docstring for details.
 
-    It supports querying for params of given path and key and copies the
-    "objects", "object_params" and "object_counts" methods (not tested).
-
-    Unsafely it also supports pickling, although to work properly params would
-    have to be deepcopied. This is not required for the current avocado usage.
-
     You can also iterate through all keys, but this can generate quite a lot
-    of duplicite entries inherited from ancestor nodes.  It shouldn't produce
+    of duplicate entries inherited from ancestor nodes.  It shouldn't produce
     false values, though.
 
     In this version each new "get()" call is logged into "avocado.test" log.
@@ -192,11 +186,6 @@ class AvocadoParams(object):
         path = "/*/asdf"      => /[^/]*/asdf
         path = "asdf/*"       => $MUX_ENTRY/?.*/asdf/.*
         path = "/asdf/*"      => /asdf/.*
-        FIXME: __QUESTION__: Should "/path/*/path" match only
-        /path/$anything/path or can multiple levels be present
-        (/path/$multiple/$levels/path). The first is complaint to BASH, the
-        second might be easier to use. Alternatively we can allow multiple
-        levels only when "/*/" is used.
         """
         if not path:
             return re.compile('^$')
@@ -451,6 +440,10 @@ class AvocadoParam(object):
 
 class Mux(object):
 
+    """
+    This is a multiplex object which multiplexes the test_suite.
+    """
+
     def __init__(self, args):
         mux_files = getattr(args, 'multiplex_files', None)
         filter_only = getattr(args, 'filter_only', None)
@@ -466,6 +459,9 @@ class Mux(object):
             self._mux_entry = ['/' + _ for _ in self._mux_entry]
 
     def get_number_of_tests(self, test_suite):
+        """
+        :return: overall number of tests * multiplex variants
+        """
         # Currently number of tests is symetrical
         if self.pools:
             return (len(test_suite) *
@@ -474,6 +470,9 @@ class Mux(object):
             return len(test_suite)
 
     def itertests(self, template):
+        """
+        Processes the template and yields test definition with proper params
+        """
         if self.pools:  # Copy template and modify it's params
             i = None
             for i, variant in enumerate(multiplex_pools(self.pools)):
