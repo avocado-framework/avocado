@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 import tempfile
+import shutil
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
@@ -26,6 +27,7 @@ exec -- $@
 class WrapperTest(unittest.TestCase):
 
     def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
         self.tmpfile = tempfile.mktemp()
         self.script = script.TemporaryScript(
             'success.sh',
@@ -40,8 +42,8 @@ class WrapperTest(unittest.TestCase):
 
     def test_global_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --wrapper %s '
-                    'examples/tests/datadir.py' % self.script.path)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s '
+                    'examples/tests/datadir.py' % (self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -54,8 +56,8 @@ class WrapperTest(unittest.TestCase):
 
     def test_process_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --wrapper %s:*/datadir '
-                    'examples/tests/datadir.py' % self.script.path)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s:*/datadir '
+                    'examples/tests/datadir.py' % (self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -68,8 +70,8 @@ class WrapperTest(unittest.TestCase):
 
     def test_both_wrappers(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --wrapper %s --wrapper %s:*/datadir '
-                    'examples/tests/datadir.py' % (self.dummy.path,
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s --wrapper %s:*/datadir '
+                    'examples/tests/datadir.py' % (self.tmpdir, self.dummy.path,
                                                    self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
@@ -88,6 +90,7 @@ class WrapperTest(unittest.TestCase):
             os.remove(self.tmpfile)
         except OSError:
             pass
+        shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
