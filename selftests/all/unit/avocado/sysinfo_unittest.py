@@ -1,6 +1,7 @@
 import os
 import sys
 import tempfile
+import shutil
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -98,10 +99,7 @@ class SysinfoTest(unittest.TestCase):
                          "Test post dir is not empty")
 
     def tearDown(self):
-        try:
-            os.rmdir(self.tmpdir)
-        except OSError:
-            pass
+        shutil.rmtree(self.tmpdir)
 
 if __name__ == '__main__':
     unittest.main()
