@@ -1,5 +1,7 @@
 import os
 import sys
+import tempfile
+import shutil
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -23,6 +25,7 @@ echo "Hello, avocado!"
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
         self.output_script = script.TemporaryScript(
             'output_check.sh',
             OUTPUT_SCRIPT_CONTENTS,
@@ -31,7 +34,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_none(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off %s --output-check-record none' % self.output_script.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record none' %
+                    (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -44,7 +48,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_stdout(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off %s --output-check-record stdout' % self.output_script.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record stdout' %
+                    (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -57,7 +62,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_all(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off %s --output-check-record all' % self.output_script.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record all' %
+                    (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -70,7 +76,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_and_check(self):
         self.test_output_record_all()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % self.output_script.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
+                    (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -83,7 +90,8 @@ class RunnerSimpleTest(unittest.TestCase):
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = './scripts/avocado run --sysinfo=off %s --xunit -' % self.output_script.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --xunit -' %
+                    (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -97,7 +105,8 @@ class RunnerSimpleTest(unittest.TestCase):
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = './scripts/avocado run --sysinfo=off %s --output-check=off --xunit -' % self.output_script.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check=off --xunit -' %
+                    (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -107,6 +116,7 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def tearDown(self):
         self.output_script.remove()
+        shutil.rmtree(self.tmpdir)
 
 if __name__ == '__main__':
     unittest.main()
