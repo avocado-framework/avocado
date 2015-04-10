@@ -23,9 +23,12 @@ from avocado.core.output import TermSupport
 
 class OutputTest(unittest.TestCase):
 
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
     def test_output_doublefree(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off doublefree'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off doublefree' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         output = result.stdout + result.stderr
@@ -37,8 +40,14 @@ class OutputTest(unittest.TestCase):
                          "Libc double free can be seen in avocado "
                          "doublefree output:\n%s" % output)
 
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
 
 class OutputPluginTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
@@ -52,7 +61,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --xunit - --json - passtest'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --xunit - --json - passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
@@ -65,7 +74,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --html - passtest'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --html - passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         output = result.stdout + result.stderr
@@ -79,7 +88,8 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --journal --xunit %s --json - passtest' % tmpfile
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --journal --xunit %s --json - passtest' %
+                    (self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -99,7 +109,8 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --xunit - --json %s passtest' % tmpfile
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --xunit - --json %s passtest' %
+                    (self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -125,8 +136,8 @@ class OutputPluginTest(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         tmpfile3 = tempfile.mktemp(dir=tmpdir)
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --xunit %s --json %s --html %s passtest' %
-                    (tmpfile, tmpfile2, tmpfile3))
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --xunit %s --json %s --html %s passtest' %
+                    (self.tmpdir, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -156,7 +167,8 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --silent --xunit %s --json %s passtest' % (tmpfile, tmpfile2)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --silent --xunit %s --json %s passtest' %
+                    (self.tmpdir, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -180,7 +192,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off passtest --show-job-log'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -195,7 +207,8 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off passtest --show-job-log --silent'
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log --silent' %
+                    self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -206,7 +219,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_default_enabled_plugins(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off passtest'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = 0
@@ -222,7 +235,8 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         try:
             os.chdir(basedir)
-            cmd_line = './scripts/avocado run --sysinfo=off whiteboard --json %s' % tmpfile
+            cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off whiteboard --json %s' %
+                        (self.tmpdir, tmpfile))
             result = process.run(cmd_line, ignore_status=True)
             expected_rc = 0
             self.assertEqual(result.exit_status, expected_rc,
@@ -246,7 +260,8 @@ class OutputPluginTest(unittest.TestCase):
         redirected_output_path = tempfile.mktemp()
         try:
             os.chdir(basedir)
-            cmd_line = './scripts/avocado run --sysinfo=off passtest > %s' % redirected_output_path
+            cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest > %s' %
+                        (self.tmpdir, redirected_output_path))
             result = process.run(cmd_line, ignore_status=True, shell=True)
             output = result.stdout + result.stderr
             expected_rc = 0
@@ -265,6 +280,9 @@ class OutputPluginTest(unittest.TestCase):
                 os.remove(redirected_output_path)
             except OSError:
                 pass
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
