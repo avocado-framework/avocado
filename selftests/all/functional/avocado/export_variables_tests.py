@@ -1,6 +1,8 @@
 import os
 import sys
 import unittest
+import tempfile
+import shutil
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -37,6 +39,7 @@ test "$AVOCADO_VERSION" = "{version}" -a \
 class EnvironmentVariablesTest(unittest.TestCase):
 
     def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
         self.script = script.TemporaryScript(
             'version.sh',
             SCRIPT_CONTENT,
@@ -45,7 +48,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def test_environment_vars(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % self.script.path
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, self.script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -54,7 +57,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def tearDown(self):
         self.script.remove()
-
+        shutil.rmtree(self.tmpdir)
 
 if __name__ == '__main__':
     unittest.main()
