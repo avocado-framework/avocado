@@ -3,7 +3,8 @@ import os
 import sys
 import json
 import argparse
-from tempfile import mkstemp
+import tempfile
+import shutil
 
 # simple magic for using scripts within a source tree
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,20 +41,22 @@ class _Stream(object):
 class JSONResultTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpfile = mkstemp()
+        self.tmpfile = tempfile.mkstemp()
+        self.tmpdir = tempfile.mkdtemp()
         args = argparse.Namespace(json_output=self.tmpfile[1])
         stream = _Stream()
         stream.logfile = 'debug.log'
         self.test_result = jsonresult.JSONTestResult(stream, args)
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()
-        self.test1 = test.Test(job=job.Job())
+        self.test1 = test.Test(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
         self.test1.time_elapsed = 1.23
 
     def tearDown(self):
         os.close(self.tmpfile[0])
         os.remove(self.tmpfile[1])
+        shutil.rmtree(self.tmpdir)
 
     def testAddSuccess(self):
         self.test_result.start_test(self.test1)
