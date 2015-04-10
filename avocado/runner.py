@@ -207,11 +207,13 @@ class TestRunner(object):
         # don't process other tests from the list
         if ctrl_c_count > 0:
             self.job.view.notify(event='minor', msg='')
-            return False
 
         self.result.check_test(test_state)
         if not status.mapping[test_state['status']]:
             failures.append(test_state['name'])
+
+        if ctrl_c_count > 0:
+            return False
         return True
 
     def run_suite(self, test_suite, mux):
@@ -228,14 +230,10 @@ class TestRunner(object):
         self.result.start_tests()
         q = queues.SimpleQueue()
 
-        ctrl_c = False
         for test_template in test_suite:
             for test_factory in mux.itertests(test_template):
                 if not self._run_test(test_factory, q, failures):
-                    ctrl_c = True
                     break
-            if ctrl_c:
-                break
         runtime.CURRENT_TEST = None
         self.result.end_tests()
         if self.job.sysinfo is not None:

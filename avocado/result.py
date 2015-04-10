@@ -126,11 +126,27 @@ class TestResult(object):
         self.failed = []
         self.skipped = []
         self.warned = []
+        self.interrupted = []
 
         # Where this results intends to write to. Convention is that a dash (-)
         # means stdout, and stdout is a special output that can be exclusively
         # claimed by a result class.
         self.output = None
+
+    def _reconcile(self):
+        """
+        Make sure job results are reconciled
+
+        In situations such as job interruptions, some test results will be
+        missing, but this is no excuse for giving wrong summaries of test
+        results.
+        """
+        valid_results_count = (len(self.passed) + len(self.errors) +
+                               len(self.failed) + len(self.warned) +
+                               len(self.skipped) + len(self.interrupted))
+        other_skipped_count = self.tests_total - valid_results_count
+        for i in xrange(other_skipped_count):
+            self.skipped.append({})
 
     def start_tests(self):
         """
@@ -209,6 +225,15 @@ class TestResult(object):
         """
         self.warned.append(state)
 
+    def add_interrupt(self, state):
+        """
+        Called when a test is interrupted by the user.
+
+        :param state: result of :class:`avocado.test.Test.get_state`.
+        :type state: dict
+        """
+        self.interrupted.append(state)
+
     def check_test(self, state):
         """
         Called once for a test to check status and report.
@@ -219,7 +244,8 @@ class TestResult(object):
                       'ERROR': self.add_error,
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
-                      'WARN': self.add_warn}
+                      'WARN': self.add_warn,
+                      'INTERRUPTED': self.add_interrupt}
         add = status_map[state['status']]
         add(state)
         self.end_test(state)
@@ -250,11 +276,13 @@ class HumanTestResult(TestResult):
         """
         Called once after all tests are executed.
         """
+        self._reconcile()
         self.stream.notify(event="message", msg="PASS       : %d" % len(self.passed))
         self.stream.notify(event="message", msg="ERROR      : %d" % len(self.errors))
         self.stream.notify(event="message", msg="FAIL       : %d" % len(self.failed))
         self.stream.notify(event="message", msg="SKIP       : %d" % len(self.skipped))
         self.stream.notify(event="message", msg="WARN       : %d" % len(self.warned))
+        self.stream.notify(event="message", msg="INTERRUPT  : %d" % len(self.interrupted))
         self.stream.notify(event="message", msg="TIME       : %.2f s" % self.total_time)
 
     def start_test(self, state):
