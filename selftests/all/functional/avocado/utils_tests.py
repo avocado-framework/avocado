@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import tempfile
+import shutil
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -150,6 +151,8 @@ class ProcessTest(unittest.TestCase):
         self.assertEqual(result.exit_status, 0, 'result: %s' % result)
         self.assertIn('load average', result.stdout)
 
+    def tearDown(self):
+        shutil.rmtree(self.base_logdir)
 
 if __name__ == '__main__':
     unittest.main()
