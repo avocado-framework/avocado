@@ -3,6 +3,8 @@ import os
 import sys
 import json
 import sqlite3
+import tempfile
+import shutil
 
 # simple magic for using scripts within a source tree
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..')
@@ -17,7 +19,9 @@ class JournalPluginTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(basedir)
-        self.cmd_line = './scripts/avocado run --sysinfo=off --json - --journal examples/tests/passtest.py'
+        self.tmpdir = tempfile.mkdtemp()
+        self.cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --json - '
+                         '--journal examples/tests/passtest.py' % self.tmpdir)
         self.result = process.run(self.cmd_line, ignore_status=True)
         data = json.loads(self.result.stdout)
         self.job_id = data['job_id']
@@ -45,6 +49,7 @@ class JournalPluginTests(unittest.TestCase):
 
     def tearDown(self):
         self.db.close()
+        shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
