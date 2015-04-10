@@ -1,5 +1,7 @@
 import os
 import sys
+import shutil
+import tempfile
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -17,9 +19,12 @@ from avocado.utils import process
 
 class SysInfoTest(unittest.TestCase):
 
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
     def test_sysinfo_enabled(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=on passtest'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=on passtest' % self.tmpdir
         result = process.run(cmd_line)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -40,7 +45,7 @@ class SysInfoTest(unittest.TestCase):
 
     def test_sysinfo_disabled(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off passtest'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir
         result = process.run(cmd_line)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -53,6 +58,8 @@ class SysInfoTest(unittest.TestCase):
         msg = 'Avocado created sysinfo directory %s:\n%s' % (sysinfo_dir, result)
         self.assertFalse(os.path.isdir(sysinfo_dir), msg)
 
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
 
 if __name__ == '__main__':
     unittest.main()
