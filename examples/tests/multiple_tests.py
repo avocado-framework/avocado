@@ -31,7 +31,7 @@ class MultipleTests(test.Test):
         """
         This method should never execute
         """
-        pass
+        raise Exception('This action method should never be executed.')
 
 if __name__ == '__main__':
     job.main()
