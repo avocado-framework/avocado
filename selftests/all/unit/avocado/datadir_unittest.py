@@ -41,17 +41,22 @@ class DataDirTest(unittest.TestCase):
         """
         When avocado.conf is present, honor the values coming from it.
         """
+        stg_orig = settings.settings
         stg = settings.Settings(self.config_file.name)
-        # Trick the module to think we're on a system wide install
-        stg.intree = False
-        flexmock(settings, settings=stg)
-        from avocado.core import data_dir
-        flexmock(data_dir, settings=stg)
-        self.assertFalse(data_dir.settings.intree)
-        reload(data_dir)
-        for key in self.mapping.keys():
-            data_dir_func = getattr(data_dir, 'get_%s' % key)
-            self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
+        try:
+            # Trick the module to think we're on a system wide install
+            stg.intree = False
+            flexmock(settings, settings=stg)
+            from avocado.core import data_dir
+            flexmock(data_dir, settings=stg)
+            self.assertFalse(data_dir.settings.intree)
+            reload(data_dir)
+            for key in self.mapping.keys():
+                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
+        finally:
+            flexmock(settings, settings=stg_orig)
+            reload(data_dir)
         del data_dir
 
     def tearDown(self):
