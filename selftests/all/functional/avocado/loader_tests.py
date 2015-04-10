@@ -1,5 +1,7 @@
 import os
 import sys
+import tempfile
+import shutil
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -60,12 +62,15 @@ true
 
 class LoaderTestFunctional(unittest.TestCase):
 
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
     def test_simple(self):
         os.chdir(basedir)
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
                                              'avocado_loader_test')
         simple_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % simple_test.path
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, simple_test.path)
         process.run(cmd_line)
         simple_test.remove()
 
@@ -75,7 +80,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                              'avocado_loader_test',
                                              mode=0664)
         simple_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % simple_test.path
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, simple_test.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc,
@@ -90,7 +95,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                                    AVOCADO_TEST_OK,
                                                    'avocado_loader_test')
         avocado_pass_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_pass_test.path
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, avocado_pass_test.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -102,7 +107,8 @@ class LoaderTestFunctional(unittest.TestCase):
                                                     AVOCADO_TEST_BUGGY,
                                                     'avocado_loader_test')
         avocado_buggy_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_buggy_test.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
+                    (self.tmpdir, avocado_buggy_test.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -115,7 +121,8 @@ class LoaderTestFunctional(unittest.TestCase):
                                                     'avocado_loader_test',
                                                     mode=0664)
         avocado_buggy_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_buggy_test.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
+                    (self.tmpdir, avocado_buggy_test.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -127,7 +134,8 @@ class LoaderTestFunctional(unittest.TestCase):
         avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
                                                     'avocado_loader_test')
         avocado_not_a_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_not_a_test.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
+                    (self.tmpdir, avocado_not_a_test.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -140,7 +148,8 @@ class LoaderTestFunctional(unittest.TestCase):
                                                     'avocado_loader_test',
                                                     mode=0664)
         avocado_not_a_test.save()
-        cmd_line = './scripts/avocado run --sysinfo=off %s' % avocado_not_a_test.path
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
+                    (self.tmpdir, avocado_not_a_test.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc,
@@ -148,6 +157,10 @@ class LoaderTestFunctional(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('is not an avocado test', result.stderr)
         avocado_not_a_test.remove()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
 
 if __name__ == '__main__':
     unittest.main()
