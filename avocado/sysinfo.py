@@ -66,14 +66,6 @@ _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
 
 _DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
 
-_DEFAULT_COMMANDS_START_TEST = []
-
-_DEFAULT_COMMANDS_END_TEST = []
-
-_DEFAULT_FILES_START_TEST = []
-
-_DEFAULT_FILES_END_TEST = []
-
 _DEFAULT_COMMANDS_START_ITERATION = []
 _DEFAULT_COMMANDS_END_ITERATION = ["/proc/schedstat",
                                    "/proc/meminfo",
@@ -469,24 +461,12 @@ class SysInfo(object):
         for filename in _DEFAULT_FILES_END_JOB:
             self.end_job_loggables.add(Logfile(filename))
 
-        for cmd in _DEFAULT_COMMANDS_START_TEST:
-            self.start_test_loggables.add(Command(cmd))
-
-        for cmd in _DEFAULT_COMMANDS_END_TEST:
-            self.end_test_loggables.add(Command(cmd))
-
         # As the system log path is not standardized between distros,
         # we have to probe and find out the correct path.
         try:
             self.end_test_loggables.add(self._get_syslog_watcher())
         except ValueError, details:
             log.info(details)
-
-        for filename in _DEFAULT_FILES_START_TEST:
-            self.start_test_loggables.add(Logfile(filename))
-
-        for filename in _DEFAULT_FILES_END_TEST:
-            self.end_test_loggables.add(Logfile(filename))
 
         for cmd in _DEFAULT_COMMANDS_START_ITERATION:
             self.start_iteration_loggables.add(Command(cmd))
