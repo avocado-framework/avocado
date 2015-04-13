@@ -31,40 +31,36 @@ from avocado.settings import settings
 log = logging.getLogger("avocado.sysinfo")
 
 
-_DEFAULT_COMMANDS_START_JOB = ["df -mP",
-                               "dmesg -c",
-                               "uname -a",
-                               "lspci -vvnn",
-                               "gcc --version",
-                               "ld --version",
-                               "mount",
-                               "hostname",
-                               "uptime",
-                               "dmidecode",
-                               "ifconfig -a",
-                               "brctl show",
-                               "ip link",
-                               "numactl --hardware show",
-                               "lscpu",
-                               "fdisk -l"]
+_DEFAULT_COMMANDS_JOB = ["df -mP",
+                         "dmesg -c",
+                         "uname -a",
+                         "lspci -vvnn",
+                         "gcc --version",
+                         "ld --version",
+                         "mount",
+                         "hostname",
+                         "uptime",
+                         "dmidecode",
+                         "ifconfig -a",
+                         "brctl show",
+                         "ip link",
+                         "numactl --hardware show",
+                         "lscpu",
+                         "fdisk -l"]
 
-_DEFAULT_COMMANDS_END_JOB = _DEFAULT_COMMANDS_START_JOB
-
-_DEFAULT_FILES_START_JOB = ["/proc/cmdline",
-                            "/proc/mounts",
-                            "/proc/pci",
-                            "/proc/meminfo",
-                            "/proc/slabinfo",
-                            "/proc/version",
-                            "/proc/cpuinfo",
-                            "/proc/modules",
-                            "/proc/interrupts",
-                            "/proc/partitions",
-                            "/sys/kernel/debug/sched_features",
-                            "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
-                            "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
-
-_DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
+_DEFAULT_FILES_JOB = ["/proc/cmdline",
+                      "/proc/mounts",
+                      "/proc/pci",
+                      "/proc/meminfo",
+                      "/proc/slabinfo",
+                      "/proc/version",
+                      "/proc/cpuinfo",
+                      "/proc/modules",
+                      "/proc/interrupts",
+                      "/proc/partitions",
+                      "/sys/kernel/debug/sched_features",
+                      "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
+                      "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
 
 
 class Loggable(object):
@@ -427,16 +423,12 @@ class SysInfo(object):
             for cmd in self.profiler_commands:
                 self.start_job_loggables.add(Daemon(cmd))
 
-        for cmd in _DEFAULT_COMMANDS_START_JOB:
+        for cmd in _DEFAULT_COMMANDS_JOB:
             self.start_job_loggables.add(Command(cmd))
-
-        for cmd in _DEFAULT_COMMANDS_END_JOB:
             self.end_job_loggables.add(Command(cmd))
 
-        for filename in _DEFAULT_FILES_START_JOB:
+        for filename in _DEFAULT_FILES_JOB:
             self.start_job_loggables.add(Logfile(filename))
-
-        for filename in _DEFAULT_FILES_END_JOB:
             self.end_job_loggables.add(Logfile(filename))
 
         # As the system log path is not standardized between distros,
