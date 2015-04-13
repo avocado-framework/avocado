@@ -64,6 +64,14 @@ class TestRunner(plugin.Plugin):
                                  help=('Forces to use of an alternate job '
                                        'results directory.'))
 
+        self.parser.add_argument('--job-timeout', action='store',
+                                 default=None, metavar='SECONDS',
+                                 help=('Set the maximum amount of time (in SECONDS) that '
+                                       'tests are allow to execute. '
+                                       'Note that the value zero means "no timeout". '
+                                       'You can also use a number followed by a suffix like: '
+                                       ' s (seconds), m (minutes), h (hours). '))
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
