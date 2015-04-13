@@ -31,38 +31,6 @@ from avocado.settings import settings
 log = logging.getLogger("avocado.sysinfo")
 
 
-_DEFAULT_COMMANDS_JOB = ["df -mP",
-                         "dmesg -c",
-                         "uname -a",
-                         "lspci -vvnn",
-                         "gcc --version",
-                         "ld --version",
-                         "mount",
-                         "hostname",
-                         "uptime",
-                         "dmidecode",
-                         "ifconfig -a",
-                         "brctl show",
-                         "ip link",
-                         "numactl --hardware show",
-                         "lscpu",
-                         "fdisk -l"]
-
-_DEFAULT_FILES_JOB = ["/proc/cmdline",
-                      "/proc/mounts",
-                      "/proc/pci",
-                      "/proc/meminfo",
-                      "/proc/slabinfo",
-                      "/proc/version",
-                      "/proc/cpuinfo",
-                      "/proc/modules",
-                      "/proc/interrupts",
-                      "/proc/partitions",
-                      "/sys/kernel/debug/sched_features",
-                      "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
-                      "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
-
-
 class Collectible(object):
 
     """
@@ -336,7 +304,7 @@ class SysInfo(object):
     * end_job
     """
 
-    def __init__(self, basedir=None, log_packages=None, profilers=None):
+    def __init__(self, basedir=None, log_packages=None, profiler=True):
         """
         Set sysinfo collectibles.
 
@@ -345,8 +313,8 @@ class SysInfo(object):
                              logging packages is a costly operation). If not
                              given explicitly, tries to look in the config
                              files, and if not found, defaults to False.
-        :param profilers: Wether to use the profiler. If not given explicitly,
-                          tries to look in the config files.
+        :param profiler: Wether to use the profiler. If not given explicitly,
+                         tries to look in the config files.
         """
         if basedir is None:
             basedir = utils.path.init_dir('sysinfo')
@@ -361,26 +329,41 @@ class SysInfo(object):
         else:
             self.log_packages = log_packages
 
-        if profilers is None:
+        commands_file = settings.get_value('sysinfo.collectibles',
+                                           'commands',
+                                           key_type='str',
+                                           default='')
+        log.info('Commands configured by file: %s', commands_file)
+        self.commands = utils.genio.read_all_lines(commands_file)
+
+        files_file = settings.get_value('sysinfo.collectibles',
+                                        'files',
+                                        key_type='str',
+                                        default='')
+        log.info('Files configured by file: %s', files_file)
+        self.files = utils.genio.read_all_lines(files_file)
+
+        if profiler is None:
             self.profiler = settings.get_value('sysinfo.collect',
                                                'profiler',
                                                key_type='bool',
                                                default=False)
-            profiler_commands = settings.get_value('sysinfo.collect',
-                                                   'profiler_commands',
-                                                   key_type='str',
-                                                   default='')
         else:
-            self.profiler = True
-            profiler_commands = profilers
+            self.profiler = profiler
 
-        self.profiler_commands = [x for x in profiler_commands.split(':') if x.strip()]
-        log.info('Profilers declared: %s', self.profiler_commands)
-        if not self.profiler_commands:
+        profiler_file = settings.get_value('sysinfo.collectibles',
+                                           'profilers',
+                                           key_type='str',
+                                           default='')
+        self.profilers = utils.genio.read_all_lines(profiler_file)
+
+        log.info('Profilers configured by file: %s', profiler_file)
+        log.info('Profilers declared: %s', self.profilers)
+        if not self.profilers:
             self.profiler = False
 
         if self.profiler is False:
-            if not self.profiler_commands:
+            if not self.profilers:
                 log.info('Profiler disabled: no profiler commands configured')
             else:
                 log.info('Profiler disabled')
@@ -420,14 +403,14 @@ class SysInfo(object):
 
     def _set_collectibles(self):
         if self.profiler:
-            for cmd in self.profiler_commands:
+            for cmd in self.profilers:
                 self.start_job_collectibles.add(Daemon(cmd))
 
-        for cmd in _DEFAULT_COMMANDS_JOB:
+        for cmd in self.commands:
             self.start_job_collectibles.add(Command(cmd))
             self.end_job_collectibles.add(Command(cmd))
 
-        for filename in _DEFAULT_FILES_JOB:
+        for filename in self.files:
             self.start_job_collectibles.add(Logfile(filename))
             self.end_job_collectibles.add(Logfile(filename))
 
