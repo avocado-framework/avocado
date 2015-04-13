@@ -353,8 +353,7 @@ class SysInfo(object):
                           tries to look in the config files.
         """
         if basedir is None:
-            basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
-
+            basedir = utils.path.init_dir('sysinfo')
         self.basedir = basedir
 
         self._installed_pkgs = None
