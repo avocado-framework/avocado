@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.21.0
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -54,8 +54,12 @@ selftests/run selftests/all/unit
 %doc README.rst LICENSE
 %dir /etc/avocado
 %dir /etc/avocado/conf.d
+%dir /etc/avocado/sysinfo
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
+%config(noreplace)/etc/avocado/sysinfo/commands
+%config(noreplace)/etc/avocado/sysinfo/files
+%config(noreplace)/etc/avocado/sysinfo/profilers
 %{python_sitelib}/avocado*
 %{_bindir}/avocado
 %{_bindir}/avocado-rest-client
@@ -99,6 +103,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/api
 
 %changelog
+* Mon Apr 13 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-6
+- Added sysinfo configuration files
+
 * Sat Mar 28 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-5
 - Change the way man pages are built, now using Makefile targets
 - Reorganized runtime and build requirements
