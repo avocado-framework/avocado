@@ -126,6 +126,32 @@ def read_one_line(filename):
     return line
 
 
+def read_all_lines(filename):
+    """
+    Return all lines of a given file
+
+    This utility method returns and empty list in any error scenario,
+    that is it doesn't attempt to identify error paths and raise
+    appropriate exceptions. It does exactly the opposite to that.
+
+    This should be used when it's fine or desirable to have an empty
+    set of lines if a file is missing or is unreadable.
+
+    :param filename: Path to the file.
+    :type filename: str
+
+    :return: all lines of the file as list
+    :rtype: list
+    """
+    contents = []
+    try:
+        with open(filename, 'r') as file_obj:
+            contents = [line.rstrip('\n') for line in file_obj.readlines()]
+    except:
+        pass
+    return contents
+
+
 def write_file(filename, data):
     """
     Write data to a file.
