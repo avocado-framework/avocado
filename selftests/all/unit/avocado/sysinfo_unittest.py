@@ -69,13 +69,9 @@ class SysinfoTest(unittest.TestCase):
                                 "Job does not have 'pre' dir")
         job_predir = os.path.join(jobdir, 'pre')
         self.assertTrue(os.path.isdir(job_predir))
-        self.assertGreater(len(os.listdir(job_predir)), 0,
-                           "Job pre dir is empty")
         sysinfo_logger.end_job_hook()
         job_postdir = os.path.join(jobdir, 'post')
         self.assertTrue(os.path.isdir(job_postdir))
-        self.assertGreater(len(os.listdir(job_postdir)), 0,
-                           "Job post dir is empty")
 
     def test_logger_test_hooks(self):
         testdir = os.path.join(self.tmpdir, 'job', 'test1')

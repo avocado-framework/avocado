@@ -31,68 +31,10 @@ from avocado.settings import settings
 log = logging.getLogger("avocado.sysinfo")
 
 
-_DEFAULT_COMMANDS_START_JOB = ["df -mP",
-                               "dmesg -c",
-                               "uname -a",
-                               "lspci -vvnn",
-                               "gcc --version",
-                               "ld --version",
-                               "mount",
-                               "hostname",
-                               "uptime",
-                               "dmidecode",
-                               "ifconfig -a",
-                               "brctl show",
-                               "ip link",
-                               "numactl --hardware show",
-                               "lscpu",
-                               "fdisk -l"]
-
-_DEFAULT_COMMANDS_END_JOB = _DEFAULT_COMMANDS_START_JOB
-
-_DEFAULT_FILES_START_JOB = ["/proc/cmdline",
-                            "/proc/mounts",
-                            "/proc/pci",
-                            "/proc/meminfo",
-                            "/proc/slabinfo",
-                            "/proc/version",
-                            "/proc/cpuinfo",
-                            "/proc/modules",
-                            "/proc/interrupts",
-                            "/proc/partitions",
-                            "/sys/kernel/debug/sched_features",
-                            "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
-                            "/sys/devices/system/clocksource/clocksource0/current_clocksource"]
-
-_DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
-
-_DEFAULT_COMMANDS_START_TEST = []
-
-_DEFAULT_COMMANDS_END_TEST = []
-
-_DEFAULT_FILES_START_TEST = []
-
-_DEFAULT_FILES_END_TEST = []
-
-_DEFAULT_COMMANDS_START_ITERATION = []
-_DEFAULT_COMMANDS_END_ITERATION = ["/proc/schedstat",
-                                   "/proc/meminfo",
-                                   "/proc/slabinfo",
-                                   "/proc/interrupts",
-                                   "/proc/buddyinfo"]
-
-_DEFAULT_FILES_START_ITERATION = []
-_DEFAULT_FILES_END_ITERATION = ["/proc/schedstat",
-                                "/proc/meminfo",
-                                "/proc/slabinfo",
-                                "/proc/interrupts",
-                                "/proc/buddyinfo"]
-
-
-class Loggable(object):
+class Collectible(object):
 
     """
-    Abstract class for representing all things "loggable" by sysinfo.
+    Abstract class for representing collectibles by sysinfo.
     """
 
     def __init__(self, logf):
@@ -100,7 +42,7 @@ class Loggable(object):
 
     def readline(self, logdir):
         """
-        Read one line of the loggable object.
+        Read one line of the collectible object.
 
         :param logdir: Path to a log directory.
         """
@@ -111,10 +53,10 @@ class Loggable(object):
             return ""
 
 
-class Logfile(Loggable):
+class Logfile(Collectible):
 
     """
-    Loggable system file.
+    Collectible system file.
 
     :param path: Path to the log file.
     :param logf: Basename of the file where output is logged (optional).
@@ -134,7 +76,7 @@ class Logfile(Loggable):
     def __eq__(self, other):
         if isinstance(other, Logfile):
             return (self.path, self.logf) == (other.path, other.logf)
-        elif isinstance(other, Loggable):
+        elif isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -160,10 +102,10 @@ class Logfile(Loggable):
                 log.debug("Not logging %s (lack of permissions)", self.path)
 
 
-class Command(Loggable):
+class Command(Collectible):
 
     """
-    Loggable command.
+    Collectible command.
 
     :param cmd: String with the command.
     :param logf: Basename of the file where output is logged (optional).
@@ -185,7 +127,7 @@ class Command(Loggable):
     def __eq__(self, other):
         if isinstance(other, Command):
             return (self.cmd, self.logf) == (other.cmd, other.logf)
-        elif isinstance(other, Loggable):
+        elif isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -225,7 +167,7 @@ class Command(Loggable):
 class Daemon(Command):
 
     """
-    Loggable daemon.
+    Collectible daemon.
 
     :param cmd: String with the daemon command.
     :param logf: Basename of the file where output is logged (optional).
@@ -261,7 +203,7 @@ class Daemon(Command):
         return retcode
 
 
-class LogWatcher(Loggable):
+class LogWatcher(Collectible):
 
     """
     Keep track of the contents of a log file in another compressed file.
@@ -299,7 +241,7 @@ class LogWatcher(Loggable):
     def __eq__(self, other):
         if isinstance(other, Logfile):
             return (self.path, self.logf) == (other.path, other.logf)
-        elif isinstance(other, Loggable):
+        elif isinstance(other, Collectible):
             return False
         return NotImplemented
 
@@ -358,27 +300,24 @@ class SysInfo(object):
 
     * start_job
     * start_test
-    * start_iteration
-    * end_iteration
     * end_test
     * end_job
     """
 
-    def __init__(self, basedir=None, log_packages=None, profilers=None):
+    def __init__(self, basedir=None, log_packages=None, profiler=None):
         """
-        Set sysinfo loggables.
+        Set sysinfo collectibles.
 
         :param basedir: Base log dir where sysinfo files will be located.
         :param log_packages: Whether to log system packages (optional because
                              logging packages is a costly operation). If not
                              given explicitly, tries to look in the config
                              files, and if not found, defaults to False.
-        :param profilers: Wether to use the profiler. If not given explicitly,
-                          tries to look in the config files.
+        :param profiler: Wether to use the profiler. If not given explicitly,
+                         tries to look in the config files.
         """
         if basedir is None:
-            basedir = utils.path.init_dir(os.getcwd(), 'sysinfo')
-
+            basedir = utils.path.init_dir('sysinfo')
         self.basedir = basedir
 
         self._installed_pkgs = None
@@ -390,51 +329,61 @@ class SysInfo(object):
         else:
             self.log_packages = log_packages
 
-        if profilers is None:
+        commands_file = settings.get_value('sysinfo.collectibles',
+                                           'commands',
+                                           key_type='str',
+                                           default='')
+        log.info('Commands configured by file: %s', commands_file)
+        self.commands = utils.genio.read_all_lines(commands_file)
+
+        files_file = settings.get_value('sysinfo.collectibles',
+                                        'files',
+                                        key_type='str',
+                                        default='')
+        log.info('Files configured by file: %s', files_file)
+        self.files = utils.genio.read_all_lines(files_file)
+
+        if profiler is None:
             self.profiler = settings.get_value('sysinfo.collect',
                                                'profiler',
                                                key_type='bool',
                                                default=False)
-            profiler_commands = settings.get_value('sysinfo.collect',
-                                                   'profiler_commands',
-                                                   key_type='str',
-                                                   default='')
         else:
-            self.profiler = True
-            profiler_commands = profilers
+            self.profiler = profiler
 
-        self.profiler_commands = [x for x in profiler_commands.split(':') if x.strip()]
-        log.info('Profilers declared: %s', self.profiler_commands)
-        if not self.profiler_commands:
+        profiler_file = settings.get_value('sysinfo.collectibles',
+                                           'profilers',
+                                           key_type='str',
+                                           default='')
+        self.profilers = utils.genio.read_all_lines(profiler_file)
+
+        log.info('Profilers configured by file: %s', profiler_file)
+        log.info('Profilers declared: %s', self.profilers)
+        if not self.profilers:
             self.profiler = False
 
         if self.profiler is False:
-            if not self.profiler_commands:
+            if not self.profilers:
                 log.info('Profiler disabled: no profiler commands configured')
             else:
                 log.info('Profiler disabled')
 
-        self.start_job_loggables = set()
-        self.end_job_loggables = set()
+        self.start_job_collectibles = set()
+        self.end_job_collectibles = set()
 
-        self.start_test_loggables = set()
-        self.end_test_loggables = set()
+        self.start_test_collectibles = set()
+        self.end_test_collectibles = set()
 
-        self.start_iteration_loggables = set()
-        self.end_iteration_loggables = set()
-
-        self.hook_mapping = {'start_job': self.start_job_loggables,
-                             'end_job': self.end_job_loggables,
-                             'start_test': self.start_test_loggables,
-                             'end_test': self.end_test_loggables,
-                             'start_iteration': self.start_iteration_loggables,
-                             'end_iteration': self.end_iteration_loggables}
+        self.hook_mapping = {'start_job': self.start_job_collectibles,
+                             'end_job': self.end_job_collectibles,
+                             'start_test': self.start_test_collectibles,
+                             'end_test': self.end_test_collectibles}
 
         self.pre_dir = utils.path.init_dir(self.basedir, 'pre')
         self.post_dir = utils.path.init_dir(self.basedir, 'post')
         self.profile_dir = utils.path.init_dir(self.basedir, 'profile')
 
-        self._set_loggables()
+        self._set_collectibles()
 
     def _get_syslog_watcher(self):
         syslog_watcher = None
@@ -452,93 +401,65 @@ class SysInfo(object):
 
         return syslog_watcher
 
-    def _set_loggables(self):
+    def _set_collectibles(self):
         if self.profiler:
-            for cmd in self.profiler_commands:
-                self.start_job_loggables.add(Daemon(cmd))
+            for cmd in self.profilers:
+                self.start_job_collectibles.add(Daemon(cmd))
 
-        for cmd in _DEFAULT_COMMANDS_START_JOB:
-            self.start_job_loggables.add(Command(cmd))
+        for cmd in self.commands:
+            self.start_job_collectibles.add(Command(cmd))
+            self.end_job_collectibles.add(Command(cmd))
 
-        for cmd in _DEFAULT_COMMANDS_END_JOB:
-            self.end_job_loggables.add(Command(cmd))
-
-        for filename in _DEFAULT_FILES_START_JOB:
-            self.start_job_loggables.add(Logfile(filename))
-
-        for filename in _DEFAULT_FILES_END_JOB:
-            self.end_job_loggables.add(Logfile(filename))
-
-        for cmd in _DEFAULT_COMMANDS_START_TEST:
-            self.start_test_loggables.add(Command(cmd))
-
-        for cmd in _DEFAULT_COMMANDS_END_TEST:
-            self.end_test_loggables.add(Command(cmd))
+        for filename in self.files:
+            self.start_job_collectibles.add(Logfile(filename))
+            self.end_job_collectibles.add(Logfile(filename))
 
         # As the system log path is not standardized between distros,
         # we have to probe and find out the correct path.
         try:
-            self.end_test_loggables.add(self._get_syslog_watcher())
+            self.end_test_collectibles.add(self._get_syslog_watcher())
         except ValueError, details:
             log.info(details)
 
-        for filename in _DEFAULT_FILES_START_TEST:
-            self.start_test_loggables.add(Logfile(filename))
-
-        for filename in _DEFAULT_FILES_END_TEST:
-            self.end_test_loggables.add(Logfile(filename))
-
-        for cmd in _DEFAULT_COMMANDS_START_ITERATION:
-            self.start_iteration_loggables.add(Command(cmd))
-
-        for cmd in _DEFAULT_COMMANDS_END_ITERATION:
-            self.end_iteration_loggables.add(Command(cmd))
-
-        for filename in _DEFAULT_FILES_START_ITERATION:
-            self.start_iteration_loggables.add(Logfile(filename))
-
-        for filename in _DEFAULT_FILES_END_ITERATION:
-            self.end_iteration_loggables.add(Logfile(filename))
-
-    def _get_loggables(self, hook):
-        loggables = self.hook_mapping.get(hook)
-        if loggables is None:
+    def _get_collectibles(self, hook):
+        collectibles = self.hook_mapping.get(hook)
+        if collectibles is None:
             raise ValueError('Incorrect hook, valid hook names: %s' %
                              self.hook_mapping.keys())
-        return loggables
+        return collectibles
 
     def add_cmd(self, cmd, hook):
         """
-        Add a command loggable.
+        Add a command collectible.
 
         :param cmd: Command to log.
         :param hook: In which hook this cmd should be logged (start job, end
-                     job, start iteration, end iteration).
+                     job).
         """
-        loggables = self._get_loggables(hook)
-        loggables.add(Command(cmd))
+        collectibles = self._get_collectibles(hook)
+        collectibles.add(Command(cmd))
 
     def add_file(self, filename, hook):
         """
-        Add a system file loggable.
+        Add a system file collectible.
 
         :param filename: Path to the file to be logged.
         :param hook: In which hook this file should be logged (start job, end
-                     job, start iteration, end iteration).
+                     job).
         """
-        loggables = self._get_loggables(hook)
-        loggables.add(Logfile(filename))
+        collectibles = self._get_collectibles(hook)
+        collectibles.add(Logfile(filename))
 
     def add_watcher(self, filename, hook):
         """
-        Add a system file watcher loggable.
+        Add a system file watcher collectible.
 
         :param filename: Path to the file to be logged.
         :param hook: In which hook this watcher should be logged (start job, end
-                     job, start iteration, end iteration).
+                     job).
         """
-        loggables = self._get_loggables(hook)
-        loggables.add(LogWatcher(filename))
+        collectibles = self._get_collectibles(hook)
+        collectibles.add(LogWatcher(filename))
 
     def _get_installed_packages(self):
         sm = software_manager.SoftwareManager()
@@ -568,7 +489,7 @@ class SysInfo(object):
         """
         Logging hook called whenever a job starts.
         """
-        for log in self.start_job_loggables:
+        for log in self.start_job_collectibles:
             if isinstance(log, Daemon):  # log daemons in profile directory
                 log.run(self.profile_dir)
             else:
@@ -581,10 +502,10 @@ class SysInfo(object):
         """
         Logging hook called whenever a job finishes.
         """
-        for log in self.end_job_loggables:
+        for log in self.end_job_collectibles:
             log.run(self.post_dir)
         # Stop daemon(s) started previously
-        for log in self.start_job_loggables:
+        for log in self.start_job_collectibles:
             if isinstance(log, Daemon):
                 log.stop()
 
@@ -595,7 +516,7 @@ class SysInfo(object):
         """
         Logging hook called before a test starts.
         """
-        for log in self.start_test_loggables:
+        for log in self.start_test_collectibles:
             log.run(self.pre_dir)
 
         if self.log_packages:
@@ -605,25 +526,11 @@ class SysInfo(object):
         """
         Logging hook called after a test finishes.
         """
-        for log in self.end_test_loggables:
+        for log in self.end_test_collectibles:
             log.run(self.post_dir)
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)
-
-    def start_iteration_hook(self):
-        """
-        Logging hook called before a test iteration
-        """
-        for log in self.start_iteration_loggables:
-            log.run(self.pre_dir)
-
-    def end_iteration_hook(self, test, iteration=None):
-        """
-        Logging hook called after a test iteration
-        """
-        for log in self.end_iteration_loggables:
-            log.run(self.post_dir)
 
 
 def collect_sysinfo(args):
