@@ -583,3 +583,17 @@ class NotATest(Test):
         e_msg = ('File %s is not executable and does not contain an avocado '
                  'test class in it ' % self.name)
         raise exceptions.NotATestError(e_msg)
+
+
+class TimeOutSkipTest(Test):
+
+    """
+    Skip test due job timeout.
+
+    This test is skipped due a job timeout.
+    It will never have a chance to execute.
+    """
+
+    def runTest(self):
+        e_msg = 'Test skipped due a job timeout!'
+        raise exceptions.TestNAError(e_msg)
