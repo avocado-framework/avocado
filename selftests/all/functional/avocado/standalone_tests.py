@@ -33,27 +33,27 @@ class StandaloneTests(unittest.TestCase):
         return result
 
     def test_passtest(self):
-        cmd_line = './examples/tests/passtest.py'
+        cmd_line = './examples/tests/passtest.py -r'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'passtest')
 
     def test_skiptest(self):
-        cmd_line = './examples/tests/skiptest.py'
+        cmd_line = './examples/tests/skiptest.py -r'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'skiptest')
 
     def test_warntest(self):
-        cmd_line = './examples/tests/warntest.py'
+        cmd_line = './examples/tests/warntest.py -r'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'warntest')
 
     def test_failtest(self):
-        cmd_line = './examples/tests/failtest.py'
+        cmd_line = './examples/tests/failtest.py -r'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'failtest')
 
     def test_failtest_nasty(self):
-        cmd_line = './examples/tests/failtest_nasty.py'
+        cmd_line = './examples/tests/failtest_nasty.py -r'
         expected_rc = 1
         result = self.run_and_check(cmd_line, expected_rc, 'failtest_nasty')
         exc = "NastyException: Nasty-string-like-exception"
@@ -63,14 +63,14 @@ class StandaloneTests(unittest.TestCase):
                          "exception details." % (exc))
 
     def test_failtest_nasty2(self):
-        cmd_line = './examples/tests/failtest_nasty2.py'
+        cmd_line = './examples/tests/failtest_nasty2.py -r'
         expected_rc = 1
         result = self.run_and_check(cmd_line, expected_rc, 'failtest_nasty2')
         self.assertIn("Exception: Unable to get exception, check the traceback"
                       " for details.", result.stdout)
 
     def test_errortest(self):
-        cmd_line = './examples/tests/errortest.py'
+        cmd_line = './examples/tests/errortest.py -r'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'errortest')
 

@@ -2,6 +2,8 @@
 
 import os
 import sys
+import tempfile
+import shutil
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -28,6 +30,9 @@ DEBUG_OUT = """Variant 16:    amd@examples/mux-environment.yaml, virtio@examples
 
 
 class MultiplexTests(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
 
     def run_and_check(self, cmd_line, expected_rc, expected_lines=None):
         os.chdir(basedir)
@@ -73,41 +78,45 @@ class MultiplexTests(unittest.TestCase):
         self.assertIn(DEBUG_OUT, result.stdout)
 
     def test_run_mplex_noid(self):
-        cmd_line = './scripts/avocado run --sysinfo=off --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 2
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):
-        cmd_line = './scripts/avocado run --sysinfo=off passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest '
+                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 0
         # Header is 2 lines + 5 lines per each test
         self.run_and_check(cmd_line, expected_rc, 2 + 5 * 4)
 
     def test_run_mplex_doublepass(self):
-        cmd_line = './scripts/avocado run --sysinfo=off passtest passtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest passtest '
+                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         # Header is 2 lines + 5 lines per each test * 2 tests
         self.run_and_check(cmd_line, expected_rc=0,
                            expected_lines=2 + 2 * 5 * 4)
 
     def test_run_mplex_failtest(self):
-        cmd_line = './scripts/avocado run --sysinfo=off passtest failtest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest failtest '
+                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_double_mplex(self):
-        cmd_line = ('./scripts/avocado run --sysinfo=off passtest --multiplex '
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --multiplex '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml')
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 0
         # Header is 2 lines + 5 lines per each test (mux files are merged thus
         # only 1x4 variants are generated as in mplex_doublepass test)
         self.run_and_check(cmd_line, expected_rc, 2 + 5 * 4)
 
     def test_run_mplex_params(self):
-        cmd_line = ('./scripts/avocado run --sysinfo=off examples/tests/env_variables.sh '
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off examples/tests/env_variables.sh '
                     '--multiplex examples/tests/env_variables.sh.data'
                     '/env_variables.yaml '
-                    '--show-job-log')
+                    '--show-job-log' % self.tmpdir)
         expected_rc = 0
         result = self.run_and_check(cmd_line, expected_rc)
         for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
@@ -118,6 +127,9 @@ class MultiplexTests(unittest.TestCase):
                           "\n  %s\nwhich is not present in the output:\n  %s"
                           % ("\n  ".join(msg.splitlines()),
                              "\n  ".join(result.stdout.splitlines())))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 from avocado import test
 from avocado import job
 
@@ -23,13 +22,16 @@ class MultipleTests(test.Test):
         self.assertTrue(1, 1)
 
     def division_by_zero(self):
-        "This method should never execute"
+        """
+        This method should never execute
+        """
         return 1 / 0
 
     def action(self):
-        "This method should never execute"
-        pass
-
+        """
+        This method should never execute
+        """
+        raise Exception('This action method should never be executed.')
 
 if __name__ == '__main__':
     job.main()
