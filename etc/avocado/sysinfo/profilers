@@ -1,0 +1,2 @@
+vmstat 1
+journalctl -f
