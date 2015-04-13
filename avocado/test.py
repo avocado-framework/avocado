@@ -91,7 +91,7 @@ class Test(unittest.TestCase):
 
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
-        self.datadir = utils_path.init_dir(self.filename + '.data')
+        self.datadir = self.filename + '.data'
 
         self.expected_stdout_file = os.path.join(self.datadir,
                                                  'stdout.expected')
