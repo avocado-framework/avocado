@@ -139,9 +139,9 @@ class TestRunner(object):
 
         test_deadline = time_started + timeout
         if job_deadline > 0:
-            time_deadline = min(test_deadline, job_deadline)
+            deadline = min(test_deadline, job_deadline)
         else:
-            time_deadline = test_deadline
+            deadline = test_deadline
 
         ctrl_c_count = 0
         ignore_window = 2.0
@@ -151,7 +151,7 @@ class TestRunner(object):
 
         while True:
             try:
-                if time.time() >= time_deadline:
+                if time.time() >= deadline:
                     os.kill(p.pid, signal.SIGUSR1)
                     break
                 wait.wait_for(lambda: not q.empty() or not p.is_alive(),
@@ -238,17 +238,17 @@ class TestRunner(object):
         q = queues.SimpleQueue()
 
         if timeout > 0:
-            end_time = time.time() + timeout
+            deadline = time.time() + timeout
         else:
-            end_time = None
+            deadline = None
 
         for test_template in test_suite:
             for test_factory in mux.itertests(test_template):
-                if end_time is not None and time.time() > end_time:
+                if deadline is not None and time.time() > deadline:
                     test_factory = (test.TimeOutSkipTest, test_factory[1])
                     self._run_test(test_factory, q, failures)
                 else:
-                    if not self._run_test(test_factory, q, failures, end_time):
+                    if not self._run_test(test_factory, q, failures, deadline):
                         break
             runtime.CURRENT_TEST = None
         self.result.end_tests()
