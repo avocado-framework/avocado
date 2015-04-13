@@ -35,8 +35,8 @@ class SysInfoTest(unittest.TestCase):
         self.assertGreater(len(os.listdir(sysinfo_dir)), 0, msg)
         for hook in ('pre', 'post'):
             sysinfo_subdir = os.path.join(sysinfo_dir, hook)
-            msg = 'The sysinfo/%s subdirectory is empty:\n%s' % (hook, result)
-            self.assertGreater(len(os.listdir(sysinfo_subdir)), 0, msg)
+            msg = 'The sysinfo/%s subdirectory does not exist:\n%s' % (hook, result)
+            self.assertTrue(os.path.exists(sysinfo_subdir), msg)
 
     def test_sysinfo_disabled(self):
         os.chdir(basedir)
