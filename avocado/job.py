@@ -109,6 +109,7 @@ class Job(object):
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
         self.sysinfo = None
+        self.timeout = getattr(self.args, 'job_timeout', 0)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -320,7 +321,8 @@ class Job(object):
         _TEST_LOGGER.info('')
 
         self.view.logfile = self.logfile
-        failures = self.test_runner.run_suite(test_suite, mux)
+        failures = self.test_runner.run_suite(test_suite, mux,
+                                              timeout=self.timeout)
         self.view.stop_file_logging()
         if not self.standalone:
             self._update_latest_link()
