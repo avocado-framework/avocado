@@ -66,20 +66,6 @@ _DEFAULT_FILES_START_JOB = ["/proc/cmdline",
 
 _DEFAULT_FILES_END_JOB = _DEFAULT_FILES_START_JOB
 
-_DEFAULT_COMMANDS_START_ITERATION = []
-_DEFAULT_COMMANDS_END_ITERATION = ["/proc/schedstat",
-                                   "/proc/meminfo",
-                                   "/proc/slabinfo",
-                                   "/proc/interrupts",
-                                   "/proc/buddyinfo"]
-
-_DEFAULT_FILES_START_ITERATION = []
-_DEFAULT_FILES_END_ITERATION = ["/proc/schedstat",
-                                "/proc/meminfo",
-                                "/proc/slabinfo",
-                                "/proc/interrupts",
-                                "/proc/buddyinfo"]
-
 
 class Loggable(object):
 
@@ -350,8 +336,6 @@ class SysInfo(object):
 
     * start_job
     * start_test
-    * start_iteration
-    * end_iteration
     * end_test
     * end_job
     """
@@ -412,15 +396,10 @@ class SysInfo(object):
         self.start_test_loggables = set()
         self.end_test_loggables = set()
 
-        self.start_iteration_loggables = set()
-        self.end_iteration_loggables = set()
-
         self.hook_mapping = {'start_job': self.start_job_loggables,
                              'end_job': self.end_job_loggables,
                              'start_test': self.start_test_loggables,
-                             'end_test': self.end_test_loggables,
-                             'start_iteration': self.start_iteration_loggables,
-                             'end_iteration': self.end_iteration_loggables}
+                             'end_test': self.end_test_loggables}
 
         self.pre_dir = utils.path.init_dir(self.basedir, 'pre')
         self.post_dir = utils.path.init_dir(self.basedir, 'post')
@@ -468,18 +447,6 @@ class SysInfo(object):
         except ValueError, details:
             log.info(details)
 
-        for cmd in _DEFAULT_COMMANDS_START_ITERATION:
-            self.start_iteration_loggables.add(Command(cmd))
-
-        for cmd in _DEFAULT_COMMANDS_END_ITERATION:
-            self.end_iteration_loggables.add(Command(cmd))
-
-        for filename in _DEFAULT_FILES_START_ITERATION:
-            self.start_iteration_loggables.add(Logfile(filename))
-
-        for filename in _DEFAULT_FILES_END_ITERATION:
-            self.end_iteration_loggables.add(Logfile(filename))
-
     def _get_loggables(self, hook):
         loggables = self.hook_mapping.get(hook)
         if loggables is None:
@@ -493,7 +460,7 @@ class SysInfo(object):
 
         :param cmd: Command to log.
         :param hook: In which hook this cmd should be logged (start job, end
-                     job, start iteration, end iteration).
+                     job).
         """
         loggables = self._get_loggables(hook)
         loggables.add(Command(cmd))
@@ -504,7 +471,7 @@ class SysInfo(object):
 
         :param filename: Path to the file to be logged.
         :param hook: In which hook this file should be logged (start job, end
-                     job, start iteration, end iteration).
+                     job).
         """
         loggables = self._get_loggables(hook)
         loggables.add(Logfile(filename))
@@ -515,7 +482,7 @@ class SysInfo(object):
 
         :param filename: Path to the file to be logged.
         :param hook: In which hook this watcher should be logged (start job, end
-                     job, start iteration, end iteration).
+                     job).
         """
         loggables = self._get_loggables(hook)
         loggables.add(LogWatcher(filename))
@@ -590,20 +557,6 @@ class SysInfo(object):
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)
-
-    def start_iteration_hook(self):
-        """
-        Logging hook called before a test iteration
-        """
-        for log in self.start_iteration_loggables:
-            log.run(self.pre_dir)
-
-    def end_iteration_hook(self, test, iteration=None):
-        """
-        Logging hook called after a test iteration
-        """
-        for log in self.end_iteration_loggables:
-            log.run(self.post_dir)
 
 
 def collect_sysinfo(args):
