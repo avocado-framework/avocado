@@ -17,15 +17,20 @@
 Test loader module.
 """
 
+import imp
+import inspect
 import os
 import re
 import sys
-import imp
-import inspect
 
 from avocado import test
 from avocado.core import data_dir
 from avocado.utils import path
+
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 
 
 class _DebugJob(object):
@@ -99,7 +104,11 @@ class TestLoader(object):
                            'base_logdir': self.job.logdir,
                            'params': params,
                            'job': self.job}
+        stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         try:
+            sys.stdin = None
+            sys.stdout = StringIO.StringIO()
+            sys.stderr = StringIO.StringIO()
             f, p, d = imp.find_module(module_name, [test_module_dir])
             test_module = imp.load_module(module_name, f, p, d)
             f.close()
@@ -161,6 +170,10 @@ class TestLoader(object):
                     params['exception'] = details
                 else:
                     test_class = test.NotATest
+        finally:
+            sys.stdin = stdin
+            sys.stdout = stdout
+            sys.stderr = stderr
 
         sys.path.pop(sys.path.index(test_module_dir))
 
