@@ -983,7 +983,7 @@ class Tail(Spawn):
                 if _thread_kill_requested:
                     try:
                         os.close(fd)
-                    except:
+                    except Exception:
                         pass
                     return
                 try:
