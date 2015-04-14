@@ -84,7 +84,7 @@ class TestLoader(object):
 
     def _make_simple_test(self, test_path, params):
         test_class = test.SimpleTest
-        test_parameters = {'path': test_path,
+        test_parameters = {'name': test_path,
                            'base_logdir': self.job.logdir,
                            'params': params,
                            'job': self.job}
@@ -95,7 +95,7 @@ class TestLoader(object):
         test_module_dir = os.path.dirname(test_path)
         sys.path.append(test_module_dir)
         test_class = None
-        test_parameters_simple = {'path': test_path,
+        test_parameters_simple = {'name': test_path,
                                   'base_logdir': self.job.logdir,
                                   'params': params,
                                   'job': self.job}
