@@ -109,12 +109,12 @@ class SimpleTestClassTest(unittest.TestCase):
         self.fail_script.save()
 
         self.tst_instance_pass = test.SimpleTest(
-            path=self.pass_script.path,
+            name=self.pass_script.path,
             base_logdir=self.tmpdir)
         self.tst_instance_pass.run_avocado()
 
         self.tst_instance_fail = test.SimpleTest(
-            path=self.fail_script.path,
+            name=self.fail_script.path,
             base_logdir=self.tmpdir)
         self.tst_instance_fail.run_avocado()
 

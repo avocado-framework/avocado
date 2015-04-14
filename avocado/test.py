@@ -497,9 +497,9 @@ class SimpleTest(Test):
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
-    def __init__(self, path, params=None, base_logdir=None, tag=None, job=None):
-        self.path = os.path.abspath(path)
-        super(SimpleTest, self).__init__(name=path, base_logdir=base_logdir,
+    def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
+        self.path = os.path.abspath(name)
+        super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
         basedir = os.path.dirname(self.path)
         basename = os.path.basename(self.path)
