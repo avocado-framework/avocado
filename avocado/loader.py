@@ -95,15 +95,10 @@ class TestLoader(object):
         test_module_dir = os.path.dirname(test_path)
         sys.path.append(test_module_dir)
         test_class = None
-        test_parameters_simple = {'name': test_path,
-                                  'base_logdir': self.job.logdir,
-                                  'params': params,
-                                  'job': self.job}
-
-        test_parameters_name = {'name': test_name,
-                                'base_logdir': self.job.logdir,
-                                'params': params,
-                                'job': self.job}
+        test_parameters = {'name': test_name,
+                           'base_logdir': self.job.logdir,
+                           'params': params,
+                           'job': self.job}
         try:
             f, p, d = imp.find_module(module_name, [test_module_dir])
             test_module = imp.load_module(module_name, f, p, d)
@@ -119,25 +114,23 @@ class TestLoader(object):
                 if self._is_unittests_like(test_class):
                     test_factories = []
                     for test_method in self._make_unittests_like(test_class):
-                        copy_test_parameters_name = test_parameters_name.copy()
-                        copy_test_parameters_name['methodName'] = test_method[0]
+                        copy_test_parameters = test_parameters.copy()
+                        copy_test_parameters['methodName'] = test_method[0]
                         class_and_method_name = ':%s.%s' % (test_class.__name__, test_method[0])
-                        copy_test_parameters_name['name'] += class_and_method_name
-                        test_factories.append([test_class, copy_test_parameters_name])
+                        copy_test_parameters['name'] += class_and_method_name
+                        test_factories.append([test_class, copy_test_parameters])
                     return test_factories
-                else:
-                    test_parameters = test_parameters_name
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
                     # it's executable, let's execute it.
                     test_class = test.SimpleTest
-                    test_parameters = test_parameters_simple
+                    test_parameters['name'] = test_path
                 else:
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
                     test_class = test.NotATest
-                    test_parameters = test_parameters_name
+                    test_parameters['name'] = test_path
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -147,7 +140,7 @@ class TestLoader(object):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
                 test_class = test.SimpleTest
-                test_parameters = test_parameters_simple
+                test_parameters['name'] = test_path
             else:
                 # Module can't be imported and it's not an executable. Let's
                 # see if there's an avocado import into the test. Although
@@ -166,7 +159,6 @@ class TestLoader(object):
                     params['exception'] = details
                 else:
                     test_class = test.NotATest
-                test_parameters = test_parameters_name
 
         sys.path.pop(sys.path.index(test_module_dir))
 
