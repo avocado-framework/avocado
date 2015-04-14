@@ -89,7 +89,7 @@ def convert_value_type(value, value_type):
     # strip off leading and trailing white space
     try:
         sval = value.strip()
-    except:
+    except Exception:
         sval = value
 
     if isinstance(value_type, str):

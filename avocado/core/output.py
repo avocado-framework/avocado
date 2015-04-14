@@ -54,7 +54,7 @@ class ProgressStreamHandler(logging.StreamHandler):
             self.flush()
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception:
             self.handleError(record)
 
 
@@ -89,13 +89,13 @@ class Paginator(object):
     def close(self):
         try:
             self.pipe.close()
-        except:
+        except Exception:
             pass
 
     def write(self, msg):
         try:
             self.pipe.write(msg)
-        except:
+        except Exception:
             pass
 
 

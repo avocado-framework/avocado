@@ -687,7 +687,7 @@ class GDBSubProcess(object):
             try:
                 msgs = self.gdb.read_until_break()
                 messages += msgs
-            except:
+            except Exception:
                 pass
 
             try:
