@@ -142,7 +142,9 @@ class TestLoader(object):
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
         # will not crash.
-        except Exception, details:
+        except BaseException, details:  # Ugly python files can raise any exc
+            if isinstance(details, KeyboardInterrupt):
+                raise   # Don't ignore ctrl+c
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
