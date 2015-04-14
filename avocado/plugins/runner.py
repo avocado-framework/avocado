@@ -116,6 +116,8 @@ class TestRunner(plugin.Plugin):
                              help='Filter only path(s) from multiplexing')
             mux.add_argument('--filter-out', nargs='*', default=[],
                              help='Filter out path(s) from multiplexing')
+            mux.add_argument('--mux-entry', nargs='?', default=None,
+                             action='append', help="Multiplex entry point(s)")
 
         super(TestRunner, self).configure(self.parser)
         # Export the test runner parser back to the main parser

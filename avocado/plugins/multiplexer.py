@@ -49,7 +49,9 @@ class Multiplexer(plugin.Plugin):
 
         self.parser.add_argument('-t', '--tree', action='store_true', default=False,
                                  help='Shows the multiplex tree structure')
-
+        self.parser.add_argument('--attributes', nargs='*', default=None,
+                                 help="Which attributes to show when using "
+                                 "--tree (default is 'name')")
         self.parser.add_argument('-c', '--contents', action='store_true', default=False,
                                  help="Shows the variant content (variables)")
         self.parser.add_argument('-d', '--debug', action='store_true',
@@ -59,25 +61,24 @@ class Multiplexer(plugin.Plugin):
 
     def run(self, args):
         view = output.View(app_args=args)
-        multiplex_files = tuple(os.path.abspath(_)
-                                for _ in args.multiplex_files)
-        for path in multiplex_files:
-            if not os.path.isfile(path):
-                view.notify(event='error',
-                            msg='Invalid multiplex file %s' % path)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
+        multiplex_files = args.multiplex_files
         if args.tree:
             view.notify(event='message', msg='Config file tree structure:')
             t = tree.create_from_yaml(multiplex_files)
             t = tree.apply_filters(t, args.filter_only, args.filter_out)
-            view.notify(event='minor', msg=t.get_ascii())
+            view.notify(event='minor',
+                        msg=t.get_ascii(attributes=args.attributes))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
-        variants = multiplexer.multiplex_yamls(multiplex_files,
-                                               args.filter_only,
-                                               args.filter_out,
-                                               args.debug)
+        try:
+            variants = multiplexer.multiplex_yamls(multiplex_files,
+                                                   args.filter_only,
+                                                   args.filter_out,
+                                                   args.debug)
+        except IOError, details:
+            view.notify(event='error',
+                        msg="%s: '%s'" % (details.strerror, details.filename))
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
