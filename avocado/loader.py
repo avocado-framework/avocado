@@ -12,16 +12,16 @@
 # Copyright: Red Hat Inc. 2014
 # Authors: Lucas Meneghel Rodrigues <lmr@redhat.com>
 #          Ruda Moura <rmoura@redhat.com>
-
 """
 Test loader module.
 """
 
+import cStringIO
+import imp
+import inspect
 import os
 import re
 import sys
-import imp
-import inspect
 
 from avocado import test
 from avocado.core import data_dir
@@ -104,7 +104,12 @@ class TestLoader(object):
                                 'base_logdir': self.job.logdir,
                                 'params': params,
                                 'job': self.job}
+        # Fortify against very nasty python code
+        stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         try:
+            sys.stdin = None
+            sys.stdout = cStringIO.StringIO()
+            sys.stderr = cStringIO.StringIO()
             f, p, d = imp.find_module(module_name, [test_module_dir])
             test_module = imp.load_module(module_name, f, p, d)
             f.close()
@@ -142,7 +147,9 @@ class TestLoader(object):
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
         # will not crash.
-        except Exception, details:
+        except BaseException, details:  # Ugly python files can raise any exc
+            if isinstance(details, KeyboardInterrupt):
+                raise   # Don't ignore ctrl+c
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
@@ -167,6 +174,10 @@ class TestLoader(object):
                 else:
                     test_class = test.NotATest
                 test_parameters = test_parameters_name
+        finally:
+            sys.stdin = stdin
+            sys.stdout = stdout
+            sys.stderr = stderr
 
         sys.path.pop(sys.path.index(test_module_dir))
 

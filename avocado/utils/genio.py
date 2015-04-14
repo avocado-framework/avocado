@@ -147,7 +147,7 @@ def read_all_lines(filename):
     try:
         with open(filename, 'r') as file_obj:
             contents = [line.rstrip('\n') for line in file_obj.readlines()]
-    except:
+    except Exception:
         pass
     return contents
 

@@ -172,5 +172,7 @@ class TestList(plugin.Plugin):
                 self.view.notify(event='error', msg=msg)
             else:
                 sys.stderr.write(msg)
-        self.view.cleanup()
+        finally:
+            if self.view:
+                self.view.cleanup()
         sys.exit(rc)
