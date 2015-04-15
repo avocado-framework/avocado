@@ -331,17 +331,6 @@ class AvocadoParams(object):
                 pass
         return self._default_parmas.get(key, default)
 
-    def _get_leaf(self, path):
-        """ Get single leaf matching the path """
-        path = self._greedy_path(path)
-        for param in self._rel_paths:
-            try:
-                return param.get_leaf(path)
-            except NoMatchError:
-                pass
-        raise NoMatchError('No leaves matching "%s" pattern found in %s'
-                           % (path.pattern, self))
-
     def objects(self, key, path=None):
         """
         Return the names of objects defined using a given key.
@@ -407,33 +396,6 @@ class AvocadoParam(object):
         return [self._leaves[i]
                 for i in xrange(len(self._leaf_names))
                 if path.match(self._leaf_names[i])]
-
-    def get_leaf(self, path):
-        """
-        :param path: Desired path
-        :return: Single leaf containing the path
-        :raise NoMatchError: When no leaf matches the path
-        :raise KeyError: When multiple leaves matches the path
-        """
-        leaves = self._get_leaves(path)
-        if len(leaves) == 1:
-            return leaves[0]
-        elif len(leaves) == 0:
-            raise NoMatchError('No leaves matchng "%s" pattern found in %s'
-                               % (path.pattern, self.str_leaves_variant))
-        else:
-            raise KeyError('Multiple leaves matching "%s" found: %s'
-                           % (path.pattern, self.str_leaves_variant))
-
-    def get(self, path, key, default=None):
-        """
-        Returns value of key from $path path. Multiple matching path are
-        acceptable when only one of them contains the key.
-        """
-        try:
-            self.get_or_die(path, key)
-        except NoMatchError:
-            return default
 
     def get_or_die(self, path, key):
         """
