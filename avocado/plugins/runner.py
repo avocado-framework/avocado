@@ -64,6 +64,14 @@ class TestRunner(plugin.Plugin):
                                  help=('Forces to use of an alternate job '
                                        'results directory.'))
 
+        self.parser.add_argument('--job-timeout', action='store',
+                                 default=None, metavar='SECONDS',
+                                 help=('Set the maximum amount of time (in SECONDS) that '
+                                       'tests are allowed to execute. '
+                                       'Note that zero means "no timeout". '
+                                       'You can also use suffixes, like: '
+                                       ' s (seconds), m (minutes), h (hours). '))
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
@@ -121,22 +129,44 @@ class TestRunner(plugin.Plugin):
         # Export the test runner parser back to the main parser
         parser.runner = self.parser
 
+    def _validate_job_timeout(self, raw_timeout):
+        units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+        mult = 1
+        if raw_timeout is not None:
+            try:
+                unit = raw_timeout[-1].lower()
+                if unit in units:
+                    mult = units[unit]
+                    timeout = int(raw_timeout[:-1]) * mult
+                else:
+                    timeout = int(raw_timeout)
+                if timeout < 1:
+                    raise ValueError()
+            except (ValueError, TypeError):
+                self.view.notify(
+                    event='error',
+                    msg=("Invalid number '%s' for job timeout. "
+                         "Use an integer number greater than 0") % raw_timeout)
+                sys.exit(exit_codes.AVOCADO_FAIL)
+        else:
+            timeout = 0
+        return timeout
+
     def run(self, args):
         """
         Run test modules or simple tests.
 
         :param args: Command line args received from the run subparser.
         """
-        view = output.View(app_args=args)
+        self.view = output.View(app_args=args)
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
                 if len(args.unique_job_id) != 40:
                     raise ValueError
             except ValueError:
-                view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
-                return sys.exit(exit_codes.AVOCADO_FAIL)
-
+                self.view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
+                sys.exit(exit_codes.AVOCADO_FAIL)
+        args.job_timeout = self._validate_job_timeout(args.job_timeout)
         job_instance = job.Job(args)
-        rc = job_instance.run()
-        return rc
+        return job_instance.run()
