@@ -164,10 +164,18 @@ class AvocadoParams(object):
         self.__dict__.update(orig)
         self._log = logging.getLogger("avocado.test").debug
 
+    def __repr__(self):
+        return "<AvocadoParams %s>" % self._str()
+
     def __str__(self):
-        return "params {%s, %s}" % (", ".join(_.str_leaves_variant
-                                              for _ in self._rel_paths),
-                                    self._abs_path.str_leaves_variant)
+        return "params {%s}" % self._str()
+
+    def _str(self):
+        out = ",".join(_.str_leaves_variant for _ in self._rel_paths)
+        if out:
+            return self._abs_path.str_leaves_variant + ',' + out
+        else:
+            return self._abs_path.str_leaves_variant
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
