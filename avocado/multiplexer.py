@@ -240,8 +240,8 @@ class AvocadoParams(object):
             msg = ("You're probably retrieving param %s via attributes "
                    " (self.params.$key) which is obsoleted. Use "
                    "self.params.get($key) instead." % attr)
-            self._log.error(msg)
-            self.get(attr)
+            logging.getLogger("avocado.test").warn(msg)
+            return self.get(attr)
 
     def get(self, *args, **kwargs):
         """
