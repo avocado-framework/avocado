@@ -188,7 +188,7 @@ class Connection(object):
         """
         try:
             self.request('version')
-        except:
+        except Exception:
             return False
         return True
 
