@@ -287,7 +287,7 @@ class AvocadoParams(object):
                     elif len(args) > 1:
                         path = args[1]
                     else:
-                        path = None
+                        path = '/*'
                     key = args[0]
                     return [key, path, default]
                 except IndexError:
