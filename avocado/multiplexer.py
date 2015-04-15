@@ -142,6 +142,17 @@ class AvocadoParams(object):
         # TODO: Get rid of this and prepare something better
         self._default_parmas = default_params
 
+    def __eq__(self, other):
+        if set(self.__dict__.iterkeys()) != set(other.__dict__.iterkeys()):
+            return False
+        for attr in self.__dict__.iterkeys():
+            if (getattr(self, attr) != getattr(other, attr)):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
     def __getstate__(self):
         """ log can't be pickled """
         copy = self.__dict__.copy()
@@ -366,6 +377,15 @@ class AvocadoParam(object):
         # names cache (leaf.path is quite expensive)
         self._leaf_names = [leaf.path + '/' for leaf in leaves]
         self.name = name
+
+    def __eq__(self, other):
+        if self.__dict__ == other.__dict__:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not (self == other)
 
     @property
     def str_leaves_variant(self):
