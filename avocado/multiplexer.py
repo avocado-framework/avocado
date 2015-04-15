@@ -105,17 +105,11 @@ class AvocadoParams(object):
     absolute and relative paths. For relative paths one can define multiple
     paths to search for the value.
     It contains compatibility wrapper to act as the original avocado Params,
-    but by special useage you can utilize the new API. See ``get()``
+    but by special usage you can utilize the new API. See ``get()``
     docstring for details.
 
-    It supports querying for params of given path and key and copies the
-    "objects", "object_params" and "object_counts" methods (not tested).
-
-    Unsafely it also supports pickling, although to work properly params would
-    have to be deepcopied. This is not required for the current avocado usage.
-
     You can also iterate through all keys, but this can generate quite a lot
-    of duplicite entries inherited from ancestor nodes.  It shouldn't produce
+    of duplicate entries inherited from ancestor nodes.  It shouldn't produce
     false values, though.
 
     In this version each new "get()" call is logged into "avocado.test" log.
@@ -148,6 +142,17 @@ class AvocadoParams(object):
         # TODO: Get rid of this and prepare something better
         self._default_parmas = default_params
 
+    def __eq__(self, other):
+        if set(self.__dict__.iterkeys()) != set(other.__dict__.iterkeys()):
+            return False
+        for attr in self.__dict__.iterkeys():
+            if (getattr(self, attr) != getattr(other, attr)):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+
     def __getstate__(self):
         """ log can't be pickled """
         copy = self.__dict__.copy()
@@ -159,10 +164,18 @@ class AvocadoParams(object):
         self.__dict__.update(orig)
         self._log = logging.getLogger("avocado.test").debug
 
+    def __repr__(self):
+        return "<AvocadoParams %s>" % self._str()
+
     def __str__(self):
-        return "params {%s, %s}" % (", ".join(_.str_leaves_variant
-                                              for _ in self._rel_paths),
-                                    self._abs_path.str_leaves_variant)
+        return "params {%s}" % self._str()
+
+    def _str(self):
+        out = ",".join(_.str_leaves_variant for _ in self._rel_paths)
+        if out:
+            return self._abs_path.str_leaves_variant + ',' + out
+        else:
+            return self._abs_path.str_leaves_variant
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
@@ -192,11 +205,6 @@ class AvocadoParams(object):
         path = "/*/asdf"      => /[^/]*/asdf
         path = "asdf/*"       => $MUX_ENTRY/?.*/asdf/.*
         path = "/asdf/*"      => /asdf/.*
-        FIXME: __QUESTION__: Should "/path/*/path" match only
-        /path/$anything/path or can multiple levels be present
-        (/path/$multiple/$levels/path). The first is complaint to BASH, the
-        second might be easier to use. Alternatively we can allow multiple
-        levels only when "/*/" is used.
         """
         if not path:
             return re.compile('^$')
@@ -232,8 +240,8 @@ class AvocadoParams(object):
             msg = ("You're probably retrieving param %s via attributes "
                    " (self.params.$key) which is obsoleted. Use "
                    "self.params.get($key) instead." % attr)
-            self._log.error(msg)
-            self.get(attr)
+            logging.getLogger("avocado.test").warn(msg)
+            return self.get(attr)
 
     def get(self, *args, **kwargs):
         """
@@ -244,10 +252,6 @@ class AvocadoParams(object):
 
         As old and new API overlaps, you must use all 3 arguments or
         explicitely use key argument "path" or "default".
-
-        Concerning params clashes this version only validates that only single
-        param or multiple params of the same values are retrieved. This will
-        be replaced with proper origin check in the future.
         """
         def compatibility(args, kwargs):
             """
@@ -327,17 +331,6 @@ class AvocadoParams(object):
                 pass
         return self._default_parmas.get(key, default)
 
-    def _get_leaf(self, path):
-        """ Get single leaf matching the path """
-        path = self._greedy_path(path)
-        for param in self._rel_paths:
-            try:
-                return param.get_leaf(path)
-            except NoMatchError:
-                pass
-        raise NoMatchError('No leaves matching "%s" pattern found in %s'
-                           % (path.pattern, self))
-
     def objects(self, key, path=None):
         """
         Return the names of objects defined using a given key.
@@ -382,6 +375,15 @@ class AvocadoParam(object):
         self._leaf_names = [leaf.path + '/' for leaf in leaves]
         self.name = name
 
+    def __eq__(self, other):
+        if self.__dict__ == other.__dict__:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not (self == other)
+
     @property
     def str_leaves_variant(self):
         """ String with identifier and all params """
@@ -395,55 +397,26 @@ class AvocadoParam(object):
                 for i in xrange(len(self._leaf_names))
                 if path.match(self._leaf_names[i])]
 
-    def get_leaf(self, path):
-        """
-        :param path: Desired path
-        :return: Single leaf containing the path
-        :raise NoMatchError: When no leaf matches the path
-        :raise KeyError: When multiple leaves matches the path
-        """
-        leaves = self._get_leaves(path)
-        if len(leaves) == 1:
-            return leaves[0]
-        elif len(leaves) == 0:
-            raise NoMatchError('No leaves matchng "%s" pattern found in %s'
-                               % (path.pattern, self.str_leaves_variant))
-        else:
-            raise KeyError('Multiple leaves matching "%s" found: %s'
-                           % (path.pattern, self.str_leaves_variant))
-
-    def get(self, path, key, default=None):
-        """
-        Returns value of key from $path path. Multiple matching path are
-        acceptable when only one of them contains the key.
-        """
-        try:
-            self.get_or_die(path, key)
-        except NoMatchError:
-            return default
-
     def get_or_die(self, path, key):
         """
         Get a value or raise exception if not present
         :raise NoMatchError: When no matches
         :raise KeyError: When value is not certain (multiple matches)
         """
-        # TODO: Implement clash detection based on origin rather than value
         leaves = self._get_leaves(path)
-        ret = [leaf.environment[key]
+        ret = [(leaf.environment[key], leaf.environment_origin[key])
                for leaf in leaves
                if key in leaf.environment]
-        if len(ret) == 1:
-            return ret[0]
-        elif not ret:
+        if not ret:
             raise NoMatchError("No matches to %s => %s in %s"
                                % (path.pattern, key, self.str_leaves_variant))
+        if len(set([_[1] for _ in ret])) == 1:  # single source of results
+            return ret[0][0]
         else:
             raise ValueError("Multiple %s leaves contain the key '%s'; %s"
                              % (path.pattern, key,
-                                ["%s=>%s" % (leaf.name, leaf.environment[key])
-                                 for leaf in leaves
-                                 if key in leaf.environment]))
+                                ["%s=>%s" % (_[1].path, _[0])
+                                 for _ in ret]))
 
     def iteritems(self):
         """
@@ -457,6 +430,10 @@ class AvocadoParam(object):
 
 class Mux(object):
 
+    """
+    This is a multiplex object which multiplexes the test_suite.
+    """
+
     def __init__(self, args):
         mux_files = getattr(args, 'multiplex_files', None)
         filter_only = getattr(args, 'filter_only', None)
@@ -465,9 +442,16 @@ class Mux(object):
             self.pools = parse_yamls(mux_files, filter_only, filter_out)
         else:   # no variants
             self.pools = None
-        self._mux_entry = getattr(args, 'mux_entry_point', ['/test/*'])
+        self._mux_entry = getattr(args, 'mux_entry', None)
+        if self._mux_entry is None:
+            self._mux_entry = ['//test/*']
+        else:   # Prepend the root '/' (internal representation uses //)
+            self._mux_entry = ['/' + _ for _ in self._mux_entry]
 
     def get_number_of_tests(self, test_suite):
+        """
+        :return: overall number of tests * multiplex variants
+        """
         # Currently number of tests is symetrical
         if self.pools:
             return (len(test_suite) *
@@ -476,11 +460,14 @@ class Mux(object):
             return len(test_suite)
 
     def itertests(self, template):
+        """
+        Processes the template and yields test definition with proper params
+        """
         if self.pools:  # Copy template and modify it's params
             i = None
             for i, variant in enumerate(multiplex_pools(self.pools)):
                 test_factory = [template[0], template[1].copy()]
-                test_factory[1]['params'] = variant
+                test_factory[1]['params'] = (variant, self._mux_entry)
                 yield test_factory
             if i is None:   # No variants, use template
                 yield template

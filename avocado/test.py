@@ -130,14 +130,17 @@ class Test(unittest.TestCase):
         self.stdout_log = logging.getLogger("avocado.test.stdout")
         self.stderr_log = logging.getLogger("avocado.test.stderr")
 
+        mux_entry = ['/test/*']
         if isinstance(params, dict):
             self.default_params = self.default_params.copy()
             self.default_params.update(params)
             params = []
         elif params is None:
             params = []
+        elif isinstance(params, tuple):
+            params, mux_entry = params[0], params[1]
         self.params = multiplexer.AvocadoParams(params, self.name, self.tag,
-                                                ['/test/*'],
+                                                mux_entry,
                                                 self.default_params)
 
         self.log.info('START %s', self.tagged_name)
