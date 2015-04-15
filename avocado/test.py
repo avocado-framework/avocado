@@ -549,13 +549,6 @@ class MissingTest(Test):
     Handle when there is no such test module in the test directory.
     """
 
-    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
-                 job=None, runner_queue=None):
-        super(MissingTest, self).__init__(name=name,
-                                          base_logdir=base_logdir,
-                                          tag=tag, job=job,
-                                          runner_queue=runner_queue)
-
     def runTest(self):
         e_msg = ('Test %s could not be found in the test dir %s '
                  '(or test path does not exist)' %
@@ -572,14 +565,6 @@ class BuggyTest(Test):
     buggy python module.
     """
 
-    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
-                 job=None, runner_queue=None):
-        super(BuggyTest, self).__init__(name=name,
-                                        base_logdir=base_logdir,
-                                        params=params,
-                                        tag=tag, job=job,
-                                        runner_queue=runner_queue)
-
     def runTest(self):
         # pylint: disable=E0702
         raise self.params.get('exception')
@@ -594,14 +579,21 @@ class NotATest(Test):
     or a regular, non executable file.
     """
 
-    def __init__(self, name=None, params=None, base_logdir=None, tag=None,
-                 job=None, runner_queue=None):
-        super(NotATest, self).__init__(name=name,
-                                       base_logdir=base_logdir,
-                                       tag=tag, job=job,
-                                       runner_queue=runner_queue)
-
     def runTest(self):
         e_msg = ('File %s is not executable and does not contain an avocado '
                  'test class in it ' % self.name)
         raise exceptions.NotATestError(e_msg)
+
+
+class TimeOutSkipTest(Test):
+
+    """
+    Skip test due job timeout.
+
+    This test is skipped due a job timeout.
+    It will never have a chance to execute.
+    """
+
+    def runTest(self):
+        e_msg = 'Test skipped due a job timeout!'
+        raise exceptions.TestNAError(e_msg)

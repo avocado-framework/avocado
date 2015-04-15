@@ -25,6 +25,7 @@ import signal
 import sys
 import time
 
+from avocado import test
 from avocado import runtime
 from avocado.core import exceptions
 from avocado.core import output
@@ -111,7 +112,8 @@ class TestRunner(object):
             test_state['text_output'] = log_file_obj.read()
         return test_state
 
-    def _run_test(self, test_factory, q, failures):
+    def _run_test(self, test_factory, q, failures, job_deadline=0):
+
         p = multiprocessing.Process(target=self.run_test,
                                     args=(test_factory, q,))
 
@@ -134,7 +136,12 @@ class TestRunner(object):
         # for sure if there's a timeout set.
         timeout = (early_state.get('params', {}).get('timeout') or
                    self.DEFAULT_TIMEOUT)
-        time_deadline = time_started + timeout
+
+        test_deadline = time_started + timeout
+        if job_deadline > 0:
+            deadline = min(test_deadline, job_deadline)
+        else:
+            deadline = test_deadline
 
         ctrl_c_count = 0
         ignore_window = 2.0
@@ -144,7 +151,7 @@ class TestRunner(object):
 
         while True:
             try:
-                if time.time() >= time_deadline:
+                if time.time() >= deadline:
                     os.kill(p.pid, signal.SIGUSR1)
                     break
                 wait.wait_for(lambda: not q.empty() or not p.is_alive(),
@@ -216,7 +223,7 @@ class TestRunner(object):
             return False
         return True
 
-    def run_suite(self, test_suite, mux):
+    def run_suite(self, test_suite, mux, timeout=0):
         """
         Run one or more tests and report with test result.
 
@@ -230,11 +237,20 @@ class TestRunner(object):
         self.result.start_tests()
         q = queues.SimpleQueue()
 
+        if timeout > 0:
+            deadline = time.time() + timeout
+        else:
+            deadline = None
+
         for test_template in test_suite:
             for test_factory in mux.itertests(test_template):
-                if not self._run_test(test_factory, q, failures):
-                    break
-        runtime.CURRENT_TEST = None
+                if deadline is not None and time.time() > deadline:
+                    test_factory = (test.TimeOutSkipTest, test_factory[1])
+                    self._run_test(test_factory, q, failures)
+                else:
+                    if not self._run_test(test_factory, q, failures, deadline):
+                        break
+            runtime.CURRENT_TEST = None
         self.result.end_tests()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
