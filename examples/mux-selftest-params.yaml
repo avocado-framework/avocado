@@ -1,0 +1,29 @@
+!join
+root: "root"
+cache_test: 'cache'
+diff_domain: "text1"
+ch0:
+    diff_domain: "text2"
+    clash1: "equal"
+    clash3: "also equal"
+    ch0.1:
+        ch0.1.1:
+            ch0.1.1.1:
+                unique1: "unique1"
+                clash1: "equal"
+            ch0.1.1.2:
+                unique1: "unique1-2"
+        ch0.1.2:
+            unique3: "unique3"
+            clash3: "also equal"
+        ch0.1.3:
+            clash3: "also equal"
+ch1:
+    unique2: "unique2"
+    clash3: "also equal"
+ch11:
+    clash2: 'equal'
+    ch2.1:
+        unique4: "other_unique"
+ch111:
+    clash2: 'equal'

@@ -1,13 +1,14 @@
 import itertools
+import pickle
 import sys
+
+from avocado import multiplexer
+from avocado.core import tree
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
     import unittest
-
-from avocado import multiplexer
-from avocado.core import tree
 
 
 TREE = tree.create_from_yaml(['examples/mux-selftest.yaml'])
@@ -63,6 +64,119 @@ class TestMultiplex(unittest.TestCase):
         self.assertIn('prod', str_act)
         self.assertNotIn('intel', str_act)
         self.assertNotIn('fedora', str_act)
+
+
+class TestAvocadoParams(unittest.TestCase):
+    yamls = multiplexer.multiplex_yamls(['examples/mux-selftest-params.'
+                                         'yaml'])
+    params1 = multiplexer.AvocadoParams(yamls.next(), 'Unittest1', 1,
+                                        ['/ch0/*', '/ch1/*'], {})
+    yamls.next()    # Skip 2nd
+    yamls.next()    # and 3rd
+    params2 = multiplexer.AvocadoParams(yamls.next(), 'Unittest2', 1,
+                                        ['/ch1/*', '/ch0/*'], {})
+
+    def test_pickle(self):
+        params = pickle.dumps(self.params1, 2)  # protocol == 2
+        params = pickle.loads(params)
+        self.assertEqual(self.params1, params)
+
+    def test_basic(self):
+        self.assertEqual(self.params1, self.params1)
+        self.assertNotEqual(self.params1, self.params2)
+        repr(self.params1)
+        str(self.params1)
+        str(multiplexer.AvocadoParams([], 'Unittest', None, [], {}))
+        self.assertEqual(26, sum([1 for _ in self.params1.iteritems()]))
+
+    def test_get_old_api(self):
+        self.assertEqual(self.params1.get('unique1'), 'unique1')
+        self.assertEqual(self.params1.get('missing'), None)
+        self.assertEqual(self.params1.get('missing', 'aaa'), 'aaa')
+        self.assertEqual(self.params1.root, 'root')
+
+    def test_get_abs_path(self):
+        # /ch0/ is not leaf thus it's not queryable
+        self.assertEqual(self.params1.get('root', '/ch0/', 'bbb'), 'bbb')
+        self.assertEqual(self.params1.get('unique1', '/ch0/*', 'ccc'),
+                         'unique1')
+        self.assertEqual(self.params2.get('unique1', '/ch0/*', 'ddd'),
+                         'unique1-2')
+        self.assertEqual(self.params1.get('unique3', '/ch0/*', 'eee'),
+                         'unique3')
+        # unique3 is not in self.params2
+        self.assertEqual(self.params2.get('unique3', '/ch0/*', 'fff'),
+                         'fff')
+        # Use the leaf
+        self.assertEqual(self.params1.get('unique1',
+                                          '/ch0/ch0.1/ch0.1.1/ch0.1.1.1/',
+                                          'ggg'), 'unique1')
+        # '/ch0/ch0.1/ch0.1.1/' is in the tree, but not in current variant
+        self.assertEqual(self.params2.get('unique1',
+                                          '/ch0/ch0.1/ch0.1.1/ch0.1.1.1/',
+                                          'hhh'), 'hhh')
+
+    def test_get_greedy_path(self):
+        self.assertEqual(self.params1.get('unique1', '/*/*/*/ch0.1.1.1/',
+                                          111), 'unique1')
+        # not in this level (-1)
+        self.assertEqual(self.params1.get('unique1', '/*/*/ch0.1.1.1/', 222),
+                         222)
+        # not in this level (+1)
+        self.assertEqual(self.params1.get('unique1', '/*/*/*/*/ch0.1.1.1/',
+                                          333), 333)
+        self.assertEqual(self.params1.get('unique1', '/ch*/c*1/*0*/*1/',
+                                          444), 'unique1')
+        # '/ch0/ch0.1/ch0.1.1/' is in the tree, but not in current variant
+        self.assertEqual(self.params2.get('unique1', '/ch*/c*1/*0*/*1/',
+                                          555), 555)
+        self.assertEqual(self.params2.get('unique1', '/ch*/c*1/*', 666),
+                         'unique1-2')
+        self.assertEqual(self.params1.get('unique4', '/ch1*/*', 777),
+                         'other_unique')
+        self.assertEqual(self.params1.get('unique2', '/ch1*/*', 888),
+                         'unique2')
+        # path matches nothing
+        self.assertEqual(self.params1.get('root', '', 999), 999)
+
+    def test_get_rel_path(self):
+        self.assertEqual(self.params1.get('root', default='iii'), 'root')
+        self.assertEqual(self.params1.get('unique1', '*', 'jjj'), 'unique1')
+        self.assertEqual(self.params2.get('unique1', '*', 'kkk'), 'unique1-2')
+        self.assertEqual(self.params1.get('unique3', '*', 'lll'), 'unique3')
+        # unique3 is not in self.params2
+        self.assertEqual(self.params2.get('unique3', default='mmm'), 'mmm')
+        # Use the leaf
+        self.assertEqual(self.params1.get('unique1', '*/ch0.1.1.1/', 'nnn'),
+                         'unique1')
+        # '/ch0/ch0.1/ch0.1.1/' is in the tree, but not in current variant
+        self.assertEqual(self.params2.get('unique1', '*/ch0.1.1.1/', 'ooo'),
+                         'ooo')
+
+    def test_get_clashes(self):
+        # One inherited, the other is new
+        self.assertRaisesRegexp(ValueError, r"'clash1'.* \['/ch0/ch0.1/ch0.1.1"
+                                r"/ch0.1.1.1=>equal', '/ch0=>equal'\]",
+                                self.params1.get, 'clash1',
+                                default='nnn')
+        # Only inherited ones
+        self.assertEqual(self.params2.get('clash1', default='ooo'),
+                         'equal')
+        # Booth of different origin
+        self.assertRaisesRegexp(ValueError,
+                                r"'clash2'.* \['/ch11=>equal', "
+                                r"'/ch111=>equal'\]", self.params1.get,
+                                'clash2', path='/*')
+        # Filter-out the clash
+        self.assertEqual(self.params1.get('clash2', path='/ch11/*'), 'equal')
+        # simple clash in params1
+        self.assertRaisesRegexp(ValueError, r"'clash3'.* \['/ch0=>also equal',"
+                                r" '/ch0/ch0.1/ch0.1.2=>also equal'\]",
+                                self.params1.get, 'clash3',
+                                default='nnn')
+        # params2 is sliced the other way around so it returns before the clash
+        self.assertEqual(self.params2.get('clash3', default='nnn'),
+                         'also equal')
 
 
 if __name__ == '__main__':
