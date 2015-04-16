@@ -275,7 +275,7 @@ class HTMLTestResult(TestResult):
 class HTML(plugin.Plugin):
 
     """
-    HTML job report.
+    HTML job report
     """
 
     name = 'htmlresult'
