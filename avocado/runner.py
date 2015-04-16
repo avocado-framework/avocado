@@ -40,7 +40,7 @@ class TestRunner(object):
     """
     A test runner class that displays tests results.
     """
-    DEFAULT_TIMEOUT = 60 * 60 * 24
+    DEFAULT_TIMEOUT = 86400
 
     def __init__(self, job, test_result):
         """
@@ -52,12 +52,12 @@ class TestRunner(object):
         self.job = job
         self.result = test_result
 
-    def run_test(self, test_factory, queue):
+    def _run_test(self, test_factory, queue):
         """
-        Run a test instance in a subprocess.
+        Run a test instance.
 
-        :param instance: Test instance.
-        :type instance: :class:`avocado.test.Test` instance.
+        :param test_factory: Test factory (test class and parameters).
+        :type test_factory: tuple of :class:`avocado.test.Test` and dict.
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
@@ -112,18 +112,29 @@ class TestRunner(object):
             test_state['text_output'] = log_file_obj.read()
         return test_state
 
-    def _run_test(self, test_factory, q, failures, job_deadline=0):
+    def run_test(self, test_factory, queue, failures, job_deadline=0):
+        """
+        Run a test instance inside a subprocess.
 
-        p = multiprocessing.Process(target=self.run_test,
-                                    args=(test_factory, q,))
+        :param test_factory: Test factory (test class and parameters).
+        :type test_factory: tuple of :class:`avocado.test.Test` and dict.
+        :param queue: Multiprocess queue.
+        :type queue: :class`multiprocessing.Queue` instance.
+        :param failures: Store tests failed.
+        :type failures: list.
+        :param job_deadline: Maximum time to execute.
+        :type job_deadline: int.
+        """
+        proc = multiprocessing.Process(target=self._run_test,
+                                       args=(test_factory, queue,))
 
         cycle_timeout = 1
         time_started = time.time()
         test_state = None
 
-        p.start()
+        proc.start()
 
-        early_state = q.get()
+        early_state = queue.get()
 
         if 'load_exception' in early_state:
             self.job.view.notify(event='error',
@@ -148,16 +159,18 @@ class TestRunner(object):
         ignore_time_started = time.time()
         stage_1_msg_displayed = False
         stage_2_msg_displayed = False
+        first = 0.01
+        step = 0.1
 
         while True:
             try:
                 if time.time() >= deadline:
-                    os.kill(p.pid, signal.SIGUSR1)
+                    os.kill(proc.pid, signal.SIGUSR1)
                     break
-                wait.wait_for(lambda: not q.empty() or not p.is_alive(),
-                              cycle_timeout, first=0.01, step=0.1)
-                if not q.empty():
-                    test_state = q.get()
+                wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
+                              cycle_timeout, first, step)
+                if not queue.empty():
+                    test_state = queue.get()
                     if not test_state['running']:
                         break
                     else:
@@ -167,12 +180,11 @@ class TestRunner(object):
                             if msg:
                                 self.job.view.notify(event='partial', msg=msg)
 
-                elif p.is_alive():
+                elif proc.is_alive():
                     if ctrl_c_count == 0:
                         self.job.result_proxy.notify_progress()
                 else:
                     break
-
             except KeyboardInterrupt:
                 time_elapsed = time.time() - ignore_time_started
                 ctrl_c_count += 1
@@ -196,13 +208,13 @@ class TestRunner(object):
                                    "Killing all active tests")
                         self.job.view.notify(event='message', msg=k_msg_3)
                         stage_2_msg_displayed = True
-                    os.kill(p.pid, signal.SIGKILL)
+                    os.kill(proc.pid, signal.SIGKILL)
 
         # If test_state is None, the test was aborted before it ended.
         if test_state is None:
-            if p.is_alive() and wait.wait_for(lambda: not q.empty(),
-                                              cycle_timeout, first=0.01, step=0.1):
-                test_state = q.get()
+            if proc.is_alive() and wait.wait_for(lambda: not queue.empty(),
+                                                 cycle_timeout, first, step):
+                test_state = queue.get()
             else:
                 early_state['time_elapsed'] = time.time() - time_started
                 test_state = self._fill_aborted_test_state(early_state)
@@ -228,14 +240,15 @@ class TestRunner(object):
         Run one or more tests and report with test result.
 
         :param test_suite: a list of tests to run.
-
+        :param mux: the multiplexer.
+        :param timeout: maximum amount of time (in seconds) to execute.
         :return: a list of test failures.
         """
         failures = []
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
         self.result.start_tests()
-        q = queues.SimpleQueue()
+        queue = queues.SimpleQueue()
 
         if timeout > 0:
             deadline = time.time() + timeout
@@ -249,9 +262,9 @@ class TestRunner(object):
                     if test_parameters.has_key('methodName'):
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
-                    self._run_test(test_factory, q, failures)
+                    self.run_test(test_factory, queue, failures)
                 else:
-                    if not self._run_test(test_factory, q, failures, deadline):
+                    if not self.run_test(test_factory, queue, failures, deadline):
                         break
             runtime.CURRENT_TEST = None
         self.result.end_tests()
