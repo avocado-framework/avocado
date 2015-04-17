@@ -25,7 +25,7 @@ from avocado import multiplexer
 class Multiplexer(plugin.Plugin):
 
     """
-    Implements the avocado 'multiplex' subcommand.
+    Implements the avocado 'multiplex' subcommand
     """
 
     name = 'multiplexer'

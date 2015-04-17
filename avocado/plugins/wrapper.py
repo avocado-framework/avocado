@@ -23,6 +23,10 @@ from avocado.plugins import plugin
 
 class Wrapper(plugin.Plugin):
 
+    """
+    Implements the '--wrapper' flag for the 'run' subcommand
+    """
+
     name = 'wrapper'
     enabled = True
 
