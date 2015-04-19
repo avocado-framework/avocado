@@ -2,7 +2,6 @@
 
 import sys
 import os
-import shutil
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -21,14 +20,6 @@ ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 _sphinx_apidoc = path.find_command('sphinx-apidoc')
 _output_dir = os.path.join(root_path, 'docs', 'source', 'api')
 _api_dir = os.path.join(root_path, 'avocado')
-
-if ON_RTD:
-    git = path.find_command('git', False)
-    if git is not False:
-        cmd = "%s clone git://github.com/avocado-framework/avocado-virt.git %s"
-        process.run(cmd % (git, os.path.join(root_path, 'avocado-virt')))
-        shutil.move(os.path.join(root_path, 'avocado-virt', 'avocado', 'virt'),
-                    _api_dir)
 
 process.run("%s -o %s %s" % (_sphinx_apidoc, _output_dir, _api_dir))
 
