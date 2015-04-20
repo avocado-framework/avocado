@@ -135,3 +135,16 @@ Workaround
 If the application you're running as part of your test can read input from alternative
 sources (including devices, files or the network) and generate output likewise, then
 you should not be further limited.
+
+GDB support and avocado-virt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Another current limitation is the use of `avocado-virt` and `avocado` GDB support.
+
+The supported API for transparent debugging is currently limited to
+:func:`avocado.utils.process.run`, and does not cover advanced uses of the
+:class:`avocado.utils.process.SubProcess` class. The `avocado-virt`
+extension, though, uses :class:`avocado.utils.process.SubProcess` class to
+execute `qemu` in the background.
+
+This limitation will be addressed in future versions of `avocado` and `avocado-virt`.
