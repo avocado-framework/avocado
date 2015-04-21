@@ -179,8 +179,7 @@ class AvocadoParams(object):
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
-        self._log("PARAMS: %-20s | %-20s | %-10s => %r"
-                  % (key, path, default, value))
+        self._log("PARAMS (key=%s, path=%s, default=%s) => %r", key, path, default, value)
 
     def _get_matching_leaves(self, path, leaves):
         """
