@@ -19,7 +19,7 @@
 	 "description": "On your development machine, execute Avocado with the Remote plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest --remote-username <user> --remote-password <pass> --remote-hostname <host> --html /tmp/report.html`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
 
 	{"name": "Avocado Remote Machine HTML report",
-	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `boot.py` (under `Test ID`) and `debug.log` point to valid locations."},
+	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `passtest.py` (under `Test ID`) and `debug.log` point to valid locations."},
 
 	{"name": "Avocado Server Source Checkout and Unittests",
 	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt`. Then finally run the unittests with `$ ./selftests/runtests.py`. Expected result: `OK`"},
