@@ -140,7 +140,7 @@ class AvocadoParams(object):
         self._log = logging.getLogger("avocado.test").debug
         self._cache = {}     # TODO: Implement something more efficient
         # TODO: Get rid of this and prepare something better
-        self._default_parmas = default_params
+        self._default_params = default_params
 
     def __eq__(self, other):
         if set(self.__dict__.iterkeys()) != set(other.__dict__.iterkeys()):
@@ -329,7 +329,7 @@ class AvocadoParams(object):
                 return self._abs_path.get_or_die(path, key)
             except NoMatchError:
                 pass
-        return self._default_parmas.get(key, default)
+        return self._default_params.get(key, default)
 
     def objects(self, key, path=None):
         """
