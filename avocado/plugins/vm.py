@@ -67,10 +67,6 @@ class RunVM(plugin.Plugin):
                                     action='store_true',
                                     help="Don't copy tests and use the "
                                     "exact uri on VM machine.")
-        self.vm_parser.add_argument('--vm-timeout', type=float,
-                                    help="Host timeout before the "
-                                    "connection is cut off and test "
-                                    "set as failed.")
         self.configured = True
 
     @staticmethod

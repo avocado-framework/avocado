@@ -56,7 +56,7 @@ class RemoteTestRunner(TestRunner):
 
         return (True, tuple(map(int, match.groups())))
 
-    def run_test(self, urls):
+    def run_test(self, urls, timeout):
         """
         Run tests.
 
@@ -84,11 +84,11 @@ class RemoteTestRunner(TestRunner):
                                          urls_str))
         try:
             result = self.result.remote.run(avocado_cmd, ignore_status=True,
-                                            timeout=self.result.timeout)
+                                            timeout=timeout)
         except CommandTimeout:
             raise exceptions.JobError("Remote execution took longer than "
                                       "specified timeout (%s). Interrupting."
-                                      % (self.result.timeout))
+                                      % (timeout))
         json_result = None
         for json_output in result.stdout.splitlines():
             # We expect dictionary:
@@ -112,7 +112,7 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux):
+    def run_suite(self, test_suite, mux, timeout):
         """
         Run one or more tests and report with test result.
 
@@ -123,9 +123,11 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.result.urls instead
         del mux            # we're not using multiplexation here
+        if not timeout:     # avoid timeout = 0
+            timeout = None
         failures = []
         self.result.setup()
-        results = self.run_test(self.result.urls)
+        results = self.run_test(self.result.urls, timeout)
         remote_log_dir = os.path.dirname(results['debuglog'])
         self.result.start_tests()
         for tst in results['tests']:

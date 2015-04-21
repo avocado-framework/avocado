@@ -50,7 +50,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
                 "--json - --archive sleeptest")
         (Remote.should_receive('run')
-         .with_args(args, timeout=None, ignore_status=True)
+         .with_args(args, timeout=61, ignore_status=True)
          .once().and_return(test_results))
         Results = flexmock(remote=Remote, urls=['sleeptest'],
                            stream=stream, timeout=None)
@@ -85,7 +85,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
 
     def test_run_suite(self):
         """ Test RemoteTestRunner.run_suite() """
-        self.remote.run_suite(None, None)
+        self.remote.run_suite(None, None, 61)
         flexmock_teardown()  # Checks the expectations
 
 
