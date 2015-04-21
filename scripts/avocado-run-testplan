@@ -142,8 +142,9 @@ class App(object):
         print("Run by '%s' at %s" % (data.get("user_identification"),
                                      data.get("datetime")))
         for result in data.get("results"):
-            print("- %s: %s" % (result.get("name"),
-                                result.get("result")))
+            print("%s: '%s': %s" % (result.get("result"),
+                                    result.get("name"),
+                                    result.get("notes")))
 
 if __name__ == '__main__':
     app = App()
