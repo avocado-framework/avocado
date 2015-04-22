@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.21.0
-Release: 6%{?dist}
+Version: 0.23.0
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -103,6 +103,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/api
 
 %changelog
+* Tue Apr 21 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.23.0-1
+- New upstream release
+
 * Mon Apr 13 2015 Cleber Rosa <cleber@redhat.com> - 0.21.0-6
 - Added sysinfo configuration files
 
