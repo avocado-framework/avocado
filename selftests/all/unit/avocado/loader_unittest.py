@@ -12,10 +12,11 @@ basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.core import exceptions
-from avocado.utils import script
-from avocado import loader
 from avocado import test
+from avocado.core import exceptions
+from avocado.core import loader
+from avocado.utils import script
+
 
 AVOCADO_TEST_OK = """#!/usr/bin/python
 from avocado import main

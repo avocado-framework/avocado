@@ -29,9 +29,9 @@ import fnmatch
 from avocado import multiplexer
 from avocado import result
 from avocado import runner
-from avocado import loader
 from avocado import runtime
 from avocado import sysinfo
+from avocado.core import loader
 from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import exceptions
