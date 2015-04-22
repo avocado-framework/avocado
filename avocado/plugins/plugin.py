@@ -64,7 +64,7 @@ class Plugin(object):
     def configure(self, parser):
         """Configuration and argument parsing.
 
-        :param parser: an instance of :class:`avocado.cli.parser.Parser`
+        :param parser: an instance of :class:`avocado.core.parser.Parser`
 
         To create a runner plugin, just call this method with `super()`.
         To create a result plugin, just set `configure` to `True`.

@@ -18,7 +18,7 @@ The core Avocado application.
 
 import os
 
-from avocado.cli.parser import Parser
+from avocado.core.parser import Parser
 from avocado.plugins.manager import get_plugin_manager
 
 
