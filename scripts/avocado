@@ -24,7 +24,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
     sys.path.append(basedir)
 
-from avocado.cli.app import AvocadoApp
+from avocado.core.app import AvocadoApp
 
 if __name__ == '__main__':
     app = AvocadoApp()

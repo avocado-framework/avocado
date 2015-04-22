@@ -107,7 +107,6 @@ if __name__ == '__main__':
           author_email='avocado-devel@redhat.com',
           url='http://avocado-framework.github.io/',
           packages=['avocado',
-                    'avocado.cli',
                     'avocado.core',
                     'avocado.external',
                     'avocado.linux',
