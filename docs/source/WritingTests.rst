@@ -208,7 +208,7 @@ the :func:`assert` class methods on your tests. Some silly examples::
 
 The reason why we have a shebang in the beginning of the test is because
 avocado tests, similarly to unittests, can use an entry point, called
-:func:`avocado.job.main`, that calls avocado libs to look for test classes and execute
+:func:`avocado.core.job.main`, that calls avocado libs to look for test classes and execute
 its main entry point. This is an optional, but fairly handy feature. In case
 you want to use it, don't forget to ``chmod +x`` your test.
 

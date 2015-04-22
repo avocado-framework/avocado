@@ -4,7 +4,7 @@ import os
 import shutil
 
 from avocado import gdb
-from avocado import job
+from avocado.core import job
 from avocado import test
 from avocado.utils import build
 

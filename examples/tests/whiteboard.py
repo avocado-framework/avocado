@@ -3,7 +3,7 @@
 import base64
 
 from avocado import test
-from avocado import job
+from avocado.core import job
 
 
 class WhiteBoard(test.Test):
