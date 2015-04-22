@@ -140,7 +140,7 @@ class AvocadoParams(object):
         self._log = logging.getLogger("avocado.test").debug
         self._cache = {}     # TODO: Implement something more efficient
         # TODO: Get rid of this and prepare something better
-        self._default_parmas = default_params
+        self._default_params = default_params
 
     def __eq__(self, other):
         if set(self.__dict__.iterkeys()) != set(other.__dict__.iterkeys()):
@@ -179,8 +179,7 @@ class AvocadoParams(object):
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
-        self._log("PARAMS: %-20s | %-20s | %-10s => %r"
-                  % (key, path, default, value))
+        self._log("PARAMS (key=%s, path=%s, default=%s) => %r", key, path, default, value)
 
     def _get_matching_leaves(self, path, leaves):
         """
@@ -329,7 +328,7 @@ class AvocadoParams(object):
                 return self._abs_path.get_or_die(path, key)
             except NoMatchError:
                 pass
-        return self._default_parmas.get(key, default)
+        return self._default_params.get(key, default)
 
     def objects(self, key, path=None):
         """

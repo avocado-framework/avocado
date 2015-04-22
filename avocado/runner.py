@@ -259,7 +259,7 @@ class TestRunner(object):
             for test_factory in mux.itertests(test_template):
                 if deadline is not None and time.time() > deadline:
                     test_parameters = test_factory[1]
-                    if test_parameters.has_key('methodName'):
+                    if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
                     self.run_test(test_factory, queue, failures)
