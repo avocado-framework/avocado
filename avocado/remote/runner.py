@@ -19,8 +19,8 @@ import re
 
 from avocado.core import exceptions
 from avocado.core import status
+from avocado.core.runner import TestRunner
 from avocado.remote.test import RemoteTest
-from avocado.runner import TestRunner
 from avocado.utils import archive
 from fabric.exceptions import CommandTimeout
 
