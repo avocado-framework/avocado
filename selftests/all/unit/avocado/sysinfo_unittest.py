@@ -14,7 +14,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import sysinfo
+from avocado.core import sysinfo
 
 
 class SysinfoTest(unittest.TestCase):
