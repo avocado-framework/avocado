@@ -27,13 +27,11 @@ import shutil
 import fnmatch
 
 from avocado import multiplexer
-from avocado import result
 from avocado import runtime
 from avocado.core import runner
 from avocado.core import loader
 from avocado.core import sysinfo
-from avocado.core import runner
-from avocado.core import loader
+from avocado.core import result
 from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import exceptions

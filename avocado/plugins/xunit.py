@@ -18,8 +18,8 @@ import datetime
 from xml.sax.saxutils import quoteattr
 
 from avocado.core import output
+from avocado.core.result import TestResult
 from avocado.plugins import plugin
-from avocado.result import TestResult
 
 
 # We use a subset of the XML format defined in this URL:
