@@ -3,7 +3,7 @@
 import os
 
 from avocado import test
-from avocado import job
+from avocado.core import job
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process

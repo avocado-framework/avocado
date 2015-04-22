@@ -14,7 +14,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 
 from avocado.plugins import xunit
 from avocado import test
-from avocado import job
+from avocado.core import job
 
 
 class ParseXMLError(Exception):

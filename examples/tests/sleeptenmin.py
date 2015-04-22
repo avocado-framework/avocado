@@ -3,7 +3,7 @@
 import os
 import time
 
-from avocado import job
+from avocado.core import job
 from avocado import test
 
 

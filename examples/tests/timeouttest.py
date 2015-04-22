@@ -3,7 +3,7 @@
 import time
 
 from avocado import test
-from avocado import job
+from avocado.core import job
 
 
 class TimeoutTest(test.Test):
