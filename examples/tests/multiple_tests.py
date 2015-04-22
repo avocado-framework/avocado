@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from avocado import test
-from avocado import job
+from avocado.core import job
 
 
 class MultipleTests(test.Test):

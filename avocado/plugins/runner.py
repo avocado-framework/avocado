@@ -22,7 +22,7 @@ from avocado.settings import settings
 from avocado.core import exit_codes
 from avocado.plugins import plugin
 from avocado.core import output
-from avocado import job
+from avocado.core import job
 from avocado import multiplexer
 
 

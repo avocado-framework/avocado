@@ -18,7 +18,7 @@ from avocado import loader
 from avocado import test
 
 AVOCADO_TEST_OK = """#!/usr/bin/python
-from avocado import job
+from avocado.core import job
 from avocado import test
 
 class PassTest(test.Test):
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 """
 
 AVOCADO_TEST_BUGGY = """#!/usr/bin/python
-from avocado import job
+from avocado.core import job
 from avocado import test
 import adsh
 

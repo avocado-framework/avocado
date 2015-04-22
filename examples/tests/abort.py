@@ -3,7 +3,7 @@
 import os
 
 from avocado import test
-from avocado import job
+from avocado.core import job
 
 
 class AbortTest(test.Test):
