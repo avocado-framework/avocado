@@ -4,7 +4,7 @@ import os
 import shutil
 
 from avocado import gdb
-from avocado.core import job
+from avocado import main
 from avocado import test
 from avocado.utils import build
 
@@ -51,4 +51,4 @@ class PrintVariableTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

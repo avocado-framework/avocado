@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from avocado import test
-from avocado.core import job
+from avocado import main
 
 
 class MultiplexTest(test.Test):
@@ -72,4 +72,4 @@ class MultiplexTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

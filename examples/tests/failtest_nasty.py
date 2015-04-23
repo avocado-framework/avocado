@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from avocado import test
-from avocado.core import job
+from avocado import main
 
 
 class NastyException(Exception):
@@ -29,4 +29,4 @@ class FailTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

@@ -42,8 +42,8 @@ nothing but ``time.sleep([number-seconds])``::
 
     import time
 
-    from avocado import job
     from avocado import test
+    from avocado import main
 
 
     class SleepTest(test.Test):
@@ -62,7 +62,7 @@ nothing but ``time.sleep([number-seconds])``::
 
 
     if __name__ == "__main__":
-        job.main()
+        main()
 
 
 This is about the simplest test you can write for avocado (at least, one using
@@ -208,7 +208,7 @@ the :func:`assert` class methods on your tests. Some silly examples::
 
 The reason why we have a shebang in the beginning of the test is because
 avocado tests, similarly to unittests, can use an entry point, called
-:func:`avocado.core.job.main`, that calls avocado libs to look for test classes and execute
+:func:`avocado.main`, that calls avocado libs to look for test classes and execute
 its main entry point. This is an optional, but fairly handy feature. In case
 you want to use it, don't forget to ``chmod +x`` your test.
 
@@ -266,7 +266,7 @@ an example that does that::
     import os
 
     from avocado import test
-    from avocado import job
+    from avocado import main
     from avocado.utils import archive
     from avocado.utils import build
     from avocado.utils import process
@@ -304,7 +304,7 @@ an example that does that::
 
 
     if __name__ == "__main__":
-        job.main()
+        main()
 
 Here we have an example of the ``setup`` method in action: Here we get the
 location of the test suite code (tarball) through
@@ -615,7 +615,7 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
     import time
 
     from avocado import test
-    from avocado import job
+    from avocado import main
 
 
     class TimeoutTest(test.Test):
@@ -636,7 +636,7 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
 
 
     if __name__ == "__main__":
-        job.main()
+        main()
 
 This accomplishes a similar effect to the multiplex setup defined in there.
 

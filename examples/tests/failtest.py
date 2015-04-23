@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from avocado import test
-from avocado.core import job
+from avocado import main
 from avocado.core import exceptions
 
 
@@ -19,4 +19,4 @@ class FailTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()
