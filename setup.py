@@ -108,7 +108,6 @@ if __name__ == '__main__':
           url='http://avocado-framework.github.io/',
           packages=['avocado',
                     'avocado.core',
-                    'avocado.external',
                     'avocado.linux',
                     'avocado.utils',
                     'avocado.plugins',
