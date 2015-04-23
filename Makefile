@@ -17,7 +17,8 @@ all:
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=SOURCES --prune
+	if test ! -d SOURCES; then mkdir SOURCES; fi
+	git archive --prefix="avocado-$(VERSION)/" -o "SOURCES/avocado-$(VERSION).tar.gz" HEAD
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
