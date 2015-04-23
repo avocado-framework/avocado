@@ -24,7 +24,7 @@ import re
 import sys
 
 from avocado import test
-from avocado.core import data_dir
+from avocado import data_dir
 from avocado.utils import path
 
 try:
