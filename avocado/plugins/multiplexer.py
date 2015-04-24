@@ -64,7 +64,12 @@ class Multiplexer(plugin.Plugin):
         multiplex_files = args.multiplex_files
         if args.tree:
             view.notify(event='message', msg='Config file tree structure:')
-            t = tree.create_from_yaml(multiplex_files)
+            try:
+                t = tree.create_from_yaml(multiplex_files)
+            except IOError, details:
+                view.notify(event='error', msg="%s: '%s'" % (details.strerror,
+                                                             details.filename))
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             t = tree.apply_filters(t, args.filter_only, args.filter_out)
             view.notify(event='minor',
                         msg=t.get_ascii(attributes=args.attr))

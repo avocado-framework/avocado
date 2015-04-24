@@ -307,7 +307,12 @@ class Job(object):
                      "filters, typos)")
             raise exceptions.OptionValidationError(e_msg)
 
-        mux = multiplexer.Mux(self.args)
+        try:
+            mux = multiplexer.Mux(self.args)
+        except IOError, details:
+            raise exceptions.OptionValidationError("%s: '%s'"
+                                                   % (details.strerror,
+                                                      details.filename))
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
