@@ -19,7 +19,7 @@ The core Avocado application.
 import os
 
 from avocado.core.parser import Parser
-from avocado.plugins.manager import get_plugin_manager
+from avocado.core.plugins.manager import get_plugin_manager
 
 
 class AvocadoApp(object):

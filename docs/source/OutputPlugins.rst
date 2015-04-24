@@ -124,7 +124,7 @@ Implementing other output formats
 ---------------------------------
 
 If you are looking to implement a new machine/human readable output format,
-you can refer to :mod:`avocado.plugins.xunit`. In a nutshell, you have to
+you can refer to :mod:`avocado.core.plugins.xunit`. In a nutshell, you have to
 implement a class that inherits from :class:`avocado.result.TestResult` and
 implements all public methods, that perform actions (write to a file/stream)
 for each test states. You can take a look at :doc:`Plugins` for more info

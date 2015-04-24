@@ -37,14 +37,14 @@ from avocado.core import exit_codes
 from avocado.core import exceptions
 from avocado.core import job_id
 from avocado.core import output
-from avocado.plugins import jsonresult
-from avocado.plugins import xunit
+from avocado.core.plugins import jsonresult
+from avocado.core.plugins import xunit
 from avocado.utils import archive
 from avocado.utils import path
 from avocado.settings import settings
 
 try:
-    from avocado.plugins import htmlresult
+    from avocado.core.plugins import htmlresult
 except ImportError:
     HTML_REPORT_SUPPORT = False
 else:
