@@ -487,14 +487,17 @@ def create_from_yaml(paths, debug=False):
         data = tree_debug.TreeNodeDebug()
         merge = _merge_debug
 
+    path = None
     try:
         for path in paths:
             merge(data, path)
-    except (yaml.scanner.ScannerError, yaml.parser.ParserError) as err:
-        if 'mapping values are not allowed in this context' in str(err):
-            err = ("%s\n\nMake sure !tags and colons are separated by a space "
-                   "(eg. !include :)" % err)
-        raise SyntaxError(err)
+    # Yaml can raise IndexError on some files
+    except (yaml.YAMLError, IndexError) as details:
+        if 'mapping values are not allowed in this context' in str(details):
+            details = ("%s\nMake sure !tags and colons are separated by a "
+                       "space (eg. !include :)" % details)
+        msg = "Invalid multiplex file '%s': %s" % (path, details)
+        raise IOError(2, msg, path)
     return data
 
 
