@@ -29,18 +29,18 @@ false
 """
 
 VOID_PLUGIN_CONTENTS = """#!/usr/bin/env python
-from avocado.plugins.plugin import Plugin
+from avocado.core.plugins.plugin import Plugin
 class VoidPlugin(Plugin):
     pass
 """
 
 SYNTAX_ERROR_PLUGIN_CONTENTS = """#!/usr/bin/env python
-from avocado.plugins.plugin import Plugin
+from avocado.core.plugins.plugin import Plugin
 class VoidPlugin(Plugin)
 """
 
 HELLO_PLUGIN_CONTENTS = """#!/usr/bin/env python
-from avocado.plugins.plugin import Plugin
+from avocado.core.plugins.plugin import Plugin
 class HelloWorld(Plugin):
     name = 'hello'
     enabled = True

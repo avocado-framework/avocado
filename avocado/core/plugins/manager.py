@@ -16,8 +16,8 @@
 
 import logging
 
-from avocado.plugins.builtin import load_builtins
-from avocado.plugins.plugin import Plugin
+from avocado.core.plugins.builtin import load_builtins
+from avocado.core.plugins.plugin import Plugin
 
 
 DefaultPluginManager = None

@@ -20,7 +20,7 @@ from avocado.core import loader
 from avocado.core import output
 from avocado.core import exit_codes
 from avocado.utils import astring
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 
 
 class TestList(plugin.Plugin):

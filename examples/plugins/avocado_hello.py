@@ -1,4 +1,4 @@
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 
 
 class HelloWorld(plugin.Plugin):

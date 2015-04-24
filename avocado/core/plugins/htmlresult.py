@@ -33,7 +33,7 @@ from avocado.core import exit_codes
 from avocado.core import output
 from avocado.core.result import TestResult
 from avocado.utils import path as utils_path
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 
 
 class ReportModel(object):
