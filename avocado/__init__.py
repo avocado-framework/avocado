@@ -14,6 +14,9 @@
 
 import logging
 
+from avocado.core.job import main
+
+
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = 'logging.NullHandler'
 else:
@@ -111,3 +114,8 @@ else:
     cfg_func = config.dictConfig
 
 cfg_func(DEFAULT_LOGGING)
+
+# Don't export these names outside avocado namespace
+del logging
+del config
+del cfg_func

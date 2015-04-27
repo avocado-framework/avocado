@@ -3,7 +3,7 @@
 import os
 
 from avocado import test
-from avocado import job
+from avocado import main
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
@@ -40,4 +40,4 @@ class FioTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

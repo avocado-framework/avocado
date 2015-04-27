@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from avocado import test
-from avocado import job
+from avocado import main
 from avocado.core import exceptions
 
 
@@ -18,4 +18,4 @@ class WarnTest(test.Test):
         self.log.warn("This marks test as WARN")
 
 if __name__ == "__main__":
-    job.main()
+    main()

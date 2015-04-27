@@ -3,7 +3,7 @@
 import os
 
 from avocado import test
-from avocado import job
+from avocado import main
 
 
 class AbortTest(test.Test):
@@ -19,4 +19,4 @@ class AbortTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

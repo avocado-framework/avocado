@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from avocado import job
+from avocado import main
 from avocado import test
 
 
@@ -18,4 +18,4 @@ class PassTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

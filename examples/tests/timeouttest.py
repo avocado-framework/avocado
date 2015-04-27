@@ -3,7 +3,7 @@
 import time
 
 from avocado import test
-from avocado import job
+from avocado import main
 
 
 class TimeoutTest(test.Test):
@@ -25,4 +25,4 @@ class TimeoutTest(test.Test):
 
 
 if __name__ == "__main__":
-    job.main()
+    main()

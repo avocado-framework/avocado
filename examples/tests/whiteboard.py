@@ -3,7 +3,7 @@
 import base64
 
 from avocado import test
-from avocado import job
+from avocado import main
 
 
 class WhiteBoard(test.Test):
@@ -34,4 +34,4 @@ class WhiteBoard(test.Test):
         self.whiteboard = base64.encodestring(result)
 
 if __name__ == "__main__":
-    job.main()
+    main()

@@ -3,7 +3,7 @@
 import os
 import time
 
-from avocado import job
+from avocado import main
 from avocado import test
 
 
@@ -30,4 +30,4 @@ class SleepTenMin(test.Test):
             self.report_state()
 
 if __name__ == "__main__":
-    job.main()
+    main()

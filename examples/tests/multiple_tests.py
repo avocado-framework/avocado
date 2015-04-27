@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from avocado import test
-from avocado import job
+from avocado import main
 
 
 class MultipleTests(test.Test):
@@ -34,4 +34,4 @@ class MultipleTests(test.Test):
         raise Exception('This action method should never be executed.')
 
 if __name__ == '__main__':
-    job.main()
+    main()

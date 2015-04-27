@@ -3,7 +3,7 @@
 import os
 import shutil
 
-from avocado import job
+from avocado import main
 from avocado import test
 from avocado.utils import build
 from avocado.utils import process
@@ -38,4 +38,4 @@ class DoubleFreeTest(test.Test):
         self.log.info(cmd_result)
 
 if __name__ == "__main__":
-    job.main()
+    main()

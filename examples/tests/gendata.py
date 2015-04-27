@@ -3,7 +3,7 @@
 import os
 
 from avocado import test
-from avocado import job
+from avocado import main
 
 
 class GenDataTest(test.Test):
@@ -46,4 +46,4 @@ class GenDataTest(test.Test):
         self.generate_json()
 
 if __name__ == "__main__":
-    job.main()
+    main()
