@@ -5,7 +5,8 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.remote import VMTestResult, RemoteTestResult
+from avocado.core.remote import VMTestResult
+from avocado.core.remote import RemoteTestResult
 from avocado.utils import virt
 
 
