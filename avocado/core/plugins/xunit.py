@@ -18,7 +18,7 @@ import datetime
 from xml.sax.saxutils import quoteattr
 
 from avocado.core import output
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 from avocado.result import TestResult
 
 

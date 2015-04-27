@@ -15,7 +15,7 @@
 import os
 import sys
 
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 from avocado.core import output
 from avocado.core import exit_codes
 from avocado.core import tree

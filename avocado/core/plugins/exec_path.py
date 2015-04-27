@@ -18,7 +18,7 @@ import os
 import sys
 
 from avocado.core import exit_codes, output
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 
 
 class ExecPath(plugin.Plugin):

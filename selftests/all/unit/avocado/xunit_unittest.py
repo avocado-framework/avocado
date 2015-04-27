@@ -12,7 +12,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.plugins import xunit
+from avocado.core.plugins import xunit
 from avocado import test
 from avocado.core import job
 

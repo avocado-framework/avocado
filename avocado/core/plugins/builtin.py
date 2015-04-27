@@ -18,21 +18,21 @@ import os
 import logging
 from importlib import import_module
 
-from avocado.plugins.plugin import Plugin
+from avocado.core.plugins.plugin import Plugin
 
 
-log = logging.getLogger("avocado.plugins")
+log = logging.getLogger("avocado.app")
 
 __all__ = ['load_builtins']
 
-Modules = ['avocado.plugins.' + x[:-3]
+Modules = ['avocado.core.plugins.' + x[:-3]
            for x in os.listdir(os.path.dirname(__file__))
            if x.endswith('.py')]
 
-Exclude = ['avocado.plugins.__init__',
-           'avocado.plugins.builtin',
-           'avocado.plugins.plugin',
-           'avocado.plugins.manager']
+Exclude = ['avocado.core.plugins.__init__',
+           'avocado.core.plugins.builtin',
+           'avocado.core.plugins.plugin',
+           'avocado.core.plugins.manager']
 
 Builtins = [x for x in Modules if x not in Exclude]
 

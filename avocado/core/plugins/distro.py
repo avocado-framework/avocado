@@ -19,7 +19,7 @@ import json
 
 from avocado.core import output
 from avocado.core import exit_codes
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 from avocado.utils import process
 from avocado.utils import path as utils_path
 from avocado.linux import distro as distro_utils
