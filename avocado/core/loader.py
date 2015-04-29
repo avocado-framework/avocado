@@ -47,6 +47,71 @@ class AccessDeniedPath(object):
     pass
 
 
+class InvalidLoaderPlugin(Exception):
+    pass
+
+
+class TestLoaderProxy(object):
+
+    def __init__(self):
+        self.loader_plugins = []
+        self.url_plugin_mapping = {}
+
+    def add_loader_plugin(self, plugin):
+        if not isinstance(plugin, TestLoader):
+            raise InvalidLoaderPlugin("Object %s is not an instance of "
+                                      "TestResult" % plugin)
+        self.loader_plugins.append(plugin)
+
+    def discover(self, urls):
+        """
+        Discover (possible) tests from test urls.
+
+        :param urls: a list of tests urls.
+        :type urls: list
+        :return: A list of test factories (tuples (TestClass, test_params))
+        """
+        test_factories = []
+        for url in urls:
+            for loader_plugin in self.loader_plugins:
+                try:
+                    params_list_from_url = loader_plugin.discover_url(url)
+                    if params_list_from_url:
+                        if url not in self.url_plugin_mapping:
+                            self.url_plugin_mapping[url] = loader_plugin
+                        if loader_plugin == self.url_plugin_mapping[url]:
+                            test_factories += loader_plugin.discover(params_list_from_url)
+                except Exception:
+                    continue
+        return test_factories
+
+    def validate_ui(self, test_suite, ignore_missing=False,
+                    ignore_not_test=False, ignore_broken_symlinks=False,
+                    ignore_access_denied=False):
+        e_msg = []
+        for tuple_class_params in test_suite:
+            for key in self.url_plugin_mapping:
+                if tuple_class_params[1]['params']['id'].startswith(key):
+                    loader_plugin = self.url_plugin_mapping[key]
+                    e_msg += loader_plugin.validate_ui(test_suite=[tuple_class_params], ignore_missing=ignore_missing,
+                                                       ignore_not_test=ignore_not_test,
+                                                       ignore_broken_symlinks=ignore_broken_symlinks,
+                                                       ignore_access_denied=ignore_access_denied)
+        return e_msg
+
+    def load_test(self, test_factory):
+        """
+        Load test from the test factory.
+
+        :param test_factory: a pair of test class and parameters.
+        :type params: tuple
+        :return: an instance of :class:`avocado.test.Testself`.
+        """
+        test_class, test_parameters = test_factory
+        test_instance = test_class(**test_parameters)
+        return test_instance
+
+
 class TestLoader(object):
 
     """
