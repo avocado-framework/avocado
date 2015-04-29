@@ -27,7 +27,7 @@ log = logging.getLogger('avocado.test')
 
 
 _open_log_files = {}
-_log_file_dir = "/tmp"
+_log_file_dir = os.environ.get('TMPDIR', '/tmp')
 
 
 def log_line(filename, line):

@@ -223,14 +223,14 @@ def create_job_logs_dir(logdir=None, unique_id=None):
     return debugdir
 
 
-def update_latest_job_logs_dir(debugdir):
+def update_latest_job_logs_dir(job_result_dir):
     """
     Update the latest job result symbolic link [avocado-logs-dir]/latest.
 
-    :param debubdir: full path for the current job result.
+    :param job_result_dir: full path for the current job result.
     """
-    basedir = os.path.dirname(debugdir)
-    basename = os.path.basename(debugdir)
+    basedir = os.path.dirname(job_result_dir)
+    basename = os.path.basename(job_result_dir)
     latest = os.path.join(basedir, "latest")
     try:
         os.unlink(latest)

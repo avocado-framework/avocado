@@ -145,7 +145,7 @@ def get_children_pids(ppid):
     param ppid: parent PID
     return: list of PIDs of all children/threads of ppid
     """
-    return (system_output("ps -L --ppid=%d -o lwp" % ppid).split('\n')[1:])
+    return system_output("ps -L --ppid=%d -o lwp" % ppid).split('\n')[1:]
 
 
 class CmdResult(object):
