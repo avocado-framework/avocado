@@ -32,7 +32,7 @@ else:
     import unittest
 
 from avocado import sysinfo, multiplexer
-from avocado.core import data_dir
+from avocado import data_dir
 from avocado.core import exceptions
 from avocado.utils import genio
 from avocado.utils import path as utils_path
@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
                      reserved for running random executables as tests.
         :param base_logdir: Directory where test logs should go. If None
                             provided, it'll use
-                            :func:`avocado.core.data_dir.create_job_logs_dir`.
+                            :func:`avocado.data_dir.create_job_logs_dir`.
         :param tag: Tag that differentiates 2 executions of the same test name.
                     Example: 'long', 'short', so we can differentiate
                     'sleeptest.long' and 'sleeptest.short'.
