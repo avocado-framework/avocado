@@ -18,6 +18,17 @@ import sys
 """Plugins basic structure."""
 
 
+class FailedPlugin(object):
+
+    name = 'noname'
+    disable_reason = ''
+    enabled = False
+
+    def __init__(self, name, disable_reason):
+        self.name = name
+        self.disable_reason = '%s %s' % (str(disable_reason.__class__.__name__), disable_reason)
+
+
 class Plugin(object):
 
     """
@@ -30,6 +41,7 @@ class Plugin(object):
     enabled = False
     priority = 3
     parser = None
+    disable_reason = ''
 
     def __init__(self, name=None, enabled=None):
         """Creates a new plugin instance.

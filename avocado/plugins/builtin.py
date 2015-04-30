@@ -19,6 +19,7 @@ import logging
 from importlib import import_module
 
 from avocado.plugins.plugin import Plugin
+from avocado.plugins.plugin import FailedPlugin
 
 
 log = logging.getLogger("avocado.plugins")
@@ -36,6 +37,8 @@ Exclude = ['avocado.plugins.__init__',
 
 Builtins = [x for x in Modules if x not in Exclude]
 
+ErrorsLoading = []
+
 
 def load_builtins():
     """
@@ -48,10 +51,12 @@ def load_builtins():
         try:
             plugin_mod = import_module(module)
         except ImportError as err:
-            log.error("Could not import module plugin '%s': %s", module, err)
+            failed_plugin = FailedPlugin(str(module), err)
+            ErrorsLoading.append(failed_plugin)
             continue
         except Exception as err:
-            log.error("Module plugin '%s' with error: %s", module, err)
+            failed_plugin = FailedPlugin(str(module), err)
+            ErrorsLoading.append(failed_plugin)
             continue
         for name in plugin_mod.__dict__:
             obj = getattr(plugin_mod, name)
