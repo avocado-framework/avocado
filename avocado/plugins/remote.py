@@ -34,6 +34,7 @@ class RunRemote(plugin.Plugin):
     def configure(self, parser):
         if remote.REMOTE_CAPABLE is False:
             self.enabled = False
+            self.disable_reason = "Python library 'fabric' unavailable"
             return
         username = getpass.getuser()
         msg = 'run on a remote machine arguments'
