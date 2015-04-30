@@ -178,8 +178,8 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('File not found', result.stderr)
-        self.assertNotIn('File not found', result.stdout)
+        self.assertIn('No tests found within the specified path(s)', result.stderr)
+        self.assertNotIn('No tests found within the specified path(s)', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id foobar skiptest'
