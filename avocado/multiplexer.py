@@ -19,6 +19,7 @@
 Multiplex and create variants.
 """
 
+import collections
 import itertools
 import logging
 import re
@@ -29,47 +30,68 @@ from avocado.core import tree
 MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
 
 
-def tree2pools(node, mux=True):
+class MuxTree(object):
+
     """
-    Process tree and flattens the structure to remaining leaves and
-    list of lists of leaves per each multiplex group.
-    :param node: Node to start with
-    :return: tuple(`leaves`, `pools`), where `leaves` are directly inherited
-    leaves of this node (no other multiplex in the middle). `pools` is list of
-    lists of directly inherited leaves of the nested multiplex domains.
+    Object representing part of the tree from the root to leaves or another
+    multiplex domain. Recursively it creates multiplexed variants of the full
+    tree.
     """
-    leaves = []
-    pools = []
-    if mux:
-        # TODO: Get this multiplex leaves filters and store them in this pool
-        # to support 2nd level filtering
-        new_leaves = []
-        for child in node.children:
-            if child.is_leaf:
-                new_leaves.append(child)
+
+    def __init__(self, root):
+        """
+        :param root: Root of this tree slice
+        """
+        self.pools = []
+        for node in self._iter_mux_leaves(root):
+            if node.is_leaf:
+                self.pools.append(node)
             else:
-                _leaves, _pools = tree2pools(child, node.multiplex)
-                new_leaves.extend(_leaves)
-                # TODO: For 2nd level filters store this separately in case
-                # this branch is filtered out
-                pools.extend(_pools)
-        if new_leaves:
-            # TODO: Filter the new_leaves (and new_pools) before merging
-            # into pools
-            pools.append(new_leaves)
-    else:
-        for child in node.children:
-            if child.is_leaf:
-                leaves.append(child)
+                pools = []
+                for mux_child in node.children:
+                    pools.append(MuxTree(mux_child))
+                self.pools.append(pools)
+
+    @staticmethod
+    def _iter_mux_leaves(node):
+        """ yield leaves or muxes of the tree """
+        queue = collections.deque()
+        while node is not None:
+            if node.is_leaf or node.multiplex:
+                yield node
             else:
-                _leaves, _pools = tree2pools(child, node.multiplex)
-                leaves.extend(_leaves)
-                pools.extend(_pools)
-    return leaves, pools
+                queue.extendleft(reversed(node.children))
+            try:
+                node = queue.popleft()
+            except IndexError:
+                raise StopIteration
+
+    def __iter__(self):
+        """
+        Iterates through variants
+        """
+        pools = []
+        for pool in self.pools:
+            if isinstance(pool, list):
+                pools.append(itertools.chain(*pool))
+            else:
+                pools.append([pool])
+        pools = itertools.product(*pools)
+        while True:
+            # TODO: Implement 2nd level filteres here
+            # TODO: This part takes most of the time, optimize it
+            dirty = pools.next()
+            ret = []
+            for pool in dirty:
+                if isinstance(pool, list):
+                    ret.extend(pool)
+                else:
+                    ret.append(pool)
+            yield ret
 
 
-def parse_yamls(input_yamls, filter_only=None, filter_out=None,
-                debug=False):
+def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
+                    debug=False):
     if filter_only is None:
         filter_only = []
     if filter_out is None:
@@ -77,20 +99,8 @@ def parse_yamls(input_yamls, filter_only=None, filter_out=None,
     input_tree = tree.create_from_yaml(input_yamls, debug)
     # TODO: Process filters and multiplex simultaneously
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
-    leaves, pools = tree2pools(final_tree, final_tree.multiplex)
-    if leaves:  # Add remaining leaves (they are not variants, only endpoints
-        pools.extend(leaves)
-    return pools
-
-
-def multiplex_pools(pools):
-    return itertools.product(*pools)
-
-
-def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
-                    debug=False):
-    pools = parse_yamls(input_yamls, filter_only, filter_out, debug)
-    return multiplex_pools(pools)
+    result = MuxTree(final_tree)
+    return result
 
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
@@ -179,7 +189,8 @@ class AvocadoParams(object):
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
-        self._log("PARAMS (key=%s, path=%s, default=%s) => %r", key, path, default, value)
+        self._log("PARAMS (key=%s, path=%s, default=%s) => %r", key, path,
+                  default, value)
 
     def _get_matching_leaves(self, path, leaves):
         """
@@ -438,9 +449,9 @@ class Mux(object):
         filter_only = getattr(args, 'filter_only', None)
         filter_out = getattr(args, 'filter_out', None)
         if mux_files:
-            self.pools = parse_yamls(mux_files, filter_only, filter_out)
+            self.variants = multiplex_yamls(mux_files, filter_only, filter_out)
         else:   # no variants
-            self.pools = None
+            self.variants = None
         self._mux_entry = getattr(args, 'mux_entry', None)
         if self._mux_entry is None:
             self._mux_entry = ['/test/*']
@@ -450,9 +461,9 @@ class Mux(object):
         :return: overall number of tests * multiplex variants
         """
         # Currently number of tests is symetrical
-        if self.pools:
+        if self.variants:
             return (len(test_suite) *
-                    sum(1 for _ in multiplex_pools(self.pools)))
+                    sum(1 for _ in self.variants))
         else:
             return len(test_suite)
 
@@ -460,9 +471,9 @@ class Mux(object):
         """
         Processes the template and yields test definition with proper params
         """
-        if self.pools:  # Copy template and modify it's params
+        if self.variants:  # Copy template and modify it's params
             i = None
-            for i, variant in enumerate(multiplex_pools(self.pools)):
+            for i, variant in enumerate(self.variants):
                 test_factory = [template[0], template[1].copy()]
                 test_factory[1]['params'] = (variant, self._mux_entry)
                 yield test_factory

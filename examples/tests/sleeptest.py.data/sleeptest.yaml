@@ -1,3 +1,4 @@
+!mux
 !using : test
 short:
     sleep_length: 0.5
