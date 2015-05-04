@@ -31,7 +31,7 @@ else:
 from avocado import runtime
 from avocado.core import exit_codes
 from avocado.core import output
-from avocado.result import TestResult
+from avocado.core.result import TestResult
 from avocado.utils import path as utils_path
 from avocado.plugins import plugin
 

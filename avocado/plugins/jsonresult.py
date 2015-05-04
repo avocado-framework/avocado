@@ -19,8 +19,8 @@ JSON output module.
 import json
 
 from avocado.core import output
+from avocado.core.result import TestResult
 from avocado.plugins import plugin
-from avocado.result import TestResult
 
 
 class JSONTestResult(TestResult):
