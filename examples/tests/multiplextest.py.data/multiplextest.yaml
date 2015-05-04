@@ -1,4 +1,4 @@
-env:
+env: !mux
     production:
        malloc_perturb:  no
        gcc_flags:  -O3
@@ -8,11 +8,11 @@ env:
 
 host:
     kernel_config:
-        page_size:
+        page_size: !mux
             default:
             huge_pages:
                 huge_pages:  yes
-        numa:
+        numa: !mux
             default:
             numa_ballance_aggressive:
                 numa_balancing:  1
@@ -24,8 +24,8 @@ host:
                 numa_balancing_scan_size_mb:  32
 
 guest:
-    os: !join
-        windows:
+    os: !mux
+        windows: !mux
             os_type: windows
             xp:
                 win: xp
@@ -33,7 +33,7 @@ guest:
                 win: 2k12
             7:
                 win: 7
-        linux:
+        linux: !mux
             os_type:  linux
             fedora:
                 distro:  fedora
@@ -41,12 +41,12 @@ guest:
                 distro:  ubuntu
 
 hardware:
-    disks:
+    disks: !mux
         ide:
             drive_format: ide
         scsi:
             drive_format: scsi
-    network:
+    network: !mux
         rtl_8139:
             nic_model: rtl8139
         e1000:
@@ -55,15 +55,15 @@ hardware:
             nic_model: virtio
             enable_msix_vectors: yes
 
-tests:
-    sync_test:
+tests: !mux
+    sync_test: !mux
         standard:
             sync_timeout: 30
             sync_tries:   10
         aggressive:
             sync_timeout: 10
             sync_tries:   20
-    ping_test:
+    ping_test: !mux
         standard:
             ping_tries:   10
             ping_timeout: 20

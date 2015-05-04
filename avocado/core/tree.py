@@ -16,7 +16,6 @@
 #          Lucas Meneghel Rodrigues <lmr@redhat.com>
 #          Jaime Huerta-Cepas <jhcepas@gmail.com>
 #
-
 """
 Tree data strucure with nodes.
 
@@ -54,7 +53,7 @@ YAML_INCLUDE = 0
 YAML_USING = 1
 YAML_REMOVE_NODE = 2
 YAML_REMOVE_VALUE = 3
-YAML_JOIN = 4
+YAML_MUX = 4
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
@@ -87,7 +86,7 @@ class TreeNode(object):
         self._environment = None
         self.environment_origin = {}
         self.ctrl = []
-        self.multiplex = True
+        self.multiplex = False
         for child in children:
             self.add_child(child)
 
@@ -157,7 +156,7 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
-        self.multiplex &= other.multiplex
+        self.multiplex = other.multiplex
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -384,8 +383,8 @@ def _create_from_yaml(path, cls_node=TreeNode):
                 elif value[0].code == YAML_REMOVE_VALUE:
                     value[0].value = value[1]   # set the name
                     node.ctrl.append(value[0])
-                elif value[0].code == YAML_JOIN:
-                    node.multiplex = False
+                elif value[0].code == YAML_MUX:
+                    node.multiplex = True
             else:
                 node.value[value[0]] = value[1]
         if using:
@@ -416,15 +415,15 @@ def _create_from_yaml(path, cls_node=TreeNode):
                 objects.append(Value((name, values)))
         return objects
 
-    def join_loader(loader, obj):
+    def mux_loader(loader, obj):
         """
-        Special !join loader which allows to tag node as 'multiplex = False'.
+        Special !mux loader which allows to tag node as 'multiplex = False'.
         """
         if not isinstance(obj, yaml.ScalarNode):
             objects = mapping_to_tree_loader(loader, obj)
         else:   # This means it's empty node. Don't call mapping_to_tree_loader
             objects = ListOfNodeObjects()
-        objects.append((Control(YAML_JOIN), None))
+        objects.append((Control(YAML_MUX), None))
         return objects
 
     Loader.add_constructor(u'!include',
@@ -435,7 +434,7 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
                            lambda loader, node: Control(YAML_REMOVE_VALUE))
-    Loader.add_constructor(u'!join', join_loader)
+    Loader.add_constructor(u'!mux', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 

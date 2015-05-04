@@ -9,9 +9,12 @@ if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
     import unittest
+if __name__ == "__main__":
+    PATH_PREFIX = "../../../../"
+else:
+    PATH_PREFIX = ""
 
-
-TREE = tree.create_from_yaml(['examples/mux-selftest.yaml'])
+TREE = tree.create_from_yaml([PATH_PREFIX + 'examples/mux-selftest.yaml'])
 
 
 def combine(leaves_pools):
@@ -23,36 +26,36 @@ def combine(leaves_pools):
 
 class TestMultiplex(unittest.TestCase):
     tree = TREE
-    mux_full = tuple(combine(multiplexer.tree2pools(tree)))
+    mux_full = tuple(multiplexer.MuxTree(tree))
 
     def test_empty(self):
-        act = tuple(combine(multiplexer.tree2pools(tree.TreeNode())))
-        self.assertEqual(act, ((),))
+        act = tuple(multiplexer.MuxTree(tree.TreeNode()))
+        self.assertEqual(act, (['', ],))
 
     def test_partial(self):
-        exp = (('intel', 'scsi'), ('intel', 'virtio'), ('amd', 'scsi'),
-               ('amd', 'virtio'), ('arm', 'scsi'), ('arm', 'virtio'))
-        act = tuple(combine(multiplexer.tree2pools(self.tree.children[0])))
+        exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
+               ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
+        act = tuple(multiplexer.MuxTree(self.tree.children[0]))
         self.assertEqual(act, exp)
 
     def test_full(self):
         self.assertEqual(len(self.mux_full), 12)
 
     def test_create_variants(self):
-        from_file = multiplexer.multiplex_yamls(['examples/mux-selftest.yaml'])
+        from_file = multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'])
         self.assertEqual(self.mux_full, tuple(from_file))
 
     # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
     def test_filter_only(self):
-        exp = (('intel', 'scsi'), ('intel', 'virtio'))
-        act = tuple(multiplexer.multiplex_yamls(['examples/mux-selftest.yaml'],
+        exp = (['intel', 'scsi'], ['intel', 'virtio'])
+        act = tuple(multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'],
                                                 ('/hw/cpu/intel',
                                                  '/distro/fedora',
                                                  '/hw')))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
-        act = tuple(multiplexer.multiplex_yamls(['examples/mux-selftest.yaml'],
+        act = tuple(multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'],
                                                 None,
                                                 ('/hw/cpu/intel',
                                                  '/distro/fedora',
@@ -67,8 +70,8 @@ class TestMultiplex(unittest.TestCase):
 
 
 class TestAvocadoParams(unittest.TestCase):
-    yamls = multiplexer.multiplex_yamls(['examples/mux-selftest-params.'
-                                         'yaml'])
+    yamls = iter(multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest-params.'
+                                              'yaml']))
     params1 = multiplexer.AvocadoParams(yamls.next(), 'Unittest1', 1,
                                         ['/ch0/*', '/ch1/*'], {})
     yamls.next()    # Skip 2nd
@@ -171,7 +174,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertEqual(self.params1.get('clash2', path='/ch11/*'), 'equal')
         # simple clash in params1
         self.assertRaisesRegexp(ValueError, r"'clash3'.* \['/ch0=>also equal',"
-                                r" '/ch0/ch0.1/ch0.1.2=>also equal'\]",
+                                r" '/ch0/ch0.1b/ch0.1.2=>also equal'\]",
                                 self.params1.get, 'clash3',
                                 default='nnn')
         # params2 is sliced the other way around so it returns before the clash
