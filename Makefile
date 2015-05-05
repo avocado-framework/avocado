@@ -58,7 +58,7 @@ clean:
 	rm -f man/avocado.1
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
-	rm -f docs/build/api/*.rst
+	rm -f docs/source/api/*.rst
 	test -L avocado/virt && rm -f avocado/virt || true
 	test -L avocado/plugins/virt.py && rm -f avocado/plugins/virt.py || true
 	test -L avocado/plugins/virt_bootstrap.py && rm -f avocado/plugins/virt_bootstrap.py || true
