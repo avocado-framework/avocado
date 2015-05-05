@@ -30,7 +30,7 @@ Writing a plugin to extend the runner functionality
 Let's say you want to write a plugin that adds a new subcommand to the test
 runner, ``hello``. This is how you'd do it::
 
-    from avocado.plugins import plugin
+    from avocado.core.plugins import plugin
 
 
     class HelloWorld(plugin.Plugin):
@@ -51,9 +51,9 @@ runner, ``hello``. This is how you'd do it::
         def run(self, args):
             print(self.__doc__)
 
-As you can see, plugins inherit from :class:`avocado.plugins.plugin.Plugin`,
-that have the methods :func:`avocado.plugins.plugin.Plugin.configure` and
-:func:`avocado.plugins.plugin.Plugin.activate`. Configure does add the
+As you can see, plugins inherit from :class:`avocado.core.plugins.plugin.Plugin`,
+that have the methods :func:`avocado.core.plugins.plugin.Plugin.configure` and
+:func:`avocado.core.plugins.plugin.Plugin.activate`. Configure does add the
 command parser to the app test runner, and activate, if necessary will activate
 your plugin, overriding avocado core functionality. In this configure method,
 we added a new parser for the new command ``hello`` and automatically set
@@ -93,5 +93,5 @@ Wrap Up
 -------
 
 We have briefly discussed the making of avocado plugins. A look at the module
-:mod:`avocado.plugins` would be useful to look some of the other possibilities
+:mod:`avocado.core.plugins` would be useful to look some of the other possibilities
 available.

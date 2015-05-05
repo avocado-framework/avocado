@@ -16,7 +16,7 @@
 
 import getpass
 
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 from avocado.remote import VMTestResult
 from avocado.remote import RemoteTestRunner
 from avocado.utils import virt

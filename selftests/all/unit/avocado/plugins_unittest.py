@@ -8,7 +8,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 
 
 class NullPlugin(plugin.Plugin):

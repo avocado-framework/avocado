@@ -12,8 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-from avocado.plugins import plugin
-from avocado.plugins.manager import get_plugin_manager
+from avocado.core.plugins import plugin
+from avocado.core.plugins.manager import get_plugin_manager
 from avocado.core import output
 
 

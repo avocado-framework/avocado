@@ -16,7 +16,7 @@
 
 from avocado import runtime
 from avocado.utils import path as utils_path
-from avocado.plugins import plugin
+from avocado.core.plugins import plugin
 from avocado.settings import settings
 
 

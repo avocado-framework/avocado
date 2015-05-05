@@ -108,15 +108,15 @@ if __name__ == '__main__':
           url='http://avocado-framework.github.io/',
           packages=['avocado',
                     'avocado.core',
+                    'avocado.core.plugins',
                     'avocado.linux',
                     'avocado.utils',
-                    'avocado.plugins',
                     'avocado.remote',
                     'avocado.restclient',
                     'avocado.restclient.cli',
                     'avocado.restclient.cli.args',
                     'avocado.restclient.cli.actions'],
-          package_data={'avocado.plugins': _get_plugin_resource_files(
+          package_data={'avocado.core.plugins': _get_plugin_resource_files(
               'avocado/plugins/resources')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
