@@ -19,7 +19,7 @@ import sqlite3
 import datetime
 
 from avocado.plugins import plugin
-from avocado.result import TestResult
+from avocado.core.result import TestResult
 
 
 JOURNAL_FILENAME = ".journal.sqlite"
