@@ -13,7 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 from avocado.core import output
-from avocado.core import data_dir
+from avocado import data_dir
 from avocado.settings import settings
 from avocado.plugins import plugin
 
