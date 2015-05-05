@@ -14,8 +14,8 @@
 
 import sys
 
-from avocado import loader
 from avocado import test
+from avocado.core import loader
 from avocado.core import data_dir
 from avocado.core import output
 from avocado.core import exit_codes

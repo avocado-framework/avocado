@@ -50,7 +50,7 @@ class RemoteTestResult(HumanTestResult):
         $remote_test_dir + $test_absolute_path.
         :note: Default tests execution is translated into absolute paths too
         """
-        # TODO: Use `avocado.loader.TestLoader` instead
+        # TODO: Use `avocado.core.loader.TestLoader` instead
         self.remote.makedir(self.remote_test_dir)
         if self.args.remote_no_copy:    # Leave everything as is
             return
