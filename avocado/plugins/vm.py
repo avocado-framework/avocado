@@ -35,6 +35,7 @@ class RunVM(plugin.Plugin):
     def configure(self, parser):
         if virt.VIRT_CAPABLE is False:
             self.enabled = False
+            self.disable_reason = "Python library 'libvirt-python' unavailable"
             return
         username = getpass.getuser()
         default_hypervisor_uri = 'qemu:///system'

@@ -34,6 +34,7 @@ class Multiplexer(plugin.Plugin):
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
             self.enabled = False
+            self.disable_reason = "Python library 'PyYAML' unavailable"
             return
         self.parser = parser.subcommands.add_parser(
             'multiplex',

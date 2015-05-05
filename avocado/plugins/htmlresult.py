@@ -284,6 +284,7 @@ class HTML(plugin.Plugin):
     def configure(self, parser):
         if HTML_REPORT_CAPABLE is False:
             self.enabled = False
+            self.disable_reason = "Python library 'pystache' unavailable"
             return
         self.parser = parser
         self.parser.runner.output.add_argument(
