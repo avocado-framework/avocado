@@ -5,8 +5,8 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado import remote
 from avocado import data_dir
+from avocado.core import remote
 from avocado.utils import archive
 from avocado.utils import remote as utils_remote
 
