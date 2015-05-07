@@ -36,6 +36,8 @@ Exclude = ['avocado.core.plugins.__init__',
 
 Builtins = [x for x in Modules if x not in Exclude]
 
+ErrorsLoading = []
+
 
 def load_builtins():
     """
@@ -47,11 +49,10 @@ def load_builtins():
     for module in Builtins:
         try:
             plugin_mod = import_module(module)
-        except ImportError as err:
-            log.error("Could not import module plugin '%s': %s", module, err)
-            continue
         except Exception as err:
-            log.error("Module plugin '%s' with error: %s", module, err)
+            name = str(module)
+            reason = '%s %s' % (str(err.__class__.__name__), err)
+            ErrorsLoading.append((name, reason))
             continue
         for name in plugin_mod.__dict__:
             obj = getattr(plugin_mod, name)
