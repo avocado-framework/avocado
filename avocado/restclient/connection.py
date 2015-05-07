@@ -207,7 +207,7 @@ def get_default():
     """
     Returns the global, default connection to avocado-server
 
-    :returns: an avocado.restclient.connection.Connection instance
+    :returns: an avocado.core.restclient.connection.Connection instance
     """
     global CONNECTION
 

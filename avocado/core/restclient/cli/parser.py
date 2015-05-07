@@ -69,7 +69,7 @@ class Parser(argparse.ArgumentParser):
             help='Password to give to avocado server')
 
     def add_arguments_on_all_modules(self,
-                                     prefix='avocado.restclient.cli.args'):
+                                     prefix='avocado.core.restclient.cli.args'):
         '''
         Add arguments that are present on all Python modules at a given prefix
 
