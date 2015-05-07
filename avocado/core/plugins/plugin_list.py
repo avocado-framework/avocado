@@ -12,9 +12,10 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-from avocado.core.plugins import plugin
-from avocado.core.plugins.manager import get_plugin_manager
 from avocado.core import output
+from avocado.core.plugins import plugin
+from avocado.core.plugins.builtin import ErrorsLoading
+from avocado.core.plugins.manager import get_plugin_manager
 
 
 class PluginList(plugin.Plugin):
@@ -40,18 +41,34 @@ class PluginList(plugin.Plugin):
         view = output.View(app_args=args,
                            use_paginator=args.paginator == 'on')
         pm = get_plugin_manager()
-        view.notify(event='message', msg='Plugins loaded:')
+
+        enabled = [p for p in pm.plugins if p.enabled]
+        disabled = [p for p in pm.plugins if not p.enabled]
+
         blength = 0
         for plug in pm.plugins:
             clength = len(plug.name)
             if clength > blength:
                 blength = clength
+        for load_error in ErrorsLoading:
+            clength = len(load_error[0])
+            if clength > blength:
+                blength = clength
+        format_str = "    %-" + str(blength + 1) + "s %s"
 
-        format_str = "    %-" + str(blength) + "s %s %s"
-        for plug in sorted(pm.plugins):
-            if plug.enabled:
-                status = "(Enabled)"
-            else:
-                status = "(Disabled)"
-            view.notify(event='minor', msg=format_str % (plug.name, plug.description, status))
+        if enabled:
+            view.notify(event='message', msg=output.term_support.healthy_str("Plugins enabled:"))
+            for plug in sorted(enabled):
+                view.notify(event='minor', msg=format_str % (plug.name, plug.description))
+
+        if disabled:
+            view.notify(event='message', msg=output.term_support.fail_header_str('Plugins disabled:'))
+            for plug in sorted(disabled):
+                view.notify(event='minor', msg=format_str % (plug.name, "Disabled during plugin configuration"))
+
+        if ErrorsLoading:
+            view.notify(event='message', msg=output.term_support.fail_header_str('Unloadable plugin modules:'))
+            for load_error in sorted(ErrorsLoading):
+                view.notify(event='minor', msg=format_str % (load_error[0], load_error[1]))
+
         view.cleanup()
