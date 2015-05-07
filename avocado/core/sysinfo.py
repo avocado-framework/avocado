@@ -24,7 +24,7 @@ except ImportError:
     import subprocess
 
 from avocado import utils
-from avocado.linux import software_manager
+from avocado.core import software_manager
 from avocado.core import output
 from avocado.settings import settings
 

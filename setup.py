@@ -109,7 +109,6 @@ if __name__ == '__main__':
           packages=['avocado',
                     'avocado.core',
                     'avocado.core.plugins',
-                    'avocado.linux',
                     'avocado.utils',
                     'avocado.core.remote',
                     'avocado.restclient',
