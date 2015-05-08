@@ -4,15 +4,22 @@ About Avocado
 =============
 
 Avocado is a set of tools and libraries (what people call these days a framework)
-to perform automated testing.
+to perform automated testing. the tests looks like Python unittest but it
+has extra functionalities to perform different kind of tests.
 
 Avocado is composed by:
 
-* Programs that let you run tests. Those tests can be either written on your
+* A test runner that lets you execute tests. Those tests can be either written on your
   language of choice, or use the python API available. In both cases, you get
   facilities such as automated log and system information collection.
 
 * APIs that help you write tests in a concise, yet expressive way.
+  The Test API is the whole set of modules, classes and functions available
+  under the ``avocado`` main module, excluding the `avocado.core` module and
+  their submodules, which is part of application's infrastructure.
+
+* Plugins, where you can extend and add more functionality to the Avocado
+  framework.
 
 Avocado tries as much as possible to comply with standard python testing
 technology. Tests written using the avocado API are derived from the unittest

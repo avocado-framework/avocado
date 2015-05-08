@@ -9,7 +9,7 @@ branches:
 
 before_install:
     - sudo apt-get update
-    - sudo apt-get -y --force-yes install python-libvirt python-lzma libyaml-dev
+    - sudo apt-get -y --force-yes install python-libvirt python-lzma libyaml-dev graphviz
 
 install:
     - pip install -r requirements-travis.txt

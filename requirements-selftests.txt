@@ -3,6 +3,8 @@
 nose>=1.3.0
 # sphinx (doc build test)
 Sphinx>=1.3b1
+# modules.png
+snakedog>=1.4
 # flexmock (some unittests use it)
 flexmock>=0.9.7
 # inspektor (static and style checks)
