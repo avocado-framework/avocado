@@ -3,18 +3,26 @@
 About Avocado
 =============
 
-Avocado is a set of tools and libraries (what people call these days a framework)
-to perform automated testing.
+Avocado is a set of tools and libraries to perform automated testing, altogether
+with the possibility of manual interaction. One can call it a test framework with benefits.
+Native tests are written in Python and they follow the :mod:`unittest` pattern,
+but any executable can serve as a test.
 
 Avocado is composed by:
 
-* Programs that let you run tests. Those tests can be either written on your
+* A test runner that lets you execute tests. Those tests can be either written on your
   language of choice, or use the python API available. In both cases, you get
   facilities such as automated log and system information collection.
 
 * APIs that help you write tests in a concise, yet expressive way.
+  The Test API is the whole set of modules, classes and functions available
+  under the :mod:`avocado` main module, excluding the :mod:`avocado.core`
+  module and their submodules, which is part of application's infrastructure.
 
-Avocado tries as much as possible to comply with standard python testing
+* :mod:`Plugins <avocado.core.plugins>` that can extend and add new functionality
+  to the Avocado Framework.
+
+Avocado tries as much as possible to comply with standard Python testing
 technology. Tests written using the avocado API are derived from the unittest
 class, while other methods suited to functional and performance testing were
 added. The test runner is designed to help people to run their tests while
@@ -25,5 +33,5 @@ progressively.
 An `extensive set of slides about avocado
 <https://docs.google.com/presentation/d/1PLyOcmoYooWGAe-rS2gtjmrZ0B9J22FbfpNlQY8fIUE>`__,
 including details about its architecture, main features and status is available
-in google-drive. Mindmap from workshop (2015) demonstraing features on
+in google-drive. Mindmap from workshop (2015) demonstrating features on
 examples available `here <https://www.mindmeister.com/504616310>`__.
