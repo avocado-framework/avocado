@@ -25,8 +25,8 @@ import functools
 from avocado import settings
 from avocado.core import output
 from avocado.core import exit_codes
-from avocado.restclient import connection
-from avocado.restclient.cli import parser
+from avocado.core.restclient import connection
+from avocado.core.restclient.cli import parser
 
 __all__ = ['App']
 
@@ -82,7 +82,7 @@ class App(object):
 
         This involves loading the relevant module file.
         """
-        module_name = "%s.%s" % ('avocado.restclient.cli.actions',
+        module_name = "%s.%s" % ('avocado.core.restclient.cli.actions',
                                  self.args.top_level_action)
 
         try:
