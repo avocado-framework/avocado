@@ -45,10 +45,10 @@ from avocado.settings import settings
 
 try:
     from avocado.core.plugins import htmlresult
+    HTML_REPORT_SUPPORT = True
 except ImportError:
     HTML_REPORT_SUPPORT = False
-else:
-    HTML_REPORT_SUPPORT = htmlresult.HTML_REPORT_CAPABLE
+
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 

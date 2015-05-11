@@ -35,7 +35,6 @@ class PluginManager(object):
 
     def __init__(self):
         self.plugins = []
-        self.disabled_plugins = []
 
     def add_plugin(self, plugin):
         self.plugins.append(plugin)
