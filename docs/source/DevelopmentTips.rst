@@ -150,3 +150,7 @@ My usual workflow is:
 
 This way you always have all the files present and you can easily resume
 your work.
+
+Module Dependencies
+===================
+.. figure:: modules.png
