@@ -2,7 +2,7 @@
 !using : virt
 # Following line makes it look exactly as mux-selftest.yaml
 !include : mux-selftest.yaml
-distro:
+distro: !mux
     # This line extends the distro branch using include
     !include : mux-selftest-distro.yaml
     # remove node called "mint"
@@ -19,14 +19,7 @@ distro:
         # And this removes the original 'is_cool'
         # Setting happens after ctrl so it should be created'
         !remove_value : is_cool
-# Following node is an empty node with only Control object. During merge
-# it setls /env node as !join (disable multiplexation)
-env: !join
-distro: !join
-    # Set !join here, it won't be overwritten below as it's defined as
-    # &=.
-    mint:   # This won't change anything
-distro:
+distro: !mux
     gentoo:     # This won't change anything
 # This creates new branch the usual way
 new_node:

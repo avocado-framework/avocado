@@ -1,15 +1,15 @@
-source:
+source: !mux
     string:
         whiteboard_data_text: 'foo bar foo baz'
     urandom:
         whiteboard_data_file: '/dev/urandom'
 
-iterations:
+iterations: !mux
     single:
         whiteboard_writes: 1
     dozen:
         whiteboard_writes: 12
-size:
+size: !mux
     onekilo:
         whiteboard_data_size: 1024
     onemega:
