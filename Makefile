@@ -66,6 +66,9 @@ clean:
 check:
 	selftests/checkall
 
+check_cyclical:
+	selftests/cyclical_deps avocado
+
 link:
 	test -d ../avocado-virt/avocado/virt && ln -s ../../avocado-virt/avocado/virt avocado || true
 	test -f ../avocado-virt/avocado/plugins/virt.py && ln -s ../../../avocado-virt/avocado/plugins/virt.py avocado/plugins/ || true
