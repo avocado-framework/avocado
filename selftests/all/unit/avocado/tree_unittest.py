@@ -7,6 +7,7 @@ else:
     import unittest
 
 from avocado.core import tree
+from avocado.core import tree_node
 
 
 class TestTree(unittest.TestCase):
@@ -14,7 +15,7 @@ class TestTree(unittest.TestCase):
     tree = tree.create_from_yaml(['examples/mux-selftest.yaml'])
 
     def test_node_order(self):
-        self.assertIsInstance(self.tree, tree.TreeNode)
+        self.assertIsInstance(self.tree, tree_node.TreeNode)
         self.assertEqual('hw', self.tree.children[0])
         self.assertEqual({'cpu_CFLAGS': '-march=core2'},
                          self.tree.children[0].children[0].children[0].value)
@@ -34,7 +35,7 @@ class TestTree(unittest.TestCase):
         tree2 = copy.deepcopy(self.tree)
         self.assertEqual(self.tree, tree2)
         # Additional node
-        child = tree.TreeNode("20", {'name': 'Heisenbug'})
+        child = tree_node.TreeNode("20", {'name': 'Heisenbug'})
         tree2.children[1].children[1].add_child(child)
         self.assertNotEqual(self.tree, tree2)
         # Should match again
@@ -47,7 +48,7 @@ class TestTree(unittest.TestCase):
         # Different value
         tree2.children[0].children[0].children[0].value = {'something': 'else'}
         self.assertNotEqual(self.tree.children[0], tree2.children[0])
-        tree3 = tree.TreeNode()
+        tree3 = tree_node.TreeNode()
         self.assertNotEqual(tree3, tree2)
         # Merge
         tree3.merge(tree2)
@@ -131,15 +132,15 @@ class TestTree(unittest.TestCase):
 
     def test_merge_trees(self):
         tree2 = copy.deepcopy(self.tree)
-        tree3 = tree.TreeNode()
-        tree3.add_child(tree.TreeNode('hw', {'another_value': 'bbb'}))
-        tree3.children[0].add_child(tree.TreeNode('nic'))
-        tree3.children[0].children[0].add_child(tree.TreeNode('default'))
-        tree3.children[0].children[0].add_child(tree.TreeNode('virtio',
-                                                              {'nic': 'virtio'}
-                                                              ))
-        tree3.children[0].add_child(tree.TreeNode('cpu',
-                                                  {'test_value': ['z']}))
+        tree3 = tree_node.TreeNode()
+        tree3.add_child(tree_node.TreeNode('hw', {'another_value': 'bbb'}))
+        tree3.children[0].add_child(tree_node.TreeNode('nic'))
+        tree3.children[0].children[0].add_child(tree_node.TreeNode('default'))
+        tree3.children[0].children[0].add_child(tree_node.TreeNode('virtio',
+                                                                   {'nic': 'virtio'}
+                                                                   ))
+        tree3.children[0].add_child(tree_node.TreeNode('cpu',
+                                                       {'test_value': ['z']}))
         tree2.merge(tree3)
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'default', 'virtio',
                'fedora', 'mint', 'prod']

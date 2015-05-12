@@ -25,7 +25,7 @@ import itertools
 import os
 
 from avocado.core import output
-from avocado.core.tree import TreeNode
+from avocado.core.tree_node import TreeNode
 
 
 class OutputValue(object):  # only container pylint: disable=R0903

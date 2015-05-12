@@ -4,6 +4,7 @@ import sys
 
 from avocado import multiplexer
 from avocado.core import tree
+from avocado.core import tree_node
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -26,7 +27,7 @@ class TestMultiplex(unittest.TestCase):
     mux_full = tuple(combine(multiplexer.tree2pools(tree)))
 
     def test_empty(self):
-        act = tuple(combine(multiplexer.tree2pools(tree.TreeNode())))
+        act = tuple(combine(multiplexer.tree2pools(tree_node.TreeNode())))
         self.assertEqual(act, ((),))
 
     def test_partial(self):
