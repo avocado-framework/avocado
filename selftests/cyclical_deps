@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Simple script to test cyclical dependencies in modules.
+
+Requirements:
+    - SnakeFood (pip install snakefood)
+    - NetworkX (yum/apt-get install python-networkx)
+"""
+
+__author__ = 'Ruda Moura <rmoura@redhat.com>'
+
+import os
+import sys
+import subprocess
+import tempfile
+
+try:
+    import networkx as nx
+except ImportError:
+    print >>sys.stderr, "NetworkX is not installed and is required!"
+    print >>sys.stderr, "Please, install 'python-networkx' with yum or apt."
+    sys.exit(2)
+
+
+def has_snakefood():
+    with open(os.devnull, 'w') as null:
+        try:
+            cmd = ['sfood', '-h']
+            res = subprocess.call(cmd, stdout=null)
+        except Exception as e:
+            print >>sys.stderr, "Could not find sfood utility: %s: %s" % (cmd, e)
+            print >>sys.stderr, "Did you forget to 'pip install python-snakefood'?"
+            return False
+    return True
+
+
+def generate_dot_file(path):
+    cmdline = 'sfood --internal %s | sfood-graph --remove-extensions'
+    output = subprocess.check_output(cmdline % path, shell=True)
+    tmp = tempfile.mktemp()
+    fd = open(tmp, 'w').write(output)
+    return tmp
+
+
+def cyclical_deps(path_dot):
+    graph = nx.DiGraph(nx.read_dot(path_dot))
+    cycles = list(nx.simple_cycles(graph))
+    if cycles:
+        print 'Found cyclical dependencies in module(s):'
+        for cycle in cycles:
+            print '*', ' <=> '.join(cycle)
+        return True
+    else:
+        print 'OK (no cyclical dependencies found)'
+        return False
+
+
+if __name__ == '__main__':
+    if sys.argv[1:] and has_snakefood():
+        dot = generate_dot_file(sys.argv[1])
+        has_cycles = cyclical_deps(dot)
+        os.remove(dot)
+        if has_cycles:
+            sys.exit(1)
+    else:
+        sys.exit(2)
+    sys.exit(0)
