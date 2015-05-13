@@ -16,7 +16,7 @@
 This module has actions for the server command
 """
 
-from avocado.restclient.cli.args import base
+from avocado.core.restclient.cli.args import base
 
 
 __all__ = ['ACTION_STATUS', 'ACTION_ARGUMENTS', 'ARGUMENTS']

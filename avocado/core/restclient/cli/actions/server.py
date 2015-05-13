@@ -7,7 +7,7 @@ command is used
 """
 
 from avocado.restclient import connection
-from avocado.restclient.cli.actions import base
+from avocado.core.restclient.cli.actions import base
 
 
 @base.action
