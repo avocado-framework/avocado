@@ -316,10 +316,6 @@ class AvocadoParam(object):
     """
     This is a single slice params. It can contain multiple leaves and tries to
     find matching results.
-    Currently it doesn't care about params origin, it requires single result
-    or failure. In future it'll get the origin from LeafParam and if it's the
-    same it'll proceed, otherwise raise exception (as it can't decide which
-    variable is desired)
     """
 
     def __init__(self, leaves, name):
