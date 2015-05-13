@@ -3,6 +3,12 @@
     "description": "Test Plan to be performed before a release is cut",
 
     "tests": [
+	{"name": "Avocado source is sound",
+	"description": "On your development machine, on a freshen Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
+
+	{"name": "Avocado modules does not contains cyclical dependencies",
+	 "description": "Pre-requirements: Python Snakefood (pip install snakefood) and Python NetworkX (yum install python-networkx). On your development machine, on a freshen Avocado source to be released, run `$ make check_cyclical`. Expected result: Make command should say OK."},
+
 	{"name": "Avocado RPM build",
 	 "description": "On your development machine, build the Avocado RPM packages using: `$ make build-rpm-all`. Expected result: SRPM file `SRPMS/avocado-x.y.z-r.distro.src.rpm` and RPM files at `RPMS/noarch`"},
 
