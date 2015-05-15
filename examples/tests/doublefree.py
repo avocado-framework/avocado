@@ -20,7 +20,8 @@ class DoubleFreeTest(test.Test):
         """
         Build 'doublefree'.
         """
-        c_file = self.get_data_path(self.params.get('source', 'doublefree.c'))
+        c_file = self.get_data_path(self.params.get('source',
+                                                    default='doublefree.c'))
         c_file_name = os.path.basename(c_file)
         dest_c_file = os.path.join(self.srcdir, c_file_name)
         shutil.copy(c_file, dest_c_file)

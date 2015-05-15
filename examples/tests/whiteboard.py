@@ -13,8 +13,8 @@ class WhiteBoard(test.Test):
     """
 
     def runTest(self):
-        data_file = self.params.get('whiteboard_data_file', '')
-        data_size = self.params.get('whiteboard_data_size', '10')
+        data_file = self.params.get('whiteboard_data_file', default='')
+        data_size = self.params.get('whiteboard_data_size', default='10')
         if data_file:
             self.log.info('Writing data to whiteboard from file: %s',
                           data_file)
@@ -24,9 +24,9 @@ class WhiteBoard(test.Test):
         else:
             offset = int(data_size) - 1
             data = self.params.get('whiteboard_data_text',
-                                   'default whiteboard text')[0:offset]
+                                   default='default whiteboard text')[0:offset]
 
-        iterations = int(self.params.get('whiteboard_writes', 1))
+        iterations = int(self.params.get('whiteboard_writes', default=1))
 
         result = ''
         for _ in xrange(0, iterations):

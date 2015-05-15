@@ -145,14 +145,14 @@ Using a multiplex file
 You may use the avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
-    $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado run sleeptest --multiplex /test:examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
     TESTS     : 3
-    (1/3) sleeptest.short: PASS (0.50 s)
-    (2/3) sleeptest.medium: PASS (1.01 s)
-    (3/3) sleeptest.long: PASS (5.01 s)
+    (1/3) sleeptest: PASS (0.50 s)
+    (2/3) sleeptest.1: PASS (1.01 s)
+    (3/3) sleeptest.2: PASS (5.01 s)
     PASS      : 3
     ERROR     : 0
     FAIL      : 0
@@ -161,30 +161,43 @@ generation for sleeptest just like::
     INTERRUPT : 0
     TIME : 6.52 s
 
+The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
+By later you can combine multiple simple YAML files and inject them into a specific location
+as shown in the example above. As you learned in previous section the ``/test`` location
+is part of default ``mux-entry`` path thus sleeptest can access the values without specifying
+the path. To understand the difference execute those commands::
+
+    $ avocado multiplex -t examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t /test:examples/tests/sleeptest.py.data/sleeptest.yaml
+
 Note that, as your multiplex file specifies all parameters for sleeptest, you
 can't leave the test ID empty::
 
-    $ scripts/avocado run --multiplex examples/tests/sleeptest/sleeptest.yaml
+    $ scripts/avocado run --multiplex /test:examples/tests/sleeptest/sleeptest.yaml
     Empty test ID. A test path or alias must be provided
 
-If you want to run some tests that don't require params set by the multiplex file, you can::
+You can also execute multiple tests with the same multiplex file::
 
-    $ avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID    : dd91ea5f8b42b2f084702315688284f7e8aa220a
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/html/results.html
-    TESTS     : 4
-    (1/4) sleeptest.short: PASS (0.50 s)
-    (2/4) sleeptest.medium: PASS (1.01 s)
-    (3/4) sleeptest.long: PASS (5.01 s)
-    (4/4) synctest.1: ERROR (1.85 s)
-    PASS      : 3
-    ERROR     : 1
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
-    TIME : 8.69 s
+    ./scripts/avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    JOB ID     : 72166988c13fec26fcc9c2e504beec8edaad4761
+    JOB LOG    : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/job.log
+    JOB HTML   : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/html/results.html
+    TESTS      : 8
+    (1/8) sleeptest.py: PASS (1.00 s)
+    (2/8) sleeptest.py.1: PASS (1.00 s)
+    (3/8) sleeptest.py.2: PASS (1.00 s)
+    (4/8) sleeptest.py.3: PASS (1.00 s)
+    (5/8) synctest.py: PASS (1.31 s)
+    (6/8) synctest.py.1: PASS (1.48 s)
+    (7/8) synctest.py.2: PASS (3.36 s)
+    (8/8) synctest.py.3: PASS (3.59 s)
+    PASS       : 8
+    ERROR      : 0
+    FAIL       : 0
+    SKIP       : 0
+    WARN       : 0
+    INTERRUPT  : 0
+    TIME       : 13.76 s
 
 Avocado tests are also unittests
 ================================
@@ -542,16 +555,14 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    variants:
-        - sleeptest:
-            sleep_length = 5
-            sleep_length_type = float
-            timeout = 3
-            timeout_type = float
+    sleep_length = 5
+    sleep_length_type = float
+    timeout = 3
+    timeout_type = float
 
 ::
 
-    $ avocado run sleeptest --multiplex /tmp/sleeptest-example.mplx
+    $ avocado run sleeptest --multiplex /test:/tmp/sleeptest-example.mplx
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
