@@ -110,34 +110,66 @@ to analyze that particular benchmark result).
 Accessing test parameters
 =========================
 
-Each test has a set of parameters that can be accessed through ``self.params.[param-name]``.
-Avocado finds and populates ``self.params`` with all parameters you define on a Multiplex
-Config file (see :doc:`MultiplexConfig`), in a way that they are available as attributes,
-not just dict keys. This has the advantage of reducing the boilerplate code necessary to
-access those parameters. As an example, consider the following multiplex file for sleeptest::
+Each test has a set of parameters that can be accessed through
+``self.params.get($name, $path=None, $default=None)``.
+Avocado finds and populates ``self.params`` with all parameters you define on
+a Multiplex Config file (see :doc:`MultiplexConfig`). As an example, consider
+the following multiplex file for sleeptest::
 
-    variants:
-        - sleeptest:
-            sleep_length_type = float
-            variants:
-                - short:
-                    sleep_length = 0.5
-                - medium:
-                    sleep_length = 1
-                - long:
-                    sleep_length = 5
+    test:
+        sleeptest:
+            type: "builtin"
+            short:
+                sleep_length: 0.5
+            medium:
+                sleep_length: 1
+            long:
+                sleep_length: 5
 
-You may notice some things here: there is one test param to sleeptest, called ``sleep_length``. We could have named it
-``length`` really, but I prefer to create a param namespace of sorts here. Then, I defined
-``sleep_length_type``, that is used by the config system to convert a value (by default a
-:class:`basestring`) to an appropriate value type (in this case, we need to pass a :class:`float`
-to :func:`time.sleep` anyway). Note that this is an optional feature, and you can always use
-:func:`float` to convert the string value coming from the configuration anyway.
+In this example 3 variants are executed (see :doc:`MultiplexConfig` for
+details). All of them contain variable "type" and "sleep_length". To obtain
+current value, you need the name ("sleep_length") and its path. The path
+differs for each variant so it's needed to use the most suitable portion
+of the path, in this example: "/test/sleeptest/*" or perhaps "sleeptest/*"
+might be enough. It depends on how your setups looks like.
 
-Another important design detail is that sometimes we might not want to use the config system
-at all (for example, when we run an avocado test as a stand alone test). To account for this
-case, we have to specify a ``default_params`` dictionary that contains the default values
-for when we are not providing config from a multiplex file.
+The default value is optional, but always keep in mind to handle them nicely.
+Someone might be executing your test with different params or without any
+params at all. It should work fine.
+
+So the complete example on how to access the "sleep_length" would be::
+
+    self.params.get("sleep_length", "/*/sleeptest/*", 1)
+
+There is one way to make this even simpler. It's possible to define resolution
+order, then for simple queries you can simply omit the path::
+
+    self.params.get("sleep_length", None, 1)
+    self.params.get("sleep_length", '*', 1)
+    self.params.get("sleep_length", default=1)
+
+One should always try to avoid param clashes (multiple matching keys for given
+path with different origin). If it's not possible (eg. when
+you use multiple yaml files) you can modify the resolution order by modifying
+``--mux-entry``. What it does is it slices the params and iterates through the
+paths one by one. When there is a match in the first slice it returns
+it without trying the other slices. Although relative queries only match
+from ``--mux-entry`` slices.
+
+There are many ways to use paths to separate clashing params or just to make
+more clear what your query for. Usually in tests the usage of '*' is sufficient
+and the namespacing is not necessarily, but it helps make advanced usage
+clearer and easier to follow.
+
+When thinking of the path always think about users. It's common to extend
+default config with additional variants or combine them with different
+ones to generate just the right scenarios they need. People might
+simply inject the values elsewhere (eg. `/test/sleeptest` =>
+`/upstream/test/sleeptest`) or they can merge other clashing file into the
+default path, which won't generate clash, but would return their values
+instead. Then you need to clarify the path (eg. `'*'` =>  `sleeptest/*`)
+
+More details on that are in :doc:`MultiplexConfig`
 
 Using a multiplex file
 ======================
@@ -562,7 +594,7 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    $ avocado run sleeptest --multiplex /test:/tmp/sleeptest-example.mplx
+    $ avocado run sleeptest --multiplex /test:/tmp/sleeptest-example.yaml
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
@@ -583,8 +615,8 @@ impact your test grid. You can account for that possibility and set up a
     15:52:51 test       L0144 DEBUG|
     15:52:51 test       L0145 DEBUG| Test log: $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/sleeptest.1/test.log
     15:52:51 test       L0146 DEBUG| Test instance parameters:
-    15:52:51 test       L0153 DEBUG|     _name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
-    15:52:51 test       L0153 DEBUG|     _short_name_map_file = {'sleeptest-example.mplx': 'sleeptest'}
+    15:52:51 test       L0153 DEBUG|     _name_map_file = {'sleeptest-example.yaml': 'sleeptest'}
+    15:52:51 test       L0153 DEBUG|     _short_name_map_file = {'sleeptest-example.yaml': 'sleeptest'}
     15:52:51 test       L0153 DEBUG|     dep = []
     15:52:51 test       L0153 DEBUG|     id = sleeptest
     15:52:51 test       L0153 DEBUG|     name = sleeptest

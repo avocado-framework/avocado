@@ -92,12 +92,6 @@ class TestAvocadoParams(unittest.TestCase):
         str(multiplexer.AvocadoParams([], 'Unittest', None, [], {}))
         self.assertEqual(26, sum([1 for _ in self.params1.iteritems()]))
 
-    def test_get_old_api(self):
-        self.assertEqual(self.params1.get('unique1'), 'unique1')
-        self.assertEqual(self.params1.get('missing'), None)
-        self.assertEqual(self.params1.get('missing', 'aaa'), 'aaa')
-        self.assertEqual(self.params1.root, 'root')
-
     def test_get_abs_path(self):
         # /ch0/ is not leaf thus it's not queryable
         self.assertEqual(self.params1.get('root', '/ch0/', 'bbb'), 'bbb')

@@ -4,197 +4,91 @@
 Multiplex Configuration
 =======================
 
-Multiplex Configuration is a specialized way of providing lists
-of key/value pairs within combination's of various categories,
-that will be passed to avocado test as parameters in a dictionary
-called ``params``. The format simplifies and condenses complex
-multidimensional arrays of test parameters into a flat list. The
-combinatorial result can be filtered and adjusted prior to testing.
+In order to get a good coverage one always needs to execute the same test
+with different parameters or in various environments. Avocado uses the
+term ``Multiplexation`` to generate multiple variants of the same test with
+different values. To define these variants and values
+`YAML <http://www.yaml.org/>`_ files are used. The benefit of using YAML
+file is the visible separation of different scopes. Even very advanced setups
+are still human readable, unlike traditional sparse, multi-dimensional-matrices
+of parameters.
 
-The parser relies on `YAML <http://www.yaml.org/>`_, a human friendly
-markup language.  The YAML format allows one to create, manually or
-with code automation, multiple configurations for the tests. You can use any
-text editor to write YAML files, but choose one that supports syntax
-enhancements and basic validation, it saves time!
+Let's start with an example (line numbers added at the beginning)::
 
-Here is how a simple and valid multiplex configuration looks like::
+     1    hw:
+     2        cpu: !mux
+     3            intel:
+     4                cpu_CFLAGS: '-march=core2'
+     5            amd:
+     6                cpu_CFLAGS: '-march=athlon64'
+     7            arm:
+     8                cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+     9        disk: !mux
+    10            scsi:
+    11                disk_type: 'scsi'
+    12            virtio:
+    13                disk_type: 'virtio'
+    14    distro: !mux
+    15        fedora:
+    16            init: 'systemd'
+    17        mint:
+    18            init: 'systemv'
+    19    env: !mux
+    20        debug:
+    21            opt_CFLAGS: '-O0 -g'
+    22        prod:
+    23            opt_CFLAGS: '-O2'
 
-    # Multiplex config example, file sleep.yaml
-    short:
-        sleep_length: 1
-    medium:
-        sleep_length: 60
-    long:
-        sleep_length: 600
 
-The key concepts here are ``nodes`` (provides context and scope), ``keys`` (think of variables) and ``values`` (scalar or lists).
+There are couple of key=>value pairs (4,6,8,11,13,...) and there are
+named nodes which define scope (1,2,3,5,7,9,...). There are also additional
+flags (2, 9, 14, 19) which modifies the behavior.
 
-In the next section, we will describe these concepts in more details.
-
-.. _nodes:
 
 Nodes
 =====
 
-Nodes servers for two purposes, to name or describe a discrete point of information
-and to store in a set of key/values (possibly empty). Basically nodes can contains
-other nodes, so will have the parent and child relationship in a tree structure.
+They define context of the key=>value pairs allowing us to easily identify
+for what this values might be used for and also it makes possible to define
+multiple values of the same keys with different scope.
 
-The tree node structure can be obtained by using the command line
-``avocado multiplex --tree <file>`` and for previous example,
-it looks just like this::
+Nodes are organized in parent-child relationship and together they create
+a tree. To view this structure use ``avocado multiplex --tree <file>``::
 
-    avocado multiplex --tree sleep.yaml
-    Config file tree structure:
+                /-intel
+               |
+         /cpu-<>--amd
+        |      |
+      /hw       \-arm
+     |  |
+     |  |        /-scsi
+     |   \disk-<>
+     |           \-virtio
+    -|
+     |          /-fedora
+     |-distro-<>
+     |          \-mint
+     |
+     |       /-debug
+      \env-<>
+             \-prod
 
-         /-short
-        |
-    ----|-medium
-        |
-         \-long
+You can see that ``hw`` has 2 children ``cpu`` and ``disk``. All parameters
+defined in parent node are inherited to children and extended/overwritten by
+their values up to the leaf nodes. The leaf nodes (``intel``, ``amd``, ``arm``,
+``scsi``, ...) are the most important as after multiplexation they form the
+parameters available in tests.
 
-It helps if you see the tree structure as a set of paths
-separated by ``/``, much like paths in the file system.
-
-In the example we have being working on, there are only three paths:
-
-- ``//short``
-- ``//medium``
-- ``//long``
-
-The ending nodes (the leafs on the tree) will become part of all lower-level
-(i.e. further indented) variant stanzas (see section variants_).
-However, the precedence is evaluated in top-down or ``last defined`` order.
-In other words, the last parsed has precedence over earlier definitions.
-
-When you provide multiple files they are processed and merged together using
-the common root (`/`). When certain paths overlap (`$file1:/my/path`,
-`$file2:/my/path`), we first create the tree of `$file1` and then process
-`$file2`. This means all children of `/my/path` of the first file are in
-correct order and `$file2` either updates values or appends new children
-as next ones. This of course happens recursively so you update valures and add
-children of all the nodes beneath.
-
-During this merge it's also possible to remove nodes using python regular
-expressions, which can be useful when extending upstream file using downstream
-yaml files. This is done by `!remove_node : $value_name` directive::
-
-    os:
-        fedora:
-        windows:
-            3.11:
-            95:
-    os:
-        !remove_node : windows
-        windows:
-            win3.11:
-            win95:
-
-Removes the `windows` node from structure. It's different from `filter-out`
-as it really removes the node (and all children) from the tree and
-it can be replaced by you new structure as shown in the example. It removes
-`windows` with all children and then replaces this structure with slightly
-modified version.
-
-As `!remove_node` is processed during merge, when you reverse the order,
-windows is not removed and you end-up with `/windows/{win3.11,win95,3.11,95}`
-nodes.
-
-Due to yaml nature, it's __mandatory__ to put space between `!remove_node`
-and `:`!
-
-Additionally you can prepend multiple nodes to the given node by using
-`!using : $prepended/path`. This is useful when extending complex structure,
-for example imagine having distro variants in separate ymal files. In the
-end you want to merge them into the `/os` node. The main file can be simply::
-
-    # main.yaml
-    os:
-        !include : os/fedora/21.yaml
-        ....
-
-And each file can look either like this::
-
-    # fedora/21.yaml
-    fedora:
-        21:
-            some: value
-
-or you can use `!using` which prepends the `fedora/21`::
-
-    # fedora/21.yaml
-    !using : /fedora/21
-    some: value
-
-To be precise there is a way to define the structure in the main yaml file::
-
-    # main.yaml
-    os:
-        fedora:
-            21:
-                !include : fedora_21.yaml
-
-Or use recursive `!include` (slower)::
-
-    # main.yaml
-    os:
-        fedora:
-            !include : os/fedora.yaml
-    # os/fedora.yaml
-    21:
-        !include : fedora/21.yaml
-    # os/fedora/21.yaml
-    some: value
-
-Due to yaml nature, it's __mandatory__ to put space between `!using` and `:`!
-
-.. _keys_and_values:
 
 Keys and Values
 ===============
 
-Keys and values are the most basic useful facility provided by the
-format. A statement in the form ``<key>: <value>`` sets ``<key>`` to
-``<value>``.
+Every value other than dict (4,6,8,11) is used as value of the antecedent
+node.
 
-Values are numbers, strings and lists. Some examples of literal values:
-
-- Booleans: ``true`` and ``false``.
-- Numbers: 123 (integer), 3.1415 (float point)
-- Strings: 'This is a string'
-
-And lists::
-
-    cflags:
-        - '-O2'
-        - '-g'
-        - '-Wall'
-
-The list above will become ``['-O2', '-g', '-Wall']`` to Python. In fact,
-YAML is compatible to JSON.
-
-It's also possible to remove key using python's regexp, which can be useful
-when extending upstream file using downstream yaml files. This is done by
-`!remove_value : $value_name` directive::
-
-    debug:
-        CFLAGS: '-O0 -g'
-    debug:
-        !remove_value: CFLAGS
-
-removes the CFLAGS value completely from the debug node. This happens during
-the merge and only once. So if you switch the two, CFLAGS would be defined.
-
-Due to yaml nature, it's __mandatory__ to put space between `!remove_value`
-and `:`!
-
-.. _environment:
-
-Environment
-===========
-
-The environment is a set of key/values constructed by the moment
-we walk the path (beginning from the root) until we reach a specific node.
+Each node can define key/value pairs (lines 4,6,8,11,...). Additionally
+each children node inherits values of it's parent and the result is called
+node ``environment``.
 
 Given the node structure bellow::
 
@@ -223,14 +117,111 @@ The environment created for the nodes ``fedora`` and ``osx`` are:
 - Node ``//devtools/fedora`` environment ``compiler: 'gcc'``, ``flags: ['-O2', '-Wall']``
 - None ``//devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
 
-.. _multiple_files:
+
+Variants
+========
+
+In the end all leafs are gathered and turned into parameters, more specifically into
+``AvocadoParams``::
+
+    setup:
+        graphic:
+            user: "guest"
+            password: "pass"
+        text:
+            user: "root"
+            password: "123456"
+
+produces ``[graphic, text]``. In the test code you'll be able to query only
+those leaves. Intermediary or root nodes are available.
+
+The example above generates a single test execution with parameters separated
+by path. But the most powerful multiplexer feature is that it can generate
+multiple variants. To do that you need to tag a node whose children are
+ment to be multiplexed. Effectively it returns only leaves of one child at the
+time.In order to generate all possible variants multiplexer creates cartesian
+product of all of these variants::
+
+    cpu: !mux
+        intel:
+        amd:
+        arm:
+    fmt: !mux
+        qcow2:
+        raw:
+
+Produces 6 variants::
+
+    /cpu/intel, /fmt/qcow2
+    /cpu/intel, /fmt/raw
+    ...
+    /cpu/arm, /fmt/raw
+
+The !mux evaluation is recursive so one variant can expand to multiple
+ones::
+
+    fmt: !mux
+        qcow: !mux
+            2:
+            2v3:
+        raw:
+
+Results in::
+
+    /fmt/qcow2/2
+    /fmt/qcow2/2v3
+    /raw
+
+
+Resolution order
+================
+
+You can see that only leaves are part of the test parameters. It might happen
+that some of these leaves contain different values of the same key. Then
+you need to make sure your queries separate them by different paths. When
+the path matches multiple results with different origin, an exception is raised
+as it's impossible to guess which key was originally intended.
+
+To avoid these problems it's recommended to use unique names in test parameters if
+possible, to avoid the mentioned clashes. It also makes it easier to extend or mix
+multiple YAML files for a test.
+
+For multiplex YAML files that are part of a framework, contain default
+configurations, or serve as plugin configurations and other advanced setups it is
+possible and commonly desirable to use non-unique names. But always keep those points
+in mind and provide sensible paths.
+
+Multiplexer also supports something called "multiplex entry points" or
+"resolution order". By default it's ``/tests/*`` but it can be overridden by
+``--mux-entry``, which accepts multiple arguments. What it does it splits
+leaves by the provided paths. Each query goes one by one through those
+sub-trees and first one to hit the match returns the result. It might not solve
+all problems, but it can help to combine existing YAML files with your ones::
+
+    qa:         # large and complex read-only file, content injected into /qa
+        tests:
+            timeout: 10
+        ...
+    my_variants: !mux        # your YAML file injected into /my_variants
+        short:
+            timeout: 1
+        long:
+            timeout: 1000
+
+You want to use an existing test which uses ``params.get('timeout', '*')``.  Then you
+can use ``--mux-entry '/my_variants/*' '/qa/*'`` and it'll first look in your
+variants. If no matches are found, then it would proceed to ``/qa/*``
+
+Keep in mind that only slices defined in mux-entry are taken into account for
+relative paths (the ones starting with ``*``)
+
 
 Multiple files
 ==============
 
 You can provide multiple files. In such scenario final tree is a combination
 of the provided files where later nodes with the same name override values of
-the precending corresponding node. New nodes are appended as new children::
+the preceding corresponding node. New nodes are appended as new children::
 
     file-1.yaml:
         debug:
@@ -253,8 +244,8 @@ results in::
     fast:
         CFLAGS: '-Ofast'    # appended
 
-It's also possilbe to include existing file into other file's node. This
-is done by `!include : $path` directive::
+It's also possible to include existing file into another a given node in another
+file. This is done by the `!include : $path` directive::
 
     os:
         fedora:
@@ -262,117 +253,161 @@ is done by `!include : $path` directive::
         gentoo:
             !include : gentoo.yaml
 
-Due to yaml nature, it's __mandatory__ to put space between `!include` and `:`!
+Due to YAML nature, it's __mandatory__ to put space between `!include` and `:`!
 
-The file location can be either absolute path or relative path to the yaml
+The file location can be either absolute path or relative path to the YAML
 file where the `!include` is called (even when it's nested).
 
 Whole file is __merged__ into the node where it's defined.
 
-.. _variants:
 
-Variants
-========
+Advanced YAML tags
+==================
 
-When tree parsing and filtering is finished, we create set of variants.
-Each variant uses one leaf of each sibling group. For example::
+There are additional features related to YAML files. Most of them require values
+separated by ``:``. Again, in all such cases it's mandatory to add a white space (``
+``) between the tag and the ``:``, otherwise ``:`` is part of the tag name and the
+parsing fails.
 
-    cpu:
-        intel:
-        amd:
-        arm:
-    fmt:
-        qcow2:
-        raw:
+!include
+--------
 
-Produces 2 groups `[intel, amd, arm]` and `[qcow2, raw]`, which results in
-6 variants (all combinations; product of the groups)
+Includes other file and injects it into the node it's specified in::
 
-It's also possible to join current node and its children by `!join` tag::
+    my_other_file:
+        !include : other.yaml
 
-    fmt: !join
-        qcow:
-            2:
-            2v3:
-        raw:
+The content of ``/my_other_file`` would be parsed from the ``other.yaml``. It's
+the hardcoded equivalent of the ``-m $using:$path``.
 
-Without the join this would produce 2 groups `[2, 2v3]` and `[raw]` resulting
-in 2 variants `[2, raw]` and `[2v3, raw]`, which is really not useful.
-But we said that `fmt` children should join this sibling group
-so it results in one group `[qcow/2, qcow/2v3, raw]` resulting in 3 variants
-each of different fmt. This is useful when some
-of the variants share some common key. These keys are set inside the
-parent, for example here `qcow2.0` and `qcow2.2v3` share the same key
-`type: qcow2` and `qcow2.2v3` adds `extra_params` into his params::
+Relative paths start from the original file's directory.
 
-    fmt:
-        qcow2:
-            type: qcow2
-            0:
-            v3:
-                extra_params: "compat=1.1"
-        raw:
-            type: raw
+!using
+------
 
-Complete example::
+Prepends path to the node it's defined in::
 
-    hw:
-        cpu:
-            intel:
-            amd:
-            arm:
-        fmt: !join
-            qcow:
-                qcow2:
-                qcow2v3:
-            raw:
-    os: !join
-        linux: !join
-            Fedora:
-                19:
-            Gentoo:
+    !using : /foo
+    bar:
+        !using : baz
+
+``bar`` is put into ``baz`` becoming ``/baz/bar`` and everything is put into
+``/foo``. So the final path of ``bar`` is ``/foo/baz/bar``.
+
+!remove_node
+------------
+
+Removes node if it existed during the merge. It can be used to extend
+incompatible YAML files::
+
+    os:
+        fedora:
         windows:
             3.11:
+            95:
+    os:
+        !remove_node : windows
+        windows:
+            win3.11:
+            win95:
 
-While preserving names and environment values. Then all combinations are
-created resulting into 27 unique variants covering all possible combinations
-of given tree::
+Removes the `windows` node from structure. It's different from `filter-out`
+as it really removes the node (and all children) from the tree and
+it can be replaced by you new structure as shown in the example. It removes
+`windows` with all children and then replaces this structure with slightly
+modified version.
 
-	Variant 1:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
-	Variant 2:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
-	Variant 3:    /hw/cpu/intel, /hw/fmt/qcow/qcow2, /os/windows/3.11
-	Variant 4:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
-	Variant 5:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
-	Variant 6:    /hw/cpu/intel, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
-	Variant 7:    /hw/cpu/intel, /hw/fmt/raw, /os/linux/Fedora/19
-	Variant 8:    /hw/cpu/intel, /hw/fmt/raw, /os/linux/Gentoo
-	Variant 9:    /hw/cpu/intel, /hw/fmt/raw, /os/windows/3.11
-	Variant 10:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
-	Variant 11:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
-	Variant 12:    /hw/cpu/amd, /hw/fmt/qcow/qcow2, /os/windows/3.11
-	Variant 13:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
-	Variant 14:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
-	Variant 15:    /hw/cpu/amd, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
-	Variant 16:    /hw/cpu/amd, /hw/fmt/raw, /os/linux/Fedora/19
-	Variant 17:    /hw/cpu/amd, /hw/fmt/raw, /os/linux/Gentoo
-	Variant 18:    /hw/cpu/amd, /hw/fmt/raw, /os/windows/3.11
-	Variant 19:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/linux/Fedora/19
-	Variant 20:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/linux/Gentoo
-	Variant 21:    /hw/cpu/arm, /hw/fmt/qcow/qcow2, /os/windows/3.11
-	Variant 22:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/linux/Fedora/19
-	Variant 23:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/linux/Gentoo
-	Variant 24:    /hw/cpu/arm, /hw/fmt/qcow/qcow2v3, /os/windows/3.11
-	Variant 25:    /hw/cpu/arm, /hw/fmt/raw, /os/linux/Fedora/19
-	Variant 26:    /hw/cpu/arm, /hw/fmt/raw, /os/linux/Gentoo
-	Variant 27:    /hw/cpu/arm, /hw/fmt/raw, /os/windows/3.11
+As `!remove_node` is processed during merge, when you reverse the order,
+windows is not removed and you end-up with `/windows/{win3.11,win95,3.11,95}`
+nodes.
 
-You can generate this list yourself by executing::
+!remove_value
+-------------
 
-    avocado multiplex /path/to/multiplex.yaml [-c]
+It's similar to `!remove_node`_ only with values.
 
-Note that there's no need to put extensions to a multiplex file, although
-doing so helps with organization. The optional -c param is used to provide
-the contents of the dictionaries generated, not only their shortnames.
+!mux
+----
 
-With Nodes, Keys, Values & Filters, we have most of what you
-actually need to construct most multiplex files.
+Children of this node will be multiplexed. This means that in first variant
+it'll return leaves of the first child, in second the leaves of the second
+child, etc. Example is in section `Variants`_
+
+
+Complete example
+================
+
+Let's take a second look at the first example::
+
+     1    hw:
+     2        cpu: !mux
+     3            intel:
+     4                cpu_CFLAGS: '-march=core2'
+     5            amd:
+     6                cpu_CFLAGS: '-march=athlon64'
+     7            arm:
+     8                cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+     9        disk: !mux
+    10            scsi:
+    11                disk_type: 'scsi'
+    12            virtio:
+    13                disk_type: 'virtio'
+    14    distro: !mux
+    15        fedora:
+    16            init: 'systemd'
+    17        mint:
+    18            init: 'systemv'
+    19    env: !mux
+    20        debug:
+    21            opt_CFLAGS: '-O0 -g'
+    22        prod:
+    23            opt_CFLAGS: '-O2'
+
+After filters are applied (simply removes non-matching variants), leaves
+are gathered and all variants are generated::
+
+    ./scripts/avocado multiplex examples/mux-environment.yaml 
+    Variants generated:
+    Variant 1:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/debug
+    Variant 2:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/prod
+    Variant 3:    /hw/cpu/intel, /hw/disk/scsi, /distro/mint, /env/debug
+    Variant 4:    /hw/cpu/intel, /hw/disk/scsi, /distro/mint, /env/prod
+    Variant 5:    /hw/cpu/intel, /hw/disk/virtio, /distro/fedora, /env/debug
+    Variant 6:    /hw/cpu/intel, /hw/disk/virtio, /distro/fedora, /env/prod
+    Variant 7:    /hw/cpu/intel, /hw/disk/virtio, /distro/mint, /env/debug
+    Variant 8:    /hw/cpu/intel, /hw/disk/virtio, /distro/mint, /env/prod
+    Variant 9:    /hw/cpu/amd, /hw/disk/scsi, /distro/fedora, /env/debug
+    Variant 10:    /hw/cpu/amd, /hw/disk/scsi, /distro/fedora, /env/prod
+    Variant 11:    /hw/cpu/amd, /hw/disk/scsi, /distro/mint, /env/debug
+    Variant 12:    /hw/cpu/amd, /hw/disk/scsi, /distro/mint, /env/prod
+    Variant 13:    /hw/cpu/amd, /hw/disk/virtio, /distro/fedora, /env/debug
+    Variant 14:    /hw/cpu/amd, /hw/disk/virtio, /distro/fedora, /env/prod
+    Variant 15:    /hw/cpu/amd, /hw/disk/virtio, /distro/mint, /env/debug
+    Variant 16:    /hw/cpu/amd, /hw/disk/virtio, /distro/mint, /env/prod
+    Variant 17:    /hw/cpu/arm, /hw/disk/scsi, /distro/fedora, /env/debug
+    Variant 18:    /hw/cpu/arm, /hw/disk/scsi, /distro/fedora, /env/prod
+    Variant 19:    /hw/cpu/arm, /hw/disk/scsi, /distro/mint, /env/debug
+    Variant 20:    /hw/cpu/arm, /hw/disk/scsi, /distro/mint, /env/prod
+    Variant 21:    /hw/cpu/arm, /hw/disk/virtio, /distro/fedora, /env/debug
+    Variant 22:    /hw/cpu/arm, /hw/disk/virtio, /distro/fedora, /env/prod
+    Variant 23:    /hw/cpu/arm, /hw/disk/virtio, /distro/mint, /env/debug
+    Variant 24:    /hw/cpu/arm, /hw/disk/virtio, /distro/mint, /env/prod
+
+Where the first variant contains::
+
+    /hw/cpu/intel/  => cpu_CFLAGS: -march=core2
+    /hw/disk/       => disk_type: scsi
+    /distro/fedora/ => init: systemd
+    /env/debug/     => opt_CFLAGS: -O0 -g
+
+The second one::
+
+    /hw/cpu/intel/  => cpu_CFLAGS: -march=core2
+    /hw/disk/       => disk_type: scsi
+    /distro/fedora/ => init: systemd
+    /env/prod/      => opt_CFLAGS: -O2
+
+From this example you can see that querying for ``/env/debug`` works only in
+the first variant, but returns nothing in the second variant. Keep this in mind
+and when you use the ``!mux`` flag always query for the pre-mux path,
+``/env/*`` in this example.
