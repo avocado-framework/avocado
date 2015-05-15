@@ -21,7 +21,7 @@ class SyncTest(test.Test):
         """
         self.cwd = os.getcwd()
         tarball_path = self.get_data_path(self.params.get('sync_tarball', '*',
-                                                          default='synctest.tar.bz2'))
+                                                          'synctest.tar.bz2'))
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         if self.params.get('debug_symbols', default=True):

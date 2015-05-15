@@ -250,63 +250,14 @@ class AvocadoParams(object):
             logging.getLogger("avocado.test").warn(msg)
             return self.get(attr)
 
-    def get(self, *args, **kwargs):
+    def get(self, key, path=None, default=None):
         """
-        Retrieve params
-
-        Old API: ``params.get(key, failobj=None)`` (any matching param)
-        New API: ``params.get(key, path=$MUX_ENTRY/*, default=None)``
-
-        As old and new API overlaps, you must use all 3 arguments or
-        explicitely use key argument "path" or "default".
+        Retrieve value associated with key from params
+        :param key: Key you're looking for
+        :param path: namespace ['*']
+        :param default: default value when not found
+        :raise KeyError: In case of multiple different values (params clash)
         """
-        def compatibility(args, kwargs):
-            """
-            Be 100% compatible with old API while allow _SOME OF_ the new APIs
-            calls:
-            OLD: get(key), get(key, default), get(key, failobj=default)
-            NEW: get(key, path, default), get(key, path=path),
-                 get(key, default=default)
-
-            :warning: We are unable to distinguish old get(key, default) vs.
-                      new get(key, path), therefor if you want to use the new
-                      API you must specify path/default using named arguments
-                      or supply all 3 arguments:
-                      get(key, path, default), get(key, path=path),
-                      get(key, default=default).
-                      This will be removed in final version.
-            """
-            if len(args) < 1:
-                raise TypeError("Incorrect arguments: params.get(%s, %s)"
-                                % (args, kwargs))
-            elif 'failobj' in kwargs:
-                return [args[0], '/*', kwargs['failobj']]   # Old API
-            elif len(args) > 2 or 'default' in kwargs or 'path' in kwargs:
-                try:
-                    if 'default' in kwargs:
-                        default = kwargs['default']
-                    elif len(args) > 2:
-                        default = args[2]
-                    else:
-                        default = None
-                    if 'path' in kwargs:
-                        path = kwargs['path']
-                    elif len(args) > 1:
-                        path = args[1]
-                    else:
-                        path = None
-                    key = args[0]
-                    return [key, path, default]
-                except IndexError:
-                    raise TypeError("Incorrect arguments: params.get(%s, %s)"
-                                    % (args, kwargs))
-            else:   # Old API
-                if len(args) == 1:
-                    return [args[0], '/*', None]
-                else:
-                    return [args[0], '/*', args[1]]
-
-        key, path, default = compatibility(args, kwargs)
         if path is None:    # default path is any relative path
             path = '*'
         try:
@@ -365,10 +316,6 @@ class AvocadoParam(object):
     """
     This is a single slice params. It can contain multiple leaves and tries to
     find matching results.
-    Currently it doesn't care about params origin, it requires single result
-    or failure. In future it'll get the origin from LeafParam and if it's the
-    same it'll proceed, otherwise raise exception (as it can't decide which
-    variable is desired)
     """
 
     def __init__(self, leaves, name):
