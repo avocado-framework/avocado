@@ -1,3 +1,4 @@
+!mux
 sigint:
     signal_number: 2
 siguser1:

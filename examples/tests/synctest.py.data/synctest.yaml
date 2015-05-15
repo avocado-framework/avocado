@@ -1,12 +1,12 @@
 sync_tarball: synctest.tar.bz2
-loop:
+loop: !mux
     short:
         sync_loop:  10
     medium:
         sync_loop: 50
     long:
         sync_loop: 100
-length:
+length: !mux
     short:
         sync_length: 100
     medium:

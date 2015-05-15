@@ -1,8 +1,9 @@
-RHEL:
+!mux
+RHEL: !mux
     enterprise: true
     6:
         init: 'systemv'
     7:
         init: 'systemd'
-gentoo:
+gentoo: !mux
     is_cool: False
