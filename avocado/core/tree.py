@@ -455,7 +455,7 @@ def _create_from_yaml(path, cls_node=TreeNode):
 
     # Add prefix
     if using:
-        loaded_tree = cls_node(using.pop(), children=loaded_tree.children)
+        loaded_tree.name = using.pop()
         while True:
             if not using:
                 break
