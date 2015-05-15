@@ -110,34 +110,66 @@ to analyze that particular benchmark result).
 Accessing test parameters
 =========================
 
-Each test has a set of parameters that can be accessed through ``self.params.[param-name]``.
-Avocado finds and populates ``self.params`` with all parameters you define on a Multiplex
-Config file (see :doc:`MultiplexConfig`), in a way that they are available as attributes,
-not just dict keys. This has the advantage of reducing the boilerplate code necessary to
-access those parameters. As an example, consider the following multiplex file for sleeptest::
+Each test has a set of parameters that can be accessed through
+``self.params.get($name, $path=None, $default=None)``.
+Avocado finds and populates ``self.params`` with all parameters you define on
+a Multiplex Config file (see :doc:`MultiplexConfig`). As an example, consider
+the following multiplex file for sleeptest::
 
-    variants:
-        - sleeptest:
-            sleep_length_type = float
-            variants:
-                - short:
-                    sleep_length = 0.5
-                - medium:
-                    sleep_length = 1
-                - long:
-                    sleep_length = 5
+    test:
+        sleeptest:
+            type: "builtin"
+            short:
+                sleep_length: 0.5
+            medium:
+                sleep_length: 1
+            long:
+                sleep_length: 5
 
-You may notice some things here: there is one test param to sleeptest, called ``sleep_length``. We could have named it
-``length`` really, but I prefer to create a param namespace of sorts here. Then, I defined
-``sleep_length_type``, that is used by the config system to convert a value (by default a
-:class:`basestring`) to an appropriate value type (in this case, we need to pass a :class:`float`
-to :func:`time.sleep` anyway). Note that this is an optional feature, and you can always use
-:func:`float` to convert the string value coming from the configuration anyway.
+In this example 3 variants are executed (see :doc:`MultiplexConfig` for
+details). All of them contain variable "type" and "sleep_length". To obtain
+current value, you need the name ("sleep_length") and it's path. The path
+differs for each variant so it's needed to use the most suitable portion
+of the path, in this example: "/test/sleeptest/*" or perhaps "sleeptest/*"
+might be enough. It depends on how your setups looks like.
 
-Another important design detail is that sometimes we might not want to use the config system
-at all (for example, when we run an avocado test as a stand alone test). To account for this
-case, we have to specify a ``default_params`` dictionary that contains the default values
-for when we are not providing config from a multiplex file.
+The default value is optional, but always keep in mind to handle them nicely.
+Someone might be executing your test with different params or without any
+params at all. It should work fine.
+
+So the complete example on how to access the "sleep_length" would be::
+
+    self.params.get("sleep_length", "/*/sleeptest/*", 1)
+
+There is one way to make this even simpler. It's possible to define resolution
+order, then for simple queries you can simply omit the path::
+
+    self.params.get("sleep_length", None, 1)
+    self.params.get("sleep_length", '*', 1)
+    self.params.get("sleep_length", default=1)
+
+One should always try to avoid param clashes (multiple matching keys for given
+path with different origin). If it's not possible (eg. when
+you use multiple yaml files) you can modify the resolution order by modifying
+``--mux-entry``. What it does is it slices the params and iterates through the
+paths one by one. When there is a match in the first slice it returns
+it without trying the other slices. Although relative queries only match
+from ``--mux-entry`` slices.
+
+There are many ways to use paths to separate clashing params or just to make
+more clear what your query for. Usually in tests the usage of '*' is sufficient
+and the namespacing is not necessarily, but it helps make advanced usage
+clearer and easier to follow.
+
+When thinking of the path always think about users. It's common to extend
+default config with additional variants or combine them with different
+ones to generate just the right scenarios they need. People might
+simply inject the values elsewhere (eg. `/test/sleeptest` =>
+`/upstream/test/sleeptest`) or they can merge other clashing file into the
+default path, which won't generate clash, but would return their values
+instead. Then you need to clarify the path (eg. `'*'` =>  `sleeptest/*`)
+
+More details on that are in :doc:`MultiplexConfig`
 
 Using a multiplex file
 ======================
@@ -145,14 +177,14 @@ Using a multiplex file
 You may use the avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
-    $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado run sleeptest --multiplex /test:examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
     TESTS     : 3
-    (1/3) sleeptest.short: PASS (0.50 s)
-    (2/3) sleeptest.medium: PASS (1.01 s)
-    (3/3) sleeptest.long: PASS (5.01 s)
+    (1/3) sleeptest: PASS (0.50 s)
+    (2/3) sleeptest.1: PASS (1.01 s)
+    (3/3) sleeptest.2: PASS (5.01 s)
     PASS      : 3
     ERROR     : 0
     FAIL      : 0
@@ -161,30 +193,43 @@ generation for sleeptest just like::
     INTERRUPT : 0
     TIME : 6.52 s
 
+The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
+By later you can combine multiple simple YAML files and inject them into a specific location
+as shown in the example above. As you learned in previous section the ``/test`` location
+is part of default ``mux-entry`` path thus sleeptest can access the values without specifying
+the path. To understand the difference execute those commands::
+
+    $ avocado multiplex -t examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t /test:examples/tests/sleeptest.py.data/sleeptest.yaml
+
 Note that, as your multiplex file specifies all parameters for sleeptest, you
 can't leave the test ID empty::
 
-    $ scripts/avocado run --multiplex examples/tests/sleeptest/sleeptest.yaml
+    $ scripts/avocado run --multiplex /test:examples/tests/sleeptest/sleeptest.yaml
     Empty test ID. A test path or alias must be provided
 
-If you want to run some tests that don't require params set by the multiplex file, you can::
+You can also execute multiple tests with the same multiplex file::
 
-    $ avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID    : dd91ea5f8b42b2f084702315688284f7e8aa220a
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.49-dd91ea5f/html/results.html
-    TESTS     : 4
-    (1/4) sleeptest.short: PASS (0.50 s)
-    (2/4) sleeptest.medium: PASS (1.01 s)
-    (3/4) sleeptest.long: PASS (5.01 s)
-    (4/4) synctest.1: ERROR (1.85 s)
-    PASS      : 3
-    ERROR     : 1
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
-    TIME : 8.69 s
+    ./scripts/avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    JOB ID     : 72166988c13fec26fcc9c2e504beec8edaad4761
+    JOB LOG    : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/job.log
+    JOB HTML   : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/html/results.html
+    TESTS      : 8
+    (1/8) sleeptest.py: PASS (1.00 s)
+    (2/8) sleeptest.py.1: PASS (1.00 s)
+    (3/8) sleeptest.py.2: PASS (1.00 s)
+    (4/8) sleeptest.py.3: PASS (1.00 s)
+    (5/8) synctest.py: PASS (1.31 s)
+    (6/8) synctest.py.1: PASS (1.48 s)
+    (7/8) synctest.py.2: PASS (3.36 s)
+    (8/8) synctest.py.3: PASS (3.59 s)
+    PASS       : 8
+    ERROR      : 0
+    FAIL       : 0
+    SKIP       : 0
+    WARN       : 0
+    INTERRUPT  : 0
+    TIME       : 13.76 s
 
 Avocado tests are also unittests
 ================================
@@ -542,16 +587,14 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    variants:
-        - sleeptest:
-            sleep_length = 5
-            sleep_length_type = float
-            timeout = 3
-            timeout_type = float
+    sleep_length = 5
+    sleep_length_type = float
+    timeout = 3
+    timeout_type = float
 
 ::
 
-    $ avocado run sleeptest --multiplex /tmp/sleeptest-example.mplx
+    $ avocado run sleeptest --multiplex /test:/tmp/sleeptest-example.mplx
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html

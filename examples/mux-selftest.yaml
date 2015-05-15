@@ -8,7 +8,7 @@
 # /env/opt_CFLAGS: Should be present in merged node
 # /env/prod/opt_CFLAGS: value should be overridden by latter node
 hw:
-    cpu:
+    cpu: !mux
         joinlist:
             - first_item
         intel:
@@ -18,7 +18,7 @@ hw:
             cpu_CFLAGS: '-march=athlon64'
         arm:
             cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
-    disk:
+    disk: !mux
         disk_type: 'virtio'
         corruptlist: 'nonlist'
         scsi:
@@ -26,17 +26,17 @@ hw:
             disk_type: 'scsi'
         virtio:
     corruptlist: ['upper_node_list']
-distro:     # This node is set as !multiplex below
+distro: !mux     # This node is set as !multiplex below
     fedora:
         init: 'systemd'
-env:
+env: !mux
     opt_CFLAGS: '-Os'
     prod:
         opt_CFLAGS: 'THIS SHOULD GET OVERWRITTEN'
-env:
+env: !mux
     prod:
         opt_CFLAGS: '-O2'
-distro:
+distro: !mux
     mint:
         init: 'systemv'
 

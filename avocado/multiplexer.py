@@ -19,6 +19,7 @@
 Multiplex and create variants.
 """
 
+import collections
 import itertools
 import logging
 import re
@@ -29,47 +30,66 @@ from avocado.core import tree
 MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
 
 
-def tree2pools(node, mux=True):
+class MuxTree(object):
     """
-    Process tree and flattens the structure to remaining leaves and
-    list of lists of leaves per each multiplex group.
-    :param node: Node to start with
-    :return: tuple(`leaves`, `pools`), where `leaves` are directly inherited
-    leaves of this node (no other multiplex in the middle). `pools` is list of
-    lists of directly inherited leaves of the nested multiplex domains.
+    Object representing part of the tree from the root to leaves or another
+    multiplex domain. Recursively it creates multiplexed variants of the full
+    tree.
     """
-    leaves = []
-    pools = []
-    if mux:
-        # TODO: Get this multiplex leaves filters and store them in this pool
-        # to support 2nd level filtering
-        new_leaves = []
-        for child in node.children:
-            if child.is_leaf:
-                new_leaves.append(child)
+    def __init__(self, root):
+        """
+        :param root: Root of this tree slice
+        """
+        self.pools = []
+        for node in self._iter_mux_leaves(root):
+            if node.is_leaf:
+                self.pools.append(node)
             else:
-                _leaves, _pools = tree2pools(child, node.multiplex)
-                new_leaves.extend(_leaves)
-                # TODO: For 2nd level filters store this separately in case
-                # this branch is filtered out
-                pools.extend(_pools)
-        if new_leaves:
-            # TODO: Filter the new_leaves (and new_pools) before merging
-            # into pools
-            pools.append(new_leaves)
-    else:
-        for child in node.children:
-            if child.is_leaf:
-                leaves.append(child)
+                pools = []
+                for mux_child in node.children:
+                    pools.append(MuxTree(mux_child))
+                self.pools.append(pools)
+
+    @staticmethod
+    def _iter_mux_leaves(node):
+        """ yield leaves or muxes of the tree """
+        queue = collections.deque()
+        while node is not None:
+            if node.is_leaf or node.multiplex:
+                yield node
             else:
-                _leaves, _pools = tree2pools(child, node.multiplex)
-                leaves.extend(_leaves)
-                pools.extend(_pools)
-    return leaves, pools
+                queue.extendleft(reversed(node.children))
+            try:
+                node = queue.popleft()
+            except IndexError:
+                raise StopIteration
+
+    def __iter__(self):
+        """
+        Iterates through variants
+        """
+        pools = []
+        for pool in self.pools:
+            if isinstance(pool, list):
+                pools.append(itertools.chain(*pool))
+            else:
+                pools.append([pool])
+        pools = itertools.product(*pools)
+        while True:
+            # TODO: Implement 2nd level filteres here
+            # TODO: This part takes most of the time, optimize it
+            dirty = pools.next()
+            ret = []
+            for _ in dirty:
+                if isinstance(_, list):
+                    ret.extend(_)
+                else:
+                    ret.append(_)
+            yield ret
 
 
-def parse_yamls(input_yamls, filter_only=None, filter_out=None,
-                debug=False):
+def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
+                    debug=False):
     if filter_only is None:
         filter_only = []
     if filter_out is None:
@@ -77,20 +97,8 @@ def parse_yamls(input_yamls, filter_only=None, filter_out=None,
     input_tree = tree.create_from_yaml(input_yamls, debug)
     # TODO: Process filters and multiplex simultaneously
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
-    leaves, pools = tree2pools(final_tree, final_tree.multiplex)
-    if leaves:  # Add remaining leaves (they are not variants, only endpoints
-        pools.extend(leaves)
-    return pools
-
-
-def multiplex_pools(pools):
-    return itertools.product(*pools)
-
-
-def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
-                    debug=False):
-    pools = parse_yamls(input_yamls, filter_only, filter_out, debug)
-    return multiplex_pools(pools)
+    result = MuxTree(final_tree)
+    return result
 
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
@@ -242,63 +250,14 @@ class AvocadoParams(object):
             logging.getLogger("avocado.test").warn(msg)
             return self.get(attr)
 
-    def get(self, *args, **kwargs):
+    def get(self, key, path=None, default=None):
         """
-        Retrieve params
-
-        Old API: ``params.get(key, failobj=None)`` (any matching param)
-        New API: ``params.get(key, path=$MUX_ENTRY/*, default=None)``
-
-        As old and new API overlaps, you must use all 3 arguments or
-        explicitely use key argument "path" or "default".
+        Retrieve value associated with key from params
+        :param key: Key you're looking for
+        :param path: namespace ['*']
+        :param default: default value when not found
+        :raise KeyError: In case of multiple different values (params clash)
         """
-        def compatibility(args, kwargs):
-            """
-            Be 100% compatible with old API while allow _SOME OF_ the new APIs
-            calls:
-            OLD: get(key), get(key, default), get(key, failobj=default)
-            NEW: get(key, path, default), get(key, path=path),
-                 get(key, default=default)
-
-            :warning: We are unable to distinguish old get(key, default) vs.
-                      new get(key, path), therefor if you want to use the new
-                      API you must specify path/default using named arguments
-                      or supply all 3 arguments:
-                      get(key, path, default), get(key, path=path),
-                      get(key, default=default).
-                      This will be removed in final version.
-            """
-            if len(args) < 1:
-                raise TypeError("Incorrect arguments: params.get(%s, %s)"
-                                % (args, kwargs))
-            elif 'failobj' in kwargs:
-                return [args[0], '/*', kwargs['failobj']]   # Old API
-            elif len(args) > 2 or 'default' in kwargs or 'path' in kwargs:
-                try:
-                    if 'default' in kwargs:
-                        default = kwargs['default']
-                    elif len(args) > 2:
-                        default = args[2]
-                    else:
-                        default = None
-                    if 'path' in kwargs:
-                        path = kwargs['path']
-                    elif len(args) > 1:
-                        path = args[1]
-                    else:
-                        path = None
-                    key = args[0]
-                    return [key, path, default]
-                except IndexError:
-                    raise TypeError("Incorrect arguments: params.get(%s, %s)"
-                                    % (args, kwargs))
-            else:   # Old API
-                if len(args) == 1:
-                    return [args[0], '/*', None]
-                else:
-                    return [args[0], '/*', args[1]]
-
-        key, path, default = compatibility(args, kwargs)
         if path is None:    # default path is any relative path
             path = '*'
         try:
@@ -357,10 +316,6 @@ class AvocadoParam(object):
     """
     This is a single slice params. It can contain multiple leaves and tries to
     find matching results.
-    Currently it doesn't care about params origin, it requires single result
-    or failure. In future it'll get the origin from LeafParam and if it's the
-    same it'll proceed, otherwise raise exception (as it can't decide which
-    variable is desired)
     """
 
     def __init__(self, leaves, name):
@@ -438,9 +393,9 @@ class Mux(object):
         filter_only = getattr(args, 'filter_only', None)
         filter_out = getattr(args, 'filter_out', None)
         if mux_files:
-            self.pools = parse_yamls(mux_files, filter_only, filter_out)
+            self.variants = multiplex_yamls(mux_files, filter_only, filter_out)
         else:   # no variants
-            self.pools = None
+            self.variants = None
         self._mux_entry = getattr(args, 'mux_entry', None)
         if self._mux_entry is None:
             self._mux_entry = ['/test/*']
@@ -450,9 +405,9 @@ class Mux(object):
         :return: overall number of tests * multiplex variants
         """
         # Currently number of tests is symetrical
-        if self.pools:
+        if self.variants:
             return (len(test_suite) *
-                    sum(1 for _ in multiplex_pools(self.pools)))
+                    sum(1 for _ in self.variants))
         else:
             return len(test_suite)
 
@@ -460,9 +415,9 @@ class Mux(object):
         """
         Processes the template and yields test definition with proper params
         """
-        if self.pools:  # Copy template and modify it's params
+        if self.variants:  # Copy template and modify it's params
             i = None
-            for i, variant in enumerate(multiplex_pools(self.pools)):
+            for i, variant in enumerate(self.variants):
                 test_factory = [template[0], template[1].copy()]
                 test_factory[1]['params'] = (variant, self._mux_entry)
                 yield test_factory

@@ -12,8 +12,8 @@ class LinuxBuildTest(test.Test):
     """
 
     def setUp(self):
-        kernel_version = self.params.get('linux_version', '3.14.5')
-        linux_config = self.params.get('linux_config', 'config')
+        kernel_version = self.params.get('linux_version', default='3.14.5')
+        linux_config = self.params.get('linux_config', default='config')
         config_path = self.get_data_path(linux_config)
         self.linux_build = kernel_build.KernelBuild(kernel_version,
                                                     config_path,
