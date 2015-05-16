@@ -21,7 +21,7 @@ class DoubleFreeTest(test.Test):
         """
         Build 'doublefree'.
         """
-        source = self.params.get('source', 'doublefree.c')
+        source = self.params.get('source', default='doublefree.c')
         c_file = self.get_data_path(source)
         shutil.copy(c_file, self.srcdir)
         self.__binary = source.rsplit('.', 1)[0]

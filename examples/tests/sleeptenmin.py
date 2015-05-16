@@ -17,9 +17,9 @@ class SleepTenMin(test.Test):
         """
         Sleep for length seconds.
         """
-        cycles = int(self.params.get('sleep_cycles', 1))
-        length = int(self.params.get('sleep_length', 600))
-        method = self.params.get('sleep_method', 'builtin')
+        cycles = int(self.params.get('sleep_cycles', default=1))
+        length = int(self.params.get('sleep_length', default=600))
+        method = self.params.get('sleep_method', default='builtin')
 
         for cycle in xrange(0, cycles):
             self.log.debug("Sleeping for %.2f seconds", length)

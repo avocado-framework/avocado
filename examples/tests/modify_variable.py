@@ -24,7 +24,7 @@ class PrintVariableTest(test.Test):
         """
         Build 'print_variable'.
         """
-        source = self.params.get('source', 'print_variable.c')
+        source = self.params.get('source', default='print_variable.c')
         c_file = self.get_data_path(source)
         shutil.copy(c_file, self.srcdir)
         self.__binary = source.rsplit('.', 1)[0]

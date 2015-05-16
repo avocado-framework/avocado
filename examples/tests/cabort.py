@@ -19,7 +19,7 @@ class CAbort(test.Test):
         """
         Build 'abort'.
         """
-        c_file = self.get_data_path(self.params.get('source', 'abort.c'))
+        c_file = self.get_data_path(self.params.get('source', default='abort.c'))
         c_file_name = os.path.basename(c_file)
         dest_c_file = os.path.join(self.srcdir, c_file_name)
         shutil.copy(c_file, dest_c_file)

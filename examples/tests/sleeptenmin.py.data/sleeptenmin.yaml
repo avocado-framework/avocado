@@ -1,0 +1,18 @@
+sleeptenmin: !mux
+    builtin:
+        sleep_method: builtin
+    shell:
+        sleep_method: shell
+variants: !mux
+    one_cycle:
+        sleep_cycles: 1
+        sleep_length: 600
+    six_cycles:
+        sleep_cycles: 6
+        sleep_length: 100
+    one_hundred_cycles:
+        sleep_cycles: 100
+        sleep_length: 6
+    six_hundred_cycles:
+        sleep_cycles: 600
+        sleep_length: 1
