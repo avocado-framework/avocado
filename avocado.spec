@@ -1,6 +1,6 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.23.0
+Version: 0.24.0
 Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -67,8 +67,8 @@ selftests/run selftests/all/unit
 %{_mandir}/man1/avocado-rest-client.1.gz
 %{_docdir}/avocado/avocado.rst
 %{_docdir}/avocado/avocado-rest-client.rst
-%exclude %{python_sitelib}/avocado/plugins/htmlresult.py*
-%exclude %{python_sitelib}/avocado/plugins/resources/htmlresult/*
+%exclude %{python_sitelib}/avocado/core/plugins/htmlresult.py*
+%exclude %{python_sitelib}/avocado/core/plugins/resources/htmlresult/*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -85,8 +85,8 @@ directory. It also gives the user the ability to write a report on an
 arbitrary filesystem location.
 
 %files plugins-output-html
-%{python_sitelib}/avocado/plugins/htmlresult.py*
-%{python_sitelib}/avocado/plugins/resources/htmlresult/*
+%{python_sitelib}/avocado/core/plugins/htmlresult.py*
+%{python_sitelib}/avocado/core/plugins/resources/htmlresult/*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
@@ -103,6 +103,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/api
 
 %changelog
+* Mon May 18 2015 Ruda Moura <rmoura@redhat.com> - 0.24.0-1
+- Update to upstream version 0.24.0
+
 * Tue Apr 21 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.23.0-1
 - New upstream release
 
