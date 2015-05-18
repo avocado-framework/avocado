@@ -86,6 +86,14 @@ class NotATestError(TestBaseException):
     status = "NOT_A_TEST"
 
 
+class TestNotFoundError(TestBaseException):
+
+    """
+    Indicates that the test was not found in the test directory.
+    """
+    status = "ERROR"
+
+
 class TestTimeoutError(TestBaseException):
 
     """
