@@ -60,8 +60,8 @@ clean:
 	rm -rf docs/build
 	rm -f docs/source/api/*.rst
 	test -L avocado/virt && rm -f avocado/virt || true
-	test -L avocado/plugins/virt.py && rm -f avocado/plugins/virt.py || true
-	test -L avocado/plugins/virt_bootstrap.py && rm -f avocado/plugins/virt_bootstrap.py || true
+	test -L avocado/core/plugins/virt.py && rm -f avocado/core/plugins/virt.py || true
+	test -L avocado/core/plugins/virt_bootstrap.py && rm -f avocado/core/plugins/virt_bootstrap.py || true
 
 check:
 	selftests/checkall
@@ -71,8 +71,8 @@ check_cyclical:
 
 link:
 	test -d ../avocado-virt/avocado/virt && ln -s ../../avocado-virt/avocado/virt avocado || true
-	test -f ../avocado-virt/avocado/plugins/virt.py && ln -s ../../../avocado-virt/avocado/plugins/virt.py avocado/plugins/ || true
-	test -f ../avocado-virt/avocado/plugins/virt_bootstrap.py && ln -s ../../../avocado-virt/avocado/plugins/virt_bootstrap.py avocado/plugins/ || true
+	test -f ../avocado-virt/avocado/core/plugins/virt.py && ln -s ../../../../avocado-virt/avocado/core/plugins/virt.py avocado/core/plugins/ || true
+	test -f ../avocado-virt/avocado/core/plugins/virt_bootstrap.py && ln -s ../../../../avocado-virt/avocado/core/plugins/virt_bootstrap.py avocado/core/plugins/ || true
 
 man: man/avocado.1 man/avocado-rest-client.1
 
