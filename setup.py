@@ -89,7 +89,7 @@ def _get_plugin_resource_files(path):
     for root, _, files in sorted(os.walk(path)):
         for name in files:
             fullname = os.path.join(root, name)
-            flist.append(fullname[len('avocado/plugins/'):])
+            flist.append(fullname[len('avocado/core/plugins/'):])
     return flist
 
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                     'avocado.core.restclient.cli.args',
                     'avocado.core.restclient.cli.actions'],
           package_data={'avocado.core.plugins': _get_plugin_resource_files(
-              'avocado/plugins/resources')},
+              'avocado/core/plugins/resources')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'])
