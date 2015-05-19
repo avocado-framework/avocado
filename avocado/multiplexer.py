@@ -66,14 +66,16 @@ class MuxTree(object):
             except IndexError:
                 raise StopIteration
 
-    def __iter__(self):
+    def __iter__(self, root=True):
         """
         Iterates through variants
         """
         pools = []
         for pool in self.pools:
             if isinstance(pool, list):
-                pools.append(itertools.chain(*pool))
+                # Don't process 2nd level filters in non-root pools
+                pools.append(itertools.chain(*(_.__iter__(False)
+                                               for _ in pool)))
             else:
                 pools.append([pool])
         pools = itertools.product(*pools)
@@ -87,7 +89,36 @@ class MuxTree(object):
                     ret.extend(pool)
                 else:
                     ret.append(pool)
-            yield ret
+            if (not root) or self._valid_variant(ret):
+                yield ret
+
+    def _valid_variant(self, variant):
+        filter_out = []
+        filter_only = []
+        for node in variant:
+            filter_only.extend(node.environment.filter_only)
+            filter_out.extend(node.environment.filter_out)
+        filter_only_parents = [str(_).rsplit('/', 2)[0] + '/'
+                               for _ in filter_only
+                               if _]
+
+        for out in filter_out:
+            for node in variant:
+                path = node.path + '/'
+                if path.startswith(out):
+                    return False
+        for i in xrange(len(filter_only)):
+            keep = False
+            for node in variant:
+                path = node.path + '/'
+                if path.startswith(filter_only[i]):
+                    keep = True
+                    break
+                if path.rsplit('/', 2)[0] == filter_only_parents[i]:
+                    keep = False
+            if not keep:
+                return False
+        return True
 
 
 def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
@@ -361,7 +392,7 @@ class AvocadoParam(object):
         :raise KeyError: When value is not certain (multiple matches)
         """
         leaves = self._get_leaves(path)
-        ret = [(leaf.environment[key], leaf.environment_origin[key])
+        ret = [(leaf.environment[key], leaf.environment.origin[key])
                for leaf in leaves
                if key in leaf.environment]
         if not ret:
