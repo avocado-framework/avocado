@@ -294,7 +294,7 @@ Prepends path to the node it's defined in::
 ``bar`` is put into ``baz`` becoming ``/baz/bar`` and everything is put into
 ``/foo``. So the final path of ``bar`` is ``/foo/baz/bar``.
 
-!remove_node
+!remove-node
 ------------
 
 Removes node if it existed during the merge. It can be used to extend
@@ -306,7 +306,7 @@ incompatible YAML files::
             3.11:
             95:
     os:
-        !remove_node : windows
+        !remove-node : windows
         windows:
             win3.11:
             win95:
@@ -317,14 +317,14 @@ it can be replaced by you new structure as shown in the example. It removes
 `windows` with all children and then replaces this structure with slightly
 modified version.
 
-As `!remove_node` is processed during merge, when you reverse the order,
+As `!remove-node` is processed during merge, when you reverse the order,
 windows is not removed and you end-up with `/windows/{win3.11,win95,3.11,95}`
 nodes.
 
-!remove_value
+!remove-value
 -------------
 
-It's similar to `!remove_node`_ only with values.
+It's similar to `!remove-node`_ only with values.
 
 !mux
 ----

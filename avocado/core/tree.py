@@ -433,9 +433,9 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
                            lambda loader, node: Control(YAML_USING))
-    Loader.add_constructor(u'!remove_node',
+    Loader.add_constructor(u'!remove-node',
                            lambda loader, node: Control(YAML_REMOVE_NODE))
-    Loader.add_constructor(u'!remove_value',
+    Loader.add_constructor(u'!remove-value',
                            lambda loader, node: Control(YAML_REMOVE_VALUE))
     Loader.add_constructor(u'!mux', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
