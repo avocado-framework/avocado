@@ -57,6 +57,8 @@ YAML_USING = 1
 YAML_REMOVE_NODE = 2
 YAML_REMOVE_VALUE = 3
 YAML_MUX = 4
+YAML_FILTER_ONLY = 5
+YAML_FILTER_OUT = 6
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
@@ -69,6 +71,30 @@ class Control(object):  # Few methods pylint: disable=R0903
     def __init__(self, code, value=None):
         self.code = code
         self.value = value
+
+
+class TreeEnvironment(dict):
+
+    """ TreeNode environment with values, origins and filters """
+
+    def __init__(self):
+        super(TreeEnvironment, self).__init__()     # values
+        self.origin = {}    # origins of the values
+        self.filter_only = set()   # list of filter_only
+        self.filter_out = set()    # list of filter_out
+
+    def copy(self):
+        cpy = TreeEnvironment()
+        cpy.update(self)
+        cpy.origin = self.origin.copy()
+        cpy.filter_only = self.filter_only.copy()
+        cpy.filter_out = self.filter_out.copy()
+        return cpy
+
+    def __str__(self):
+        return ",".join((super(TreeEnvironment, self).__str__(),
+                         str(self.origin), str(self.filter_only),
+                         str(self.filter_out)))
 
 
 class TreeNode(object):
@@ -87,8 +113,8 @@ class TreeNode(object):
         self.parent = parent
         self.children = []
         self._environment = None
-        self.environment_origin = {}
         self.ctrl = []
+        self.filters = [], []  # This node filters, full filters in environ..
         self.multiplex = False
         for child in children:
             self.add_child(child)
@@ -160,6 +186,8 @@ class TreeNode(object):
                     for key in remove:
                         self.value.pop(key, None)
         self.multiplex = other.multiplex
+        self.filters[0].extend(other.filters[0])
+        self.filters[1].extend(other.filters[1])
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -220,9 +248,7 @@ class TreeNode(object):
         """ Get node environment (values + preceding envs) """
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
-                                 if self.parent else {})
-            self.environment_origin = (self.parent.environment_origin.copy()
-                                       if self.parent else {})
+                                 if self.parent else TreeEnvironment())
             for key, value in self.value.iteritems():
                 if isinstance(value, list):
                     if (key in self._environment and
@@ -232,7 +258,9 @@ class TreeNode(object):
                         self._environment[key] = value
                 else:
                     self._environment[key] = value
-                self.environment_origin[key] = self
+                self._environment.origin[key] = self
+            self._environment.filter_only.update(self.filters[0])
+            self._environment.filter_out.update(self.filters[1])
         return self._environment
 
     def set_environment_dirty(self):
@@ -359,6 +387,50 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
 
 def _create_from_yaml(path, cls_node=TreeNode):
     """ Create tree structure from yaml stream """
+    def handle_control_tag(node, value):
+        """ Handling of YAML tags (except of !using) """
+        def normalize_path(path):
+            """ End the path with single '/', None when empty path """
+            if not path:
+                return
+            if path[-1] != '/':
+                path += '/'
+            return path
+        if value[0].code == YAML_INCLUDE:
+            # Include file
+            ypath = value[1]
+            if not os.path.isabs(ypath):
+                ypath = os.path.join(os.path.dirname(path), ypath)
+            node.merge(_create_from_yaml(ypath, cls_node))
+        elif value[0].code == YAML_REMOVE_NODE:
+            value[0].value = value[1]   # set the name
+            node.ctrl.append(value[0])    # add "blue pill" of death
+        elif value[0].code == YAML_REMOVE_VALUE:
+            value[0].value = value[1]   # set the name
+            node.ctrl.append(value[0])
+        elif value[0].code == YAML_MUX:
+            node.multiplex = True
+        elif value[0].code == YAML_FILTER_ONLY:
+            value = normalize_path(value[1])
+            if value:
+                node.filters[0].append(value)
+        elif value[0].code == YAML_FILTER_OUT:
+            value = normalize_path(value[1])
+            if value:
+                node.filters[1].append(value)
+
+    def handle_control_tag_using(name, using, value):
+        """ Handling of the !using tag """
+        if using:
+            raise ValueError("!using can be used only once per "
+                             "node! (%s:%s)" % (path, name))
+        using = value[1]
+        if using[0] == '/':
+            using = using[1:]
+        if using[-1] == '/':
+            using = using[:-1]
+        return using
+
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
         node = cls_node(str(name))
@@ -367,29 +439,10 @@ def _create_from_yaml(path, cls_node=TreeNode):
             if isinstance(value, TreeNode):
                 node.add_child(value)
             elif isinstance(value[0], Control):
-                if value[0].code == YAML_INCLUDE:
-                    # Include file
-                    ypath = value[1]
-                    if not os.path.isabs(ypath):
-                        ypath = os.path.join(os.path.dirname(path), ypath)
-                    node.merge(_create_from_yaml(ypath, cls_node))
-                elif value[0].code == YAML_USING:
-                    if using:
-                        raise ValueError("!using can be used only once per "
-                                         "node! (%s:%s)" % (path, name))
-                    using = value[1]
-                    if using[0] == '/':
-                        using = using[1:]
-                    if using[-1] == '/':
-                        using = using[:-1]
-                elif value[0].code == YAML_REMOVE_NODE:
-                    value[0].value = value[1]   # set the name
-                    node.ctrl.append(value[0])    # add "blue pill" of death
-                elif value[0].code == YAML_REMOVE_VALUE:
-                    value[0].value = value[1]   # set the name
-                    node.ctrl.append(value[0])
-                elif value[0].code == YAML_MUX:
-                    node.multiplex = True
+                if value[0].code == YAML_USING:
+                    using = handle_control_tag_using(name, using, value)
+                else:
+                    handle_control_tag(node, value)
             else:
                 node.value[value[0]] = value[1]
         if using:
@@ -439,6 +492,10 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove-value',
                            lambda loader, node: Control(YAML_REMOVE_VALUE))
+    Loader.add_constructor(u'!filter-only',
+                           lambda loader, node: Control(YAML_FILTER_ONLY))
+    Loader.add_constructor(u'!filter-out',
+                           lambda loader, node: Control(YAML_FILTER_OUT))
     Loader.add_constructor(u'!mux', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)

@@ -66,19 +66,20 @@ class MuxTree(object):
             except IndexError:
                 raise StopIteration
 
-    def __iter__(self):
+    def __iter__(self, root=True):
         """
         Iterates through variants
         """
         pools = []
         for pool in self.pools:
             if isinstance(pool, list):
-                pools.append(itertools.chain(*pool))
+                # Don't process 2nd level filters in non-root pools
+                pools.append(itertools.chain(*(_.__iter__(False)
+                                               for _ in pool)))
             else:
                 pools.append([pool])
         pools = itertools.product(*pools)
         while True:
-            # TODO: Implement 2nd level filteres here
             # TODO: This part takes most of the time, optimize it
             dirty = pools.next()
             ret = []
@@ -87,7 +88,47 @@ class MuxTree(object):
                     ret.extend(pool)
                 else:
                     ret.append(pool)
-            yield ret
+            if not root or self._valid_variant(ret):
+                yield ret
+
+    def _valid_variant(self, variant):
+        """
+        Check the variant for 2nd level filters
+        """
+        filter_out = set()
+        filter_only = set()
+        for node in variant:
+            filter_only.update(node.environment.filter_only)
+            filter_out.update(node.environment.filter_out)
+        filter_only = tuple(filter_only)
+        filter_out = tuple(filter_out)
+        filter_only_parents = [str(_).rsplit('/', 2)[0] + '/'
+                               for _ in filter_only
+                               if _]
+
+        for out in filter_out:
+            for node in variant:
+                path = node.path + '/'
+                if path.startswith(out):
+                    return False
+        for node in variant:
+            print node
+            keep = 0
+            remove = 0
+            path = node.path + '/'
+            ppath = path.rsplit('/', 2)[0] + '/'
+            for i in xrange(len(filter_only)):
+                level = filter_only[i].count('/')
+                if level < max(keep, remove):
+                    continue
+                if ppath.startswith(filter_only_parents[i]):
+                    if path.startswith(filter_only[i]):
+                        keep = level
+                    else:
+                        remove = level
+            if remove > keep:
+                return False
+        return True
 
 
 def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
@@ -361,7 +402,7 @@ class AvocadoParam(object):
         :raise KeyError: When value is not certain (multiple matches)
         """
         leaves = self._get_leaves(path)
-        ret = [(leaf.environment[key], leaf.environment_origin[key])
+        ret = [(leaf.environment[key], leaf.environment.origin[key])
                for leaf in leaves
                if key in leaf.environment]
         if not ret:

@@ -7,16 +7,27 @@
 #          multiple files and checks that the node ordering works fine.
 # /env/opt_CFLAGS: Should be present in merged node
 # /env/prod/opt_CFLAGS: value should be overridden by latter node
+# !filter-only: All root childern are specified in different levels. They
+#               should be combined and together enable all variants. On the
+#               other hand they should not enable other-level filter-only
+#               filters like /hw/disk/virtio.
 hw:
+    # This filter has no effect whatsoever, it tests the filter inheritance
     cpu: !mux
+        !filter-only : /env
+        # Again, no use only to test leaves inherits it
+        !filter-out : /non/existing/node
         joinlist:
             - first_item
         intel:
+            !filter-only : /hw/disk/virtio
+            !filter-only : /hw/disk/scsi
             cpu_CFLAGS: '-march=core2'
         amd:
             joinlist: ['second', 'third']
             cpu_CFLAGS: '-march=athlon64'
         arm:
+            !filter-only : /hw/disk/virtio
             cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
     disk: !mux
         disk_type: 'virtio'
@@ -28,15 +39,17 @@ hw:
     corruptlist: ['upper_node_list']
 distro: !mux     # This node is set as !multiplex below
     fedora:
+        !filter-out : /hw/disk/scsi
         init: 'systemd'
 env: !mux
     opt_CFLAGS: '-Os'
     prod:
         opt_CFLAGS: 'THIS SHOULD GET OVERWRITTEN'
 env: !mux
+    !filter-only : /distro  # let's see if filters are updated when merging
     prod:
         opt_CFLAGS: '-O2'
 distro: !mux
     mint:
         init: 'systemv'
-
+!filter-only : /hw
