@@ -333,6 +333,29 @@ Children of this node will be multiplexed. This means that in first variant
 it'll return leaves of the first child, in second the leaves of the second
 child, etc. Example is in section `Variants`_
 
+!filter-only
+------------
+
+Defines 2nd level filtering. They are inherited by childern and evaluated
+during multiplexation. It allows one to specify the only compatible branch
+of the tree with the current variant, for example::
+
+    cpu:
+        arm:
+            !filter-only : /disk/virtio
+    disk:
+        virtio:
+        scsi:
+
+will skip the ``[arm, scsi]`` variant and result only in ``[arm, virtio]``
+
+!filter-out
+-----------
+
+Similarily to `!filter-only`_ only it skips the specified branches and leaves
+the remaining ones. (in the same example the use of
+``!filter-out : /disk/scsi`` results in the same behavior. The difference
+is when you have multiple disk types, ``!filter-only`` is more efficient.
 
 Complete example
 ================
