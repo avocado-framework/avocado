@@ -14,6 +14,10 @@ class PassTest(test.Test):
         """
         A test simply doesn't have to fail in order to pass
         """
+        self.params.get('asdf', 'aaa/*', 1)
+        self.params.set('asdf', '**', 2)
+        self.params.get('asdf', 'aaa/*', 3)
+        self.params.get('asdf', '/*', 4)
         pass
 
 
