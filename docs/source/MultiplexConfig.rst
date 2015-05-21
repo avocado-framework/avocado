@@ -121,7 +121,7 @@ The environment created for the nodes ``fedora`` and ``osx`` are:
 Variants
 ========
 
-In the end all leafs are gathered and turned into parameters, more specifically into
+In the end all leaves are gathered and turned into parameters, more specifically into
 ``AvocadoParams``::
 
     setup:
