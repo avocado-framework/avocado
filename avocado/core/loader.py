@@ -47,6 +47,66 @@ class AccessDeniedPath(object):
     pass
 
 
+class InvalidLoaderPlugin(Exception):
+    pass
+
+
+class TestLoaderProxy(object):
+
+    def __init__(self):
+        self.loader_plugins = []
+
+    def add_loader_plugin(self, plugin):
+        if not isinstance(plugin, TestLoader):
+            raise InvalidLoaderPlugin("Object %s is not an instance of "
+                                      "TestResult" % plugin)
+        self.loader_plugins.append(plugin)
+
+    def discover(self, urls):
+        """
+        Discover (possible) tests from test urls.
+
+        :param urls: a list of tests urls.
+        :type urls: list
+        :return: A list of test factories (tuples (TestClass, test_params))
+        """
+        test_factories = []
+        for url in urls:
+            if url == '':
+                continue
+            for loader_plugin in self.loader_plugins:
+                try:
+                    params_list_from_url = loader_plugin.discover_url(url)
+                except Exception:
+                    continue
+                test_factories_from_url = loader_plugin.discover(params_list_from_url)
+                if test_factories_from_url:
+                    if test_factories_from_url[0][0] not in [test.MissingTest]:
+                        test_factories += test_factories_from_url
+                        break
+        return test_factories
+
+    def validate_ui(self, test_suite, ignore_missing=False,
+                    ignore_not_test=False, ignore_broken_symlinks=False,
+                    ignore_access_denied=False):
+        for loader_plugin in self.loader_plugins:
+            loader_plugin.validate_ui(test_suite=test_suite, ignore_missing=ignore_missing,
+                                      ignore_not_test=ignore_not_test, ignore_broken_symlinks=ignore_broken_symlinks,
+                                      ignore_access_denied=ignore_access_denied)
+
+    def load_test(self, test_factory):
+        """
+        Load test from the test factory.
+
+        :param test_factory: a pair of test class and parameters.
+        :type params: tuple
+        :return: an instance of :class:`avocado.test.Testself`.
+        """
+        test_class, test_parameters = test_factory
+        test_instance = test_class(**test_parameters)
+        return test_instance
+
+
 class TestLoader(object):
 
     """

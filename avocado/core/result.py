@@ -245,7 +245,8 @@ class TestResult(object):
                       'FAIL': self.add_fail,
                       'TEST_NA': self.add_skip,
                       'WARN': self.add_warn,
-                      'INTERRUPTED': self.add_interrupt}
+                      'INTERRUPTED': self.add_interrupt,
+                      'NOT_A_TEST': self.add_error}
         add = status_map[state['status']]
         add(state)
         self.end_test(state)
