@@ -57,6 +57,8 @@ YAML_USING = 1
 YAML_REMOVE_NODE = 2
 YAML_REMOVE_VALUE = 3
 YAML_MUX = 4
+YAML_FILTER_ONLY = 5
+YAML_FILTER_OUT = 6
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
@@ -69,6 +71,30 @@ class Control(object):  # Few methods pylint: disable=R0903
     def __init__(self, code, value=None):
         self.code = code
         self.value = value
+
+
+class TreeEnvironment(dict):
+
+    """ TreeNode environment with values, origins and filters """
+
+    def __init__(self):
+        super(TreeEnvironment, self).__init__()     # values
+        self.origin = {}    # origins of the values
+        self.filter_only = set()   # list of filter_only
+        self.filter_out = set()    # list of filter_out
+
+    def copy(self):
+        cpy = TreeEnvironment()
+        cpy.update(self)
+        cpy.origin = self.origin.copy()
+        cpy.filter_only = self.filter_only.copy()
+        cpy.filter_out = self.filter_out.copy()
+        return cpy
+
+    def __str__(self):
+        return ",".join((super(TreeEnvironment, self).__str__(),
+                         str(self.origin), str(self.filter_only),
+                         str(self.filter_out)))
 
 
 class TreeNode(object):
@@ -87,8 +113,8 @@ class TreeNode(object):
         self.parent = parent
         self.children = []
         self._environment = None
-        self.environment_origin = {}
         self.ctrl = []
+        self._filters = [], []  # This node filters, full filters in environ..
         self.multiplex = False
         for child in children:
             self.add_child(child)
@@ -220,9 +246,7 @@ class TreeNode(object):
         """ Get node environment (values + preceding envs) """
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
-                                 if self.parent else {})
-            self.environment_origin = (self.parent.environment_origin.copy()
-                                       if self.parent else {})
+                                 if self.parent else TreeEnvironment())
             for key, value in self.value.iteritems():
                 if isinstance(value, list):
                     if (key in self._environment and
@@ -232,7 +256,9 @@ class TreeNode(object):
                         self._environment[key] = value
                 else:
                     self._environment[key] = value
-                self.environment_origin[key] = self
+                self._environment.origin[key] = self
+            self._environment.filter_only.update(self._filters[0])
+            self._environment.filter_out.update(self._filters[1])
         return self._environment
 
     def set_environment_dirty(self):
@@ -388,6 +414,20 @@ def _create_from_yaml(path, cls_node=TreeNode):
                     node.ctrl.append(value[0])
                 elif value[0].code == YAML_MUX:
                     node.multiplex = True
+                elif value[0].code == YAML_FILTER_ONLY:
+                    if not value[1]:
+                        continue
+                    value = str(value[1])
+                    if value[-1] != '/':
+                        value += '/'
+                    node._filters[0].append(value)
+                elif value[0].code == YAML_FILTER_OUT:
+                    if not value[1]:
+                        continue
+                    value = str(value[1])
+                    if value[-1] != '/':
+                        value += '/'
+                    node._filters[1].append(value)
             else:
                 node.value[value[0]] = value[1]
         if using:
@@ -433,10 +473,14 @@ def _create_from_yaml(path, cls_node=TreeNode):
                            lambda loader, node: Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
                            lambda loader, node: Control(YAML_USING))
-    Loader.add_constructor(u'!remove_node',
+    Loader.add_constructor(u'!remove-node',
                            lambda loader, node: Control(YAML_REMOVE_NODE))
-    Loader.add_constructor(u'!remove_value',
+    Loader.add_constructor(u'!remove-value',
                            lambda loader, node: Control(YAML_REMOVE_VALUE))
+    Loader.add_constructor(u'!filter-only',
+                           lambda loader, node: Control(YAML_FILTER_ONLY))
+    Loader.add_constructor(u'!filter-out',
+                           lambda loader, node: Control(YAML_FILTER_OUT))
     Loader.add_constructor(u'!mux', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
