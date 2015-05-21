@@ -291,13 +291,15 @@ class TreeNode(object):
         """
         if not attributes:
             attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v)
-                                        for v in attributes
-                                        if hasattr(self, v)]))
+        node_name = ','.join((str(getattr(self, attr))
+                              for attr in attributes
+                              if hasattr(self, attr)))
         if self.multiplex:
             node_name += "-<>"
 
-        length = max(2, (len(node_name) + 1) if not self.children or show_internal else 3)
+        length = max(2, ((len(node_name) + 1)
+                         if not self.children or show_internal
+                         else 3))
         pad = ' ' * length
         _pad = ' ' * (length - 1)
         if not self.is_leaf:
