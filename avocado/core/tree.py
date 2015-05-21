@@ -656,9 +656,8 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
             value = {}
         if srcyaml:
             srcyaml = os.path.relpath(srcyaml)
-        super(TreeNodeDebug, self).__init__(name,
-                                            ValueDict(srcyaml, self, value),
-                                            parent, children)
+        super(TreeNodeDebug, self).__init__(name, None, parent, children)
+        self.value = ValueDict(srcyaml, self, value)
         self.yaml = srcyaml
 
     def merge(self, other):
@@ -669,7 +668,7 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
         if hasattr(other, 'yaml'):
             srcyaml = os.path.relpath(other.yaml)
             # when we use TreeNodeDebug, value is always ValueDict
-            self.value.yaml_per_key.update(other.value.yaml_per_key)    # pylint: disable=E1101
+            self.value.yaml_per_key.update(other.value.yaml_per_key)
         else:
             srcyaml = "Unknown"
         self.yaml = srcyaml
