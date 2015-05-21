@@ -19,6 +19,6 @@ script:
     - inspekt lint
     - inspekt indent
     - inspekt style
-    - ./selftests/run -v selftests/all/doc
+    - export VIRT_TEST_DIR="/valid/path/to/virt_test"
     - ./selftests/run -v selftests/all/functional
     - ./selftests/run -v selftests/all/unit
