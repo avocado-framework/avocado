@@ -89,7 +89,7 @@ class TreeNode(object):
         self._environment = None
         self.environment_origin = {}
         self.ctrl = []
-        self.multiplex = False
+        self.multiplex = None
         for child in children:
             self.add_child(child)
 
@@ -159,7 +159,10 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
-        self.multiplex = other.multiplex
+        if other.multiplex is True:
+            self.multiplex = True
+        elif other.multiplex is False:
+            self.multiplex = False
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -244,6 +247,29 @@ class TreeNode(object):
         for child in self.children:
             child.set_environment_dirty()
         self._environment = None
+
+    def get_node(self, path, create=False):
+        """
+        :param path: Path of the desired node (relative to this node)
+        :param create: Create the node (and intermediary ones) when not present
+        :return: the node associated with this path
+        :raise ValueError: When path doesn't exist and create not set
+        """
+        node = self
+        for name in path.split('/'):
+            if not name:
+                continue
+            try:
+                node = node.children[node.children.index(name)]
+            except ValueError:
+                if create:
+                    child = node.__class__(name)
+                    node.add_child(child)
+                    node = child
+                else:
+                    raise ValueError("Path %s does not exists in this tree\n%s"
+                                     % (path, self.get_ascii()))
+        return node
 
     def iter_children_preorder(self):
         """ Iterate through children """
