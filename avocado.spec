@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.24.0
-Release: 1%{?dist}
+Release: 99%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -57,6 +57,7 @@ selftests/run selftests/all/unit
 %dir /etc/avocado/sysinfo
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
+%config(noreplace)/etc/avocado/conf.d/gdb.conf
 %config(noreplace)/etc/avocado/sysinfo/commands
 %config(noreplace)/etc/avocado/sysinfo/files
 %config(noreplace)/etc/avocado/sysinfo/profilers
