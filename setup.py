@@ -60,7 +60,7 @@ def get_avocado_libexec_dir():
 def get_data_files():
     data_files = [(get_dir(['etc', 'avocado']), ['etc/avocado/avocado.conf'])]
     data_files += [(get_dir(['etc', 'avocado', 'conf.d']),
-                    ['etc/avocado/conf.d/README'])]
+                    ['etc/avocado/conf.d/README', 'etc/avocado/conf.d/gdb.conf'])]
     data_files += [(get_dir(['etc', 'avocado', 'sysinfo']),
                     ['etc/avocado/sysinfo/commands', 'etc/avocado/sysinfo/files',
                      'etc/avocado/sysinfo/profilers'])]
