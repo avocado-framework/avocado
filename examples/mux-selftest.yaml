@@ -8,7 +8,10 @@
 # /env/opt_CFLAGS: Should be present in merged node
 # /env/prod/opt_CFLAGS: value should be overridden by latter node
 hw:
+    # This filter has no effect whatsoever, it tests the filter inheritance
     cpu: !mux
+        # Again, no use only to test leaves inherits it
+        !filter-out : /non/existing/node
         joinlist:
             - first_item
         intel:
@@ -18,6 +21,9 @@ hw:
             cpu_CFLAGS: '-march=athlon64'
         arm:
             cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+        arm:
+            # Check if filters are updated on node merge
+            !filter-only : /hw/disk/virtio
     disk: !mux
         disk_type: 'virtio'
         corruptlist: 'nonlist'
@@ -28,6 +34,7 @@ hw:
     corruptlist: ['upper_node_list']
 distro: !mux     # This node is set as !multiplex below
     fedora:
+        !filter-out : /hw/disk/scsi
         init: 'systemd'
 env: !mux
     opt_CFLAGS: '-Os'
@@ -39,4 +46,3 @@ env: !mux
 distro: !mux
     mint:
         init: 'systemv'
-

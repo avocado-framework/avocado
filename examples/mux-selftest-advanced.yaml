@@ -6,19 +6,19 @@ distro: !mux
     # This line extends the distro branch using include
     !include : mux-selftest-distro.yaml
     # remove node called "mint"
-    !remove_node : mi.*nt
+    !remove-node : mi.*nt
     # This is a new /distro/mint appended as latest child
     mint:
         new_mint: True
     fedora:
-        !remove_value : init.*
+        !remove-value : init.*
         new_init: systemd
     gentoo:
         # This modifies the value of 'is_cool'
         is_cool: True
         # And this removes the original 'is_cool'
         # Setting happens after ctrl so it should be created'
-        !remove_value : is_cool
+        !remove-value : is_cool
 distro: !mux
     gentoo:     # This won't change anything
 # This creates new branch the usual way

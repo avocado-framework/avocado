@@ -34,12 +34,12 @@ class TestMultiplex(unittest.TestCase):
 
     def test_partial(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
-               ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
+               ['amd', 'virtio'], ['arm', 'virtio'])
         act = tuple(multiplexer.MuxTree(self.tree.children[0]))
         self.assertEqual(act, exp)
 
     def test_full(self):
-        self.assertEqual(len(self.mux_full), 12)
+        self.assertEqual(len(self.mux_full), 8)
 
     def test_create_variants(self):
         from_file = multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'])
@@ -60,7 +60,7 @@ class TestMultiplex(unittest.TestCase):
                                                 ('/hw/cpu/intel',
                                                  '/distro/fedora',
                                                  '/distro')))
-        self.assertEqual(len(act), 4)
+        self.assertEqual(len(act), 3)
         self.assertEqual(len(act[0]), 3)
         str_act = str(act)
         self.assertIn('amd', str_act)
