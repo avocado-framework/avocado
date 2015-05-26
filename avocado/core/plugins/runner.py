@@ -18,7 +18,6 @@ Base Test Runner Plugins.
 
 import sys
 
-from avocado.settings import settings
 from avocado.core import exit_codes
 from avocado.core.plugins import plugin
 from avocado.core import output
@@ -72,10 +71,8 @@ class TestRunner(plugin.Plugin):
                                        'You can also use suffixes, like: '
                                        ' s (seconds), m (minutes), h (hours). '))
 
-        sysinfo_default = settings.get_value('sysinfo.collect',
-                                             'enabled',
-                                             key_type='bool',
-                                             default=True)
+        sysinfo_default = parser.args.settings.get_value(
+            'sysinfo.collect', 'enabled', key_type='bool', default=True)
         sysinfo_default = 'on' if sysinfo_default is True else 'off'
         self.parser.add_argument('--sysinfo', choices=('on', 'off'), default=sysinfo_default,
                                  help=('Enable or disable system information '

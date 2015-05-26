@@ -33,7 +33,6 @@ class TestList(plugin.Plugin):
     enabled = True
     view = None
     test_loader = loader.TestLoader()
-    term_support = output.TermSupport()
 
     def configure(self, parser):
         """
@@ -108,36 +107,36 @@ class TestList(plugin.Plugin):
 
             if cls == test.SimpleTest:
                 stats['simple'] += 1
-                type_label = self.term_support.healthy_str('SIMPLE')
+                type_label = self.view.term_support.healthy_str('SIMPLE')
             elif cls == test.BuggyTest:
                 stats['buggy'] += 1
-                type_label = self.term_support.fail_header_str('BUGGY')
+                type_label = self.view.term_support.fail_header_str('BUGGY')
             elif cls == test.NotATest:
                 if not args.verbose:
                     continue
                 stats['not_a_test'] += 1
-                type_label = self.term_support.warn_header_str('NOT_A_TEST')
+                type_label = self.view.term_support.warn_header_str('NOT_A_TEST')
             elif cls == test.MissingTest:
                 stats['missing'] += 1
-                type_label = self.term_support.fail_header_str('MISSING')
+                type_label = self.view.term_support.fail_header_str('MISSING')
             elif cls == loader.BrokenSymlink:
                 stats['broken_symlink'] += 1
-                type_label = self.term_support.fail_header_str('BROKEN_SYMLINK')
+                type_label = self.view.term_support.fail_header_str('BROKEN_SYMLINK')
             elif cls == loader.AccessDeniedPath:
                 stats['access_denied'] += 1
-                type_label = self.term_support.fail_header_str('ACCESS_DENIED')
+                type_label = self.view.term_support.fail_header_str('ACCESS_DENIED')
             else:
                 if issubclass(cls, test.Test):
                     stats['instrumented'] += 1
                     id_label = params['name']
-                    type_label = self.term_support.healthy_str('INSTRUMENTED')
+                    type_label = self.view.term_support.healthy_str('INSTRUMENTED')
 
             test_matrix.append((type_label, id_label))
 
         header = None
         if args.verbose:
-            header = (self.term_support.header_str('Type'),
-                      self.term_support.header_str('file'))
+            header = (self.view.term_support.header_str('Type'),
+                      self.view.term_support.header_str('file'))
         for line in astring.tabular_output(test_matrix,
                                            header=header).splitlines():
             self.view.notify(event='minor', msg="%s" % line)
