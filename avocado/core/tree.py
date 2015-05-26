@@ -512,8 +512,6 @@ def path_parent(path):
     :return: the parent path as string.
     """
     parent = path.rpartition('/')[0]
-    if parent == '':
-        return ''
     return parent
 
 
