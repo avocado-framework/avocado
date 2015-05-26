@@ -69,7 +69,7 @@ class Plugin(object):
         To create a runner plugin, just call this method with `super()`.
         To create a result plugin, just set `configure` to `True`.
         """
-        parser.set_defaults(func=self.run)
+        parser.set_defaults(dispatch=self.run)
         self.configured = True
 
     def activate(self, arguments):

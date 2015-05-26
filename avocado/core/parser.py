@@ -72,8 +72,8 @@ class Parser(object):
         # Inject --help if no arguments is present
         default_args = ['--help'] if not sys.argv[1:] else None
         self.args, rest = self.application.parse_known_args(args=default_args)
-        if not hasattr(self.args, 'func'):
-            self.application.set_defaults(func=self.application.print_help)
+        if not hasattr(self.args, 'dispatch'):
+            self.application.set_defaults(dispatch=self.application.print_help)
 
     def finish(self):
         """
@@ -87,4 +87,4 @@ class Parser(object):
         """
         Take some action after parsing arguments.
         """
-        return self.args.func(self.args)
+        return self.args.dispatch(self.args)
