@@ -93,8 +93,8 @@ class Multiplexer(plugin.Plugin):
                 cend = output.term_support.ENDC
                 paths = ', '.join(["%s%s@%s%s" % (_.name, color, _.yaml, cend)
                                    for _ in tpl])
-            view.notify(event='minor', msg='\nVariant %s:    %s' %
-                        (index + 1, paths))
+            view.notify(event='minor', msg='%sVariant %s:    %s' %
+                        (('\n' if args.contents else ''), index + 1, paths))
             if args.contents:
                 env = {}
                 for node in tpl:

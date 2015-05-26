@@ -533,8 +533,16 @@ def apply_filters(tree, filter_only=None, filter_out=None):
     """
     if filter_only is None:
         filter_only = []
+    else:
+        for i in xrange(len(filter_only)):
+            if filter_only[i] and filter_only[i][-1] == '/':
+                filter_only[i] = filter_only[i][:-1]
     if filter_out is None:
         filter_out = []
+    else:
+        for i in xrange(len(filter_out)):
+            if filter_out[i] and filter_out[i][-1] == '/':
+                filter_out[i] = filter_out[i][:-1]
     for node in tree.iter_children_preorder():
         keep_node = True
         for path in filter_only:
