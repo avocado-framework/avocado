@@ -57,7 +57,7 @@ class PluginList(plugin.Plugin):
         format_str = "    %-" + str(blength + 1) + "s %s"
 
         if enabled:
-            view.notify(event='message', msg=output.term_support.healthy_str("Plugins enabled:"))
+            view.notify(event='message', msg=view.term_support.healthy_str("Plugins enabled:"))
             for plug in sorted(enabled):
                 view.notify(event='minor', msg=format_str % (plug.name, plug.description))
 

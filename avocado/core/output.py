@@ -20,7 +20,6 @@ import os
 import sys
 
 from avocado.utils import path as utils_path
-from avocado.settings import settings
 
 
 class FilterError(logging.Filter):
@@ -149,7 +148,7 @@ class TermSupport(object):
     allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
                      'screen-256color']
 
-    def __init__(self):
+    def __init__(self, colored=True):
         self.HEADER = self.COLOR_BLUE
         self.PASS = self.COLOR_GREEN
         self.SKIP = self.COLOR_YELLOW
@@ -162,8 +161,6 @@ class TermSupport(object):
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
         term = os.environ.get("TERM")
-        colored = settings.get_value('runner.output', 'colored',
-                                     key_type='bool')
         if ((not colored) or (not os.isatty(1)) or
                 (term not in self.allowed_terms)):
             self.disable()
@@ -275,7 +272,6 @@ class TermSupport(object):
         return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
 
 
-term_support = TermSupport()
 
 
 class LoggingFile(object):
@@ -345,18 +341,18 @@ class Throbber(object):
     """
     Produces a spinner used to notify progress in the application UI.
     """
-    STEPS = ['-', '\\', '|', '/']
-    # Only print a throbber when we're on a terminal
-    if term_support.enabled:
-        MOVES = [term_support.MOVE_BACK + STEPS[0],
-                 term_support.MOVE_BACK + STEPS[1],
-                 term_support.MOVE_BACK + STEPS[2],
-                 term_support.MOVE_BACK + STEPS[3]]
-    else:
-        MOVES = ['', '', '', '']
 
-    def __init__(self):
+    def __init__(self, term_support=None):
         self.position = 0
+        STEPS = ['-', '\\', '|', '/']
+        # Only print a throbber when we're on a terminal
+        if term_support is not None and term_support.enabled:
+            self.MOVES = [term_support.MOVE_BACK + STEPS[0],
+                          term_support.MOVE_BACK + STEPS[1],
+                          term_support.MOVE_BACK + STEPS[2],
+                          term_support.MOVE_BACK + STEPS[3]]
+        else:
+            self.MOVES = ['', '', '', '']
 
     def _update_position(self):
         if self.position == (len(self.MOVES) - 1):
@@ -396,7 +392,12 @@ class View(object):
             self.paginator = get_paginator()
         else:
             self.paginator = None
-        self.throbber = Throbber()
+        if self.app_args is not None and hasattr(self.app_args, 'settings'):
+            colored = self.app_args.settings.get_value('runner.output', 'colored', key_type='bool')
+        else:
+            colored = False
+        self.term_support = TermSupport(colored)
+        self.throbber = Throbber(self.term_support)
         self.tests_info = {}
 
     def cleanup(self):
@@ -481,7 +482,7 @@ class View(object):
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.healthy_str(msg), skip_newline)
+        self._log_ui_info(self.term_support.healthy_str(msg), skip_newline)
 
     def _log_ui_partial(self, msg, skip_newline=False):
         """
@@ -489,7 +490,7 @@ class View(object):
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.partial_str(msg), skip_newline)
+        self._log_ui_info(self.term_support.partial_str(msg), skip_newline)
 
     def _log_ui_header(self, msg):
         """
@@ -497,7 +498,7 @@ class View(object):
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.header_str(msg))
+        self._log_ui_info(self.term_support.header_str(msg))
 
     def _log_ui_minor(self, msg):
         """
@@ -513,7 +514,7 @@ class View(object):
 
         :param msg: Message to write.
         """
-        self._log_ui_error_base(term_support.fail_header_str(msg))
+        self._log_ui_error_base(self.term_support.fail_header_str(msg))
 
     def _log_ui_warning(self, msg):
         """
@@ -521,7 +522,7 @@ class View(object):
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.warn_header_str(msg))
+        self._log_ui_info(self.term_support.warn_header_str(msg))
 
     def _log_ui_status_pass(self, t_elapsed):
         """
@@ -529,7 +530,7 @@ class View(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
+        normal_pass_msg = self.term_support.pass_str() + " (%.2f s)" % t_elapsed
         self._log_ui_info(normal_pass_msg)
 
     def _log_ui_status_error(self, t_elapsed):
@@ -538,7 +539,7 @@ class View(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
+        normal_error_msg = self.term_support.error_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_error_msg)
 
     def _log_ui_status_interrupt(self, t_elapsed):
@@ -547,7 +548,7 @@ class View(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_error_msg = term_support.interrupt_str() + " (%.2f s)" % t_elapsed
+        normal_error_msg = self.term_support.interrupt_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_error_msg)
 
     def _log_ui_status_fail(self, t_elapsed):
@@ -556,7 +557,7 @@ class View(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
+        normal_fail_msg = self.term_support.fail_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_fail_msg)
 
     def _log_ui_status_skip(self, t_elapsed):
@@ -565,7 +566,7 @@ class View(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_skip_msg = term_support.skip_str()
+        normal_skip_msg = self.term_support.skip_str()
         self._log_ui_info(normal_skip_msg)
 
     def _log_ui_status_warn(self, t_elapsed):
@@ -574,7 +575,7 @@ class View(object):
 
         :param t_elapsed: Time it took for the operation to complete.
         """
-        normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
+        normal_warn_msg = self.term_support.warn_str() + " (%.2f s)" % t_elapsed
         self._log_ui_error_base(normal_warn_msg)
 
     def _log_ui_throbber_progress(self, progress_from_test=False):

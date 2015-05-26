@@ -17,7 +17,6 @@
 from avocado import runtime
 from avocado.utils import path as utils_path
 from avocado.core.plugins import plugin
-from avocado.settings import settings
 
 
 class GDB(plugin.Plugin):
@@ -67,12 +66,11 @@ class GDB(plugin.Plugin):
                     runtime.GDB_PRERUN_COMMANDS[''] = commands
             runtime.GDB_ENABLE_CORE = True if app_args.gdb_coredump == 'on' else False
             system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
-            runtime.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
-                                                  default=system_gdb_path)
-            system_gdbserver_path = utils_path.find_command('gdbserver',
-                                                            '/usr/bin/gdbserver')
-            runtime.GDBSERVER_PATH = settings.get_value('gdb.paths',
-                                                        'gdbserver',
-                                                        default=system_gdbserver_path)
+            runtime.GDB_PATH = app_args.settings.get_value(
+                'gdb.paths', 'gdb', default=system_gdb_path)
+            system_gdbserver_path = utils_path.find_command(
+                'gdbserver', '/usr/bin/gdbserver')
+            runtime.GDBSERVER_PATH = app_args.settings.get_value(
+                'gdb.paths', 'gdbserver', default=system_gdbserver_path)
         except AttributeError:
             pass

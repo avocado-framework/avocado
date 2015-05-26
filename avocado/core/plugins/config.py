@@ -14,7 +14,6 @@
 
 from avocado.core import output
 from avocado import data_dir
-from avocado.settings import settings
 from avocado.core.plugins import plugin
 
 
@@ -36,20 +35,20 @@ class ConfigOptions(plugin.Plugin):
         super(ConfigOptions, self).configure(self.parser)
 
     def run(self, args):
-        view = output.View()
+        view = output.View(args)
         view.notify(event="message", msg='Config files read (in order):')
-        for cfg_path in settings.config_paths:
+        for cfg_path in args.settings.config_paths:
             view.notify(event="message", msg='    %s' % cfg_path)
-        if settings.config_paths_failed:
+        if args.settings.config_paths_failed:
             view.notify(event="minor", msg='')
             view.notify(event="error", msg='Config files that failed to read:')
-            for cfg_path in settings.config_paths_failed:
+            for cfg_path in args.settings.config_paths_failed:
                 view.notify(event="error", msg='    %s' % cfg_path)
         view.notify(event="minor", msg='')
         if not args.datadir:
             blength = 0
-            for section in settings.config.sections():
-                for value in settings.config.items(section):
+            for section in args.settings.config.sections():
+                for value in args.settings.config.items(section):
                     clength = len('%s.%s' % (section, value[0]))
                     if clength > blength:
                         blength = clength
@@ -57,8 +56,8 @@ class ConfigOptions(plugin.Plugin):
             format_str = "    %-" + str(blength) + "s %s"
 
             view.notify(event="minor", msg=format_str % ('Section.Key', 'Value'))
-            for section in settings.config.sections():
-                for value in settings.config.items(section):
+            for section in args.settings.config.sections():
+                for value in args.settings.config.items(section):
                     config_key = ".".join((section, value[0]))
                     view.notify(event="minor", msg=format_str % (config_key, value[1]))
         else:
