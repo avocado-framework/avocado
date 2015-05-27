@@ -512,8 +512,6 @@ def path_parent(path):
     :return: the parent path as string.
     """
     parent = path.rpartition('/')[0]
-    if parent == '':
-        return ''
     return parent
 
 
@@ -533,8 +531,12 @@ def apply_filters(tree, filter_only=None, filter_out=None):
     """
     if filter_only is None:
         filter_only = []
+    else:
+        filter_only = [_.rstrip('/') for _ in filter_only if _]
     if filter_out is None:
         filter_out = []
+    else:
+        filter_out = [_.rstrip('/') for _ in filter_out if _]
     for node in tree.iter_children_preorder():
         keep_node = True
         for path in filter_only:
