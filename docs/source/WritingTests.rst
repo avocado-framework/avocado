@@ -116,22 +116,23 @@ Avocado finds and populates ``self.params`` with all parameters you define on
 a Multiplex Config file (see :doc:`MultiplexConfig`). As an example, consider
 the following multiplex file for sleeptest::
 
-    test:
-        sleeptest:
-            type: "builtin"
-            short:
-                sleep_length: 0.5
-            medium:
-                sleep_length: 1
-            long:
-                sleep_length: 5
+    sleeptest:
+        type: "builtin"
+        short:
+            sleep_length: 0.5
+        medium:
+            sleep_length: 1
+        long:
+            sleep_length: 5
 
-In this example 3 variants are executed (see :doc:`MultiplexConfig` for
-details). All of them contain variable "type" and "sleep_length". To obtain
-current value, you need the name ("sleep_length") and its path. The path
-differs for each variant so it's needed to use the most suitable portion
-of the path, in this example: "/test/sleeptest/*" or perhaps "sleeptest/*"
-might be enough. It depends on how your setups looks like.
+When running this example by ``avocado run $test --multiplex $file.yaml``
+three variants are executed and the content is injected into ``/run`` namespace
+(see :doc:`MultiplexConfig` for details). Every variant contain variables
+"type" and "sleep_length". To obtain current value, you need the name
+("sleep_length") and its path. The path differs for each variant so it's
+needed to use the most suitable portion of the path, in this example:
+"/run/sleeptest/*" or perhaps "sleeptest/*" might be enough. It depends on how
+your setups looks like.
 
 The default value is optional, but always keep in mind to handle them nicely.
 Someone might be executing your test with different params or without any
@@ -164,8 +165,8 @@ clearer and easier to follow.
 When thinking of the path always think about users. It's common to extend
 default config with additional variants or combine them with different
 ones to generate just the right scenarios they need. People might
-simply inject the values elsewhere (eg. `/test/sleeptest` =>
-`/upstream/test/sleeptest`) or they can merge other clashing file into the
+simply inject the values elsewhere (eg. `/run/sleeptest` =>
+`/upstream/sleeptest`) or they can merge other clashing file into the
 default path, which won't generate clash, but would return their values
 instead. Then you need to clarify the path (eg. `'*'` =>  `sleeptest/*`)
 
@@ -177,7 +178,7 @@ Using a multiplex file
 You may use the avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
-    $ avocado run sleeptest --multiplex /test:examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
@@ -194,18 +195,22 @@ generation for sleeptest just like::
     TIME : 6.52 s
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
-By later you can combine multiple simple YAML files and inject them into a specific location
-as shown in the example above. As you learned in previous section the ``/test`` location
-is part of default ``mux-entry`` path thus sleeptest can access the values without specifying
-the path. To understand the difference execute those commands::
+As explained :doc:`MultiplexConfig` without any path the content gets injected
+into ``/run`` in order to be in the default relative path location. The
+``$INJECT_TO`` can be either relative path, then it's injected into
+``/run/$INJECT_TO`` location, or absolute path (starting with ``'/'``), then
+it's injected directly into the specified path and it's up to the test/framework
+developer to get the value from this location (using path or adding the path to
+``mux-entry``). To understand the difference execute those commands::
 
     $ avocado multiplex -t examples/tests/sleeptest.py.data/sleeptest.yaml
-    $ avocado multiplex -t /test:examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t duration:examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t /my/location:examples/tests/sleeptest.py.data/sleeptest.yaml
 
 Note that, as your multiplex file specifies all parameters for sleeptest, you
 can't leave the test ID empty::
 
-    $ scripts/avocado run --multiplex /test:examples/tests/sleeptest/sleeptest.yaml
+    $ scripts/avocado run --multiplex examples/tests/sleeptest/sleeptest.yaml
     Empty test ID. A test path or alias must be provided
 
 You can also execute multiple tests with the same multiplex file::
@@ -594,7 +599,7 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    $ avocado run sleeptest --multiplex /test:/tmp/sleeptest-example.yaml
+    $ avocado run sleeptest --multiplex /tmp/sleeptest-example.yaml
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html

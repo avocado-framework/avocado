@@ -71,8 +71,10 @@ class MultiplexTests(unittest.TestCase):
 
     def test_mplex_debug(self):
         cmd_line = ('./scripts/avocado multiplex -c -d '
-                    'examples/mux-selftest.yaml examples/mux-environment.yaml '
-                    'examples/mux-selftest.yaml examples/mux-environment.yaml')
+                    '/:examples/mux-selftest.yaml '
+                    '/:examples/mux-environment.yaml '
+                    '/:examples/mux-selftest.yaml '
+                    '/:examples/mux-environment.yaml')
         expected_rc = 0
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(DEBUG_OUT, result.stdout)
