@@ -14,7 +14,8 @@ if __name__ == "__main__":
 else:
     PATH_PREFIX = ""
 
-TREE = tree.create_from_yaml([PATH_PREFIX + 'examples/mux-selftest.yaml'])
+TREE = tree.create_from_yaml(['/:' + PATH_PREFIX +
+                              'examples/mux-selftest.yaml'])
 
 
 def combine(leaves_pools):
@@ -42,20 +43,20 @@ class TestMultiplex(unittest.TestCase):
         self.assertEqual(len(self.mux_full), 12)
 
     def test_create_variants(self):
-        from_file = multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'])
+        from_file = multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest.yaml'])
         self.assertEqual(self.mux_full, tuple(from_file))
 
     # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
     def test_filter_only(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
-        act = tuple(multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'],
+        act = tuple(multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest.yaml'],
                                                 ('/hw/cpu/intel',
                                                  '/distro/fedora',
                                                  '/hw')))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
-        act = tuple(multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest.yaml'],
+        act = tuple(multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest.yaml'],
                                                 None,
                                                 ('/hw/cpu/intel',
                                                  '/distro/fedora',
@@ -70,7 +71,7 @@ class TestMultiplex(unittest.TestCase):
 
 
 class TestAvocadoParams(unittest.TestCase):
-    yamls = iter(multiplexer.multiplex_yamls([PATH_PREFIX + 'examples/mux-selftest-params.'
+    yamls = iter(multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest-params.'
                                               'yaml']))
     params1 = multiplexer.AvocadoParams(yamls.next(), 'Unittest1', 1,
                                         ['/ch0/*', '/ch1/*'], {})

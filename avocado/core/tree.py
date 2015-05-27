@@ -370,7 +370,7 @@ def _create_from_yaml(path, cls_node=TreeNode):
                     ypath = value[1]
                     if not os.path.isabs(ypath):
                         ypath = os.path.join(os.path.dirname(path), ypath)
-                    node.merge(_create_from_yaml(ypath, cls_node))
+                    node.merge(_create_from_yaml('/:' + ypath, cls_node))
                 elif value[0].code == YAML_USING:
                     if using:
                         raise ValueError("!using can be used only once per "
@@ -445,10 +445,12 @@ def _create_from_yaml(path, cls_node=TreeNode):
     path = __RE_FILE_SPLIT.split(path, 1)
     if len(path) == 1:
         path = __RE_FILE_SUBS.sub(':', path[0])
-        using = None
+        using = ["run"]
     else:
         nodes = __RE_FILE_SUBS.sub(':', path[0]).strip('/').split('/')
         using = [node for node in nodes if node]
+        if not path[0].startswith('/'):  # relative path, put into /run
+            using.insert(0, 'run')
         path = __RE_FILE_SUBS.sub(':', path[1])
 
     # Load the tree
@@ -688,5 +690,6 @@ def get_named_tree_cls(path):
         def __init__(self, name='', value=None, parent=None,
                      children=None):
             super(NamedTreeNodeDebug, self).__init__(name, value, parent,
-                                                     children, path)
+                                                     children,
+                                                     path.split(':', 1)[-1])
     return NamedTreeNodeDebug

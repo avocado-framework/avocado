@@ -192,7 +192,7 @@ possible and commonly desirable to use non-unique names. But always keep those p
 in mind and provide sensible paths.
 
 Multiplexer also supports something called "multiplex entry points" or
-"resolution order". By default it's ``/tests/*`` but it can be overridden by
+"resolution order". By default it's ``/run/*`` but it can be overridden by
 ``--mux-entry``, which accepts multiple arguments. What it does it splits
 leaves by the provided paths. Each query goes one by one through those
 sub-trees and first one to hit the match returns the result. It might not solve
@@ -214,6 +214,51 @@ variants. If no matches are found, then it would proceed to ``/qa/*``
 
 Keep in mind that only slices defined in mux-entry are taken into account for
 relative paths (the ones starting with ``*``)
+
+
+Injecting files
+===============
+
+You can run any test with any YAML file by::
+
+    avocado run sleeptest --multiplex file.yaml
+
+This puts the content of ``file.yaml`` into ``/run``
+location, which as mentioned in previous section, is the default ``mux-entry``
+path. For most simple cases this is the expected behavior as your files
+are available in the default path and you can safely use ``params.get(key)``.
+
+When you need to put certain file into a different location, for example
+when you have two files and you don't want the content to be merged into
+a single place becomming effectively a single blob, you can do that by
+giving a name to your yaml file::
+
+    avocado run sleeptest --multiplex duration:duration.yaml
+
+The content of ``duration`` is injected into ``/run/duration``. Still when
+keys from other files don't clash, you can use ``params.get(key)`` and retrieve
+from this location as it's in the default path, only extended of ``duration``
+intermediary node. Another benefit is you can merge or separate multiple files
+by using the same or different name, or even a complex (relative) path.
+
+Last but not least, advanced users can inject the file into whatever location
+they prefer by::
+
+    avocado run sleeptest --multiplex /my/variants/duration:duration.yaml
+
+Simple ``params.get(key)`` won't look in this location, which might be the
+intention. There are several ways to access the values:
+
+* absolute location ``params.get(key, '/my/variants/duration')``
+* partial absolute location ``params.get(key, '/my/*)`` (or ``/*/duration/*``...)
+* set the mux-entry ``avocado run ... --mux-entry /my/*`` and use relative path
+
+It's recommended to use the simple injection for single YAML files, relative
+injection for multiple simple YAML files. The last option is for very advanced
+setup when you either can't modify the YAML files and you need to specify
+custom resoltion order or you are specifying non-test parameters, for example
+parameters for your plugin, which you need to separate from the test
+parameters.
 
 
 Multiple files

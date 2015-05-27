@@ -11,7 +11,7 @@ from avocado.core import tree
 
 class TestTree(unittest.TestCase):
     # Share tree with all tests
-    tree = tree.create_from_yaml(['examples/mux-selftest.yaml'])
+    tree = tree.create_from_yaml(['/:examples/mux-selftest.yaml'])
 
     def test_node_order(self):
         self.assertIsInstance(self.tree, tree.TreeNode)
@@ -154,7 +154,8 @@ class TestTree(unittest.TestCase):
                          tree2.children[0].children[2].children[1].value)
 
     def test_advanced_yaml(self):
-        tree2 = tree.create_from_yaml(['examples/mux-selftest-advanced.yaml'])
+        tree2 = tree.create_from_yaml(['/:examples/mux-selftest-advanced.'
+                                       'yaml'])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
                '7', 'gentoo', 'mint', 'prod', 'new_node']
         act = tree2.get_leaves()
