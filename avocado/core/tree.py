@@ -686,5 +686,6 @@ def get_named_tree_cls(path):
         def __init__(self, name='', value=None, parent=None,
                      children=None):
             super(NamedTreeNodeDebug, self).__init__(name, value, parent,
-                                                     children, path)
+                                                     children,
+                                                     path.split(':', 1)[-1])
     return NamedTreeNodeDebug
