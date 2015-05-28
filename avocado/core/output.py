@@ -403,14 +403,14 @@ class View(object):
         if self.use_paginator:
             self.paginator.close()
 
-    def notify(self, event='message', msg=None):
+    def notify(self, event='message', msg=None, skip_newline=False):
         mapping = {'message': self._log_ui_header,
                    'minor': self._log_ui_minor,
                    'error': self._log_ui_error,
                    'warning': self._log_ui_warning,
                    'partial': self._log_ui_partial}
         if msg is not None:
-            mapping[event](msg)
+            mapping[event](msg=msg, skip_newline=skip_newline)
 
     def notify_progress(self, progress):
         self._log_ui_throbber_progress(progress)
@@ -491,37 +491,37 @@ class View(object):
         """
         self._log_ui_info(term_support.partial_str(msg), skip_newline)
 
-    def _log_ui_header(self, msg):
+    def _log_ui_header(self, msg, skip_newline=False):
         """
         Log a header message.
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.header_str(msg))
+        self._log_ui_info(term_support.header_str(msg), skip_newline)
 
-    def _log_ui_minor(self, msg):
+    def _log_ui_minor(self, msg, skip_newline=False):
         """
         Log a minor message.
 
         :param msg: Message to write.
         """
-        self._log_ui_info(msg)
+        self._log_ui_info(msg, skip_newline)
 
-    def _log_ui_error(self, msg):
+    def _log_ui_error(self, msg, skip_newline=False):
         """
         Log an error message (useful for critical errors).
 
         :param msg: Message to write.
         """
-        self._log_ui_error_base(term_support.fail_header_str(msg))
+        self._log_ui_error_base(term_support.fail_header_str(msg), skip_newline)
 
-    def _log_ui_warning(self, msg):
+    def _log_ui_warning(self, msg, skip_newline=False):
         """
         Log a warning message (useful for warning messages).
 
         :param msg: Message to write.
         """
-        self._log_ui_info(term_support.warn_header_str(msg))
+        self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
 
     def _log_ui_status_pass(self, t_elapsed):
         """
