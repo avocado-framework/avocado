@@ -15,7 +15,6 @@
 import sys
 
 from avocado import test
-from avocado import data_dir
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import exit_codes
@@ -33,20 +32,18 @@ class TestLister(object):
         use_paginator = args.paginator == 'on'
         self.view = output.View(app_args=args, use_paginator=use_paginator)
         self.term_support = output.TermSupport()
-        self.test_loader = loader.TestLoader()
+        self.test_loader = loader.TestLoaderProxy()
+        self.test_loader.load_plugins(args)
         self.args = args
 
     def _set_paths(self):
-        paths = [data_dir.get_test_dir()]
+        paths = self.test_loader.get_base_path()
         if self.args.paths:
             paths = self.args.paths
         return paths
 
     def _get_test_suite(self, paths):
-        params_list = self.test_loader.discover_urls(paths)
-        for params in params_list:
-            params['omit_non_tests'] = False
-        return self.test_loader.discover(params_list)
+        return self.test_loader.discover(paths, list_non_tests=self.args.verbose)
 
     def _validate_test_suite(self, test_suite):
         error_msg_parts = self.test_loader.validate_ui(test_suite,
@@ -62,21 +59,8 @@ class TestLister(object):
     def _get_test_matrix(self, test_suite):
         test_matrix = []
 
-        type_label_mapping = {test.SimpleTest: 'SIMPLE',
-                              test.BuggyTest: 'BUGGY',
-                              test.NotATest: 'NOT_A_TEST',
-                              test.MissingTest: 'MISSING',
-                              loader.BrokenSymlink: 'BROKEN_SYMLINK',
-                              loader.AccessDeniedPath: 'ACCESS_DENIED',
-                              test.Test: 'INSTRUMENTED'}
-
-        decorator_mapping = {test.SimpleTest: self.term_support.healthy_str,
-                             test.BuggyTest: self.term_support.fail_header_str,
-                             test.NotATest: self.term_support.warn_header_str,
-                             test.MissingTest: self.term_support.fail_header_str,
-                             loader.BrokenSymlink: self.term_support.fail_header_str,
-                             loader.AccessDeniedPath: self.term_support.fail_header_str,
-                             test.Test: self.term_support.healthy_str}
+        type_label_mapping = self.test_loader.get_type_label_mapping()
+        decorator_mapping = self.test_loader.get_decorator_mapping()
 
         stats = {}
         for value in type_label_mapping.values():
