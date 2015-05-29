@@ -15,7 +15,6 @@
 import sys
 
 from avocado import test
-from avocado import data_dir
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import exit_codes
@@ -33,20 +32,21 @@ class TestLister(object):
         use_paginator = args.paginator == 'on'
         self.view = output.View(app_args=args, use_paginator=use_paginator)
         self.term_support = output.TermSupport()
-        self.test_loader = loader.TestLoader()
+        self.test_loader = loader.TestLoaderProxy()
+        self.test_loader.load_plugins(args)
         self.args = args
 
-    def _set_paths(self):
-        paths = [data_dir.get_test_dir()]
-        if self.args.paths:
-            paths = self.args.paths
-        return paths
+    def _extra_listing(self):
+        self.test_loader.get_extra_listing(self.args)
+
+    def _get_keywords(self):
+        keywords = self.test_loader.get_base_keywords()
+        if self.args.keywords:
+            keywords = self.args.keywords
+        return keywords
 
     def _get_test_suite(self, paths):
-        params_list = self.test_loader.discover_urls(paths)
-        for params in params_list:
-            params['omit_non_tests'] = False
-        return self.test_loader.discover(params_list)
+        return self.test_loader.discover(paths, list_non_tests=self.args.verbose)
 
     def _validate_test_suite(self, test_suite):
         error_msg_parts = self.test_loader.validate_ui(test_suite,
@@ -62,21 +62,8 @@ class TestLister(object):
     def _get_test_matrix(self, test_suite):
         test_matrix = []
 
-        type_label_mapping = {test.SimpleTest: 'SIMPLE',
-                              test.BuggyTest: 'BUGGY',
-                              test.NotATest: 'NOT_A_TEST',
-                              test.MissingTest: 'MISSING',
-                              loader.BrokenSymlink: 'BROKEN_SYMLINK',
-                              loader.AccessDeniedPath: 'ACCESS_DENIED',
-                              test.Test: 'INSTRUMENTED'}
-
-        decorator_mapping = {test.SimpleTest: self.term_support.healthy_str,
-                             test.BuggyTest: self.term_support.fail_header_str,
-                             test.NotATest: self.term_support.warn_header_str,
-                             test.MissingTest: self.term_support.fail_header_str,
-                             loader.BrokenSymlink: self.term_support.fail_header_str,
-                             loader.AccessDeniedPath: self.term_support.fail_header_str,
-                             test.Test: self.term_support.healthy_str}
+        type_label_mapping = self.test_loader.get_type_label_mapping()
+        decorator_mapping = self.test_loader.get_decorator_mapping()
 
         stats = {}
         for value in type_label_mapping.values():
@@ -115,7 +102,7 @@ class TestLister(object):
     def _display(self, test_matrix, stats):
         header = None
         if self.args.verbose:
-            header = (self.term_support.header_str('Type'), self.term_support.header_str('ID'))
+            header = (self.term_support.header_str('Type'), self.term_support.header_str('Test'))
 
         for line in astring.tabular_output(test_matrix, header=header).splitlines():
             self.view.notify(event='minor', msg="%s" % line)
@@ -126,8 +113,9 @@ class TestLister(object):
                 self.view.notify(event='message', msg=("%s: %s" % (key.upper(), stats[key])))
 
     def _list(self):
-        paths = self._set_paths()
-        test_suite = self._get_test_suite(paths)
+        self._extra_listing()
+        keywords = self._get_keywords()
+        test_suite = self._get_test_suite(keywords)
         self._validate_test_suite(test_suite)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
@@ -165,11 +153,16 @@ class TestList(plugin.Plugin):
         :param parser: Main test runner parser.
         """
         self.parser = parser.subcommands.add_parser('list', help='List available test modules')
-        self.parser.add_argument('paths', type=str, default=[], nargs='*',
-                                 help="List of paths. If no paths provided, "
-                                      "avocado will list tests on the "
-                                      "configured test directory, "
-                                      "see 'avocado config --datadir'")
+        self.parser.add_argument('keywords', type=str, default=[], nargs='*',
+                                 help="List of paths, aliases or other "
+                                      "keywords used to locate tests. "
+                                      "If empty, avocado will list tests on "
+                                      "the configured test source, "
+                                      "(see 'avocado config --datadir') Also, "
+                                      "if there are other test loader plugins "
+                                      "active, tests from those plugins might "
+                                      "also show up (behavior may vary among "
+                                      "plugins)")
         self.parser.add_argument('-V', '--verbose',
                                  action='store_true', default=False,
                                  help='Whether to show extra information '
@@ -179,6 +172,7 @@ class TestList(plugin.Plugin):
                                  help='Turn the paginator on/off. '
                                       'Current: %(default)s')
         super(TestList, self).configure(self.parser)
+        parser.lister = self.parser
 
     def run(self, args):
         test_lister = TestLister(args)
