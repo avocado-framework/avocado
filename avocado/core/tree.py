@@ -673,7 +673,7 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
         Override origin with the one from other tree. Updated/Newly set values
         are going to use this location as origin.
         """
-        if hasattr(other, 'yaml'):
+        if hasattr(other, 'yaml') and other.yaml:
             srcyaml = os.path.relpath(other.yaml)
             # when we use TreeNodeDebug, value is always ValueDict
             self.value.yaml_per_key.update(other.value.yaml_per_key)    # pylint: disable=E1101
