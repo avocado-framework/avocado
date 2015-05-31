@@ -282,15 +282,38 @@ class AvocadoParams(object):
         path = self._greedy_path(path)
         for param in self._rel_paths:
             try:
+                param.get_or_die(path, key)
                 return param.get_or_die(path, key)
             except NoMatchError:
                 pass
         if self._is_abspath(path):
             try:
+                self._abs_path.get_or_die(path, key)
                 return self._abs_path.get_or_die(path, key)
             except NoMatchError:
                 pass
         return self._default_params.get(key, default)
+
+    def set(self, key, path, value):
+        path = self._greedy_path(path)
+        handled = False
+        for param in self._rel_paths:
+            for node in param._get_leaves(path):
+                self._log("SETREL (key=%s, path=%s) => %r", key,
+                          node.path, value)
+                handled |= True
+                node.value[key] = value
+                node.set_environment_dirty()
+        if self._is_abspath(path):
+            for node in self._abs_path._get_leaves(path):
+                self._log("SETABS (key=%s, path=%s) => %r", key,
+                          node.path, value)
+                handled |= True
+                node.value[key] = value
+                node.set_environment_dirty()
+        self._cache = {}
+        self._log("SETABS (key=%s, path=DEFAULT) => %r", key, value)
+        self._default_params[key] = value
 
     def objects(self, key, path=None):
         """
