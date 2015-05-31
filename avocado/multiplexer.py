@@ -90,8 +90,8 @@ class MuxTree(object):
             yield ret
 
 
-def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
-                    debug=False):
+def yaml2tree(input_yamls, filter_only=None, filter_out=None,
+              debug=False):
     if filter_only is None:
         filter_only = []
     if filter_out is None:
@@ -99,8 +99,7 @@ def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
     input_tree = tree.create_from_yaml(input_yamls, debug)
     # TODO: Process filters and multiplex simultaneously
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
-    result = MuxTree(final_tree)
-    return result
+    return final_tree
 
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
@@ -396,9 +395,12 @@ class Mux(object):
         filter_only = getattr(args, 'filter_only', None)
         filter_out = getattr(args, 'filter_out', None)
         if mux_files:
-            self.variants = multiplex_yamls(mux_files, filter_only, filter_out)
+            mux_tree = yaml2tree(mux_files, filter_only, filter_out)
         else:   # no variants
-            self.variants = None
+            mux_tree = tree.TreeNode()
+        if getattr(args, 'default_multiplex_tree', None):
+            mux_tree.merge(args.default_multiplex_tree)
+        self.variants = MuxTree(mux_tree)
         self._mux_entry = getattr(args, 'mux_entry', None)
         if self._mux_entry is None:
             self._mux_entry = ['/test/*']

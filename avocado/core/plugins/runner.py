@@ -126,10 +126,23 @@ class TestRunner(plugin.Plugin):
                              help='Filter out path(s) from multiplexing')
             mux.add_argument('--mux-entry', nargs='*', default=None,
                              help="Multiplex entry point(s)")
-
+            mux.add_argument('--env', default=[], nargs='*')
         super(TestRunner, self).configure(self.parser)
         # Export the test runner parser back to the main parser
         parser.runner = self.parser
+
+    def activate(self, args):
+        # Extend default multiplex tree of --env values
+        for value in getattr(args, "env", []):
+            value = value.split(':', 2)
+            if len(value) < 2:
+                raise ValueError("key:value pairs required, found only %s"
+                                 % (value))
+            elif len(value) == 2:
+                args.default_multiplex_tree.value[value[0]] = value[1]
+            else:
+                node = args.default_multiplex_tree.get_node(value[0], True)
+                node.value[value[1]] = value[2]
 
     def _validate_job_timeout(self, raw_timeout):
         units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
