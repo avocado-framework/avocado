@@ -33,6 +33,8 @@ class Parser(object):
     """
 
     def __init__(self):
+        self.args = None
+        self.subcommands = None
         self.application = argparse.ArgumentParser(
             prog=PROG,
             add_help=False,  # see parent parsing
@@ -71,7 +73,7 @@ class Parser(object):
         """
         # Inject --help if no arguments is present
         default_args = ['--help'] if not sys.argv[1:] else None
-        self.args, rest = self.application.parse_known_args(args=default_args)
+        self.args, _ = self.application.parse_known_args(args=default_args)
         if not hasattr(self.args, 'dispatch'):
             self.application.set_defaults(dispatch=self.application.print_help)
 
