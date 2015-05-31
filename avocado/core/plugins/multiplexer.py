@@ -12,7 +12,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import os
 import sys
 
 from avocado.core.plugins import plugin
@@ -91,7 +90,10 @@ class Multiplexer(plugin.Plugin):
             else:
                 color = output.term_support.LOWLIGHT
                 cend = output.term_support.ENDC
-                paths = ', '.join(["%s%s@%s%s" % (_.name, color, _.yaml, cend)
+                paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                                  getattr(_, 'yaml',
+                                                          "Unknown"),
+                                                  cend)
                                    for _ in tpl])
             view.notify(event='minor', msg='%sVariant %s:    %s' %
                         (('\n' if args.contents else ''), index + 1, paths))
