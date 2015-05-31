@@ -91,12 +91,14 @@ class MuxTree(object):
 
 
 def multiplex_yamls(input_yamls, filter_only=None, filter_out=None,
-                    debug=False):
+                    debug=False, additional_tree=None):
     if filter_only is None:
         filter_only = []
     if filter_out is None:
         filter_out = []
     input_tree = tree.create_from_yaml(input_yamls, debug)
+    if additional_tree:
+        input_tree.merge(additional_tree)
     # TODO: Process filters and multiplex simultaneously
     final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
     result = MuxTree(final_tree)

@@ -20,6 +20,34 @@ from avocado.core import output
 from avocado.core import exit_codes
 from avocado.core import tree
 from avocado import multiplexer
+import argparse
+
+
+class Arg2Tree(argparse.Action):
+    '''
+    def __init__(self, option_strings, dest, nargs=None, const=None,
+                 default=None, type=None, choices=None, required=False,
+                 help=None, metavar=None):
+        super(Arg2Tree, self).__init__(self, option_strings=option_strings,
+                                       dest=dest, nargs=nargs, const=const,
+                                       default=default, type=type,
+                                       choices=choices, required=required,
+                                       help=help, metavar=metavar)
+    '''
+    def __call__(self, parser, namespace, values, option_string=None):
+        if not namespace.env:
+            namespace.env = tree.TreeNode()
+        for value in values:
+            value = value.split(':', 2)
+            print value
+            if len(value) < 2:
+                raise argparse.ArgumentError("key:value pairs required, found "
+                                             "only value.")
+            elif len(value) == 2:
+                namespace.env.value[value[0]] = value[1]
+            else:
+                node = namespace.env.get_node(value[0], True)
+                node.value[value[1]] = value[2]
 
 
 class Multiplexer(plugin.Plugin):
@@ -57,6 +85,7 @@ class Multiplexer(plugin.Plugin):
         self.parser.add_argument('-d', '--debug', action='store_true',
                                  default=False, help="Debug multiplexed "
                                  "files.")
+        self.parser.add_argument('--env', action=Arg2Tree, nargs='*')
         super(Multiplexer, self).configure(self.parser)
 
     def run(self, args):
@@ -66,6 +95,8 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='message', msg='Config file tree structure:')
             try:
                 t = tree.create_from_yaml(multiplex_files)
+                if args.env:
+                    t.merge(args.env)
             except IOError, details:
                 view.notify(event='error', msg=details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -78,7 +109,8 @@ class Multiplexer(plugin.Plugin):
             variants = multiplexer.multiplex_yamls(multiplex_files,
                                                    args.filter_only,
                                                    args.filter_out,
-                                                   args.debug)
+                                                   args.debug,
+                                                   additional_tree=args.env)
         except IOError, details:
             view.notify(event='error',
                         msg=details.strerror)
