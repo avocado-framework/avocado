@@ -89,7 +89,7 @@ class TreeNode(object):
         self._environment = None
         self.environment_origin = {}
         self.ctrl = []
-        self.multiplex = False
+        self.multiplex = None
         for child in children:
             self.add_child(child)
 
@@ -159,7 +159,10 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
-        self.multiplex = other.multiplex
+        if other.multiplex is True:
+            self.multiplex = True
+        elif other.multiplex is False:
+            self.multiplex = False
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
