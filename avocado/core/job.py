@@ -43,6 +43,9 @@ from avocado.utils import archive
 from avocado.utils import path
 from avocado.settings import settings
 
+from avocado.core.plugins.builtin import ErrorsLoading
+
+
 try:
     from avocado.core.plugins import htmlresult
     HTML_REPORT_SUPPORT = True
@@ -320,6 +323,11 @@ class Job(object):
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id)
+
+        for plugin_failed in ErrorsLoading:
+            _TEST_LOGGER.error('Error loading %s -> %s' % plugin_failed)
+        _TEST_LOGGER.error('')
+
         _TEST_LOGGER.info('Job ID: %s', self.unique_id)
         _TEST_LOGGER.info('')
 

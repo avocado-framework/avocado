@@ -52,6 +52,7 @@ def load_builtins():
         except Exception as err:
             name = str(module)
             reason = '%s %s' % (str(err.__class__.__name__), err)
+            log.error('Error loading %s -> %s', name, reason)
             ErrorsLoading.append((name, reason))
             continue
         for name in plugin_mod.__dict__:
