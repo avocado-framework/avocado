@@ -20,6 +20,7 @@ Avocado application command line parsing.
 import sys
 import argparse
 
+from avocado.core import tree
 from avocado.version import VERSION
 
 PROG = 'avocado'
@@ -33,6 +34,8 @@ class Parser(object):
     """
 
     def __init__(self):
+        self.args = None
+        self.subcommands = None
         self.application = argparse.ArgumentParser(
             prog=PROG,
             add_help=False,  # see parent parsing
@@ -71,9 +74,12 @@ class Parser(object):
         """
         # Inject --help if no arguments is present
         default_args = ['--help'] if not sys.argv[1:] else None
-        self.args, rest = self.application.parse_known_args(args=default_args)
+        self.args, _ = self.application.parse_known_args(args=default_args)
         if not hasattr(self.args, 'dispatch'):
             self.application.set_defaults(dispatch=self.application.print_help)
+        if tree.MULTIPLEX_CAPABLE:
+            # Allow overriding multiplex variants by plugins args
+            self.args.default_multiplex_tree = tree.TreeNode()
 
     def finish(self):
         """
@@ -81,7 +87,7 @@ class Parser(object):
 
         Side effect: set the final value for attribute `args`.
         """
-        self.args = self.application.parse_args()
+        self.args = self.application.parse_args(namespace=self.args)
 
     def take_action(self):
         """

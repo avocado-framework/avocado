@@ -12,7 +12,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import os
 import sys
 
 from avocado.core.plugins import plugin
@@ -57,33 +56,40 @@ class Multiplexer(plugin.Plugin):
         self.parser.add_argument('-d', '--debug', action='store_true',
                                  default=False, help="Debug multiplexed "
                                  "files.")
+        self.parser.add_argument('--env', default=[], nargs='*')
         super(Multiplexer, self).configure(self.parser)
+
+    def activate(self, args):
+        # Extend default multiplex tree of --env values
+        for value in getattr(args, "env", []):
+            value = value.split(':', 2)
+            if len(value) < 2:
+                raise ValueError("key:value pairs required, found only %s"
+                                 % (value))
+            elif len(value) == 2:
+                args.default_multiplex_tree.value[value[0]] = value[1]
+            else:
+                node = args.default_multiplex_tree.get_node(value[0], True)
+                node.value[value[1]] = value[2]
 
     def run(self, args):
         view = output.View(app_args=args)
-        multiplex_files = args.multiplex_files
-        if args.tree:
-            view.notify(event='message', msg='Config file tree structure:')
-            try:
-                t = tree.create_from_yaml(multiplex_files)
-            except IOError, details:
-                view.notify(event='error', msg=details.strerror)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-            t = tree.apply_filters(t, args.filter_only, args.filter_out)
-            view.notify(event='minor',
-                        msg=t.get_ascii(attributes=args.attr))
-            sys.exit(exit_codes.AVOCADO_ALL_OK)
-
         try:
-            variants = multiplexer.multiplex_yamls(multiplex_files,
-                                                   args.filter_only,
-                                                   args.filter_out,
-                                                   args.debug)
+            mux_tree = multiplexer.yaml2tree(args.multiplex_files,
+                                             args.filter_only, args.filter_out,
+                                             args.debug)
         except IOError, details:
             view.notify(event='error',
                         msg=details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        mux_tree.merge(args.default_multiplex_tree)
+        if args.tree:
+            view.notify(event='message', msg='Config file tree structure:')
+            view.notify(event='minor',
+                        msg=mux_tree.get_ascii(attributes=args.attr))
+            sys.exit(exit_codes.AVOCADO_ALL_OK)
 
+        variants = multiplexer.MuxTree(mux_tree)
         view.notify(event='message', msg='Variants generated:')
         for (index, tpl) in enumerate(variants):
             if not args.debug:
@@ -91,7 +97,9 @@ class Multiplexer(plugin.Plugin):
             else:
                 color = output.term_support.LOWLIGHT
                 cend = output.term_support.ENDC
-                paths = ', '.join(["%s%s@%s%s" % (_.name, color, _.yaml, cend)
+                paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                                  getattr(_, 'yaml', "???"),
+                                                  cend)
                                    for _ in tpl])
             view.notify(event='minor', msg='%sVariant %s:    %s' %
                         (('\n' if args.contents else ''), index + 1, paths))
