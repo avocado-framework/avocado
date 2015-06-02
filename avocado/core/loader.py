@@ -26,6 +26,7 @@ import sys
 from avocado import test
 from avocado import data_dir
 from avocado.utils import path
+from avocado.core import output
 
 try:
     import cStringIO as StringIO
@@ -35,8 +36,9 @@ except ImportError:
 
 class _DebugJob(object):
 
-    def __init__(self):
+    def __init__(self, args=None):
         self.logdir = '.'
+        self.args = args
 
 
 class BrokenSymlink(object):
@@ -47,16 +49,161 @@ class AccessDeniedPath(object):
     pass
 
 
+class InvalidLoaderPlugin(Exception):
+    pass
+
+
+class TestLoaderProxy(object):
+
+    def __init__(self):
+        self.loader_plugins = []
+        self.url_plugin_mapping = {}
+
+    def add_loader_plugin(self, plugin):
+        if not isinstance(plugin, TestLoader):
+            raise InvalidLoaderPlugin("Object %s is not an instance of "
+                                      "TestResult" % plugin)
+        self.loader_plugins.append(plugin)
+
+    def load_plugins(self, args):
+        for key in args.__dict__.keys():
+            if key.endswith('_loader'):
+                loader_class = getattr(args, key)
+                if issubclass(loader_class, TestLoader):
+                    loader_plugin = loader_class(args=args)
+                    self.add_loader_plugin(loader_plugin)
+        filesystem_loader = TestLoader()
+        self.add_loader_plugin(filesystem_loader)
+
+    def get_extra_listing(self, args):
+        for loader_plugin in self.loader_plugins:
+            loader_plugin.get_extra_listing(args)
+
+    def get_base_keywords(self):
+        base_path = []
+        for loader_plugin in self.loader_plugins:
+            base_path += loader_plugin.get_base_keywords()
+        return base_path
+
+    def get_type_label_mapping(self):
+        mapping = {}
+        for loader_plugin in self.loader_plugins:
+            mapping.update(loader_plugin.get_type_label_mapping())
+        return mapping
+
+    def get_decorator_mapping(self):
+        mapping = {}
+        for loader_plugin in self.loader_plugins:
+            mapping.update(loader_plugin.get_decorator_mapping())
+        return mapping
+
+    def discover(self, urls, list_non_tests=False):
+        """
+        Discover (possible) tests from test urls.
+
+        :param urls: a list of tests urls.
+        :type urls: list
+        :param list_non_tests: Whether to list non tests (for listing methods)
+        :type list_non_tests: bool
+        :return: A list of test factories (tuples (TestClass, test_params))
+        """
+        test_factories = []
+        for url in urls:
+            for loader_plugin in self.loader_plugins:
+                try:
+                    params_list_from_url = loader_plugin.discover_url(url)
+                    if list_non_tests:
+                        for params in params_list_from_url:
+                            params['omit_non_tests'] = False
+                    if params_list_from_url:
+                        if url not in self.url_plugin_mapping:
+                            self.url_plugin_mapping[url] = loader_plugin
+                        if loader_plugin == self.url_plugin_mapping[url]:
+                            test_factories += loader_plugin.discover(params_list_from_url)
+                except Exception:
+                    continue
+        return test_factories
+
+    def validate_ui(self, test_suite, ignore_missing=False,
+                    ignore_not_test=False, ignore_broken_symlinks=False,
+                    ignore_access_denied=False):
+        e_msg = []
+        for tuple_class_params in test_suite:
+            for key in self.url_plugin_mapping:
+                if tuple_class_params[1]['params']['id'].startswith(key):
+                    loader_plugin = self.url_plugin_mapping[key]
+                    e_msg += loader_plugin.validate_ui(test_suite=[tuple_class_params], ignore_missing=ignore_missing,
+                                                       ignore_not_test=ignore_not_test,
+                                                       ignore_broken_symlinks=ignore_broken_symlinks,
+                                                       ignore_access_denied=ignore_access_denied)
+        return e_msg
+
+    def load_test(self, test_factory):
+        """
+        Load test from the test factory.
+
+        :param test_factory: a pair of test class and parameters.
+        :type params: tuple
+        :return: an instance of :class:`avocado.test.Testself`.
+        """
+        test_class, test_parameters = test_factory
+        test_instance = test_class(**test_parameters)
+        return test_instance
+
+
 class TestLoader(object):
 
     """
     Test loader class.
     """
 
-    def __init__(self, job=None):
+    def __init__(self, job=None, args=None):
+
         if job is None:
-            job = _DebugJob()
+            job = _DebugJob(args=args)
         self.job = job
+
+    def get_extra_listing(self, args):
+        pass
+
+    def get_base_keywords(self):
+        """
+        Get base keywords to locate tests (path to test dir in this case).
+
+        Used to list all tests available in virt-test.
+
+        :return: list with path strings.
+        """
+        return [data_dir.get_test_dir()]
+
+    def get_type_label_mapping(self):
+        """
+        Get label mapping for display in test listing.
+
+        :return: Dict {TestClass: 'TEST_LABEL_STRING'}
+        """
+        return {test.SimpleTest: 'SIMPLE',
+                test.BuggyTest: 'BUGGY',
+                test.NotATest: 'NOT_A_TEST',
+                test.MissingTest: 'MISSING',
+                BrokenSymlink: 'BROKEN_SYMLINK',
+                AccessDeniedPath: 'ACCESS_DENIED',
+                test.Test: 'INSTRUMENTED'}
+
+    def get_decorator_mapping(self):
+        """
+        Get label mapping for display in test listing.
+
+        :return: Dict {TestClass: decorator function}
+        """
+        term_support = output.TermSupport()
+        return {test.SimpleTest: term_support.healthy_str,
+                test.BuggyTest: term_support.fail_header_str,
+                test.NotATest: term_support.warn_header_str,
+                test.MissingTest: term_support.fail_header_str,
+                BrokenSymlink: term_support.fail_header_str,
+                AccessDeniedPath: term_support.fail_header_str,
+                test.Test: term_support.healthy_str}
 
     def _is_unittests_like(self, test_class, pattern='test'):
         for name, _ in inspect.getmembers(test_class, inspect.ismethod):
