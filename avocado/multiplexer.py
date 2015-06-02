@@ -401,7 +401,7 @@ class Mux(object):
             self.variants = None
         self._mux_entry = getattr(args, 'mux_entry', None)
         if self._mux_entry is None:
-            self._mux_entry = ['/test/*']
+            self._mux_entry = ['/run/*']
 
     def get_number_of_tests(self, test_suite):
         """
