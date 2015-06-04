@@ -394,7 +394,7 @@ class PluginsTest(unittest.TestCase):
 
     def test_config_plugin(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado config'
+        cmd_line = './scripts/avocado config --paginator off'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = 0
@@ -405,7 +405,7 @@ class PluginsTest(unittest.TestCase):
 
     def test_config_plugin_datadir(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado config --datadir'
+        cmd_line = './scripts/avocado config --datadir --paginator off'
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = 0
