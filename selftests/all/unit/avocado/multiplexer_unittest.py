@@ -43,24 +43,30 @@ class TestMultiplex(unittest.TestCase):
         self.assertEqual(len(self.mux_full), 12)
 
     def test_create_variants(self):
-        from_file = multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest.yaml'])
+        from_file = multiplexer.yaml2tree(
+            ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
+        from_file = multiplexer.MuxTree(from_file)
         self.assertEqual(self.mux_full, tuple(from_file))
 
     # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
     def test_filter_only(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
-        act = tuple(multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest.yaml'],
-                                                ('/hw/cpu/intel',
-                                                 '/distro/fedora',
-                                                 '/hw')))
+        act = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
+                                     'examples/mux-selftest.yaml'],
+                                    ('/hw/cpu/intel',
+                                     '/distro/fedora',
+                                     '/hw'))
+        act = tuple(multiplexer.MuxTree(act))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
-        act = tuple(multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest.yaml'],
-                                                None,
-                                                ('/hw/cpu/intel',
-                                                 '/distro/fedora',
-                                                 '/distro')))
+        act = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
+                                     'examples/mux-selftest.yaml'],
+                                    None,
+                                    ('/hw/cpu/intel',
+                                     '/distro/fedora',
+                                     '/distro'))
+        act = tuple(multiplexer.MuxTree(act))
         self.assertEqual(len(act), 4)
         self.assertEqual(len(act[0]), 3)
         str_act = str(act)
@@ -71,8 +77,9 @@ class TestMultiplex(unittest.TestCase):
 
 
 class TestAvocadoParams(unittest.TestCase):
-    yamls = iter(multiplexer.multiplex_yamls(['/:' + PATH_PREFIX + 'examples/mux-selftest-params.'
-                                              'yaml']))
+    yamls = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
+                                   'examples/mux-selftest-params.yaml'])
+    yamls = iter(multiplexer.MuxTree(yamls))
     params1 = multiplexer.AvocadoParams(yamls.next(), 'Unittest1', 1,
                                         ['/ch0/*', '/ch1/*'], {})
     yamls.next()    # Skip 2nd
