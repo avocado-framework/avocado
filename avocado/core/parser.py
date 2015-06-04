@@ -21,6 +21,7 @@ import sys
 import argparse
 
 from avocado.version import VERSION
+from avocado.settings import Settings
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
@@ -39,6 +40,8 @@ class Parser(object):
             description=DESCRIPTION)
         self.application.add_argument('-v', '--version', action='version',
                                       version='Avocado %s' % VERSION)
+        self.application.add_argument('-c', '--config',
+                                      dest='avocado_conf', default=None)
         self.application.add_argument('--plugins', action='store',
                                       help='Load extra plugins from directory',
                                       dest='plugins_dir', default='')
@@ -51,6 +54,7 @@ class Parser(object):
         Side effect: update attribute `args` (the namespace).
         """
         self.args, _ = self.application.parse_known_args()
+        self.args.settings = Settings(self.args.avocado_conf)
 
         # Use parent parsing to avoid breaking the output of --help option
         self.application = argparse.ArgumentParser(prog=PROG,
@@ -79,9 +83,12 @@ class Parser(object):
         """
         Finish the process of parsing arguments.
 
-        Side effect: set the final value for attribute `args`.
+        Side effects:
+        - Set the final value for attribute `args`.
+        - Set the configuration settings to attribute `settings`.
         """
         self.args = self.application.parse_args()
+        self.args.settings = Settings(self.args.avocado_conf)
 
     def take_action(self):
         """

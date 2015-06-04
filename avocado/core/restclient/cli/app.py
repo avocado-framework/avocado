@@ -20,9 +20,7 @@ This is the main entry point for the rest client cli application
 import sys
 import types
 import importlib
-import functools
 
-from avocado import settings
 from avocado.restclient import connection
 from avocado.core import output
 from avocado.core import exit_codes

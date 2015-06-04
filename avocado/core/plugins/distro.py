@@ -343,7 +343,7 @@ class DistroOptions(plugin.Plugin):
                                         args.distro_def_arch)
 
     def run(self, args):
-        view = output.View()
+        view = output.View(args)
         if args.distro_def_create:
             if not (args.distro_def_name and args.distro_def_version and
                     args.distro_def_arch and args.distro_def_type and

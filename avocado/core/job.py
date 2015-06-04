@@ -41,7 +41,6 @@ from avocado.core.plugins import jsonresult
 from avocado.core.plugins import xunit
 from avocado.utils import archive
 from avocado.utils import path
-from avocado.settings import settings
 
 from avocado.core.plugins.builtin import ErrorsLoading
 
@@ -83,8 +82,11 @@ class Job(object):
         self.unique_id = unique_id
         self.view = output.View(app_args=self.args)
         self.logdir = None
-        raw_log_level = settings.get_value('job.output', 'loglevel',
-                                           default='debug')
+        if hasattr(args, 'settings'):
+            raw_log_level = args.settings.get_value(
+                'job.output', 'loglevel', default='debug')
+        else:
+            raw_log_level = 'debug'
         mapping = {'info': logging.INFO,
                    'debug': logging.DEBUG,
                    'warning': logging.WARNING,
@@ -192,6 +194,7 @@ class Job(object):
         # Setup the xunit plugin to output to the debug directory
         xunit_file = os.path.join(self.logdir, 'results.xml')
         args = argparse.Namespace()
+        args.settings = self.args.settings
         args.xunit_output = xunit_file
         xunit_plugin = xunit.xUnitTestResult(self.view, args)
         self.result_proxy.add_output_plugin(xunit_plugin)
@@ -199,6 +202,7 @@ class Job(object):
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')
         args = argparse.Namespace()
+        args.settings = self.args.settings
         args.json_output = json_file
         json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
@@ -207,6 +211,7 @@ class Job(object):
         if HTML_REPORT_SUPPORT:
             html_file = os.path.join(self.logdir, 'html', 'results.html')
             args = argparse.Namespace()
+            args.settings = self.args.settings
             args.html_output = html_file
             args.open_browser = getattr(self.args, 'open_browser', False)
             args.relative_links = True
@@ -344,8 +349,8 @@ class Job(object):
         if getattr(self.args, 'archive', False):
             filename = self.logdir + '.zip'
             archive.create(filename, self.logdir)
-        if not settings.get_value('runner.behavior', 'keep_tmp_files',
-                                  key_type=bool, default=False):
+        if not self.args.settings.get_value('runner.behavior', 'keep_tmp_files',
+                                            key_type=bool, default=False):
             data_dir.clean_tmp_files()
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
