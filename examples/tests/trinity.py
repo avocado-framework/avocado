@@ -16,7 +16,7 @@ class TrinityTest(test.Test):
     Trinity syscall fuzzer wrapper.
 
     :see: http://codemonkey.org.uk/projects/trinity/
-    :src: http://codemonkey.org.uk/projects/trinity/trinity-1.4.tar.xz (repackaged)
+    :src: http://codemonkey.org.uk/projects/trinity/trinity-1.5.tar.xz (repackaged)
 
     :param tarball: Path to the trinity tarball relative to deps dir.
     :param stress: Name of the syscall you want to stress.
@@ -28,9 +28,10 @@ class TrinityTest(test.Test):
         """
         Build trinity.
         """
-        tarball_path = self.get_data_path(self.params.get('tarball'))
+        tarball = self.params.get('tarball', default='trinity-1.5.tar.bz2')
+        tarball_path = self.get_data_path(tarball)
         archive.extract(tarball_path, self.srcdir)
-        self.srcdir = os.path.join(self.srcdir, 'trinity-1.4')
+        self.srcdir = os.path.join(self.srcdir, 'trinity-1.5')
         os.chdir(self.srcdir)
         process.run('./configure.sh')
         build.make(self.srcdir)
