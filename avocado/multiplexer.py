@@ -198,7 +198,7 @@ class AvocadoParams(object):
         :param leaves: list of TreeNode leaves
         """
         path = self._greedy_path(path)
-        path_leaves = [leaf for leaf in leaves if path.match(leaf.path + '/')]
+        path_leaves = [leaf for leaf in leaves if path.search(leaf.path + '/')]
         for leaf in path_leaves:
             leaves.remove(leaf)
         return path_leaves
@@ -207,9 +207,9 @@ class AvocadoParams(object):
     def _greedy_path(path):
         """
         converts user-friendly asterisk path to python regexp and compiles it:
-        path = ""             => ^$ only
-        path = "/"            => / only
-        path = "/asdf/fdsa"   => /asdf/fdsa only
+        path = ""             => ^$
+        path = "/"            => /
+        path = "/asdf/fdsa"   => /asdf/fdsa
         path = "asdf/fdsa"    => $MUX_ENTRY/?.*/asdf/fdsa
         path = "/*/asdf"      => /[^/]*/asdf
         path = "asdf/*"       => $MUX_ENTRY/?.*/asdf/.*
@@ -217,16 +217,12 @@ class AvocadoParams(object):
         """
         if not path:
             return re.compile('^$')
-        if path[0] != '/':
-            prefix = '.*/'
-        else:
-            prefix = ''
         if path[-1] == '*':
             suffix = ''
             path = path[:-1]
         else:
             suffix = '$'
-        return re.compile(prefix + path.replace('*', '[^/]*') + suffix)
+        return re.compile(path.replace('*', '[^/]*') + suffix)
 
     @staticmethod
     def _is_abspath(path):
@@ -351,7 +347,7 @@ class AvocadoParam(object):
         """
         return [self._leaves[i]
                 for i in xrange(len(self._leaf_names))
-                if path.match(self._leaf_names[i])]
+                if path.search(self._leaf_names[i])]
 
     def get_or_die(self, path, key):
         """
