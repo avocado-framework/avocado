@@ -23,8 +23,10 @@ try:
 except ImportError:
     import subprocess
 
-from avocado import utils
-from avocado.linux import software_manager
+from avocado.utils import genio
+from avocado.utils import process
+from avocado.utils import software_manager
+from avocado.utils import path as utils_path
 from avocado.core import output
 from avocado.settings import settings
 
@@ -48,7 +50,7 @@ class Collectible(object):
         """
         path = os.path.join(logdir, self.logf)
         if os.path.exists(path):
-            return utils.genio.read_one_line(path)
+            return genio.read_one_line(path)
         else:
             return ""
 
@@ -159,9 +161,9 @@ class Command(Collectible):
             for f in (stdin, stdout):
                 f.close()
             if self._compress_log and os.path.exists(logf_path):
-                utils.process.run('gzip -9 "%s"' % logf_path,
-                                  ignore_status=True,
-                                  verbose=False)
+                process.run('gzip -9 "%s"' % logf_path,
+                            ignore_status=True,
+                            verbose=False)
 
 
 class Daemon(Command):
@@ -317,7 +319,7 @@ class SysInfo(object):
                          tries to look in the config files.
         """
         if basedir is None:
-            basedir = utils.path.init_dir('sysinfo')
+            basedir = utils_path.init_dir('sysinfo')
         self.basedir = basedir
 
         self._installed_pkgs = None
@@ -334,14 +336,14 @@ class SysInfo(object):
                                            key_type='str',
                                            default='')
         log.info('Commands configured by file: %s', commands_file)
-        self.commands = utils.genio.read_all_lines(commands_file)
+        self.commands = genio.read_all_lines(commands_file)
 
         files_file = settings.get_value('sysinfo.collectibles',
                                         'files',
                                         key_type='str',
                                         default='')
         log.info('Files configured by file: %s', files_file)
-        self.files = utils.genio.read_all_lines(files_file)
+        self.files = genio.read_all_lines(files_file)
 
         if profiler is None:
             self.profiler = settings.get_value('sysinfo.collect',
@@ -355,7 +357,7 @@ class SysInfo(object):
                                            'profilers',
                                            key_type='str',
                                            default='')
-        self.profilers = utils.genio.read_all_lines(profiler_file)
+        self.profilers = genio.read_all_lines(profiler_file)
 
         log.info('Profilers configured by file: %s', profiler_file)
         log.info('Profilers declared: %s', self.profilers)
@@ -379,9 +381,9 @@ class SysInfo(object):
                              'start_test': self.start_test_collectibles,
                              'end_test': self.end_test_collectibles}
 
-        self.pre_dir = utils.path.init_dir(self.basedir, 'pre')
-        self.post_dir = utils.path.init_dir(self.basedir, 'post')
-        self.profile_dir = utils.path.init_dir(self.basedir, 'profile')
+        self.pre_dir = utils_path.init_dir(self.basedir, 'pre')
+        self.post_dir = utils_path.init_dir(self.basedir, 'post')
+        self.profile_dir = utils_path.init_dir(self.basedir, 'profile')
 
         self._set_collectibles()
 
@@ -470,7 +472,7 @@ class SysInfo(object):
     def _log_installed_packages(self, path):
         installed_path = os.path.join(path, "installed_packages")
         installed_packages = "\n".join(self._get_installed_packages()) + "\n"
-        utils.genio.write_file(installed_path, installed_packages)
+        genio.write_file(installed_path, installed_packages)
 
     def _log_modified_packages(self, path):
         """
@@ -480,10 +482,10 @@ class SysInfo(object):
         new_packages = set(self._get_installed_packages())
         added_path = os.path.join(path, "added_packages")
         added_packages = "\n".join(new_packages - old_packages) + "\n"
-        utils.genio.write_file(added_path, added_packages)
+        genio.write_file(added_path, added_packages)
         removed_path = os.path.join(self.basedir, "removed_packages")
         removed_packages = "\n".join(old_packages - new_packages) + "\n"
-        utils.genio.write_file(removed_path, removed_packages)
+        genio.write_file(removed_path, removed_packages)
 
     def start_job_hook(self):
         """
