@@ -14,7 +14,7 @@
 
 import sys
 
-from avocado import data_dir
+from avocado.core import data_dir
 from avocado.core import test
 from avocado.core import loader
 from avocado.core import output
