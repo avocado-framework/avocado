@@ -46,10 +46,10 @@ try:
 except ImportError:
     pass
 
-from avocado.utils import process
-from avocado.utils import data_factory
-from avocado.utils import distro
-from avocado.utils import path as utils_path
+from . import process
+from . import data_factory
+from . import distro
+from . import path as utils_path
 
 log = logging.getLogger('avocado.test')
 
