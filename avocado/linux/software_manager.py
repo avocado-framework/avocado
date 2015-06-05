@@ -48,7 +48,7 @@ except ImportError:
 
 from avocado.utils import process
 from avocado.utils import data_factory
-from avocado.linux import distro
+from avocado.utils import distro
 from avocado.core import exceptions
 from avocado.utils import path as utils_path
 
