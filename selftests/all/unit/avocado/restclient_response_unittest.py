@@ -8,7 +8,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.restclient import response
+from avocado.core.restclient import response
 
 
 class ResultResponseTest(unittest.TestCase):

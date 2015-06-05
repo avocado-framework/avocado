@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.24.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -101,9 +101,11 @@ examples of how to write tests on your own.
 %files examples
 %{_datadir}/avocado/tests
 %{_datadir}/avocado/wrappers
-%{_datadir}/avocado/api
 
 %changelog
+* Fri Jun  5 2015 Cleber Rosa <cleber@redhat.com> - 0.24.0-3
+- Removed rest client API examples
+
 * Mon May 25 2015 Cleber Rosa <cleber@redhat.com> - 0.24.0-2
 - Added previously missing gdb.conf
 

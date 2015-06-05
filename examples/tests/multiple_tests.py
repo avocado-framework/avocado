@@ -1,9 +1,9 @@
 #!/usr/bin/python
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class MultipleTests(test.Test):
+class MultipleTests(Test):
 
     """
     Following the idea of unittest module,

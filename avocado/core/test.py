@@ -31,10 +31,10 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado import data_dir
-from avocado import multiplexer
+from avocado.core import data_dir
 from avocado.core import sysinfo
 from avocado.core import exceptions
+from avocado.core import multiplexer
 from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process
@@ -534,7 +534,7 @@ class SimpleTest(Test):
             result = process.run(pipes.quote(self.path), verbose=True,
                                  env=test_params)
             self._log_detailed_cmd_info(result)
-        except exceptions.CmdError, details:
+        except process.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 

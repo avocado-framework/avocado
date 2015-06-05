@@ -20,9 +20,8 @@ import getpass
 import logging
 import time
 
-from avocado.core import exceptions
 from avocado.core import output
-from avocado.utils import process
+from . import process
 
 
 LOG = logging.getLogger('avocado.test')
@@ -109,7 +108,7 @@ class Remote(object):
         result.succeeded = fabric_result.succeeded
         if not ignore_status:
             if result.failed:
-                raise exceptions.CmdError(command=command, result=result)
+                raise process.CmdError(command=command, result=result)
         return result
 
     def uptime(self):

@@ -20,7 +20,7 @@ import os
 import tempfile
 import shutil
 
-from avocado.utils import path as utils_path
+from . import path as utils_path
 
 
 class Script(object):

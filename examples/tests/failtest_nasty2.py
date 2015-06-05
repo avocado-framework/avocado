@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
@@ -15,7 +15,7 @@ class NastyException(Exception):
         return self.msg
 
 
-class FailTest(test.Test):
+class FailTest(Test):
 
     """
     Very nasty exception test

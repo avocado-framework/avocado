@@ -13,7 +13,7 @@ basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import data_dir
+from avocado.core import data_dir
 from avocado.core import job_id
 from avocado.utils import process
 

@@ -22,7 +22,7 @@ import glob
 import math
 import logging
 
-from avocado.utils import process
+from . import process
 
 
 # Returns total memory in kb

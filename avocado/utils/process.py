@@ -34,13 +34,35 @@ except ImportError:
     import subprocess
     SUBPROCESS32_SUPPORT = False
 
-from avocado import gdb
+from . import gdb
+
 from avocado import runtime
 from avocado.core import exceptions
 
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
+
+
+class CmdError(Exception):
+
+    def __init__(self, command=None, result=None):
+        self.command = command
+        self.result = result
+
+    def __str__(self):
+        if self.result is not None:
+            if self.result.interrupted:
+                return "Command %s interrupted by user (Ctrl+C)" % self.command
+            if self.result.exit_status is None:
+                msg = "Command '%s' failed and is not responding to signals"
+                msg %= self.command
+            else:
+                msg = "Command '%s' failed (rc=%d)"
+                msg %= (self.command, self.result.exit_status)
+            return msg
+        else:
+            return "CmdError"
 
 
 class GDBInferiorProcessExitedError(exceptions.TestNAError):
@@ -128,7 +150,7 @@ def process_in_ptree_is_defunct(ppid):
     defunct = False
     try:
         pids = get_children_pids(ppid)
-    except exceptions.CmdError:  # Process doesn't exist
+    except CmdError:  # Process doesn't exist
         return True
     for pid in pids:
         cmd = "ps --no-headers -o cmd %d" % int(pid)
@@ -449,7 +471,7 @@ class SubProcess(object):
                     the specified timeout.
         :type sig: int
         :returns: The command result object.
-        :rtype: A :class:`avocado.utils.process.CmdResult` instance.
+        :rtype: A :class:`CmdResult` instance.
         """
         self._init_subprocess()
         start_time = time.time()
@@ -886,8 +908,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     :param env: Use extra environment variables
     :type env: dict
 
-    :return: An :class:`avocado.utils.process.CmdResult` object.
-    :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
+    :return: An :class:`CmdResult` object.
+    :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
@@ -895,7 +917,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
-        raise exceptions.CmdError(cmd, sp.result)
+        raise CmdError(cmd, sp.result)
     return cmd_result
 
 
@@ -932,7 +954,7 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
 
     :return: Exit code.
     :rtype: int
-    :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
+    :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env)
@@ -971,7 +993,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
 
     :return: Command output.
     :rtype: str
-    :raise: :class:`avocado.core.exceptions.CmdError`, if ``ignore_status=False``.
+    :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env)

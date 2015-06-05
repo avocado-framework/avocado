@@ -18,7 +18,7 @@ import os
 import logging
 import shutil
 
-from avocado.utils import download, archive, build
+from . import download, archive, build
 
 
 log = logging.getLogger('avocado.test')
