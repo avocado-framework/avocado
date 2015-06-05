@@ -2,11 +2,11 @@
 
 import os
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class AbortTest(test.Test):
+class AbortTest(Test):
 
     """
     A test that just calls abort() (and abort).

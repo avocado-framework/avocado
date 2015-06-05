@@ -23,8 +23,8 @@ import os
 import re
 import sys
 
-from avocado import test
 from avocado import data_dir
+from avocado.core import test
 from avocado.utils import path
 
 try:

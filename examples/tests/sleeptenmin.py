@@ -4,10 +4,10 @@ import os
 import time
 
 from avocado import main
-from avocado import test
+from avocado import Test
 
 
-class SleepTenMin(test.Test):
+class SleepTenMin(Test):
 
     """
     Sleeps for 10 minutes

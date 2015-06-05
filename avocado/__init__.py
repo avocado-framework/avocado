@@ -12,9 +12,14 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+
+__all__ = ['main', 'Test']
+
+
 import logging
 
 from avocado.core.job import main
+from avocado.core.test import Test
 
 
 if hasattr(logging, 'NullHandler'):
