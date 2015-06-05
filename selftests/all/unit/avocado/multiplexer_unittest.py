@@ -124,10 +124,10 @@ class TestAvocadoParams(unittest.TestCase):
     def test_get_greedy_path(self):
         self.assertEqual(self.params1.get('unique1', '/*/*/*/ch0.1.1.1/',
                                           111), 'unique1')
-        # not in this level (-1)
+        # evaluated from right
         self.assertEqual(self.params1.get('unique1', '/*/*/ch0.1.1.1/', 222),
-                         222)
-        # not in this level (+1)
+                         'unique1')
+        # path too long so can't match from right
         self.assertEqual(self.params1.get('unique1', '/*/*/*/*/ch0.1.1.1/',
                                           333), 333)
         self.assertEqual(self.params1.get('unique1', '/ch*/c*1/*0*/*1/',
