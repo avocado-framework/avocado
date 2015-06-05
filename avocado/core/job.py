@@ -111,6 +111,7 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
+        self.test_loader = loader.TestLoaderProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
 
@@ -148,12 +149,14 @@ class Job(object):
         shutil.rmtree(self.logdir, ignore_errors=True)
 
     def _make_test_loader(self):
-        if hasattr(self.args, 'test_loader'):
-            test_loader_class = self.args.test_loader
-        else:
-            test_loader_class = loader.TestLoader
-
-        self.test_loader = test_loader_class(job=self)
+        for key in self.args.__dict__.keys():
+            if key.endswith('_loader'):
+                loader_class = getattr(self.args, key)
+                if issubclass(loader_class, loader.TestLoader):
+                    loader_plugin = loader_class(self)
+                    self.test_loader.add_loader_plugin(loader_plugin)
+        filesystem_loader = loader.TestLoader(self)
+        self.test_loader.add_loader_plugin(filesystem_loader)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -252,9 +255,7 @@ class Job(object):
 
         self._make_test_loader()
 
-        params_list = self.test_loader.discover_urls(urls)
-        test_suite = self.test_loader.discover(params_list)
-        return test_suite
+        return self.test_loader.discover(urls)
 
     def _validate_test_suite(self, test_suite):
         try:

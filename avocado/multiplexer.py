@@ -420,7 +420,14 @@ class Mux(object):
             i = None
             for i, variant in enumerate(self.variants):
                 test_factory = [template[0], template[1].copy()]
-                test_factory[1]['params'] = (variant, self._mux_entry)
+                mux_append = test_factory[1]['params'].get('avocado_mux_append', False)
+                # Test providers might want to keep their original params and only append
+                # avocado parameters to a special 'avocado_params' key. In order for that
+                # to happen, they need to set params['avocado_mux_append'] = True as well.
+                if not mux_append:
+                    test_factory[1]['params'] = (variant, self._mux_entry)
+                else:
+                    test_factory[1]['params']['avocado_params'] = (variant, self._mux_entry)
                 yield test_factory
             if i is None:   # No variants, use template
                 yield template
