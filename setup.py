@@ -75,8 +75,6 @@ def get_data_files():
     data_files += [(get_dir(['usr', 'share', 'avocado', 'wrappers'],
                             ['wrappers']),
                     glob.glob('examples/wrappers/*.sh'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'api'], ['api']),
-                    glob.glob('examples/api/*/*.py'))]
     data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
     return data_files
 
@@ -111,7 +109,6 @@ if __name__ == '__main__':
                     'avocado.core.plugins',
                     'avocado.utils',
                     'avocado.core.remote',
-                    'avocado.restclient',
                     'avocado.core.restclient',
                     'avocado.core.restclient.cli',
                     'avocado.core.restclient.cli.args',

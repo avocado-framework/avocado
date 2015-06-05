@@ -6,7 +6,7 @@ Module that implements the actions for the CLI App when the job toplevel
 command is used
 """
 
-from avocado.restclient import connection
+from avocado.core.restclient import connection
 from avocado.core.restclient.cli.actions import base
 
 
