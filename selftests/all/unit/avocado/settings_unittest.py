@@ -13,7 +13,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import settings
+from avocado.core import settings
 
 example_1 = """[foo]
 str_key = frobnicate
