@@ -2,7 +2,7 @@
 
 from avocado import Test
 from avocado import main
-from avocado.linux import kernel_build
+from avocado.utils import kernel_build
 
 
 class LinuxBuildTest(Test):
