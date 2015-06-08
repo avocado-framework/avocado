@@ -47,17 +47,17 @@ htmlhelp_basename = 'avocadodoc'
 
 latex_documents = [
     ('index', 'avocado.tex', u'avocado Documentation',
-     u'Lucas Meneghel Rodrigues', 'manual'),
+     u'Avocado Development Team', 'manual'),
 ]
 
 man_pages = [
     ('index', 'avocado', u'avocado Documentation',
-     [u'Lucas Meneghel Rodrigues'], 1)
+     [u'Avocado Development Team'], 1)
 ]
 
 texinfo_documents = [
     ('index', 'avocado', u'avocado Documentation',
-     u'Lucas Meneghel Rodrigues', 'avocado', 'One line description of project.',
+     u'Avocado Development Team', 'avocado', 'One line description of project.',
      'Miscellaneous'),
 ]
 
