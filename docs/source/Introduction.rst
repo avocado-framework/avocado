@@ -3,10 +3,11 @@
 About Avocado
 =============
 
-Avocado is a set of tools and libraries to perform automated testing, altogether
-with the possibility of manual interaction. One can call it a test framework with benefits.
-Native tests are written in Python and they follow the :mod:`unittest` pattern,
-but any executable can serve as a test.
+Avocado is a set of tools and libraries to help with automated testing.
+
+One can call it a test framework with benefits. Native tests are
+written in Python and they follow the :mod:`unittest` pattern, but any
+executable can serve as a test.
 
 Avocado is composed by:
 
