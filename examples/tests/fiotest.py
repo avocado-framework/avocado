@@ -2,14 +2,14 @@
 
 import os
 
-from avocado import test
+from avocado import Test
 from avocado import main
 from avocado.utils import archive
 from avocado.utils import build
 from avocado.utils import process
 
 
-class FioTest(test.Test):
+class FioTest(Test):
 
     """
     fio is an I/O tool meant to be used both for benchmark and

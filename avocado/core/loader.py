@@ -23,8 +23,8 @@ import os
 import re
 import sys
 
-from avocado import test
 from avocado import data_dir
+from avocado.core import test
 from avocado.utils import path
 from avocado.core import output
 
@@ -144,7 +144,7 @@ class TestLoaderProxy(object):
 
         :param test_factory: a pair of test class and parameters.
         :type params: tuple
-        :return: an instance of :class:`avocado.test.Testself`.
+        :return: an instance of :class:`avocado.core.test.Test`.
         """
         test_class, test_parameters = test_factory
         test_instance = test_class(**test_parameters)
@@ -539,7 +539,7 @@ class TestLoader(object):
 
         :param test_factory: a pair of test class and parameters.
         :type params: tuple
-        :return: an instance of :class:`avocado.test.Testself`.
+        :return: an instance of :class:`avocado.core.test.Test`.
         """
         test_class, test_parameters = test_factory
         test_instance = test_class(**test_parameters)

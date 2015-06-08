@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
+from avocado import Test
 from avocado import main
-from avocado.linux import kernel_build
+from avocado.utils import kernel_build
 
 
-class LinuxBuildTest(test.Test):
+class LinuxBuildTest(Test):
 
     """
     Execute the Linux Build test.

@@ -18,10 +18,10 @@ from avocado.utils import script
 from avocado.utils import process
 
 AVOCADO_TEST_OK = """#!/usr/bin/python
+from avocado import Test
 from avocado import main
-from avocado import test
 
-class PassTest(test.Test):
+class PassTest(Test):
     def runTest(self):
         pass
 
@@ -30,11 +30,11 @@ if __name__ == "__main__":
 """
 
 AVOCADO_TEST_BUGGY = """#!/usr/bin/python
+from avocado import Test
 from avocado import main
-from avocado import test
 import adsh
 
-class PassTest(test.Test):
+class PassTest(Test):
     def runTest(self):
         pass
 

@@ -13,7 +13,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 
-from avocado.linux import distro
+from avocado.utils import distro
 
 
 class ProbeTest(unittest.TestCase):

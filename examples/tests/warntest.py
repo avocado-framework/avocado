@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
+from avocado import Test
 from avocado import main
 from avocado.core import exceptions
 
 
-class WarnTest(test.Test):
+class WarnTest(Test):
 
     """
     Functional test for avocado. Throw a TestWarn.

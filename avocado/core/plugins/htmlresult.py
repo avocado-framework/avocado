@@ -191,7 +191,7 @@ class HTMLTestResult(TestResult):
         """
         Called when the given test has been run.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.end_test(self, state)

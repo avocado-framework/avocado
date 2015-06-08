@@ -18,7 +18,7 @@
 class RemoteTest(object):
 
     """
-    Mimics :class:`avocado.test.Test` for remote tests.
+    Mimics :class:`avocado.core.test.Test` for remote tests.
     """
 
     def __init__(self, name, status, time, start, end, fail_reason, logdir,

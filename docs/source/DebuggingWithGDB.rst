@@ -97,10 +97,10 @@ Currently, when using the Avocado GDB plugin, that is, when using the
 But, you can still depend on the process `STDOUT`, as exemplified by this fictional
 test::
 
- from avocado import test
+ from avocado import Test
  from avocado.utils import process
 
- class HelloOutputTest(test.Test):
+ class HelloOutputTest(Test):
 
      def runTest(self):
          result = process.run("/path/to/hello", ignore_status=True)

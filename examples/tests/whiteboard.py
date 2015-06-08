@@ -2,11 +2,11 @@
 
 import base64
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class WhiteBoard(test.Test):
+class WhiteBoard(Test):
 
     """
     Simple test that saves test custom data to the test whiteboard

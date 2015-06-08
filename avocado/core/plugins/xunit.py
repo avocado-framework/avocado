@@ -82,7 +82,7 @@ class XmlResult(object):
         """
         Add a testcase node of kind succeed.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         tc = '\t<testcase classname={class} name={name} time="{time}"/>'
@@ -95,7 +95,7 @@ class XmlResult(object):
         """
         Add a testcase node of kind skipped.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         tc = '''\t<testcase classname={class} name={name} time="{time}">
@@ -110,7 +110,7 @@ class XmlResult(object):
         """
         Add a testcase node of kind failed.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         tc = '''\t<testcase classname={class} name={name} time="{time}">
@@ -130,7 +130,7 @@ class XmlResult(object):
         """
         Add a testcase node of kind error.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         tc = '''\t<testcase classname={class} name={name} time="{time}">
@@ -184,7 +184,7 @@ class xUnitTestResult(TestResult):
         """
         Record an end test event, accord to the given test status.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.end_test(self, state)

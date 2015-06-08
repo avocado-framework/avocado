@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 from avocado import main
-from avocado import test
+from avocado import Test
 
 
-class PassTest(test.Test):
+class PassTest(Test):
 
     """
     Example test that passes.
