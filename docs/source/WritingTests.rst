@@ -4,80 +4,42 @@
 Writing Avocado Tests
 =====================
 
-Test Resolution in avocado - simple tests vs instrumented tests
-===============================================================
+We are going to write an Avocado test in Python and we are going to inherit from
+:class:`avocado.test.Test`. This makes this test a so-called instrumented test.
 
-What is a test in the avocado context? Either one of:
+Basic example
+=============
 
-* An executable file, that returns exit code 0 (PASS) or != 0 (FAIL). This
-  is known as a SimpleTest, in avocado terminology.
-* A python module containing a class derived from :mod:`avocado.test.Test`.
-  This is known as an instrumented test, in avocado terminology. The term
-  instrumented is used because the avocado python test classes allow you to
-  get more features for your test, such as logging facilities and more
-  sophisticated test APIs.
-
-When you use the avocado runner, frequently you'll provide paths to files,
-that will be inspected, and acted upon depending on their contents. The
-diagram below shows how avocado analyzes a file and decides what to do with
-it:
-
-.. figure:: diagram.png
-
-Now that we covered how avocado resolves tests, let's get to business.
-This section is concerned with writing an avocado test. The process is not
-hard, all you need to do is to create a test module, which is a python file
-with a class that inherits from :class:`avocado.test.Test`. This class only
-really needs to implement a method called `runTest`, which represents the actual
-sequence of test operations.
-
-Simple example
-==============
-
-Let's re-create an old time favorite, ``sleeptest``, which is a functional
-test for avocado (old because we also use such a test for autotest). It does
-nothing but ``time.sleep([number-seconds])``::
-
-        #!/usr/bin/python
+Let's re-create an old time favorite, ``sleeptest`` [#f1]_.  It is so simple, it
+does nothing besides sleeping for a while::
 
         import time
 
         from avocado import test
-        from avocado import main
-
 
         class SleepTest(test.Test):
 
-            """
-            Example test for avocado.
-            """
-
-            def runTest(self):
-                """
-                Sleep for length seconds.
-                """
+            def test(self):
                 sleep_length = self.params.get('sleep_length', default=1)
                 self.log.debug("Sleeping for %.2f seconds", sleep_length)
                 time.sleep(sleep_length)
 
+This is about the simplest test you can write for Avocado, while still
+leveraging its API power.
 
-        if __name__ == "__main__":
-            main()
+As can be seen, an Avocado test is a method that starts with ``test`` (so
+our method named simply ``test`` is indeed valid) in a class that inherits
+from :mod:`avocado.test.Test`. For the class name, you can pick any name you
+like, but we do recommend that it follows the CamelCase convention, for PEP8
+consistency.
 
-This is about the simplest test you can write for avocado (at least, one using
-the avocado APIs). An avocado test is basically a class that inherits from
-:mod:`avocado.test.Test` and could have any name you might like (we'll trust
-you'll choose a good name, although we do recommend that the name uses the
-CamelCase convention, for PEP8 consistency).
+Note that the test class provides you with a number of convenience attributes:
 
-Note that the test object provides you with a number of convenience
-attributes, such as ``self.log``, that lets you log debug, info, error and
-warning messages. Also, we note the parameter passing system that avocado
-provides: We frequently want to pass parameters to tests, and we can do that
-through what we call a `multiplex file`, which is a configuration file that
-not only allows you to provide params to your test, but also easily create a
-validation matrix in a concise way. You can find more about the multiplex
-file format on :doc:`MultiplexConfig`.
+* A ready to use log mechanism for your test, that can be accessed by means
+  of ``self.log``. It lets you log debug, info, error and warning messages.
+* A parameter passing system (and fetching system) that can be accessed by
+  means of ``self.params``. This is hooked to the Multiplexer, about which
+  you can find that more information at :doc:`MultiplexConfig`.
 
 Saving test generated (custom) data
 ===================================
@@ -91,10 +53,7 @@ encoded it first (base64 is the obvious choice).
 Building on the previously demonstrated ``sleeptest``, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
 
-        def runTest(self):
-            """
-            Sleep for length seconds.
-            """
+        def test(self):
             sleep_length = self.params.get('sleep_length', default=1)
             self.log.debug("Sleeping for %.2f seconds", sleep_length)
             time.sleep(sleep_length)
@@ -175,7 +134,7 @@ More details on that are in :doc:`MultiplexConfig`
 Using a multiplex file
 ======================
 
-You may use the avocado runner with a multiplex file to provide params and matrix
+You may use the Avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
     $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
@@ -239,11 +198,11 @@ You can also execute multiple tests with the same multiplex file::
 Avocado tests are also unittests
 ================================
 
-Since avocado tests inherit from :class:`unittest.TestCase`, you can use all
+Since Avocado tests inherit from :class:`unittest.TestCase`, you can use all
 the :func:`assert` class methods on your tests. Some silly examples::
 
     class RandomExamples(test.Test):
-        def runTest(self):
+        def test(self):
             self.log.debug("Verifying some random math...")
             four = 2 * 2
             four_ = 2 + 2
@@ -257,12 +216,12 @@ the :func:`assert` class methods on your tests. Some silly examples::
             self.assertIsInstance(self, test.Test)
 
 The reason why we have a shebang in the beginning of the test is because
-avocado tests, similarly to unittests, can use an entry point, called
+Avocado tests, similarly to unittests, can use an entry point, called
 :func:`avocado.main`, that calls avocado libs to look for test classes and execute
 its main entry point. This is an optional, but fairly handy feature. In case
 you want to use it, don't forget to ``chmod +x`` your test.
 
-Executing an avocado test gives::
+Executing an Avocado test gives::
 
     $ examples/tests/sleeptest.py
     JOB ID    : de6c1e4c227c786dc4d926f6fca67cda34d96276
@@ -281,10 +240,10 @@ Executing an avocado test gives::
 Running tests with nosetests
 ============================
 
-`nose <https://nose.readthedocs.org/>`__ is a python testing framework with
-similar goals as avocado, except that avocado also intends to provide tools to
+`nose <https://nose.readthedocs.org/>`__ is a Python testing framework with
+similar goals as Avocado, except that avocado also intends to provide tools to
 assemble a fully automated test grid, plus richer test API for tests on the
-Linux platform. Regardless, the fact that an avocado class is also an unittest
+Linux platform. Regardless, the fact that an Avocado class is also an unittest
 cass, you can run them with the ``nosetests`` application::
 
     $ nosetests examples/tests/sleeptest.py
@@ -305,7 +264,7 @@ Running third party test suites
 ===============================
 
 It is very common in test automation workloads to use test suites developed
-by third parties. By wrapping the execution code inside an avocado test module,
+by third parties. By wrapping the execution code inside an Avocado test module,
 you gain access to the facilities and API provided by the framework. Let's
 say you want to pick up a test suite written in C that it is in a tarball,
 uncompress it, compile the suite code, and then executing the test. Here's
@@ -342,7 +301,7 @@ an example that does that::
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
 
-        def runTest(self):
+        def test(self):
             """
             Execute synctest with the appropriate params.
             """
@@ -386,7 +345,7 @@ both, if you specified ``all``) being executed to reference files: ``stdout.expe
 and ``stderr.expected``. Those files will be recorded in the test data dir. The
 data dir is in the same directory as the test source file, named
 ``[source_file_name.data]``. Let's take as an example the test ``synctest.py``. In a
-fresh checkout of avocado, you can see::
+fresh checkout of Avocado, you can see::
 
         examples/tests/synctest.py.data/stderr.expected
         examples/tests/synctest.py.data/stdout.expected
@@ -460,7 +419,7 @@ Let's look what's in each of them::
 
 Now, every time this test runs, it'll take into account the expected files that
 were recorded, no need to do anything else but run the test. Let's see what
-happens if we change the ``stdout.expected`` file contents to ``Hello, avocado!``::
+happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!``::
 
     $ scripts/avocado run output_record.sh
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
@@ -508,7 +467,7 @@ Verifying the failure reason::
     20:52:38 test       L0063 ERROR| Hello, world!
     20:52:38 test       L0063 ERROR|
     20:52:38 test       L0063 ERROR| Expected:
-    20:52:38 test       L0063 ERROR| Hello, avocado!
+    20:52:38 test       L0063 ERROR| Hello, Avocado!
     20:52:38 test       L0063 ERROR|
     20:52:38 test       L0064 ERROR|
     20:52:38 test       L0529 ERROR| FAIL home/$USER/Code/avocado/output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
@@ -516,13 +475,13 @@ Verifying the failure reason::
     Hello, world!
 
     Expected:
-    Hello, avocado!
+    Hello, Avocado!
 
     20:52:38 test       L0516 INFO |
 
 As expected, the test failed because we changed its expectations.
 
-Test log, stdout and stderr in native avocado modules
+Test log, stdout and stderr in native Avocado modules
 =====================================================
 
 If needed, you can write directly to the expected stdout and stderr files
@@ -544,7 +503,7 @@ You may log something into the test logs using the methods in
 
     class output_test(test.Test):
 
-        def runTest(self):
+        def test(self):
             self.log.info('This goes to the log and it is only informational')
             self.log.warn('Oh, something unexpected, non-critical happened, '
                           'but we can continue.')
@@ -561,7 +520,7 @@ stderr streams, you can do something like::
 
     class output_test(test.Test):
 
-        def runTest(self):
+        def test(self):
             self.log.info('This goes to the log and it is only informational')
             self.stdout_log.info('This goes to the test stdout (will be recorded)')
             self.stderr_log.info('This goes to the test stderr (will be recorded)')
@@ -575,8 +534,8 @@ Avocado Tests run on a separate process
 =======================================
 
 In order to avoid tests to mess around the environment used by the main
-avocado runner process, tests are run on a forked subprocess. This allows
-for more robustness (tests are not easily able to mess/break avocado) and
+Avocado runner process, tests are run on a forked subprocess. This allows
+for more robustness (tests are not easily able to mess/break Avocado) and
 some nifty features, such as setting test timeouts.
 
 Setting a Test Timeout
@@ -652,7 +611,7 @@ impact your test grid. You can account for that possibility and set up a
 
 
 If you pass that multiplex file to the runner multiplexer, this will register
-a timeout of 3 seconds before avocado ends the test forcefully by sending a
+a timeout of 3 seconds before Avocado ends the test forcefully by sending a
 :class:`signal.SIGTERM` to the test, making it raise a
 :class:`avocado.core.exceptions.TestTimeoutError`.
 
@@ -669,12 +628,12 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
     class TimeoutTest(test.Test):
 
         """
-        Functional test for avocado. Throw a TestTimeoutError.
+        Functional test for Avocado. Throw a TestTimeoutError.
         """
         default_params = {'timeout': 3.0,
                           'sleep_time': 5.0}
 
-        def runTest(self):
+        def test(self):
             """
             This should throw a TestTimeoutError.
             """
@@ -738,7 +697,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 Environment Variables for Simple Tests
 ======================================
 
-Avocado exports avocado variables and multiplexed variables as BASH environment
+Avocado exports Avocado variables and multiplexed variables as BASH environment
 to the running test. Those variables are interesting to simple tests, because
 they can not make use of Avocado API directly with Python, like the native
 tests can do and also they can modify the test parameters.
@@ -778,7 +737,7 @@ only requirement is to use::
 
     PATH=$(avocado "exec-path"):$PATH
 
-which injects path to avocado utils into shell PATH. Take a look into
+which injects path to Avocado utils into shell PATH. Take a look into
 ``avocado exec-path`` to see list of available functions and take a look at
 ``examples/tests/simplewarning.sh`` for inspiration.
 
@@ -789,7 +748,12 @@ Wrap Up
 We recommend you take a look at the example tests present in the
 ``examples/tests`` directory, that contains a few samples to take some
 inspiration from. That directory, besides containing examples, is also used by
-the avocado self test suite to do functional testing of avocado itself.
+the Avocado self test suite to do functional testing of Avocado itself.
 
 It is also recommended that you take a look at the
 :doc:`API documentation <api/modules>` for more possibilities.
+
+.. [#f1] sleeptest is a functional test for Avocado. It's "old" because we
+	 also have had such a test for `Autotest`_ for a long time.
+
+.. _Autotest: http://autotest.github.io

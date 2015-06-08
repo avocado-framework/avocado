@@ -3,7 +3,7 @@ Results Specification
 =====================
 
 On a machine that executed tests, job results are available under
-``[job-results]/job-[timestamp]-[short job ID]``, where ``logdir`` is the configured avocado
+``[job-results]/job-[timestamp]-[short job ID]``, where ``logdir`` is the configured Avocado
 logs directory (see the data dir plugin), and the directory name includes
 a timestamp, such as ``job-2014-08-12T15.44-565e8de``. A typical
 results directory structure can be seen below ::

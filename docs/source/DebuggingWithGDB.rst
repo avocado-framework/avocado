@@ -1,56 +1,46 @@
 Debugging with GDB
 ==================
 
-Avocado has two levels of GDB support, one by using the Avocado GDB APIs
-to fire up GDB and interact with it, and other by transparently debugging
-binaries inside the GNU Debugger based on command line only options. This
-later option means that any test that uses :mod:`avocado.utils.process`
-can transparently inspect processes during test run time.
+Avocado has two different types of GDB support that complement each
+other:
 
-API
----
-
-Avocado's GDB module, provides three main classes that lets a test writer
-interact with a `gdb` process, a `gdbserver` process and also use the GDB
-remote protocol for interaction with a remote target.
-
-Please refer to :mod:`avocado.gdb` for more information.
-
-Example
-~~~~~~~
-
-Take a look at ``examples/tests/modify_variable.py`` test::
-
-    def runTest(self):
-        """
-        Execute 'print_variable'.
-        """
-        path = os.path.join(self.srcdir, 'print_variable')
-        app = gdb.GDB()
-        app.set_file(path)
-        app.set_break(6)
-        app.run()
-        self.log.info("\n".join(app.read_until_break()))
-        app.cmd("set variable a = 0xff")
-        app.cmd("c")
-        out = "\n".join(app.read_until_break())
-        self.log.info(out)
-        app.exit()
-        self.assertIn("MY VARIABLE 'A' IS: ff", out)
-
-You can see that instead of running the binary using ``process.run`` we invoke
-``gdb.GDB``. This allows us to automate the interaction with the GDB in means
-of setting breakpoints, executing commands and querying for output.
-
-When you check the output (``--show-job-log``) you can see that despite
-declaring the variable as 0, ff is injected and printed instead.
+* Transparent execution of binaries inside the GNU Debugger. This
+  takes standard and possibly unmodified tests that uses the
+  :mod:`avocado.utils.process` APIs for running processes. By using a
+  command line option, the binary is run on GDB. This allows the user
+  to interact with GDB, but to the test itself, things are pretty much
+  transparent.
+* The :mod:`avocado.gdb` APIs that allows a test to interact with GDB,
+  including setting a binary to be run, setting breakpoints or any
+  other types of commands. This requires a test written with that
+  approach and API in mind.
 
 
-Transparent Debugging Usage
----------------------------
+Transparent Execution of Binaries
+---------------------------------
 
-This feature is implemented as a plugin, that adds the ``--gdb-run-bin``
-option to the avocado ``run`` command.
+This feature adds a few command line options to the Avocado ``run``
+command::
+
+  $ avocado run --help
+  ...
+  GNU Debugger support:
+  --gdb-run-bin BINARY_PATH
+                        Set a breakpoint on a given binary to be run inside
+                        the GNU debugger. Format should be
+                        "<binary>[:breakpoint]". Breakpoint defaults to "main"
+  --gdb-prerun-commands BINARY_PATH:COMMANDS_PATH
+                        After loading a binary in binary in GDB, but before
+                        actually running it, execute the given GDB commands in
+                        the given file. BINARY_PATH is optional and if omitted
+                        will apply to all binaries
+  --gdb-coredump {on,off}
+                        Automatically generate a core dump when the inferior
+                        process received a fatal signal such as SIGSEGV or
+                        SIGABRT
+  ...
+
+To get started you want to use ``--gdb-run-bin``, as shown in the example bellow.
 
 Example
 ~~~~~~~
@@ -67,7 +57,7 @@ Optionally you can specify single breakpoint using
 It's worth mentioning that when breakpoint is not reached, the test finishes
 without any interruption. This is helpful when you identify regions where you
 should never get in your code, or places which interests you and you can run
-your code in production and gdb variants. If after a long time you get to this
+your code in production and GDB variants. If after a long time you get to this
 place, the test notifies you and you can investigate the problem. This is
 demonstrated in ``examples/tests/doublefree_nasty.py`` test. To unveil the
 power of Avocado, run this test using::
@@ -116,7 +106,7 @@ There are a two basic reasons for the mentioned caveats:
 * The architecture of Avocado's GDB feature
 * GDB's own behavior and limitations
 
-When using the Avocado GDB plugin, that is, `--gdb-run-bin`, avocado runs a `gdbserver` instance
+When using the Avocado GDB plugin, that is, `--gdb-run-bin`, Avocado runs a `gdbserver` instance
 transparently and controls it by means of a `gdb` process. When a given event happens, say a
 breakpoint is reached, it disconnects its own `gdb` from the server, and allows the user to use
 a standard `gdb` to connect to the `gdbserver`. This provides a natural and seamless user experience.
@@ -126,7 +116,7 @@ But, `gdbserver` has some limitations at this point, including:
 * Not being able to set a controlling `tty`
 * Not separating its own `STDERR` content from the application being run
 
-These limitations are being addressed both on Avocado and GDB, and will be resolved in future avocado
+These limitations are being addressed both on Avocado and GDB, and will be resolved in future Avocado
 versions.
 
 Workaround
@@ -148,3 +138,42 @@ extension, though, uses :class:`avocado.utils.process.SubProcess` class to
 execute `qemu` in the background.
 
 This limitation will be addressed in future versions of `avocado` and `avocado-virt`.
+
+
+:mod:`avocado.gdb` APIs
+-----------------------
+
+Avocado's GDB module, provides three main classes that lets a test writer
+interact with a `gdb` process, a `gdbserver` process and also use the GDB
+remote protocol for interaction with a remote target.
+
+Please refer to :mod:`avocado.gdb` for more information.
+
+Example
+~~~~~~~
+
+Take a look at ``examples/tests/modify_variable.py`` test::
+
+    def runTest(self):
+        """
+        Execute 'print_variable'.
+        """
+        path = os.path.join(self.srcdir, 'print_variable')
+        app = gdb.GDB()
+        app.set_file(path)
+        app.set_break(6)
+        app.run()
+        self.log.info("\n".join(app.read_until_break()))
+        app.cmd("set variable a = 0xff")
+        app.cmd("c")
+        out = "\n".join(app.read_until_break())
+        self.log.info(out)
+        app.exit()
+        self.assertIn("MY VARIABLE 'A' IS: ff", out)
+
+You can see that instead of running the binary using ``process.run`` we invoke
+``gdb.GDB``. This allows us to automate the interaction with the GDB in means
+of setting breakpoints, executing commands and querying for output.
+
+When you check the output (``--show-job-log``) you can see that despite
+declaring the variable as 0, ff is injected and printed instead.

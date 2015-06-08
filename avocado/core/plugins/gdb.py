@@ -43,7 +43,7 @@ class GDB(plugin.Plugin):
                              default=[], metavar='BINARY_PATH:COMMANDS_PATH',
                              help=('After loading a binary in binary in GDB, '
                                    'but before actually running it, execute '
-                                   'the given GDB commands in the given file.'
+                                   'the given GDB commands in the given file. '
                                    'BINARY_PATH is optional and if omitted '
                                    'will apply to all binaries'))
 

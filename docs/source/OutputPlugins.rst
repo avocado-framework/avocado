@@ -5,7 +5,7 @@ Output Plugins
 
 A test runner must provide an assortment of ways to clearly communicate results
 to interested parties, be them humans or machines. The types of output that
-avocado is interested in produce are:
+Avocado is interested in produce are:
 
 * Human Readable:
     Textual output that humans can make sense of. Not meant to be
@@ -15,7 +15,7 @@ avocado is interested in produce are:
     and/or stored by programs. This is how the test suite is
     supposed to interact with other programs.
 
-As an example of human readable output, we have the dots that python unittests
+As an example of human readable output, we have the dots that Python unittests
 print while executing tests::
 
     $ unittests/avocado/test_unittest.py
@@ -25,7 +25,7 @@ print while executing tests::
 
     OK (skipped=2)
 
-Or the more verbose avocado output::
+Or the more verbose Avocado output::
 
     $ avocado run sleeptest failtest synctest
     JOB ID    : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
@@ -49,11 +49,11 @@ human output to figure out what happened with your test run.
 Machine readable output - xunit
 -------------------------------
 
-The default machine readable output in avocado is
+The default machine readable output in Avocado is
 `xunit <http://help.catchsoftware.com/display/ET/JUnit+Format>`__, an xml format
 that contains test results in a structured form, and are used by other test
 automation projects, such as `jenkins <http://jenkins-ci.org/>`__. If you want
-to make avocado to generate xunit output in the standard output of the runner,
+to make Avocado to generate xunit output in the standard output of the runner,
 simply use::
 
     $ scripts/avocado --xunit - run "sleeptest failtest synctest"
@@ -72,7 +72,7 @@ Machine readable output - json
 ------------------------------
 
 `JSON <http://www.json.org/>`__ is a widely used data exchange format. The
-json avocado plugin outputs job information, similarly to the xunit output
+json Avocado plugin outputs job information, similarly to the xunit output
 plugin::
 
     $ scripts/avocado --json - run "sleeptest failtest synctest"

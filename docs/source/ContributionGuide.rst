@@ -2,7 +2,7 @@
 Contribution and Community Guide
 ================================
 
-Useful pointers on how to participate of the avocado community and contribute.
+Useful pointers on how to participate of the Avocado community and contribute.
 
 Contact information
 ===================
@@ -10,7 +10,7 @@ Contact information
 - Avocado-devel mailing list: `https://www.redhat.com/mailman/listinfo/avocado-devel <https://www.redhat.com/mailman/listinfo/avocado-devel>`_
 - Avocado IRC channel: `irc.oftc.net #avocado <irc://irc.oftc.net/#avocado>`_
 
-Contributing to avocado
+Contributing to Avocado
 =======================
 
 Avocado uses github and the github pull request development model. You can
