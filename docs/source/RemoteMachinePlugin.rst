@@ -20,7 +20,7 @@ You can check for its presence by listing your plugins::
         run_remote - Run tests on a remote machine (Enabled)
         ...
 
-This plugin adds a number of options to the avocado test runner::
+This plugin adds a number of options to the Avocado test runner::
 
       --remote-hostname REMOTE_HOSTNAME
                             Specify the hostname to login on remote machine
@@ -69,7 +69,7 @@ Once everything is verified and covered, you may run your test. Example::
     WARN      : 0
     TIME      : 1.01 s
 
-As you can see, avocado will copy the tests you have to your remote machine and
+As you can see, Avocado will copy the tests you have to your remote machine and
 execute them. A bit of extra logging information is added to your job summary,
 mainly to distinguish the regular execution from the remote one. Note here that
 we did not need `--remote-password` because the SSH key is already setup.
