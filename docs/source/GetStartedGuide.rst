@@ -1,24 +1,28 @@
 .. _get-started:
 
-=============================
-Getting started guide - users
-=============================
+===============
+Getting Started
+===============
 
-If you want to simply use Avocado as a test runner/test API, you can install a
-distro package. For Fedora, you can look
-at `lmr's Autotest COPR`_, while for Ubuntu, you can look
-at `lmr's Avocado PPA`_.
+The first step towards using Avocado is, quite obivously, installing it.
 
-.. _lmr's autotest COPR: http://copr.fedoraproject.org/coprs/lmr/Autotest
-.. _lmr's avocado PPA: https://launchpad.net/~lmr/+archive/avocado
+Installing Avocado
+==================
 
-Avocado is primarily being developed on Fedora boxes, but we are making
-reasonable efforts that Ubuntu users can use and develop Avocado well.
+Avocado is available in `RPM packages for Fedora`_, and `DEB packages for Ubuntu`_.
 
-Installing Avocado - Fedora
-===========================
+.. _RPM Packages For Fedora: http://copr.fedoraproject.org/coprs/lmr/Autotest
+.. _DEB packages for Ubuntu: https://launchpad.net/~lmr/+archive/avocado
 
-You can install the rpm package by performing the following commands::
+.. Note: the following text should instead reference the distro tiers levels
+
+Avocado is primarily being developed on Fedora, but reasonable efforts
+are being made to support other platforms such as Ubuntu.
+
+Fedora
+------
+
+You can install the RPM packages by running the following commands::
 
     sudo curl http://copr.fedoraproject.org/coprs/lmr/Autotest/repo/fedora-20/lmr-Autotest-fedora-20.repo -o /etc/yum.repos.d/autotest.repo
     sudo yum update
@@ -26,29 +30,30 @@ You can install the rpm package by performing the following commands::
 
 Don't mind the Fedora version here, the same repo file should work for newer distros.
 
-Installing Avocado - Ubuntu
-===========================
+Ubuntu
+------
 
-You need to add the following lines::
+You can install Avocado by running the following commands::
 
-    deb http://ppa.launchpad.net/lmr/avocado/ubuntu trusty main
-
-To the file ``/etc/apt/sources.list``. After that you can install Avocado by
-performing the following commands::
-
+    sudo echo "deb http://ppa.launchpad.net/lmr/avocado/ubuntu trusty main" >> /etc/apt/sources.list
     sudo apt-get update
     sudo apt-get install avocado
 
-Installing Avocado - Git
-========================
+Generic installation from a GIT repository
+------------------------------------------
 
-To install Avocado from the git repository, check this instructions::
+First make sure you have a basic set of packages installed. The
+following applies to Fedora based distributions, please adapt to
+your platform::
+
+    sudo yum install -y git gcc python-devel python-pip libvirt-devel libyaml-devel
+
+Then to install Avocado from the git repository run::
 
     git clone git@github.com:avocado-framework/avocado.git
     cd avocado
-    sudo python setup.py install
-    sudo yum install -y gcc python-devel python-pip libvirt-devel libyaml-devel
     sudo pip install -r requirements.txt
+    sudo python setup.py install
 
 Note that `python` and `pip` should point to the Python interpreter version 2.7.x.
 If you're having trouble to install, you can try again and use the command line
