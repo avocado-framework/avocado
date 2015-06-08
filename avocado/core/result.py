@@ -165,7 +165,7 @@ class TestResult(object):
         """
         Called when the given test is about to run.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         pass
@@ -174,7 +174,7 @@ class TestResult(object):
         """
         Called when the given test has been run.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.tests_run += 1
@@ -185,7 +185,7 @@ class TestResult(object):
         """
         Called when a test succeeded.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.passed.append(state)
@@ -194,7 +194,7 @@ class TestResult(object):
         """
         Called when a test had a setup error.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.errors.append(state)
@@ -203,7 +203,7 @@ class TestResult(object):
         """
         Called when a test fails.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.failed.append(state)
@@ -212,7 +212,7 @@ class TestResult(object):
         """
         Called when a test is skipped.
 
-        :param test: an instance of :class:`avocado.test.Test`.
+        :param test: an instance of :class:`avocado.core.test.Test`.
         """
         self.skipped.append(state)
 
@@ -220,7 +220,7 @@ class TestResult(object):
         """
         Called when a test had a warning.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.warned.append(state)
@@ -229,7 +229,7 @@ class TestResult(object):
         """
         Called when a test is interrupted by the user.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.interrupted.append(state)
@@ -289,7 +289,7 @@ class HumanTestResult(TestResult):
         """
         Called when the given test is about to run.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         self.stream.add_test(state)
@@ -298,7 +298,7 @@ class HumanTestResult(TestResult):
         """
         Called when the given test has been run.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.end_test(self, state)
@@ -307,7 +307,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test succeeded.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.add_pass(self, state)
@@ -317,7 +317,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test had a setup error.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.add_error(self, state)
@@ -327,7 +327,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test fails.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.add_fail(self, state)
@@ -337,7 +337,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test is skipped.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.add_skip(self, state)
@@ -347,7 +347,7 @@ class HumanTestResult(TestResult):
         """
         Called when a test had a warning.
 
-        :param state: result of :class:`avocado.test.Test.get_state`.
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
         TestResult.add_warn(self, state)

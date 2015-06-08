@@ -11,7 +11,7 @@ What is a test in the avocado context? Either one of:
 
 * An executable file, that returns exit code 0 (PASS) or != 0 (FAIL). This
   is known as a SimpleTest, in avocado terminology.
-* A python module containing a class derived from :mod:`avocado.test.Test`.
+* A python module containing a class derived from :mod:`avocado.Test`.
   This is known as an instrumented test, in avocado terminology. The term
   instrumented is used because the avocado python test classes allow you to
   get more features for your test, such as logging facilities and more
@@ -27,7 +27,7 @@ it:
 Now that we covered how avocado resolves tests, let's get to business.
 This section is concerned with writing an avocado test. The process is not
 hard, all you need to do is to create a test module, which is a python file
-with a class that inherits from :class:`avocado.test.Test`. This class only
+with a class that inherits from :class:`avocado.Test`. This class only
 really needs to implement a method called `runTest`, which represents the actual
 sequence of test operations.
 
@@ -42,11 +42,11 @@ nothing but ``time.sleep([number-seconds])``::
 
         import time
 
-        from avocado import test
+        from avocado import Test
         from avocado import main
 
 
-        class SleepTest(test.Test):
+        class SleepTest(Test):
 
             """
             Example test for avocado.
@@ -66,7 +66,7 @@ nothing but ``time.sleep([number-seconds])``::
 
 This is about the simplest test you can write for avocado (at least, one using
 the avocado APIs). An avocado test is basically a class that inherits from
-:mod:`avocado.test.Test` and could have any name you might like (we'll trust
+:mod:`avocado.Test` and could have any name you might like (we'll trust
 you'll choose a good name, although we do recommend that the name uses the
 CamelCase convention, for PEP8 consistency).
 
@@ -315,14 +315,14 @@ an example that does that::
 
     import os
 
-    from avocado import test
+    from avocado import Test
     from avocado import main
     from avocado.utils import archive
     from avocado.utils import build
     from avocado.utils import process
 
 
-    class SyncTest(test.Test):
+    class SyncTest(Test):
 
         """
         Execute the synctest test suite.
@@ -358,7 +358,7 @@ an example that does that::
 
 Here we have an example of the ``setup`` method in action: Here we get the
 location of the test suite code (tarball) through
-:func:`avocado.test.Test.get_data_path`, then uncompress the tarball through
+:func:`avocado.Test.get_data_path`, then uncompress the tarball through
 :func:`avocado.utils.archive.extract`, an API that will
 decompress the suite tarball, followed by ``build.make``, that will build the
 suite.
@@ -540,9 +540,9 @@ passed but there were non-related unexpected situations described in warning
 log.
 
 You may log something into the test logs using the methods in
-:mod:`avocado.test.Test.log` class attributes. Consider the example::
+:mod:`avocado.Test.log` class attributes. Consider the example::
 
-    class output_test(test.Test):
+    class output_test(Test):
 
         def runTest(self):
             self.log.info('This goes to the log and it is only informational')
@@ -554,12 +554,12 @@ You may log something into the test logs using the methods in
             self.log.debug('Everybody look, I had a good lunch today...')
 
 If you need to write directly to the test stdout and stderr streams, there
-are another 2 class attributes for that, :mod:`avocado.test.Test.stdout_log`
-and :mod:`avocado.test.Test.stderr_log`, that have the exact same methods
+are another 2 class attributes for that, :mod:`avocado.Test.stdout_log`
+and :mod:`avocado.Test.stderr_log`, that have the exact same methods
 of the log object. So if you want to add stuff to your expected stdout and
 stderr streams, you can do something like::
 
-    class output_test(test.Test):
+    class output_test(Test):
 
         def runTest(self):
             self.log.info('This goes to the log and it is only informational')
@@ -662,11 +662,11 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
 
     import time
 
-    from avocado import test
+    from avocado import Test
     from avocado import main
 
 
-    class TimeoutTest(test.Test):
+    class TimeoutTest(Test):
 
         """
         Functional test for avocado. Throw a TestTimeoutError.

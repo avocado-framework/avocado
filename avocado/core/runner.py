@@ -25,8 +25,8 @@ import signal
 import sys
 import time
 
-from avocado import test
 from avocado import runtime
+from avocado.core import test
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
@@ -57,7 +57,7 @@ class TestRunner(object):
         Run a test instance.
 
         :param test_factory: Test factory (test class and parameters).
-        :type test_factory: tuple of :class:`avocado.test.Test` and dict.
+        :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
@@ -117,7 +117,7 @@ class TestRunner(object):
         Run a test instance inside a subprocess.
 
         :param test_factory: Test factory (test class and parameters).
-        :type test_factory: tuple of :class:`avocado.test.Test` and dict.
+        :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         :param failures: Store tests failed.
