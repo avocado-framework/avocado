@@ -19,8 +19,28 @@ other:
 Transparent Execution of Binaries
 ---------------------------------
 
-This feature is implemented as a plugin, that adds the ``--gdb-run-bin``
-option to the Avocado ``run`` command.
+This feature adds a few command line options to the Avocado ``run``
+command::
+
+  $ avocado run --help
+  ...
+  GNU Debugger support:
+  --gdb-run-bin BINARY_PATH
+                        Set a breakpoint on a given binary to be run inside
+                        the GNU debugger. Format should be
+                        "<binary>[:breakpoint]". Breakpoint defaults to "main"
+  --gdb-prerun-commands BINARY_PATH:COMMANDS_PATH
+                        After loading a binary in binary in GDB, but before
+                        actually running it, execute the given GDB commands in
+                        the given file. BINARY_PATH is optional and if omitted
+                        will apply to all binaries
+  --gdb-coredump {on,off}
+                        Automatically generate a core dump when the inferior
+                        process received a fatal signal such as SIGSEGV or
+                        SIGABRT
+  ...
+
+To get started you want to use ``--gdb-run-bin``, as shown in the example bellow.
 
 Example
 ~~~~~~~
