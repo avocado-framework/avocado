@@ -31,7 +31,7 @@ except ImportError:
     import subprocess
 
 from avocado.utils import network
-from avocado.core import gdbmi_parser
+from avocado.utils.external import gdbmi_parser
 
 GDB_PROMPT = '(gdb)'
 GDB_EXIT = '^exit'
