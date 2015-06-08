@@ -4,35 +4,11 @@
 Writing Avocado Tests
 =====================
 
-Test Resolution in Avocado - simple tests vs instrumented tests
-===============================================================
+We are going to write an Avocado test in Python and we are going to inherit from
+:class:`avocado.test.Test`. This makes this test a so-called instrumented test.
 
-What is a test in the Avocado context? Either one of:
-
-* An executable file, that returns exit code 0 (PASS) or != 0 (FAIL). This
-  is known as a SimpleTest, in Avocado terminology.
-* A Python module containing a class derived from :mod:`avocado.test.Test`.
-  This is known as an instrumented test, in Avocado terminology. The term
-  instrumented is used because the Avocado Python test classes allow you to
-  get more features for your test, such as logging facilities and more
-  sophisticated test APIs.
-
-When you use the Avocado runner, frequently you'll provide paths to files,
-that will be inspected, and acted upon depending on their contents. The
-diagram below shows how Avocado analyzes a file and decides what to do with
-it:
-
-.. figure:: diagram.png
-
-Now that we covered how Avocado resolves tests, let's get to business.
-This section is concerned with writing an Avocado test. The process is not
-hard, all you need to do is to create a test module, which is a Python file
-with a class that inherits from :class:`avocado.test.Test`. This class only
-really needs to implement a method called `runTest`, which represents the actual
-sequence of test operations.
-
-Simple example
-==============
+Basic example
+=============
 
 Let's re-create an old time favorite, ``sleeptest``, which is a functional
 test for Avocado (old because we also use such a test for autotest). It does

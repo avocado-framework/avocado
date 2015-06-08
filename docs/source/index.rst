@@ -9,8 +9,8 @@ Contents:
 
    Introduction
    GetStartedGuide
-   Configuration
    WritingTests
+   Configuration
    ResultsSpecification
    MultiplexConfig
    Plugins
