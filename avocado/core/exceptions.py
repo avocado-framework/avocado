@@ -145,24 +145,3 @@ class TestWarn(TestBaseException):
     failure.
     """
     status = "WARN"
-
-
-class CmdError(Exception):
-
-    def __init__(self, command=None, result=None):
-        self.command = command
-        self.result = result
-
-    def __str__(self):
-        if self.result is not None:
-            if self.result.interrupted:
-                return "Command %s interrupted by user (Ctrl+C)" % self.command
-            if self.result.exit_status is None:
-                msg = "Command '%s' failed and is not responding to signals"
-                msg %= self.command
-            else:
-                msg = "Command '%s' failed (rc=%d)"
-                msg %= (self.command, self.result.exit_status)
-            return msg
-        else:
-            return "CmdError"
