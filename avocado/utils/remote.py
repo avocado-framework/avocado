@@ -21,7 +21,7 @@ import logging
 import time
 
 from avocado.core import output
-from avocado.utils import process
+from . import process
 
 
 LOG = logging.getLogger('avocado.test')

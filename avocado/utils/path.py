@@ -19,7 +19,7 @@ Avocado path related functions.
 import os
 import stat
 
-from avocado.utils import aurl
+from . import aurl
 
 
 PY_EXTENSIONS = ['.py']

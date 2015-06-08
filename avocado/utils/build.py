@@ -14,7 +14,7 @@
 
 import os
 
-import process
+from . import process
 
 
 def make(path, make='make', env=None, extra_args='', ignore_status=False, allow_output_check='none'):

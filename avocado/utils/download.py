@@ -23,7 +23,7 @@ import socket
 import shutil
 import urllib2
 
-from avocado.utils import aurl
+from . import aurl
 
 
 log = logging.getLogger('avocado.test')
