@@ -2,11 +2,11 @@
 
 import time
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class SleepTest(test.Test):
+class SleepTest(Test):
 
     """
     Example test for avocado.

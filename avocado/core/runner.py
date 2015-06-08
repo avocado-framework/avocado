@@ -25,8 +25,8 @@ import signal
 import sys
 import time
 
-from avocado import test
 from avocado import runtime
+from avocado.core import test
 from avocado.core import exceptions
 from avocado.core import output
 from avocado.core import status
