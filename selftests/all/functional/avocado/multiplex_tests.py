@@ -100,7 +100,8 @@ class MultiplexTests(unittest.TestCase):
                            expected_lines=2 + 2 * 5 * 4)
 
     def test_run_mplex_failtest(self):
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest failtest '
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest '
+                    'selftests/functional_assets/failtest.py '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc)

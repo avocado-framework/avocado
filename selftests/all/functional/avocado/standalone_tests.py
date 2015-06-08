@@ -38,17 +38,17 @@ class StandaloneTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, 'passtest')
 
     def test_skiptest(self):
-        cmd_line = './examples/tests/skiptest.py -r'
+        cmd_line = './selftests/functional_assets/skiptest.py -r'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'skiptest')
 
     def test_warntest(self):
-        cmd_line = './examples/tests/warntest.py -r'
+        cmd_line = './selftests/functional_assets/warntest.py -r'
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'warntest')
 
     def test_failtest(self):
-        cmd_line = './examples/tests/failtest.py -r'
+        cmd_line = './selftests/functional_assets/failtest.py -r'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'failtest')
 
@@ -70,7 +70,7 @@ class StandaloneTests(unittest.TestCase):
                       " for details.", result.stdout)
 
     def test_errortest(self):
-        cmd_line = './examples/tests/errortest.py -r'
+        cmd_line = './selftests/functional_assets/errortest.py -r'
         expected_rc = 1
         self.run_and_check(cmd_line, expected_rc, 'errortest')
 

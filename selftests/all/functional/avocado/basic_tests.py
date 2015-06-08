@@ -81,7 +81,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_tests_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest failtest passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s passtest '
+                    'selftests/functional_assets/failtest.py passtest' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -100,7 +101,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_doublefail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - doublefail' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - '
+                    'selftests/functional_assets/doublefail.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = 1
@@ -190,14 +192,14 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_valid_unique_id(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 skiptest' % self.tmpdir)
+                    '--force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 passtest' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(0, result.exit_status)
         self.assertNotIn('needs to be a 40 digit hex', result.stderr)
         self.assertIn('SKIP', result.stdout)
 
     def test_automatic_unique_id(self):
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off skiptest --json -' % self.tmpdir
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --json -' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(0, result.exit_status)
         r = json.loads(result.stdout)
@@ -250,8 +252,8 @@ class RunnerSimpleTest(unittest.TestCase):
         considered to be pretty safe here.
         """
         os.chdir(basedir)
-        one_hundred = 'failtest ' * 100
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, one_hundred)
+        one_hundred_fail = 'selftests/functional_assets/failtest.py ' * 100
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, one_hundred_fail)
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
@@ -266,7 +268,8 @@ class RunnerSimpleTest(unittest.TestCase):
         100 failtests and check the test runner timing.
         """
         os.chdir(basedir)
-        sleep_fail_sleep = 'sleeptest ' + 'failtest ' * 100 + 'sleeptest'
+        one_hundred_fail = 'selftests/functional_assets/failtest.py ' * 100
+        sleep_fail_sleep = 'sleeptest ' + one_hundred_fail + 'sleeptest'
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, sleep_fail_sleep)
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
@@ -486,13 +489,13 @@ class PluginsXunitTest(PluginsTest):
         self.run_and_check('passtest', 0, 1, 0, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 0, 1, 0)
+        self.run_and_check('selftests/functional_assets/failtest.py', 1, 1, 0, 0, 1, 0)
 
     def test_xunit_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
+        self.run_and_check('selftests/functional_assets/skiptest.py', 0, 1, 0, 0, 0, 1)
 
     def test_xunit_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
+        self.run_and_check('selftests/functional_assets/errortest.py', 1, 1, 1, 0, 0, 0)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -544,13 +547,13 @@ class PluginsJSONTest(PluginsTest):
         self.run_and_check('passtest', 0, 1, 0, 0, 0)
 
     def test_json_plugin_failtest(self):
-        self.run_and_check('failtest', 1, 1, 0, 1, 0)
+        self.run_and_check('selftests/functional_assets/failtest.py', 1, 1, 0, 1, 0)
 
     def test_json_plugin_skiptest(self):
-        self.run_and_check('skiptest', 0, 1, 0, 0, 1)
+        self.run_and_check('selftests/functional_assets/skiptest.py', 0, 1, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
-        self.run_and_check('errortest', 1, 1, 1, 0, 0)
+        self.run_and_check('selftests/functional_assets/errortest.py', 1, 1, 1, 0, 0)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
