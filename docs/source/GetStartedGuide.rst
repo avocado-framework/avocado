@@ -35,7 +35,7 @@ Ubuntu
 
 You can install Avocado by running the following commands::
 
-    sudo echo "deb http://ppa.launchpad.net/lmr/avocado/ubuntu trusty main" >> /etc/apt/sources.list
+    sudo echo "deb http://ppa.launchpad.net/lmr/avocado/ubuntu utopic main" >> /etc/apt/sources.list
     sudo apt-get update
     sudo apt-get install avocado
 
