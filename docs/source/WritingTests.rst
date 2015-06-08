@@ -14,31 +14,17 @@ Let's re-create an old time favorite, ``sleeptest``, which is a functional
 test for Avocado (old because we also use such a test for autotest). It does
 nothing but ``time.sleep([number-seconds])``::
 
-        #!/usr/bin/python
-
         import time
 
         from avocado import test
-        from avocado import main
-
 
         class SleepTest(test.Test):
 
-            """
-            Example test for Avocado.
-            """
-
-            def runTest(self):
-                """
-                Sleep for length seconds.
-                """
+            def test(self):
                 sleep_length = self.params.get('sleep_length', default=1)
                 self.log.debug("Sleeping for %.2f seconds", sleep_length)
                 time.sleep(sleep_length)
 
-
-        if __name__ == "__main__":
-            main()
 
 This is about the simplest test you can write for Avocado (at least, one using
 the Avocado APIs). An avocado test is basically a class that inherits from
@@ -67,10 +53,7 @@ encoded it first (base64 is the obvious choice).
 Building on the previously demonstrated ``sleeptest``, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
 
-        def runTest(self):
-            """
-            Sleep for length seconds.
-            """
+        def test(self):
             sleep_length = self.params.get('sleep_length', default=1)
             self.log.debug("Sleeping for %.2f seconds", sleep_length)
             time.sleep(sleep_length)
@@ -219,7 +202,7 @@ Since Avocado tests inherit from :class:`unittest.TestCase`, you can use all
 the :func:`assert` class methods on your tests. Some silly examples::
 
     class RandomExamples(test.Test):
-        def runTest(self):
+        def test(self):
             self.log.debug("Verifying some random math...")
             four = 2 * 2
             four_ = 2 + 2
@@ -318,7 +301,7 @@ an example that does that::
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
 
-        def runTest(self):
+        def test(self):
             """
             Execute synctest with the appropriate params.
             """
@@ -520,7 +503,7 @@ You may log something into the test logs using the methods in
 
     class output_test(test.Test):
 
-        def runTest(self):
+        def test(self):
             self.log.info('This goes to the log and it is only informational')
             self.log.warn('Oh, something unexpected, non-critical happened, '
                           'but we can continue.')
@@ -537,7 +520,7 @@ stderr streams, you can do something like::
 
     class output_test(test.Test):
 
-        def runTest(self):
+        def test(self):
             self.log.info('This goes to the log and it is only informational')
             self.stdout_log.info('This goes to the test stdout (will be recorded)')
             self.stderr_log.info('This goes to the test stderr (will be recorded)')
@@ -650,7 +633,7 @@ a timeout of 3 seconds before Avocado ends the test forcefully by sending a
         default_params = {'timeout': 3.0,
                           'sleep_time': 5.0}
 
-        def runTest(self):
+        def test(self):
             """
             This should throw a TestTimeoutError.
             """
