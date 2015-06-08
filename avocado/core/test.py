@@ -534,7 +534,7 @@ class SimpleTest(Test):
             result = process.run(pipes.quote(self.path), verbose=True,
                                  env=test_params)
             self._log_detailed_cmd_info(result)
-        except exceptions.CmdError, details:
+        except process.CmdError, details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 

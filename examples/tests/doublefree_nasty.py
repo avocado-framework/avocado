@@ -4,12 +4,12 @@ import os
 import shutil
 
 from avocado import main
-from avocado import test
+from avocado import Test
 from avocado.utils import build
 from avocado.utils import process
 
 
-class DoubleFreeTest(test.Test):
+class DoubleFreeTest(Test):
 
     """
     10% chance to execute double free exception.

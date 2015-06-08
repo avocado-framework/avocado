@@ -42,11 +42,11 @@ nothing but ``time.sleep([number-seconds])``::
 
         import time
 
-        from avocado import test
+        from avocado import Test
         from avocado import main
 
 
-        class SleepTest(test.Test):
+        class SleepTest(Test):
 
             """
             Example test for avocado.
@@ -315,14 +315,14 @@ an example that does that::
 
     import os
 
-    from avocado import test
+    from avocado import Test
     from avocado import main
     from avocado.utils import archive
     from avocado.utils import build
     from avocado.utils import process
 
 
-    class SyncTest(test.Test):
+    class SyncTest(Test):
 
         """
         Execute the synctest test suite.
@@ -662,11 +662,11 @@ a timeout of 3 seconds before avocado ends the test forcefully by sending a
 
     import time
 
-    from avocado import test
+    from avocado import Test
     from avocado import main
 
 
-    class TimeoutTest(test.Test):
+    class TimeoutTest(Test):
 
         """
         Functional test for avocado. Throw a TestTimeoutError.

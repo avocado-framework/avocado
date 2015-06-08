@@ -12,8 +12,8 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
+from avocado import Test
 from avocado.core.plugins import xunit
-from avocado import test
 from avocado.core import job
 
 
@@ -51,7 +51,7 @@ class xUnitSucceedTest(unittest.TestCase):
         args.xunit_output = self.tmpfile[1]
         self.test_result = xunit.xUnitTestResult(stream=_Stream(), args=args)
         self.test_result.start_tests()
-        self.test1 = test.Test(job=job.Job(), base_logdir=self.tmpdir)
+        self.test1 = Test(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
         self.test1.time_elapsed = 1.23
 

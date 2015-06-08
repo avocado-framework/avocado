@@ -5,11 +5,11 @@ import shutil
 
 from avocado import gdb
 from avocado import main
-from avocado import test
+from avocado import Test
 from avocado.utils import build
 
 
-class PrintVariableTest(test.Test):
+class PrintVariableTest(Test):
 
     """
     This demonstrates the GDB API

@@ -2,11 +2,11 @@
 
 import time
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class TimeoutTest(test.Test):
+class TimeoutTest(Test):
 
     """
     Functional test for avocado. Throw a TestTimeoutError.

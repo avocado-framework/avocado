@@ -48,8 +48,7 @@ except ImportError:
 
 from avocado.utils import process
 from avocado.utils import data_factory
-from avocado.linux import distro
-from avocado.core import exceptions
+from avocado.utils import distro
 from avocado.utils import path as utils_path
 
 log = logging.getLogger('avocado.test')
@@ -230,7 +229,7 @@ class RpmBackend(BaseBackend):
             try:
                 process.system(cmd)
                 return True
-            except exceptions.CmdError:
+            except process.CmdError:
                 return False
 
     def list_all(self, software_components=True):
@@ -274,7 +273,7 @@ class RpmBackend(BaseBackend):
             result = process.system_output(l_cmd)
             list_files = result.split('\n')
             return list_files
-        except exceptions.CmdError:
+        except process.CmdError:
             return []
 
 
@@ -391,7 +390,7 @@ class YumBackend(RpmBackend):
         try:
             process.system(i_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def remove(self, name):
@@ -404,7 +403,7 @@ class YumBackend(RpmBackend):
         try:
             process.system(r_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def add_repo(self, url):
@@ -461,7 +460,7 @@ class YumBackend(RpmBackend):
         try:
             process.system(r_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def provides(self, name):
@@ -519,7 +518,7 @@ class ZypperBackend(RpmBackend):
         try:
             process.system(i_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def add_repo(self, url):
@@ -532,7 +531,7 @@ class ZypperBackend(RpmBackend):
         try:
             process.system(ar_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def remove_repo(self, url):
@@ -545,7 +544,7 @@ class ZypperBackend(RpmBackend):
         try:
             process.system(rr_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def remove(self, name):
@@ -557,7 +556,7 @@ class ZypperBackend(RpmBackend):
         try:
             process.system(r_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def upgrade(self, name=None):
@@ -577,7 +576,7 @@ class ZypperBackend(RpmBackend):
         try:
             process.system(u_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def provides(self, name):
@@ -606,7 +605,7 @@ class ZypperBackend(RpmBackend):
                 log.info("Package %s provides %s", list_provides[0], name)
                 return list_provides[0]
             return None
-        except exceptions.CmdError:
+        except process.CmdError:
             return None
 
 
@@ -652,7 +651,7 @@ class AptBackend(DpkgBackend):
         try:
             process.system(i_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def remove(self, name):
@@ -668,7 +667,7 @@ class AptBackend(DpkgBackend):
         try:
             process.system(r_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def add_repo(self, repo):
@@ -714,7 +713,7 @@ class AptBackend(DpkgBackend):
         ud_cmd = self.base_command + ' ' + ud_command
         try:
             process.system(ud_cmd)
-        except exceptions.CmdError:
+        except process.CmdError:
             log.error("Apt package update failed")
 
         if name:
@@ -727,7 +726,7 @@ class AptBackend(DpkgBackend):
         try:
             process.system(up_cmd)
             return True
-        except exceptions.CmdError:
+        except process.CmdError:
             return False
 
     def provides(self, path):
@@ -745,7 +744,7 @@ class AptBackend(DpkgBackend):
         cache_update_cmd = command + ' update'
         try:
             process.system(cache_update_cmd, ignore_status=True)
-        except exceptions.CmdError:
+        except process.CmdError:
             log.error("Apt file cache update failed")
         fu_cmd = command + ' search ' + path
         try:
@@ -768,7 +767,7 @@ class AptBackend(DpkgBackend):
                 log.info("Package %s provides %s", list_provides[0], path)
                 return list_provides[0]
             return None
-        except exceptions.CmdError:
+        except process.CmdError:
             return None
 
 

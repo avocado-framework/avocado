@@ -2,11 +2,11 @@
 
 import os
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class GenDataTest(test.Test):
+class GenDataTest(Test):
 
     """
     Simple test that generates data to be persisted after the test is run
