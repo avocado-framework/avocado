@@ -150,11 +150,13 @@ class Job(object):
 
     def _make_test_loader(self):
         for key in self.args.__dict__.keys():
-            if key.endswith('_loader'):
-                loader_class = getattr(self.args, key)
+            loader_class = getattr(self.args, key)
+            try:
                 if issubclass(loader_class, loader.TestLoader):
                     loader_plugin = loader_class(self)
                     self.test_loader.add_loader_plugin(loader_plugin)
+            except TypeError:
+                pass
         filesystem_loader = loader.TestLoader(self)
         self.test_loader.add_loader_plugin(filesystem_loader)
 
@@ -169,12 +171,14 @@ class Job(object):
 
     def _set_output_plugins(self):
         for key in self.args.__dict__:
-            if key.endswith('_result'):
-                result_class = getattr(self.args, key)
+            result_class = getattr(self.args, key)
+            try:
                 if issubclass(result_class, result.TestResult):
                     result_plugin = result_class(self.view,
                                                  self.args)
                     self.result_proxy.add_output_plugin(result_plugin)
+            except TypeError:
+                pass
 
     def _make_test_result(self):
         """
