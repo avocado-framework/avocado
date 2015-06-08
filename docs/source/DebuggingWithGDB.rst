@@ -50,7 +50,7 @@ Transparent Debugging Usage
 ---------------------------
 
 This feature is implemented as a plugin, that adds the ``--gdb-run-bin``
-option to the avocado ``run`` command.
+option to the Avocado ``run`` command.
 
 Example
 ~~~~~~~
@@ -116,7 +116,7 @@ There are a two basic reasons for the mentioned caveats:
 * The architecture of Avocado's GDB feature
 * GDB's own behavior and limitations
 
-When using the Avocado GDB plugin, that is, `--gdb-run-bin`, avocado runs a `gdbserver` instance
+When using the Avocado GDB plugin, that is, `--gdb-run-bin`, Avocado runs a `gdbserver` instance
 transparently and controls it by means of a `gdb` process. When a given event happens, say a
 breakpoint is reached, it disconnects its own `gdb` from the server, and allows the user to use
 a standard `gdb` to connect to the `gdbserver`. This provides a natural and seamless user experience.
@@ -126,7 +126,7 @@ But, `gdbserver` has some limitations at this point, including:
 * Not being able to set a controlling `tty`
 * Not separating its own `STDERR` content from the application being run
 
-These limitations are being addressed both on Avocado and GDB, and will be resolved in future avocado
+These limitations are being addressed both on Avocado and GDB, and will be resolved in future Avocado
 versions.
 
 Workaround

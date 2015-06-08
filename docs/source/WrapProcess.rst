@@ -18,7 +18,7 @@ Usage
 
 This feature is implemented as a plugin, that adds the `--wrapper` option
 to the Avocado `run` command.  For a detailed explanation please consult the     
-avocado man page.
+Avocado man page.
 
 Example of a transparent way of running strace as a wrapper::
 
@@ -55,7 +55,7 @@ Caveats
   and  `/long/path/to/make`.
 
 *  When you use a relative path to a script, it will use the current path
-   of the running avocado program.
-   Example: If I'm running avocado on `/home/user/project/avocado`,
+   of the running Avocado program.
+   Example: If I'm running Avocado on `/home/user/project/avocado`,
    then `avocado run --wrapper examples/wrappers/strace.sh datadir`  will
    set the wrapper to `/home/user/project/avocado/examples/wrappers/strace.sh`

@@ -4,7 +4,7 @@ Avocado Plugins
 ===============
 
 In order to keep the code base approachable, and allow for cleanly extending
-the test runner functionality, avocado has a plugin system. In order to
+the test runner functionality, Avocado has a plugin system. In order to
 exemplify the concepts involved, let's use another old time favorite,
 the "Print hello world" theme.
 
@@ -55,11 +55,11 @@ As you can see, plugins inherit from :class:`avocado.core.plugins.plugin.Plugin`
 that have the methods :func:`avocado.core.plugins.plugin.Plugin.configure` and
 :func:`avocado.core.plugins.plugin.Plugin.activate`. Configure does add the
 command parser to the app test runner, and activate, if necessary will activate
-your plugin, overriding avocado core functionality. In this configure method,
+your plugin, overriding Avocado core functionality. In this configure method,
 we added a new parser for the new command ``hello`` and automatically set
 it to the method ``run``, that will print the plugin's docstring.
 
-Make avocado aware of the new plugin
+Make Avocado aware of the new plugin
 ------------------------------------
 
 Avocado has an option ``--plugins`` that allows you to provide a filesystem
@@ -69,7 +69,7 @@ Note that all external plugins shall be prefixed with this ``avocado_`` name,
 otherwise the Python module will be just ignored and no plugin inside
 will be loaded!
 
-In the avocado source tree, the ``avocado_hello.py`` example is available under
+In the Avocado source tree, the ``avocado_hello.py`` example is available under
 ``examples/plugins``. So, in order to enable the hello plugin, you can do a::
 
     $ avocado --plugins examples/plugins/ plugins
@@ -92,6 +92,6 @@ To run it, you can simply call the newly registered runner command ``hello``::
 Wrap Up
 -------
 
-We have briefly discussed the making of avocado plugins. A look at the module
+We have briefly discussed the making of Avocado plugins. A look at the module
 :mod:`avocado.core.plugins` would be useful to look some of the other possibilities
 available.

@@ -4,18 +4,18 @@
 Getting started guide - users
 =============================
 
-If you want to simply use avocado as a test runner/test API, you can install a
+If you want to simply use Avocado as a test runner/test API, you can install a
 distro package. For Fedora, you can look
-at `lmr's autotest COPR`_, while for Ubuntu, you can look
-at `lmr's avocado PPA`_.
+at `lmr's Autotest COPR`_, while for Ubuntu, you can look
+at `lmr's Avocado PPA`_.
 
 .. _lmr's autotest COPR: http://copr.fedoraproject.org/coprs/lmr/Autotest
 .. _lmr's avocado PPA: https://launchpad.net/~lmr/+archive/avocado
 
 Avocado is primarily being developed on Fedora boxes, but we are making
-reasonable efforts that Ubuntu users can use and develop avocado well.
+reasonable efforts that Ubuntu users can use and develop Avocado well.
 
-Installing avocado - Fedora
+Installing Avocado - Fedora
 ===========================
 
 You can install the rpm package by performing the following commands::
@@ -26,23 +26,23 @@ You can install the rpm package by performing the following commands::
 
 Don't mind the Fedora version here, the same repo file should work for newer distros.
 
-Installing avocado - Ubuntu
+Installing Avocado - Ubuntu
 ===========================
 
 You need to add the following lines::
 
     deb http://ppa.launchpad.net/lmr/avocado/ubuntu trusty main
 
-To the file ``/etc/apt/sources.list``. After that you can install avocado by
+To the file ``/etc/apt/sources.list``. After that you can install Avocado by
 performing the following commands::
 
     sudo apt-get update
     sudo apt-get install avocado
 
-Installing avocado - Git
+Installing Avocado - Git
 ========================
 
-To install avocado from the git repository, check this instructions::
+To install Avocado from the git repository, check this instructions::
 
     git clone git@github.com:avocado-framework/avocado.git
     cd avocado
@@ -56,13 +56,13 @@ utilities `python2.7` and `pip2.7`.
 
 For Debian users, use `apt-get` to install the proper dependencies that `yum` installs.
 
-Using the avocado test runner
+Using the Avocado test runner
 =============================
 
 The test runner is designed to conveniently run tests on your local machine. The types of
 tests you can run are:
 
-* Tests written in Python, using the avocado API, which we'll call `instrumented`.
+* Tests written in Python, using the Avocado API, which we'll call `instrumented`.
 * Any executable in your box, really. The criteria for PASS/FAIL is the return
   code of the executable. If it returns 0, the test PASSes, if it returns anything
   else, it FAILs. We'll call those tests `simple tests`.
@@ -72,8 +72,8 @@ Listing tests
 
 The ``avocado`` command line tool also has a ``list`` command, that lists the
 known tests in a given path, be it a path to an individual test, or a path
-to a directory. If no arguments provided, avocado will inspect the contents
-of the test location being used by avocado (if you are in doubt about which
+to a directory. If no arguments provided, Avocado will inspect the contents
+of the test location being used by Avocado (if you are in doubt about which
 one is that, you may use ``avocado config --datadir``). The output looks like::
 
     $ avocado list
@@ -98,9 +98,8 @@ one is that, you may use ``avocado config --datadir``). The output looks like::
     INSTRUMENTED /usr/share/avocado/tests/warntest.py
     INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
 
-Here, ``INSTRUMENTED`` means that the files there are python files with an
-avocado
-test class in them This means those tests have access to all avocado APIs and
+Here, ``INSTRUMENTED`` means that the files there are Python files with an Avocado
+test class in them This means those tests have access to all Avocado APIs and
 facilities. Let's try to list a directory with a bunch of executable shell
 scripts::
 
@@ -113,10 +112,10 @@ scripts::
     SIMPLE examples/wrappers/valgrind.sh
 
 Here, as covered in the previous section, ``SIMPLE`` means that those files are
-executables, that avocado will simply execute and return PASS or FAIL
+executables, that Avocado will simply execute and return PASS or FAIL
 depending on their return codes (PASS -> 0, FAIL -> any integer different
 than 0). You can also provide the ``--verbose``, or ``-V`` flag to display files
-that were detected but are not avocado tests, along with summary information::
+that were detected but are not Avocado tests, along with summary information::
 
     $ avocado list examples/gdb-prerun-scripts/ -V
     Type       file
@@ -195,7 +194,7 @@ Debugging tests
 
 When developing new tests, you frequently want to look at the straight
 output of the job log in the stdout, without having to tail the job log.
-In order to do that, you can use --show-job-log to the avocado test runner::
+In order to do that, you can use --show-job-log to the Avocado test runner::
 
     $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
     Not logging /proc/slabinfo (lack of permissions)
@@ -217,5 +216,5 @@ In order to do that, you can use --show-job-log to the avocado test runner::
 
 As you can see, the UI output is suppressed and only the job log goes to
 stdout, making this a useful feature for test development/debugging. Some more
-involved functionalities for the avocado runner will be discussed as
+involved functionalities for the Avocado runner will be discussed as
 appropriate, during the introduction of important concepts.
