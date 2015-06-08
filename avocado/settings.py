@@ -15,6 +15,7 @@
 """
 Reads the avocado settings from a .ini file (from python ConfigParser).
 """
+import ast
 import ConfigParser
 import os
 import sys
@@ -129,8 +130,7 @@ def convert_value_type(value, value_type):
             return True
 
     if value_type == list:
-        # Split the string using ',' and return a list
-        return [val.strip() for val in sval.split(',')]
+        return ast.literal_eval(sval)
 
     conv_val = value_type(sval)
     return conv_val
