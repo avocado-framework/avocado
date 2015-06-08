@@ -14,7 +14,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import test
+from avocado.core import test
 from avocado.utils import script
 
 PASS_SCRIPT_CONTENTS = """#!/bin/sh

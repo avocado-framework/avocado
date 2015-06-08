@@ -25,9 +25,9 @@ sleep 2
 
 PYTHON_CONTENT = """#!/usr/bin/env python
 import time
-from avocado import test
+from avocado import Test
 
-class Dummy(test.Test):
+class Dummy(Test):
     def test00sleep(self):
         time.sleep(2)
     def test01pass(self):

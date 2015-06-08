@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-from avocado import test
+from avocado import Test
 from avocado import main
 
 
-class MultiplexTest(test.Test):
+class MultiplexTest(Test):
 
     """
     Execute a test that uses provided parameters (for multiplexing testing).

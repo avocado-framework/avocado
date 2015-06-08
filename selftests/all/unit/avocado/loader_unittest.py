@@ -12,17 +12,17 @@ basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import test
+from avocado.core import test
 from avocado.core import exceptions
 from avocado.core import loader
 from avocado.utils import script
 
 
 AVOCADO_TEST_OK = """#!/usr/bin/python
+from avocado import Test
 from avocado import main
-from avocado import test
 
-class PassTest(test.Test):
+class PassTest(Test):
     def runTest(self):
         pass
 
@@ -31,11 +31,11 @@ if __name__ == "__main__":
 """
 
 AVOCADO_TEST_BUGGY = """#!/usr/bin/python
+from avocado import Test
 from avocado import main
-from avocado import test
 import adsh
 
-class PassTest(test.Test):
+class PassTest(Test):
     def runTest(self):
         pass
 
@@ -60,9 +60,9 @@ SIMPLE_TEST = """#!/bin/sh
 true
 """
 
-AVOCADO_BASE_CLASS_TEST = """from avocado import test
+AVOCADO_BASE_CLASS_TEST = """from avocado import Test
 
-class MyBaseTest(test.Test):
+class MyBaseTest(Test):
     pass
 """
 
@@ -72,9 +72,9 @@ class MyInheritedTest(MyBaseTest):
     pass
 """
 
-AVOCADO_MULTIPLE_TESTS = """from avocado import test
+AVOCADO_MULTIPLE_TESTS = """from avocado import Test
 
-class MultipleMethods(test.Test):
+class MultipleMethods(Test):
     def test_one(self):
         pass
     def testTwo(self):
