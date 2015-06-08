@@ -32,11 +32,14 @@ and match those in a single job.
 Instrumented
 ------------
 
-Tests written in Python that use the Avocado API. To consider a file to contain an instrumented
-test, the Avocado test loader looks for an Avocado test class inside it.
+These are tests written in Python that use the Avocado test API.
 
+To be more precise, the Python file must contain a class derived from :mod:`avocado.test.Test`.
 This means that an executable written in Python is not always an instrumented test, but may work
 as a simple test.
+
+By the way, the term instrumented is used because the Avocado Python test classes allow you to
+get more features for your test, such as logging facilities and more sophisticated test APIs.
 
 Simple
 ------
@@ -44,4 +47,13 @@ Simple
 Any executable in your box. The criteria for PASS/FAIL is the return code of the executable.
 If it returns 0, the test PASSes, if it returns anything else, it FAILs.
 
+Test Resolution
+===============
+
+When you use the Avocado runner, frequently you'll provide paths to files,
+that will be inspected, and acted upon depending on their contents. The
+diagram below shows how Avocado analyzes a file and decides what to do with
+it:
+
+.. figure:: diagram.png
 .. [#f1] Avocado plugins can introduce additional test types.
