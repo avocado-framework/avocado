@@ -18,7 +18,7 @@ Base Test Runner Plugins.
 
 import sys
 
-from avocado.settings import settings
+from avocado.core.settings import settings
 from avocado.core import exit_codes
 from avocado.core.plugins import plugin
 from avocado.core import output

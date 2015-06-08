@@ -14,7 +14,7 @@
 
 from avocado.core import output
 from avocado.core import data_dir
-from avocado.settings import settings
+from avocado.core.settings import settings
 from avocado.core.plugins import plugin
 
 
