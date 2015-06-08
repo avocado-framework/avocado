@@ -470,7 +470,7 @@ class SubProcess(object):
                     the specified timeout.
         :type sig: int
         :returns: The command result object.
-        :rtype: A :class:`avocado.utils.process.CmdResult` instance.
+        :rtype: A :class:`CmdResult` instance.
         """
         self._init_subprocess()
         start_time = time.time()
@@ -907,7 +907,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     :param env: Use extra environment variables
     :type env: dict
 
-    :return: An :class:`avocado.utils.process.CmdResult` object.
+    :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     klass = get_sub_process_klass(cmd)
