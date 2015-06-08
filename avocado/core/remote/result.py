@@ -16,7 +16,7 @@
 
 import os
 
-from avocado import data_dir
+from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.core.result import HumanTestResult
 from avocado.utils import remote
