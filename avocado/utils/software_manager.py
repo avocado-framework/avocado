@@ -41,10 +41,13 @@ import re
 import logging
 import ConfigParser
 import optparse
+
 try:
     import yum
 except ImportError:
-    pass
+    HAS_YUM_MODULE = False
+else:
+    HAS_YUM_MODULE = True
 
 from avocado.utils import process
 from avocado.utils import data_factory
@@ -367,7 +370,12 @@ class YumBackend(RpmBackend):
         self.pm_version = ver
         log.debug('Yum version: %s' % self.pm_version)
 
-        self.yum_base = yum.YumBase()
+        if HAS_YUM_MODULE:
+            self.yum_base = yum.YumBase()
+        else:
+            self.yum_base = None
+            log.error("yum module for Python is required. "
+                      "Using the basic support from rpm and yum commands")
 
     def _cleanup(self):
         """
@@ -469,6 +477,10 @@ class YumBackend(RpmBackend):
 
         :param name: Capability name (eg, 'foo').
         """
+        if self.yum_base is None:
+            log.error("The method 'provides' is disabled, "
+                      "yum module is required for this operation")
+            return None
         try:
             d_provides = self.yum_base.searchPackageProvides(args=[name])
         except Exception, e:
