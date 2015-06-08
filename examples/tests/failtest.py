@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-from avocado import test
+from avocado import Test
 from avocado import main
 from avocado.core import exceptions
 
 
-class FailTest(test.Test):
+class FailTest(Test):
 
     """
     Functional test for avocado. Straight up fail the test.
