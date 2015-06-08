@@ -1,24 +1,28 @@
 .. _get-started:
 
-=============================
-Getting started guide - users
-=============================
+===============
+Getting Started
+===============
 
-If you want to simply use avocado as a test runner/test API, you can install a
-distro package. For Fedora, you can look
-at `lmr's autotest COPR`_, while for Ubuntu, you can look
-at `lmr's avocado PPA`_.
+The first step towards using Avocado is, quite obviously, installing it.
 
-.. _lmr's autotest COPR: http://copr.fedoraproject.org/coprs/lmr/Autotest
-.. _lmr's avocado PPA: https://launchpad.net/~lmr/+archive/avocado
+Installing Avocado
+==================
 
-Avocado is primarily being developed on Fedora boxes, but we are making
-reasonable efforts that Ubuntu users can use and develop avocado well.
+Avocado is available in `RPM packages for Fedora`_, and `DEB packages for Ubuntu`_.
 
-Installing avocado - Fedora
-===========================
+.. _RPM Packages For Fedora: http://copr.fedoraproject.org/coprs/lmr/Autotest
+.. _DEB packages for Ubuntu: https://launchpad.net/~lmr/+archive/avocado
 
-You can install the rpm package by performing the following commands::
+.. Note: the following text should instead reference the distro tiers levels
+
+Avocado is primarily being developed on Fedora, but reasonable efforts
+are being made to support other platforms such as Ubuntu.
+
+Fedora
+------
+
+You can install the RPM packages by running the following commands::
 
     sudo curl http://copr.fedoraproject.org/coprs/lmr/Autotest/repo/fedora-20/lmr-Autotest-fedora-20.repo -o /etc/yum.repos.d/autotest.repo
     sudo yum update
@@ -26,29 +30,30 @@ You can install the rpm package by performing the following commands::
 
 Don't mind the Fedora version here, the same repo file should work for newer distros.
 
-Installing avocado - Ubuntu
-===========================
+Ubuntu
+------
 
-You need to add the following lines::
+You can install Avocado by running the following commands::
 
-    deb http://ppa.launchpad.net/lmr/avocado/ubuntu trusty main
-
-To the file ``/etc/apt/sources.list``. After that you can install avocado by
-performing the following commands::
-
+    sudo echo "deb http://ppa.launchpad.net/lmr/avocado/ubuntu utopic main" >> /etc/apt/sources.list
     sudo apt-get update
     sudo apt-get install avocado
 
-Installing avocado - Git
-========================
+Generic installation from a GIT repository
+------------------------------------------
 
-To install avocado from the git repository, check this instructions::
+First make sure you have a basic set of packages installed. The
+following applies to Fedora based distributions, please adapt to
+your platform::
+
+    sudo yum install -y git gcc python-devel python-pip libvirt-devel libyaml-devel
+
+Then to install Avocado from the git repository run::
 
     git clone git@github.com:avocado-framework/avocado.git
     cd avocado
-    sudo python setup.py install
-    sudo yum install -y gcc python-devel python-pip libvirt-devel libyaml-devel
     sudo pip install -r requirements.txt
+    sudo python setup.py install
 
 Note that `python` and `pip` should point to the Python interpreter version 2.7.x.
 If you're having trouble to install, you can try again and use the command line
@@ -56,24 +61,43 @@ utilities `python2.7` and `pip2.7`.
 
 For Debian users, use `apt-get` to install the proper dependencies that `yum` installs.
 
-Using the avocado test runner
-=============================
+Using Avocado
+=============
 
-The test runner is designed to conveniently run tests on your local machine. The types of
-tests you can run are:
+You should first experience Avocado by using the test runner, that is, the command
+line tool that will conveniently run your tests and collect their results.
 
-* Tests written in Python, using the avocado API, which we'll call `instrumented`.
-* Any executable in your box, really. The criteria for PASS/FAIL is the return
-  code of the executable. If it returns 0, the test PASSes, if it returns anything
-  else, it FAILs. We'll call those tests `simple tests`.
+Running Tests
+-------------
+
+To do so, please run ``avocado`` with the ``run`` sub-command and the chosen test::
+
+    $ avocado run /bin/true
+    JOB ID    : 381b849a62784228d2fd208d929cc49f310412dc
+    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
+    TESTS     : 1
+    (1/1) /bin/true: PASS (0.01 s)
+    PASS      : 1
+    ERROR     : 0
+    FAIL      : 0
+    SKIP      : 0
+    WARN      : 0
+    INTERRUPT : 0
+    TIME : 0.01 s
+
+You probably noticed that we used ``/bin/true`` as a test, and in accordance with our
+expectations, it passed! These are known as `simple tests`, but there is also another
+type of test, which we call `instrumented tests`. See more at :ref:`test-types` or just
+keep reading.
 
 Listing tests
 -------------
 
 The ``avocado`` command line tool also has a ``list`` command, that lists the
 known tests in a given path, be it a path to an individual test, or a path
-to a directory. If no arguments provided, avocado will inspect the contents
-of the test location being used by avocado (if you are in doubt about which
+to a directory. If no arguments provided, Avocado will inspect the contents
+of the test location being used by Avocado (if you are in doubt about which
 one is that, you may use ``avocado config --datadir``). The output looks like::
 
     $ avocado list
@@ -98,13 +122,16 @@ one is that, you may use ``avocado config --datadir``). The output looks like::
     INSTRUMENTED /usr/share/avocado/tests/warntest.py
     INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
 
-Here, ``INSTRUMENTED`` means that the files there are python files with an
-avocado
-test class in them This means those tests have access to all avocado APIs and
-facilities. Let's try to list a directory with a bunch of executable shell
+These Python files are considered by Avocado to contain ``INSTRUMENTED``
+tests.
+
+.. These should refer to proper simple tests example but they are currently
+   lacking in our tree. See GitHub issue #628.
+
+Let's now list a directory with a bunch of executable shell
 scripts::
 
-    $ avocado list examples/wrappers/
+   $ avocado list /usr/share/avocado/examples/wrappers
     SIMPLE examples/wrappers/dummy.sh
     SIMPLE examples/wrappers/ltrace.sh
     SIMPLE examples/wrappers/perf.sh
@@ -112,11 +139,9 @@ scripts::
     SIMPLE examples/wrappers/time.sh
     SIMPLE examples/wrappers/valgrind.sh
 
-Here, as covered in the previous section, ``SIMPLE`` means that those files are
-executables, that avocado will simply execute and return PASS or FAIL
-depending on their return codes (PASS -> 0, FAIL -> any integer different
-than 0). You can also provide the ``--verbose``, or ``-V`` flag to display files
-that were detected but are not avocado tests, along with summary information::
+Here, as mentioned before, ``SIMPLE`` means that those files are executables
+treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to
+display files that were found by Avocado, but are not considered Avocado tests::
 
     $ avocado list examples/gdb-prerun-scripts/ -V
     Type       file
@@ -129,49 +154,28 @@ that were detected but are not avocado tests, along with summary information::
     MISSING: 0
     NOT_A_TEST: 2
 
+Notice that the verbose flag also adds summary information.
 
-Running Tests
--------------
+Writing a Simple Test
+=====================
 
-You can run them using the subcommand ``run``::
+This very simple example of simple test written in shell script::
 
-    $ avocado run sleeptest
-    JOB ID    : 381b849a62784228d2fd208d929cc49f310412dc
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
-    TESTS     : 1
-    (1/1) sleeptest.1: PASS (1.01 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
-    TIME : 1.01 s
+    $ echo '#!/bin/bash' > /tmp/simple_test.sh
+    $ echo 'exit 0' >> /tmp/simple_test.sh
+    $ chmod +x /tmp/simple_test.sh
 
-Job ID
-======
+Notice that the file is given executable permissions, which is a requirement for
+Avocado to treat it as a simple test. Also notice that the script exits with status
+code 0, which signals a successful result to Avocado.
 
-The Job ID is a SHA1 string that has some information encoded:
-
-* Hostname
-* ISO timestamp
-* 64 bit integer
-
-The idea is to have a unique identifier that can be used for job data, for
-the purposes of joining on a single database results obtained by jobs run
-on different systems.
-
-Simple Tests
-============
+Running A More Complex Test Job
+===============================
 
 You can run any number of test in an arbitrary order, as well as mix and match
-native tests and simple tests::
+instrumented and simple tests::
 
-    $ echo '#!/bin/bash' > /tmp/script_that_passes.sh
-    $ echo 'true' >> /tmp/script_that_passes.sh
-    $ chmod +x /tmp/script_that_passes.sh
-    $ avocado run failtest sleeptest synctest failtest synctest /tmp/script_that_passes.sh
+    $ avocado run failtest sleeptest synctest failtest synctest /tmp/simple_test.sh
     JOB ID    : 86911e49b5f2c36caeea41307cee4fecdcdfa121
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
@@ -181,7 +185,7 @@ native tests and simple tests::
     (3/6) synctest.1: ERROR (0.01 s)
     (4/6) failtest.2: FAIL (0.00 s)
     (5/6) synctest.2: ERROR (0.01 s)
-    (6/6) /tmp/script_that_passes.sh.1: PASS (0.02 s)
+    (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
     PASS      : 2
     ERROR     : 2
     FAIL      : 2
@@ -193,29 +197,22 @@ native tests and simple tests::
 Debugging tests
 ===============
 
-When developing new tests, you frequently want to look at the straight
-output of the job log in the stdout, without having to tail the job log.
-In order to do that, you can use --show-job-log to the avocado test runner::
+When developing new tests, you frequently want to look straight at the
+job log, without switching screens or having to "tail" the job log.
 
-    $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
-    Not logging /proc/slabinfo (lack of permissions)
+In order to do that, you can use ``--show-job-log`` option::
+
+    $ avocado run examples/tests/sleeptest --show-job-log
+    Job ID: f9ea1742134e5352dec82335af584d1f151d4b85
+
     START examples/tests/sleeptest.py
 
-    Test instance parameters:
-        id = examples/tests/sleeptest.py
-
-    Default parameters:
-        sleep_length = 1.0
-
-    Test instance params override defaults whenever available
-
+    PARAMS (key=timeout, path=*, default=None) => None
+    PARAMS (key=sleep_length, path=*, default=1) => 1
     Sleeping for 1.00 seconds
-    Not logging /var/log/messages (lack of permissions)
     PASS examples/tests/sleeptest.py
 
-    Not logging /proc/slabinfo (lack of permissions)
+    Test results available in $HOME/avocado/job-results/job-2015-06-02T10.45-f9ea174
 
-As you can see, the UI output is suppressed and only the job log goes to
-stdout, making this a useful feature for test development/debugging. Some more
-involved functionalities for the avocado runner will be discussed as
-appropriate, during the introduction of important concepts.
+As you can see, the UI output is suppressed and only the job log is shown,
+making this a useful feature for test development and debugging.

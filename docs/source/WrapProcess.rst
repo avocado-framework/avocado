@@ -1,61 +1,59 @@
 Wrap process in tests
 =====================
 
-Avocado allows the instrumentation of applications being
-run by a test in a transparent way.
+Avocado allows the instrumentation of applications being run by a test
+in a transparent way. The user specifies a script ("the wrapper") to be
+used to run the actual program called by the test.
 
-The user specifies a script ("the wrapper") to be used to run the actual
-program called by the test.  If the instrument is
-implemented correctly, it should not interfere with the test behavior.
+If the instrumentation script is implemented correctly, it should not
+interfere with the test behavior. That is, the wrapper should avoid
+changing the return status, standard output and standard error messages
+of the original process.
 
-So it means that the wrapper should avoid to change the return status,
-standard output and standard error messages of the process.
-
-The user can optionally specify a target program to wrap.
+The user can be specific about which program to wrap, or if that is omitted,
+a global wrapper that will apply to all programs called by the test.
 
 Usage
 -----
 
 This feature is implemented as a plugin, that adds the `--wrapper` option
 to the Avocado `run` command.  For a detailed explanation please consult the     
-avocado man page.
+Avocado man page.
 
 Example of a transparent way of running strace as a wrapper::
 
     #!/bin/sh
     exec strace -ff -o $AVOCADO_TEST_LOGDIR/strace.log -- $@
 
+To have all programs started by ``test.py`` wrapped with ``~/bin/my-wrapper.sh``::
 
-Now you can run::
-
-    # run all programs started by test.py with ~/bin/my-wrapper.sh
     $ scripts/avocado run --wrapper ~/bin/my-wrapper.sh tests/test.py
 
-    # run only my-binary (if/when started by a test) with ~/bin/my-wrapper.sh
-    $ scripts/avocado run --wrapper ~/bin/my-wrapper.sh:my-binary tests/test.py
+To have only ``my-binary`` wrapped with ``~/bin/my-wrapper.sh``::
 
+  $ scripts/avocado run --wrapper ~/bin/my-wrapper.sh:my-binary tests/test.py
 
 Caveats
 -------
 
 * It is not possible to debug with GDB (`--gdb-run-bin`) and use
-  wrappers (`--wrapper`), both options together are incompatible.
+  wrappers (`--wrapper`) at the same time. These two options are
+  mutually exclusive.
 
-* You cannot set multiples (global) wrappers
-  -- like `--wrapper foo.sh --wrapper bar.sh` -- it will trigger an error.
-  You should use a single script that performs both things
-  you are trying to achieve.
+* You can only set one (global) wrapper. If you need functionality
+  present in two wrappers, you have to combine those into a single
+  wrapper script.
 
-* The only process that can be wrapper are those that uses the Avocado
-  module `avocado.utils.process` and the modules that make use of it,
-  like `avocado.utils.build` and so on.
+* Only processes that are run with the :mod:`avocado.utils.process` APIs
+  (and other API modules that make use of it, like mod:`avocado.utils.build`)
+  are affected by this feature.
 
 * If paths are not absolute, then the process name matches with the base name,
   so `--wrapper foo.sh:make` will match `/usr/bin/make`, `/opt/bin/make`
-  and  `/long/path/to/make`.
+  and `/long/path/to/make`.
 
-*  When you use a relative path to a script, it will use the current path
-   of the running avocado program.
-   Example: If I'm running avocado on `/home/user/project/avocado`,
-   then `avocado run --wrapper examples/wrappers/strace.sh datadir`  will
-   set the wrapper to `/home/user/project/avocado/examples/wrappers/strace.sh`
+* When you use a relative path to a script, it will use the current path
+  of the running Avocado program. Example: If I'm running Avocado on
+  `/home/user/project/avocado`, then `avocado run --wrapper
+  examples/wrappers/strace.sh datadir`  will set the wrapper to
+  `/home/user/project/avocado/examples/wrappers/strace.sh`

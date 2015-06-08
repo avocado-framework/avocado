@@ -13,7 +13,7 @@ provided that you properly set up that VM.
 VM Plugin Basics
 ================
 
-The vm plugin is one of the basic plugins provided by avocado. You can check
+The vm plugin is one of the basic plugins provided by Avocado. You can check
 for its presence by listing your plugins::
 
     $ scripts/avocado plugins
@@ -22,7 +22,7 @@ for its presence by listing your plugins::
         run_vm - Run tests on a Virtual Machine (Enabled)
         ...
 
-This plugin adds a number of options to the avocado test runner::
+This plugin adds a number of options to the Avocado test runner::
 
       --vm                  Run tests on Virtual Machine
       --vm-hypervisor-uri VM_HYPERVISOR_URI
@@ -47,7 +47,7 @@ VM Setup
 
 Make sure you have:
 
- 1) A libvirt domain with an avocado RPM installed. You can see more info on
+ 1) A libvirt domain with an Avocado RPM installed. You can see more info on
     how to do that in the Getting Started Guide.
  2) The domain IP address or fully qualified hostname
  3) All pre-requesites for your test to run installed inside the VM
@@ -76,7 +76,7 @@ Once everything is verified and covered, you may run your test. Example::
     WARN      : 0
     TIME      : 1.01 s
 
-As you can see, avocado will copy the tests you have to your libvirt domain and
+As you can see, Avocado will copy the tests you have to your libvirt domain and
 execute them. A bit of extra logging information is added to your job summary,
 mainly to distinguish the regular execution from the remote one. Note here that
 we did not need `--vm-password` because the SSH key is already setup.
