@@ -37,13 +37,12 @@ from avocado.core import exceptions
 from avocado.core import job_id
 from avocado.core import output
 from avocado.core import multiplexer
+from avocado.core.settings import settings
 from avocado.core.plugins import jsonresult
 from avocado.core.plugins import xunit
+from avocado.core.plugins.builtin import ErrorsLoading
 from avocado.utils import archive
 from avocado.utils import path
-from avocado.settings import settings
-
-from avocado.core.plugins.builtin import ErrorsLoading
 
 
 try:

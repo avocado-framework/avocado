@@ -20,7 +20,7 @@ import os
 import sys
 
 from avocado.utils import path as utils_path
-from avocado.settings import settings
+from avocado.core.settings import settings
 
 
 class FilterError(logging.Filter):
