@@ -149,12 +149,13 @@ class Job(object):
         shutil.rmtree(self.logdir, ignore_errors=True)
 
     def _make_test_loader(self):
-        for key in self.args.__dict__.keys():
-            if key.endswith('_loader'):
-                loader_class = getattr(self.args, key)
-                if issubclass(loader_class, loader.TestLoader):
-                    loader_plugin = loader_class(self)
+        for loader_class_candidate in self.args.__dict__.itervalues():
+            try:
+                if issubclass(loader_class_candidate, loader.TestLoader):
+                    loader_plugin = loader_class_candidate(self)
                     self.test_loader.add_loader_plugin(loader_plugin)
+            except TypeError:
+                pass
         filesystem_loader = loader.TestLoader(self)
         self.test_loader.add_loader_plugin(filesystem_loader)
 
@@ -168,13 +169,14 @@ class Job(object):
                                              test_result=self.result_proxy)
 
     def _set_output_plugins(self):
-        for key in self.args.__dict__:
-            if key.endswith('_result'):
-                result_class = getattr(self.args, key)
-                if issubclass(result_class, result.TestResult):
-                    result_plugin = result_class(self.view,
-                                                 self.args)
+        for result_class_candidate in self.args.__dict__.itervalues():
+            try:
+                if issubclass(result_class_candidate, result.TestResult):
+                    result_plugin = result_class_candidate(self.view,
+                                                           self.args)
                     self.result_proxy.add_output_plugin(result_plugin)
+            except TypeError:
+                pass
 
     def _make_test_result(self):
         """

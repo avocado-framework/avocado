@@ -66,12 +66,13 @@ class TestLoaderProxy(object):
         self.loader_plugins.append(plugin)
 
     def load_plugins(self, args):
-        for key in args.__dict__.keys():
-            if key.endswith('_loader'):
-                loader_class = getattr(args, key)
-                if issubclass(loader_class, TestLoader):
-                    loader_plugin = loader_class(args=args)
+        for loader_class_candidate in args.__dict__.itervalues():
+            try:
+                if issubclass(loader_class_candidate, TestLoader):
+                    loader_plugin = loader_class_candidate(args=args)
                     self.add_loader_plugin(loader_plugin)
+            except TypeError:
+                pass
         filesystem_loader = TestLoader()
         self.add_loader_plugin(filesystem_loader)
 
