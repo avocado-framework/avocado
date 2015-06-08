@@ -19,6 +19,7 @@ import logging
 from importlib import import_module
 
 from avocado.core.plugins.plugin import Plugin
+from avocado.settings import settings
 
 
 log = logging.getLogger("avocado.app")
@@ -46,13 +47,17 @@ def load_builtins():
     :return: a list of plugin classes, ordered by `priority`.
     """
     plugins = []
+    skip_notify = settings.get_value(section='plugins.load',
+                                     key='skip_broken_plugin_notification',
+                                     key_type=list)
     for module in Builtins:
         try:
             plugin_mod = import_module(module)
         except Exception as err:
             name = str(module)
             reason = '%s %s' % (str(err.__class__.__name__), err)
-            log.error('Error loading %s -> %s', name, reason)
+            if name not in skip_notify:
+                log.error('Error loading %s -> %s', name, reason)
             ErrorsLoading.append((name, reason))
             continue
         for name in plugin_mod.__dict__:
