@@ -2,7 +2,7 @@ import itertools
 import pickle
 import sys
 
-from avocado import multiplexer
+from avocado.core import multiplexer
 from avocado.core import tree
 
 if sys.version_info[:2] == (2, 6):

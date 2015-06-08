@@ -32,9 +32,9 @@ else:
     import unittest
 
 from avocado import data_dir
-from avocado import multiplexer
 from avocado.core import sysinfo
 from avocado.core import exceptions
+from avocado.core import multiplexer
 from avocado.utils import genio
 from avocado.utils import path as utils_path
 from avocado.utils import process
