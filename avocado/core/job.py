@@ -27,7 +27,7 @@ import shutil
 import fnmatch
 
 from avocado import runtime
-from avocado import data_dir
+from avocado.core import data_dir
 from avocado.core import runner
 from avocado.core import loader
 from avocado.core import sysinfo
