@@ -22,7 +22,7 @@ from avocado.core import exit_codes
 from avocado.core.plugins import plugin
 from avocado.utils import process
 from avocado.utils import path as utils_path
-from avocado.linux import distro as distro_utils
+from avocado.utils import distro as utils_distro
 
 
 class SoftwarePackage(object):
@@ -55,7 +55,7 @@ class SoftwarePackage(object):
         return json.dumps(self.to_dict())
 
 
-class DistroDef(distro_utils.LinuxDistro):
+class DistroDef(utils_distro.LinuxDistro):
 
     """
     More complete information on a given Linux Distribution
@@ -373,7 +373,7 @@ class DistroOptions(plugin.Plugin):
                             msg=('Distro information saved '
                                  'to "%s"' % output_file_name))
         else:
-            detected = distro_utils.detect()
+            detected = utils_distro.detect()
             msg = 'Detected distribution: %s (%s) version %s release %s' % (
                 detected.name,
                 detected.arch,
