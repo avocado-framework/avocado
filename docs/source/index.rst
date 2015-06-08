@@ -19,6 +19,7 @@ Contents:
    RemoteMachinePlugin
    DebuggingWithGDB
    WrapProcess
+   ReferenceGuide
    ContributionGuide
    DevelopmentTips
    api/modules
