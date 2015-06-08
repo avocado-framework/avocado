@@ -5,14 +5,13 @@ Writing Avocado Tests
 =====================
 
 We are going to write an Avocado test in Python and we are going to inherit from
-:class:`avocado.test.Test`. This makes this test a so-called instrumented test.
+:class:`avocado.Test`. This makes this test a so-called instrumented test.
 
 Basic example
 =============
 
-Let's re-create an old time favorite, ``sleeptest``, which is a functional
-test for Avocado (old because we also use such a test for autotest). It does
-nothing but ``time.sleep([number-seconds])``::
+Let's re-create an old time favorite, ``sleeptest`` [#f1]_.  It is so simple, it
+does nothing besides sleeping for a while::
 
         import time
 
@@ -25,20 +24,38 @@ nothing but ``time.sleep([number-seconds])``::
                 self.log.debug("Sleeping for %.2f seconds", sleep_length)
                 time.sleep(sleep_length)
 
-This is about the simplest test you can write for Avocado (at least, one using
-the Avocado APIs). An avocado test is basically a class that inherits from
-:mod:`avocado.Test` and could have any name you might like (we'll trust
-you'll choose a good name, although we do recommend that the name uses the
-CamelCase convention, for PEP8 consistency).
+This is about the simplest test you can write for Avocado, while still
+leveraging its API power.
 
-Note that the test object provides you with a number of convenience
-attributes, such as ``self.log``, that lets you log debug, info, error and
-warning messages. Also, we note the parameter passing system that Avocado
-provides: We frequently want to pass parameters to tests, and we can do that
-through what we call a `multiplex file`, which is a configuration file that
-not only allows you to provide params to your test, but also easily create a
-validation matrix in a concise way. You can find more about the multiplex
-file format on :doc:`MultiplexConfig`.
+What is an Avocado Test
+-----------------------
+
+As can be seen in the example above, an Avocado test is a method that
+starts with ``test`` in a class that inherits from :mod:`avocado.Test`.
+
+Multiple tests and naming conventions
+-------------------------------------
+
+You can have multiple tests in a single class.
+
+To do so, just give the methods names that start with ``test``, say
+``test_foo``, ``test_bar`` and so on. We recommend you follow this naming
+style, as defined in the `PEP8 Function Names`_ section.
+
+For the class name, you can pick any name you like, but we also recommend
+that it follows the CamelCase convention, also known as CapWords, defined
+in the PEP 8 document under `Class Names`_.
+
+Convenience Attributes
+----------------------
+
+Note that the test class provides you with a number of convenience attributes:
+
+* A ready to use log mechanism for your test, that can be accessed by means
+  of ``self.log``. It lets you log debug, info, error and warning messages.
+* A parameter passing system (and fetching system) that can be accessed by
+  means of ``self.params``. This is hooked to the Multiplexer, about which
+  you can find that more information at :doc:`MultiplexConfig`.
 
 Saving test generated (custom) data
 ===================================
@@ -751,3 +768,10 @@ the Avocado self test suite to do functional testing of Avocado itself.
 
 It is also recommended that you take a look at the
 :doc:`API documentation <api/modules>` for more possibilities.
+
+.. [#f1] sleeptest is a functional test for Avocado. It's "old" because we
+	 also have had such a test for `Autotest`_ for a long time.
+
+.. _Autotest: http://autotest.github.io
+.. _Class Names: https://www.python.org/dev/peps/pep-0008/
+.. _PEP8 Function Names: https://www.python.org/dev/peps/pep-0008/#function-names
