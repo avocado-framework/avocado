@@ -9,7 +9,7 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
 
-from avocado import gdb
+from avocado.utils import gdb
 
 
 class GDBRemoteTest(unittest.TestCase):

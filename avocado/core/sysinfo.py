@@ -28,7 +28,7 @@ from avocado.utils import process
 from avocado.utils import software_manager
 from avocado.utils import path as utils_path
 from avocado.core import output
-from avocado.settings import settings
+from avocado.core.settings import settings
 
 log = logging.getLogger("avocado.sysinfo")
 

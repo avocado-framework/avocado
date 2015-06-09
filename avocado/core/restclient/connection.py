@@ -21,7 +21,7 @@ basic object that allows methods to be called on the remote server.
 
 import requests
 
-from avocado.settings import settings
+from avocado.core.settings import settings
 
 
 __all__ = ['get_default', 'Connection']

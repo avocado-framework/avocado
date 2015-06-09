@@ -17,7 +17,7 @@
 from avocado import runtime
 from avocado.utils import path as utils_path
 from avocado.core.plugins import plugin
-from avocado.settings import settings
+from avocado.core.settings import settings
 
 
 class GDB(plugin.Plugin):

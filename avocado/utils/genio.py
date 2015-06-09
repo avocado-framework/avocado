@@ -20,7 +20,7 @@ import logging
 import os
 import time
 
-from avocado.utils import path as utils_path
+from . import path as utils_path
 
 
 log = logging.getLogger('avocado.test')

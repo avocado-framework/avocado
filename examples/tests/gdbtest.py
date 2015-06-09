@@ -3,8 +3,8 @@
 import os
 
 from avocado import Test
-from avocado import gdb
 from avocado import main
+from avocado.utils import gdb
 from avocado.utils import process
 
 

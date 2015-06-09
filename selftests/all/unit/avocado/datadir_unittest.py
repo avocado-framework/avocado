@@ -13,7 +13,7 @@ basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado import settings
+from avocado.core import settings
 
 
 def _get_bogus_settings(args):
@@ -47,7 +47,7 @@ class DataDirTest(unittest.TestCase):
             # Trick the module to think we're on a system wide install
             stg.intree = False
             flexmock(settings, settings=stg)
-            from avocado import data_dir
+            from avocado.core import data_dir
             flexmock(data_dir, settings=stg)
             self.assertFalse(data_dir.settings.intree)
             reload(data_dir)
