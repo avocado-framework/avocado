@@ -12,8 +12,8 @@ executable can serve as a test.
 Avocado is composed by:
 
 * A test runner that lets you execute tests. Those tests can be either written in your
-  language of choice, or use the Python API available. In both cases, you get
-  facilities such as automated log and system information collection.
+  language of choice, or be written in Python and use the available libraries. In both
+  cases, you get facilities such as automated log and system information collection.
 
 * APIs that help you write tests in a concise, yet expressive way.
   The Test API is the whole set of modules, classes and functions available
