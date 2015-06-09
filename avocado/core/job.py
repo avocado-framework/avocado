@@ -148,7 +148,8 @@ class Job(object):
         shutil.rmtree(self.logdir, ignore_errors=True)
 
     def _make_test_loader(self):
-        for loader_class_candidate in self.args.__dict__.itervalues():
+        for key in self.args.__dict__.keys():
+            loader_class_candidate = getattr(self.args, key)
             try:
                 if issubclass(loader_class_candidate, loader.TestLoader):
                     loader_plugin = loader_class_candidate(self)
@@ -168,7 +169,8 @@ class Job(object):
                                              test_result=self.result_proxy)
 
     def _set_output_plugins(self):
-        for result_class_candidate in self.args.__dict__.itervalues():
+        for key in self.args.__dict__.keys():
+            result_class_candidate = getattr(self.args, key)
             try:
                 if issubclass(result_class_candidate, result.TestResult):
                     result_plugin = result_class_candidate(self.view,
