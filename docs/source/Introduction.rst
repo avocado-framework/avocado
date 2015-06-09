@@ -9,16 +9,15 @@ One can call it a test framework with benefits. Native tests are
 written in Python and they follow the :mod:`unittest` pattern, but any
 executable can serve as a test.
 
-Avocado is composed by:
+Avocado is composed of:
 
-* A test runner that lets you execute tests. Those tests can be either written on your
-  language of choice, or use the Python API available. In both cases, you get
-  facilities such as automated log and system information collection.
+* A test runner that lets you execute tests. Those tests can be either written in your
+  language of choice, or be written in Python and use the available libraries. In both
+  cases, you get facilities such as automated log and system information collection.
 
-* APIs that help you write tests in a concise, yet expressive way.
-  The Test API is the whole set of modules, classes and functions available
-  under the :mod:`avocado` main module, excluding the :mod:`avocado.core`
-  module and their submodules, which is part of application's infrastructure.
+* Libraries that help you write tests in a concise, yet expressive and powerful way.
+  You can find more information about what libraries are intended for test writers
+  at :ref:`libraries-apis`.
 
 * :mod:`Plugins <avocado.core.plugins>` that can extend and add new functionality
   to the Avocado Framework.
