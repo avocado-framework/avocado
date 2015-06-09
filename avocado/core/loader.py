@@ -66,7 +66,8 @@ class TestLoaderProxy(object):
         self.loader_plugins.append(plugin)
 
     def load_plugins(self, args):
-        for loader_class_candidate in args.__dict__.itervalues():
+        for key in args.__dict__.keys():
+            loader_class_candidate = getattr(args, key)
             try:
                 if issubclass(loader_class_candidate, TestLoader):
                     loader_plugin = loader_class_candidate(args=args)
