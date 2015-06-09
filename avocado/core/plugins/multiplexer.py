@@ -30,6 +30,10 @@ class Multiplexer(plugin.Plugin):
     name = 'multiplexer'
     enabled = True
 
+    def __init__(self, *args, **kwargs):
+        super(Multiplexer, self).__init__(*args, **kwargs)
+        self._from_args_tree = tree.TreeNode()
+
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
             self.enabled = False
@@ -45,6 +49,9 @@ class Multiplexer(plugin.Plugin):
 
         self.parser.add_argument('--filter-out', nargs='*', default=[],
                                  help='Filter out path(s) from multiplexing')
+        self.parser.add_argument('-s', '--system-wide', action='store_true',
+                                 help="Combine the files with the default "
+                                 "tree.")
 
         self.parser.add_argument('-t', '--tree', action='store_true', default=False,
                                  help='Shows the multiplex tree structure')
@@ -60,6 +67,7 @@ class Multiplexer(plugin.Plugin):
                                  help="Inject [path:]key:node values into "
                                  "the final multiplex tree.")
         super(Multiplexer, self).configure(self.parser)
+        self._from_args_tree = tree.TreeNode()
 
     def activate(self, args):
         # Extend default multiplex tree of --env values
@@ -69,9 +77,9 @@ class Multiplexer(plugin.Plugin):
                 raise ValueError("key:value pairs required, found only %s"
                                  % (value))
             elif len(value) == 2:
-                args.default_multiplex_tree.value[value[0]] = value[1]
+                self._from_args_tree.value[value[0]] = value[1]
             else:
-                node = args.default_multiplex_tree.get_node(value[0], True)
+                node = self._from_args_tree.get_node(value[0], True)
                 node.value[value[1]] = value[2]
 
     def run(self, args):
@@ -84,7 +92,9 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='error',
                         msg=details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        mux_tree.merge(args.default_multiplex_tree)
+        if args.system_wide:
+            mux_tree.merge(args.default_multiplex_tree)
+        mux_tree.merge(self._from_args_tree)
         if args.tree:
             view.notify(event='message', msg='Config file tree structure:')
             view.notify(event='minor',
