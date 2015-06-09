@@ -15,7 +15,7 @@ Avocado is composed by:
   language of choice, or be written in Python and use the available libraries. In both
   cases, you get facilities such as automated log and system information collection.
 
-* APIs that help you write tests in a concise, yet expressive way.
+* Libraries that help you write tests in a concise, yet expressive and powerful way.
   The Test API is the whole set of modules, classes and functions available
   under the :mod:`avocado` main module, excluding the :mod:`avocado.core`
   module and their submodules, which is part of application's infrastructure.
