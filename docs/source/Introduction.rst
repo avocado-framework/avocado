@@ -16,9 +16,8 @@ Avocado is composed by:
   cases, you get facilities such as automated log and system information collection.
 
 * Libraries that help you write tests in a concise, yet expressive and powerful way.
-  The Test API is the whole set of modules, classes and functions available
-  under the :mod:`avocado` main module, excluding the :mod:`avocado.core`
-  module and their submodules, which is part of application's infrastructure.
+  You can find more information about what libraries are intended for test writers
+  at :ref:`libraries-apis`.
 
 * :mod:`Plugins <avocado.core.plugins>` that can extend and add new functionality
   to the Avocado Framework.
