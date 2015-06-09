@@ -20,7 +20,7 @@ str_key = frobnicate
 int_key = 1
 float_key = 1.25
 bool_key = True
-list_key = I, love, settings
+list_key = ['I', 'love', 'settings']
 empty_key =
 """
 
