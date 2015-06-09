@@ -47,6 +47,54 @@ Simple
 Any executable in your box. The criteria for PASS/FAIL is the return code of the executable.
 If it returns 0, the test PASSes, if it returns anything else, it FAILs.
 
+.. _libraries-apis:
+
+Libraries and APIs
+==================
+
+The Avocado libraries and its APIs are a big part of what Avocado is.
+
+But, to avoid having any issues you should understand what parts of the Avocado
+libraries are intended for test writers and their respective API stability promises.
+
+Test APIs
+---------
+
+At the most basic level there's the Test APIs which you should use when writing
+tests in Python and planning to make use of any other utility library.
+
+The Test APIs can be found in the :mod:`avocado` main module, and its most important
+member is the :class:`avocado.Test` class. By conforming to the :class:`avocado.Test`
+API, that is, by inheriting from it, you can use the full set of utility libraries.
+
+The Test APIs are guaranteed to be stable across a single major version of Avocado.
+That means that a test written for a given version of Avocado should not break on later
+minor versions because of Test API changes.
+
+Utility Libraries
+-----------------
+
+There are also a large number of utility libraries that can be found under the
+:mod:`avocado.utils` namespace. These are very general in nature and can help you
+speed up your test development.
+
+The utility libraries may receive incompatible changes across minor versions, but
+these will be done in a staged fashion. If a given change to an utility library
+can cause test breakage, it will first be documented and/or deprecated, and only
+on the next subsequent minor version it will actually be changed.
+
+What this means is that upon updating to later minor versions of Avocado, you
+should look at the Avocado Release Notes for changes that may impact your tests.
+
+Core (Application) Libraries
+----------------------------
+
+Finally, everything under :mod:`avocado.core` is part of the application's
+infrastructure and should not be used by tests.
+
+Extensions and Plugins can use the core libraries, but API stability is not
+guaranteed at any level.
+
 Test Resolution
 ===============
 
