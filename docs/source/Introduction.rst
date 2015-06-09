@@ -11,7 +11,7 @@ executable can serve as a test.
 
 Avocado is composed by:
 
-* A test runner that lets you execute tests. Those tests can be either written on your
+* A test runner that lets you execute tests. Those tests can be either written in your
   language of choice, or use the Python API available. In both cases, you get
   facilities such as automated log and system information collection.
 
