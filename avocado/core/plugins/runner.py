@@ -18,12 +18,12 @@ Base Test Runner Plugins.
 
 import sys
 
-from avocado.settings import settings
+from avocado.core.settings import settings
 from avocado.core import exit_codes
 from avocado.core.plugins import plugin
 from avocado.core import output
 from avocado.core import job
-from avocado import multiplexer
+from avocado.core import multiplexer
 
 
 class TestRunner(plugin.Plugin):

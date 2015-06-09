@@ -30,8 +30,8 @@ try:
 except ImportError:
     import subprocess
 
-from avocado.utils import network
-from avocado.core import gdbmi_parser
+from . import network
+from .external import gdbmi_parser
 
 GDB_PROMPT = '(gdb)'
 GDB_EXIT = '^exit'

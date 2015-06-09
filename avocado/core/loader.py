@@ -23,7 +23,7 @@ import os
 import re
 import sys
 
-from avocado import data_dir
+from avocado.core import data_dir
 from avocado.core import test
 from avocado.utils import path
 from avocado.core import output

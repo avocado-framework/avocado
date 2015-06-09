@@ -34,7 +34,8 @@ except ImportError:
     import subprocess
     SUBPROCESS32_SUPPORT = False
 
-from avocado import gdb
+from . import gdb
+
 from avocado import runtime
 from avocado.core import exceptions
 

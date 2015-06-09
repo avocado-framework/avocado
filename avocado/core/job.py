@@ -26,9 +26,8 @@ import tempfile
 import shutil
 import fnmatch
 
-from avocado import multiplexer
 from avocado import runtime
-from avocado import data_dir
+from avocado.core import data_dir
 from avocado.core import runner
 from avocado.core import loader
 from avocado.core import sysinfo
@@ -37,13 +36,13 @@ from avocado.core import exit_codes
 from avocado.core import exceptions
 from avocado.core import job_id
 from avocado.core import output
+from avocado.core import multiplexer
+from avocado.core.settings import settings
 from avocado.core.plugins import jsonresult
 from avocado.core.plugins import xunit
+from avocado.core.plugins.builtin import ErrorsLoading
 from avocado.utils import archive
 from avocado.utils import path
-from avocado.settings import settings
-
-from avocado.core.plugins.builtin import ErrorsLoading
 
 
 try:
