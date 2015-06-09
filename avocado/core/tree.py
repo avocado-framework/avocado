@@ -37,6 +37,7 @@ import collections
 import itertools
 import os
 import re
+import sys
 
 try:
     import yaml
@@ -719,3 +720,101 @@ def get_named_tree_cls(path):
                                                      children,
                                                      path.split(':', 1)[-1])
     return NamedTreeNodeDebug
+
+
+def tree_view(root, content=True):
+
+    """
+    Generate tree-view of the given node
+    :param root: root node
+    :return: string representing this node's tree structure
+    """
+
+    def prefixed_write(prefix, value):
+        """
+        Split value's lines and prepend empty prefix to 2nd+ lines
+        :return: list of lines
+        """
+        value = str(value)
+        if '\n' not in value:
+            return [prefix + value]
+        value = value.splitlines()
+        empty_prefix = ' ' * len(prefix)
+        return [prefix + value[0]] + [empty_prefix + _ for _ in value[1:]]
+
+    def process_node(node):
+        """
+        Generate this node's tree-view
+        :return: list of lines
+        """
+        if node.multiplex:
+            down = charset['DoubleDown']
+            down_right = charset['DoubleDownRight']
+            right = charset['DoubleRight']
+        else:
+            down = charset['Down']
+            down_right = charset['DownRight']
+            right = charset['Right']
+        if content and node.value:
+            val = charset['Value']
+            values = node.value.iteritems()
+            if node.children:
+                val_prefix = down + ' ' * (len(node.name) + 1 - len(down))
+            else:
+                val_prefix = ' ' * (len(node.name) + 1)
+            key, value = values.next()
+            out = prefixed_write(node.name + ' ' + val + key + ': ', value)
+            for key, value in values:
+                out.extend(prefixed_write(val_prefix + val + key + ': ',
+                                          value))
+        else:
+            out = [node.name]
+        if node.children:
+            for child in node.children[:-1]:
+                lines = process_node(child)
+                out.append(down_right + lines[0])
+                out.extend(down + line for line in lines[1:])
+            lines = process_node(node.children[-1])
+            out.append(right + lines[0])
+            empty_down_right = ' ' * len(down_right)
+            out.extend(empty_down_right + line for line in lines[1:])
+        return out
+
+    if sys.stdout.encoding == 'UTF-8':
+        charset = {'DoubleDown': u' \u2551   ',
+                   'DoubleDownRight': u' \u2560\u2550\u2550 ',
+                   'DoubleRight': u' \u255a\u2550\u2550 ',
+                   'Down': u' \u2503   ',
+                   'DownRight': u' \u2523\u2501\u2501 ',
+                   'Right': u' \u2517\u2501\u2501 ',
+                   'Value': u' \u2192'}
+    else:
+        charset = {'Down': ' |   ',
+                   'DownRight': ' |-- ',
+                   'Right': ' \\-- ',
+                   'DoubleDown': ' #   ',
+                   'DoubleDownRight': ' #== ',
+                   'DoubleRight': ' #== ',
+                   'Value': ' -> '}
+    if root.multiplex:
+        down = charset['DoubleDown']
+        down_right = charset['DoubleDownRight']
+        right = charset['DoubleRight']
+    else:
+        down = charset['Down']
+        down_right = charset['DownRight']
+        right = charset['Right']
+    out = []
+    if content:
+        prefix = charset['Value'].lstrip()
+        for key, value in root.value.iteritems():
+            out.extend(prefixed_write(prefix + key + ': ', value))
+    if root.children:
+        for child in root.children[:-1]:
+            lines = process_node(child)
+            out.append(down_right + lines[0])
+            out.extend(down + line for line in lines[1:])
+        lines = process_node(root.children[-1])
+        out.append(right + lines[0])
+        out.extend(' ' * len(down_right) + line for line in lines[1:])
+    return '\n'.join(out)

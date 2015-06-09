@@ -54,6 +54,8 @@ class Multiplexer(plugin.Plugin):
         self.parser.add_argument('--attr', nargs='*', default=[],
                                  help="Which attributes to show when using "
                                  "--tree (default is 'name')")
+        self.parser.add_argument('-T', '--tree-view', action='store_true',
+                                 help='Shows the multiplex tree view')
         self.parser.add_argument('-c', '--contents', action='store_true', default=False,
                                  help="Shows the variant content (variables)")
         self.parser.add_argument('-d', '--debug', action='store_true',
@@ -93,6 +95,10 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='message', msg='Config file tree structure:')
             view.notify(event='minor',
                         msg=mux_tree.get_ascii(attributes=args.attr))
+            sys.exit(exit_codes.AVOCADO_ALL_OK)
+        elif args.tree_view:
+            view.notify(event='message', msg=tree.tree_view(mux_tree,
+                                                            args.contents))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         variants = multiplexer.MuxTree(mux_tree)
