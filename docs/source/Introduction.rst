@@ -9,7 +9,7 @@ One can call it a test framework with benefits. Native tests are
 written in Python and they follow the :mod:`unittest` pattern, but any
 executable can serve as a test.
 
-Avocado is composed by:
+Avocado is composed of:
 
 * A test runner that lets you execute tests. Those tests can be either written in your
   language of choice, or be written in Python and use the available libraries. In both
