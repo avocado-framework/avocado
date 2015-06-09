@@ -112,7 +112,7 @@ class TestTree(unittest.TestCase):
                   'prod']
         self.assertEqual(leaves, self.tree.get_leaves())
         # asci contain all leaves and doesn't raise any exceptions
-        ascii = self.tree.get_ascii()
+        ascii = tree.tree_view(self.tree, 0, False)
         for leaf in leaves:
             self.assertIn(leaf, ascii, "Leaf %s not in asci:\n%s"
                           % (leaf, ascii))
