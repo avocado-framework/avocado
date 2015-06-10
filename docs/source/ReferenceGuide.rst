@@ -11,15 +11,18 @@ This guide presents information on the Avocado basic design and its internals.
 Job ID
 ======
 
-The Job ID is a SHA1 string that has some information encoded:
+The Job ID is a random SHA1 string that uniquely identifies a given job.
 
-* Hostname
-* ISO timestamp
-* 64 bit integer
+The full form of the SHA1 string is used is most references to a job::
 
-The idea is to have a unique identifier that can be used for job data, for
-the purposes of joining on a single database results obtained by jobs run
-on different systems.
+  $ avocado run sleeptest
+  JOB ID     : 49ec339a6cca73397be21866453985f88713ac34
+  ...
+
+But a shorter version is also used at some places, such as in the job
+results location::
+
+  JOB LOG    : $HOME/avocado/job-results/job-2015-06-10T10.44-49ec339/job.log
 
 .. _test-types:
 
