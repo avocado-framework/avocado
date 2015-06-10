@@ -64,7 +64,7 @@ Each test instance provides a so called ``whiteboard``. It that can be accessed
 through ``self.whiteboard``. This whiteboard is simply a string that will be
 automatically saved to test results (as long as the output format supports it).
 If you choose to save binary data to the whiteboard, it's your responsibility to
-encoded it first (base64 is the obvious choice).
+encode it first (base64 is the obvious choice).
 
 Building on the previously demonstrated ``sleeptest``, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
