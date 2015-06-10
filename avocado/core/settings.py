@@ -166,30 +166,30 @@ class Settings(object):
                                           config_path_intree])
             if config_intree:
                 # In this case, respect only the intree config
-                self._process_config_path(config_path_intree)
+                self.process_config_path(config_path_intree)
                 if config_intree_extra:
                     for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
-                        self._process_config_path(extra_file)
+                        self.process_config_path(extra_file)
                 self.intree = True
             else:
                 # In this case, load first the global config, then the
                 # local config overrides the global one
                 if config_system:
-                    self._process_config_path(config_path_system)
+                    self.process_config_path(config_path_system)
                     if config_system_extra:
                         for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
-                            self._process_config_path(extra_file)
+                            self.process_config_path(extra_file)
                 if not config_local:
                     path.init_dir(_config_dir_local)
                     with open(config_path_local, 'w') as config_local_fileobj:
                         config_local_fileobj.write('# You can use this file to override configuration values from '
                                                    '%s and %s\n' % (config_path_system, _config_dir_system_extra))
-                self._process_config_path(config_path_local)
+                self.process_config_path(config_path_local)
         else:
             # Unittests
-            self._process_config_path(config_path)
+            self.process_config_path(config_path)
 
-    def _process_config_path(self, pth):
+    def process_config_path(self, pth):
         read_configs = self.config.read(pth)
         if read_configs:
             self.config_paths += read_configs
