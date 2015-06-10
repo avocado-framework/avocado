@@ -60,7 +60,7 @@ class Parser(object):
 
         # Load settings from file, if user provides one
         if self.args.config is not None:
-            settings.settings._process_config_path(self.args.config)
+            settings.settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
         self.application = argparse.ArgumentParser(prog=PROG,
