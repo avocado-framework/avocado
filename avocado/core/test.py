@@ -360,6 +360,9 @@ class Test(unittest.TestCase):
         stderr_check_exception = None
         try:
             self.setUp()
+        except exceptions.TestNAError, details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestNAError(details)
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSetupFail(details)

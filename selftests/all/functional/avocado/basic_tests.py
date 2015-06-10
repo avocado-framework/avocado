@@ -491,6 +491,9 @@ class PluginsXunitTest(PluginsTest):
     def test_xunit_plugin_skiptest(self):
         self.run_and_check('skiptest', 0, 1, 0, 0, 0, 1)
 
+    def test_xunit_plugin_skiponsetuptest(self):
+        self.run_and_check('skiponsetup', 0, 1, 0, 0, 0, 1)
+
     def test_xunit_plugin_errortest(self):
         self.run_and_check('errortest', 1, 1, 1, 0, 0, 0)
 
@@ -548,6 +551,9 @@ class PluginsJSONTest(PluginsTest):
 
     def test_json_plugin_skiptest(self):
         self.run_and_check('skiptest', 0, 1, 0, 0, 1)
+
+    def test_json_plugin_skiponsetuptest(self):
+        self.run_and_check('skiponsetup', 0, 1, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest', 1, 1, 1, 0, 0)
