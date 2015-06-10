@@ -21,6 +21,7 @@ import sys
 import argparse
 
 from avocado.core import tree
+from avocado.core import settings
 from avocado.version import VERSION
 
 PROG = 'avocado'
@@ -45,6 +46,8 @@ class Parser(object):
         self.application.add_argument('--plugins', action='store',
                                       help='Load extra plugins from directory',
                                       dest='plugins_dir', default='')
+        self.application.add_argument('--config', metavar='CONFIG_FILE',
+                                      help='Use custom configuration from file')
 
     def start(self):
         """
@@ -54,6 +57,10 @@ class Parser(object):
         Side effect: update attribute `args` (the namespace).
         """
         self.args, _ = self.application.parse_known_args()
+
+        # Load settings from file, if user provides one
+        if self.args.config is not None:
+            settings.settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
         self.application = argparse.ArgumentParser(prog=PROG,

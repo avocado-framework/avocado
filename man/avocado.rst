@@ -6,7 +6,7 @@
 SYNOPSIS
 ========
 
- avocado [-h] [-v] [--plugins PLUGINS_DIR]
+ avocado [-h] [-v] [--plugins PLUGINS_DIR] [--config CONFIG_FILE]
  {run,list,sysinfo,multiplex,plugins,datadir} ...
 
 DESCRIPTION
@@ -31,6 +31,7 @@ on them being loaded::
  -h, --help             show this help message and exit
  -v, --version          show program's version number and exit
  --plugins PLUGINS_DIR  Load extra plugins from directory
+ --config CONFIG_FILE   Use custom configuration from file
 
 Real use of avocado depends on running avocado subcommands. This a typical list
 of avocado subcommands::
