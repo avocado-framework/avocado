@@ -11,7 +11,6 @@ Contents:
    GetStartedGuide
    WritingTests
    Configuration
-   ResultsSpecification
    MultiplexConfig
    Plugins
    OutputPlugins
