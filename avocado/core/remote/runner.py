@@ -13,6 +13,7 @@
 # Author: Ruda Moura <rmoura@redhat.com>
 """Remote test runner."""
 
+import sys
 import json
 import os
 import re
@@ -22,6 +23,7 @@ from avocado.core import status
 from avocado.core.runner import TestRunner
 from avocado.core.remote.test import RemoteTest
 from avocado.utils import archive
+from avocado.utils import stacktrace
 from fabric.exceptions import CommandTimeout
 
 
@@ -126,7 +128,11 @@ class RemoteTestRunner(TestRunner):
         if not timeout:     # avoid timeout = 0
             timeout = None
         failures = []
-        self.result.setup()
+        try:
+            self.result.setup()
+        except Exception, details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.JobError(details)
         results = self.run_test(self.result.urls, timeout)
         remote_log_dir = os.path.dirname(results['debuglog'])
         self.result.start_tests()
@@ -152,5 +158,9 @@ class RemoteTestRunner(TestRunner):
         archive.uncompress(zip_path_filename, local_log_dir)
         os.remove(zip_path_filename)
         self.result.end_tests()
-        self.result.tear_down()
+        try:
+            self.result.tear_down()
+        except Exception, details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.JobError(details)
         return failures
