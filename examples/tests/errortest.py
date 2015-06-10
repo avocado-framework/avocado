@@ -2,20 +2,19 @@
 
 from avocado import Test
 from avocado import main
-from avocado.core import exceptions
 
 
 class ErrorTest(Test):
 
     """
-    Functional test for avocado. Throw a TestError.
+    Example test that ends with ERROR.
     """
 
     def runTest(self):
         """
-        This should throw a TestError.
+        This should end with ERROR.
         """
-        raise exceptions.TestError('This should throw a TestError')
+        self.error('This should end with ERROR.')
 
 if __name__ == "__main__":
     main()

@@ -2,20 +2,19 @@
 
 from avocado import Test
 from avocado import main
-from avocado.core import exceptions
 
 
 class SkipTest(Test):
 
     """
-    Functional test for avocado. Throw a TestNAError (skips the test).
+    Example test that skips the current test, that is it, ends with SKIP.
     """
 
     def runTest(self):
         """
-        This should throw a TestNAError (skips the test).
+        This should end with SKIP.
         """
-        raise exceptions.TestNAError('This test should be skipped')
+        self.skip('This should end with SKIP.')
 
 if __name__ == "__main__":
     main()
