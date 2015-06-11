@@ -33,8 +33,8 @@ import shutil
 import time
 import tempfile
 
-from avocado.core import job_id
-from avocado.core.settings import settings
+from . import job_id
+from .settings import settings
 from avocado.utils import path as utils_path
 from avocado.utils.data_structures import Borg
 

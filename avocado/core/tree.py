@@ -49,7 +49,7 @@ else:
     except ImportError:
         from yaml import Loader
 
-from avocado.core import output
+from . import output
 
 # Mapping for yaml flags
 YAML_INCLUDE = 0

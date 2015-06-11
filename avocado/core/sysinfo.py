@@ -23,12 +23,12 @@ try:
 except ImportError:
     import subprocess
 
+from . import output
+from .settings import settings
 from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import software_manager
 from avocado.utils import path as utils_path
-from avocado.core import output
-from avocado.core.settings import settings
 
 log = logging.getLogger("avocado.sysinfo")
 

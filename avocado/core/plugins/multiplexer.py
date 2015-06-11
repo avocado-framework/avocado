@@ -14,11 +14,11 @@
 
 import sys
 
-from avocado.core.plugins import plugin
-from avocado.core import output
-from avocado.core import exit_codes
-from avocado.core import tree
-from avocado.core import multiplexer
+from . import plugin
+from .. import output
+from .. import exit_codes
+from .. import tree
+from .. import multiplexer
 
 
 class Multiplexer(plugin.Plugin):

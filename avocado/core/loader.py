@@ -23,10 +23,10 @@ import os
 import re
 import sys
 
-from avocado.core import data_dir
-from avocado.core import test
+from . import data_dir
+from . import test
+from . import output
 from avocado.utils import path
-from avocado.core import output
 
 try:
     import cStringIO as StringIO

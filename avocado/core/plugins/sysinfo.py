@@ -15,8 +15,8 @@
 System information plugin
 """
 
-from avocado.core import sysinfo
-from avocado.core.plugins import plugin
+from . import plugin
+from .. import sysinfo
 
 
 class SystemInformation(plugin.Plugin):
