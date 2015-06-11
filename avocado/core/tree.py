@@ -658,8 +658,7 @@ def get_named_tree_cls(path):
     return NamedTreeNodeDebug
 
 
-def tree_view(root, content=True):
-
+def tree_view(root, verbose=None):
     """
     Generate tree-view of the given node
     :param root: root node
@@ -693,9 +692,14 @@ def tree_view(root, content=True):
             down_right = charset['DownRight']
             right = charset['Right']
         out = [node.name]
-        if content and node.value:
-            val = charset['Value']
+        if verbose == 1 and node.value:
             values = node.value.iteritems()
+        elif verbose > 1 and node.environment:
+            values = node.environment.iteritems()
+        else:
+            values = None
+        if values:
+            val = charset['Value']
             if node.children:
                 val_prefix = down + ' '
             else:
@@ -740,9 +744,15 @@ def tree_view(root, content=True):
         down_right = charset['DownRight']
         right = charset['Right']
     out = []
-    if content:
+    if verbose == 1:
+        values = root.value.iteritems()
+    elif verbose > 1:
+        values = root.environment.iteritems()
+    else:
+        values = None
+    if values:
         prefix = charset['Value'].lstrip()
-        for key, value in root.value.iteritems():
+        for key, value in values:
             out.extend(prefixed_write(prefix, key + ': ', value))
     if root.children:
         for child in root.children[:-1]:

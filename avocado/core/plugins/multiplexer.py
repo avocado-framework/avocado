@@ -66,6 +66,8 @@ class Multiplexer(plugin.Plugin):
                                  default=False, help="Debug multiplexed "
                                  "files.")
         self.parser.add_argument('--env', default=[], nargs='*')
+        tree_parser.add_argument('-e', '--environment', action="store_true",
+                                 help="Show environment rather than value")
         super(Multiplexer, self).configure(self.parser)
 
     def activate(self, args):
@@ -95,13 +97,14 @@ class Multiplexer(plugin.Plugin):
             mux_tree.merge(args.default_multiplex_tree)
         mux_tree.merge(self._from_args_tree)
         if args.tree:
-            view.notify(event='message', msg='Config file tree structure:')
-            view.notify(event='minor',
-                        msg=mux_tree.get_ascii(attributes=args.attr))
-            sys.exit(exit_codes.AVOCADO_ALL_OK)
-        elif args.tree_view:
+            if args.environment:
+                verbose = 2
+            elif args.contents:
+                verbose = 1
+            else:
+                verbose = 0
             view.notify(event='message', msg=tree.tree_view(mux_tree,
-                                                            args.contents))
+                                                            verbose))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         variants = multiplexer.MuxTree(mux_tree)
