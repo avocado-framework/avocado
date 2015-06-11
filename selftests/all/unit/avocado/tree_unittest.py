@@ -190,10 +190,10 @@ class TestTree(unittest.TestCase):
 class TestPathParent(unittest.TestCase):
 
     def test_empty_string(self):
-        self.assertEqual(tree.path_parent(''), '')
+        self.assertEqual(tree.path_parent(''), '/')
 
     def test_on_root(self):
-        self.assertEqual(tree.path_parent('/'), '')
+        self.assertEqual(tree.path_parent('/'), '/')
 
     def test_direct_parent(self):
         self.assertEqual(tree.path_parent('/os/linux'), '/os')
