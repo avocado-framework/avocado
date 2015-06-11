@@ -4,13 +4,13 @@ from avocado import Test
 from avocado import main
 
 
-class SkipTest(Test):
+class SkipOnSetupTest(Test):
 
     """
-    Example test that skips the current test, that is it, ends with SKIP.
+    Example test that skips the current test, on the setUp phase.
     """
 
-    def runTest(self):
+    def setUp(self):
         """
         This should end with SKIP.
         """

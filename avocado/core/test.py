@@ -360,6 +360,9 @@ class Test(unittest.TestCase):
         stderr_check_exception = None
         try:
             self.setUp()
+        except exceptions.TestNAError, details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestNAError(details)
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSetupFail(details)
@@ -490,6 +493,39 @@ class Test(unittest.TestCase):
                 self.status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
                           self.tagged_name)
+
+    def fail(self, message=None):
+        """
+        Fails the currently running test.
+
+        After calling this method a test will be terminated and have its status
+        as FAIL.
+
+        :param message: an optional message that will be recorded in the logs
+        :type message: str
+        """
+        raise exceptions.TestFail(message)
+
+    def error(self, message=None):
+        """
+        Errors the currently running test.
+
+        After calling this method a test will be terminated and have its status
+        as ERROR.
+
+        :param message: an optional message that will be recorded in the logs
+        :type message: str
+        """
+        raise exceptions.TestError(message)
+
+    def skip(self, message=None):
+        """
+        Skips the currently running test
+
+        :param message: an optional message that will be recorded in the logs
+        :type message: str
+        """
+        raise exceptions.TestNAError(message)
 
 
 class SimpleTest(Test):
