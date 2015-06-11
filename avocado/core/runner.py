@@ -26,11 +26,11 @@ import sys
 import time
 
 from avocado import runtime
-from avocado.core import test
-from avocado.core import exceptions
-from avocado.core import output
-from avocado.core import status
-from avocado.core import exit_codes
+from . import test
+from . import exceptions
+from . import output
+from . import status
+from . import exit_codes
 from avocado.utils import wait
 from avocado.utils import stacktrace
 

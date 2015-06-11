@@ -14,12 +14,12 @@
 
 import sys
 
-from avocado.core import test
-from avocado.core import loader
-from avocado.core import output
-from avocado.core import exit_codes
+from . import plugin
+from .. import test
+from .. import loader
+from .. import output
+from .. import exit_codes
 from avocado.utils import astring
-from avocado.core.plugins import plugin
 
 
 class TestLister(object):

@@ -17,8 +17,8 @@ Libexec PATHs modifier
 import os
 import sys
 
-from avocado.core import exit_codes, output
-from avocado.core.plugins import plugin
+from . import plugin
+from .. import exit_codes, output
 
 
 class ExecPath(plugin.Plugin):

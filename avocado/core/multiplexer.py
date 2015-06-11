@@ -24,7 +24,7 @@ import itertools
 import logging
 import re
 
-from avocado.core import tree
+from . import tree
 
 
 MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
