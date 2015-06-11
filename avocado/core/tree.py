@@ -35,9 +35,9 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 
 import collections
 import itertools
+import locale
 import os
 import re
-import sys
 
 try:
     import yaml
@@ -293,72 +293,6 @@ class TreeNode(object):
     def get_leaves(self):
         """ Get list of leaf nodes """
         return list(self.iter_leaves())
-
-    def get_ascii(self, show_internal=True, compact=False, attributes=None):
-        """
-        Get ascii-art tree structure
-        :param show_internal: Show intermediary nodes
-        :param compact: Compress the tree vertically
-        :param attributes: List of node attributes to be printed out ['name']
-        :return: string
-        """
-        (lines, _) = self.ascii_art(show_internal=show_internal,
-                                    compact=compact, attributes=attributes)
-        return '\n' + '\n'.join(lines)
-
-    def ascii_art(self, char1='-', show_internal=True, compact=False,
-                  attributes=None):
-        """
-        Generate ascii-art for this node
-        :param char1: Incomming path character [-]
-        :param show_internal: Show intermediary nodes
-        :param compact: Compress the tree vertically
-        :param attributes: List of node attributes to be printed out ['name']
-        :return: list of strings
-        """
-        if not attributes:
-            attributes = ["name"]
-        node_name = ', '.join(map(str, [getattr(self, v)
-                                        for v in attributes
-                                        if hasattr(self, v)]))
-        if self.multiplex:
-            node_name += "-<>"
-
-        length = max(2, (len(node_name) + 1) if not self.children or show_internal else 3)
-        pad = ' ' * length
-        _pad = ' ' * (length - 1)
-        if not self.is_leaf:
-            mids = []
-            result = []
-            for char in self.children:
-                if len(self.children) == 1:
-                    char2 = '-'
-                elif char is self.children[0]:
-                    char2 = '/'
-                elif char is self.children[-1]:
-                    char2 = '\\'
-                else:
-                    char2 = '-'
-                (clines, mid) = char.ascii_art(char2, show_internal, compact,
-                                               attributes)
-                mids.append(mid + len(result))
-                result.extend(clines)
-                if not compact:
-                    result.append('')
-            if not compact:
-                result.pop()
-            (low, high, end) = (mids[0], mids[-1], len(result))
-            prefixes = ([pad] * (low + 1) + [_pad + '|'] * (high - low - 1) +
-                        [pad] * (end - high))
-            mid = (low + high) / 2
-            prefixes[mid] = char1 + '-' * (length - 2) + prefixes[mid][-1]
-            result = [p + l for (p, l) in zip(prefixes, result)]
-            if show_internal:
-                stem = result[mid]
-                result[mid] = stem[0] + node_name + stem[len(node_name) + 1:]
-            return result, mid
-        else:
-            return [char1 + '-' + node_name], 0
 
     def detach(self):
         """ Detach this node from parent """
@@ -778,7 +712,8 @@ def tree_view(root, content=True):
             out.extend(empty_down_right + line for line in lines[1:])
         return out
 
-    if sys.stdout.encoding == 'UTF-8':
+    is_utf8 = locale.getdefaultlocale()[1] == 'UTF-8'
+    if is_utf8:
         charset = {'DoubleDown': u' \u2551   ',
                    'DoubleDownRight': u' \u2560\u2550\u2550 ',
                    'DoubleRight': u' \u255a\u2550\u2550 ',
@@ -815,4 +750,5 @@ def tree_view(root, content=True):
         lines = process_node(root.children[-1])
         out.append(right + lines[0])
         out.extend(' ' * len(down_right) + line for line in lines[1:])
-    return '\n'.join(out)
+    # When not on TTY we need to force the encoding
+    return '\n'.join(out).encode('utf-8' if is_utf8 else 'ascii')
