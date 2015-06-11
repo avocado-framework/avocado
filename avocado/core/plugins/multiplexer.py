@@ -52,20 +52,18 @@ class Multiplexer(plugin.Plugin):
         self.parser.add_argument('-s', '--system-wide', action='store_true',
                                  help="Combine the files with the default "
                                  "tree.")
-
-        self.parser.add_argument('-t', '--tree', action='store_true', default=False,
-                                 help='Shows the multiplex tree structure')
-        self.parser.add_argument('--attr', nargs='*', default=[],
-                                 help="Which attributes to show when using "
-                                 "--tree (default is 'name')")
-        self.parser.add_argument('-T', '--tree-view', action='store_true',
-                                 help='Shows the multiplex tree view')
-        self.parser.add_argument('-c', '--contents', action='store_true', default=False,
-                                 help="Shows the variant content (variables)")
-        self.parser.add_argument('-d', '--debug', action='store_true',
-                                 default=False, help="Debug multiplexed "
-                                 "files.")
+        self.parser.add_argument('-c', '--contents', action='store_true',
+                                 default=False, help="Shows the variant "
+                                 "content (variables)")
         self.parser.add_argument('--env', default=[], nargs='*')
+        env_parser = self.parser.add_argument_group("environment view options")
+        env_parser.add_argument('-d', '--debug', action='store_true',
+                                default=False, help="Debug multiplexed "
+                                "files.")
+        tree_parser = self.parser.add_argument_group("tree view options")
+        tree_parser.add_argument('-t', '--tree', action='store_true',
+                                 default=False, help='Shows the multiplex '
+                                 'tree structure')
         tree_parser.add_argument('-e', '--environment', action="store_true",
                                  help="Show environment rather than value")
         super(Multiplexer, self).configure(self.parser)
@@ -85,6 +83,15 @@ class Multiplexer(plugin.Plugin):
 
     def run(self, args):
         view = output.View(app_args=args)
+        err = None
+        if args.tree and args.debug:
+            err = "Option --tree is incompatible with --debug."
+        elif not args.tree and args.environment:
+            err = "Option --environment can be only used with --tree"
+        if err:
+            view.notify(event="minor", msg=self.parser.format_help())
+            view.notify(event="error", msg=err)
+            sys.exit(exit_codes.AVOCADO_FAIL)
         try:
             mux_tree = multiplexer.yaml2tree(args.multiplex_files,
                                              args.filter_only, args.filter_out,
