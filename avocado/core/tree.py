@@ -210,6 +210,8 @@ class TreeNode(object):
 
     def get_path(self, sep='/'):
         """ Get node path """
+        if not self.parent:
+            return sep + str(self.name)
         path = [str(self.name)]
         for node in self.iter_parents():
             path.append(str(node.name))
