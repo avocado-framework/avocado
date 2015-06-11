@@ -277,12 +277,12 @@ try:
 except ImportError:
     import subprocess
 
-from avocado.utils import astring
-from avocado.utils import data_factory
-from avocado.utils import process
-from avocado.utils import genio
-from avocado.utils import wait
-from avocado.utils import path as utils_path
+from ..utils import astring
+from ..utils import data_factory
+from ..utils import process
+from ..utils import genio
+from ..utils import wait
+from ..utils import path as utils_path
 
 
 class ExpectError(Exception):

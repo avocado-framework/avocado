@@ -15,10 +15,10 @@
 import os
 import sys
 
+from . import plugin
+from .. import exit_codes
+from .. import output
 from avocado import runtime
-from avocado.core import exit_codes
-from avocado.core import output
-from avocado.core.plugins import plugin
 
 
 class Wrapper(plugin.Plugin):

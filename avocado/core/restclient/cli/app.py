@@ -22,11 +22,12 @@ import types
 import importlib
 import functools
 
-from avocado.core import settings
-from avocado.core import output
-from avocado.core import exit_codes
-from avocado.core.restclient import connection
-from avocado.core.restclient.cli import parser
+from . import parser
+from .. import connection
+from ... import settings
+from ... import output
+from ... import exit_codes
+
 
 __all__ = ['App']
 

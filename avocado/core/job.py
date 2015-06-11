@@ -27,26 +27,26 @@ import shutil
 import fnmatch
 
 from avocado import runtime
-from avocado.core import data_dir
-from avocado.core import runner
-from avocado.core import loader
-from avocado.core import sysinfo
-from avocado.core import result
-from avocado.core import exit_codes
-from avocado.core import exceptions
-from avocado.core import job_id
-from avocado.core import output
-from avocado.core import multiplexer
-from avocado.core.settings import settings
-from avocado.core.plugins import jsonresult
-from avocado.core.plugins import xunit
-from avocado.core.plugins.builtin import ErrorsLoading
-from avocado.utils import archive
-from avocado.utils import path
+from . import data_dir
+from . import runner
+from . import loader
+from . import sysinfo
+from . import result
+from . import exit_codes
+from . import exceptions
+from . import job_id
+from . import output
+from . import multiplexer
+from .settings import settings
+from .plugins import jsonresult
+from .plugins import xunit
+from .plugins.builtin import ErrorsLoading
+from ..utils import archive
+from ..utils import path
 
 
 try:
-    from avocado.core.plugins import htmlresult
+    from .plugins import htmlresult
     HTML_REPORT_SUPPORT = True
 except ImportError:
     HTML_REPORT_SUPPORT = False

@@ -19,8 +19,8 @@ import logging
 import os
 import sys
 
-from avocado.utils import path as utils_path
-from avocado.core.settings import settings
+from .settings import settings
+from ..utils import path as utils_path
 
 
 class FilterError(logging.Filter):
