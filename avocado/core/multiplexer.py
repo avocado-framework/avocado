@@ -367,7 +367,7 @@ class AvocadoParam(object):
         else:
             raise ValueError("Multiple %s leaves contain the key '%s'; %s"
                              % (path.pattern, key,
-                                ["%s=>%s" % (_[1].path, _[0])
+                                ["%s=>%s" % (_[1], _[0])
                                  for _ in ret]))
 
     def iteritems(self):

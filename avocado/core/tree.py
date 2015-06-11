@@ -237,7 +237,7 @@ class TreeNode(object):
                         self._environment[key] = value
                 else:
                     self._environment[key] = value
-                self.environment_origin[key] = self
+                self.environment_origin[key] = self.path
         return self._environment
 
     def set_environment_dirty(self):
