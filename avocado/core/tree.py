@@ -730,17 +730,18 @@ def tree_view(root, content=True):
     :return: string representing this node's tree structure
     """
 
-    def prefixed_write(prefix, value):
+    def prefixed_write(prefix1, prefix2, value):
         """
         Split value's lines and prepend empty prefix to 2nd+ lines
         :return: list of lines
         """
         value = str(value)
         if '\n' not in value:
-            return [prefix + value]
+            return [prefix1 + prefix2 + value]
         value = value.splitlines()
-        empty_prefix = ' ' * len(prefix)
-        return [prefix + value[0]] + [empty_prefix + _ for _ in value[1:]]
+        empty_prefix2 = ' ' * len(prefix2)
+        return [prefix1 + prefix2 + value[0]] + [prefix1 + empty_prefix2 +
+                                                 _ for _ in value[1:]]
 
     def process_node(node):
         """
@@ -755,20 +756,17 @@ def tree_view(root, content=True):
             down = charset['Down']
             down_right = charset['DownRight']
             right = charset['Right']
+        out = [node.name]
         if content and node.value:
             val = charset['Value']
             values = node.value.iteritems()
             if node.children:
-                val_prefix = down + ' ' * (len(node.name) + 1 - len(down))
+                val_prefix = down + ' '
             else:
-                val_prefix = ' ' * (len(node.name) + 1)
-            key, value = values.next()
-            out = prefixed_write(node.name + ' ' + val + key + ': ', value)
+                val_prefix = '    '
             for key, value in values:
-                out.extend(prefixed_write(val_prefix + val + key + ': ',
+                out.extend(prefixed_write(val_prefix, val + key + ': ',
                                           value))
-        else:
-            out = [node.name]
         if node.children:
             for child in node.children[:-1]:
                 lines = process_node(child)
@@ -808,7 +806,7 @@ def tree_view(root, content=True):
     if content:
         prefix = charset['Value'].lstrip()
         for key, value in root.value.iteritems():
-            out.extend(prefixed_write(prefix + key + ': ', value))
+            out.extend(prefixed_write(prefix, key + ': ', value))
     if root.children:
         for child in root.children[:-1]:
             lines = process_node(child)
