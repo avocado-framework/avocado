@@ -130,10 +130,15 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='minor', msg='%sVariant %s:    %s' %
                         (('\n' if args.contents else ''), index + 1, paths))
             if args.contents:
-                env = {}
+                env = set()
                 for node in tpl:
-                    env.update(node.environment)
-                for k in sorted(env.keys()):
-                    view.notify(event='minor', msg='    %s: %s' % (k, env[k]))
+                    for key, value in node.environment.iteritems():
+                        origin = node.environment_origin[key]
+                        env.add(("%s:%s" % (origin, key), repr(value)))
+                if not env:
+                    continue
+                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                for record in sorted(env):
+                    view.notify(event='minor', msg=fmt % record)
 
         sys.exit(exit_codes.AVOCADO_ALL_OK)
