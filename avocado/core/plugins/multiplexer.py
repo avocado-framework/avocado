@@ -30,6 +30,10 @@ class Multiplexer(plugin.Plugin):
     name = 'multiplexer'
     enabled = True
 
+    def __init__(self, *args, **kwargs):
+        super(Multiplexer, self).__init__(*args, **kwargs)
+        self._from_args_tree = tree.TreeNode()
+
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
             self.enabled = False
@@ -63,7 +67,6 @@ class Multiplexer(plugin.Plugin):
                                  "files.")
         self.parser.add_argument('--env', default=[], nargs='*')
         super(Multiplexer, self).configure(self.parser)
-        self._from_args_tree = tree.TreeNode()
 
     def activate(self, args):
         # Extend default multiplex tree of --env values
