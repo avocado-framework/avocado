@@ -108,6 +108,7 @@ if __name__ == '__main__':
                     'avocado.core',
                     'avocado.core.plugins',
                     'avocado.utils',
+                    'avocado.utils.external',
                     'avocado.core.remote',
                     'avocado.core.restclient',
                     'avocado.core.restclient.cli',
