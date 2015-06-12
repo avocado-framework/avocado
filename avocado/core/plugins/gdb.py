@@ -15,8 +15,10 @@
 """Run tests with GDB goodies enabled."""
 
 from . import plugin
+from .. import exceptions
 from ..settings import settings
 from ...utils import gdb
+from ...utils import process
 from ...utils import path as utils_path
 
 
@@ -74,5 +76,6 @@ class GDB(plugin.Plugin):
             gdb.GDBSERVER_PATH = settings.get_value('gdb.paths',
                                                     'gdbserver',
                                                     default=system_gdbserver_path)
+            process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestNAError
         except AttributeError:
             pass

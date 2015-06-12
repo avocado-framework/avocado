@@ -37,8 +37,6 @@ except ImportError:
 from . import gdb
 from . import runtime
 
-from avocado.core import exceptions
-
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
@@ -54,6 +52,14 @@ WRAP_PROCESS = None
 #: A list of wrappers and program names.
 #: Format: [ ('/path/to/wrapper.sh', 'progname'), ... ]
 WRAP_PROCESS_NAMES_EXPR = []
+
+#: Exception to be raised when users of this API need to know that the
+#: execution of a given process resulted in undefined behavior. One
+#: concrete example when a user, in an interactive session, let the
+#: inferior process exit before before avocado resumed the debugger
+#: session. Since the information is unknown, and the behavior is
+#: undefined, this situation will be flagged by an exception.
+UNDEFINED_BEHAVIOR_EXCEPTION = None
 
 
 class CmdError(Exception):
@@ -75,20 +81,6 @@ class CmdError(Exception):
             return msg
         else:
             return "CmdError"
-
-
-class GDBInferiorProcessExitedError(exceptions.TestNAError):
-
-    """
-    Debugged process exited/finished outside of avocado control
-
-    This probably means that the user, in an interactive session, let the
-    inferior process exit before before avocado resumed the debugger session.
-
-    Since the information is unknown, and the behavior is undefined, the
-    test will be skipped.
-    """
-    pass
 
 
 def pid_exists(pid):
@@ -749,14 +741,18 @@ class GDBSubProcess(object):
                                      'skipped. Please let avocado finish the '
                                      'the execution of your binary to have '
                                      'dependable results.', self.binary)
-                            raise GDBInferiorProcessExitedError
+                            # pylint: disable=E0702
+                            if UNDEFINED_BEHAVIOR_EXCEPTION is not None:
+                                raise UNDEFINED_BEHAVIOR_EXCEPTION
 
                 elif gdb.is_fatal_signal(parsed_msg):
                     # waits on fifo read() until end of debug session is notified
                     r = self.handle_fatal_signal(parsed_msg)
                     log.warn('Because "%s" received a fatal signal, this test '
                              'is going to be skipped.', self.binary)
-                    raise GDBInferiorProcessExitedError
+                    # pylint: disable=E0702
+                    if UNDEFINED_BEHAVIOR_EXCEPTION is not None:
+                        raise UNDEFINED_BEHAVIOR_EXCEPTION
 
             except IndexError:
                 continue
