@@ -43,6 +43,18 @@ log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
 
+#: The active wrapper utility script.
+CURRENT_WRAPPER = None
+
+#: The global wrapper.
+#: If set, run every process under this wrapper.
+WRAP_PROCESS = None
+
+#: Set wrapper per program names.
+#: A list of wrappers and program names.
+#: Format: [ ('/path/to/wrapper.sh', 'progname'), ... ]
+WRAP_PROCESS_NAMES_EXPR = []
+
 
 class CmdError(Exception):
 
@@ -512,8 +524,8 @@ class WrapSubProcess(SubProcess):
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
                  shell=False, env=None, wrapper=None):
-        if wrapper is None and runtime.CURRENT_WRAPPER is not None:
-            wrapper = runtime.CURRENT_WRAPPER
+        if wrapper is None and CURRENT_WRAPPER is not None:
+            wrapper = CURRENT_WRAPPER
         self.wrapper = wrapper
         if self.wrapper:
             if not os.path.exists(self.wrapper):
@@ -844,18 +856,19 @@ def should_run_inside_wrapper(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    runtime.CURRENT_WRAPPER = None
+    global CURRENT_WRAPPER
+    CURRENT_WRAPPER = None
     args = shlex.split(cmd)
     cmd_binary_name = args[0]
 
-    for script, cmd_expr in runtime.WRAP_PROCESS_NAMES_EXPR:
+    for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:
         if fnmatch.fnmatch(cmd_binary_name, cmd_expr):
-            runtime.CURRENT_WRAPPER = script
+            CURRENT_WRAPPER = script
 
-    if runtime.WRAP_PROCESS is not None and runtime.CURRENT_WRAPPER is None:
-        runtime.CURRENT_WRAPPER = runtime.WRAP_PROCESS
+    if WRAP_PROCESS is not None and CURRENT_WRAPPER is None:
+        CURRENT_WRAPPER = WRAP_PROCESS
 
-    if runtime.CURRENT_WRAPPER is None:
+    if CURRENT_WRAPPER is None:
         return False
     else:
         return True
