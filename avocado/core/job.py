@@ -27,6 +27,7 @@ import shutil
 import fnmatch
 
 from avocado import runtime
+from avocado import version
 from . import data_dir
 from . import runner
 from . import loader
@@ -291,6 +292,76 @@ class Job(object):
                     filtered_suite.append(test_template)
         return filtered_suite
 
+    @staticmethod
+    def _log_plugin_load_errors():
+        job_log = _TEST_LOGGER
+        for plugin_failed in ErrorsLoading:
+            job_log.error('Error loading %s -> %s' % plugin_failed)
+        job_log.error('')
+
+    def _log_job_id(self):
+        job_log = _TEST_LOGGER
+        job_log.info('Job ID: %s', self.unique_id)
+        job_log.info('')
+
+    @staticmethod
+    def _log_cmdline():
+        job_log = _TEST_LOGGER
+        cmdline = " \\\n".join(sys.argv)
+        job_log.info("Command line:\n%s", cmdline)
+        job_log.info('')
+
+    @staticmethod
+    def _log_avocado_version():
+        job_log = _TEST_LOGGER
+        job_log.info('Avocado version: %s', version.VERSION)
+        if os.path.exists('.git') and os.path.exists('avocado.spec'):
+            job_log.info('Avocado git repo info')
+            import commands
+            job_log.info("Top commit: %s",
+                         commands.getoutput("git show --summary "
+                                            "--pretty='%H' | head -1"))
+            job_log.info("Branch: %s",
+                         commands.getoutput("git rev-parse "
+                                            "--abbrev-ref HEAD"))
+        job_log.info('')
+
+    @staticmethod
+    def _log_avocado_config():
+        job_log = _TEST_LOGGER
+        job_log.info('Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            job_log.info(cfg_path)
+        if settings.config_paths_failed:
+            job_log.info('Config files failed to read (in order):')
+            for cfg_path in settings.config_paths_failed:
+                job_log.info(cfg_path)
+        job_log.info('')
+        blength = 0
+        for section in settings.config.sections():
+            for value in settings.config.items(section):
+                clength = len('%s.%s' % (section, value[0]))
+                if clength > blength:
+                    blength = clength
+        job_log.info('Avocado config:')
+        format_str = "%-" + str(blength) + "s %s"
+        job_log.info(format_str % ('Section.Key', 'Value'))
+        for section in settings.config.sections():
+            for value in settings.config.items(section):
+                config_key = ".".join((section, value[0]))
+                job_log.info(format_str % (config_key, value[1]))
+        job_log.info('')
+
+    def _log_job_debug_info(self):
+        """
+        Log relevant debug information to the job log.
+        """
+        self._log_plugin_load_errors()
+        self._log_cmdline()
+        self._log_avocado_version()
+        self._log_avocado_config()
+        self._log_job_id()
+
     def _run(self, urls=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
@@ -328,12 +399,7 @@ class Job(object):
                                      self.loglevel,
                                      self.unique_id)
 
-        for plugin_failed in ErrorsLoading:
-            _TEST_LOGGER.error('Error loading %s -> %s' % plugin_failed)
-        _TEST_LOGGER.error('')
-
-        _TEST_LOGGER.info('Job ID: %s', self.unique_id)
-        _TEST_LOGGER.info('')
+        self._log_job_debug_info()
 
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
