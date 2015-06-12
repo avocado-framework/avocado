@@ -26,7 +26,7 @@ import sys
 from . import data_dir
 from . import test
 from . import output
-from ..utils import path
+from ..utils import path, stacktrace
 
 try:
     import cStringIO as StringIO
@@ -122,8 +122,14 @@ class TestLoaderProxy(object):
                             self.url_plugin_mapping[url] = loader_plugin
                         if loader_plugin == self.url_plugin_mapping[url]:
                             test_factories += loader_plugin.discover(params_list_from_url)
-                except Exception:
-                    continue
+                except Exception, details:
+                    # FIXME: Introduce avocado.exceptions logger and use here
+                    stacktrace.log_message("Test discovery plugin %s failed: "
+                                           "%s" % (loader_plugin, details),
+                                           'avocado.app.exceptions')
+                    # FIXME: Introduce avocado.traceback logger and use here
+                    stacktrace.log_exc_info(sys.exc_info(),
+                                            'avocado.app.tracebacks')
         return test_factories
 
     def validate_ui(self, test_suite, ignore_missing=False,
