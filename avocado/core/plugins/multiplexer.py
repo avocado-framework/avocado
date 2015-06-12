@@ -14,11 +14,11 @@
 
 import sys
 
-from . import plugin
-from .. import output
-from .. import exit_codes
-from .. import tree
 from .. import multiplexer
+from .. import exit_codes
+from .. import output
+from .. import tree
+from . import plugin
 
 
 class Multiplexer(plugin.Plugin):
