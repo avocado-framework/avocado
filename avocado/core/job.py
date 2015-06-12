@@ -18,6 +18,7 @@ Job module - describes a sequence of automated test operations.
 """
 
 import argparse
+import commands
 import logging
 import os
 import sys
@@ -26,6 +27,7 @@ import tempfile
 import shutil
 import fnmatch
 
+from . import version
 from . import data_dir
 from . import runner
 from . import loader
@@ -309,12 +311,30 @@ class Job(object):
         job_log.info("Command line: %s", cmdline)
         job_log.info('')
 
+    @staticmethod
+    def _log_avocado_version():
+        job_log = _TEST_LOGGER
+        job_log.info('Avocado version: %s', version.VERSION)
+        if os.path.exists('.git') and os.path.exists('avocado.spec'):
+            cmd = "git show --summary --pretty='%H' | head -1"
+            status, top_commit = commands.getstatusoutput(cmd)
+            cmd2 = "git rev-parse --abbrev-ref HEAD"
+            status2, branch = commands.getstatusoutput(cmd2)
+            # Let's display information only if git is installed
+            # (commands succeed).
+            if status == 0 and status2 == 0:
+                job_log.info('Avocado git repo info')
+                job_log.info("Top commit: %s", top_commit)
+                job_log.info("Branch: %s", branch)
+        job_log.info('')
+
     def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
         self._log_plugin_load_errors()
         self._log_cmdline()
+        self._log_avocado_version()
         self._log_job_id()
 
     def _run(self, urls=None):
