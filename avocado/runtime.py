@@ -16,25 +16,6 @@
 Module that contains runtime configuration
 """
 
-#: Contains a list of binary names that should be run via the GNU debugger
-#: and be stopped at a given point. That means that a breakpoint will be set
-#: using the given expression
-GDB_RUN_BINARY_NAMES_EXPR = []
-
-#: After loading a binary in binary in GDB, but before actually running it,
-#: execute the given GDB commands present in the given file, one per line
-GDB_PRERUN_COMMANDS = {}
-
-#: Whether to enable the automatic generation of core dumps for applications
-#: that are run inside the GNU debugger
-GDB_ENABLE_CORE = False
-
-#: Path to the GDB binary
-GDB_PATH = None
-
-#: Path to the gdbserver binary
-GDBSERVER_PATH = None
-
 #: The active wrapper utility script.
 CURRENT_WRAPPER = None
 

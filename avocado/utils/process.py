@@ -558,14 +558,14 @@ class GDBSubProcess(object):
         self.binary_path = os.path.abspath(self.cmd)
         self.result = CmdResult(cmd)
 
-        self.gdb_server = gdb.GDBServer(runtime.GDBSERVER_PATH)
-        self.gdb = gdb.GDB(runtime.GDB_PATH)
+        self.gdb_server = gdb.GDBServer(gdb.GDBSERVER_PATH)
+        self.gdb = gdb.GDB(gdb.GDB_PATH)
         self.gdb.connect(self.gdb_server.port)
         self.gdb.set_file(self.binary)
 
     def _get_breakpoints(self):
         breakpoints = []
-        for expr in runtime.GDB_RUN_BINARY_NAMES_EXPR:
+        for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
             expr_binary_name, breakpoint = split_gdb_expr(expr)
             binary_name = os.path.basename(self.binary)
             if expr_binary_name == binary_name:
@@ -620,7 +620,7 @@ class GDBSubProcess(object):
 
             script = open(script_path, 'w')
             script.write("#!/bin/sh\n")
-            script.write("%s -x %s\n" % (runtime.GDB_PATH, cmds))
+            script.write("%s -x %s\n" % (gdb.GDB_PATH, cmds))
             script.write("echo -n 'C' > %s\n" % fifo_path)
             script.close()
             os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
@@ -659,7 +659,7 @@ class GDBSubProcess(object):
         msg = ("\n\nTEST PAUSED because inferior process received a FATAL SIGNAL. "
                "To DEBUG your application run:\n%s\n\n" % script_path)
 
-        if runtime.GDB_ENABLE_CORE:
+        if gdb.GDB_ENABLE_CORE:
             core = self.generate_core()
             msg += ("\nAs requested, a core dump has been generated "
                     "automatically at the following location:\n%s\n") % core
@@ -758,9 +758,9 @@ class GDBSubProcess(object):
         binary_name = os.path.basename(self.binary)
         # The commands file can be specific to a given binary or universal,
         # start checking for specific ones first
-        prerun_commands_path = runtime.GDB_PRERUN_COMMANDS.get(
+        prerun_commands_path = gdb.GDB_PRERUN_COMMANDS.get(
             binary_name,
-            runtime.GDB_PRERUN_COMMANDS.get('', None))
+            gdb.GDB_PRERUN_COMMANDS.get('', None))
 
         if prerun_commands_path is not None:
             prerun_commands = open(prerun_commands_path).readlines()
@@ -831,7 +831,7 @@ def should_run_inside_gdb(cmd):
     args = shlex.split(cmd)
     cmd_binary_name = os.path.basename(args[0])
 
-    for expr in runtime.GDB_RUN_BINARY_NAMES_EXPR:
+    for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
         binary_name = os.path.basename(expr.split(':', 1)[0])
         if cmd_binary_name == binary_name:
             return True
