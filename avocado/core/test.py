@@ -31,14 +31,14 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado.core import data_dir
-from avocado.core import sysinfo
-from avocado.core import exceptions
-from avocado.core import multiplexer
-from avocado.utils import genio
-from avocado.utils import path as utils_path
-from avocado.utils import process
-from avocado.utils import stacktrace
+from . import data_dir
+from . import sysinfo
+from . import exceptions
+from . import multiplexer
+from ..utils import genio
+from ..utils import path as utils_path
+from ..utils import process
+from ..utils import stacktrace
 from avocado.version import VERSION
 
 

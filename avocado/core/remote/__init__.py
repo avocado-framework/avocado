@@ -12,6 +12,6 @@
 # Copyright: Red Hat Inc. 2014-2015
 # Author: Ruda Moura <rmoura@redhat.com>
 
-from avocado.core.remote.test import RemoteTest
-from avocado.core.remote.result import RemoteTestResult, VMTestResult
-from avocado.core.remote.runner import RemoteTestRunner
+from .test import RemoteTest
+from .result import RemoteTestResult, VMTestResult
+from .runner import RemoteTestRunner

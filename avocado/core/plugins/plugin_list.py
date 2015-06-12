@@ -12,10 +12,10 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-from avocado.core import output
-from avocado.core.plugins import plugin
-from avocado.core.plugins.builtin import ErrorsLoading
-from avocado.core.plugins.manager import get_plugin_manager
+from . import plugin
+from .builtin import ErrorsLoading
+from .manager import get_plugin_manager
+from .. import output
 
 
 class PluginList(plugin.Plugin):

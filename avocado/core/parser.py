@@ -20,8 +20,8 @@ Avocado application command line parsing.
 import sys
 import argparse
 
-from avocado.core import tree
-from avocado.core import settings
+from . import tree
+from . import settings
 from avocado.version import VERSION
 
 PROG = 'avocado'

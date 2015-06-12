@@ -16,10 +16,10 @@
 
 import getpass
 
-from avocado.core.plugins import plugin
-from avocado.core.remote import VMTestResult
-from avocado.core.remote import RemoteTestRunner
-from avocado.utils import virt
+from . import plugin
+from ..remote import VMTestResult
+from ..remote import RemoteTestRunner
+from ...utils import virt
 
 
 class RunVM(plugin.Plugin):
@@ -83,7 +83,7 @@ class RunVM(plugin.Plugin):
             if not getattr(app_args, arg):
                 missing.append(arg)
         if missing:
-            from avocado.core import output, exit_codes
+            from .. import output, exit_codes
             import sys
             view = output.View(app_args=app_args)
             e_msg = ('Use of %s requires %s arguments to be set. Please set %s'

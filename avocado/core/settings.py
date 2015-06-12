@@ -21,7 +21,7 @@ import os
 import sys
 import glob
 
-from avocado.utils import path
+from ..utils import path
 
 
 if 'VIRTUAL_ENV' in os.environ:

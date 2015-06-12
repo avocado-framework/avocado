@@ -16,11 +16,11 @@
 
 import os
 
-from avocado.core import data_dir
-from avocado.core import exceptions
-from avocado.core.result import HumanTestResult
-from avocado.utils import remote
-from avocado.utils import virt
+from .. import data_dir
+from .. import exceptions
+from ..result import HumanTestResult
+from ...utils import remote
+from ...utils import virt
 
 
 class RemoteTestResult(HumanTestResult):

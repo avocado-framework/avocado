@@ -12,10 +12,10 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-from avocado.core import output
-from avocado.core import data_dir
-from avocado.core.settings import settings
-from avocado.core.plugins import plugin
+from . import plugin
+from .. import output
+from .. import data_dir
+from ..settings import settings
 
 
 class ConfigOptions(plugin.Plugin):

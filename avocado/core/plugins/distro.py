@@ -17,12 +17,12 @@ import bz2
 import sys
 import json
 
-from avocado.core import output
-from avocado.core import exit_codes
-from avocado.core.plugins import plugin
-from avocado.utils import process
-from avocado.utils import path as utils_path
-from avocado.utils import distro as utils_distro
+from . import plugin
+from .. import output
+from .. import exit_codes
+from ...utils import process
+from ...utils import path as utils_path
+from ...utils import distro as utils_distro
 
 
 class SoftwarePackage(object):

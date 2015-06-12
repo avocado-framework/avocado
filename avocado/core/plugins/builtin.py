@@ -18,8 +18,8 @@ import os
 import logging
 from importlib import import_module
 
-from avocado.core.plugins.plugin import Plugin
-from avocado.core.settings import settings
+from .plugin import Plugin
+from ..settings import settings
 
 
 log = logging.getLogger("avocado.app")
