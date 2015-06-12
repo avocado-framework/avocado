@@ -20,7 +20,7 @@ from .. import remoter
 from .. import data_dir
 from .. import exceptions
 from ..result import HumanTestResult
-from ...utils import virt
+from ...core import virt
 
 
 class RemoteTestResult(HumanTestResult):

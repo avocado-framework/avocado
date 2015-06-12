@@ -7,7 +7,7 @@ from flexmock import flexmock, flexmock_teardown
 
 from avocado.core.remote import VMTestResult
 from avocado.core.remote import RemoteTestResult
-from avocado.utils import virt
+from avocado.core import virt
 
 
 JSON_RESULTS = ('Something other than json\n'

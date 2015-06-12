@@ -19,7 +19,7 @@ Module to provide classes for Virtual Machines.
 import logging
 from xml.dom import minidom
 
-from avocado.core import remoter
+from . import remoter
 
 LOG = logging.getLogger('avocado.test')
 
