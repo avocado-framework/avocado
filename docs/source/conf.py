@@ -9,7 +9,7 @@ import os
 root_path = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, root_path)
 
-import avocado.version
+from avocado import VERSION
 from avocado.utils import path
 from avocado.utils import process
 
@@ -32,8 +32,8 @@ master_doc = 'index'
 project = u'Avocado'
 copyright = u'2014-2015, Red Hat'
 
-version = avocado.version.VERSION
-release = avocado.version.VERSION
+version = VERSION
+release = VERSION
 
 if not ON_RTD:  # only import and set the theme if we're building docs locally
     try:

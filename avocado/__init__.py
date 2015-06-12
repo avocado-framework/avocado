@@ -13,8 +13,9 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-__all__ = ['main', 'Test']
+__all__ = ['main', 'Test', 'VERSION']
 
 
 from avocado.core.job import main
 from avocado.core.test import Test
+from avocado.core.version import VERSION
