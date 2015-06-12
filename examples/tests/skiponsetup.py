@@ -16,5 +16,11 @@ class SkipOnSetupTest(Test):
         """
         self.skip('This should end with SKIP.')
 
+    def test_wont_be_executed(self):
+        """
+        This won't get to be executed, given that setUp calls .skip().
+        """
+        pass
+
 if __name__ == "__main__":
     main()
