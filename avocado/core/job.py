@@ -27,6 +27,7 @@ import shutil
 import fnmatch
 
 from avocado import runtime
+from avocado import version
 from . import data_dir
 from . import runner
 from . import loader
@@ -310,12 +311,28 @@ class Job(object):
         job_log.info("Command line:\n%s", cmdline)
         job_log.info('')
 
+    @staticmethod
+    def _log_avocado_version():
+        job_log = _TEST_LOGGER
+        job_log.info('Avocado version: %s', version.VERSION)
+        if os.path.exists('.git') and os.path.exists('avocado.spec'):
+            job_log.info('Avocado git repo info')
+            import commands
+            job_log.info("Top commit: %s",
+                         commands.getoutput("git show --summary "
+                                            "--pretty='%H' | head -1"))
+            job_log.info("Branch: %s",
+                         commands.getoutput("git rev-parse "
+                                            "--abbrev-ref HEAD"))
+        job_log.info('')
+
     def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
         self._log_plugin_load_errors()
         self._log_cmdline()
+        self._log_avocado_version()
         self._log_job_id()
 
     def _run(self, urls=None):
