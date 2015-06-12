@@ -41,3 +41,15 @@ def log_exc_info(exc_info, logger='root'):
         for l in line.splitlines():
             log.error(l)
     log.error('')
+
+
+def log_message(message, logger='root'):
+    """
+    Log message to logger.
+
+    :param message: Message
+    :param logger: Name of the logger (defaults to root)
+    """
+    log = logging.getLogger(logger)
+    for line in message.splitlines():
+        log.error(line)
