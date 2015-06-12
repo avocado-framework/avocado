@@ -300,17 +300,6 @@ class Test(unittest.TestCase):
         """
         pass
 
-    def runTest(self):
-        """
-        Actual test payload. Must be implemented by tests.
-
-        In case of an existing test suite wrapper, it'll execute the suite,
-        or perform a series of operations, and based in the results of the
-        operations decide if the test pass (let the test complete) or fail
-        (raise a test related exception).
-        """
-        pass
-
     def tearDown(self):
         """
         Cleanup stage after the runTest is done.
@@ -345,11 +334,9 @@ class Test(unittest.TestCase):
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
-    def run(self, result=None):
+    def _run_avocado(self):
         """
-        Run test method, for compatibility with unittest.TestCase.
-
-        :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
+        Auxiliary method to run_avocado.
         """
         testMethod = getattr(self, self._testMethodName)
         self.start_logging()
@@ -437,7 +424,7 @@ class Test(unittest.TestCase):
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
         os.environ['AVOCADO_TEST_SYSINFODIR'] = self.sysinfodir
 
-    def run_avocado(self, result=None):
+    def run_avocado(self):
         """
         Wraps the run method, for execution inside the avocado runner.
 
@@ -446,7 +433,7 @@ class Test(unittest.TestCase):
         self._setup_environment_variables()
         try:
             self.tag_start()
-            self.run(result)
+            self._run_avocado()
         except exceptions.TestBaseException, detail:
             self.status = detail.status
             self.fail_class = detail.__class__.__name__

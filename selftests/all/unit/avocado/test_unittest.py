@@ -36,26 +36,11 @@ class TestClassTest(unittest.TestCase):
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'
 
-        class EmptyTest(test.Test):
-
-            """
-            I don't have runTest() defined!
-            """
-            pass
-
         self.base_logdir = tempfile.mkdtemp(prefix='avocado_test_unittest')
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass.run_avocado()
         self.tst_instance_pass_new = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass_new.run_avocado()
-        self.tst_instance_empty = EmptyTest(base_logdir=self.base_logdir)
-        self.tst_instance_empty.run_avocado()
-
-    def testRunTest(self):
-        self.assertEqual(self.tst_instance_empty.runTest(), None)
-
-    def testRunAvocado(self):
-        self.assertEqual(self.tst_instance_empty.status, 'PASS')
 
     def testClassAttributesName(self):
         self.assertEqual(self.tst_instance_pass.name, 'AvocadoPass')

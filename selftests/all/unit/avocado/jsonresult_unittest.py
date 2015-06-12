@@ -41,6 +41,12 @@ class _Stream(object):
 class JSONResultTest(unittest.TestCase):
 
     def setUp(self):
+
+        class SimpleTest(Test):
+
+            def runTest(self):
+                pass
+
         self.tmpfile = tempfile.mkstemp()
         self.tmpdir = tempfile.mkdtemp()
         args = argparse.Namespace(json_output=self.tmpfile[1])
@@ -49,7 +55,7 @@ class JSONResultTest(unittest.TestCase):
         self.test_result = jsonresult.JSONTestResult(stream, args)
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()
-        self.test1 = Test(job=job.Job(), base_logdir=self.tmpdir)
+        self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
         self.test1.time_elapsed = 1.23
 
