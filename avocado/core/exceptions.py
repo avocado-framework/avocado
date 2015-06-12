@@ -130,10 +130,14 @@ class TestNAError(TestBaseException):
     status = "TEST_NA"
 
 
-class TestFail(TestBaseException):
+class TestFail(TestBaseException, AssertionError):
 
     """
-    Indicates that the test failed. The test job will continue, though.
+    Indicates that the test failed.
+
+    TestFail inherits from AssertionError in order to keep compatibility
+    with vanilla python unittests (they only consider failures the ones
+    deriving from AssertionError).
     """
     status = "FAIL"
 
