@@ -290,6 +290,25 @@ class Job(object):
                     filtered_suite.append(test_template)
         return filtered_suite
 
+    @staticmethod
+    def _log_plugin_load_errors():
+        job_log = _TEST_LOGGER
+        for plugin_failed in ErrorsLoading:
+            job_log.error('Error loading %s -> %s' % plugin_failed)
+        job_log.error('')
+
+    def _log_job_id(self):
+        job_log = _TEST_LOGGER
+        job_log.info('Job ID: %s', self.unique_id)
+        job_log.info('')
+
+    def _log_job_debug_info(self):
+        """
+        Log relevant debug information to the job log.
+        """
+        self._log_plugin_load_errors()
+        self._log_job_id()
+
     def _run(self, urls=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
@@ -327,12 +346,7 @@ class Job(object):
                                      self.loglevel,
                                      self.unique_id)
 
-        for plugin_failed in ErrorsLoading:
-            _TEST_LOGGER.error('Error loading %s -> %s' % plugin_failed)
-        _TEST_LOGGER.error('')
-
-        _TEST_LOGGER.info('Job ID: %s', self.unique_id)
-        _TEST_LOGGER.info('')
+        self._log_job_debug_info()
 
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
