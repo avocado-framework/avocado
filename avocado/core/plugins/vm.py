@@ -17,9 +17,9 @@
 import getpass
 
 from . import plugin
+from .. import virt
 from ..remote import VMTestResult
 from ..remote import RemoteTestRunner
-from ...utils import virt
 
 
 class RunVM(plugin.Plugin):
