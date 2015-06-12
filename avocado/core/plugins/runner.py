@@ -126,7 +126,9 @@ class TestRunner(plugin.Plugin):
                              help='Filter out path(s) from multiplexing')
             mux.add_argument('--mux-entry', nargs='*', default=None,
                              help="Multiplex entry point(s)")
-            mux.add_argument('--env', default=[], nargs='*')
+            mux.add_argument('--env', default=[], nargs='*',
+                             help="Inject [path:]key:node values into the "
+                             "final multiplex tree.")
         super(TestRunner, self).configure(self.parser)
         # Export the test runner parser back to the main parser
         parser.runner = self.parser
