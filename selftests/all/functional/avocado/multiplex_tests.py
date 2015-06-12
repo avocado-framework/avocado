@@ -35,25 +35,9 @@ class MultiplexTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
 
-    def run_and_check(self, cmd_line, expected_rc, expected_lines=None):
+    def run_and_check(self, cmd_line, expected_rc):
         os.chdir(basedir)
         result = process.run(cmd_line, ignore_status=True)
-        if expected_lines is not None:
-            for line in result.stdout.splitlines():
-                if 'JOB LOG' in line:
-                    debug_log = line.split()[-1]
-                    debug_log_obj = open(debug_log, 'r')
-                    job_log_lines = debug_log_obj.readlines()
-                    lines_output = len(job_log_lines)
-                    debug_log_obj.close()
-            self.assertGreaterEqual(lines_output, expected_lines,
-                                    'The multiplexed job log output has less '
-                                    'lines than expected\n%s' %
-                                    "".join(job_log_lines))
-            self.assertLess(lines_output, expected_lines * 1.2,
-                            'The multiplexed job log output has more '
-                            'lines than expected\n%s'
-                            % "".join(job_log_lines))
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
@@ -90,15 +74,12 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 0
-        # Header is 2 lines + 5 lines per each test
-        self.run_and_check(cmd_line, expected_rc, 2 + 5 * 4)
+        self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_doublepass(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest passtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
-        # Header is 2 lines + 5 lines per each test * 2 tests
-        self.run_and_check(cmd_line, expected_rc=0,
-                           expected_lines=2 + 2 * 5 * 4)
+        self.run_and_check(cmd_line, expected_rc=0)
 
     def test_run_mplex_failtest(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest failtest '
@@ -111,9 +92,7 @@ class MultiplexTests(unittest.TestCase):
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = 0
-        # Header is 2 lines + 5 lines per each test (mux files are merged thus
-        # only 1x4 variants are generated as in mplex_doublepass test)
-        self.run_and_check(cmd_line, expected_rc, 2 + 5 * 4)
+        self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_params(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off examples/tests/env_variables.sh '
