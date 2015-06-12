@@ -19,7 +19,7 @@ Module to provide classes for Virtual Machines.
 import logging
 from xml.dom import minidom
 
-from . import remote
+from avocado.core import remoter
 
 LOG = logging.getLogger('avocado.test')
 
@@ -32,7 +32,7 @@ else:
     VIRT_CAPABLE = True
 
 
-if remote.REMOTE_CAPABLE is False:
+if remoter.REMOTE_CAPABLE is False:
     VIRT_CAPABLE = False
     LOG.info('Virt module is disabled: remote module is disabled')
 
@@ -273,8 +273,8 @@ class VM(object):
         :param password: the password.
         """
         if not self.logged:
-            self.remote = remote.Remote(hostname, username, password,
-                                        quiet=True)
+            self.remote = remoter.Remote(hostname, username, password,
+                                         quiet=True)
             res = self.remote.uptime()
             if res.succeeded:
                 self.logged = True

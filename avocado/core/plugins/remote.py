@@ -17,9 +17,9 @@
 import getpass
 
 from . import plugin
+from .. import remoter
 from ..remote import RemoteTestResult
 from ..remote import RemoteTestRunner
-from ...utils import remote
 
 
 class RunRemote(plugin.Plugin):
@@ -33,7 +33,7 @@ class RunRemote(plugin.Plugin):
     remote_parser = None
 
     def configure(self, parser):
-        if remote.REMOTE_CAPABLE is False:
+        if remoter.REMOTE_CAPABLE is False:
             self.enabled = False
             return
         username = getpass.getuser()

@@ -20,8 +20,8 @@ import getpass
 import logging
 import time
 
-from avocado.core import output
-from . import process
+from . import output
+from ..utils import process
 
 
 LOG = logging.getLogger('avocado.test')
