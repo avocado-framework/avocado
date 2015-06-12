@@ -56,7 +56,9 @@ class Multiplexer(plugin.Plugin):
         self.parser.add_argument('-d', '--debug', action='store_true',
                                  default=False, help="Debug multiplexed "
                                  "files.")
-        self.parser.add_argument('--env', default=[], nargs='*')
+        self.parser.add_argument('--env', default=[], nargs='*',
+                                 help="Inject [path:]key:node values into "
+                                 "the final multiplex tree.")
         super(Multiplexer, self).configure(self.parser)
 
     def activate(self, args):
