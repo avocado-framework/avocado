@@ -35,11 +35,11 @@ from . import data_dir
 from . import sysinfo
 from . import exceptions
 from . import multiplexer
+from .version import VERSION
 from ..utils import genio
 from ..utils import path as utils_path
 from ..utils import process
 from ..utils import stacktrace
-from avocado.version import VERSION
 
 
 class Test(unittest.TestCase):

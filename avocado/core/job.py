@@ -26,7 +26,6 @@ import tempfile
 import shutil
 import fnmatch
 
-from avocado import runtime
 from . import data_dir
 from . import runner
 from . import loader
@@ -43,7 +42,7 @@ from .plugins import xunit
 from .plugins.builtin import ErrorsLoading
 from ..utils import archive
 from ..utils import path
-
+from ..utils import runtime
 
 try:
     from .plugins import htmlresult

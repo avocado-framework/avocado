@@ -22,7 +22,7 @@ import argparse
 
 from . import tree
 from . import settings
-from avocado.version import VERSION
+from .version import VERSION
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
