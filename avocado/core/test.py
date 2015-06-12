@@ -300,17 +300,6 @@ class Test(unittest.TestCase):
         """
         pass
 
-    def runTest(self):
-        """
-        Actual test payload. Must be implemented by tests.
-
-        In case of an existing test suite wrapper, it'll execute the suite,
-        or perform a series of operations, and based in the results of the
-        operations decide if the test pass (let the test complete) or fail
-        (raise a test related exception).
-        """
-        pass
-
     def tearDown(self):
         """
         Cleanup stage after the runTest is done.
@@ -351,6 +340,11 @@ class Test(unittest.TestCase):
 
         :result: Unused param, compatibiltiy with :class:`unittest.TestCase`.
         """
+        if result is None:
+            result = self.defaultTestResult()
+
+        result.startTest(self)
+
         testMethod = getattr(self, self._testMethodName)
         self.start_logging()
         self.sysinfo_logger.start_test_hook()
@@ -366,17 +360,20 @@ class Test(unittest.TestCase):
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSetupFail(details)
+            result.addError(self, sys.exc_info())
         try:
             testMethod()
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             runTest_exception = details
+            result.addFailure(self, sys.exc_info())
         finally:
             try:
                 self.tearDown()
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 cleanup_exception = details
+                result.addError(self, sys.exc_info())
 
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
         genio.write_file(whiteboard_file, self.whiteboard)
@@ -398,11 +395,13 @@ class Test(unittest.TestCase):
                     except Exception, details:
                         stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                         stdout_check_exception = details
+                        result.addError(self, sys.exc_info())
                     try:
                         self.check_reference_stderr()
                     except Exception, details:
                         stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                         stderr_check_exception = details
+                        result.addError(self, sys.exc_info())
             elif not job_standalone:
                 if output_check_record in ['all', 'stdout']:
                     self.record_reference_stdout()
@@ -422,8 +421,11 @@ class Test(unittest.TestCase):
             raise exceptions.TestWarn("Test passed but there were warnings "
                                       "during execution. Check the log for "
                                       "details.")
+        else:
+            self.status = 'PASS'
+            result.addSuccess(self)
 
-        self.status = 'PASS'
+        result.stopTest(self)
         self.sysinfo_logger.end_test_hook()
 
     def _setup_environment_variables(self):
