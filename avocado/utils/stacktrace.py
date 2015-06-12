@@ -3,6 +3,7 @@ Traceback standard module plus some additional APIs.
 """
 from traceback import format_exception
 import logging
+import inspect
 
 
 def tb_info(exc_info):
@@ -33,6 +34,9 @@ def log_exc_info(exc_info, logger='root'):
     """
     log = logging.getLogger(logger)
     log.error('')
+    called_from = inspect.currentframe().f_back
+    log.error("Reproduced traceback from: %s:%s",
+              called_from.f_code.co_filename, called_from.f_lineno)
     for line in tb_info(exc_info):
         for l in line.splitlines():
             log.error(l)
