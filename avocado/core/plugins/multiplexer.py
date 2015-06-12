@@ -30,6 +30,10 @@ class Multiplexer(plugin.Plugin):
     name = 'multiplexer'
     enabled = True
 
+    def __init__(self, *args, **kwargs):
+        super(Multiplexer, self).__init__(*args, **kwargs)
+        self._from_args_tree = tree.TreeNode()
+
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
             self.enabled = False
@@ -45,18 +49,23 @@ class Multiplexer(plugin.Plugin):
 
         self.parser.add_argument('--filter-out', nargs='*', default=[],
                                  help='Filter out path(s) from multiplexing')
-
-        self.parser.add_argument('-t', '--tree', action='store_true', default=False,
-                                 help='Shows the multiplex tree structure')
-        self.parser.add_argument('--attr', nargs='*', default=[],
-                                 help="Which attributes to show when using "
-                                 "--tree (default is 'name')")
-        self.parser.add_argument('-c', '--contents', action='store_true', default=False,
-                                 help="Shows the variant content (variables)")
-        self.parser.add_argument('-d', '--debug', action='store_true',
-                                 default=False, help="Debug multiplexed "
-                                 "files.")
+        self.parser.add_argument('-s', '--system-wide', action='store_true',
+                                 help="Combine the files with the default "
+                                 "tree.")
+        self.parser.add_argument('-c', '--contents', action='store_true',
+                                 default=False, help="Shows the variant "
+                                 "content (variables)")
         self.parser.add_argument('--env', default=[], nargs='*')
+        env_parser = self.parser.add_argument_group("environment view options")
+        env_parser.add_argument('-d', '--debug', action='store_true',
+                                default=False, help="Debug multiplexed "
+                                "files.")
+        tree_parser = self.parser.add_argument_group("tree view options")
+        tree_parser.add_argument('-t', '--tree', action='store_true',
+                                 default=False, help='Shows the multiplex '
+                                 'tree structure')
+        tree_parser.add_argument('-e', '--environment', action="store_true",
+                                 help="Show environment rather than value")
         super(Multiplexer, self).configure(self.parser)
 
     def activate(self, args):
@@ -67,13 +76,22 @@ class Multiplexer(plugin.Plugin):
                 raise ValueError("key:value pairs required, found only %s"
                                  % (value))
             elif len(value) == 2:
-                args.default_multiplex_tree.value[value[0]] = value[1]
+                self._from_args_tree.value[value[0]] = value[1]
             else:
-                node = args.default_multiplex_tree.get_node(value[0], True)
+                node = self._from_args_tree.get_node(value[0], True)
                 node.value[value[1]] = value[2]
 
     def run(self, args):
         view = output.View(app_args=args)
+        err = None
+        if args.tree and args.debug:
+            err = "Option --tree is incompatible with --debug."
+        elif not args.tree and args.environment:
+            err = "Option --environment can be only used with --tree"
+        if err:
+            view.notify(event="minor", msg=self.parser.format_help())
+            view.notify(event="error", msg=err)
+            sys.exit(exit_codes.AVOCADO_FAIL)
         try:
             mux_tree = multiplexer.yaml2tree(args.multiplex_files,
                                              args.filter_only, args.filter_out,
@@ -82,11 +100,18 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='error',
                         msg=details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        mux_tree.merge(args.default_multiplex_tree)
+        if args.system_wide:
+            mux_tree.merge(args.default_multiplex_tree)
+        mux_tree.merge(self._from_args_tree)
         if args.tree:
-            view.notify(event='message', msg='Config file tree structure:')
-            view.notify(event='minor',
-                        msg=mux_tree.get_ascii(attributes=args.attr))
+            if args.environment:
+                verbose = 2
+            elif args.contents:
+                verbose = 1
+            else:
+                verbose = 0
+            view.notify(event='message', msg=tree.tree_view(mux_tree,
+                                                            verbose))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         variants = multiplexer.MuxTree(mux_tree)
@@ -105,10 +130,15 @@ class Multiplexer(plugin.Plugin):
             view.notify(event='minor', msg='%sVariant %s:    %s' %
                         (('\n' if args.contents else ''), index + 1, paths))
             if args.contents:
-                env = {}
+                env = set()
                 for node in tpl:
-                    env.update(node.environment)
-                for k in sorted(env.keys()):
-                    view.notify(event='minor', msg='    %s: %s' % (k, env[k]))
+                    for key, value in node.environment.iteritems():
+                        origin = node.environment_origin[key]
+                        env.add(("%s:%s" % (origin, key), repr(value)))
+                if not env:
+                    continue
+                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                for record in sorted(env):
+                    view.notify(event='minor', msg=fmt % record)
 
         sys.exit(exit_codes.AVOCADO_ALL_OK)
