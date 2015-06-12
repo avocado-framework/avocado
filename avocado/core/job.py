@@ -40,6 +40,7 @@ from . import multiplexer
 from .settings import settings
 from .plugins import jsonresult
 from .plugins import xunit
+from .plugins import manager
 from .plugins.builtin import ErrorsLoading
 from ..utils import archive
 from ..utils import path
@@ -291,13 +292,6 @@ class Job(object):
                     filtered_suite.append(test_template)
         return filtered_suite
 
-    @staticmethod
-    def _log_plugin_load_errors():
-        job_log = _TEST_LOGGER
-        for plugin_failed in ErrorsLoading:
-            job_log.error('Error loading %s -> %s' % plugin_failed)
-        job_log.error('')
-
     def _log_job_id(self):
         job_log = _TEST_LOGGER
         job_log.info('Job ID: %s', self.unique_id)
@@ -351,14 +345,52 @@ class Job(object):
                 job_log.info(format_str % (config_key, value[1]))
         job_log.info('')
 
+    @staticmethod
+    def _log_avocado_plugins():
+        job_log = _TEST_LOGGER
+        pm = manager.get_plugin_manager()
+
+        enabled = [p for p in pm.plugins if p.enabled]
+        disabled = [p for p in pm.plugins if not p.enabled]
+
+        blength = 0
+        for plug in pm.plugins:
+            clength = len(plug.name)
+            if clength > blength:
+                blength = clength
+        for load_error in ErrorsLoading:
+            clength = len(load_error[0])
+            if clength > blength:
+                blength = clength
+        format_str = "%-" + str(blength + 1) + "s %s"
+
+        if enabled:
+            job_log.info("Plugins enabled:")
+            for plug in sorted(enabled):
+                job_log.info(format_str % (plug.name, plug.description))
+
+        if disabled:
+            job_log.info("Plugins disabled:")
+            for plug in sorted(disabled):
+                job_log.info(format_str %
+                             (plug.name,
+                              "Disabled during plugin configuration"))
+
+        if ErrorsLoading:
+            job_log.info('Unloadable plugin modules:')
+            for load_error in sorted(ErrorsLoading):
+                job_log.info(format_str % (load_error[0], load_error[1]))
+
+        job_log.info('')
+
     def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
-        self._log_plugin_load_errors()
         self._log_cmdline()
         self._log_avocado_version()
         self._log_avocado_config()
+        self._log_avocado_plugins()
         self._log_job_id()
 
     def _run(self, urls=None):
