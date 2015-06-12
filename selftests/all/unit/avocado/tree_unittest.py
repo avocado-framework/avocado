@@ -8,10 +8,16 @@ else:
 
 from avocado.core import tree
 
+if __name__ == "__main__":
+    PATH_PREFIX = "../../../../"
+else:
+    PATH_PREFIX = ""
+
 
 class TestTree(unittest.TestCase):
     # Share tree with all tests
-    tree = tree.create_from_yaml(['/:examples/mux-selftest.yaml'])
+    tree = tree.create_from_yaml(['/:' + PATH_PREFIX +
+                                  'examples/mux-selftest.yaml'])
 
     def test_node_order(self):
         self.assertIsInstance(self.tree, tree.TreeNode)
@@ -112,7 +118,7 @@ class TestTree(unittest.TestCase):
                   'prod']
         self.assertEqual(leaves, self.tree.get_leaves())
         # asci contain all leaves and doesn't raise any exceptions
-        ascii = self.tree.get_ascii()
+        ascii = tree.tree_view(self.tree, 0, False)
         for leaf in leaves:
             self.assertIn(leaf, ascii, "Leaf %s not in asci:\n%s"
                           % (leaf, ascii))
@@ -154,8 +160,8 @@ class TestTree(unittest.TestCase):
                          tree2.children[0].children[2].children[1].value)
 
     def test_advanced_yaml(self):
-        tree2 = tree.create_from_yaml(['/:examples/mux-selftest-advanced.'
-                                       'yaml'])
+        tree2 = tree.create_from_yaml(['/:' + PATH_PREFIX + 'examples/mux-'
+                                       'selftest-advanced.yaml'])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
                '7', 'gentoo', 'mint', 'prod', 'new_node']
         act = tree2.get_leaves()
@@ -190,10 +196,10 @@ class TestTree(unittest.TestCase):
 class TestPathParent(unittest.TestCase):
 
     def test_empty_string(self):
-        self.assertEqual(tree.path_parent(''), '')
+        self.assertEqual(tree.path_parent(''), '/')
 
     def test_on_root(self):
-        self.assertEqual(tree.path_parent('/'), '')
+        self.assertEqual(tree.path_parent('/'), '/')
 
     def test_direct_parent(self):
         self.assertEqual(tree.path_parent('/os/linux'), '/os')
