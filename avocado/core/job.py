@@ -302,11 +302,19 @@ class Job(object):
         job_log.info('Job ID: %s', self.unique_id)
         job_log.info('')
 
+    @staticmethod
+    def _log_cmdline():
+        job_log = _TEST_LOGGER
+        cmdline = " ".join(sys.argv)
+        job_log.info("Command line: %s", cmdline)
+        job_log.info('')
+
     def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
         self._log_plugin_load_errors()
+        self._log_cmdline()
         self._log_job_id()
 
     def _run(self, urls=None):
