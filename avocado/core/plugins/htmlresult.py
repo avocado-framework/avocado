@@ -22,12 +22,12 @@ import time
 import subprocess
 import pystache
 
-from avocado import runtime
 from . import plugin
 from .. import exit_codes
 from .. import output
 from ..result import TestResult
 from ...utils import path as utils_path
+from ...utils import runtime
 
 
 class ReportModel(object):

@@ -18,9 +18,9 @@ Operations with strings (conversion and sanitation).
 The unusual name aims to avoid causing name clashes with the stdlib module
 string. Even with the dot notation, people may try to do things like
 
-import string
-...
-from avocado.utils import string
+   import string
+   ...
+   from avocado.utils import string
 
 And not notice until their code starts failing.
 """

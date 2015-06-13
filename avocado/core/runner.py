@@ -25,7 +25,6 @@ import signal
 import sys
 import time
 
-from avocado import runtime
 from . import test
 from . import exceptions
 from . import output
@@ -33,6 +32,7 @@ from . import status
 from . import exit_codes
 from ..utils import wait
 from ..utils import stacktrace
+from ..utils import runtime
 
 
 class TestRunner(object):

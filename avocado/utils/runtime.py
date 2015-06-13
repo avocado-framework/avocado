@@ -9,13 +9,17 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Copyright: Red Hat Inc. 2014
+# Authors: Cleber Rosa <cleber@redhat.com>
 
+"""
+Module that contains runtime configuration
+"""
 
-__all__ = ['main', 'Test', 'VERSION']
+#: Sometimes it's useful for the framework and API to know about the job that
+#: is currently running, if one exists
+CURRENT_JOB = None
 
-
-from avocado.core.job import main
-from avocado.core.test import Test
-from avocado.core.version import VERSION
+#: Sometimes it's useful for the framework and API to know about the test that
+#: is currently running, if one exists
+CURRENT_TEST = None

@@ -19,6 +19,7 @@ script:
     - inspekt lint
     - inspekt indent
     - inspekt style
+    - ./selftests/modules_boundaries
     - ./selftests/run -v selftests/all/doc
     - ./selftests/run -v selftests/all/functional
     - ./selftests/run -v selftests/all/unit

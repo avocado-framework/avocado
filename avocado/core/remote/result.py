@@ -16,11 +16,11 @@
 
 import os
 
+from .. import remoter
 from .. import data_dir
 from .. import exceptions
 from ..result import HumanTestResult
-from ...utils import remote
-from ...utils import virt
+from ...core import virt
 
 
 class RemoteTestResult(HumanTestResult):
@@ -79,11 +79,11 @@ class RemoteTestResult(HumanTestResult):
                                 % (self.args.remote_username,
                                    self.args.remote_hostname,
                                    self.args.remote_port)))
-        self.remote = remote.Remote(self.args.remote_hostname,
-                                    self.args.remote_username,
-                                    self.args.remote_password,
-                                    self.args.remote_port,
-                                    quiet=True)
+        self.remote = remoter.Remote(self.args.remote_hostname,
+                                     self.args.remote_username,
+                                     self.args.remote_password,
+                                     self.args.remote_port,
+                                     quiet=True)
         self._copy_tests()
 
     def tear_down(self):

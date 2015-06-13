@@ -35,13 +35,31 @@ except ImportError:
     SUBPROCESS32_SUPPORT = False
 
 from . import gdb
-
-from avocado import runtime
-from avocado.core import exceptions
+from . import runtime
 
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
+
+#: The active wrapper utility script.
+CURRENT_WRAPPER = None
+
+#: The global wrapper.
+#: If set, run every process under this wrapper.
+WRAP_PROCESS = None
+
+#: Set wrapper per program names.
+#: A list of wrappers and program names.
+#: Format: [ ('/path/to/wrapper.sh', 'progname'), ... ]
+WRAP_PROCESS_NAMES_EXPR = []
+
+#: Exception to be raised when users of this API need to know that the
+#: execution of a given process resulted in undefined behavior. One
+#: concrete example when a user, in an interactive session, let the
+#: inferior process exit before before avocado resumed the debugger
+#: session. Since the information is unknown, and the behavior is
+#: undefined, this situation will be flagged by an exception.
+UNDEFINED_BEHAVIOR_EXCEPTION = None
 
 
 class CmdError(Exception):
@@ -63,20 +81,6 @@ class CmdError(Exception):
             return msg
         else:
             return "CmdError"
-
-
-class GDBInferiorProcessExitedError(exceptions.TestNAError):
-
-    """
-    Debugged process exited/finished outside of avocado control
-
-    This probably means that the user, in an interactive session, let the
-    inferior process exit before before avocado resumed the debugger session.
-
-    Since the information is unknown, and the behavior is undefined, the
-    test will be skipped.
-    """
-    pass
 
 
 def pid_exists(pid):
@@ -512,8 +516,8 @@ class WrapSubProcess(SubProcess):
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
                  shell=False, env=None, wrapper=None):
-        if wrapper is None and runtime.CURRENT_WRAPPER is not None:
-            wrapper = runtime.CURRENT_WRAPPER
+        if wrapper is None and CURRENT_WRAPPER is not None:
+            wrapper = CURRENT_WRAPPER
         self.wrapper = wrapper
         if self.wrapper:
             if not os.path.exists(self.wrapper):
@@ -558,14 +562,14 @@ class GDBSubProcess(object):
         self.binary_path = os.path.abspath(self.cmd)
         self.result = CmdResult(cmd)
 
-        self.gdb_server = gdb.GDBServer(runtime.GDBSERVER_PATH)
-        self.gdb = gdb.GDB(runtime.GDB_PATH)
+        self.gdb_server = gdb.GDBServer(gdb.GDBSERVER_PATH)
+        self.gdb = gdb.GDB(gdb.GDB_PATH)
         self.gdb.connect(self.gdb_server.port)
         self.gdb.set_file(self.binary)
 
     def _get_breakpoints(self):
         breakpoints = []
-        for expr in runtime.GDB_RUN_BINARY_NAMES_EXPR:
+        for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
             expr_binary_name, breakpoint = split_gdb_expr(expr)
             binary_name = os.path.basename(self.binary)
             if expr_binary_name == binary_name:
@@ -620,7 +624,7 @@ class GDBSubProcess(object):
 
             script = open(script_path, 'w')
             script.write("#!/bin/sh\n")
-            script.write("%s -x %s\n" % (runtime.GDB_PATH, cmds))
+            script.write("%s -x %s\n" % (gdb.GDB_PATH, cmds))
             script.write("echo -n 'C' > %s\n" % fifo_path)
             script.close()
             os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
@@ -659,7 +663,7 @@ class GDBSubProcess(object):
         msg = ("\n\nTEST PAUSED because inferior process received a FATAL SIGNAL. "
                "To DEBUG your application run:\n%s\n\n" % script_path)
 
-        if runtime.GDB_ENABLE_CORE:
+        if gdb.GDB_ENABLE_CORE:
             core = self.generate_core()
             msg += ("\nAs requested, a core dump has been generated "
                     "automatically at the following location:\n%s\n") % core
@@ -737,14 +741,18 @@ class GDBSubProcess(object):
                                      'skipped. Please let avocado finish the '
                                      'the execution of your binary to have '
                                      'dependable results.', self.binary)
-                            raise GDBInferiorProcessExitedError
+                            # pylint: disable=E0702
+                            if UNDEFINED_BEHAVIOR_EXCEPTION is not None:
+                                raise UNDEFINED_BEHAVIOR_EXCEPTION
 
                 elif gdb.is_fatal_signal(parsed_msg):
                     # waits on fifo read() until end of debug session is notified
                     r = self.handle_fatal_signal(parsed_msg)
                     log.warn('Because "%s" received a fatal signal, this test '
                              'is going to be skipped.', self.binary)
-                    raise GDBInferiorProcessExitedError
+                    # pylint: disable=E0702
+                    if UNDEFINED_BEHAVIOR_EXCEPTION is not None:
+                        raise UNDEFINED_BEHAVIOR_EXCEPTION
 
             except IndexError:
                 continue
@@ -758,9 +766,9 @@ class GDBSubProcess(object):
         binary_name = os.path.basename(self.binary)
         # The commands file can be specific to a given binary or universal,
         # start checking for specific ones first
-        prerun_commands_path = runtime.GDB_PRERUN_COMMANDS.get(
+        prerun_commands_path = gdb.GDB_PRERUN_COMMANDS.get(
             binary_name,
-            runtime.GDB_PRERUN_COMMANDS.get('', None))
+            gdb.GDB_PRERUN_COMMANDS.get('', None))
 
         if prerun_commands_path is not None:
             prerun_commands = open(prerun_commands_path).readlines()
@@ -831,7 +839,7 @@ def should_run_inside_gdb(cmd):
     args = shlex.split(cmd)
     cmd_binary_name = os.path.basename(args[0])
 
-    for expr in runtime.GDB_RUN_BINARY_NAMES_EXPR:
+    for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
         binary_name = os.path.basename(expr.split(':', 1)[0])
         if cmd_binary_name == binary_name:
             return True
@@ -844,18 +852,19 @@ def should_run_inside_wrapper(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    runtime.CURRENT_WRAPPER = None
+    global CURRENT_WRAPPER
+    CURRENT_WRAPPER = None
     args = shlex.split(cmd)
     cmd_binary_name = args[0]
 
-    for script, cmd_expr in runtime.WRAP_PROCESS_NAMES_EXPR:
+    for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:
         if fnmatch.fnmatch(cmd_binary_name, cmd_expr):
-            runtime.CURRENT_WRAPPER = script
+            CURRENT_WRAPPER = script
 
-    if runtime.WRAP_PROCESS is not None and runtime.CURRENT_WRAPPER is None:
-        runtime.CURRENT_WRAPPER = runtime.WRAP_PROCESS
+    if WRAP_PROCESS is not None and CURRENT_WRAPPER is None:
+        CURRENT_WRAPPER = WRAP_PROCESS
 
-    if runtime.CURRENT_WRAPPER is None:
+    if CURRENT_WRAPPER is None:
         return False
     else:
         return True

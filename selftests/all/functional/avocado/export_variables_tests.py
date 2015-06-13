@@ -10,7 +10,7 @@ basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.append(basedir)
 
-from avocado.version import VERSION
+from avocado import VERSION
 from avocado.utils import process
 from avocado.utils import script
 

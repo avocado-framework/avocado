@@ -19,7 +19,7 @@ import os
 
 from distutils.core import setup
 
-import avocado.version
+from avocado import VERSION
 
 
 VIRTUAL_ENV = 'VIRTUAL_ENV' in os.environ
@@ -98,7 +98,7 @@ def get_long_description():
 
 if __name__ == '__main__':
     setup(name='avocado',
-          version=avocado.version.VERSION,
+          version=VERSION,
           description='Avocado Test Framework',
           long_description=get_long_description(),
           author='Avocado Developers',

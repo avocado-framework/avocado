@@ -7,8 +7,9 @@ from flexmock import flexmock, flexmock_teardown
 
 from avocado.core import data_dir
 from avocado.core import remote
+from avocado.core import remoter
 from avocado.utils import archive
-from avocado.utils import remote as utils_remote
+
 
 cwd = os.getcwd()
 
@@ -99,7 +100,7 @@ class RemoteTestResultTest(unittest.TestCase):
         (flexmock(os).should_receive('getcwd')
          .and_return('/current/directory').ordered())
         Stream.should_receive('notify').once().ordered()
-        remote_remote = flexmock(utils_remote)
+        remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
          .with_args('hostname', 'username', 'password', 22, quiet=True)
          .once().ordered()

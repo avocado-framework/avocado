@@ -21,7 +21,7 @@ import glob
 import argparse
 import importlib
 
-from avocado.version import VERSION
+from ...version import VERSION
 
 
 class Parser(argparse.ArgumentParser):

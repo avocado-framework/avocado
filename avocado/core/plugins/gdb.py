@@ -14,9 +14,11 @@
 
 """Run tests with GDB goodies enabled."""
 
-from avocado import runtime
 from . import plugin
+from .. import exceptions
 from ..settings import settings
+from ...utils import gdb
+from ...utils import process
 from ...utils import path as utils_path
 
 
@@ -58,21 +60,22 @@ class GDB(plugin.Plugin):
     def activate(self, app_args):
         try:
             for binary in app_args.gdb_run_bin:
-                runtime.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
+                gdb.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
             for commands in app_args.gdb_prerun_commands:
                 if ':' in commands:
                     binary, commands_path = commands.split(':', 1)
-                    runtime.GDB_PRERUN_COMMANDS['binary'] = commands_path
+                    gdb.GDB_PRERUN_COMMANDS['binary'] = commands_path
                 else:
-                    runtime.GDB_PRERUN_COMMANDS[''] = commands
-            runtime.GDB_ENABLE_CORE = True if app_args.gdb_coredump == 'on' else False
+                    gdb.GDB_PRERUN_COMMANDS[''] = commands
+            gdb.GDB_ENABLE_CORE = True if app_args.gdb_coredump == 'on' else False
             system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
-            runtime.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
-                                                  default=system_gdb_path)
+            gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
+                                              default=system_gdb_path)
             system_gdbserver_path = utils_path.find_command('gdbserver',
                                                             '/usr/bin/gdbserver')
-            runtime.GDBSERVER_PATH = settings.get_value('gdb.paths',
-                                                        'gdbserver',
-                                                        default=system_gdbserver_path)
+            gdb.GDBSERVER_PATH = settings.get_value('gdb.paths',
+                                                    'gdbserver',
+                                                    default=system_gdbserver_path)
+            process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestNAError
         except AttributeError:
             pass

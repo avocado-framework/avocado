@@ -18,7 +18,7 @@ import sys
 from . import plugin
 from .. import exit_codes
 from .. import output
-from avocado import runtime
+from ...utils import process
 
 
 class Wrapper(plugin.Plugin):
@@ -52,9 +52,9 @@ class Wrapper(plugin.Plugin):
             view = output.View(app_args=app_args)
             for wrap in app_args.wrapper:
                 if ':' not in wrap:
-                    if runtime.WRAP_PROCESS is None:
+                    if process.WRAP_PROCESS is None:
                         script = os.path.abspath(wrap)
-                        runtime.WRAP_PROCESS = os.path.abspath(script)
+                        process.WRAP_PROCESS = os.path.abspath(script)
                     else:
                         view.notify(event='error',
                                     msg="You can't have multiple global"
@@ -63,7 +63,7 @@ class Wrapper(plugin.Plugin):
                 else:
                     script, cmd = wrap.split(':', 1)
                     script = os.path.abspath(script)
-                    runtime.WRAP_PROCESS_NAMES_EXPR.append((script, cmd))
+                    process.WRAP_PROCESS_NAMES_EXPR.append((script, cmd))
                 if not os.path.exists(script):
                     view.notify(event='error',
                                 msg="Wrapper '%s' not found!" % script)
