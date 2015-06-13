@@ -415,9 +415,9 @@ class Job(object):
         """
         self._log_cmdline()
         self._log_avocado_version()
+        self._log_avocado_plugins()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_avocado_plugins()
         self._log_mux_tree(mux)
         self._log_job_id()
 
