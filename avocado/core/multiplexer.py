@@ -42,6 +42,7 @@ class MuxTree(object):
         """
         :param root: Root of this tree slice
         """
+        self.tree = root
         self.pools = []
         for node in self._iter_mux_leaves(root):
             if node.is_leaf:
