@@ -253,61 +253,108 @@ MULTIPLEX
 =========
 
 Avocado has a powerful tool that enables multiple test scenarios to be run
-using a single, unmodified test. This mechanism uses a multiplex file, that
-multiplies all possible variations automatically.
+using a single, unmodified test. This mechanism uses a YAML file called the
+'multiplex file', that tells avocado how to multiply all possible test scenarios
+automatically.
 
 A command by the same name, `multiplex`, is available on the `avocado`
 command line tool, and enables you to see all the test scenarios that can
 be run::
 
- $ avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+ $ scripts/avocado multiplex -c examples/tests/sleeptest.py.data/sleeptest.yaml
  Variants generated:
- Variant 1:    /short
+
+ Variant 1:    /run/short
+     /run/short:sleep_length => 0.5
+
+ Variant 2:    /run/medium
+     /run/medium:sleep_length => 1
+
+ Variant 3:    /run/long
+     /run/long:sleep_length => 5
+
+ Variant 4:    /run/longest
+     /run/longest:sleep_length => 10
+
+This is a sample that varies the parameter `sleep_length` through the scenarios
+``/run/short`` (sleeps for 0.5 s), ``/run/medium`` (sleeps for 1 s),
+``/run/long`` (sleeps for 5s), ``/run/longest`` (sleeps for 10s). The YAML
+file (multiplex file) that produced the output above is::
+
+ !mux
+ short:
      sleep_length: 0.5
- Variant 2:    /medium
+ medium:
      sleep_length: 1
- Variant 3:    /long
+ long:
      sleep_length: 5
- Variant 4:    /longest
+ longest:
      sleep_length: 10
+
+You can execute `sleeptest` in all variations exposed above with:
 
  $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml
 
 And the output should look like::
 
- JOB ID    : <id>
- JOB LOG   : /home/<user>/avocado/job-results/job-<date-<shortid>/job.log
- TESTS     : 4
- (1/4) sleeptest.py.1:  PASS (0.50 s)
- (2/4) sleeptest.py.2:  PASS (1.00 s)
- (3/4) sleeptest.py.3:  PASS (5.01 s)
- (4/4) sleeptest.py.4:  PASS (10.01 s)
- PASS      : 4
- ERROR     : 0
- FAIL      : 0
- SKIP      : 0
- WARN      : 0
- INTERRUPT : 0
- TIME      : 16.53 s
+ JOB ID     : <id>
+ JOB LOG    : /home/<user>/avocado/job-results/job-<date-<shortid>/job.log
+ TESTS      : 4
+ (1/4) sleeptest.py: PASS (0.50 s)
+ (2/4) sleeptest.py.1: PASS (1.00 s)
+ (3/4) sleeptest.py.2: PASS (5.01 s)
+ (4/4) sleeptest.py.3: PASS (10.01 s)
+ PASS       : 4
+ ERROR      : 0
+ FAIL       : 0
+ SKIP       : 0
+ WARN       : 0
+ INTERRUPT  : 0
+ TIME       : 16.52 s
 
 The `multiplex` plugin and the test runner supports two kinds of global
 filters, through the command line options `--filter-only` and `--filter-out`.
 The `filter-only` exclusively includes one or more paths and
 the `filter-out` removes one or more paths from being processed.
 
-From the previous example, if we are interested to use the variants `/medium`
-and `longest`, we do the following command line::
+From the previous example, if we are interested to use the variants `/run/medium`
+and `/run/longest`, we do the following command line::
 
  $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml \
-       --filter-only /medium /longest
+       --filter-only /run/medium /run/longest
 
 And if you want to remove `/small` from the variants created,
 we do the following::
 
  $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml \
-       --filter-out /medium
+       --filter-out /run/medium
 
-Note that both filters can be arranged in the same command line.
+Note that both `--filter-only` and `--filter-out` filters can be arranged in
+the same command line.
+
+The multiplexer also supports default paths. The base path is ``/run/*`` but it
+can be overridden by ``--mux-path``, which accepts multiple arguments. What it
+does: it splits leaves by the provided paths. Each query goes one by one through
+those sub-trees and first one to hit the match returns the result. It might not
+solve all problems, but it can help to combine existing YAML files with your
+ones::
+
+    qa:         # large and complex read-only file, content injected into /qa
+        tests:
+            timeout: 10
+        ...
+    my_variants: !mux        # your YAML file injected into /my_variants
+        short:
+            timeout: 1
+        long:
+            timeout: 1000
+
+You want to use an existing test which uses ``params.get('timeout', '*')``.  Then you
+can use ``--mux-path '/my_variants/*' '/qa/*'`` and it'll first look in your
+variants. If no matches are found, then it would proceed to ``/qa/*``
+
+Keep in mind that only slices defined in mux-path are taken into account for
+relative paths (the ones starting with ``*``).
 
 DEBUGGING BINARIES RUN AS PART OF A TEST
 ========================================
