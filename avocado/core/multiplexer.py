@@ -127,21 +127,21 @@ class AvocadoParams(object):
 
     # TODO: Use "test" to log params.get()
 
-    def __init__(self, leaves, test_id, tag, mux_entry, default_params):
+    def __init__(self, leaves, test_id, tag, mux_path, default_params):
         """
         :param leaves: List of TreeNode leaves defining current variant
         :param test_id: test id
         :param tag: test tag
-        :param mux_entry: list of entry points
+        :param mux_path: list of entry points
         :param default_params: dict of params used when no matches found
         """
         self._rel_paths = []
         leaves = list(leaves)
-        for i, path in enumerate(mux_entry):
+        for i, path in enumerate(mux_path):
             path_leaves = self._get_matching_leaves(path, leaves)
             self._rel_paths.append(AvocadoParam(path_leaves,
                                                 '%d: %s' % (i, path)))
-        # Don't use non-mux-entry params for relative paths
+        # Don't use non-mux-path params for relative paths
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
         self.id = test_id
@@ -397,9 +397,9 @@ class Mux(object):
         if getattr(args, 'default_multiplex_tree', None):
             mux_tree.merge(args.default_multiplex_tree)
         self.variants = MuxTree(mux_tree)
-        self._mux_entry = getattr(args, 'mux_entry', None)
-        if self._mux_entry is None:
-            self._mux_entry = ['/run/*']
+        self._mux_path = getattr(args, 'mux_path', None)
+        if self._mux_path is None:
+            self._mux_path = ['/run/*']
 
     def get_number_of_tests(self, test_suite):
         """
@@ -427,10 +427,10 @@ class Mux(object):
                 # key. In order for that to happen, they need to set
                 # params['avocado_inject_params'] = True as well.
                 if not inject_params:
-                    test_factory[1]['params'] = (variant, self._mux_entry)
+                    test_factory[1]['params'] = (variant, self._mux_path)
                 else:
                     test_factory[1]['params']['avocado_params'] = (
-                        variant, self._mux_entry)
+                        variant, self._mux_path)
                 yield test_factory
             if i is None:   # No variants, use template
                 yield template
