@@ -239,7 +239,7 @@ class Test(unittest.TestCase):
         logger.addHandler(file_handler)
         return file_handler
 
-    def start_logging(self):
+    def _start_logging(self):
         """
         Simple helper for adding a file logger to the root logger.
         """
@@ -260,7 +260,7 @@ class Test(unittest.TestCase):
         self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
                                                                    self.stderr_file)
 
-    def stop_logging(self):
+    def _stop_logging(self):
         """
         Stop the logging activity of the test by cleaning the logger handlers.
         """
@@ -339,7 +339,7 @@ class Test(unittest.TestCase):
         Auxiliary method to run_avocado.
         """
         testMethod = getattr(self, self._testMethodName)
-        self.start_logging()
+        self._start_logging()
         self.sysinfo_logger.start_test_hook()
         runTest_exception = None
         cleanup_exception = None
@@ -463,7 +463,7 @@ class Test(unittest.TestCase):
             self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
                 self.text_output = log_file_obj.read()
-            self.stop_logging()
+            self._stop_logging()
 
     def report(self):
         """
