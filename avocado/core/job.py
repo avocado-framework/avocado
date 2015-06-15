@@ -39,6 +39,7 @@ from . import job_id
 from . import output
 from . import multiplexer
 from .settings import settings
+from .plugins import manager
 from .plugins import jsonresult
 from .plugins import xunit
 from .plugins.builtin import ErrorsLoading
@@ -353,13 +354,49 @@ class Job(object):
             job_log.info(line)
         job_log.info('')
 
+    @staticmethod
+    def _log_avocado_plugins():
+        job_log = _TEST_LOGGER
+        pm = manager.get_plugin_manager()
+
+        enabled = [p for p in pm.plugins if p.enabled]
+        disabled = [p for p in pm.plugins if not p.enabled]
+
+        if enabled:
+            enabled_matrix = []
+            for plug in sorted(enabled):
+                enabled_matrix.append([plug.name, plug.description])
+            job_log.info("Plugins enabled:")
+            for line in astring.tabular_output(enabled_matrix).splitlines():
+                job_log.info(line)
+
+        if disabled:
+            disabled_matrix = []
+            for plug in sorted(disabled):
+                disabled_matrix.append([plug.name, plug.description])
+            job_log.info("Plugins enabled:")
+            for line in astring.tabular_output(disabled_matrix).splitlines():
+                job_log.info(line)
+
+        if ErrorsLoading:
+            unloadable_matrix = []
+            for load_error in sorted(ErrorsLoading):
+                unloadable_matrix.append([plug.name, "%s -> %s" %
+                                          (load_error[0], load_error[1])])
+
+            job_log.info("Unloadable plugin modules:")
+            for line in astring.tabular_output(unloadable_matrix).splitlines():
+                job_log.info(line)
+
+        job_log.info('')
+
     def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
         """
-        self._log_plugin_load_errors()
         self._log_cmdline()
         self._log_avocado_version()
+        self._log_avocado_plugins()
         self._log_avocado_config()
         self._log_job_id()
 
