@@ -43,6 +43,7 @@ from .plugins import jsonresult
 from .plugins import xunit
 from .plugins.builtin import ErrorsLoading
 from ..utils import archive
+from ..utils import astring
 from ..utils import path
 from ..utils import runtime
 
@@ -328,6 +329,30 @@ class Job(object):
                 job_log.info("Branch: %s", branch)
         job_log.info('')
 
+    @staticmethod
+    def _log_avocado_config():
+        job_log = _TEST_LOGGER
+        job_log.info('Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            job_log.info(cfg_path)
+        if settings.config_paths_failed:
+            job_log.info('Config files failed to read (in order):')
+            for cfg_path in settings.config_paths_failed:
+                job_log.info(cfg_path)
+        job_log.info('')
+
+        job_log.info('Avocado config:')
+        header = ('Section.Key', 'Value')
+        config_matrix = []
+        for section in settings.config.sections():
+            for value in settings.config.items(section):
+                config_key = ".".join((section, value[0]))
+                config_matrix.append([config_key, value[1]])
+
+        for line in astring.tabular_output(config_matrix, header).splitlines():
+            job_log.info(line)
+        job_log.info('')
+
     def _log_job_debug_info(self):
         """
         Log relevant debug information to the job log.
@@ -335,6 +360,7 @@ class Job(object):
         self._log_plugin_load_errors()
         self._log_cmdline()
         self._log_avocado_version()
+        self._log_avocado_config()
         self._log_job_id()
 
     def _run(self, urls=None):
