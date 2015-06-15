@@ -145,7 +145,6 @@ class Test(unittest.TestCase):
                                                 self.default_params)
 
         self.log.info('START %s', self.tagged_name)
-        self.log.debug('')
 
         self.debugdir = None
         self.resultsdir = None
