@@ -174,11 +174,11 @@ class Test(unittest.TestCase):
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
 
-    def tag_start(self):
+    def _tag_start(self):
         self.running = True
         self.time_start = time.time()
 
-    def tag_end(self):
+    def _tag_end(self):
         self.running = False
         self.time_end = time.time()
         # for consistency sake, always use the same stupid method
@@ -432,7 +432,7 @@ class Test(unittest.TestCase):
         """
         self._setup_environment_variables()
         try:
-            self.tag_start()
+            self._tag_start()
             self._run_avocado()
         except exceptions.TestBaseException, detail:
             self.status = detail.status
@@ -458,7 +458,7 @@ class Test(unittest.TestCase):
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
-            self.tag_end()
+            self._tag_end()
             self.report()
             self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
