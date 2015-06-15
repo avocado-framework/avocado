@@ -459,13 +459,13 @@ class Test(unittest.TestCase):
                 self.log.error(e_line)
         finally:
             self._tag_end()
-            self.report()
+            self._report()
             self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
                 self.text_output = log_file_obj.read()
             self._stop_logging()
 
-    def report(self):
+    def _report(self):
         """
         Report result to the logging system.
         """
