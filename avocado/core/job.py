@@ -18,6 +18,7 @@ Job module - describes a sequence of automated test operations.
 """
 
 import argparse
+import commands
 import logging
 import os
 import sys
@@ -26,6 +27,7 @@ import tempfile
 import shutil
 import fnmatch
 
+from . import version
 from . import data_dir
 from . import runner
 from . import loader
@@ -36,11 +38,14 @@ from . import exceptions
 from . import job_id
 from . import output
 from . import multiplexer
+from . import tree
 from .settings import settings
+from .plugins import manager
 from .plugins import jsonresult
 from .plugins import xunit
 from .plugins.builtin import ErrorsLoading
 from ..utils import archive
+from ..utils import astring
 from ..utils import path
 from ..utils import runtime
 
@@ -290,6 +295,139 @@ class Job(object):
                     filtered_suite.append(test_template)
         return filtered_suite
 
+    @staticmethod
+    def _log_plugin_load_errors():
+        job_log = _TEST_LOGGER
+        for plugin_failed in ErrorsLoading:
+            job_log.error('Error loading %s -> %s' % plugin_failed)
+        job_log.error('')
+
+    def _log_job_id(self):
+        job_log = _TEST_LOGGER
+        job_log.info('Job ID: %s', self.unique_id)
+        job_log.info('')
+
+    @staticmethod
+    def _log_cmdline():
+        job_log = _TEST_LOGGER
+        cmdline = " ".join(sys.argv)
+        job_log.info("Command line: %s", cmdline)
+        job_log.info('')
+
+    @staticmethod
+    def _log_avocado_version():
+        job_log = _TEST_LOGGER
+        job_log.info('Avocado version: %s', version.VERSION)
+        if os.path.exists('.git') and os.path.exists('avocado.spec'):
+            cmd = "git show --summary --pretty='%H' | head -1"
+            status, top_commit = commands.getstatusoutput(cmd)
+            cmd2 = "git rev-parse --abbrev-ref HEAD"
+            status2, branch = commands.getstatusoutput(cmd2)
+            # Let's display information only if git is installed
+            # (commands succeed).
+            if status == 0 and status2 == 0:
+                job_log.info('Avocado git repo info')
+                job_log.info("Top commit: %s", top_commit)
+                job_log.info("Branch: %s", branch)
+        job_log.info('')
+
+    @staticmethod
+    def _log_avocado_config():
+        job_log = _TEST_LOGGER
+        job_log.info('Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            job_log.info(cfg_path)
+        if settings.config_paths_failed:
+            job_log.info('Config files failed to read (in order):')
+            for cfg_path in settings.config_paths_failed:
+                job_log.info(cfg_path)
+        job_log.info('')
+
+        job_log.info('Avocado config:')
+        header = ('Section.Key', 'Value')
+        config_matrix = []
+        for section in settings.config.sections():
+            for value in settings.config.items(section):
+                config_key = ".".join((section, value[0]))
+                config_matrix.append([config_key, value[1]])
+
+        for line in astring.tabular_output(config_matrix, header).splitlines():
+            job_log.info(line)
+        job_log.info('')
+
+    @staticmethod
+    def _log_avocado_datadir():
+        job_log = _TEST_LOGGER
+        job_log.info('Avocado Data Directories:')
+        job_log.info('')
+        job_log.info("Avocado replaces config dirs that can't be accessed")
+        job_log.info('with sensible defaults. Please edit your local config')
+        job_log.info('file to customize values')
+        job_log.info('')
+        job_log.info('base     ' + data_dir.get_base_dir())
+        job_log.info('tests    ' + data_dir.get_test_dir())
+        job_log.info('data     ' + data_dir.get_data_dir())
+        job_log.info('logs     ' + data_dir.get_logs_dir())
+        job_log.info('')
+
+    @staticmethod
+    def _log_avocado_plugins():
+        job_log = _TEST_LOGGER
+        pm = manager.get_plugin_manager()
+
+        enabled = [p for p in pm.plugins if p.enabled]
+        disabled = [p for p in pm.plugins if not p.enabled]
+
+        if enabled:
+            enabled_matrix = []
+            for plug in sorted(enabled):
+                enabled_matrix.append([plug.name, plug.description])
+            job_log.info("Plugins enabled:")
+            for line in astring.tabular_output(enabled_matrix).splitlines():
+                job_log.info(line)
+
+        if disabled:
+            disabled_matrix = []
+            for plug in sorted(disabled):
+                disabled_matrix.append([plug.name, plug.description])
+            job_log.info("Plugins enabled:")
+            for line in astring.tabular_output(disabled_matrix).splitlines():
+                job_log.info(line)
+
+        if ErrorsLoading:
+            unloadable_matrix = []
+            for load_error in sorted(ErrorsLoading):
+                unloadable_matrix.append([plug.name, "%s -> %s" %
+                                          (load_error[0], load_error[1])])
+
+            job_log.info("Unloadable plugin modules:")
+            for line in astring.tabular_output(unloadable_matrix).splitlines():
+                job_log.info(line)
+
+        job_log.info('')
+
+    def _log_mux_tree(self, mux):
+        job_log = _TEST_LOGGER
+        tree_repr = tree.tree_view(mux.variants.root, verbose=True,
+                                   use_utf8=False)
+        if tree_repr:
+            job_log.info('Multiplex tree representation:')
+            for line in tree_repr.splitlines():
+                job_log.info(line)
+            job_log.info('')
+
+    def _log_job_debug_info(self, mux):
+        """
+        Log relevant debug information to the job log.
+        """
+        self._log_cmdline()
+        self._log_avocado_version()
+        self._log_avocado_plugins()
+        self._log_avocado_config()
+        self._log_avocado_datadir()
+        self._log_mux_tree(mux)
+        self._log_job_id()
+
     def _run(self, urls=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
@@ -327,12 +465,7 @@ class Job(object):
                                      self.loglevel,
                                      self.unique_id)
 
-        for plugin_failed in ErrorsLoading:
-            _TEST_LOGGER.error('Error loading %s -> %s' % plugin_failed)
-        _TEST_LOGGER.error('')
-
-        _TEST_LOGGER.info('Job ID: %s', self.unique_id)
-        _TEST_LOGGER.info('')
+        self._log_job_debug_info(mux)
 
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
