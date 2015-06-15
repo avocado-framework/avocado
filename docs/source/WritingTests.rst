@@ -126,11 +126,11 @@ order, then for simple queries you can simply omit the path::
 
 One should always try to avoid param clashes (multiple matching keys for given
 path with different origin). If it's not possible (eg. when
-you use multiple yaml files) you can modify the resolution order by modifying
-``--mux-entry``. What it does is it slices the params and iterates through the
+you use multiple yaml files) you can modify the default paths by modifying
+``--mux-path``. What it does is it slices the params and iterates through the
 paths one by one. When there is a match in the first slice it returns
 it without trying the other slices. Although relative queries only match
-from ``--mux-entry`` slices.
+from ``--mux-path`` slices.
 
 There are many ways to use paths to separate clashing params or just to make
 more clear what your query for. Usually in tests the usage of '*' is sufficient
@@ -176,7 +176,7 @@ The ``$INJECT_TO`` can be either relative path, then it's injected into
 ``/run/$INJECT_TO`` location, or absolute path (starting with ``'/'``), then
 it's injected directly into the specified path and it's up to the test/framework
 developer to get the value from this location (using path or adding the path to
-``mux-entry``). To understand the difference execute those commands::
+``mux-path``). To understand the difference execute those commands::
 
     $ avocado multiplex -t examples/tests/sleeptest.py.data/sleeptest.yaml
     $ avocado multiplex -t duration:examples/tests/sleeptest.py.data/sleeptest.yaml

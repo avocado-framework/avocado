@@ -191,12 +191,12 @@ configurations, or serve as plugin configurations and other advanced setups it i
 possible and commonly desirable to use non-unique names. But always keep those points
 in mind and provide sensible paths.
 
-Multiplexer also supports something called "multiplex entry points" or
-"resolution order". By default it's ``/run/*`` but it can be overridden by
-``--mux-entry``, which accepts multiple arguments. What it does it splits
-leaves by the provided paths. Each query goes one by one through those
-sub-trees and first one to hit the match returns the result. It might not solve
-all problems, but it can help to combine existing YAML files with your ones::
+Multiplexer also supports default paths. By default it's ``/run/*`` but it can
+be overridden by ``--mux-path``, which accepts multiple arguments. What it does
+it splits leaves by the provided paths. Each query goes one by one through
+those sub-trees and first one to hit the match returns the result. It might not
+solve all problems, but it can help to combine existing YAML files with your
+ones::
 
     qa:         # large and complex read-only file, content injected into /qa
         tests:
@@ -209,10 +209,10 @@ all problems, but it can help to combine existing YAML files with your ones::
             timeout: 1000
 
 You want to use an existing test which uses ``params.get('timeout', '*')``.  Then you
-can use ``--mux-entry '/my_variants/*' '/qa/*'`` and it'll first look in your
+can use ``--mux-path '/my_variants/*' '/qa/*'`` and it'll first look in your
 variants. If no matches are found, then it would proceed to ``/qa/*``
 
-Keep in mind that only slices defined in mux-entry are taken into account for
+Keep in mind that only slices defined in mux-path are taken into account for
 relative paths (the ones starting with ``*``)
 
 
@@ -224,7 +224,7 @@ You can run any test with any YAML file by::
     avocado run sleeptest --multiplex file.yaml
 
 This puts the content of ``file.yaml`` into ``/run``
-location, which as mentioned in previous section, is the default ``mux-entry``
+location, which as mentioned in previous section, is the default ``mux-path``
 path. For most simple cases this is the expected behavior as your files
 are available in the default path and you can safely use ``params.get(key)``.
 
@@ -253,7 +253,7 @@ intention of the test writer. There are several ways to access the values:
 * absolute location ``params.get(key, '/my/variants/duration')``
 * absolute location with wildcards ``params.get(key, '/my/*)``
   (or ``/*/duration/*``...)
-* set the mux-entry ``avocado run ... --mux-entry /my/*`` and use relative path
+* set the mux-path ``avocado run ... --mux-path /my/*`` and use relative path
 
 It's recommended to use the simple injection for single YAML files, relative
 injection for multiple simple YAML files and the last option is for very

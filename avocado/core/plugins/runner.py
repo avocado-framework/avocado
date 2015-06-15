@@ -124,7 +124,7 @@ class TestRunner(plugin.Plugin):
                              help='Filter only path(s) from multiplexing')
             mux.add_argument('--filter-out', nargs='*', default=[],
                              help='Filter out path(s) from multiplexing')
-            mux.add_argument('--mux-entry', nargs='*', default=None,
+            mux.add_argument('--mux-path', nargs='*', default=None,
                              help="Multiplex entry point(s)")
             mux.add_argument('--env', default=[], nargs='*',
                              help="Inject [path:]key:node values into the "
