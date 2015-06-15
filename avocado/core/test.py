@@ -182,9 +182,9 @@ class Test(unittest.TestCase):
         self.running = False
         self.time_end = time.time()
         # for consistency sake, always use the same stupid method
-        self.update_time_elapsed(self.time_end)
+        self._update_time_elapsed(self.time_end)
 
-    def update_time_elapsed(self, current_time=None):
+    def _update_time_elapsed(self, current_time=None):
         if current_time is None:
             current_time = time.time()
         self.time_elapsed = current_time - self.time_start
@@ -204,7 +204,7 @@ class Test(unittest.TestCase):
         :rtype: dict
         """
         if self.running and self.time_start:
-            self.update_time_elapsed()
+            self._update_time_elapsed()
         preserve_attr = ['basedir', 'debugdir', 'depsdir',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
