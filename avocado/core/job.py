@@ -356,6 +356,21 @@ class Job(object):
         job_log.info('')
 
     @staticmethod
+    def _log_avocado_datadir():
+        job_log = _TEST_LOGGER
+        job_log.info('Avocado Data Directories:')
+        job_log.info('')
+        job_log.info("Avocado replaces config dirs that can't be accessed")
+        job_log.info('with sensible defaults. Please edit your local config')
+        job_log.info('file to customize values')
+        job_log.info('')
+        job_log.info('base     ' + data_dir.get_base_dir())
+        job_log.info('tests    ' + data_dir.get_test_dir())
+        job_log.info('data     ' + data_dir.get_data_dir())
+        job_log.info('logs     ' + data_dir.get_logs_dir())
+        job_log.info('')
+
+    @staticmethod
     def _log_avocado_plugins():
         job_log = _TEST_LOGGER
         pm = manager.get_plugin_manager()
@@ -409,6 +424,7 @@ class Job(object):
         self._log_avocado_version()
         self._log_avocado_plugins()
         self._log_avocado_config()
+        self._log_avocado_datadir()
         self._log_mux_tree(mux)
         self._log_job_id()
 
