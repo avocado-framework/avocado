@@ -173,17 +173,17 @@ class Test(unittest.TestCase):
     def __repr__(self):
         return "Test(%r)" % self.tagged_name
 
-    def tag_start(self):
+    def _tag_start(self):
         self.running = True
         self.time_start = time.time()
 
-    def tag_end(self):
+    def _tag_end(self):
         self.running = False
         self.time_end = time.time()
         # for consistency sake, always use the same stupid method
-        self.update_time_elapsed(self.time_end)
+        self._update_time_elapsed(self.time_end)
 
-    def update_time_elapsed(self, current_time=None):
+    def _update_time_elapsed(self, current_time=None):
         if current_time is None:
             current_time = time.time()
         self.time_elapsed = current_time - self.time_start
@@ -203,7 +203,7 @@ class Test(unittest.TestCase):
         :rtype: dict
         """
         if self.running and self.time_start:
-            self.update_time_elapsed()
+            self._update_time_elapsed()
         preserve_attr = ['basedir', 'debugdir', 'depsdir',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
@@ -238,7 +238,7 @@ class Test(unittest.TestCase):
         logger.addHandler(file_handler)
         return file_handler
 
-    def start_logging(self):
+    def _start_logging(self):
         """
         Simple helper for adding a file logger to the root logger.
         """
@@ -259,7 +259,7 @@ class Test(unittest.TestCase):
         self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
                                                                    self.stderr_file)
 
-    def stop_logging(self):
+    def _stop_logging(self):
         """
         Stop the logging activity of the test by cleaning the logger handlers.
         """
@@ -338,7 +338,7 @@ class Test(unittest.TestCase):
         Auxiliary method to run_avocado.
         """
         testMethod = getattr(self, self._testMethodName)
-        self.start_logging()
+        self._start_logging()
         self.sysinfo_logger.start_test_hook()
         runTest_exception = None
         cleanup_exception = None
@@ -431,7 +431,7 @@ class Test(unittest.TestCase):
         """
         self._setup_environment_variables()
         try:
-            self.tag_start()
+            self._tag_start()
             self._run_avocado()
         except exceptions.TestBaseException, detail:
             self.status = detail.status
@@ -457,14 +457,14 @@ class Test(unittest.TestCase):
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
-            self.tag_end()
-            self.report()
+            self._tag_end()
+            self._report()
             self.log.info("")
             with open(self.logfile, 'r') as log_file_obj:
                 self.text_output = log_file_obj.read()
-            self.stop_logging()
+            self._stop_logging()
 
-    def report(self):
+    def _report(self):
         """
         Report result to the logging system.
         """
