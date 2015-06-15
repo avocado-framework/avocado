@@ -38,6 +38,7 @@ from . import exceptions
 from . import job_id
 from . import output
 from . import multiplexer
+from . import tree
 from .settings import settings
 from .plugins import manager
 from .plugins import jsonresult
@@ -390,7 +391,17 @@ class Job(object):
 
         job_log.info('')
 
-    def _log_job_debug_info(self):
+    def _log_mux_tree(self, mux):
+        job_log = _TEST_LOGGER
+        tree_repr = tree.tree_view(mux.variants.root, verbose=True,
+                                   use_utf8=False)
+        if tree_repr:
+            job_log.info('Multiplex tree representation:')
+            for line in tree_repr.splitlines():
+                job_log.info(line)
+            job_log.info('')
+
+    def _log_job_debug_info(self, mux):
         """
         Log relevant debug information to the job log.
         """
@@ -398,6 +409,7 @@ class Job(object):
         self._log_avocado_version()
         self._log_avocado_plugins()
         self._log_avocado_config()
+        self._log_mux_tree(mux)
         self._log_job_id()
 
     def _run(self, urls=None):
@@ -437,7 +449,7 @@ class Job(object):
                                      self.loglevel,
                                      self.unique_id)
 
-        self._log_job_debug_info()
+        self._log_job_debug_info(mux)
 
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
