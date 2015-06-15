@@ -378,41 +378,38 @@ WRAP PROCESS IN TESTS
 =====================
 
 Avocado allows the instrumentation of applications being
-run by a test in a transparent way.
+run by a test in a transparent way. The user specifies a script
+("the wrapper") to be used to run the actual program called by the test.
 
-The user specify a script ("the wrapper") to be used to run the actual
-program called by the test.  If the instrument is
-implemented correctly, it should not interfere with the test behavior.
+If the instrument is implemented correctly, it should not interfere
+with the test behavior. So that, a perfect wrapper shall not
+change the return status, standard output and standard error messages
+of the process being executed.
 
-So it means that the wrapper should avoid to change the return status,
-standard output and standard error messages of the process.
+By using an optional parameter to the wrapper, you can specify a pattern
+in format of shell glob to select the "target binary" to wrap.
 
-By using an optional parameter to the wrapper, you can specify the
-"target binary" to wrap, so that for every program spawned by the test,
-the program name will be compared to the target binary.
-
-If the target binary is absolute path and the program name is absolute,
-then both paths should be equal to the wrapper take effect, otherwise
-the wrapper will not be used.
-
-For the case that the target binary is not absolute or the program name
-is not absolute, then both will be compared by its base name, ignoring paths.
+In this case, for every program spawned by the test,
+the program name will be compared to the pattern to decide
+whether to wrap it or not. You can have multiples wrappers and patterns
+defined.
 
 Examples::
 
  $ avocado run datadir --wrapper examples/wrappers/strace.sh
- $ avocado run datadir --wrapper examples/wrappers/ltrace.sh:make \
-                       --wrapper examples/wrappers/perf.sh:datadir
 
-Note that it's not possible to use ``--gdb-run-bin`` together
-with ``--wrapper``, they are incompatible.::
+Any command created by the test datadir will be wrapped on ``strace.sh``. ::
 
- $ avocado run mytest --wrapper examples/wrappers/strace:/opt/bin/foo
+ $ avocado run datadir --wrapper examples/wrappers/ltrace.sh:*make \
+                       --wrapper examples/wrappers/perf.sh:*datadir
 
-In this case, the possible program that can wrapped by ``mytest`` is
-``/opt/bin/foo`` (absolute paths equal) and ``foo`` without absolute path
-will be wrapped too, but ``/opt/bin/foo`` will never be wrapped, because
-the absolute paths are not equal.
+Any command that matches the pattern `*make` will
+be wrapper on ``ltrace.sh`` and the pattern ``*datadir`` will trigger
+the execution of ``perf.sh``. ::
+
+Note that it is not possible to use ``--gdb-run-bin`` together
+with ``--wrapper``, they are incompatible.
+
 
 RECORDING TEST REFERENCE OUTPUT
 ===============================
