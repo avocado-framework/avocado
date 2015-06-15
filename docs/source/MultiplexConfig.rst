@@ -55,23 +55,21 @@ multiple values of the same keys with different scope.
 Nodes are organized in parent-child relationship and together they create
 a tree. To view this structure use ``avocado multiplex --tree <file>``::
 
-                /-intel
-               |
-         /cpu-<>--amd
-        |      |
-      /hw       \-arm
-     |  |
-     |  |        /-scsi
-     |   \disk-<>
-     |           \-virtio
-    -|
-     |          /-fedora
-     |-distro-<>
-     |          \-mint
-     |
-     |       /-debug
-      \env-<>
-             \-prod
+ ┗━━ run
+      ┣━━ hw
+      ┃    ┣━━ cpu
+      ┃    ┃    ╠══ intel
+      ┃    ┃    ╠══ amd
+      ┃    ┃    ╚══ arm
+      ┃    ┗━━ disk
+      ┃         ╠══ scsi
+      ┃         ╚══ virtio
+      ┣━━ distro
+      ┃    ╠══ fedora
+      ┃    ╚══ mint
+      ┗━━ env
+           ╠══ debug
+           ╚══ prod
 
 You can see that ``hw`` has 2 children ``cpu`` and ``disk``. All parameters
 defined in parent node are inherited to children and extended/overwritten by
