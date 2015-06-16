@@ -2,7 +2,7 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/avocado
 PROJECT=avocado
-VERSION=`$(CURDIR)/avocado/version.py`
+VERSION=`$(CURDIR)/avocado/core/version.py`
 
 all:
 	@echo "make source - Create source package"
