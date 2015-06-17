@@ -31,7 +31,7 @@ class TestClassTest(unittest.TestCase):
     def setUp(self):
         class AvocadoPass(test.Test):
 
-            def runTest(self):
+            def test(self):
                 variable = True
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'

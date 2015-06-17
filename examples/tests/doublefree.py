@@ -29,7 +29,7 @@ class DoubleFreeTest(Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='doublefree')
 
-    def runTest(self):
+    def test(self):
         """
         Execute 'doublefree'.
         """

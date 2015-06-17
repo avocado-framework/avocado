@@ -28,7 +28,7 @@ class DataDirTest(Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='datadir')
 
-    def runTest(self):
+    def test(self):
         """
         Execute 'datadir'.
         """

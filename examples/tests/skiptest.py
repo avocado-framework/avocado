@@ -10,7 +10,7 @@ class SkipTest(Test):
     Example test that skips the current test, that is it, ends with SKIP.
     """
 
-    def runTest(self):
+    def test(self):
         """
         This should end with SKIP.
         """
