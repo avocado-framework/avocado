@@ -10,7 +10,7 @@ class ErrorTest(Test):
     Example test that raises generic exception
     """
 
-    def runTest(self):
+    def test(self):
         """
         This should end with ERROR (on default config)
         """

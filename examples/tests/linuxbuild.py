@@ -22,7 +22,7 @@ class LinuxBuildTest(Test):
         self.linux_build.uncompress()
         self.linux_build.configure()
 
-    def runTest(self):
+    def test(self):
         self.linux_build.build()
 
 
