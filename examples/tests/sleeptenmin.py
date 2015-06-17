@@ -13,7 +13,7 @@ class SleepTenMin(Test):
     Sleeps for 10 minutes
     """
 
-    def runTest(self):
+    def test(self):
         """
         Sleep for length seconds.
         """

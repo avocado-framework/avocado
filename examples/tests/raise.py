@@ -28,7 +28,7 @@ class Raise(Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='raise')
 
-    def runTest(self):
+    def test(self):
         """
         Execute 'raise'.
         """
