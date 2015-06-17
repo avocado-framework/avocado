@@ -35,6 +35,7 @@ from . import data_dir
 from . import sysinfo
 from . import exceptions
 from . import multiplexer
+from .settings import settings
 from .version import VERSION
 from ..utils import genio
 from ..utils import path as utils_path
@@ -444,7 +445,9 @@ class Test(unittest.TestCase):
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception, detail:
-            self.status = 'FAIL'
+            self.status = settings.get_value("runner.behavior",
+                                             "generic_exception_result",
+                                             default="ERROR")
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
