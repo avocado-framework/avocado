@@ -14,7 +14,7 @@ class AbortTest(Test):
 
     default_params = {'timeout': 2.0}
 
-    def runTest(self):
+    def test(self):
         os.abort()
 
 

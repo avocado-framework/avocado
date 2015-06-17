@@ -48,11 +48,11 @@ class Test(unittest.TestCase):
     Base implementation for the test class.
 
     You'll inherit from this to write your own tests. Typically you'll want
-    to implement setUp(), runTest() and tearDown() methods on your own tests.
+    to implement setUp(), test*() and tearDown() methods on your own tests.
     """
     default_params = {}
 
-    def __init__(self, methodName='runTest', name=None, params=None,
+    def __init__(self, methodName='test', name=None, params=None,
                  base_logdir=None, tag=None, job=None, runner_queue=None):
         """
         Initializes the test.
@@ -291,7 +291,7 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         """
-        Setup stage that the test needs before passing to the actual runTest.
+        Setup stage that the test needs before passing to the actual test*.
 
         Must be implemented by tests if they want such an stage. Commonly we'll
         download/compile test suites, create files needed for a test, among
@@ -301,9 +301,9 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         """
-        Cleanup stage after the runTest is done.
+        Cleanup stage after the test* is done.
 
-        Examples of cleanup runTests are deleting temporary files, restoring
+        Examples of cleanup are deleting temporary files, restoring
         firewall configurations or other system settings that were changed
         in setup.
         """
@@ -340,7 +340,7 @@ class Test(unittest.TestCase):
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
         self.sysinfo_logger.start_test_hook()
-        runTest_exception = None
+        test_exception = None
         cleanup_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
@@ -356,7 +356,7 @@ class Test(unittest.TestCase):
             testMethod()
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            runTest_exception = details
+            test_exception = details
         finally:
             try:
                 self.tearDown()
@@ -396,8 +396,8 @@ class Test(unittest.TestCase):
                     self.record_reference_stderr()
 
         # pylint: disable=E0702
-        if runTest_exception is not None:
-            raise runTest_exception
+        if test_exception is not None:
+            raise test_exception
         elif cleanup_exception is not None:
             raise exceptions.TestSetupFail(cleanup_exception)
         elif stdout_check_exception is not None:
@@ -545,7 +545,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def runTest(self):
+    def test(self):
         """
         Run the executable, and log its detailed execution.
         """
@@ -575,7 +575,7 @@ class MissingTest(Test):
     Handle when there is no such test module in the test directory.
     """
 
-    def runTest(self):
+    def test(self):
         e_msg = ('Test %s could not be found in the test dir %s '
                  '(or test path does not exist)' %
                  (self.name, data_dir.get_test_dir()))
@@ -591,7 +591,7 @@ class BuggyTest(Test):
     buggy python module.
     """
 
-    def runTest(self):
+    def test(self):
         # pylint: disable=E0702
         raise self.params.get('exception')
 
@@ -605,7 +605,7 @@ class NotATest(Test):
     or a regular, non executable file.
     """
 
-    def runTest(self):
+    def test(self):
         e_msg = ('File %s is not executable and does not contain an avocado '
                  'test class in it ' % self.name)
         raise exceptions.NotATestError(e_msg)
@@ -620,6 +620,6 @@ class TimeOutSkipTest(Test):
     It will never have a chance to execute.
     """
 
-    def runTest(self):
+    def test(self):
         e_msg = 'Test skipped due a job timeout!'
         raise exceptions.TestNAError(e_msg)

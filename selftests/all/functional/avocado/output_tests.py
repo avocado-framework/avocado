@@ -244,10 +244,9 @@ class OutputPluginTest(unittest.TestCase):
                              (expected_rc, result))
             with open(tmpfile, 'r') as fp:
                 json_results = json.load(fp)
-                debug_log = json_results['debuglog']
-                debug_dir = os.path.dirname(debug_log)
-                test_result_dir = os.path.join(debug_dir, 'test-results', 'whiteboard.py')
-                whiteboard_path = os.path.join(test_result_dir, 'whiteboard')
+                logfile = json_results['tests'][0]['logfile']
+                debug_dir = os.path.dirname(logfile)
+                whiteboard_path = os.path.join(debug_dir, 'whiteboard')
                 self.assertTrue(os.path.exists(whiteboard_path),
                                 'Missing whiteboard file %s' % whiteboard_path)
         finally:

@@ -12,7 +12,7 @@ class WhiteBoard(Test):
     Simple test that saves test custom data to the test whiteboard
     """
 
-    def runTest(self):
+    def test(self):
         data_file = self.params.get('whiteboard_data_file', default='')
         data_size = self.params.get('whiteboard_data_size', default='10')
         if data_file:

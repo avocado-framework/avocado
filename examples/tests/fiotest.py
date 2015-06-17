@@ -30,7 +30,7 @@ class FioTest(Test):
         self.srcdir = os.path.join(self.srcdir, fio_version)
         build.make(self.srcdir)
 
-    def runTest(self):
+    def test(self):
         """
         Execute 'fio' with appropriate parameters.
         """
