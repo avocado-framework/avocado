@@ -114,8 +114,7 @@ class TestLister(object):
 
     def _list(self):
         self._extra_listing()
-        keywords = self._get_keywords()
-        test_suite = self._get_test_suite(keywords)
+        test_suite = self._get_test_suite(self.args.keywords)
         self._validate_test_suite(test_suite)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
