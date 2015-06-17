@@ -10,7 +10,7 @@ class FailTest(Test):
     Example test for avocado. Straight up fail the test.
     """
 
-    def runTest(self):
+    def test(self):
         """
         Should fail.
         """

@@ -31,7 +31,7 @@ class SyncTest(Test):
         else:
             build.make(self.srcdir)
 
-    def runTest(self):
+    def test(self):
         """
         Execute synctest with the appropriate params.
         """
