@@ -12,7 +12,7 @@ class GenDataTest(Test):
     Simple test that generates data to be persisted after the test is run
     """
 
-    def generate_bsod(self):
+    def test_bsod(self):
         try:
             from PIL import Image
             from PIL import ImageDraw
@@ -34,16 +34,13 @@ class GenDataTest(Test):
             y += 12
         bsod.save(os.path.join(self.outputdir, "bsod.png"))
 
-    def generate_json(self):
+    def test_json(self):
         import json
         output_path = os.path.join(self.outputdir, "test.json")
         output = {"basedir": self.basedir,
                   "outputdir": self.outputdir}
         json.dump(output, open(output_path, "w"))
 
-    def runTest(self):
-        self.generate_bsod()
-        self.generate_json()
 
 if __name__ == "__main__":
     main()
