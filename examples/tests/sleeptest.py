@@ -12,7 +12,7 @@ class SleepTest(Test):
     Example test for avocado.
     """
 
-    def runTest(self):
+    def test(self):
         """
         Sleep for length seconds.
         """

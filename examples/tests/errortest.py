@@ -10,7 +10,7 @@ class ErrorTest(Test):
     Example test that ends with ERROR.
     """
 
-    def runTest(self):
+    def test(self):
         """
         This should end with ERROR.
         """

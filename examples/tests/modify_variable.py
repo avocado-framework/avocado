@@ -32,7 +32,7 @@ class PrintVariableTest(Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args=self.__binary)
 
-    def runTest(self):
+    def test(self):
         """
         Execute 'print_variable'.
         """

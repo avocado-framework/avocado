@@ -48,7 +48,7 @@ class xUnitSucceedTest(unittest.TestCase):
 
         class SimpleTest(Test):
 
-            def runTest(self):
+            def test(self):
                 pass
 
         self.tmpfile = tempfile.mkstemp()
