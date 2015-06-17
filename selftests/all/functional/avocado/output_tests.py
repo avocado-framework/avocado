@@ -255,6 +255,45 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
+    def test_gendata(self):
+        tmpfile = tempfile.mktemp()
+        try:
+            os.chdir(basedir)
+            cmd_line = ("./scripts/avocado run --job-results-dir %s "
+                        "--sysinfo=off gendata --json %s" %
+                        (self.tmpdir, tmpfile))
+            result = process.run(cmd_line, ignore_status=True)
+            expected_rc = 0
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+            with open(tmpfile, 'r') as fp:
+                json_results = json.load(fp)
+                bsod_dir = None
+                json_dir = None
+                for test in json_results['tests']:
+                    if "test_bsod" in test['url']:
+                        bsod_dir = test['logfile']
+                    elif "test_json" in test['url']:
+                        json_dir = test['logfile']
+                self.assertTrue(bsod_dir, "Failed to get test_bsod output "
+                                "directory")
+                self.assertTrue(json_dir, "Failed to get test_json output "
+                                "directory")
+                bsod_dir = os.path.join(os.path.dirname(bsod_dir), "data",
+                                        "bsod.png")
+                json_dir = os.path.join(os.path.dirname(json_dir), "data",
+                                        "test.json")
+                self.assertTrue(os.path.exists(bsod_dir), "File %s produced by"
+                                "test does not exist" % bsod_dir)
+                self.assertTrue(os.path.exists(json_dir), "File %s produced by"
+                                "test does not exist" % json_dir)
+        finally:
+            try:
+                os.remove(tmpfile)
+            except OSError:
+                pass
+
     def test_redirect_output(self):
         redirected_output_path = tempfile.mktemp()
         try:
