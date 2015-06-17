@@ -103,25 +103,31 @@ class TestLoaderProxy(object):
         """
         Discover (possible) tests from test urls.
 
-        :param urls: a list of tests urls.
+        :param urls: a list of tests urls; if [] use plugin defaults
         :type urls: list
         :param list_non_tests: Whether to list non tests (for listing methods)
         :type list_non_tests: bool
         :return: A list of test factories (tuples (TestClass, test_params))
         """
         test_factories = []
-        for url in urls:
-            for loader_plugin in self.loader_plugins:
+        for loader_plugin in self.loader_plugins:
+            if urls:
+                _urls = urls
+            else:
+                _urls = loader_plugin.get_base_keywords()
+                print _urls
+            for url in _urls:
+                if url in self.url_plugin_mapping:
+                    continue
                 try:
                     params_list_from_url = loader_plugin.discover_url(url)
                     if list_non_tests:
                         for params in params_list_from_url:
                             params['omit_non_tests'] = False
                     if params_list_from_url:
-                        if url not in self.url_plugin_mapping:
-                            self.url_plugin_mapping[url] = loader_plugin
-                        if loader_plugin == self.url_plugin_mapping[url]:
-                            test_factories += loader_plugin.discover(params_list_from_url)
+                        test_factory = loader_plugin.discover(params_list_from_url)
+                        self.url_plugin_mapping[url] = loader_plugin
+                        test_factories += test_factory
                 except Exception, details:
                     # FIXME: Introduce avocado.exceptions logger and use here
                     stacktrace.log_message("Test discovery plugin %s failed: "
