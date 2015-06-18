@@ -10,7 +10,7 @@ class WarnTest(Test):
     Functional test for avocado. Throw a TestWarn.
     """
 
-    def runTest(self):
+    def test(self):
         """
         This should throw a TestWarn.
         """
