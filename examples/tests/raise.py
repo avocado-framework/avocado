@@ -13,6 +13,9 @@ class Raise(Test):
 
     """
     A test that calls raise() to signals to itself.
+
+    :param source: name of the source file located in data path
+    :param signal_number: Which signal number should be raised
     """
 
     def setUp(self):

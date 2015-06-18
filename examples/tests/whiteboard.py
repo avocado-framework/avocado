@@ -10,6 +10,11 @@ class WhiteBoard(Test):
 
     """
     Simple test that saves test custom data to the test whiteboard
+
+    :param whiteboard_data_file: File to be used as source for whiteboard data
+    :param whiteboard_data_size: Size of the generated data of the whiteboard
+    :param whiteboard_data_text: Text used when no file supplied
+    :param whiteboard_writes: How many times to copy the data into whiteboard
     """
 
     def runTest(self):

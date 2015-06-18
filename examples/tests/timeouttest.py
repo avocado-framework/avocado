@@ -10,6 +10,8 @@ class TimeoutTest(Test):
 
     """
     Functional test for avocado. Throw a TestTimeoutError.
+
+    :param sleep_time: How long should the test sleep
     """
 
     default_params = {'timeout': 3}

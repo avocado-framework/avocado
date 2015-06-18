@@ -13,6 +13,11 @@ class SyncTest(Test):
 
     """
     Execute the synctest test suite.
+
+    :param sync_tarball: path to the tarball relative to deps dir.
+    :param default_symbols: whether to build with debug symbols (bool)
+    :param sync_length: how many data should by used in sync test
+    :param sync_loop: how many writes should be executed in sync test
     """
 
     def setUp(self):

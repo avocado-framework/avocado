@@ -8,6 +8,8 @@ class MultiplexTest(Test):
 
     """
     Execute a test that uses provided parameters (for multiplexing testing).
+
+    :param *: All params are only logged, they have no special meaning
     """
 
     def setUp(self):

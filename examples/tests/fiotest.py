@@ -16,6 +16,9 @@ class FioTest(Test):
     stress/hardware verification.
 
     :see: http://freecode.com/projects/fio
+
+    :param fio_tarbal: name of the tarbal of fio suite located in deps path
+    :param fio_job: config defining set of executed tests located in deps path
     """
 
     def setUp(self):

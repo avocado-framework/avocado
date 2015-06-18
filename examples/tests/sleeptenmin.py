@@ -11,6 +11,10 @@ class SleepTenMin(Test):
 
     """
     Sleeps for 10 minutes
+
+    :param sleep_cycles: How many iterations should be executed
+    :param sleep_length: single sleep duration
+    :param sleep_method: what method of sleep should be used (builtin|shell)
     """
 
     def runTest(self):
