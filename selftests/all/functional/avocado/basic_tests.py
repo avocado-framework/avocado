@@ -115,6 +115,17 @@ class RunnerOperationTest(unittest.TestCase):
                       output,
                       "Test did not fail with action exception:\n%s" % output)
 
+    def test_uncaught_exception(self):
+        os.chdir(basedir)
+        cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
+                    "--json - uncaught_exception" % self.tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc,
+                                                                result))
+        self.assertIn('"status": "ERROR"', result.stdout)
+
     def test_runner_timeout(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - timeouttest' % self.tmpdir
