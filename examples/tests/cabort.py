@@ -27,7 +27,7 @@ class CAbort(Test):
                    env={'CFLAGS': '-g -O0'},
                    extra_args='abort')
 
-    def runTest(self):
+    def test(self):
         """
         Execute 'abort'.
         """

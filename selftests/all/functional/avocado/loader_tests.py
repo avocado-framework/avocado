@@ -22,7 +22,7 @@ from avocado import Test
 from avocado import main
 
 class PassTest(Test):
-    def runTest(self):
+    def test(self):
         pass
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ from avocado import main
 import adsh
 
 class PassTest(Test):
-    def runTest(self):
+    def test(self):
         pass
 
 if __name__ == "__main__":

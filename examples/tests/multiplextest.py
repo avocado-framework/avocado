@@ -55,7 +55,7 @@ class MultiplexTest(Test):
         if enable_msx_vectors == 'yes':
             self.log.info('Enabling msx vectors')
 
-    def runTest(self):
+    def test(self):
         self.log.info('Executing synctest...')
         self.log.info('synctest --timeout %s --tries %s',
                       self.params.get('sync_timeout', default=12),
