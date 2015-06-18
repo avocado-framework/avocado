@@ -23,7 +23,7 @@ from avocado import Test
 from avocado import main
 
 class PassTest(Test):
-    def runTest(self):
+    def test(self):
         pass
 
 if __name__ == "__main__":
@@ -36,7 +36,7 @@ from avocado import main
 import adsh
 
 class PassTest(Test):
-    def runTest(self):
+    def test(self):
         pass
 
 if __name__ == "__main__":
@@ -103,7 +103,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': simple_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
-        tc.runTest()
+        tc.test()
         simple_test.remove()
 
     def test_load_simple_not_exec(self):
@@ -115,7 +115,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': simple_test.path})[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.NotATestError, tc.runTest)
+        self.assertRaises(exceptions.NotATestError, tc.test)
         simple_test.remove()
 
     def test_load_pass(self):
@@ -129,7 +129,7 @@ class LoaderTest(unittest.TestCase):
                         str(test_class))
         self.assertTrue(issubclass(test_class, test.Test))
         tc = test_class(**test_parameters)
-        tc.runTest()
+        tc.test()
         avocado_pass_test.remove()
 
     def test_load_inherited(self):
@@ -162,7 +162,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': avocado_buggy_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.TestFail, tc.runTest)
+        self.assertRaises(exceptions.TestFail, tc.test)
         avocado_buggy_test.remove()
 
     def test_load_buggy_not_exec(self):
@@ -175,7 +175,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': avocado_buggy_test.path})[0])
         self.assertTrue(test_class == test.BuggyTest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(ImportError, tc.runTest)
+        self.assertRaises(ImportError, tc.test)
         avocado_buggy_test.remove()
 
     def test_load_not_a_test(self):
@@ -188,7 +188,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': avocado_not_a_test.path})[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.NotATestError, tc.runTest)
+        self.assertRaises(exceptions.NotATestError, tc.test)
         avocado_not_a_test.remove()
 
     def test_load_not_a_test_exec(self):
@@ -201,7 +201,7 @@ class LoaderTest(unittest.TestCase):
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
         # (OSError: [Errno 8] Exec format error)
-        self.assertRaises(OSError, tc.runTest)
+        self.assertRaises(OSError, tc.test)
         avocado_not_a_test.remove()
 
     def test_py_simple_test(self):
@@ -213,7 +213,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': avocado_simple_test.path})[0])
         self.assertTrue(test_class == test.SimpleTest)
         tc = test_class(**test_parameters)
-        tc.runTest()
+        tc.test()
         avocado_simple_test.remove()
 
     def test_py_simple_test_notexec(self):
@@ -226,7 +226,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover_tests(params={'id': avocado_simple_test.path})[0])
         self.assertTrue(test_class == test.NotATest)
         tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.NotATestError, tc.runTest)
+        self.assertRaises(exceptions.NotATestError, tc.test)
         avocado_simple_test.remove()
 
     def test_multiple_methods(self):

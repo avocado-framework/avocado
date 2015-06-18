@@ -19,7 +19,7 @@ from avocado.utils import process
 UNITTEST_GOOD = """from avocado import Test
 from unittest import main
 class AvocadoPassTest(Test):
-    def runTest(self):
+    def test(self):
         self.assertTrue(True)
 if __name__ == '__main__':
     main()
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 UNITTEST_FAIL = """from avocado import Test
 from unittest import main
 class AvocadoFailTest(Test):
-    def runTest(self):
+    def test(self):
         self.fail('This test is supposed to fail')
 if __name__ == '__main__':
     main()
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 UNITTEST_ERROR = """from avocado import Test
 from unittest import main
 class AvocadoErrorTest(Test):
-    def runTest(self):
+    def test(self):
         self.error('This test is supposed to error')
 if __name__ == '__main__':
     main()

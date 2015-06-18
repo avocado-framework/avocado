@@ -35,14 +35,18 @@ and match those in a single job.
 Instrumented
 ------------
 
-These are tests written in Python that use the Avocado test API.
+These are tests written in Python or BASH with the Avocado helpers that use the Avocado test API.
 
 To be more precise, the Python file must contain a class derived from :mod:`avocado.test.Test`.
 This means that an executable written in Python is not always an instrumented test, but may work
 as a simple test.
 
-By the way, the term instrumented is used because the Avocado Python test classes allow you to
-get more features for your test, such as logging facilities and more sophisticated test APIs.
+The instrumented tests allows the writer finer control over the process
+including logging, test result status and other more sophisticated test APIs.
+
+Test statuses ``PASS``, ``WARN``, ``START`` and ``TEST_NA`` are considered as
+successful builds. The ``ABORT``, ``ERROR``, ``FAIL``, ``ALERT``, ``RUNNING``,
+``NOSTATUS`` and ``INTERRUPTED`` are considered as failed ones.
 
 Simple
 ------
