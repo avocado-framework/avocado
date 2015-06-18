@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.25.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -14,7 +14,7 @@ BuildRequires: python2-devel, python-docutils, python-nose
 Requires: PyYAML
 Requires: python-argparse, python-importlib, python-logutils, python-unittest2
 BuildRequires: PyYAML
-BuildRequires: python-argparse, python-logutils, python-unittest2
+BuildRequires: python-argparse, python-importlib, python-logutils, python-unittest2
 %else
 Requires: python-yaml
 BuildRequires: python-yaml, fabric
@@ -103,6 +103,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Jun 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.25.0-2
+- Fix spec bug with BuildRequires on EPEL6
+
 * Tue Jun 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.25.0-1
 - New upstream release 0.25.0
 
