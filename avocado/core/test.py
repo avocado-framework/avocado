@@ -35,6 +35,8 @@ from . import data_dir
 from . import sysinfo
 from . import exceptions
 from . import multiplexer
+from . import status
+from .settings import settings
 from .version import VERSION
 from ..utils import genio
 from ..utils import path as utils_path
@@ -444,7 +446,16 @@ class Test(unittest.TestCase):
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception, detail:
-            self.status = 'FAIL'
+            stat = settings.get_value("runner.behavior",
+                                      "uncaught_exception_result",
+                                      default="ERROR")
+            if stat not in status.mapping:
+                stacktrace.log_message("Incorrect runner.behavior.generic_"
+                                       "exception_result value '%s', using "
+                                       "'ERROR' instead." % stat,
+                                       "avocado.test")
+                stat = "ERROR"
+            self.status = stat
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
