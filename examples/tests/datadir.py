@@ -13,6 +13,8 @@ class DataDirTest(Test):
 
     """
     Test that uses resources from the data dir.
+
+    :param tarball: Path to the c-source file relative to deps dir.
     """
 
     def setUp(self):

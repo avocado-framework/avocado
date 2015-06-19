@@ -9,7 +9,9 @@ from avocado import main
 class SleepTest(Test):
 
     """
-    Example test for avocado.
+    This test sleeps for 1s by default
+
+    :param sleep_length: Sleep duration
     """
 
     def test(self):

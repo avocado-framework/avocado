@@ -16,6 +16,8 @@ class PrintVariableTest(Test):
     1) it executes C program which prints MY VARIABLE 'A' IS: 0
     2) using GDB it modifies the variable to ff
     3) checks the output
+
+    :param source: path to the source file relative to deps dir.
     """
 
     __binary = None    # filename of the compiled program

@@ -9,6 +9,9 @@ class LinuxBuildTest(Test):
 
     """
     Execute the Linux Build test.
+
+    :param linux_version: kernel version to be built
+    :param linux_config: name of the config file located in deps path
     """
 
     def setUp(self):

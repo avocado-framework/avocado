@@ -13,6 +13,9 @@ class CAbort(Test):
 
     """
     A test that calls C standard lib function abort().
+
+    params:
+    :param tarball: Path to the c-source file relative to deps dir.
     """
 
     def setUp(self):

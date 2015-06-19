@@ -13,6 +13,8 @@ class DoubleFreeTest(Test):
 
     """
     10% chance to execute double free exception.
+
+    :param source: name of the source file located in deps path
     """
 
     __binary = None     # filename of the compiled program
