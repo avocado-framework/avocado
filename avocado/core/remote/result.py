@@ -82,8 +82,7 @@ class RemoteTestResult(HumanTestResult):
         self.remote = remoter.Remote(self.args.remote_hostname,
                                      self.args.remote_username,
                                      self.args.remote_password,
-                                     self.args.remote_port,
-                                     quiet=True)
+                                     self.args.remote_port)
         self._copy_tests()
 
     def tear_down(self):
