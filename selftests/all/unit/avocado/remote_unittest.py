@@ -32,6 +32,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
     def setUp(self):
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
         self.remote = remote.RemoteTestRunner(None, None)
+        self.remote.job = flexmock(logdir='.')
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
         stream = flexmock(job_unique_id='sleeptest.1',
                           debuglog='/local/path/dirname')
@@ -102,7 +103,7 @@ class RemoteTestResultTest(unittest.TestCase):
         Stream.should_receive('notify').once().ordered()
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
-         .with_args('hostname', 'username', 'password', 22, quiet=True)
+         .with_args('hostname', 'username', 'password', 22)
          .once().ordered()
          .and_return(Remote))
         (Remote.should_receive('makedir').with_args('~/avocado/tests')
