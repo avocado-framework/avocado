@@ -68,9 +68,14 @@ class TestRunner(object):
         def interrupt_handler(signum, frame):
             e_msg = "Test %s interrupted by user" % instance
             raise exceptions.TestInterruptedError(e_msg)
-
-        sys.stdout = output.LoggingFile(logger=logging.getLogger('avocado.test.stdout'))
-        sys.stderr = output.LoggingFile(logger=logging.getLogger('avocado.test.stderr'))
+        logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
+                              logging.getLogger('avocado.test'),
+                              logging.getLogger('paramiko')]
+        logger_list_stderr = [logging.getLogger('avocado.test.stderr'),
+                              logging.getLogger('avocado.test'),
+                              logging.getLogger('paramiko')]
+        sys.stdout = output.LoggingFile(logger=logger_list_stdout)
+        sys.stderr = output.LoggingFile(logger=logger_list_stderr)
 
         try:
             instance = self.job.test_loader.load_test(test_factory)
