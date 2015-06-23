@@ -211,13 +211,20 @@ You can also execute multiple tests with the same multiplex file::
     INTERRUPT  : 0
     TIME       : 13.76 s
 
-Avocado tests are also unittests
-================================
+:class:`unittest.TestCase` heritage
+===================================
 
-Since Avocado tests inherit from :class:`unittest.TestCase`, you can use all
-the :func:`assert` class methods on your tests. Some silly examples::
+Since an Avocado test inherits from :class:`unittest.TestCase`, you
+can use all the assertion methods that its parent.
 
-    class RandomExamples(test.Test):
+The code example bellow uses :meth:`assertEqual
+<unittest.TestCase.assertEqual>`, :meth:`assertTrue
+<unittest.TestCase.assertTrue>` and :meth:`assertIsInstace
+<unittest.TestCase.assertIsInstance>`::
+
+    from avocado import Test
+
+    class RandomExamples(Test):
         def test(self):
             self.log.debug("Verifying some random math...")
             four = 2 * 2
@@ -231,36 +238,13 @@ the :func:`assert` class methods on your tests. Some silly examples::
             self.log.debug("Verifying if this test is an instance of test.Test")
             self.assertIsInstance(self, test.Test)
 
-The reason why we have a shebang in the beginning of the test is because
-Avocado tests, similarly to unittests, can use an entry point, called
-:func:`avocado.main`, that calls avocado libs to look for test classes and execute
-its main entry point. This is an optional, but fairly handy feature. In case
-you want to use it, don't forget to ``chmod +x`` your test.
+Running tests under other :mod:`unittest` runners
+-------------------------------------------------
 
-Executing an Avocado test gives::
+`nose <https://nose.readthedocs.org/>`__ is another Python testing framework
+that is also compatible with :mod:`unittest`.
 
-    $ examples/tests/sleeptest.py
-    JOB ID    : de6c1e4c227c786dc4d926f6fca67cda34d96276
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/html/results.html
-    TESTS     : 1
-    (1/1) sleeptest.1: PASS (1.00 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
-    TIME      : 1.00 s
-
-Running tests with nosetests
-============================
-
-`nose <https://nose.readthedocs.org/>`__ is a Python testing framework with
-similar goals as Avocado, except that avocado also intends to provide tools to
-assemble a fully automated test grid, plus richer test API for tests on the
-Linux platform. Regardless, the fact that an Avocado class is also an unittest
-cass, you can run them with the ``nosetests`` application::
+Because of that, you can run avocado tests with the ``nosetests`` application::
 
     $ nosetests examples/tests/sleeptest.py
     .
@@ -268,6 +252,28 @@ cass, you can run them with the ``nosetests`` application::
     Ran 1 test in 1.004s
 
     OK
+
+Conversely, you can also use the standard :func:`unittest.main` entry point to run an
+Avocado test. Check out the following code, to be saved as ``dummy.py``::
+
+   from avocado import Test
+   from unittest import main
+
+   class Dummy(Test):
+       def test(self):
+           self.assertTrue(True)
+
+   if __name__ == '__main__':
+       main()
+
+It can be run by::
+
+   $ python dummy.py
+   .
+   ----------------------------------------------------------------------
+   Ran 1 test in 0.000s
+
+   OK
 
 Setup and cleanup methods
 =========================
