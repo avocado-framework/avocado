@@ -1,5 +1,3 @@
-.. _Writing Plugins:
-
 Plugin System
 =============
 
@@ -42,9 +40,16 @@ it's run on machine not capable of (``libvirt`` based) virtualization::
   Plugins disabled:
     run_vm                               Disabled during plugin configuration
 
+.. _Writing Plugins:
 
-Writing a plugin to extend the runner functionality
----------------------------------------------------
+Writing a plugin
+----------------
+
+What better way to understand how an Avocado plugin works than creating one?
+Let's use another old time favorite for that, the "Print hello world" theme.
+
+Code example
+~~~~~~~~~~~~
 
 Let's say you want to write a plugin that adds a new subcommand to the test
 runner, ``hello``. This is how you'd do it::
@@ -64,53 +69,58 @@ runner, ``hello``. This is how you'd do it::
         def configure(self, parser):
             self.parser = parser.subcommands.add_parser(
                 'hello',
-                help='Hello World! plugin example')
+                 help='Hello World! plugin example')
             super(HelloWorld, self).configure(self.parser)
 
         def run(self, args):
             print(self.__doc__)
 
-As you can see, plugins inherit from :class:`avocado.core.plugins.plugin.Plugin`,
-that have the methods :func:`avocado.core.plugins.plugin.Plugin.configure` and
-:func:`avocado.core.plugins.plugin.Plugin.activate`. Configure does add the
-command parser to the app test runner, and activate, if necessary will activate
-your plugin, overriding Avocado core functionality. In this configure method,
-we added a new parser for the new command ``hello`` and automatically set
-it to the method ``run``, that will print the plugin's docstring.
+As you can see, plugins inherit from :class:`avocado.core.plugins.plugin.Plugin`.
+Its most important methods are :func:`configure
+<avocado.core.plugins.plugin.Plugin.configure>`, :func:`run
+<avocado.core.plugins.plugin.Plugin.run>` and
+:func:`activate <avocado.core.plugins.plugin.Plugin.activate>`.
+
+:func:`configure <avocado.core.plugins.plugin.Plugin.configure>` adds the command
+parser to the test runner. In this code example method, we added a new parser for
+the new ``hello`` command.
+
+The :func:`run <avocado.core.plugins.plugin.Plugin.run>` method is the main entry
+point. In this code example it will simply print the plugin's docstring.
+
+:func:`activate <avocado.core.plugins.plugin.Plugin.activate>`, if necessary,
+will activate your plugin, overriding Avocado core functionality.
 
 Make Avocado aware of the new plugin
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Avocado has an option ``--plugins`` that allows you to provide a filesystem
-location that contains plugins, that will be automatically loaded.
+The Avocado command line tool has a ``--plugins`` option that allows you to
+provide a filesystem location that contains plugins that will be automatically
+loaded.
 
-Note that all external plugins shall be prefixed with this ``avocado_`` name,
-otherwise the Python module will be just ignored and no plugin inside
-will be loaded!
+Note that all external plugin files must be prefixed with the ``avocado_`` name,
+otherwise it will not be loaded.
 
 In the Avocado source tree, the ``avocado_hello.py`` example is available under
 ``examples/plugins``. So, in order to enable the hello plugin, you can do a::
 
     $ avocado --plugins examples/plugins/ plugins
-    Plugins loaded:
-        test_lister - Implements the avocado 'list' functionality. (Enabled)
-        sysinfo - Collect system information and log. (Enabled)
-        test_runner - Implements the avocado 'run' functionality. (Enabled)
-        xunit - xUnit output plugin. (Enabled)
-        plugins_list - Implements the avocado 'plugins' functionality. (Enabled)
-        hello_world - The classical Hello World! plugin example. (Enabled)
+    Plugins enabled:
+        ...
+        hello_world - The classical Hello World! plugin example.
+	...
 
 Run it
-------
+~~~~~~
 
-To run it, you can simply call the newly registered runner command ``hello``::
+To run the newly created plugin, you can simply call the Avocado command line
+tool with newly registered runner command ``hello``::
 
     $ avocado --plugins examples/plugins/ hello
         The classical Hello World! plugin example.
 
 Wrap Up
--------
+~~~~~~~
 
 We have briefly discussed the making of Avocado plugins. A look at the module
-:mod:`avocado.core.plugins` would be useful to look some of the other possibilities
-available.
+:mod:`avocado.core.plugins` is also recommended.
