@@ -10,9 +10,9 @@ Contents:
    Introduction
    GetStartedGuide
    WritingTests
+   ResultFormats
    Configuration
    MultiplexConfig
-   ResultFormats
    Plugins
    VirtualMachinePlugin
    RemoteMachinePlugin
