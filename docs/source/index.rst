@@ -14,9 +14,9 @@ Contents:
    Configuration
    MultiplexConfig
    RunningTestsRemotely
-   Plugins
    DebuggingWithGDB
    WrapProcess
+   Plugins
    ReferenceGuide
    ContributionGuide
    DevelopmentTips
