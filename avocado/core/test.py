@@ -117,6 +117,7 @@ class Test(unittest.TestCase):
         self.logdir = utils_path.init_dir(base_logdir, tagged_name)
         genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
+        self._ssh_logfile = os.path.join(self.logdir, 'ssh.log')
 
         self.stdout_file = os.path.join(self.logdir, 'stdout')
         self.stderr_file = os.path.join(self.logdir, 'stderr')
@@ -260,12 +261,16 @@ class Test(unittest.TestCase):
                                                                    self.stdout_file)
         self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
                                                                    self.stderr_file)
+        self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
+                                                       formatter,
+                                                       self._ssh_logfile)
 
     def _stop_logging(self):
         """
         Stop the logging activity of the test by cleaning the logger handlers.
         """
         self.log.removeHandler(self.file_handler)
+        logging.getLogger('paramiko').removeHandler(self._ssh_fh)
 
     def get_tagged_name(self, logdir):
         """

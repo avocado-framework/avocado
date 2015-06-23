@@ -285,7 +285,7 @@ class LoggingFile(object):
     """
 
     def __init__(self, prefix='', level=logging.DEBUG,
-                 logger=logging.getLogger()):
+                 logger=[logging.getLogger()]):
         """
         Constructor. Sets prefixes and which logger is going to be used.
 
@@ -295,6 +295,8 @@ class LoggingFile(object):
         self._prefix = prefix
         self._level = level
         self._buffer = []
+        if not isinstance(logger, list):
+            logger = [logger]
         self._logger = logger
 
     def write(self, data):
@@ -326,7 +328,8 @@ class LoggingFile(object):
         """
         Passes lines of output to the logging module.
         """
-        self._logger.log(self._level, self._prefix + line)
+        for lg in self._logger:
+            lg.log(self._level, self._prefix + line)
 
     def _flush_buffer(self):
         if self._buffer:

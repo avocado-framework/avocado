@@ -85,16 +85,10 @@ class Remote(object):
         :rtype: :class:`avocado.utils.process.CmdResult`.
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
-        if not self.quiet:
-            LOG.info('[%s] Running command %s', self.hostname, command)
         result = process.CmdResult()
-        stdout = output.LoggingFile(logger=logging.getLogger('avocado.test'))
-        stderr = output.LoggingFile(logger=logging.getLogger('avocado.test'))
         start_time = time.time()
         fabric_result = fabric.operations.run(command=command,
                                               quiet=self.quiet,
-                                              stdout=stdout,
-                                              stderr=stderr,
                                               warn_only=True,
                                               timeout=timeout)
         end_time = time.time()
@@ -138,15 +132,11 @@ class Remote(object):
         :param local_path: the local path.
         :param remote_path: the remote path.
         """
-        if not self.quiet:
-            LOG.info('[%s] Sending files %s -> %s', self.hostname,
-                     local_path, remote_path)
-        with fabric.context_managers.quiet():
-            try:
-                fabric.operations.put(local_path, remote_path,
-                                      mirror_local_mode=True)
-            except ValueError:
-                return False
+        try:
+            fabric.operations.put(local_path, remote_path,
+                                  mirror_local_mode=True)
+        except ValueError:
+            return False
         return True
 
     def receive_files(self, local_path, remote_path):
@@ -156,13 +146,9 @@ class Remote(object):
         :param local_path: the local path.
         :param remote_path: the remote path.
         """
-        if not self.quiet:
-            LOG.info('[%s] Receive remote files %s -> %s', self.hostname,
-                     local_path, remote_path)
-        with fabric.context_managers.quiet():
-            try:
-                fabric.operations.get(remote_path,
-                                      local_path)
-            except ValueError:
-                return False
+        try:
+            fabric.operations.get(remote_path,
+                                  local_path)
+        except ValueError:
+            return False
         return True

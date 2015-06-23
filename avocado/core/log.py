@@ -83,6 +83,16 @@ DEFAULT_LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'avocado.fabric': {
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'paramiko': {
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
         'avocado.test.stdout': {
             'handlers': ['null'],
             'level': 'DEBUG',
