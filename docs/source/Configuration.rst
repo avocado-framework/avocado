@@ -1,6 +1,6 @@
-=====================
-Avocado Configuration
-=====================
+===============
+ Configuration
+===============
 
 Avocado utilities have a certain default behavior based on educated, reasonable (we hope) guesses about how
 users like to use their systems. Of course, different people will have different needs and/or dislike our defaults,
