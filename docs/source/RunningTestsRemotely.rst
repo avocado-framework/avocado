@@ -5,30 +5,30 @@
 Running Tests on a Remote Host
 ==============================
 
-Avocado implements a feature that lets
-you run tests directly in a remote machine with SSH connection,
-provided that you properly set it up by installing Avocado in it.
+Avocado lets you run tests directly in a remote machine with SSH
+connection, provided that you properly set it up by installing Avocado
+in it.
 
-The remote plugin is one of the basic plugins provided by Avocado.
-You can check for its presence by listing your plugins::
+You can check if this feature (a plugin) is enabled by running::
 
     $ scripts/avocado plugins
-    Plugins loaded:
+    Plugins enabled:
         ...
-        run_remote - Run tests on a remote machine (Enabled)
+        run_remote - Run tests on a remote machine
         ...
 
-This plugin adds a number of options to the Avocado test runner::
+Assuming this feature is enabled, you should be able to pass the following options
+when using the ``run`` command in the Avocado command line tool::
 
-      --remote-hostname REMOTE_HOSTNAME
-                            Specify the hostname to login on remote machine
-      --remote-port REMOTE_PORT
-                            Specify the port number to login on remote machine.
-                            Default: 22
-      --remote-username REMOTE_USERNAME
-                            Specify the username to login on remote machine
-      --remote-password REMOTE_PASSWORD
-                            Specify the password to login on remote machine
+   --remote-hostname REMOTE_HOSTNAME
+                         Specify the hostname to login on remote machine
+   --remote-port REMOTE_PORT
+                         Specify the port number to login on remote machine.
+                         Default: 22
+   --remote-username REMOTE_USERNAME
+                         Specify the username to login on remote machine
+   --remote-password REMOTE_PASSWORD
+                         Specify the password to login on remote machine
 
 From these options, you are normally going to use `--remote-hostname` and
 `--remote-username` in case you did set up your VM with password-less
@@ -39,19 +39,19 @@ Remote Setup
 
 Make sure you have:
 
- 1) Avocado RPM installed. You can see more info on
-    how to do that in the Getting Started Guide.
- 2) The domain IP address or fully qualified hostname and the port number.
+ 1) Avocado packages installed. You can see more info on how to do that in
+    the :ref:`get-started` section.
+ 2) The remote machine IP address or fully qualified hostname and the SSH port number.
  3) All pre-requesites for your test to run installed inside the remote machine
     (gcc, make and others if you want to compile a 3rd party test suite written
     in C, for example).
- 4) Optionally, you may have password less SSH login on your remote machine enabled.
 
+Optionally, you may have password less SSH login on your remote machine enabled.
 
 Running your test
 -----------------
 
-Once everything is verified and covered, you may run your test. Example::
+Once the remote machine is properly setup, you may run your test. Example::
 
     $ scripts/avocado run --remote-hostname 192.168.122.30 --remote-username fedora examples/tests/sleeptest.py examples/tests/failtest.py
     REMOTE LOGIN  : fedora@192.168.122.30:22
@@ -70,7 +70,7 @@ Once everything is verified and covered, you may run your test. Example::
 As you can see, Avocado will copy the tests you have to your remote machine and
 execute them. A bit of extra logging information is added to your job summary,
 mainly to distinguish the regular execution from the remote one. Note here that
-we did not need `--remote-password` because the SSH key is already setup.
+we did not need `--remote-password` because an SSH key was already setup.
 
 Running Tests on a Virtual Machine
 ==================================
