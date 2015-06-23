@@ -13,9 +13,8 @@ Contents:
    ResultFormats
    Configuration
    MultiplexConfig
+   RunningTestsRemotely
    Plugins
-   VirtualMachinePlugin
-   RemoteMachinePlugin
    DebuggingWithGDB
    WrapProcess
    ReferenceGuide
