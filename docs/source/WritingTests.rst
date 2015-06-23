@@ -211,11 +211,16 @@ You can also execute multiple tests with the same multiplex file::
     INTERRUPT  : 0
     TIME       : 13.76 s
 
-Avocado tests are also unittests
-================================
+:class:`unittest.TestCase` heritage
+===================================
 
-Since Avocado tests inherit from :class:`unittest.TestCase`, you can use all
-the :func:`assert` class methods on your tests. Some silly examples::
+Since an Avocado test inherits from :class:`unittest.TestCase`, you
+can use all the assertion methods that its parent.
+
+The code example bellow uses :meth:`assertEqual
+<unittest.TestCase.assertEqual>`, :meth:`assertTrue
+<unittest.TestCase.assertTrue>` and :meth:`assertIsInstace
+<unittest.TestCase.assertIsInstance>`::
 
     from avocado import Test
 
