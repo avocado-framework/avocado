@@ -10,14 +10,13 @@ Contents:
    Introduction
    GetStartedGuide
    WritingTests
+   ResultFormats
    Configuration
    MultiplexConfig
-   Plugins
-   OutputPlugins
-   VirtualMachinePlugin
-   RemoteMachinePlugin
+   RunningTestsRemotely
    DebuggingWithGDB
    WrapProcess
+   Plugins
    ReferenceGuide
    ContributionGuide
    DevelopmentTips
