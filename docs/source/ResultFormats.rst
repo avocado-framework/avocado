@@ -6,12 +6,6 @@ Result Formats
 A test runner must provide an assortment of ways to clearly communicate results
 to interested parties, be them humans or machines.
 
-
-* Machine Readable:
-    Data structure representation that can be easily parsed
-    and/or stored by programs. This is how the test suite is
-    supposed to interact with other programs.
-
 Results for human beings
 ------------------------
 
