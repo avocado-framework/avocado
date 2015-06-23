@@ -75,22 +75,24 @@ we did not need `--remote-password` because an SSH key was already setup.
 Running Tests on a Virtual Machine
 ==================================
 
-Sometimes you don't want to run a given test directly in your laptop
-(maybe the test is dangerous, maybe you need to run it in another linux
-distribution, so on and so forth). Avocado implements a feature that lets
-you run tests directly in VMs defined as libvirt domains in your system,
-provided that you properly set up that VM.
+Sometimes you don't want to run a given test directly in your own machine
+(maybe the test is dangerous, maybe you need to run it in another Linux
+distribution, so on and so forth).
 
-The vm plugin is one of the basic plugins provided by Avocado. You can check
-for its presence by listing your plugins::
+For those scenarios, Avocado lets you run tests directly in VMs
+defined as libvirt domains in your system, provided that you properly
+set them up.
+
+You can check if this feature (a plugin) is enabled by running::
 
     $ scripts/avocado plugins
-    Plugins loaded:
+    Plugins enabled:
         ...
-        run_vm - Run tests on a Virtual Machine (Enabled)
+        run_vm - Run tests on a Virtual Machine
         ...
 
-This plugin adds a number of options to the Avocado test runner::
+Assuming this feature is enabled, you should be able to pass the following options
+when using the ``run`` command in the Avocado command line tool::
 
       --vm                  Run tests on Virtual Machine
       --vm-hypervisor-uri VM_HYPERVISOR_URI
@@ -115,19 +117,19 @@ Virtual Machine Setup
 
 Make sure you have:
 
- 1) A libvirt domain with an Avocado RPM installed. You can see more info on
-    how to do that in the Getting Started Guide.
- 2) The domain IP address or fully qualified hostname
+ 1) A libvirt domain with the Avocado packages installed. You can see
+    more info on how to do that in the :ref:`get-started` section.
+ 2) The domain IP address or fully qualified hostname.
  3) All pre-requesites for your test to run installed inside the VM
     (gcc, make and others if you want to compile a 3rd party test suite written
     in C, for example).
- 4) Optionally, you may have password less SSH login on your VM enabled.
 
+Optionally, you may have password less SSH login on your VM enabled.
 
 Running your test
 -----------------
 
-Once everything is verified and covered, you may run your test. Example::
+Once the virtual machine is properly setup, you may run your test. Example::
 
     $ scripts/avocado run --vm-domain fedora20 --vm-hostname 192.168.122.30 --vm-username autotest --vm examples/tests/sleeptest.py examples/tests/failtest.py
     VM DOMAIN : fedora20
