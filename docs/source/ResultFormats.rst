@@ -1,6 +1,6 @@
 .. _output-plugins:
 
-Output Plugins
+Result Formats
 ==============
 
 A test runner must provide an assortment of ways to clearly communicate results

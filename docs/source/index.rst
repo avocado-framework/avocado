@@ -12,8 +12,8 @@ Contents:
    WritingTests
    Configuration
    MultiplexConfig
+   ResultFormats
    Plugins
-   OutputPlugins
    VirtualMachinePlugin
    RemoteMachinePlugin
    DebuggingWithGDB
