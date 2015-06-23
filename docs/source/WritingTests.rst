@@ -260,14 +260,13 @@ Executing an Avocado test gives::
     INTERRUPT : 0
     TIME      : 1.00 s
 
-Running tests with nosetests
-============================
+Running tests under other :mod:`unittest` runners
+-------------------------------------------------
 
-`nose <https://nose.readthedocs.org/>`__ is a Python testing framework with
-similar goals as Avocado, except that avocado also intends to provide tools to
-assemble a fully automated test grid, plus richer test API for tests on the
-Linux platform. Regardless, the fact that an Avocado class is also an unittest
-cass, you can run them with the ``nosetests`` application::
+`nose <https://nose.readthedocs.org/>`__ is another Python testing framework
+that is also compatible with :mod:`unittest`.
+
+Because of that, you can run avocado tests with the ``nosetests`` application::
 
     $ nosetests examples/tests/sleeptest.py
     .
@@ -275,6 +274,28 @@ cass, you can run them with the ``nosetests`` application::
     Ran 1 test in 1.004s
 
     OK
+
+Conversely, you can also use the standard :func:`unittest.main` entry point to run an
+Avocado test. Check out the following code, to be saved as ``dummy.py``::
+
+   from avocado import Test
+   from unittest import main
+
+   class Dummy(Test):
+       def test(self):
+           self.assertTrue(True)
+
+   if __name__ == '__main__':
+       main()
+
+It can be run by::
+
+   $ python dummy.py
+   .
+   ----------------------------------------------------------------------
+   Ran 1 test in 0.000s
+
+   OK
 
 Setup and cleanup methods
 =========================
