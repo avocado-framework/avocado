@@ -1,28 +1,47 @@
 .. _Writing Plugins:
 
-Avocado Plugins
-===============
+Plugin System
+=============
 
-In order to keep the code base approachable, and allow for cleanly extending
-the test runner functionality, Avocado has a plugin system. In order to
-exemplify the concepts involved, let's use another old time favorite,
-the "Print hello world" theme.
+Avocado has a plugin system that can be used to extended it in a cleaner way.
 
-List available plugins
-----------------------
+Listing plugins
+---------------
 
-Avocado has a builtin ``plugins`` command that lets you list available
-plugins::
+The ``avocado`` command line tool has a builtin ``plugins`` command that lets
+you list available plugins. The usage is pretty simple::
 
-    $ avocado plugins
-    Plugins loaded:
-        test_lister - Implements the avocado 'list' functionality. (Enabled)
-        sysinfo - Collect system information and log. (Enabled)
-        test_runner - Implements the avocado 'run' functionality. (Enabled)
-        xunit - xUnit output plugin. (Enabled)
-        plugins_list - Implements the avocado 'plugins' functionality. (Enabled)
+ $ avocado plugins
+ Plugins enabled:
+    config                               Implements the avocado 'config' subcommand
+    distro                               Implements the avocado 'distro' subcommand
+    exec_path                            Implements the avocado 'exec-path' subcommand
+    gdb                                  Run tests with GDB goodies enabled
+    htmlresult                           HTML job report
+    json                                 JSON output
+    ...
 
-Now, let's write a simple plugin.
+Since plugins are (usually small) bundles of Python code, they may fail to load if
+the Python code is broken for any reason. Example::
+
+ $ avocado plugins
+ Plugins enabled:
+    config                               Implements the avocado 'config' subcommand
+  ...
+  Unloadable plugin modules:
+    avocado.core.plugins.htmlresult      ImportError No module named pystache
+
+Besides load errors, plugins may also disable themselves due to, say, missing
+requirements on your environment. This is the case for the ``run_vm`` plugin when
+it's run on machine not capable of (``libvirt`` based) virtualization::
+
+ $ avocado plugins
+  Plugins enabled:
+    config                               Implements the avocado 'config' subcommand
+  ...
+  Plugins disabled:
+    run_vm                               Disabled during plugin configuration
+
 
 Writing a plugin to extend the runner functionality
 ---------------------------------------------------
