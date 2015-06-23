@@ -217,7 +217,9 @@ Avocado tests are also unittests
 Since Avocado tests inherit from :class:`unittest.TestCase`, you can use all
 the :func:`assert` class methods on your tests. Some silly examples::
 
-    class RandomExamples(test.Test):
+    from avocado import Test
+
+    class RandomExamples(Test):
         def test(self):
             self.log.debug("Verifying some random math...")
             four = 2 * 2
