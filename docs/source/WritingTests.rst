@@ -238,28 +238,6 @@ The code example bellow uses :meth:`assertEqual
             self.log.debug("Verifying if this test is an instance of test.Test")
             self.assertIsInstance(self, test.Test)
 
-The reason why we have a shebang in the beginning of the test is because
-Avocado tests, similarly to unittests, can use an entry point, called
-:func:`avocado.main`, that calls avocado libs to look for test classes and execute
-its main entry point. This is an optional, but fairly handy feature. In case
-you want to use it, don't forget to ``chmod +x`` your test.
-
-Executing an Avocado test gives::
-
-    $ examples/tests/sleeptest.py
-    JOB ID    : de6c1e4c227c786dc4d926f6fca67cda34d96276
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.48-de6c1e4c/html/results.html
-    TESTS     : 1
-    (1/1) sleeptest.1: PASS (1.00 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
-    TIME      : 1.00 s
-
 Running tests under other :mod:`unittest` runners
 -------------------------------------------------
 
