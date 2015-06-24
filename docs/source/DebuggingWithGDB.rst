@@ -4,20 +4,20 @@ Debugging with GDB
 Avocado has two different types of GDB support that complement each
 other:
 
-* Transparent execution of binaries inside the GNU Debugger. This
+* Transparent execution of executables inside the GNU Debugger. This
   takes standard and possibly unmodified tests that uses the
   :mod:`avocado.utils.process` APIs for running processes. By using a
-  command line option, the binary is run on GDB. This allows the user
+  command line option, the executable is run on GDB. This allows the user
   to interact with GDB, but to the test itself, things are pretty much
   transparent.
 * The :mod:`avocado.gdb` APIs that allows a test to interact with GDB,
-  including setting a binary to be run, setting breakpoints or any
+  including setting a executable to be run, setting breakpoints or any
   other types of commands. This requires a test written with that
   approach and API in mind.
 
 
-Transparent Execution of Binaries
----------------------------------
+Transparent Execution of Executables
+------------------------------------
 
 This feature adds a few command line options to the Avocado ``run``
 command::
@@ -25,19 +25,19 @@ command::
   $ avocado run --help
   ...
   GNU Debugger support:
-  --gdb-run-bin BINARY_PATH
-                        Set a breakpoint on a given binary to be run inside
-                        the GNU debugger. Format should be
-                        "<binary>[:breakpoint]". Breakpoint defaults to "main"
-  --gdb-prerun-commands BINARY_PATH:COMMANDS_PATH
-                        After loading a binary in binary in GDB, but before
-                        actually running it, execute the given GDB commands in
-                        the given file. BINARY_PATH is optional and if omitted
-                        will apply to all binaries
-  --gdb-coredump {on,off}
-                        Automatically generate a core dump when the inferior
-                        process received a fatal signal such as SIGSEGV or
-                        SIGABRT
+
+    --gdb-run-bin EXECUTABLE[:BREAKPOINT]
+                          Run a given executable inside the GNU debugger,
+                          pausing at a given breakpoint (defaults to "main")
+    --gdb-prerun-commands EXECUTABLE:COMMANDS
+                          After loading an executable in GDB, but before
+                          actually running it, execute the GDB commands in the
+                          given file. EXECUTABLE is optional, if omitted
+                          COMMANDS will apply to all executables
+    --gdb-coredump {on,off}
+                          Automatically generate a core dump when the inferior
+                          process received a fatal signal such as SIGSEGV or
+                          SIGABRT
   ...
 
 To get started you want to use ``--gdb-run-bin``, as shown in the example bellow.
@@ -47,8 +47,8 @@ Example
 
 The simplest way is to just run
 ``avocado run --gdb-run-bin=doublefree examples/tests/doublefree.py``, which
-wraps each executed binary with name ``doublefree`` inside GDB server and
-stops at the binary entry point.
+wraps each executed executable with name ``doublefree`` inside GDB server and
+stops at the executable entry point.
 
 Optionally you can specify single breakpoint using
 ``--gdb-run-bin=doublefree:$breakpoint`` (eg: ``doublefree:1``) or just
@@ -171,7 +171,7 @@ Take a look at ``examples/tests/modify_variable.py`` test::
         app.exit()
         self.assertIn("MY VARIABLE 'A' IS: ff", out)
 
-You can see that instead of running the binary using ``process.run`` we invoke
+You can see that instead of running the executable using ``process.run`` we invoke
 ``gdb.GDB``. This allows us to automate the interaction with the GDB in means
 of setting breakpoints, executing commands and querying for output.
 
