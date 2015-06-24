@@ -38,9 +38,8 @@ class RunVM(plugin.Plugin):
             return
         username = getpass.getuser()
         default_hypervisor_uri = 'qemu:///system'
-        self.vm_parser = parser.runner.add_argument_group('run on a libvirt '
-                                                          'domain arguments')
-
+        msg = 'test execution on a Virtual Machine'
+        self.vm_parser = parser.runner.add_argument_group(msg)
         self.vm_parser.add_argument('--vm-domain', dest='vm_domain',
                                     help=('Specify Libvirt Domain Name'))
         self.vm_parser.add_argument('--vm-hypervisor-uri',

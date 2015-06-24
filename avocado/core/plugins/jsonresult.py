@@ -104,8 +104,8 @@ class JSON(plugin.Plugin):
         self.parser = parser
         self.parser.runner.output.add_argument(
             '--json', type=str,
-            dest='json_output',
-            help='Enable JSON output to the file where the result should be written. '
+            dest='json_output', metavar='FILE',
+            help='Enable JSON result format and write it to FILE. '
                  "Use '-' to redirect to the standard output.")
         self.configured = True
 

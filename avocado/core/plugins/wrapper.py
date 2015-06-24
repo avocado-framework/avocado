@@ -33,7 +33,7 @@ class Wrapper(plugin.Plugin):
     def configure(self, parser):
         self.parser = parser
         wrap_group = self.parser.runner.add_argument_group(
-            'Wrapper support')
+            'wrapper support')
         wrap_group.add_argument('--wrapper', action='append', default=[],
                                 metavar='SCRIPT[:EXECUTABLE]',
                                 help='Use a script to wrap executables run by '
