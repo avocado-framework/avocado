@@ -32,14 +32,44 @@ class RemoteTestRunnerTest(unittest.TestCase):
     def setUp(self):
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
         self.remote = remote.RemoteTestRunner(None, None)
+        self.remote.job = flexmock(logdir='.')
+
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
         stream = flexmock(job_unique_id='sleeptest.1',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
-        args = 'avocado -v'
+        args_version = 'avocado -v'
         version_result = flexmock(stdout='Avocado 1.2.3', exit_status=0)
+        args_env = 'env'
+        env_result = flexmock(stdout='''XDG_SESSION_ID=20
+HOSTNAME=rhel7.0
+SELINUX_ROLE_REQUESTED=
+SHELL=/bin/bash
+TERM=vt100
+HISTSIZE=1000
+SSH_CLIENT=192.168.124.1 52948 22
+SELINUX_USE_CURRENT_RANGE=
+SSH_TTY=/dev/pts/0
+USER=root
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+MAIL=/var/spool/mail/root
+PWD=/root
+LANG=en_US.UTF-8
+SELINUX_LEVEL_REQUESTED=
+HISTCONTROL=ignoredups
+HOME=/root
+SHLVL=2
+LOGNAME=root
+SSH_CONNECTION=192.168.124.1 52948 192.168.124.65 22
+LESSOPEN=||/usr/bin/lesspipe.sh %s
+XDG_RUNTIME_DIR=/run/user/0
+_=/usr/bin/env''', exit_status=0)
         (Remote.should_receive('run')
-         .with_args(args, ignore_status=True, timeout=60)
+         .with_args(args_env, ignore_status=True, timeout=60)
+         .once().and_return(env_result))
+
+        (Remote.should_receive('run')
+         .with_args(args_version, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
         args = 'cd ~/avocado/tests; avocado list sleeptest --paginator=off'
@@ -54,7 +84,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
          .with_args(args, timeout=61, ignore_status=True)
          .once().and_return(test_results))
         Results = flexmock(remote=Remote, urls=['sleeptest'],
-                           stream=stream, timeout=None)
+                           stream=stream, timeout=None,
+                           args=flexmock(show_job_log=False))
         Results.should_receive('setup').once().ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
@@ -102,7 +133,7 @@ class RemoteTestResultTest(unittest.TestCase):
         Stream.should_receive('notify').once().ordered()
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
-         .with_args('hostname', 'username', 'password', 22, quiet=True)
+         .with_args('hostname', 'username', 'password', 22)
          .once().ordered()
          .and_return(Remote))
         (Remote.should_receive('makedir').with_args('~/avocado/tests')

@@ -17,8 +17,10 @@ import sys
 import json
 import os
 import re
+import logging
 
 from .test import RemoteTest
+from .. import output
 from .. import exceptions
 from .. import status
 from ..runner import TestRunner
@@ -46,6 +48,10 @@ class RemoteTestRunner(TestRunner):
         :returns: (True, (x, y, z)) if avocado appears to be installed and
                   (False, None) otherwise.
         """
+        # This will be useful as extra debugging info in case avocado
+        # doesn't seem to be available in the remote system.
+        self.result.remote.run('env', ignore_status=True, timeout=60)
+
         result = self.result.remote.run('avocado -v',
                                         ignore_status=True,
                                         timeout=60)
@@ -128,39 +134,63 @@ class RemoteTestRunner(TestRunner):
         if not timeout:     # avoid timeout = 0
             timeout = None
         failures = []
+
+        stdout_backup = sys.stdout
+        stderr_backup = sys.stderr
+        fabric_debugfile = os.path.join(self.job.logdir, 'remote.log')
+        paramiko_logger = logging.getLogger('paramiko')
+        fabric_logger = logging.getLogger('avocado.fabric')
+        app_logger = logging.getLogger('avocado.debug')
+        fmt = ('%(asctime)s %(module)-10.10s L%(lineno)-.4d %('
+               'levelname)-5.5s| %(message)s')
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+        file_handler = logging.FileHandler(filename=fabric_debugfile)
+        file_handler.setFormatter(formatter)
+        fabric_logger.addHandler(file_handler)
+        paramiko_logger.addHandler(file_handler)
+        logger_list = [fabric_logger]
+        if self.result.args.show_job_log:
+            logger_list.append(app_logger)
+            output.add_console_handler(paramiko_logger)
+        sys.stdout = output.LoggingFile(logger=logger_list)
+        sys.stderr = output.LoggingFile(logger=logger_list)
         try:
-            self.result.setup()
-        except Exception, details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.JobError(details)
-        results = self.run_test(self.result.urls, timeout)
-        remote_log_dir = os.path.dirname(results['debuglog'])
-        self.result.start_tests()
-        for tst in results['tests']:
-            test = RemoteTest(name=tst['test'],
-                              time=tst['time'],
-                              start=tst['start'],
-                              end=tst['end'],
-                              status=tst['status'],
-                              logdir=tst['logdir'],
-                              logfile=tst['logfile'],
-                              fail_reason=tst['fail_reason'])
-            state = test.get_state()
-            self.result.start_test(state)
-            self.result.check_test(state)
-            if not status.mapping[state['status']]:
-                failures.append(state['tagged_name'])
-        local_log_dir = os.path.dirname(self.result.stream.debuglog)
-        zip_filename = remote_log_dir + '.zip'
-        zip_path_filename = os.path.join(local_log_dir,
-                                         os.path.basename(zip_filename))
-        self.result.remote.receive_files(local_log_dir, zip_filename)
-        archive.uncompress(zip_path_filename, local_log_dir)
-        os.remove(zip_path_filename)
-        self.result.end_tests()
-        try:
-            self.result.tear_down()
-        except Exception, details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.JobError(details)
+            try:
+                self.result.setup()
+            except Exception, details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                raise exceptions.JobError(details)
+            results = self.run_test(self.result.urls, timeout)
+            remote_log_dir = os.path.dirname(results['debuglog'])
+            self.result.start_tests()
+            for tst in results['tests']:
+                test = RemoteTest(name=tst['test'],
+                                  time=tst['time'],
+                                  start=tst['start'],
+                                  end=tst['end'],
+                                  status=tst['status'],
+                                  logdir=tst['logdir'],
+                                  logfile=tst['logfile'],
+                                  fail_reason=tst['fail_reason'])
+                state = test.get_state()
+                self.result.start_test(state)
+                self.result.check_test(state)
+                if not status.mapping[state['status']]:
+                    failures.append(state['tagged_name'])
+            local_log_dir = os.path.dirname(self.result.stream.debuglog)
+            zip_filename = remote_log_dir + '.zip'
+            zip_path_filename = os.path.join(local_log_dir,
+                                             os.path.basename(zip_filename))
+            self.result.remote.receive_files(local_log_dir, zip_filename)
+            archive.uncompress(zip_path_filename, local_log_dir)
+            os.remove(zip_path_filename)
+            self.result.end_tests()
+            try:
+                self.result.tear_down()
+            except Exception, details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                raise exceptions.JobError(details)
+        finally:
+            sys.stdout = stdout_backup
+            sys.stderr = stderr_backup
         return failures
