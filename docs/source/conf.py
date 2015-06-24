@@ -16,12 +16,70 @@ from avocado.utils import process
 # Flag that tells if the docs are being built on readthedocs.org
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 
+#
 # Auto generate API documentation
-_sphinx_apidoc = path.find_command('sphinx-apidoc')
-_output_dir = os.path.join(root_path, 'docs', 'source', 'api')
-_api_dir = os.path.join(root_path, 'avocado')
+#
+apidoc = path.find_command('sphinx-apidoc')
+api_source_dir = os.path.join(root_path, 'avocado')
+apidoc_template = apidoc + " -o %(output_dir)s " + api_source_dir + " %(exclude_dirs)s"
+base_api_output_dir = os.path.join(root_path, 'docs', 'source', 'api')
 
-process.run("%s -o %s %s" % (_sphinx_apidoc, _output_dir, _api_dir))
+# Documentation sections. Key is the name of the section, followed by:
+# Second level module name (after avocado), Module description,
+# Output directory, List of directory to exclude from API  generation,
+# list of (duplicated) generated reST files to remove (and avoid warnings)
+API_SECTIONS = {"Test APIs": (None,
+                              "This is the bare mininum set of APIs that users "
+                              "should use, and can rely on, while writing tests.",
+                              "test",
+                              ("core", "utils"),
+                              ("modules.rst", )),
+
+                "Utilities APIs": ("utils",
+                                   "This is a set of utility APIs that Avocado "
+                                   "provides as added value to test writers.",
+                                   "utils",
+                                   ("core", ),
+                                   ("avocado.rst", "modules.rst"),),
+
+                "Internal (Core) APIs": ("core",
+                                         "Internal APIs that may be of interest to "
+                                         "Avocado hackers or plugin writers.",
+                                         "core",
+                                         ("utils", ),
+                                         ("avocado.rst", "modules.rst"))}
+
+# clean up all previous rst files. RTD is known to keep them from previous runs
+process.run("find %s -name '*.rst' -delete" % base_api_output_dir)
+
+for (section, params) in API_SECTIONS.iteritems():
+    output_dir = os.path.join(base_api_output_dir, params[2])
+    exclude_dirs = [os.path.join(api_source_dir, d)
+                    for d in params[3]]
+    exclude_dirs = " ".join(exclude_dirs)
+    files_to_remove = [os.path.join(base_api_output_dir, output_dir, d)
+                       for d in params[4]]
+    # generate all rst files
+    cmd = apidoc_template % locals()
+    process.run(cmd)
+    # remove unnecessary ones
+    for f in files_to_remove:
+        os.unlink(f)
+    # rewrite first lines of main rst file for this section
+    second_level_module_name = params[0]
+    if second_level_module_name is None:
+        main_rst = os.path.join(output_dir,
+                                "avocado.rst")
+    else:
+        main_rst = os.path.join(output_dir,
+                                "avocado.%s.rst" % second_level_module_name)
+    main_rst_content = open(main_rst).readlines()
+    new_main_rst_content = [section, "=" * len(section), "",
+                            params[1], ""]
+    new_main_rst = open(main_rst, "w")
+    new_main_rst.write("\n".join(new_main_rst_content))
+    new_main_rst.write("".join(main_rst_content[2:]))
+    new_main_rst.close()
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',

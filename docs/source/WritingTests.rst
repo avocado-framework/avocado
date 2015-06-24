@@ -772,8 +772,8 @@ We recommend you take a look at the example tests present in the
 inspiration from. That directory, besides containing examples, is also used by
 the Avocado self test suite to do functional testing of Avocado itself.
 
-It is also recommended that you take a look at the
-:doc:`API documentation <api/modules>` for more possibilities.
+It is also recommended that you take a look at the :ref:`api-reference`.
+for more possibilities.
 
 .. [#f1] sleeptest is a functional test for Avocado. It's "old" because we
 	 also have had such a test for `Autotest`_ for a long time.

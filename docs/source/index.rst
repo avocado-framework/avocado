@@ -20,7 +20,21 @@ Contents:
    ReferenceGuide
    ContributionGuide
    DevelopmentTips
-   api/modules
+
+.. _api-reference:
+
+
+=============
+API Reference
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   api/test/avocado.rst
+   api/utils/avocado.utils.rst
+   api/core/avocado.core.rst
+
 
 Indices and tables
 ==================
