@@ -421,25 +421,25 @@ In this example, `/tmp/disable-signals` is a simple text file containing two lin
 Each line is a GDB command, so you can have from simple to very complex
 debugging environments configured like that.
 
-WRAP PROCESS IN TESTS
-=====================
+WRAP EXECUTABLE RUN BY TESTS
+============================
 
-Avocado allows the instrumentation of applications being
-run by a test in a transparent way. The user specifies a script
-("the wrapper") to be used to run the actual program called by the test.
+Avocado allows the instrumentation of executables being run by a test
+in a transparent way. The user specifies a script ("the wrapper") to be
+used to run the actual program called by the test.
 
-If the instrument is implemented correctly, it should not interfere
-with the test behavior. So that, a perfect wrapper shall not
-change the return status, standard output and standard error messages
-of the process being executed.
+If the instrumentation script is implemented correctly, it should not
+interfere with the test behavior. That is, the wrapper should avoid
+changing the return status, standard output and standard error messages
+of the original executable.
 
-By using an optional parameter to the wrapper, you can specify a pattern
-in format of shell glob to select the "target binary" to wrap.
+The user can be specific about which program to wrap (with a shell-like glob),
+or if that is omitted, a global wrapper that will apply to all
+programs called by the test.
 
-In this case, for every program spawned by the test,
-the program name will be compared to the pattern to decide
-whether to wrap it or not. You can have multiples wrappers and patterns
-defined.
+So, for every executable run by the test, the program name will be
+compared to the pattern to decide whether to wrap it or not. You can
+have multiples wrappers and patterns defined.
 
 Examples::
 

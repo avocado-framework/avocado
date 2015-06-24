@@ -1,14 +1,14 @@
-Wrap process in tests
-=====================
+Wrap executables run by tests
+=============================
 
-Avocado allows the instrumentation of applications being run by a test
+Avocado allows the instrumentation of executables being run by a test
 in a transparent way. The user specifies a script ("the wrapper") to be
 used to run the actual program called by the test.
 
 If the instrumentation script is implemented correctly, it should not
 interfere with the test behavior. That is, the wrapper should avoid
 changing the return status, standard output and standard error messages
-of the original process.
+of the original executable.
 
 The user can be specific about which program to wrap (with a shell-like glob),
 or if that is omitted, a global wrapper that will apply to all
@@ -45,6 +45,6 @@ Caveats
   present in two wrappers, you have to combine those into a single
   wrapper script.
 
-* Only processes that are run with the :mod:`avocado.utils.process` APIs
+* Only executables that are run with the :mod:`avocado.utils.process` APIs
   (and other API modules that make use of it, like mod:`avocado.utils.build`)
   are affected by this feature.
