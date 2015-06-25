@@ -44,7 +44,7 @@ class RemoteTestResult(HumanTestResult):
         self.output = '-'
         self.command_line_arg_name = '--remote-hostname'
 
-    def _copy_tests(self):
+    def copy_tests(self):
         """
         Gather test directories and copy them recursively to
         $remote_test_dir + $test_absolute_path.
@@ -83,7 +83,6 @@ class RemoteTestResult(HumanTestResult):
                                      self.args.remote_username,
                                      self.args.remote_password,
                                      self.args.remote_port)
-        self._copy_tests()
 
     def tear_down(self):
         """ Cleanup after test execution """

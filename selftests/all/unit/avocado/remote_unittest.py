@@ -136,27 +136,6 @@ class RemoteTestResultTest(unittest.TestCase):
          .with_args('hostname', 'username', 'password', 22)
          .once().ordered()
          .and_return(Remote))
-        (Remote.should_receive('makedir').with_args('~/avocado/tests')
-         .once().ordered())
-        (flexmock(os.path).should_receive('exists')
-         .with_args('/tests/sleeptest').once().and_return(True).ordered())
-        (flexmock(os.path).should_receive('exists')
-         .with_args('/tests/other/test').once().and_return(True).ordered())
-        (flexmock(os.path).should_receive('exists')
-         .with_args('passtest').once().and_return(False).ordered())
-        (flexmock(data_dir).should_receive('get_test_dir').once()
-         .and_return('/path/to/default/tests/location').ordered())
-        (Remote.should_receive('makedir')
-         .with_args("~/avocado/tests/path/to/default/tests/location")
-         .once().ordered())
-        (Remote.should_receive('send_files')
-         .with_args("/path/to/default/tests/location",
-                    "~/avocado/tests/path/to/default/tests").once().ordered())
-        (Remote.should_receive('makedir')
-         .with_args("~/avocado/tests/tests")
-         .once().ordered())
-        (Remote.should_receive('send_files')
-         .with_args("/tests", "~/avocado/tests").once().ordered())
         Args = flexmock(test_result_total=1,
                         url=['/tests/sleeptest', '/tests/other/test',
                              'passtest'],
