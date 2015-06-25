@@ -87,6 +87,7 @@ _=/usr/bin/env''', exit_status=0)
                            stream=stream, timeout=None,
                            args=flexmock(show_job_log=False))
         Results.should_receive('setup').once().ordered()
+        Results.should_receive('copy_tests').once().ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
                 'name': u'sleeptest.1', 'class_name': 'RemoteTest',
