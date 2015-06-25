@@ -35,19 +35,21 @@ class GDB(plugin.Plugin):
         self.parser = parser
         gdb_grp = self.parser.runner.add_argument_group('GNU Debugger support')
         gdb_grp.add_argument('--gdb-run-bin', action='append',
-                             default=[], metavar='BINARY_PATH',
-                             help=('Set a breakpoint on a given binary to be '
-                                   'run inside the GNU debugger. Format should '
-                                   'be "<binary>[:breakpoint]". Breakpoint '
-                                   'defaults to "main"'))
+                             default=[], metavar='EXECUTABLE[:BREAKPOINT]',
+                             help=('Run a given executable inside the GNU '
+                                   'debugger, pausing at a given breakpoint '
+                                   '(defaults to "main")'))
 
+        # Because of a bug in Python's argparse, it's not possible to mark
+        # this option metavar as [EXECUTABLE:]COMMANDS, signalling that the
+        # EXECUTABLE is optional. https://bugs.python.org/issue11874
         gdb_grp.add_argument('--gdb-prerun-commands', action='append',
-                             default=[], metavar='BINARY_PATH:COMMANDS_PATH',
-                             help=('After loading a binary in binary in GDB, '
+                             default=[], metavar='EXECUTABLE:COMMANDS',
+                             help=('After loading an executable in GDB, '
                                    'but before actually running it, execute '
-                                   'the given GDB commands in the given file. '
-                                   'BINARY_PATH is optional and if omitted '
-                                   'will apply to all binaries'))
+                                   'the GDB commands in the given file. '
+                                   'EXECUTABLE is optional, if omitted '
+                                   'COMMANDS will apply to all executables'))
 
         gdb_grp.add_argument('--gdb-coredump', choices=('on', 'off'),
                              default='off',

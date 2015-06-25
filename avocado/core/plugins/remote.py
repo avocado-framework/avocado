@@ -37,7 +37,7 @@ class RunRemote(plugin.Plugin):
             self.enabled = False
             return
         username = getpass.getuser()
-        msg = 'run on a remote machine arguments'
+        msg = 'test execution on a remote machine'
         self.remote_parser = parser.runner.add_argument_group(msg)
         self.remote_parser.add_argument('--remote-hostname',
                                         dest='remote_hostname', default=None,

@@ -82,7 +82,7 @@ class TestRunner(plugin.Plugin):
                                        '(hardware details, profilers, etc.). '
                                        'Current:  %(default)s'))
 
-        self.parser.output = self.parser.add_argument_group('output related arguments')
+        self.parser.output = self.parser.add_argument_group('output and result format')
 
         self.parser.output.add_argument(
             '-s', '--silent', action='store_true', default=False,
@@ -116,10 +116,11 @@ class TestRunner(plugin.Plugin):
                                      'Current: on (output check enabled)'))
 
         if multiplexer.MULTIPLEX_CAPABLE:
-            mux = self.parser.add_argument_group('multiplex arguments')
-            mux.add_argument('-m', '--multiplex-files', nargs='*', default=None,
-                             help='Path(s) to a avocado multiplex (.yaml) '
-                             'file(s) (order dependent)')
+            mux = self.parser.add_argument_group('multiplexer use on test execution')
+            mux.add_argument('-m', '--multiplex-files', nargs='*',
+                             default=None, metavar='FILE',
+                             help='Location of one or more Avocado multiplex (.yaml) '
+                             'FILE(s) (order dependent)')
             mux.add_argument('--filter-only', nargs='*', default=[],
                              help='Filter only path(s) from multiplexing')
             mux.add_argument('--filter-out', nargs='*', default=[],

@@ -228,8 +228,8 @@ class XUnit(plugin.Plugin):
     def configure(self, parser):
         self.parser = parser
         self.parser.runner.output.add_argument(
-            '--xunit', type=str, dest='xunit_output',
-            help=('Enable xUnit output to the file where the result should be written. '
+            '--xunit', type=str, dest='xunit_output', metavar='FILE',
+            help=('Enable xUnit result format and write it to FILE. '
                   "Use '-' to redirect to the standard output."))
         self.configured = True
 

@@ -279,8 +279,8 @@ class HTML(plugin.Plugin):
         self.parser = parser
         self.parser.runner.output.add_argument(
             '--html', type=str,
-            dest='html_output',
-            help=('Enable HTML output to the file where the result should be '
+            dest='html_output', metavar='FILE',
+            help=('Enable HTML output to the FILE where the result should be '
                   'written. The value - (output to stdout) is not supported '
                   'since not all HTML resources can be embedded into a '
                   'single file (page resources will be copied to the '

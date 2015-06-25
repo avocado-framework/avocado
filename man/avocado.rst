@@ -356,11 +356,11 @@ variants. If no matches are found, then it would proceed to ``/qa/*``
 Keep in mind that only slices defined in mux-path are taken into account for
 relative paths (the ones starting with ``*``).
 
-DEBUGGING BINARIES RUN AS PART OF A TEST
-========================================
+DEBUGGING EXECUTABLES RUN AS PART OF A TEST
+===========================================
 
 One interesting avocado feature is the ability to automatically and
-transparently run binaries that are used on a given test inside the
+transparently run executables that are used on a given test inside the
 GNU debugger.
 
 Suppose you are running a test that uses an external, compiled, image
@@ -378,7 +378,7 @@ The job starts running just as usual, and so does your test::
  TESTS     : 1
  (1/1) converttest.py: /
 
-The `convert` binary though, automatically runs inside GDB. Avocado will
+The `convert` executable though, automatically runs inside GDB. Avocado will
 stop when the given breakpoint is reached::
 
  TEST PAUSED because of debugger breakpoint. To DEBUG your application run:
@@ -390,7 +390,7 @@ From this point, you can run the generated script (`convert.gdb.sh`) to
 debug you application.
 
 As noted, it is strongly recommended that you *disconnect* from gdb while
-your binary is still running. That is, if the binary finished running
+your executable is still running. That is, if the executable finished running
 while you are debugging it, avocado has no way to know about its status.
 
 Avocado will automatically send a `continue` command to the debugger
@@ -421,25 +421,25 @@ In this example, `/tmp/disable-signals` is a simple text file containing two lin
 Each line is a GDB command, so you can have from simple to very complex
 debugging environments configured like that.
 
-WRAP PROCESS IN TESTS
-=====================
+WRAP EXECUTABLE RUN BY TESTS
+============================
 
-Avocado allows the instrumentation of applications being
-run by a test in a transparent way. The user specifies a script
-("the wrapper") to be used to run the actual program called by the test.
+Avocado allows the instrumentation of executables being run by a test
+in a transparent way. The user specifies a script ("the wrapper") to be
+used to run the actual program called by the test.
 
-If the instrument is implemented correctly, it should not interfere
-with the test behavior. So that, a perfect wrapper shall not
-change the return status, standard output and standard error messages
-of the process being executed.
+If the instrumentation script is implemented correctly, it should not
+interfere with the test behavior. That is, the wrapper should avoid
+changing the return status, standard output and standard error messages
+of the original executable.
 
-By using an optional parameter to the wrapper, you can specify a pattern
-in format of shell glob to select the "target binary" to wrap.
+The user can be specific about which program to wrap (with a shell-like glob),
+or if that is omitted, a global wrapper that will apply to all
+programs called by the test.
 
-In this case, for every program spawned by the test,
-the program name will be compared to the pattern to decide
-whether to wrap it or not. You can have multiples wrappers and patterns
-defined.
+So, for every executable run by the test, the program name will be
+compared to the pattern to decide whether to wrap it or not. You can
+have multiples wrappers and patterns defined.
 
 Examples::
 
