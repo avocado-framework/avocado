@@ -62,16 +62,15 @@ class RemoteTestResult(HumanTestResult):
                 url = os.path.join(data_dir.get_test_dir(), '%s.py' % url)
             url = os.path.abspath(url)  # always use abspath; avoid clashes
             # modify url to remote_path + abspath
-            paths.add(os.path.dirname(url))
+            paths.add(url)
             self.urls[i] = self.remote_test_dir + url
-        previous = ' NOT ABSOLUTE PATH'
         for path in sorted(paths):
-            if os.path.commonprefix((path, previous)) == previous:
-                continue    # already copied
             rpath = self.remote_test_dir + path
-            self.remote.makedir(rpath)
+            self.remote.makedir(os.path.dirname(rpath))
             self.remote.send_files(path, os.path.dirname(rpath))
-            previous = path
+            test_data = path + '.data'
+            if os.path.isdir(test_data):
+                self.remote.send_files(test_data, os.path.dirname(rpath))
 
     def setup(self):
         """ Setup remote environment and copy test directories """
