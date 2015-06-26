@@ -56,7 +56,7 @@ class Multiplexer(plugin.Plugin):
         self.parser.add_argument('-c', '--contents', action='store_true',
                                  default=False, help="Shows the node content "
                                  "(variables)")
-        self.parser.add_argument('--env', default=[], nargs='*',
+        self.parser.add_argument('--mux-inject', default=[], nargs='*',
                                  help="Inject [path:]key:node values into "
                                  "the final multiplex tree.")
         env_parser = self.parser.add_argument_group("environment view options")
@@ -73,7 +73,7 @@ class Multiplexer(plugin.Plugin):
 
     def activate(self, args):
         # Extend default multiplex tree of --env values
-        for value in getattr(args, "env", []):
+        for value in getattr(args, "mux_inject", []):
             value = value.split(':', 2)
             if len(value) < 2:
                 raise ValueError("key:value pairs required, found only %s"

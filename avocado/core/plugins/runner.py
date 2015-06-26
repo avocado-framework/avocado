@@ -126,8 +126,9 @@ class TestRunner(plugin.Plugin):
             mux.add_argument('--filter-out', nargs='*', default=[],
                              help='Filter out path(s) from multiplexing')
             mux.add_argument('--mux-path', nargs='*', default=None,
-                             help="Multiplex entry point(s)")
-            mux.add_argument('--env', default=[], nargs='*',
+                             help="List of paths used to determine path "
+                             "priority when querying for parameters")
+            mux.add_argument('--mux-inject', default=[], nargs='*',
                              help="Inject [path:]key:node values into the "
                              "final multiplex tree.")
         super(TestRunner, self).configure(self.parser)
@@ -135,8 +136,8 @@ class TestRunner(plugin.Plugin):
         parser.runner = self.parser
 
     def activate(self, args):
-        # Extend default multiplex tree of --env values
-        for value in getattr(args, "env", []):
+        # Extend default multiplex tree of --mux_inject values
+        for value in getattr(args, "mux_inject", []):
             value = value.split(':', 2)
             if len(value) < 2:
                 raise ValueError("key:value pairs required, found only %s"
