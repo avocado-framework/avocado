@@ -44,16 +44,17 @@ class RemoteTestResult(HumanTestResult):
         self.output = '-'
         self.command_line_arg_name = '--remote-hostname'
 
-    def _copy_tests(self):
+    def copy_tests(self):
         """
         Gather test directories and copy them recursively to
         $remote_test_dir + $test_absolute_path.
         :note: Default tests execution is translated into absolute paths too
         """
-        # TODO: Use `avocado.core.loader.TestLoader` instead
-        self.remote.makedir(self.remote_test_dir)
         if self.args.remote_no_copy:    # Leave everything as is
             return
+
+        # TODO: Use `avocado.core.loader.TestLoader` instead
+        self.remote.makedir(self.remote_test_dir)
         paths = set()
         for i in xrange(len(self.urls)):
             url = self.urls[i]
@@ -61,16 +62,15 @@ class RemoteTestResult(HumanTestResult):
                 url = os.path.join(data_dir.get_test_dir(), '%s.py' % url)
             url = os.path.abspath(url)  # always use abspath; avoid clashes
             # modify url to remote_path + abspath
-            paths.add(os.path.dirname(url))
+            paths.add(url)
             self.urls[i] = self.remote_test_dir + url
-        previous = ' NOT ABSOLUTE PATH'
         for path in sorted(paths):
-            if os.path.commonprefix((path, previous)) == previous:
-                continue    # already copied
             rpath = self.remote_test_dir + path
-            self.remote.makedir(rpath)
+            self.remote.makedir(os.path.dirname(rpath))
             self.remote.send_files(path, os.path.dirname(rpath))
-            previous = path
+            test_data = path + '.data'
+            if os.path.isdir(test_data):
+                self.remote.send_files(test_data, os.path.dirname(rpath))
 
     def setup(self):
         """ Setup remote environment and copy test directories """
@@ -83,7 +83,6 @@ class RemoteTestResult(HumanTestResult):
                                      self.args.remote_username,
                                      self.args.remote_password,
                                      self.args.remote_port)
-        self._copy_tests()
 
     def tear_down(self):
         """ Cleanup after test execution """

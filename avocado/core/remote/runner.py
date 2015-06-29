@@ -71,11 +71,6 @@ class RemoteTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
-        avocado_installed_version = self.check_remote_avocado()
-        if not avocado_installed_version[0]:
-            raise exceptions.JobError('Remote machine does not seem to have '
-                                      'avocado installed')
-
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
@@ -157,6 +152,11 @@ class RemoteTestRunner(TestRunner):
         try:
             try:
                 self.result.setup()
+                avocado_installed, _ = self.check_remote_avocado()
+                if not avocado_installed:
+                    raise exceptions.JobError('Remote machine does not seem to have '
+                                              'avocado installed')
+                self.result.copy_tests()
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
