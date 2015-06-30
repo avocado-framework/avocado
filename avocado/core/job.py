@@ -160,7 +160,7 @@ class Job(object):
                     self.test_loader.add_loader_plugin(loader_plugin)
             except TypeError:
                 pass
-        filesystem_loader = loader.TestLoader(self)
+        filesystem_loader = loader.FileLoader(self)
         self.test_loader.add_loader_plugin(filesystem_loader)
 
     def _make_test_runner(self):

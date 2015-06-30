@@ -24,9 +24,10 @@ import re
 import sys
 
 from . import data_dir
-from . import test
 from . import output
-from ..utils import path, stacktrace
+from . import test
+from ..utils import path
+from ..utils import stacktrace
 
 try:
     import cStringIO as StringIO
@@ -34,22 +35,19 @@ except ImportError:
     import StringIO
 
 
-class _DebugJob(object):
+class _DummyJob(object):
+
+    """ Simplest job definition for debugging purposes """
 
     def __init__(self, args=None):
         self.logdir = '.'
         self.args = args
 
 
-class BrokenSymlink(object):
-    pass
-
-
-class AccessDeniedPath(object):
-    pass
-
-
 class InvalidLoaderPlugin(Exception):
+
+    """ Invalid loader plugin """
+
     pass
 
 
@@ -74,8 +72,8 @@ class TestLoaderProxy(object):
                     self.add_loader_plugin(loader_plugin)
             except TypeError:
                 pass
-        filesystem_loader = TestLoader()
-        self.add_loader_plugin(filesystem_loader)
+        # File loader has to be the last one (for now)
+        self.add_loader_plugin(FileLoader())
 
     def get_extra_listing(self, args):
         for loader_plugin in self.loader_plugins:
@@ -167,13 +165,13 @@ class TestLoaderProxy(object):
 class TestLoader(object):
 
     """
-    Test loader class.
+    Base for test loader classes
     """
 
     def __init__(self, job=None, args=None):
 
         if job is None:
-            job = _DebugJob(args=args)
+            job = _DummyJob(args=args)
         self.job = job
 
     def get_extra_listing(self, args):
@@ -181,13 +179,13 @@ class TestLoader(object):
 
     def get_base_keywords(self):
         """
-        Get base keywords to locate tests (path to test dir in this case).
+        Get base keywords to locate tests.
 
-        Used to list all tests available in virt-test.
+        Used when no keywords specified.
 
-        :return: list with path strings.
+        :return: list of plugin default keywords.
         """
-        return [data_dir.get_test_dir()]
+        return []
 
     def get_type_label_mapping(self):
         """
@@ -195,6 +193,68 @@ class TestLoader(object):
 
         :return: Dict {TestClass: 'TEST_LABEL_STRING'}
         """
+        return {}
+
+    def get_decorator_mapping(self):
+        """
+        Get label mapping for display in test listing.
+
+        :return: Dict {TestClass: decorator function}
+        """
+        return {}
+
+    def discover_url(self, url):
+        """
+        Discover (possible) tests from an url.
+
+        :param url: the url to be inspected.
+        :type url: str
+        :return: a list of test matching the url as params.
+        """
+        raise NotImplementedError
+
+    def discover(self, params_list):
+        """
+        Discover tests for test suite.
+
+        :param params_list: a list of test parameters.
+        :type params_list: list
+        :return: a test suite (a list of test factories).
+        """
+        raise NotImplementedError
+
+    def validate_ui(self, test_suite, ignore_missing=False,
+                    ignore_not_test=False, ignore_broken_symlinks=False,
+                    ignore_access_denied=False):
+        """
+        Validate test suite and deliver error messages to the UI
+        :param test_suite: List of tuples (test_class, test_params)
+        :type test_suite: list
+        :return: List with error messages
+        :rtype: list
+        """
+        raise NotImplementedError
+
+
+class BrokenSymlink(object):
+    pass
+
+
+class AccessDeniedPath(object):
+    pass
+
+
+class FileLoader(TestLoader):
+
+    """
+    Test loader class.
+    """
+
+    def get_base_keywords(self):
+        """ Return default tests directory """
+        return [data_dir.get_test_dir()]
+
+    def get_type_label_mapping(self):
         return {test.SimpleTest: 'SIMPLE',
                 test.BuggyTest: 'BUGGY',
                 test.NotATest: 'NOT_A_TEST',
@@ -204,11 +264,6 @@ class TestLoader(object):
                 test.Test: 'INSTRUMENTED'}
 
     def get_decorator_mapping(self):
-        """
-        Get label mapping for display in test listing.
-
-        :return: Dict {TestClass: decorator function}
-        """
         term_support = output.TermSupport()
         return {test.SimpleTest: term_support.healthy_str,
                 test.BuggyTest: term_support.fail_header_str,
@@ -217,6 +272,55 @@ class TestLoader(object):
                 BrokenSymlink: term_support.fail_header_str,
                 AccessDeniedPath: term_support.fail_header_str,
                 test.Test: term_support.healthy_str}
+
+    def discover_url(self, url):
+        """
+        Discover (possible) tests from a directory.
+
+        Recursively walk in a directory and find tests params.
+        The tests are returned in alphabetic order.
+
+        :param url: the directory path to inspect.
+        :type url: str
+        :return: a list of test params (each one a dictionary).
+        """
+        ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
+                         '__main__.py')
+        params_list = []
+
+        # Look for filename:test_method pattern
+        if ':' in url:
+            url, filter_pattern = url.split(':', 1)
+        else:
+            filter_pattern = None
+
+        def onerror(exception):
+            norm_url = os.path.abspath(url)
+            norm_error_filename = os.path.abspath(exception.filename)
+            if os.path.isdir(norm_url) and norm_url != norm_error_filename:
+                omit_non_tests = True
+            else:
+                omit_non_tests = False
+
+            params_list.append({'id': exception.filename,
+                                'filter': filter_pattern,
+                                'omit_non_tests': omit_non_tests})
+
+        for dirpath, dirnames, filenames in os.walk(url, onerror=onerror):
+            for dir_name in dirnames:
+                if dir_name.startswith('.'):
+                    dirnames.pop(dirnames.index(dir_name))
+            for file_name in filenames:
+                if not file_name.startswith('.'):
+                    ignore = False
+                    for suffix in ignore_suffix:
+                        if file_name.endswith(suffix):
+                            ignore = True
+                    if not ignore:
+                        pth = os.path.join(dirpath, file_name)
+                        params_list.append({'id': pth,
+                                            'omit_non_tests': True})
+        return params_list
 
     def _is_unittests_like(self, test_class, pattern='test'):
         for name, _ in inspect.getmembers(test_class, inspect.ismethod):
@@ -285,9 +389,11 @@ class TestLoader(object):
                     for test_method in self._make_unittests_like(test_class):
                         copy_test_parameters = test_parameters.copy()
                         copy_test_parameters['methodName'] = test_method[0]
-                        class_and_method_name = ':%s.%s' % (test_class.__name__, test_method[0])
+                        class_and_method_name = ':%s.%s' % (
+                            test_class.__name__, test_method[0])
                         copy_test_parameters['name'] += class_and_method_name
-                        test_factories.append([test_class, copy_test_parameters])
+                        test_factories.append(
+                            [test_class, copy_test_parameters])
                     return test_factories
             else:
                 if os.access(test_path, os.X_OK):
@@ -339,7 +445,7 @@ class TestLoader(object):
 
         return [(test_class, test_parameters)]
 
-    def discover_tests(self, params):
+    def _discover_tests(self, params):
         """
         Try to discover and resolve tests.
 
@@ -383,72 +489,6 @@ class TestLoader(object):
                     test_name, params)
         return [(test_class, test_parameters)]
 
-    def discover_url(self, url):
-        """
-        Discover (possible) tests from a directory.
-
-        Recursively walk in a directory and find tests params.
-        The tests are returned in alphabetic order.
-
-        :param dir_path: the directory path to inspect.
-        :type dir_path: str
-        :param ignore_suffix: list of suffix to ignore in paths.
-        :type ignore_suffix: list
-        :return: a list of test params (each one a dictionary).
-        """
-        ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
-                         '__main__.py')
-        params_list = []
-
-        # Look for filename:test_method pattern
-        if ':' in url:
-            url, filter_pattern = url.split(':', 1)
-        else:
-            filter_pattern = None
-
-        def onerror(exception):
-            norm_url = os.path.abspath(url)
-            norm_error_filename = os.path.abspath(exception.filename)
-            if os.path.isdir(norm_url) and norm_url != norm_error_filename:
-                omit_non_tests = True
-            else:
-                omit_non_tests = False
-
-            params_list.append({'id': exception.filename,
-                                'filter': filter_pattern,
-                                'omit_non_tests': omit_non_tests})
-
-        for dirpath, dirnames, filenames in os.walk(url, onerror=onerror):
-            for dir_name in dirnames:
-                if dir_name.startswith('.'):
-                    dirnames.pop(dirnames.index(dir_name))
-            for file_name in filenames:
-                if not file_name.startswith('.'):
-                    ignore = False
-                    for suffix in ignore_suffix:
-                        if file_name.endswith(suffix):
-                            ignore = True
-                    if not ignore:
-                        pth = os.path.join(dirpath, file_name)
-                        params_list.append({'id': pth,
-                                            'omit_non_tests': True})
-        return params_list
-
-    def discover_urls(self, urls):
-        """
-        Discover (possible) tests from test urls.
-
-        :param urls: a list of tests urls.
-        :type urls: list
-        :return: a list of test params (each one a dictionary).
-        """
-        params_list = []
-        for url in urls:
-            if url == '':
-                continue
-            params_list.extend(self.discover_url(url))
-        return params_list
-
     def discover(self, params_list):
         """
         Discover tests for test suite.
@@ -459,7 +499,7 @@ class TestLoader(object):
         """
         test_suite = []
         for params in params_list:
-            test_factories = self.discover_tests(params)
+            test_factories = self._discover_tests(params)
             for test_factory in test_factories:
                 if test_factory is None:
                     continue
@@ -472,7 +512,7 @@ class TestLoader(object):
         return test_suite
 
     @staticmethod
-    def validate(test_suite):
+    def _validate(test_suite):
         """
         Find missing files/non-tests provided by the user in the input.
 
@@ -508,7 +548,7 @@ class TestLoader(object):
         :rtype: list
         """
         (missing, not_test, broken_symlink,
-         access_denied) = self.validate(test_suite)
+         access_denied) = self._validate(test_suite)
         broken_symlink_msg = ''
         if (not ignore_broken_symlinks) and broken_symlink:
             if len(broken_symlink) == 1:
@@ -545,15 +585,3 @@ class TestLoader(object):
         return [msg for msg in
                 [access_denied_msg, broken_symlink_msg, missing_msg,
                  not_test_msg] if msg]
-
-    def load_test(self, test_factory):
-        """
-        Load test from the test factory.
-
-        :param test_factory: a pair of test class and parameters.
-        :type params: tuple
-        :return: an instance of :class:`avocado.core.test.Test`.
-        """
-        test_class, test_parameters = test_factory
-        test_instance = test_class(**test_parameters)
-        return test_instance
