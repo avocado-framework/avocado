@@ -17,6 +17,7 @@ This file contains tools for (not only) Avocado developers.
 """
 import logging
 import time
+import os
 
 
 # Use this for debug logging
@@ -43,3 +44,49 @@ def measure_duration(func):
             LOGGER.debug("PERF: %s: (%ss, %ss)", func, duration,
                          __MEASURE_DURATION[func])
     return wrapper
+
+
+def log_calls_class(length=None):
+    """
+    Use this as decorator to log the function methods' calls.
+    :param length: Max message length
+    """
+    def wrap(orig_cls):
+        for key, attr in orig_cls.__dict__.iteritems():
+            if callable(attr):
+                setattr(orig_cls, key,
+                        _log_calls(attr, length, orig_cls.__name__))
+        return orig_cls
+    return wrap
+
+
+def _log_calls(func, length=None, cls_name=None):
+    """
+    log_calls wrapper function
+    """
+    def wrapper(*args, **kwargs):
+        """ Wrapper function """
+        msg = ("CALL: %s:%s%s(%s, %s)"
+               % (os.path.relpath(func.func_code.co_filename),
+                  cls_name, func.func_name,
+                  ", ".join([str(_) for _ in args]),
+                  ", ".join(["%s=%s" % (key, value)
+                             for key, value in kwargs.iteritems()])))
+        if length:
+            msg = msg[:length]
+        LOGGER.debug(msg)
+        return func(*args, **kwargs)
+    if cls_name:
+        cls_name = cls_name + "."
+    return wrapper
+
+
+def log_calls(length=None, cls_name=None):
+    """
+    Use this as decorator to log the function call altogether with arguments.
+    :param length: Max message length
+    :param cls_name: Optional class name prefix
+    """
+    def wrap(func):
+        return _log_calls(func, length, cls_name)
+    return wrap
