@@ -65,6 +65,26 @@ def string_to_bitlist(data):
     return result
 
 
+def shell_escape(command):
+    """
+    Escape special characters from a command so that it can be passed
+    as a double quoted (" ") string in a (ba)sh command.
+
+    :param command: the command string to escape.
+
+    :return: The escaped command string. The required englobing double
+            quotes are NOT added and so should be added at some point by
+            the caller.
+
+    See also: http://www.tldp.org/LDP/abs/html/escapingsection.html
+    """
+    command = command.replace("\\", "\\\\")
+    command = command.replace("$", r'\$')
+    command = command.replace('"', r'\"')
+    command = command.replace('`', r'\`')
+    return command
+
+
 def strip_console_codes(output, custom_codes=None):
     """
     Remove the Linux console escape and control sequences from the console
