@@ -35,15 +35,6 @@ except ImportError:
     import StringIO
 
 
-class _DummyJob(object):
-
-    """ Simplest job definition for debugging purposes """
-
-    def __init__(self, args=None):
-        self.logdir = '.'
-        self.args = args
-
-
 class InvalidLoaderPlugin(Exception):
 
     """ Invalid loader plugin """
@@ -54,46 +45,47 @@ class InvalidLoaderPlugin(Exception):
 class TestLoaderProxy(object):
 
     def __init__(self):
-        self.loader_plugins = []
+        self._initialized_plugins = []
+        self.registered_plugins = []
         self.url_plugin_mapping = {}
 
-    def add_loader_plugin(self, plugin):
-        if not isinstance(plugin, TestLoader):
+    def register_plugin(self, plugin):
+        try:
+            if issubclass(plugin, TestLoader):
+                self.registered_plugins.append(plugin)
+            else:
+                raise ValueError
+        except ValueError:
             raise InvalidLoaderPlugin("Object %s is not an instance of "
                                       "TestLoader" % plugin)
-        self.loader_plugins.append(plugin)
 
     def load_plugins(self, args):
-        for key in args.__dict__.keys():
-            loader_class_candidate = getattr(args, key)
-            try:
-                if issubclass(loader_class_candidate, TestLoader):
-                    loader_plugin = loader_class_candidate(args=args)
-                    self.add_loader_plugin(loader_plugin)
-            except TypeError:
-                pass
-        # File loader has to be the last one (for now)
-        self.add_loader_plugin(FileLoader())
+        self._initialized_plugins = []
+        for plugin in self.registered_plugins:
+            self._initialized_plugins.append(plugin(args))
+        # Add (default) file loader if not already registered
+        if FileLoader not in self.registered_plugins:
+            self._initialized_plugins.append(FileLoader(args))
 
     def get_extra_listing(self, args):
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             loader_plugin.get_extra_listing(args)
 
     def get_base_keywords(self):
         base_path = []
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             base_path += loader_plugin.get_base_keywords()
         return base_path
 
     def get_type_label_mapping(self):
         mapping = {}
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             mapping.update(loader_plugin.get_type_label_mapping())
         return mapping
 
     def get_decorator_mapping(self):
         mapping = {}
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             mapping.update(loader_plugin.get_decorator_mapping())
         return mapping
 
@@ -108,7 +100,7 @@ class TestLoaderProxy(object):
         :return: A list of test factories (tuples (TestClass, test_params))
         """
         test_factories = []
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             if urls:
                 _urls = urls
             else:
@@ -168,11 +160,8 @@ class TestLoader(object):
     Base for test loader classes
     """
 
-    def __init__(self, job=None, args=None):
-
-        if job is None:
-            job = _DummyJob(args=args)
-        self.job = job
+    def __init__(self, args):
+        self.args = args
 
     def get_extra_listing(self, args):
         pass
@@ -338,25 +327,19 @@ class FileLoader(TestLoader):
     def _make_missing_test(self, test_name, params):
         test_class = test.MissingTest
         test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
+                           'params': params}
         return test_class, test_parameters
 
     def _make_not_a_test(self, test_name, params):
         test_class = test.NotATest
         test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
+                           'params': params}
         return test_class, test_parameters
 
     def _make_simple_test(self, test_path, params):
         test_class = test.SimpleTest
         test_parameters = {'name': test_path,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
+                           'params': params}
         return test_class, test_parameters
 
     def _make_tests(self, test_name, test_path, params):
@@ -365,9 +348,7 @@ class FileLoader(TestLoader):
         sys.path.append(test_module_dir)
         test_class = None
         test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
+                           'params': params}
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         try:
             sys.stdin = None
@@ -585,3 +566,6 @@ class FileLoader(TestLoader):
         return [msg for msg in
                 [access_denied_msg, broken_symlink_msg, missing_msg,
                  not_test_msg] if msg]
+
+
+loader = TestLoaderProxy()

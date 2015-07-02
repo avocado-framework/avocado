@@ -32,7 +32,7 @@ class TestLister(object):
         use_paginator = args.paginator == 'on'
         self.view = output.View(app_args=args, use_paginator=use_paginator)
         self.term_support = output.TermSupport()
-        self.test_loader = loader.TestLoaderProxy()
+        self.test_loader = loader.loader
         self.test_loader.load_plugins(args)
         self.args = args
 

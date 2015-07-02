@@ -30,7 +30,7 @@ import fnmatch
 from . import version
 from . import data_dir
 from . import runner
-from . import loader
+from .loader import loader
 from . import sysinfo
 from . import result
 from . import exit_codes
@@ -114,7 +114,6 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-        self.test_loader = loader.TestLoaderProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
 
@@ -150,18 +149,6 @@ class Job(object):
 
     def _remove_job_results(self):
         shutil.rmtree(self.logdir, ignore_errors=True)
-
-    def _make_test_loader(self):
-        for key in self.args.__dict__.keys():
-            loader_class_candidate = getattr(self.args, key)
-            try:
-                if issubclass(loader_class_candidate, loader.TestLoader):
-                    loader_plugin = loader_class_candidate(self)
-                    self.test_loader.add_loader_plugin(loader_plugin)
-            except TypeError:
-                pass
-        filesystem_loader = loader.FileLoader(self)
-        self.test_loader.add_loader_plugin(filesystem_loader)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -259,10 +246,8 @@ class Job(object):
         :returns: a test suite (a list of test factories)
         """
         urls = self._handle_urls(urls)
-
-        self._make_test_loader()
-
-        return self.test_loader.discover(urls)
+        loader.load_plugins(self.args)
+        return loader.discover(urls)
 
     def _validate_test_suite(self, test_suite):
         try:
@@ -270,7 +255,7 @@ class Job(object):
             # the tests will not be copied from this system to a remote one
             # using the remote plugin features
             if not getattr(self.args, 'remote_no_copy', False):
-                error_msg_parts = self.test_loader.validate_ui(test_suite)
+                error_msg_parts = loader.validate_ui(test_suite)
             else:
                 error_msg_parts = []
         except KeyboardInterrupt:
