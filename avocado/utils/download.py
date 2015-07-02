@@ -24,6 +24,7 @@ import shutil
 import urllib2
 
 from . import aurl
+from . import output
 
 
 log = logging.getLogger('avocado.test')
@@ -69,6 +70,47 @@ def url_download(url, filename, data=None, timeout=300):
             dest_file.close()
     finally:
         src_file.close()
+
+
+def url_download_interactive(url, output_file, title='', chunk_size=102400):
+    """
+    Interactively downloads a given file url to a given output file.
+
+    :type url: string
+    :param url: URL for the file to be download
+    :type output_file: string
+    :param output_file: file name or absolute path on which to save the file to
+    :type title: string
+    :param title: optional title to go along the progress bar
+    :type chunk_size: integer
+    :param chunk_size: amount of data to read at a time
+    """
+    output_dir = os.path.dirname(output_file)
+    output_file = open(output_file, 'w+b')
+    input_file = urllib2.urlopen(url)
+
+    try:
+        file_size = int(input_file.headers['Content-Length'])
+    except KeyError:
+        raise ValueError('Could not find file size in HTTP headers')
+
+    logging.info('Downloading %s, %s to %s', os.path.basename(url),
+                 output.display_data_size(file_size), output_dir)
+
+    progress_bar = output.ProgressBar(maximum=file_size, title=title)
+
+    # Download the file, while interactively updating the progress
+    progress_bar.draw()
+    while True:
+        data = input_file.read(chunk_size)
+        if data:
+            progress_bar.append_amount(len(data))
+            output_file.write(data)
+        else:
+            progress_bar.update_amount(file_size)
+            break
+
+    output_file.close()
 
 
 def get_file(src, dst, permissions=None):
