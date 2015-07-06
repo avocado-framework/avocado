@@ -12,7 +12,7 @@ class ErrorTest(Test):
 
     def test(self):
         """
-        This should end with ERROR (on default config)
+        This should end with ERROR.
         """
         raise Exception("This is a generic exception")
 

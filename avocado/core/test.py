@@ -35,8 +35,6 @@ from . import data_dir
 from . import sysinfo
 from . import exceptions
 from . import multiplexer
-from . import status
-from .settings import settings
 from .version import VERSION
 from ..utils import genio
 from ..utils import path as utils_path
@@ -361,12 +359,26 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail(details)
         try:
             testMethod()
+        except exceptions.TestNAError, details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            skip_illegal_msg = ('Calling skip() in places other than '
+                                'setUp() is not allowed in avocado, you '
+                                'must fix your test. Original skip exception: '
+                                '%s' % details)
+            raise exceptions.TestError(skip_illegal_msg)
         except Exception, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             test_exception = details
         finally:
             try:
                 self.tearDown()
+            except exceptions.TestNAError, details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                skip_illegal_msg = ('Calling skip() in places other than '
+                                    'setUp() is not allowed in avocado, '
+                                    'you must fix your test. Original skip '
+                                    'exception: %s' % details)
+                raise exceptions.TestError(skip_illegal_msg)
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 cleanup_exception = details
@@ -451,16 +463,7 @@ class Test(unittest.TestCase):
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception, detail:
-            stat = settings.get_value("runner.behavior",
-                                      "uncaught_exception_result",
-                                      default="ERROR")
-            if stat not in status.mapping:
-                stacktrace.log_message("Incorrect runner.behavior.generic_"
-                                       "exception_result value '%s', using "
-                                       "'ERROR' instead." % stat,
-                                       "avocado.test")
-                stat = "ERROR"
-            self.status = stat
+            self.status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
@@ -522,7 +525,13 @@ class Test(unittest.TestCase):
 
     def skip(self, message=None):
         """
-        Skips the currently running test
+        Skips the currently running test.
+
+        This method should only be called from a test's setUp() method, not
+        anywhere else, since by definition, if a test gets to be executed, it
+        can't be skipped anymore. If you call this method outside setUp(),
+        avocado will mark your test status as ERROR, and instruct you to
+        fix your test in the error message.
 
         :param message: an optional message that will be recorded in the logs
         :type message: str
@@ -636,6 +645,9 @@ class TimeOutSkipTest(Test):
     It will never have a chance to execute.
     """
 
-    def test(self):
+    def setUp(self):
         e_msg = 'Test skipped due a job timeout!'
         raise exceptions.TestNAError(e_msg)
+
+    def test(self):
+        pass
