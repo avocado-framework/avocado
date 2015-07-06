@@ -19,3 +19,4 @@ __all__ = ['main', 'Test', 'VERSION']
 from avocado.core.job import main
 from avocado.core.test import Test
 from avocado.core.version import VERSION
+from avocado.core.exceptions import fail_on_error
