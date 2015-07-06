@@ -215,6 +215,17 @@ class RunnerOperationTest(unittest.TestCase):
         int(r['job_id'], 16)  # it's an hex number
         self.assertEqual(len(r['job_id']), 40)
 
+    def test_skip_outside_setup(self):
+        os.chdir(basedir)
+        cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
+                    "--json - skip_outside_setup" % self.tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc,
+                                                                result))
+        self.assertIn('"status": "ERROR"', result.stdout)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
