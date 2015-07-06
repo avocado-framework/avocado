@@ -3,7 +3,8 @@
 
 from __future__ import print_function
 
-"""Simple script to test cyclical dependencies in modules.
+"""
+Simple script to test cyclical dependencies in modules.
 
 Requirements:
     - SnakeFood (pip install snakefood)
@@ -24,6 +25,15 @@ except ImportError:
     print("Please, install 'python-networkx' with yum or apt.", file=sys.stderr)
     sys.exit(2)
 
+# simple magic for using scripts within a source tree
+basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.isdir(os.path.join(basedir, 'avocado')):
+    os.environ['PATH'] += ":" + os.path.join(basedir, 'scripts')
+    os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
+    sys.path.append(basedir)
+
+from avocado.utils import process
+
 
 def has_snakefood():
     with open(os.devnull, 'w') as null:
@@ -39,9 +49,10 @@ def has_snakefood():
 
 def generate_dot_file(path):
     cmdline = 'sfood --internal %s | sfood-graph --remove-extensions'
-    output = subprocess.check_output(cmdline % path, shell=True)
+    output = process.system_output(cmdline % path, shell=True)
     tmp = tempfile.mktemp()
-    fd = open(tmp, 'w').write(output)
+    with open(tmp, 'w') as sfood_file:
+        sfood_file.write(output)
     return tmp
 
 

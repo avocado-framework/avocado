@@ -57,12 +57,16 @@ class App(object):
         self.args, _ = self.parser.parse_known_args()
         if not (self.args.template or self.args.input):
             self.parser.print_usage()
-            sys.exit(0)
+            return 0
 
         if self.args.input:
             self.report()
         else:
-            self.run_test_plan()
+            try:
+                self.run_test_plan()
+            except KeyboardInterrupt:
+                print("\nTest Plan interrupted by the user")
+                return 1
 
     def run_test_plan(self):
         self.json = json.load(self.args.template)
@@ -98,6 +102,7 @@ class App(object):
         self.user_identification = user
 
         self.save()
+        return 0
 
     def get_output_file_name(self, suffix='json'):
         """
@@ -145,6 +150,7 @@ class App(object):
             print("%s: '%s': %s" % (result.get("result"),
                                     result.get("name"),
                                     result.get("notes")))
+        return 0
 
 if __name__ == '__main__':
     app = App()

@@ -67,11 +67,14 @@ clean:
 	test -L avocado/core/plugins/virt_test_list.py && rm -f avocado/core/plugins/virt_test_list.py || true
 	test -L etc/avocado/conf.d/virt-test.conf && rm -f etc/avocado/conf.d/virt-test.conf || true
 
-check: clean
+check: clean check_cyclical modules_boundaries
 	selftests/checkall
 
 check_cyclical:
 	selftests/cyclical_deps avocado
+
+modules_boundaries:
+	selftests/modules_boundaries
 
 link: link_virt link_vt
 
