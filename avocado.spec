@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.25.0
-Release: 2%{?dist}
+Version: 0.26.0
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -104,6 +104,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Jul 6 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.26.0-1
+- New upstream release 0.26.0
+
 * Tue Jun 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.25.0-2
 - Fix spec bug with BuildRequires on EPEL6
 
