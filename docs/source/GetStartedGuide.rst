@@ -113,7 +113,6 @@ one is that, you may use ``avocado config --datadir``). The output looks like::
     INSTRUMENTED /usr/share/avocado/tests/linuxbuild.py
     INSTRUMENTED /usr/share/avocado/tests/multiplextest.py
     INSTRUMENTED /usr/share/avocado/tests/passtest.py
-    INSTRUMENTED /usr/share/avocado/tests/skiptest.py
     INSTRUMENTED /usr/share/avocado/tests/sleeptenmin.py
     INSTRUMENTED /usr/share/avocado/tests/sleeptest.py
     INSTRUMENTED /usr/share/avocado/tests/synctest.py
