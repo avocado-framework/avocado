@@ -17,6 +17,29 @@ Exception classes, useful for tests, and other parts of the framework code.
 """
 
 
+def fail_on_error(fn):
+    """
+    Apply to any test you want to FAIL upon any exception raised.
+
+    Normally only TestFail called explicitly will mark an avocado test with the
+    FAIL state, but this decorator is provided as a convenience for people
+    that need a more relaxed behavior.
+
+    :param fn: Function that will be decorated
+    """
+    def new_fn(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except TestBaseException:
+            raise
+        except Exception, e:
+            raise TestFail(str(e))
+    new_fn.__name__ = fn.__name__
+    new_fn.__doc__ = fn.__doc__
+    new_fn.__dict__.update(fn.__dict__)
+    return new_fn
+
+
 class JobBaseException(Exception):
 
     """

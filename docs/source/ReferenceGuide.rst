@@ -54,6 +54,21 @@ Simple
 Any executable in your box. The criteria for PASS/FAIL is the return code of the executable.
 If it returns 0, the test PASSes, if it returns anything else, it FAILs.
 
+Test Statuses
+=============
+
+Avocado sticks to the following definitions of test statuses:
+
+ * ```PASS```: The test passed, which means all conditions being tested have passed.
+ * ```FAIL```: The test failed, which means at least one condition being tested has
+   failed. Ideally, it should mean a problem in the software being tested has been found.
+ * ```ERROR```: An error happened during the test execution. This can happen, for example,
+   if there's a bug in the test runner, in its libraries or if a resource breaks unexpectedly.
+   Uncaught exceptions in the test code will also result in this status.
+ * ```SKIP```: The test runner decided a requested test should not be run. This
+   can happen, for example, due to missing requirements in the test environment
+   or when there's a job timeout.
+
 .. _libraries-apis:
 
 Libraries and APIs
