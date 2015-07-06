@@ -37,11 +37,6 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = 0
         self.run_and_check(cmd_line, expected_rc, 'passtest')
 
-    def test_skiptest(self):
-        cmd_line = './examples/tests/skiptest.py -r'
-        expected_rc = 0
-        self.run_and_check(cmd_line, expected_rc, 'skiptest')
-
     def test_warntest(self):
         cmd_line = './examples/tests/warntest.py -r'
         expected_rc = 0
