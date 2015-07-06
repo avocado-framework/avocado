@@ -9,3 +9,6 @@ pep8==1.6.2
 requests==1.2.3
 PyYAML==3.11
 Pillow==2.2.1
+snakefood==1.4
+networkx==1.9.1
+pygraphviz==1.3rc2
