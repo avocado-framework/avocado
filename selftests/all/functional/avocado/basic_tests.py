@@ -126,10 +126,10 @@ class RunnerOperationTest(unittest.TestCase):
                                                                 result))
         self.assertIn('"status": "ERROR"', result.stdout)
 
-    def test_fail_on_error(self):
+    def test_fail_on_exception(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
-                    "--json - fail_on_error" % self.tmpdir)
+                    "--json - fail_on_exception" % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
