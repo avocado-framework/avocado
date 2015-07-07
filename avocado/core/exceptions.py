@@ -15,29 +15,45 @@
 """
 Exception classes, useful for tests, and other parts of the framework code.
 """
+from functools import wraps
+import types
 
 
-def fail_on_error(fn):
+def fail_on(exceptions=None):
     """
-    Apply to any test you want to FAIL upon any exception raised.
+    Fail the test when decorated function produces exception of the specified
+    type.
 
-    Normally only TestFail called explicitly will mark an avocado test with the
-    FAIL state, but this decorator is provided as a convenience for people
-    that need a more relaxed behavior.
+    (For example, our method may raise IndexError on tested software failure.
+    We can either try/catch it or use this decorator instead)
 
-    :param fn: Function that will be decorated
+    :param exceptions: Tuple or single exception to be assumed as
+                       test fail [Exception]
+    :note: self.error and self.skip behavior remains intact
+    :note: To allow simple usage param "exceptions" must not be callable
     """
-    def new_fn(*args, **kwargs):
-        try:
-            return fn(*args, **kwargs)
-        except TestBaseException:
-            raise
-        except Exception, e:
-            raise TestFail(str(e))
-    new_fn.__name__ = fn.__name__
-    new_fn.__doc__ = fn.__doc__
-    new_fn.__dict__.update(fn.__dict__)
-    return new_fn
+    func = False
+    if exceptions is None:
+        exceptions = Exception
+    elif isinstance(exceptions, types.FunctionType):     # @fail_on without ()
+        func = exceptions
+        exceptions = Exception
+
+    def decorate(func):
+        """ Decorator """
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            """ Function wrapper """
+            try:
+                return func(*args, **kwargs)
+            except TestBaseException:
+                raise
+            except exceptions, details:
+                raise TestFail(str(details))
+        return wrap
+    if func:
+        return decorate(func)
+    return decorate
 
 
 class JobBaseException(Exception):
