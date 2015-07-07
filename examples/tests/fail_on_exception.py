@@ -3,13 +3,14 @@
 import avocado
 
 
-class FailOnError(avocado.Test):
+class FailOnException(avocado.Test):
 
     """
-    Test illustrating the behavior of the fail_on_error decorator.
+    Test illustrating the behavior of the fail_on decorator.
     """
 
-    @avocado.fail_on_error
+    # @avocado.fail_on(ValueError) also possible
+    @avocado.fail_on
     def test(self):
         """
         This should end with FAIL.

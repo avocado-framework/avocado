@@ -15,29 +15,40 @@
 """
 Exception classes, useful for tests, and other parts of the framework code.
 """
+from functools import wraps
 
 
-def fail_on_error(fn):
+def fail_on(exceptions=None):
     """
-    Apply to any test you want to FAIL upon any exception raised.
+    Apply to any function to make it fail rather than error when exception
+    is of provided type.
 
-    Normally only TestFail called explicitly will mark an avocado test with the
-    FAIL state, but this decorator is provided as a convenience for people
-    that need a more relaxed behavior.
-
-    :param fn: Function that will be decorated
+    :param exceptions: Tuple of exceptions to be assumed as FAIL [Exception]
+    :note: Avocado exceptions are re-raised untouched
+    :note: To allow simple usage param "exceptions" must not be callable
     """
-    def new_fn(*args, **kwargs):
-        try:
-            return fn(*args, **kwargs)
-        except TestBaseException:
-            raise
-        except Exception, e:
-            raise TestFail(str(e))
-    new_fn.__name__ = fn.__name__
-    new_fn.__doc__ = fn.__doc__
-    new_fn.__dict__.update(fn.__dict__)
-    return new_fn
+    func = False
+    if exceptions is None:
+        exceptions = Exception
+    elif not isinstance(exceptions, tuple):     # @fail_on without ()
+        func = exceptions
+        exceptions = Exception
+
+    def decorate(func):
+        """ Decorator """
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            """ Function wrapper """
+            try:
+                return func(*args, **kwargs)
+            except TestBaseException:
+                raise
+            except exceptions, details:
+                raise TestFail(str(details))
+        return wrap
+    if func:
+        return decorate(func)
+    return decorate
 
 
 class JobBaseException(Exception):

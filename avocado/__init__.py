@@ -13,10 +13,10 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-__all__ = ['main', 'Test', 'VERSION', 'fail_on_error']
+__all__ = ['main', 'Test', 'VERSION', 'fail_on']
 
 
 from avocado.core.job import main
 from avocado.core.test import Test
 from avocado.core.version import VERSION
-from avocado.core.exceptions import fail_on_error
+from avocado.core.exceptions import fail_on
