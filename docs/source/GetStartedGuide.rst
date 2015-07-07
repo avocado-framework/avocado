@@ -130,13 +130,9 @@ tests.
 Let's now list a directory with a bunch of executable shell
 scripts::
 
-   $ avocado list /usr/share/avocado/examples/wrappers
-    SIMPLE examples/wrappers/dummy.sh
-    SIMPLE examples/wrappers/ltrace.sh
-    SIMPLE examples/wrappers/perf.sh
-    SIMPLE examples/wrappers/strace.sh
-    SIMPLE examples/wrappers/time.sh
-    SIMPLE examples/wrappers/valgrind.sh
+   $ avocado list /usr/share/avocado/simpletests/
+   SIMPLE /usr/share/avocado/simpletests/failtest.sh
+   SIMPLE /usr/share/avocado/simpletests/passtest.sh
 
 Here, as mentioned before, ``SIMPLE`` means that those files are executables
 treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to

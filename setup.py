@@ -75,6 +75,11 @@ def get_data_files():
     data_files += [(get_dir(['usr', 'share', 'avocado', 'wrappers'],
                             ['wrappers']),
                     glob.glob('examples/wrappers/*.sh'))]
+
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'simpletests'],
+                            ['simpletests']),
+                    glob.glob('examples/simpletests/*.sh'))]
+
     data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
     return data_files
 
