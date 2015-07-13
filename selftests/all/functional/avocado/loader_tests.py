@@ -63,100 +63,39 @@ true
 class LoaderTestFunctional(unittest.TestCase):
 
     def setUp(self):
+        os.chdir(basedir)
         self.tmpdir = tempfile.mkdtemp()
 
+    def _test(self, name, content, exp_str, mode=0664):
+        test_script = script.TemporaryScript(name, content,
+                                             'avocado_loader_test',
+                                             mode=mode)
+        test_script.save()
+        cmd_line = ('./scripts/avocado list -V %s' % test_script.path)
+        result = process.run(cmd_line)
+        self.assertIn('%s: 1' % exp_str, result.stdout)
+        test_script.remove()
+
     def test_simple(self):
-        os.chdir(basedir)
-        simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
-                                             'avocado_loader_test')
-        simple_test.save()
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, simple_test.path)
-        process.run(cmd_line)
-        simple_test.remove()
+        self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', 0775)
 
     def test_simple_not_exec(self):
-        os.chdir(basedir)
-        simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
-                                             'avocado_loader_test',
-                                             mode=0664)
-        simple_test.save()
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, simple_test.path)
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        self.assertIn('is not an avocado test', result.stderr)
-        self.assertNotIn('is not an avocado test', result.stdout)
-        simple_test.remove()
+        self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST')
 
     def test_pass(self):
-        avocado_pass_test = script.TemporaryScript('passtest.py',
-                                                   AVOCADO_TEST_OK,
-                                                   'avocado_loader_test')
-        avocado_pass_test.save()
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, avocado_pass_test.path)
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+        self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
 
     def test_buggy_exec(self):
-        avocado_buggy_test = script.TemporaryScript('buggytest.py',
-                                                    AVOCADO_TEST_BUGGY,
-                                                    'avocado_loader_test')
-        avocado_buggy_test.save()
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
-                    (self.tmpdir, avocado_buggy_test.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+        self._test('buggytest.py', AVOCADO_TEST_BUGGY, 'SIMPLE', 0775)
 
     def test_buggy_not_exec(self):
-        avocado_buggy_test = script.TemporaryScript('buggytest.py',
-                                                    AVOCADO_TEST_BUGGY,
-                                                    'avocado_loader_test',
-                                                    mode=0664)
-        avocado_buggy_test.save()
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
-                    (self.tmpdir, avocado_buggy_test.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        avocado_buggy_test.remove()
+        self._test('buggytest.py', AVOCADO_TEST_BUGGY, 'BUGGY')
 
     def test_load_not_a_test(self):
-        avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
-                                                    'avocado_loader_test')
-        avocado_not_a_test.save()
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
-                    (self.tmpdir, avocado_not_a_test.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        avocado_not_a_test.remove()
+        self._test('notatest.py', NOT_A_TEST, 'SIMPLE', 0775)
 
     def test_load_not_a_test_not_exec(self):
-        avocado_not_a_test = script.TemporaryScript('notatest.py', NOT_A_TEST,
-                                                    'avocado_loader_test',
-                                                    mode=0664)
-        avocado_not_a_test.save()
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
-                    (self.tmpdir, avocado_not_a_test.path))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
-        self.assertIn('is not an avocado test', result.stderr)
-        avocado_not_a_test.remove()
+        self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

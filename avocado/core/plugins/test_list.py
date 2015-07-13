@@ -32,38 +32,27 @@ class TestLister(object):
         use_paginator = args.paginator == 'on'
         self.view = output.View(app_args=args, use_paginator=use_paginator)
         self.term_support = output.TermSupport()
-        self.test_loader = loader.loader
-        self.test_loader.load_plugins(args)
+        loader.loader.load_plugins(args)
         self.args = args
 
     def _extra_listing(self):
-        self.test_loader.get_extra_listing(self.args)
-
-    def _get_keywords(self):
-        keywords = self.test_loader.get_base_keywords()
-        if self.args.keywords:
-            keywords = self.args.keywords
-        return keywords
+        loader.loader.get_extra_listing()
 
     def _get_test_suite(self, paths):
-        return self.test_loader.discover(paths, list_non_tests=self.args.verbose)
-
-    def _validate_test_suite(self, test_suite):
-        error_msg_parts = self.test_loader.validate_ui(test_suite,
-                                                       ignore_not_test=True,
-                                                       ignore_access_denied=True,
-                                                       ignore_broken_symlinks=True)
-        if error_msg_parts:
-            for error_msg in error_msg_parts:
-                self.view.notify(event='error', msg=error_msg)
+        list_tests = loader.ALL if self.args.verbose else loader.AVAILABLE
+        try:
+            return loader.loader.discover(paths,
+                                          list_tests=list_tests)
+        except loader.LoaderUnhandledUrlError, details:
+            self.view.notify(event="error", msg=str(details))
             self.view.cleanup()
             sys.exit(exit_codes.AVOCADO_FAIL)
 
     def _get_test_matrix(self, test_suite):
         test_matrix = []
 
-        type_label_mapping = self.test_loader.get_type_label_mapping()
-        decorator_mapping = self.test_loader.get_decorator_mapping()
+        type_label_mapping = loader.loader.get_type_label_mapping()
+        decorator_mapping = loader.loader.get_decorator_mapping()
 
         stats = {}
         for value in type_label_mapping.values():
@@ -115,7 +104,6 @@ class TestLister(object):
     def _list(self):
         self._extra_listing()
         test_suite = self._get_test_suite(self.args.keywords)
-        self._validate_test_suite(test_suite)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
 
