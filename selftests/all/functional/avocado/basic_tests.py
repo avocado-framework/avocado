@@ -190,7 +190,7 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
-        expected_output = 'too few arguments'
+        expected_output = 'No tests found for given urls'
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
 
@@ -200,8 +200,8 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('File not found', result.stderr)
-        self.assertNotIn('File not found', result.stdout)
+        self.assertIn('Unable to discover url', result.stderr)
+        self.assertNotIn('Unable to discover url', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id foobar passtest'
@@ -411,7 +411,7 @@ class PluginsTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn("File not found", output)
+        self.assertIn("Unable to discover url", output)
 
     def test_plugin_list(self):
         os.chdir(basedir)
