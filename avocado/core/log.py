@@ -78,6 +78,11 @@ DEFAULT_LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'avocado.app.tracebacks': {
+            'handlers': ['null'],   # change this to 'error' to see tracebacks
+            'level': 'ERROR',
+            'propagate': False,
+        },
         'avocado.test': {
             'handlers': ['null'],
             'level': 'DEBUG',
