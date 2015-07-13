@@ -114,7 +114,6 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.TestResultProxy()
-        self.test_loader = loader.TestLoaderProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
 
@@ -150,18 +149,6 @@ class Job(object):
 
     def _remove_job_results(self):
         shutil.rmtree(self.logdir, ignore_errors=True)
-
-    def _make_test_loader(self):
-        for key in self.args.__dict__.keys():
-            loader_class_candidate = getattr(self.args, key)
-            try:
-                if issubclass(loader_class_candidate, loader.TestLoader):
-                    loader_plugin = loader_class_candidate(self)
-                    self.test_loader.add_loader_plugin(loader_plugin)
-            except TypeError:
-                pass
-        filesystem_loader = loader.TestLoader(self)
-        self.test_loader.add_loader_plugin(filesystem_loader)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -259,27 +246,15 @@ class Job(object):
         :returns: a test suite (a list of test factories)
         """
         urls = self._handle_urls(urls)
-
-        self._make_test_loader()
-
-        return self.test_loader.discover(urls)
-
-    def _validate_test_suite(self, test_suite):
+        loader.loader.load_plugins(self.args)
         try:
-            # Do not attempt to validate the tests given on the command line if
-            # the tests will not be copied from this system to a remote one
-            # using the remote plugin features
-            if not getattr(self.args, 'remote_no_copy', False):
-                error_msg_parts = self.test_loader.validate_ui(test_suite)
-            else:
-                error_msg_parts = []
-        except KeyboardInterrupt:
-            raise exceptions.JobError('Command interrupted by user...')
-
-        if error_msg_parts:
+            return loader.loader.discover(urls)
+        except loader.LoaderUnhandledUrlError, details:
             self._remove_job_results()
-            e_msg = '\n'.join(error_msg_parts)
-            raise exceptions.OptionValidationError(e_msg)
+            raise exceptions.OptionValidationError(details)
+        except KeyboardInterrupt:
+            self._remove_job_results()
+            raise exceptions.JobError('Command interrupted by user...')
 
     def _filter_test_suite(self, test_suite):
         # Filter tests methods with params.filter and methodName
@@ -441,11 +416,9 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-
         test_suite = self._make_test_suite(urls)
-        self._validate_test_suite(test_suite)
-        test_suite = self._filter_test_suite(test_suite)
         if not test_suite:
+            self._remove_job_results()
             e_msg = ("No tests found within the specified path(s) "
                      "(Possible reasons: File ownership, permissions, "
                      "filters, typos)")
