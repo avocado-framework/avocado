@@ -609,15 +609,17 @@ class View(object):
         self.file_handler = logging.FileHandler(filename=logfile)
         self.file_handler.setLevel(loglevel)
 
-        fmt = ('%(asctime)s %(module)-10.10s L%(lineno)-.4d %('
+        fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
                'levelname)-5.5s| %(message)s')
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
         self.file_handler.setFormatter(formatter)
         test_logger = logging.getLogger('avocado.test')
-        linux_logger = logging.getLogger('avocado.linux')
         test_logger.addHandler(self.file_handler)
-        linux_logger.addHandler(self.file_handler)
+        test_logger.setLevel(loglevel)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.file_handler)
+        root_logger.setLevel(loglevel)
 
     def stop_file_logging(self):
         """
@@ -625,6 +627,8 @@ class View(object):
         """
         test_logger = logging.getLogger('avocado.test')
         linux_logger = logging.getLogger('avocado.linux')
+        root_logger = logging.getLogger()
         test_logger.removeHandler(self.file_handler)
         linux_logger.removeHandler(self.file_handler)
+        root_logger.removeHandler(self.file_handler)
         self.file_handler.close()
