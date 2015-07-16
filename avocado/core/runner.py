@@ -30,6 +30,7 @@ from . import exceptions
 from . import output
 from . import status
 from . import exit_codes
+from .loader import loader
 from ..utils import wait
 from ..utils import stacktrace
 from ..utils import runtime
@@ -78,7 +79,7 @@ class TestRunner(object):
         sys.stderr = output.LoggingFile(logger=logger_list_stderr)
 
         try:
-            instance = self.job.test_loader.load_test(test_factory)
+            instance = loader.load_test(test_factory)
             if instance.runner_queue is None:
                 instance.runner_queue = queue
             runtime.CURRENT_TEST = instance
@@ -261,6 +262,8 @@ class TestRunner(object):
             deadline = None
 
         for test_template in test_suite:
+            test_template[1]['base_logdir'] = self.job.logdir
+            test_template[1]['job'] = self.job
             for test_factory in mux.itertests(test_template):
                 if deadline is not None and time.time() > deadline:
                     test_parameters = test_factory[1]
