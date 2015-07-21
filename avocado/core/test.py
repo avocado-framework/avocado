@@ -167,6 +167,48 @@ class Test(unittest.TestCase):
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self, methodName=methodName)
+        self._log_replay_cmd()
+
+    def _log_replay_cmd(self):
+        """
+        Log the command to re-run this test
+        :warning: This is a temporary demonstration version, don't rely on it
+        """
+        # Remove urls
+        urls_set = set(getattr(self.job.args, 'url', []))
+        # Check whether named arguments contain url (then we can't remove it)
+        named_args = []
+        for item in self.job.args._get_kwargs():
+            if item[0] in ('multiplex_files', 'url', 'mux_inject'):
+                continue
+            if isinstance(item[1], list):
+                named_args.extend(item[1])
+            else:
+                named_args.append(item[1])
+        if urls_set.intersection(named_args):
+            self.log.info("Replay job: Unavailable because some arg values "
+                          "match with url")
+            return
+        # Remove urls from arguments and add only this url
+        args = [arg for arg in sys.argv if arg not in urls_set]
+        # Add this test
+        name = self.name
+        try:    # Try to parse $url:$class.$method into $url:$method
+            if ':' in name:
+                name, filt = name.split(':', 1)
+                if name.endswith('.py') and not os.path.exists(name):
+                    name = name[:-3]
+                name = "%s:%s" % (name, filt.split('.', 1)[1])
+        except IndexError:
+            name = self.name
+        args.insert(2, name)    # Insert it right after "run"
+        # Add --filter-only to use only this variant
+        args.append('--filter-only')
+        for leaf in self.params.iterleaves():
+            args.append(leaf.path)
+        if args[-1] == '--filter-only':
+            args = args[:-1]
+        self.log.info("Replay job: %s" % " ".join(args))
 
     def __str__(self):
         return str(self.name)
