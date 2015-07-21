@@ -78,6 +78,6 @@ class GDB(plugin.Plugin):
             gdb.GDBSERVER_PATH = settings.get_value('gdb.paths',
                                                     'gdbserver',
                                                     default=system_gdbserver_path)
-            process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestNAError
+            process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestError
         except AttributeError:
             pass
