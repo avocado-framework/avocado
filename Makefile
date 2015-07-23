@@ -65,7 +65,9 @@ clean:
 	test -L etc/avocado/conf.d/virt.conf && rm -f etc/avocado/conf.d/virt.conf || true
 	test -L avocado/core/plugins/virt_test.py && rm -f avocado/core/plugins/virt_test.py || true
 	test -L avocado/core/plugins/virt_test_list.py && rm -f avocado/core/plugins/virt_test_list.py || true
+	test -L avocado/core/plugins/virt_test_bootstrap.py && rm -f avocado/core/plugins/virt_test_bootstrap.py || true
 	test -L etc/avocado/conf.d/virt-test.conf && rm -f etc/avocado/conf.d/virt-test.conf || true
+	test -L virttest && rm -f virttest || true
 
 check: clean check_cyclical modules_boundaries
 	selftests/checkall
@@ -88,6 +90,8 @@ link_vt:
 	test -f ../avocado-vt/etc/avocado/conf.d/virt-test.conf && ln -s ../../../../avocado-vt/etc/avocado/conf.d/virt-test.conf etc/avocado/conf.d/ || true
 	test -f ../avocado-vt/avocado/core/plugins/virt_test.py && ln -s ../../../../avocado-vt/avocado/core/plugins/virt_test.py avocado/core/plugins/ || true
 	test -f ../avocado-vt/avocado/core/plugins/virt_test_list.py && ln -s ../../../../avocado-vt/avocado/core/plugins/virt_test_list.py avocado/core/plugins/ || true
+	test -f ../avocado-vt/avocado/core/plugins/virt_test_bootstrap.py && ln -s ../../../../avocado-vt/avocado/core/plugins/virt_test_bootstrap.py avocado/core/plugins/ || true
+	test -d ../avocado-vt/virttest && ln -s ../avocado-vt/virttest . || true
 
 man: man/avocado.1 man/avocado-rest-client.1
 
