@@ -309,6 +309,16 @@ class AvocadoParams(object):
         for pair in self._abs_path.iteritems():
             yield pair
 
+    def iterleaves(self):
+        """
+        Iterate through all leaves in this Avocado params
+        """
+        for param in self._rel_paths:
+            for leaf in param.iterleaves():
+                yield leaf
+        for leaf in self._abs_path.iterleaves():
+            yield leaf
+
 
 class AvocadoParam(object):
 
@@ -379,6 +389,13 @@ class AvocadoParam(object):
         for leaf in self._leaves:
             for pair in leaf.environment.iteritems():
                 yield pair
+
+    def iterleaves(self):
+        """
+        Iterate through all leaves in this Avocado param
+        """
+        for leaf in self._leaves:
+            yield leaf
 
 
 class Mux(object):
