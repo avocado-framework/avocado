@@ -22,11 +22,14 @@ import inspect
 import os
 import re
 import sys
+import fnmatch
 
 from . import data_dir
-from . import test
 from . import output
-from ..utils import path, stacktrace
+from . import test
+from .settings import settings
+from ..utils import path
+from ..utils import stacktrace
 
 try:
     import cStringIO as StringIO
@@ -34,122 +37,149 @@ except ImportError:
     import StringIO
 
 
-class _DebugJob(object):
-
-    def __init__(self, args=None):
-        self.logdir = '.'
-        self.args = args
+DEFAULT = False     # Show default tests (for execution)
+AVAILABLE = None    # Available tests (for listing purposes)
+ALL = True          # All tests (inicluding broken ones)
 
 
-class BrokenSymlink(object):
+class LoaderError(Exception):
+
+    """ Loader exception """
+
     pass
 
 
-class AccessDeniedPath(object):
+class InvalidLoaderPlugin(LoaderError):
+
+    """ Invalid loader plugin """
+
     pass
 
 
-class InvalidLoaderPlugin(Exception):
-    pass
+class LoaderUnhandledUrlError(LoaderError):
+
+    """ Urls not handled by any loader """
+
+    def __init__(self, unhandled_urls, plugins):
+        super(LoaderUnhandledUrlError, self).__init__()
+        self.unhandled_urls = unhandled_urls
+        self.plugins = [_.name for _ in plugins]
+
+    def __str__(self):
+        return ("Unable to discover url(s) '%s' with loader plugins(s) '%s', "
+                "try running 'avocado list -V %s' to see the details."
+                % ("', '" .join(self.unhandled_urls),
+                   "', '".join(self.plugins),
+                   " ".join(self.unhandled_urls)))
 
 
 class TestLoaderProxy(object):
 
     def __init__(self):
-        self.loader_plugins = []
+        self._initialized_plugins = []
+        self.registered_plugins = []
         self.url_plugin_mapping = {}
 
-    def add_loader_plugin(self, plugin):
-        if not isinstance(plugin, TestLoader):
+    def register_plugin(self, plugin):
+        try:
+            if issubclass(plugin, TestLoader):
+                self.registered_plugins.append(plugin)
+            else:
+                raise ValueError
+        except ValueError:
             raise InvalidLoaderPlugin("Object %s is not an instance of "
                                       "TestLoader" % plugin)
-        self.loader_plugins.append(plugin)
 
     def load_plugins(self, args):
-        for key in args.__dict__.keys():
-            loader_class_candidate = getattr(args, key)
-            try:
-                if issubclass(loader_class_candidate, TestLoader):
-                    loader_plugin = loader_class_candidate(args=args)
-                    self.add_loader_plugin(loader_plugin)
-            except TypeError:
-                pass
-        filesystem_loader = TestLoader()
-        self.add_loader_plugin(filesystem_loader)
+        self._initialized_plugins = []
+        # Add (default) file loader if not already registered
+        if FileLoader not in self.registered_plugins:
+            self.registered_plugins.append(FileLoader)
+        # Load plugin by the priority from settings
+        names = [_.name for _ in self.registered_plugins]
+        priority = settings.get_value("plugins", "loader_plugins_priority",
+                                      list, [])
+        sorted_plugins = [self.registered_plugins[names.index(name)]
+                          for name in priority
+                          if name in names]
+        for plugin in sorted_plugins:
+            self._initialized_plugins.append(plugin(args))
+        for plugin in self.registered_plugins:
+            if plugin in sorted_plugins:
+                continue
+            self._initialized_plugins.append(plugin(args))
 
-    def get_extra_listing(self, args):
-        for loader_plugin in self.loader_plugins:
-            loader_plugin.get_extra_listing(args)
+    def get_extra_listing(self):
+        for loader_plugin in self._initialized_plugins:
+            loader_plugin.get_extra_listing()
 
     def get_base_keywords(self):
         base_path = []
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             base_path += loader_plugin.get_base_keywords()
         return base_path
 
     def get_type_label_mapping(self):
         mapping = {}
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             mapping.update(loader_plugin.get_type_label_mapping())
         return mapping
 
     def get_decorator_mapping(self):
         mapping = {}
-        for loader_plugin in self.loader_plugins:
+        for loader_plugin in self._initialized_plugins:
             mapping.update(loader_plugin.get_decorator_mapping())
         return mapping
 
-    def discover(self, urls, list_non_tests=False):
+    def discover(self, urls, list_tests=False):
         """
         Discover (possible) tests from test urls.
 
         :param urls: a list of tests urls; if [] use plugin defaults
         :type urls: list
-        :param list_non_tests: Whether to list non tests (for listing methods)
-        :type list_non_tests: bool
+        :param list_tests: Limit tests to be displayed (loader.ALL|DEFAULT...)
         :return: A list of test factories (tuples (TestClass, test_params))
         """
-        test_factories = []
-        for loader_plugin in self.loader_plugins:
-            if urls:
-                _urls = urls
-            else:
-                _urls = loader_plugin.get_base_keywords()
-            for url in _urls:
-                if url in self.url_plugin_mapping:
-                    continue
+        def handle_exception(plugin, details):
+            # FIXME: Introduce avocado.exceptions logger and use here
+            stacktrace.log_message("Test discovery plugin %s failed: "
+                                   "%s" % (plugin, details),
+                                   'avocado.app.exceptions')
+            # FIXME: Introduce avocado.traceback logger and use here
+            stacktrace.log_exc_info(sys.exc_info(),
+                                    'avocado.app.tracebacks')
+        tests = []
+        unhandled_urls = []
+        if not urls:
+            for loader_plugin in self._initialized_plugins:
                 try:
-                    params_list_from_url = loader_plugin.discover_url(url)
-                    if list_non_tests:
-                        for params in params_list_from_url:
-                            params['omit_non_tests'] = False
-                    if params_list_from_url:
-                        test_factory = loader_plugin.discover(params_list_from_url)
-                        self.url_plugin_mapping[url] = loader_plugin
-                        test_factories += test_factory
+                    tests.extend(loader_plugin.discover(None,
+                                                        list_tests))
                 except Exception, details:
-                    # FIXME: Introduce avocado.exceptions logger and use here
-                    stacktrace.log_message("Test discovery plugin %s failed: "
-                                           "%s" % (loader_plugin, details),
-                                           'avocado.app.exceptions')
-                    # FIXME: Introduce avocado.traceback logger and use here
-                    stacktrace.log_exc_info(sys.exc_info(),
-                                            'avocado.app.tracebacks')
-        return test_factories
-
-    def validate_ui(self, test_suite, ignore_missing=False,
-                    ignore_not_test=False, ignore_broken_symlinks=False,
-                    ignore_access_denied=False):
-        e_msg = []
-        for tuple_class_params in test_suite:
-            for key in self.url_plugin_mapping:
-                if tuple_class_params[1]['params']['id'].startswith(key):
-                    loader_plugin = self.url_plugin_mapping[key]
-                    e_msg += loader_plugin.validate_ui(test_suite=[tuple_class_params], ignore_missing=ignore_missing,
-                                                       ignore_not_test=ignore_not_test,
-                                                       ignore_broken_symlinks=ignore_broken_symlinks,
-                                                       ignore_access_denied=ignore_access_denied)
-        return e_msg
+                    handle_exception(loader_plugin, details)
+        else:
+            for url in urls:
+                handled = False
+                for loader_plugin in self._initialized_plugins:
+                    try:
+                        _test = loader_plugin.discover(url, list_tests)
+                        if _test:
+                            tests.extend(_test)
+                            handled = True
+                            if not list_tests:
+                                break    # Don't process other plugins
+                    except Exception, details:
+                        handle_exception(loader_plugin, details)
+                if not handled:
+                    unhandled_urls.append(url)
+        if unhandled_urls:
+            if list_tests:
+                tests.extend([(test.MissingTest, {'name': url})
+                              for url in list_tests])
+            else:
+                raise LoaderUnhandledUrlError(unhandled_urls,
+                                              self._initialized_plugins)
+        return tests
 
     def load_test(self, test_factory):
         """
@@ -167,27 +197,14 @@ class TestLoaderProxy(object):
 class TestLoader(object):
 
     """
-    Test loader class.
+    Base for test loader classes
     """
 
-    def __init__(self, job=None, args=None):
+    def __init__(self, args):
+        self.args = args
 
-        if job is None:
-            job = _DebugJob(args=args)
-        self.job = job
-
-    def get_extra_listing(self, args):
+    def get_extra_listing(self):
         pass
-
-    def get_base_keywords(self):
-        """
-        Get base keywords to locate tests (path to test dir in this case).
-
-        Used to list all tests available in virt-test.
-
-        :return: list with path strings.
-        """
-        return [data_dir.get_test_dir()]
 
     def get_type_label_mapping(self):
         """
@@ -195,13 +212,7 @@ class TestLoader(object):
 
         :return: Dict {TestClass: 'TEST_LABEL_STRING'}
         """
-        return {test.SimpleTest: 'SIMPLE',
-                test.BuggyTest: 'BUGGY',
-                test.NotATest: 'NOT_A_TEST',
-                test.MissingTest: 'MISSING',
-                BrokenSymlink: 'BROKEN_SYMLINK',
-                AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED'}
+        raise NotImplementedError
 
     def get_decorator_mapping(self):
         """
@@ -209,6 +220,59 @@ class TestLoader(object):
 
         :return: Dict {TestClass: decorator function}
         """
+        raise NotImplementedError
+
+    def discover(self, url, list_tests=False):
+        """
+        Discover (possible) tests from an url.
+
+        :param url: the url to be inspected.
+        :type url: str
+        :return: a list of test matching the url as params.
+        """
+        raise NotImplementedError
+
+
+class BrokenSymlink(object):
+
+    """ Dummy object to represent url pointing to a BrokenSymlink path """
+
+    pass
+
+
+class AccessDeniedPath(object):
+
+    """ Dummy object to represent url pointing to a inaccessible path """
+
+    pass
+
+
+class FilteredOut(object):
+
+    """ Dummy object to represent test filtered out by the optional mask """
+
+    pass
+
+
+class FileLoader(TestLoader):
+
+    """
+    Test loader class.
+    """
+
+    name = 'file'
+
+    def get_type_label_mapping(self):
+        return {test.SimpleTest: 'SIMPLE',
+                test.BuggyTest: 'BUGGY',
+                test.NotATest: 'NOT_A_TEST',
+                test.MissingTest: 'MISSING',
+                BrokenSymlink: 'BROKEN_SYMLINK',
+                AccessDeniedPath: 'ACCESS_DENIED',
+                test.Test: 'INSTRUMENTED',
+                FilteredOut: 'FILTERED'}
+
+    def get_decorator_mapping(self):
         term_support = output.TermSupport()
         return {test.SimpleTest: term_support.healthy_str,
                 test.BuggyTest: term_support.fail_header_str,
@@ -216,7 +280,64 @@ class TestLoader(object):
                 test.MissingTest: term_support.fail_header_str,
                 BrokenSymlink: term_support.fail_header_str,
                 AccessDeniedPath: term_support.fail_header_str,
-                test.Test: term_support.healthy_str}
+                test.Test: term_support.healthy_str,
+                FilteredOut: term_support.warn_header_str}
+
+    def discover(self, url, list_tests=DEFAULT):
+        """
+        Discover (possible) tests from a directory.
+
+        Recursively walk in a directory and find tests params.
+        The tests are returned in alphabetic order.
+
+        :param url: the directory path to inspect.
+        :param list_tests: list corrupted/invalid tests too
+        :return: list of matching tests
+        """
+        if url is None:
+            if list_tests is DEFAULT:
+                return []   # Return empty set when not listing details
+            else:
+                url = data_dir.get_test_dir()
+        ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
+                         '__main__.py')
+
+        # Look for filename:test_method pattern
+        subtests_filter = None
+        if ':' in url:
+            _url, _subtests_filter = url.split(':', 1)
+            if os.path.exists(_url):    # otherwise it's ':' in the file name
+                url = _url
+                subtests_filter = _subtests_filter
+
+        if not os.path.isdir(url):  # Single file
+            return self._make_tests(url, list_tests, subtests_filter)
+
+        tests = []
+
+        def add_test_from_exception(exception):
+            """ If the exc.filename is valid test it's added to tests """
+            tests.extend(self._make_tests(exception.filename, list_tests))
+
+        def skip_non_test(exception):
+            """ Always return None """
+            return None
+
+        if list_tests:      # ALL => include everything
+            onerror = add_test_from_exception
+        else:               # DEFAULT, AVAILABLE => skip missing tests
+            onerror = skip_non_test
+
+        for dirpath, _, filenames in os.walk(url, onerror=onerror):
+            for file_name in filenames:
+                if not file_name.startswith('.'):
+                    for suffix in ignore_suffix:
+                        if file_name.endswith(suffix):
+                            break
+                    else:
+                        pth = os.path.join(dirpath, file_name)
+                        tests.extend(self._make_tests(pth, list_tests))
+        return tests
 
     def _is_unittests_like(self, test_class, pattern='test'):
         for name, _ in inspect.getmembers(test_class, inspect.ismethod):
@@ -231,39 +352,13 @@ class TestLoader(object):
                 test_methods.append((name, obj))
         return test_methods
 
-    def _make_missing_test(self, test_name, params):
-        test_class = test.MissingTest
-        test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
-        return test_class, test_parameters
-
-    def _make_not_a_test(self, test_name, params):
-        test_class = test.NotATest
-        test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
-        return test_class, test_parameters
-
-    def _make_simple_test(self, test_path, params):
-        test_class = test.SimpleTest
-        test_parameters = {'name': test_path,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
-        return test_class, test_parameters
-
-    def _make_tests(self, test_name, test_path, params):
+    def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
+                            test_name=None):
+        if test_name is None:
+            test_name = test_path
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
         sys.path.append(test_module_dir)
-        test_class = None
-        test_parameters = {'name': test_name,
-                           'base_logdir': self.job.logdir,
-                           'params': params,
-                           'job': self.job}
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         try:
             sys.stdin = None
@@ -272,34 +367,44 @@ class TestLoader(object):
             f, p, d = imp.find_module(module_name, [test_module_dir])
             test_module = imp.load_module(module_name, f, p, d)
             f.close()
-            for name, obj in inspect.getmembers(test_module):
-                if inspect.isclass(obj) and inspect.getmodule(obj) == test_module:
+            for _, obj in inspect.getmembers(test_module):
+                if (inspect.isclass(obj) and
+                        inspect.getmodule(obj) == test_module):
                     if issubclass(obj, test.Test):
                         test_class = obj
                         break
+            else:
+                if os.access(test_path, os.X_OK):
+                    # Module does not have an avocado test class inside but
+                    # it's executable, let's execute it.
+                    return self._make_test(test.SimpleTest, test_path)
+                else:
+                    # Module does not have an avocado test class inside, and
+                    # it's not executable. Not a Test.
+                    return make_broken(test.NotATest, test_path)
             if test_class is not None:
                 # Module is importable and does have an avocado test class
                 # inside, let's proceed.
                 if self._is_unittests_like(test_class):
                     test_factories = []
+                    test_parameters = {'name': test_name}
+                    if subtests_filter:
+                        test_parameters['params'] = {'filter': subtests_filter}
                     for test_method in self._make_unittests_like(test_class):
-                        copy_test_parameters = test_parameters.copy()
-                        copy_test_parameters['methodName'] = test_method[0]
-                        class_and_method_name = ':%s.%s' % (test_class.__name__, test_method[0])
-                        copy_test_parameters['name'] += class_and_method_name
-                        test_factories.append([test_class, copy_test_parameters])
+                        name = test_name + ':%s.%s' % (test_class.__name__,
+                                                       test_method[0])
+                        if (subtests_filter is not None and
+                                not fnmatch.fnmatch(test_method[0],
+                                                    subtests_filter)):
+                            test_factories.extend(make_broken(FilteredOut,
+                                                              name))
+                        else:
+                            tst = (test_class, {'name': name,
+                                                'methodName': test_method[0]})
+                            test_factories.append(tst)
                     return test_factories
-            else:
-                if os.access(test_path, os.X_OK):
-                    # Module does not have an avocado test class inside but
-                    # it's executable, let's execute it.
-                    test_class = test.SimpleTest
-                    test_parameters['name'] = test_path
                 else:
-                    # Module does not have an avocado test class inside, and
-                    # it's not executable. Not a Test.
-                    test_class = test.NotATest
-                    test_parameters['name'] = test_path
+                    return self._make_test(test_class, test_name)
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -310,250 +415,85 @@ class TestLoader(object):
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
-                test_class = test.SimpleTest
-                test_parameters['name'] = test_path
+                return self._make_test(test.SimpleTest, test_path)
             else:
                 # Module can't be imported and it's not an executable. Let's
                 # see if there's an avocado import into the test. Although
                 # not entirely reliable, we hope it'll be good enough.
-                likely_avocado_test = False
                 with open(test_path, 'r') as test_file_obj:
                     test_contents = test_file_obj.read()
                     # Actual tests will have imports starting on column 0
                     patterns = ['^from avocado.* import', '^import avocado.*']
                     for pattern in patterns:
                         if re.search(pattern, test_contents, re.MULTILINE):
-                            likely_avocado_test = True
                             break
-                if likely_avocado_test:
-                    test_class = test.BuggyTest
-                    params['exception'] = details
-                else:
-                    test_class = test.NotATest
+                    else:
+                        return make_broken(test.NotATest, test_path)
+                    return make_broken(test.BuggyTest, test_path,
+                                       {'exception': details})
         finally:
             sys.stdin = stdin
             sys.stdout = stdout
             sys.stderr = stderr
+            sys.path.remove(test_module_dir)
 
-        sys.path.pop(sys.path.index(test_module_dir))
-
-        return [(test_class, test_parameters)]
-
-    def discover_tests(self, params):
+    @staticmethod
+    def _make_test(klass, uid, params=None):
         """
-        Try to discover and resolve tests.
-
-        :param params: dictionary with test parameters.
-        :type params: dict
-        :return: a list of test factories (a pair of test class and test parameters).
+        Create test template
+        :param klass: test class
+        :param uid: test uid (by default used as id and name)
+        :param params: optional params (id won't be overriden when present)
         """
-        test_name = test_path = params.get('id')
+        if not params:
+            params = {}
+        params.setdefault('id', uid)
+        return [(klass, {'name': uid, 'params': params})]
+
+    def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
+        """
+        Create test templates from given path
+        :param test_path: File system path
+        :param list_non_tests: include bad tests (NotATest, BrokenSymlink,...)
+        :param subtests_filter: optional filter of methods for avocado tests
+        """
+        def ignore_broken(klass, uid, params=None):
+            """ Always return empty list """
+            return []
+
+        if list_non_tests:   # return broken test with params
+            make_broken = self._make_test
+        else:               # return empty set instead
+            make_broken = ignore_broken
+        test_name = test_path
         if os.path.exists(test_path):
             if os.access(test_path, os.R_OK) is False:
-                return [(AccessDeniedPath, {'params': {'id': test_path}})]
+                return make_broken(AccessDeniedPath, test_path)
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
-                test_factories = self._make_tests(test_name,
-                                                  test_path,
-                                                  params)
-                return test_factories
+                return self._make_avocado_tests(test_path, make_broken,
+                                                subtests_filter)
             else:
                 if os.access(test_path, os.X_OK):
-                    test_class, test_parameters = self._make_simple_test(test_path,
-                                                                         params)
+                    return self._make_test(test.SimpleTest, test_path)
                 else:
-                    test_class, test_parameters = self._make_not_a_test(test_path,
-                                                                        params)
+                    return make_broken(test.NotATest, test_path)
         else:
             if os.path.islink(test_path):
                 try:
                     if not os.path.isfile(os.readlink(test_path)):
-                        return [(BrokenSymlink, {'params': {'id': test_path}})]
+                        return make_broken(BrokenSymlink, test_path)
                 except OSError:
-                    return [(AccessDeniedPath, {'params': {'id': test_path}})]
+                    return make_broken(AccessDeniedPath, test_path)
 
             # Try to resolve test ID (keep compatibility)
             rel_path = '%s.py' % test_name
             test_path = os.path.join(data_dir.get_test_dir(), rel_path)
             if os.path.exists(test_path):
-                test_factories = self._make_tests(rel_path, test_path, params)
-                return test_factories
+                return self._make_avocado_tests(test_path, list_non_tests,
+                                                subtests_filter, rel_path)
             else:
-                test_class, test_parameters = self._make_missing_test(
-                    test_name, params)
-        return [(test_class, test_parameters)]
+                return make_broken(test.MissingTest, test_name)
 
-    def discover_url(self, url):
-        """
-        Discover (possible) tests from a directory.
 
-        Recursively walk in a directory and find tests params.
-        The tests are returned in alphabetic order.
-
-        :param dir_path: the directory path to inspect.
-        :type dir_path: str
-        :param ignore_suffix: list of suffix to ignore in paths.
-        :type ignore_suffix: list
-        :return: a list of test params (each one a dictionary).
-        """
-        ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
-                         '__main__.py')
-        params_list = []
-
-        # Look for filename:test_method pattern
-        if ':' in url:
-            url, filter_pattern = url.split(':', 1)
-        else:
-            filter_pattern = None
-
-        def onerror(exception):
-            norm_url = os.path.abspath(url)
-            norm_error_filename = os.path.abspath(exception.filename)
-            if os.path.isdir(norm_url) and norm_url != norm_error_filename:
-                omit_non_tests = True
-            else:
-                omit_non_tests = False
-
-            params_list.append({'id': exception.filename,
-                                'filter': filter_pattern,
-                                'omit_non_tests': omit_non_tests})
-
-        for dirpath, dirnames, filenames in os.walk(url, onerror=onerror):
-            for dir_name in dirnames:
-                if dir_name.startswith('.'):
-                    dirnames.pop(dirnames.index(dir_name))
-            for file_name in filenames:
-                if not file_name.startswith('.'):
-                    ignore = False
-                    for suffix in ignore_suffix:
-                        if file_name.endswith(suffix):
-                            ignore = True
-                    if not ignore:
-                        pth = os.path.join(dirpath, file_name)
-                        params_list.append({'id': pth,
-                                            'omit_non_tests': True})
-        return params_list
-
-    def discover_urls(self, urls):
-        """
-        Discover (possible) tests from test urls.
-
-        :param urls: a list of tests urls.
-        :type urls: list
-        :return: a list of test params (each one a dictionary).
-        """
-        params_list = []
-        for url in urls:
-            if url == '':
-                continue
-            params_list.extend(self.discover_url(url))
-        return params_list
-
-    def discover(self, params_list):
-        """
-        Discover tests for test suite.
-
-        :param params_list: a list of test parameters.
-        :type params_list: list
-        :return: a test suite (a list of test factories).
-        """
-        test_suite = []
-        for params in params_list:
-            test_factories = self.discover_tests(params)
-            for test_factory in test_factories:
-                if test_factory is None:
-                    continue
-                test_class, test_parameters = test_factory
-                if test_class in [test.NotATest, BrokenSymlink, AccessDeniedPath]:
-                    if not params.get('omit_non_tests'):
-                        test_suite.append((test_class, test_parameters))
-                else:
-                    test_suite.append((test_class, test_parameters))
-        return test_suite
-
-    @staticmethod
-    def validate(test_suite):
-        """
-        Find missing files/non-tests provided by the user in the input.
-
-        Used mostly for user input validation.
-
-        :param test_suite: List with tuples (test_class, test_params)
-        :return: list of missing files.
-        """
-        missing = []
-        not_test = []
-        broken_symlink = []
-        access_denied = []
-        for suite in test_suite:
-            if suite[0] == test.MissingTest:
-                missing.append(suite[1]['params']['id'])
-            elif suite[0] == test.NotATest:
-                not_test.append(suite[1]['params']['id'])
-            elif suite[0] == BrokenSymlink:
-                broken_symlink.append(suite[1]['params']['id'])
-            elif suite[0] == AccessDeniedPath:
-                access_denied.append(suite[1]['params']['id'])
-
-        return missing, not_test, broken_symlink, access_denied
-
-    def validate_ui(self, test_suite, ignore_missing=False,
-                    ignore_not_test=False, ignore_broken_symlinks=False,
-                    ignore_access_denied=False):
-        """
-        Validate test suite and deliver error messages to the UI
-        :param test_suite: List of tuples (test_class, test_params)
-        :type test_suite: list
-        :return: List with error messages
-        :rtype: list
-        """
-        (missing, not_test, broken_symlink,
-         access_denied) = self.validate(test_suite)
-        broken_symlink_msg = ''
-        if (not ignore_broken_symlinks) and broken_symlink:
-            if len(broken_symlink) == 1:
-                broken_symlink_msg = ("Cannot access '%s': Broken symlink" %
-                                      ", ".join(broken_symlink))
-            elif len(broken_symlink) > 1:
-                broken_symlink_msg = ("Cannot access '%s': Broken symlinks" %
-                                      ", ".join(broken_symlink))
-        access_denied_msg = ''
-        if (not ignore_access_denied) and access_denied:
-            if len(access_denied) == 1:
-                access_denied_msg = ("Cannot access '%s': Access denied" %
-                                     ", ".join(access_denied))
-            elif len(access_denied) > 1:
-                access_denied_msg = ("Cannot access '%s': Access denied" %
-                                     ", ".join(access_denied))
-        missing_msg = ''
-        if (not ignore_missing) and missing:
-            if len(missing) == 1:
-                missing_msg = ("Cannot access '%s': File not found" %
-                               ", ".join(missing))
-            elif len(missing) > 1:
-                missing_msg = ("Cannot access '%s': Files not found" %
-                               ", ".join(missing))
-        not_test_msg = ''
-        if (not ignore_not_test) and not_test:
-            if len(not_test) == 1:
-                not_test_msg = ("File '%s' is not an avocado test" %
-                                ", ".join(not_test))
-            elif len(not_test) > 1:
-                not_test_msg = ("Files '%s' are not avocado tests" %
-                                ", ".join(not_test))
-
-        return [msg for msg in
-                [access_denied_msg, broken_symlink_msg, missing_msg,
-                 not_test_msg] if msg]
-
-    def load_test(self, test_factory):
-        """
-        Load test from the test factory.
-
-        :param test_factory: a pair of test class and parameters.
-        :type params: tuple
-        :return: an instance of :class:`avocado.core.test.Test`.
-        """
-        test_class, test_parameters = test_factory
-        test_instance = test_class(**test_parameters)
-        return test_instance
+loader = TestLoaderProxy()

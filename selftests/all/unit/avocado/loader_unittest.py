@@ -17,6 +17,7 @@ from avocado.core import exceptions
 from avocado.core import loader
 from avocado.utils import script
 
+# We need to access protected members pylint: disable=W0212
 
 AVOCADO_TEST_OK = """#!/usr/bin/python
 from avocado import Test
@@ -84,15 +85,10 @@ class MultipleMethods(Test):
 """
 
 
-class _DebugJob(object):
-    logdir = tempfile.mkdtemp()
-
-
 class LoaderTest(unittest.TestCase):
 
     def setUp(self):
-        self.job = _DebugJob
-        self.loader = loader.TestLoader(job=self.job)
+        self.loader = loader.FileLoader({})
         self.queue = multiprocessing.Queue()
 
     def test_load_simple(self):
@@ -100,7 +96,7 @@ class LoaderTest(unittest.TestCase):
                                              'avocado_loader_unittest')
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': simple_test.path})[0])
+            self.loader.discover(simple_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         tc.test()
@@ -112,7 +108,7 @@ class LoaderTest(unittest.TestCase):
                                              mode=0664)
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': simple_test.path})[0])
+            self.loader.discover(simple_test.path, True)[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.test)
@@ -124,7 +120,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_pass_test.path})[0])
+            self.loader.discover(avocado_pass_test.path, True)[0])
         self.assertTrue(str(test_class) == "<class 'passtest.PassTest'>",
                         str(test_class))
         self.assertTrue(issubclass(test_class, test.Test))
@@ -138,7 +134,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_base_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_base_test.path})[0])
+            self.loader.discover(avocado_base_test.path, True)[0])
         self.assertTrue(str(test_class) == "<class 'base.MyBaseTest'>",
                         str(test_class))
 
@@ -147,7 +143,7 @@ class LoaderTest(unittest.TestCase):
                                                         'avocado_loader_unittest')
         avocado_inherited_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_inherited_test.path})[0])
+            self.loader.discover(avocado_inherited_test.path, True)[0])
         self.assertTrue(str(test_class) == "<class 'inherited.MyInheritedTest'>",
                         str(test_class))
         avocado_base_test.remove()
@@ -159,7 +155,7 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_buggy_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_buggy_test.path})[0])
+            self.loader.discover(avocado_buggy_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.TestFail, tc.test)
@@ -172,7 +168,7 @@ class LoaderTest(unittest.TestCase):
                                                     mode=0664)
         avocado_buggy_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_buggy_test.path})[0])
+            self.loader.discover(avocado_buggy_test.path, True)[0])
         self.assertTrue(test_class == test.BuggyTest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(ImportError, tc.test)
@@ -185,7 +181,7 @@ class LoaderTest(unittest.TestCase):
                                                     mode=0664)
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_not_a_test.path})[0])
+            self.loader.discover(avocado_not_a_test.path, True)[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.test)
@@ -196,7 +192,7 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_not_a_test.path})[0])
+            self.loader.discover(avocado_not_a_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
@@ -210,7 +206,7 @@ class LoaderTest(unittest.TestCase):
                                                      'avocado_loader_unittest')
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_simple_test.path})[0])
+            self.loader.discover(avocado_simple_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest)
         tc = test_class(**test_parameters)
         tc.test()
@@ -223,7 +219,7 @@ class LoaderTest(unittest.TestCase):
                                                      mode=0664)
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover_tests(params={'id': avocado_simple_test.path})[0])
+            self.loader.discover(avocado_simple_test.path, True)[0])
         self.assertTrue(test_class == test.NotATest)
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.test)
@@ -235,13 +231,10 @@ class LoaderTest(unittest.TestCase):
                                                         'avocado_multiple_tests_unittest',
                                                         mode=0664)
         avocado_multiple_tests.save()
-        suite = self.loader.discover_tests(params={'id': avocado_multiple_tests.path})
+        suite = self.loader.discover(avocado_multiple_tests.path, True)
         self.assertEqual(len(suite), 2)
         avocado_multiple_tests.remove()
 
-    def tearDown(self):
-        if os.path.isdir(self.job.logdir):
-            shutil.rmtree(self.job.logdir)
 
 if __name__ == '__main__':
     unittest.main()
