@@ -17,13 +17,13 @@ class AstringTest(unittest.TestCase):
         matrix = [('foo', 'bar'), ('/bin/bar/sbrubles',
                                    '/home/myuser/sbrubles')]
         self.assertEqual(astring.tabular_output(matrix),
-                         ('foo               bar                   \n'
-                          '/bin/bar/sbrubles /home/myuser/sbrubles \n'))
+                         ('foo               bar\n'
+                          '/bin/bar/sbrubles /home/myuser/sbrubles'))
         header = ['id', 'path']
         self.assertEqual(astring.tabular_output(matrix, header),
-                         ('id                path                  \n'
-                          'foo               bar                   \n'
-                          '/bin/bar/sbrubles /home/myuser/sbrubles \n'))
+                         ('id                path\n'
+                          'foo               bar\n'
+                          '/bin/bar/sbrubles /home/myuser/sbrubles'))
 
 if __name__ == '__main__':
     unittest.main()
