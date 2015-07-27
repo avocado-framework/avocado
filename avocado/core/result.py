@@ -276,13 +276,19 @@ class HumanTestResult(TestResult):
         """
         Called once after all tests are executed.
         """
+        def display(status, status_list):
+            number = len(status_list)
+            if number > 0:
+                self.stream.notify(event="message",
+                                   msg="%s: %d" % (status, number))
+
         self._reconcile()
-        self.stream.notify(event="message", msg="PASS       : %d" % len(self.passed))
-        self.stream.notify(event="message", msg="ERROR      : %d" % len(self.errors))
-        self.stream.notify(event="message", msg="FAIL       : %d" % len(self.failed))
-        self.stream.notify(event="message", msg="SKIP       : %d" % len(self.skipped))
-        self.stream.notify(event="message", msg="WARN       : %d" % len(self.warned))
-        self.stream.notify(event="message", msg="INTERRUPT  : %d" % len(self.interrupted))
+        display("PASS       ", self.passed)
+        display("ERROR      ", self.errors)
+        display("FAIL       ", self.failed)
+        display("SKIP       ", self.skipped)
+        display("WARN       ", self.warned)
+        display("INTERRUPT  ", self.interrupted)
         self.stream.notify(event="message", msg="TIME       : %.2f s" % self.total_time)
 
     def start_test(self, state):
