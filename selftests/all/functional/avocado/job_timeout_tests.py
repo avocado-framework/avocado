@@ -1,8 +1,8 @@
 import os
 import sys
-import unittest
 import tempfile
 import shutil
+import xml.dom.minidom
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -37,6 +37,10 @@ class Dummy(Test):
 """
 
 
+class ParseXMLError(Exception):
+    pass
+
+
 class JobTimeOutTest(unittest.TestCase):
 
     def setUp(self):
@@ -53,32 +57,65 @@ class JobTimeOutTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp()
         os.chdir(basedir)
 
+    def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures,
+                      e_nskip):
+        os.chdir(basedir)
+        result = process.run(cmd_line, ignore_status=True)
+        xml_output = result.stdout
+        self.assertEqual(result.exit_status, e_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (e_rc, result))
+        try:
+            xunit_doc = xml.dom.minidom.parseString(xml_output)
+        except Exception, detail:
+            raise ParseXMLError("Failed to parse content: %s\n%s" %
+                                (detail, xml_output))
+
+        testsuite_list = xunit_doc.getElementsByTagName('testsuite')
+        self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
+
+        testsuite_tag = testsuite_list[0]
+        self.assertEqual(len(testsuite_tag.attributes), 7,
+                         'The testsuite tag does not have 7 attributes. '
+                         'XML:\n%s' % xml_output)
+
+        n_tests = int(testsuite_tag.attributes['tests'].value)
+        self.assertEqual(n_tests, e_ntests,
+                         "Unexpected number of executed tests, "
+                         "XML:\n%s" % xml_output)
+
+        n_errors = int(testsuite_tag.attributes['errors'].value)
+        self.assertEqual(n_errors, e_nerrors,
+                         "Unexpected number of test errors, "
+                         "XML:\n%s" % xml_output)
+
+        n_failures = int(testsuite_tag.attributes['failures'].value)
+        self.assertEqual(n_failures, e_nfailures,
+                         "Unexpected number of test failures, "
+                         "XML:\n%s" % xml_output)
+
+        n_skip = int(testsuite_tag.attributes['skip'].value)
+        self.assertEqual(n_skip, e_nskip,
+                         "Unexpected number of test skips, "
+                         "XML:\n%s" % xml_output)
+
     def test_sleep_longer_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--job-timeout=5 %s examples/tests/passtest.py' % (self.tmpdir, self.script.path))
-        result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 0)
-        self.assertIn('PASS       : 2', result.stdout)
-        self.assertIn('ERROR      : 0', result.stdout)
-        self.assertIn('SKIP       : 0', result.stdout)
+                    '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
+                    (self.tmpdir, self.script.path))
+        self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
 
     def test_sleep_short_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--job-timeout=1 %s examples/tests/passtest.py' % (self.tmpdir, self.script.path))
-        result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 1)
-        self.assertIn('PASS       : 0', result.stdout)
-        self.assertIn('ERROR      : 1', result.stdout)
-        self.assertIn('SKIP       : 1', result.stdout)
+                    '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
+                    (self.tmpdir, self.script.path))
+        self.run_and_check(cmd_line, 1, 2, 1, 0, 1)
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--job-timeout=1 %s' % (self.tmpdir, self.py.path))
-        result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 1)
-        self.assertIn('PASS       : 0', result.stdout)
-        self.assertIn('ERROR      : 1', result.stdout)
-        self.assertIn('SKIP       : 2', result.stdout)
+                    '--xunit - --job-timeout=1 %s' %
+                    (self.tmpdir, self.py.path))
+        self.run_and_check(cmd_line, 1, 3, 1, 0, 2)
 
     def test_invalid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '

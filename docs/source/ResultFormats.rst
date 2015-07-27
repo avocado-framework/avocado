@@ -29,12 +29,7 @@ that is, the job and its test(s) results are constantly updated::
     (1/3) sleeptest.1: PASS (1.01 s)
     (2/3) failtest.1: FAIL (0.00 s)
     (3/3) synctest.1: PASS (1.98 s)
-    PASS      : 1
-    ERROR     : 1
-    FAIL      : 1
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 3.17 s
 
 The most important thing is to remember that programs should never need to parse

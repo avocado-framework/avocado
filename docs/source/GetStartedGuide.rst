@@ -78,12 +78,7 @@ To do so, please run ``avocado`` with the ``run`` sub-command and the chosen tes
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
     TESTS     : 1
     (1/1) /bin/true: PASS (0.01 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME : 0.01 s
 
 You probably noticed that we used ``/bin/true`` as a test, and in accordance with our
@@ -181,12 +176,7 @@ instrumented and simple tests::
     (4/6) failtest.2: FAIL (0.00 s)
     (5/6) synctest.2: ERROR (0.01 s)
     (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
-    PASS      : 2
-    ERROR     : 2
-    FAIL      : 2
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 2 | ERROR 2 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 1.04 s
 
 Debugging tests
