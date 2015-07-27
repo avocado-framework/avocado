@@ -322,7 +322,7 @@ class Job(object):
                 config_key = ".".join((section, value[0]))
                 config_matrix.append([config_key, value[1]])
 
-        for line in astring.tabular_output(config_matrix, header).splitlines():
+        for line in astring.iter_tabular_output(config_matrix, header):
             job_log.info(line)
         job_log.info('')
 
@@ -354,7 +354,7 @@ class Job(object):
             for plug in sorted(enabled):
                 enabled_matrix.append([plug.name, plug.description])
             job_log.info("Plugins enabled:")
-            for line in astring.tabular_output(enabled_matrix).splitlines():
+            for line in astring.iter_tabular_output(enabled_matrix):
                 job_log.info(line)
 
         if disabled:
@@ -362,7 +362,7 @@ class Job(object):
             for plug in sorted(disabled):
                 disabled_matrix.append([plug.name, plug.description])
             job_log.info("Plugins enabled:")
-            for line in astring.tabular_output(disabled_matrix).splitlines():
+            for line in astring.iter_tabular_output(disabled_matrix):
                 job_log.info(line)
 
         if ErrorsLoading:
@@ -372,7 +372,7 @@ class Job(object):
                                           (load_error[0], load_error[1])])
 
             job_log.info("Unloadable plugin modules:")
-            for line in astring.tabular_output(unloadable_matrix).splitlines():
+            for line in astring.iter_tabular_output(unloadable_matrix):
                 job_log.info(line)
 
         job_log.info('')
