@@ -116,9 +116,9 @@ def strip_console_codes(output, custom_codes=None):
     return return_str
 
 
-def tabular_output(matrix, header=None):
+def iter_tabular_output(matrix, header=None):
     """
-    Return a pretty, aligned string representation of a nxm matrix.
+    Generator for a pretty, aligned string representation of a nxm matrix.
 
     This representation can be used to print any tabular data, such as
     database results. It works by scanning the lengths of each element
@@ -126,8 +126,6 @@ def tabular_output(matrix, header=None):
 
     :param matrix: Matrix representation (list with n rows of m elements).
     :param header: Optional tuple or list with header elements to be displayed.
-    :return: String with the tabular output, lines separated by unix line feeds.
-    :rtype: str
     """
     if type(header) is list:
         header = tuple(header)
@@ -150,12 +148,26 @@ def tabular_output(matrix, header=None):
     format_string = ""
     for length in lengths:
         format_string += "%-" + str(length) + "s "
-    format_string += "\n"
 
-    matrix_str = ""
     if header:
-        matrix_str += format_string % header
+        out_line = format_string % header
+        yield out_line.strip()
     for row in matrix:
-        matrix_str += format_string % tuple(row)
+        out_line = format_string % tuple(row)
+        yield out_line.strip()
 
-    return matrix_str
+
+def tabular_output(matrix, header=None):
+    """
+    Pretty, aligned string representation of a nxm matrix.
+
+    This representation can be used to print any tabular data, such as
+    database results. It works by scanning the lengths of each element
+    in each column, and determining the format string dynamically.
+
+    :param matrix: Matrix representation (list with n rows of m elements).
+    :param header: Optional tuple or list with header elements to be displayed.
+    :return: String with the tabular output, lines separated by unix line feeds.
+    :rtype: str
+    """
+    return "\n".join(iter_tabular_output(matrix, header))

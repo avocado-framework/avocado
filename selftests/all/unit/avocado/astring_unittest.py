@@ -16,14 +16,14 @@ class AstringTest(unittest.TestCase):
     def testTabularOutput(self):
         matrix = [('foo', 'bar'), ('/bin/bar/sbrubles',
                                    '/home/myuser/sbrubles')]
-        self.assertTrue(astring.tabular_output(matrix),
-                        ('foo               bar                   \n'
-                         '/bin/bar/sbrubles /home/myuser/sbrubles \n'))
+        self.assertEqual(astring.tabular_output(matrix),
+                         ('foo               bar\n'
+                          '/bin/bar/sbrubles /home/myuser/sbrubles'))
         header = ['id', 'path']
-        self.assertTrue(astring.tabular_output(matrix, header),
-                        ('id                path                  \n'
-                         'foo               bar                   \n'
-                         '/bin/bar/sbrubles /home/myuser/sbrubles \n'))
+        self.assertEqual(astring.tabular_output(matrix, header),
+                         ('id                path\n'
+                          'foo               bar\n'
+                          '/bin/bar/sbrubles /home/myuser/sbrubles'))
 
 if __name__ == '__main__':
     unittest.main()

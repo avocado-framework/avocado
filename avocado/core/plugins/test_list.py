@@ -93,7 +93,7 @@ class TestLister(object):
         if self.args.verbose:
             header = (self.term_support.header_str('Type'), self.term_support.header_str('Test'))
 
-        for line in astring.tabular_output(test_matrix, header=header).splitlines():
+        for line in astring.iter_tabular_output(test_matrix, header=header):
             self.view.notify(event='minor', msg="%s" % line)
 
         if self.args.verbose:
