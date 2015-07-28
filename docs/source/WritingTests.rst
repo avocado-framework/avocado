@@ -161,12 +161,7 @@ generation for sleeptest just like::
     (1/3) sleeptest: PASS (0.50 s)
     (2/3) sleeptest.1: PASS (1.01 s)
     (3/3) sleeptest.2: PASS (5.01 s)
-    PASS      : 3
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME : 6.52 s
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
@@ -393,11 +388,7 @@ option --output-check-record all to the test runner::
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
     TESTS     : 1
     (1/1) synctest.py: PASS (2.20 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.20 s
 
 
@@ -426,11 +417,7 @@ Let's record the output for this one::
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
     TESTS     : 1
     (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.01 s
 
 After this is done, you'll notice that a the test data directory
@@ -455,11 +442,7 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
     TESTS     : 1
     (1/1) home/$USER/Code/avocado/output_record.sh: FAIL (0.02 s)
-    PASS      : 0
-    ERROR     : 0
-    FAIL      : 1
-    SKIP      : 0
-    WARN      : 0
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.02 s
 
 Verifying the failure reason::
@@ -593,12 +576,7 @@ impact your test grid. You can account for that possibility and set up a
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
     TESTS     : 1
     (1/1) sleeptest.1: ERROR (2.97 s)
-    PASS      : 0
-    ERROR     : 1
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.97 s
 
 ::
@@ -684,12 +662,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/html/results.html
     TESTS     : 1
     (1/1) timeouttest.1: ERROR (2.97 s)
-    PASS      : 0
-    ERROR     : 1
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.97 s
 
 

@@ -277,13 +277,14 @@ class HumanTestResult(TestResult):
         Called once after all tests are executed.
         """
         self._reconcile()
-        self.stream.notify(event="message", msg="PASS       : %d" % len(self.passed))
-        self.stream.notify(event="message", msg="ERROR      : %d" % len(self.errors))
-        self.stream.notify(event="message", msg="FAIL       : %d" % len(self.failed))
-        self.stream.notify(event="message", msg="SKIP       : %d" % len(self.skipped))
-        self.stream.notify(event="message", msg="WARN       : %d" % len(self.warned))
-        self.stream.notify(event="message", msg="INTERRUPT  : %d" % len(self.interrupted))
-        self.stream.notify(event="message", msg="TIME       : %.2f s" % self.total_time)
+        self.stream.notify(event="message",
+                           msg="RESULTS    : PASS %d | ERROR %d | FAIL %d | "
+                               "SKIP %d | WARN %d | INTERRUPT %s" %
+                               (len(self.passed), len(self.errors),
+                                len(self.failed), len(self.skipped),
+                                len(self.warned), len(self.interrupted)))
+        self.stream.notify(event="message",
+                           msg="TIME       : %.2f s" % self.total_time)
 
     def start_test(self, state):
         """

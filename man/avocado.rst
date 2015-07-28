@@ -79,12 +79,7 @@ directories. The output should be similar to::
  JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
  TESTS     : 1
  (1/1) sleeptest.py: PASS (1.00 s)
- PASS      : 1
- ERROR     : 0
- FAIL      : 0
- SKIP      : 0
- WARN      : 0
- INTERRUPT : 0
+ RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
  TIME      : 1.00 s
 
 The test directories will vary depending on you system and
@@ -490,12 +485,7 @@ option --output-check-record all to the test runner::
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS     : 1
     (1/1) examples/tests/synctest.py: PASS (2.20 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.20 s
 
 After the reference files are added, the check process is transparent, in the
@@ -526,12 +516,7 @@ Let's record the output (both stdout and stderr) for this one::
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
     TESTS     : 1
     (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
-    PASS      : 1
-    ERROR     : 0
-    FAIL      : 0
-    SKIP      : 0
-    WARN      : 0
-    INTERRUPT : 0
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.01 s
 
 After this is done, you'll notice that a the test data directory
@@ -575,12 +560,7 @@ The output should look like::
  JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
  TESTS     : 1
  (1/1) sleeptest.py:  PASS (1.01 s)
- PASS      : 1
- ERROR     : 0
- FAIL      : 0
- SKIP      : 0
- WARN      : 0
- INTERRUPT : 0
+ RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
  TIME      : 1.01 s
 
 For more information, please consult the topic Remote Machine Plugin
