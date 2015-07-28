@@ -144,17 +144,18 @@ def iter_tabular_output(matrix, header=None):
             except IndexError:
                 lengths.append(col_len)
 
-    lengths = tuple(lengths)
-    format_string = ""
-    for length in lengths:
-        format_string += "%-" + str(length) + "s "
+    if not lengths:     # No items...
+        raise StopIteration
+    format_string = " ".join(["%-" + str(leng) + "s"
+                              for leng in lengths[:-1]] +
+                             ["%s"])
 
     if header:
         out_line = format_string % header
-        yield out_line.strip()
+        yield out_line
     for row in matrix:
         out_line = format_string % tuple(row)
-        yield out_line.strip()
+        yield out_line
 
 
 def tabular_output(matrix, header=None):
