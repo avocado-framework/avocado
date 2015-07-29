@@ -108,7 +108,9 @@ class Job(object):
         if self.show_job_log:
             if not self.silent:
                 output.add_console_handler(_TEST_LOGGER)
+                output.add_console_handler(logging.getLogger())
                 _TEST_LOGGER.setLevel(self.loglevel)
+                _TEST_LOGGER.propagate = False
 
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
