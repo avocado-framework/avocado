@@ -421,6 +421,7 @@ class Mux(object):
             i = None
             for i, variant in enumerate(self.variants):
                 test_factory = [template[0], template[1].copy()]
+                test_factory[1]['tag'] = str(i + 1)
                 inject_params = test_factory[1].get('params', {}).get(
                     'avocado_inject_params', False)
                 # Test providers might want to keep their original params and
