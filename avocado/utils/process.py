@@ -655,7 +655,11 @@ class GDBSubProcess(object):
         runtime.CURRENT_TEST.report_state()
         runtime.CURRENT_TEST.paused_msg = ''
 
-        return self.create_and_wait_on_resume_fifo(fifo_path)
+        ret = self.create_and_wait_on_resume_fifo(fifo_path)
+        runtime.CURRENT_TEST.paused_msg = ("\rResuming ...")
+        runtime.CURRENT_TEST.report_state()
+        runtime.CURRENT_TEST.paused_msg = ''
+        return ret
 
     def handle_fatal_signal(self, response):
         script_path, fifo_path = self.generate_gdb_connect_sh()
@@ -675,7 +679,11 @@ class GDBSubProcess(object):
         runtime.CURRENT_TEST.report_state()
         runtime.CURRENT_TEST.paused_msg = ''
 
-        return self.create_and_wait_on_resume_fifo(fifo_path)
+        ret = self.create_and_wait_on_resume_fifo(fifo_path)
+        runtime.CURRENT_TEST.paused_msg = ("\rResuming ...")
+        runtime.CURRENT_TEST.report_state()
+        runtime.CURRENT_TEST.paused_msg = ''
+        return ret
 
     def _is_thread_stopped(self):
         result = False
