@@ -158,7 +158,7 @@ def process_in_ptree_is_defunct(ppid):
         return True
     for pid in pids:
         cmd = "ps --no-headers -o cmd %d" % int(pid)
-        proc_name = system_output(cmd, ignore_status=True)
+        proc_name = system_output(cmd, ignore_status=True, verbose=False)
         if '<defunct>' in proc_name:
             defunct = True
             break
@@ -171,7 +171,7 @@ def get_children_pids(ppid):
     param ppid: parent PID
     return: list of PIDs of all children/threads of ppid
     """
-    return system_output("ps -L --ppid=%d -o lwp" % ppid).split('\n')[1:]
+    return system_output("ps -L --ppid=%d -o lwp" % ppid, verbose=False).split('\n')[1:]
 
 
 class CmdResult(object):
