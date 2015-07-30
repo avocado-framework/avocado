@@ -388,6 +388,7 @@ class Mux(object):
     """
 
     def __init__(self, args):
+        self._has_multiple_variants = None
         mux_files = getattr(args, 'multiplex_files', None)
         filter_only = getattr(args, 'filter_only', None)
         filter_out = getattr(args, 'filter_out', None)
@@ -408,8 +409,10 @@ class Mux(object):
         """
         # Currently number of tests is symetrical
         if self.variants:
-            return (len(test_suite) *
-                    sum(1 for _ in self.variants))
+            no_variants = sum(1 for _ in self.variants)
+            if no_variants > 1:
+                self._has_multiple_variants = True
+            return (len(test_suite) * no_variants)
         else:
             return len(test_suite)
 
@@ -421,6 +424,8 @@ class Mux(object):
             i = None
             for i, variant in enumerate(self.variants):
                 test_factory = [template[0], template[1].copy()]
+                if self._has_multiple_variants:
+                    test_factory[1]['tag'] = "variant%s" % (i + 1)
                 inject_params = test_factory[1].get('params', {}).get(
                     'avocado_inject_params', False)
                 # Test providers might want to keep their original params and
