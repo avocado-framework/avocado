@@ -9,3 +9,9 @@ flexmock>=0.9.7
 inspektor>=0.1.12
 # mock (some unittests use it)
 mock>=1.0.0
+# setuptools
+setuptools>=18.0.0
+# six
+six>=1.9.0
+# funcsigs
+funcsigs>=0.4
