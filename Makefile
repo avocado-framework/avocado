@@ -69,6 +69,14 @@ clean:
 	test -L etc/avocado/conf.d/virt-test.conf && rm -f etc/avocado/conf.d/virt-test.conf || true
 	test -L virttest && rm -f virttest || true
 
+install-requirements-all: install-requirements install-requirements-selftests
+
+install-requirements:
+	grep -v '^#' requirements.txt | xargs -n 1 pip install
+
+install-requirements-selftests:
+	grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install
+
 check: clean check_cyclical modules_boundaries
 	selftests/checkall
 
