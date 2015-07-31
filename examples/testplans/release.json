@@ -31,7 +31,7 @@
 	 "description": "On the same machine used during 'Avocado Server Source Checkout and Unittests', run the quick and dirty script to get it running `$ ./reset-and-run.sh`. Expected result: `Starting development server at http://0.0.0.0:9405`"},
 
 	{"name": "Avocado Server Functional Test",
-	 "description": "On the same machine used during 'Avocado Server Run', on another console, run `$ avocado run selftests/all/functional/avocadoserver/api.py`. Expected result: `PASS`"},
+	 "description": "On the same machine used during 'Avocado Server Run', on another console, run `$ curl http://localhost:9405`. Expected result: json response"},
 
 	{"name": "Avocado Virt and VT Source Checkout",
 	 "description": "On a virtualization capable machine, checkout a copy of the avocado-vt, avocado-virt, avocado-virt-tests repositories with `$ git clone git://github.com/avocado-framework/avocado-vt.git`, `$ git clone git://github.com/avocado-framework/avocado-virt.git` and `$ git clone git://github.com/avocado-framework/avocado-virt-tests.git`. On the Avocado (non-virt) repo, run `make link`. Now run `$ avocado plugins`. Expected result: `virt_bootstrap`, `virt`, `virt_test_compat_runner` and `virt_test_compat_lister` plugins enabled."},
