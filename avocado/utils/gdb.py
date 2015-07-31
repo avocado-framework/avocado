@@ -541,7 +541,7 @@ class GDB(object):
 
         :param args: the arguments to be passed to the binary as command line
                      arguments
-        :type args: list
+        :type args: builtin.list
         :returns: a :class:`CommandResult` instance
         :rtype: :class:`CommandResult`
         """

@@ -141,7 +141,7 @@ def read_all_lines(filename):
     :type filename: str
 
     :return: all lines of the file as list
-    :rtype: list
+    :rtype: builtin.list
     """
     contents = []
     try:

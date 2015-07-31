@@ -136,7 +136,7 @@ class TestLoaderProxy(object):
         Discover (possible) tests from test urls.
 
         :param urls: a list of tests urls; if [] use plugin defaults
-        :type urls: list
+        :type urls: builtin.list
         :param list_tests: Limit tests to be displayed (loader.ALL|DEFAULT...)
         :return: A list of test factories (tuples (TestClass, test_params))
         """
