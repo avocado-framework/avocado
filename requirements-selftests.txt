@@ -8,7 +8,7 @@ Sphinx>=1.3b1
 # flexmock (some unittests use it)
 flexmock>=0.9.7
 # inspektor (static and style checks)
-inspektor>=0.1.12
+inspektor>=0.1.16
 # mock (some unittests use it)
 mock>=1.0.0
 # six
