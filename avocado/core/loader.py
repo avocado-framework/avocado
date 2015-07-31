@@ -136,7 +136,7 @@ class TestLoaderProxy(object):
         Discover (possible) tests from test urls.
 
         :param urls: a list of tests urls; if [] use plugin defaults
-        :type urls: list
+        :type urls: builtin.list
         :param list_tests: Limit tests to be displayed (loader.ALL|DEFAULT...)
         :return: A list of test factories (tuples (TestClass, test_params))
         """
@@ -358,7 +358,7 @@ class FileLoader(TestLoader):
             test_name = test_path
         module_name = os.path.basename(test_path).split('.')[0]
         test_module_dir = os.path.dirname(test_path)
-        sys.path.append(test_module_dir)
+        sys.path.insert(0, test_module_dir)
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         try:
             sys.stdin = None

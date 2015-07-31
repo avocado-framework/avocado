@@ -10,7 +10,7 @@ import shutil
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
-    sys.path.append(basedir)
+    sys.path.insert(0, basedir)
 
 from avocado import Test
 from avocado.core.plugins import xunit

@@ -92,7 +92,7 @@ def get_submodules(module_name):
     :param module_name: Name of module to search for
     :type module_name: str
     :return: List of the submodules
-    :rtype: list
+    :rtype: builtin.list
     """
     module_info = loaded_module_info(module_name)
     module_list = []

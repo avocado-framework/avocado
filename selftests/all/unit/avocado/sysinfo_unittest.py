@@ -12,7 +12,7 @@ else:
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 basedir = os.path.dirname(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
-    sys.path.append(basedir)
+    sys.path.insert(0, basedir)
 
 from avocado.core import sysinfo
 
@@ -91,8 +91,10 @@ class SysinfoTest(unittest.TestCase):
         job_postdir = os.path.join(testdir, 'post')
         self.assertTrue(os.path.isdir(job_postdir))
         # By default, there are no post test files
-        self.assertEqual(len(os.listdir(job_postdir)), 0,
-                         "Test post dir is not empty")
+        self.assertLess(len(os.listdir(job_postdir)), 2,
+                        "Post dir can contain 0-1 files depending on whether "
+                        "sys messages are obtainable or not:\n%s"
+                        % os.listdir(job_postdir))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
