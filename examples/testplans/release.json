@@ -28,7 +28,7 @@
 	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt`. Then finally run the unittests with `$ make check`. Expected result: `OK`"},
 
 	{"name": "Avocado Server Run",
-	 "description": "On the same machine used during 'Avocado Server Source Checkout and Unittests', run the quick and dirty script to get it running `$ ./reset-and-run.sh`. Set admin password to `123`. Expected result: `Starting development server at http://0.0.0.0:9405`"},
+	 "description": "On the same machine used during 'Avocado Server Source Checkout and Unittests', run the quick and dirty script to get it running `$ ./reset-and-run.sh`. Expected result: `Starting development server at http://0.0.0.0:9405`"},
 
 	{"name": "Avocado Server Functional Test",
 	 "description": "On the same machine used during 'Avocado Server Run', on another console, run `$ avocado run selftests/all/functional/avocadoserver/api.py`. Expected result: `PASS`"},
