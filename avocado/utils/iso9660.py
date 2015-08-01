@@ -217,7 +217,7 @@ class Iso9660IsoInfo(BaseIso9660):
                 return ""
 
         cmd.append("-x %s" % fname)
-        result = process.run(" ".join(cmd))
+        result = process.run(" ".join(cmd), verbose=False)
         return result.stdout
 
 
