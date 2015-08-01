@@ -614,10 +614,18 @@ class View(object):
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
 
         self.file_handler.setFormatter(formatter)
+        show_job_log = (self.app_args is not None and
+                        getattr(self.app_args, 'show_job_log', False))
         test_logger = logging.getLogger('avocado.test')
+        if not show_job_log:
+            map(test_logger.removeHandler, test_logger.handlers[:])
+            map(test_logger.removeFilter, test_logger.filters[:])
         test_logger.addHandler(self.file_handler)
         test_logger.setLevel(loglevel)
         root_logger = logging.getLogger()
+        if not show_job_log:
+            map(root_logger.removeHandler, root_logger.handlers[:])
+            map(root_logger.removeFilter, root_logger.filters[:])
         root_logger.addHandler(self.file_handler)
         root_logger.setLevel(loglevel)
 
