@@ -443,6 +443,8 @@ class Job(object):
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
+        if not self.standalone:
+            self._update_latest_link()
         self._make_test_runner()
         self._start_sysinfo()
 
@@ -452,8 +454,6 @@ class Job(object):
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout)
         self.view.stop_file_logging()
-        if not self.standalone:
-            self._update_latest_link()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
