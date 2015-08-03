@@ -141,7 +141,19 @@ class Job(object):
             id_file_obj.write("%s\n" % self.unique_id)
 
     def _update_latest_link(self):
-        data_dir.update_latest_job_logs_dir(self.logdir)
+        """
+        Update the latest job result symbolic link [avocado-logs-dir]/latest.
+        """
+        basedir = os.path.dirname(self.logdir)
+        basename = os.path.basename(self.logdir)
+        latest = os.path.join(basedir, "latest")
+        if os.path.exists(latest) and not os.path.islink(latest):
+            raise OSError('"%s" already exists and is not a symlink' % latest)
+        try:
+            os.unlink(latest)
+        except OSError:
+            pass
+        os.symlink(basename, latest)
 
     def _start_sysinfo(self):
         if hasattr(self.args, 'sysinfo'):
