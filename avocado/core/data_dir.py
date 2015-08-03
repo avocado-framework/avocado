@@ -232,6 +232,8 @@ def update_latest_job_logs_dir(job_result_dir):
     basedir = os.path.dirname(job_result_dir)
     basename = os.path.basename(job_result_dir)
     latest = os.path.join(basedir, "latest")
+    if os.path.exists(latest) and not os.path.islink(latest):
+        raise OSError('"%s" already exists and is not a symlink' % latest)
     try:
         os.unlink(latest)
     except OSError:
