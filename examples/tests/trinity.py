@@ -41,9 +41,9 @@ class TrinityTest(Test):
         """
         Execute the trinity syscall fuzzer with the appropriate params.
         """
-        cmd = './trinity -I'
+        cmd = './trinity -m -I'
         process.run(cmd)
-        cmd = './trinity'
+        cmd = './trinity -m'
         if self.params.get('stress'):
             cmd += " " + self.params.get('stress')
         if self.params.get('victims_path'):
