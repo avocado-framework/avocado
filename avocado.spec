@@ -1,14 +1,14 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.27.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache
-BuildRequires: python2-devel, python-docutils, python-nose
+BuildRequires: python2-devel, python-docutils, python-nose, python-mock
 
 %if 0%{?el6}
 Requires: PyYAML
@@ -104,6 +104,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Aug 3 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.27.0-2
+- Added 'python-mock' as a build requirement
+
 * Mon Aug 3 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.27.0-1
 - New upstream release 0.27.0
 
