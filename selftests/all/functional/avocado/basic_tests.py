@@ -24,9 +24,13 @@ PASS_SCRIPT_CONTENTS = """#!/bin/sh
 true
 """
 
+PASS_SHELL_CONTENTS = "exit 0"
+
 FAIL_SCRIPT_CONTENTS = """#!/bin/sh
 false
 """
+
+FAIL_SHELL_CONTENTS = "exit 1"
 
 VOID_PLUGIN_CONTENTS = """#!/usr/bin/env python
 from avocado.core.plugins.plugin import Plugin
@@ -344,6 +348,60 @@ class RunnerSimpleTest(unittest.TestCase):
                       'finish with warning)', result.stdout, result)
         self.assertIn('ERROR| Error message (ordinary message not changing '
                       'the results)', result.stdout, result)
+
+    def tearDown(self):
+        self.pass_script.remove()
+        self.fail_script.remove()
+        shutil.rmtree(self.tmpdir)
+
+
+class InnerRunnerTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+        self.pass_script = script.TemporaryScript(
+            'pass',
+            PASS_SHELL_CONTENTS,
+            'avocado_innerrunner_functional')
+        self.pass_script.save()
+        self.fail_script = script.TemporaryScript(
+            'fail',
+            FAIL_SHELL_CONTENTS,
+            'avocado_innerrunner_functional')
+        self.fail_script.save()
+
+    def test_innerrunner_pass(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --inner-runner=/bin/sh %s'
+        cmd_line %= (self.tmpdir, self.pass_script.path)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+    def test_innerrunner_fail(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --inner-runner=/bin/sh %s'
+        cmd_line %= (self.tmpdir, self.fail_script.path)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+    def test_innerrunner_chdir_no_testdir(self):
+        os.chdir(basedir)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --inner-runner=/bin/sh '
+                    '--inner-runner-chdir=test %s')
+        cmd_line %= (self.tmpdir, self.pass_script.path)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_output = 'Option "--inner-runner-testdir" is mandatory'
+        self.assertIn(expected_output, result.stderr)
+        expected_rc = 3
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
 
     def tearDown(self):
         self.pass_script.remove()
