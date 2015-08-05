@@ -294,6 +294,9 @@ class FileLoader(TestLoader):
         :param list_tests: list corrupted/invalid tests too
         :return: list of matching tests
         """
+        if test.INNER_RUNNER is not None:
+            return self._make_tests(url, [], [])
+
         if url is None:
             if list_tests is DEFAULT:
                 return []   # Return empty set when not listing details
@@ -460,6 +463,9 @@ class FileLoader(TestLoader):
         def ignore_broken(klass, uid, params=None):
             """ Always return empty list """
             return []
+
+        if test.INNER_RUNNER is not None:
+            return self._make_test(test.SimpleTest, test_path)
 
         if list_non_tests:   # return broken test with params
             make_broken = self._make_test
