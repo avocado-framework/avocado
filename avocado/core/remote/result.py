@@ -145,5 +145,7 @@ class VMTestResult(RemoteTestResult):
 
     def tear_down(self):
         super(VMTestResult, self).tear_down()
-        if self.args.vm_cleanup is True and self.vm.snapshot is not None:
-            self.vm.restore_snapshot()
+        if self.args.vm_cleanup is True:
+            self.vm.stop()
+            if self.vm.snapshot is not None:
+                self.vm.restore_snapshot()

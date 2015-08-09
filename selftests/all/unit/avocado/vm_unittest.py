@@ -52,6 +52,7 @@ class VMTestResultTest(unittest.TestCase):
         self.remote = VMTestResult(Stream, Args)
         # vm.RemoteTestResult.tear_down()
         RemoteTestResult.should_receive('tear_down').once().ordered()
+        mock_vm.should_receive('stop').once().ordered()
         mock_vm.should_receive('restore_snapshot').once().ordered()
 
     def tearDown(self):
