@@ -77,7 +77,6 @@ class KernelBuild(object):
         Configure/prepare kernel source to build.
         """
         self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
-        #log.info("Running make mrproper")
         build.make(self.linux_dir, extra_args='mrproper')
         dotconfig = os.path.join(self.linux_dir, '.config')
         shutil.copy(self.config_path, dotconfig)
