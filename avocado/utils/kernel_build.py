@@ -34,7 +34,7 @@ class KernelBuild(object):
     URL = 'https://www.kernel.org/pub/linux/kernel/v3.x/'
     SOURCE = 'linux-{version}.tar.gz'
 
-    def __init__(self, version, config_path, work_dir=None):
+    def __init__(self, version, config_path=None, work_dir=None):
         """
         Creates an instance of :class:`KernelBuild`.
 
@@ -81,15 +81,19 @@ class KernelBuild(object):
         """
         self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
         build.make(self.linux_dir, extra_args='mrproper')
-        dotconfig = os.path.join(self.linux_dir, '.config')
-        shutil.copy(self.config_path, dotconfig)
+        if self.config_path is not None:
+            dotconfig = os.path.join(self.linux_dir, '.config')
+            shutil.copy(self.config_path, dotconfig)
 
     def build(self):
         """
         Build kernel from source.
         """
         log.info("Starting build the kernel")
-        build.make(self.linux_dir, extra_args='oldconfig')
+        if self.config_path is None:
+            build.make(self.linux_dir, extra_args='defconfig')
+        else:
+            build.make(self.linux_dir, extra_args='olddefconfig')
         build.make(self.linux_dir, extra_args='dep')
         build.make(self.linux_dir, extra_args='bzImage')
 
