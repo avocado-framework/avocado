@@ -38,7 +38,7 @@ class KernelBuild(object):
         """
         Creates an instance of :class:`KernelBuild`.
 
-        :param version: kernel version ("3.14.5").
+        :param version: kernel version ("3.19.8").
         :param config_path: path to config file.
         :param work_dir: work directory.
         :return: None.
@@ -94,7 +94,7 @@ class KernelBuild(object):
             build.make(self.linux_dir, extra_args='defconfig')
         else:
             build.make(self.linux_dir, extra_args='olddefconfig')
-        build.make(self.linux_dir, extra_args='bzImage')
+        build.make(self.linux_dir)
 
     def __del__(self):
         shutil.rmtree(self.work_dir)
