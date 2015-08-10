@@ -17,9 +17,10 @@ class LinuxBuildTest(Test):
     def setUp(self):
         kernel_version = self.params.get('linux_version', default='3.19.8')
         linux_config = self.params.get('linux_config', default=None)
-        config_path = self.get_data_path(linux_config)
+        if linux_config is not None:
+            linux_config = self.get_data_path(linux_config)
         self.linux_build = kernel_build.KernelBuild(kernel_version,
-                                                    config_path,
+                                                    linux_config,
                                                     self.srcdir)
         self.linux_build.download()
         self.linux_build.uncompress()
