@@ -48,6 +48,9 @@ class KernelBuild(object):
         if work_dir is None:
             work_dir = tempfile.mkdtemp()
         self.work_dir = work_dir
+        self.build_dir = os.path.join(self.work_dir, 'build')
+        if not os.path.isdir(self.build_dir):
+            os.makedirs(self.build_dir)
 
     def __repr__(self):
         return "KernelBuild('%s, %s, %s')" % (self.version,
@@ -80,7 +83,7 @@ class KernelBuild(object):
         Configure/prepare kernel source to build.
         """
         self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
-        build.make(self.linux_dir, extra_args='mrproper')
+        build.make(self.linux_dir, extra_args='O=%s mrproper' % self.build_dir)
         if self.config_path is not None:
             dotconfig = os.path.join(self.linux_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
@@ -91,10 +94,10 @@ class KernelBuild(object):
         """
         log.info("Starting build the kernel")
         if self.config_path is None:
-            build.make(self.linux_dir, extra_args='defconfig')
+            build.make(self.linux_dir, extra_args='O=%s defconfig' % self.build_dir)
         else:
-            build.make(self.linux_dir, extra_args='olddefconfig')
-        build.make(self.linux_dir)
+            build.make(self.linux_dir, extra_args='O=%s olddefconfig' % self.build_dir)
+        build.make(self.linux_dir, extra_args='O=%s' % self.build_dir)
 
     def __del__(self):
         shutil.rmtree(self.work_dir)
