@@ -30,8 +30,8 @@ class KernelBuild(object):
     Build the Linux Kernel from official tarballs.
     """
 
-    url = 'https://www.kernel.org/pub/linux/kernel/v3.x/'
-    source = 'linux-{version}.tar.gz'
+    URL = 'https://www.kernel.org/pub/linux/kernel/v3.x/'
+    SOURCE = 'linux-{version}.tar.gz'
 
     def __init__(self, version, config_path, work_dir):
         """
@@ -55,8 +55,8 @@ class KernelBuild(object):
         """
         Download kernel source.
         """
-        self.kernel_file = KernelBuild.source.format(version=self.version)
-        full_url = KernelBuild.url + KernelBuild.source.format(version=self.version)
+        self.kernel_file = self.SOURCE.format(version=self.version)
+        full_url = self.URL + self.SOURCE.format(version=self.version)
         path = os.path.join(self.work_dir, self.kernel_file)
         if os.path.isfile(path):
             log.info("File '%s' exists, will not download!", path)
