@@ -15,8 +15,9 @@
 # Author: Ruda Moura <rmoura@redhat.com>
 
 import os
-import logging
 import shutil
+import logging
+import tempfile
 
 from . import download, archive, build
 
@@ -33,7 +34,7 @@ class KernelBuild(object):
     URL = 'https://www.kernel.org/pub/linux/kernel/v3.x/'
     SOURCE = 'linux-{version}.tar.gz'
 
-    def __init__(self, version, config_path, work_dir):
+    def __init__(self, version, config_path, work_dir=None):
         """
         Creates an instance of :class:`KernelBuild`.
 
@@ -44,6 +45,8 @@ class KernelBuild(object):
         """
         self.version = version
         self.config_path = config_path
+        if work_dir is None:
+            work_dir = tempfile.mkdtemp()
         self.work_dir = work_dir
 
     def __repr__(self):
@@ -89,3 +92,6 @@ class KernelBuild(object):
         build.make(self.linux_dir, extra_args='oldconfig')
         build.make(self.linux_dir, extra_args='dep')
         build.make(self.linux_dir, extra_args='bzImage')
+
+    def __del__(self):
+        shutil.rmtree(self.work_dir)
