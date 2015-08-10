@@ -298,8 +298,11 @@ class SubProcess(object):
             def signal_handler(signum, frame):
                 self.result.interrupted = True
                 self.wait()
-
-            signal.signal(signal.SIGINT, signal_handler)
+            try:
+                signal.signal(signal.SIGINT, signal_handler)
+            except ValueError:
+                if self.verbose:
+                    log.info("Command %s running on a thread", self.cmd)
 
     def _fd_drainer(self, input_pipe):
         """
