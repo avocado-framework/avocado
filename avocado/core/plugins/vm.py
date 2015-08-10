@@ -40,30 +40,25 @@ class RunVM(plugin.Plugin):
         default_hypervisor_uri = 'qemu:///system'
         msg = 'test execution on a Virtual Machine'
         self.vm_parser = parser.runner.add_argument_group(msg)
-        self.vm_parser.add_argument('--vm-domain', dest='vm_domain',
+        self.vm_parser.add_argument('--vm-domain',
                                     help=('Specify Libvirt Domain Name'))
         self.vm_parser.add_argument('--vm-hypervisor-uri',
-                                    dest='vm_hypervisor_uri',
                                     default=default_hypervisor_uri,
                                     help=('Specify hypervisor URI driver '
                                           'connection. Current: %s' %
                                           default_hypervisor_uri))
-        self.vm_parser.add_argument('--vm-hostname', dest='vm_hostname',
+        self.vm_parser.add_argument('--vm-hostname',
                                     help='Specify VM hostname to login')
-        self.vm_parser.add_argument('--vm-username', dest='vm_username',
-                                    default=username,
+        self.vm_parser.add_argument('--vm-username', default=username,
                                     help='Specify the username to login on VM')
-        self.vm_parser.add_argument('--vm-password', dest='vm_password',
+        self.vm_parser.add_argument('--vm-password',
                                     default=None,
                                     help='Specify the password to login on VM')
-        self.vm_parser.add_argument('--vm-cleanup', dest='vm_cleanup',
-                                    action='store_true',
-                                    default=False,
+        self.vm_parser.add_argument('--vm-cleanup',
+                                    action='store_true', default=False,
                                     help='Restore VM to a previous state, '
                                     'before running tests')
-        self.vm_parser.add_argument('--vm-no-copy',
-                                    dest='vm_no_copy',
-                                    action='store_true',
+        self.vm_parser.add_argument('--vm-no-copy', action='store_true',
                                     help="Don't copy tests and use the "
                                     "exact uri on VM machine.")
         self.configured = True
