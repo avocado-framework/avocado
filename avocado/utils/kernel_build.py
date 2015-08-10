@@ -94,7 +94,6 @@ class KernelBuild(object):
             build.make(self.linux_dir, extra_args='defconfig')
         else:
             build.make(self.linux_dir, extra_args='olddefconfig')
-        build.make(self.linux_dir, extra_args='dep')
         build.make(self.linux_dir, extra_args='bzImage')
 
     def __del__(self):
