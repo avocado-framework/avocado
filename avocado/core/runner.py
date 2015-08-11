@@ -196,23 +196,17 @@ class TestRunner(object):
                 ctrl_c_count += 1
                 if ctrl_c_count == 2:
                     if not stage_1_msg_displayed:
-                        k_msg_1 = ("SIGINT sent to tests, waiting for their "
-                                   "reaction")
-                        k_msg_2 = ("Ignoring Ctrl+C during the next "
-                                   "%d seconds so they can try to finish" %
+                        k_msg_1 = ('\nInterrupt requested. Waiting %d '
+                                   'seconds for test to finish '
+                                   '(ignoring new Ctrl+C until then)' %
                                    ignore_window)
-                        k_msg_3 = ("A new Ctrl+C sent after that will send a "
-                                   "SIGKILL to them")
                         self.job.view.notify(event='message', msg=k_msg_1)
-                        self.job.view.notify(event='message', msg=k_msg_2)
-                        self.job.view.notify(event='message', msg=k_msg_3)
                         stage_1_msg_displayed = True
                     ignore_time_started = time.time()
                 if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
-                        k_msg_3 = ("Ctrl+C received after the ignore window. "
-                                   "Killing all active tests")
-                        self.job.view.notify(event='message', msg=k_msg_3)
+                        k_msg_2 = "Killing test subprocess %s" % proc.pid
+                        self.job.view.notify(event='message', msg=k_msg_2)
                         stage_2_msg_displayed = True
                     os.kill(proc.pid, signal.SIGKILL)
 
@@ -264,17 +258,23 @@ class TestRunner(object):
         for test_template in test_suite:
             test_template[1]['base_logdir'] = self.job.logdir
             test_template[1]['job'] = self.job
+            break_loop = False
             for test_factory in mux.itertests(test_template):
                 if deadline is not None and time.time() > deadline:
                     test_parameters = test_factory[1]
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
-                    self.run_test(test_factory, queue, failures)
+                    if not self.run_test(test_factory, queue, failures):
+                        break_loop = True
+                        break
                 else:
                     if not self.run_test(test_factory, queue, failures, deadline):
+                        break_loop = True
                         break
             runtime.CURRENT_TEST = None
+            if break_loop:
+                break
         self.result.end_tests()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
