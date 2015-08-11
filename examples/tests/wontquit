@@ -1,0 +1,17 @@
+#!/bin/env python
+
+"""
+Example of badly behaved program that will ignore all stop signs sent to it.
+
+This is for functional testing of the avocado Ctrl+C handling.
+"""
+
+import signal
+import time
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    signal.signal(signal.SIGQUIT, signal.SIG_IGN)
+    while True:
+        time.sleep(0.1)
