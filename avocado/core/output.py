@@ -416,7 +416,19 @@ class View(object):
             mapping[event](msg=msg, skip_newline=skip_newline)
 
     def notify_progress(self, progress):
-        self._log_ui_throbber_progress(progress)
+        """
+        Give an interactive indicator of the test progress
+
+        :param progress: if indication of progress came explicitly from the
+                         test. If false, it means the test process is running,
+                         but not communicating test specific progress.
+        :type progress: bool
+        :rtype: None
+        """
+        if progress:
+            self._log_ui_healthy(self.throbber.render(), True)
+        else:
+            self._log_ui_partial(self.throbber.render(), True)
 
     def add_test(self, state):
         self._log(msg=self._get_test_tag(state['tagged_name']),
@@ -534,22 +546,6 @@ class View(object):
         :param msg: Message to write.
         """
         self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
-
-    def _log_ui_throbber_progress(self, progress_from_test=False):
-        """
-        Give an interactive indicator of the test progress
-
-        :param progress_from_test: if indication of progress came explicitly
-                                   from the test. If false, it means the test
-                                   process is running, but not communicating
-                                   test specific progress.
-        :type progress_from_test: bool
-        :rtype: None
-        """
-        if progress_from_test:
-            self._log_ui_healthy(self.throbber.render(), True)
-        else:
-            self._log_ui_partial(self.throbber.render(), True)
 
     def start_file_logging(self, logfile, loglevel, unique_id):
         """
