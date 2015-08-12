@@ -406,6 +406,16 @@ class Job(object):
         job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
         job_log.info('')
 
+    def _log_mux_variants(self, mux):
+        job_log = _TEST_LOGGER
+
+        for (index, tpl) in enumerate(mux.variants):
+            paths = ', '.join([x.path for x in tpl])
+            job_log.info('Variant %s:    %s', index + 1, paths)
+
+        if mux.variants:
+            job_log.info('')
+
     def _log_job_debug_info(self, mux):
         """
         Log relevant debug information to the job log.
@@ -417,6 +427,7 @@ class Job(object):
         self._log_avocado_datadir()
         self._log_mux_tree(mux)
         self._log_tmp_dir()
+        self._log_mux_variants(mux)
         self._log_job_id()
 
     def _run(self, urls=None):
