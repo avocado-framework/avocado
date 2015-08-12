@@ -63,10 +63,10 @@ clean:
 	test -L avocado/core/plugins/virt.py && rm -f avocado/core/plugins/virt.py || true
 	test -L avocado/core/plugins/virt_bootstrap.py && rm -f avocado/core/plugins/virt_bootstrap.py || true
 	test -L etc/avocado/conf.d/virt.conf && rm -f etc/avocado/conf.d/virt.conf || true
-	test -L avocado/core/plugins/virt_test.py && rm -f avocado/core/plugins/virt_test.py || true
-	test -L avocado/core/plugins/virt_test_list.py && rm -f avocado/core/plugins/virt_test_list.py || true
-	test -L avocado/core/plugins/virt_test_bootstrap.py && rm -f avocado/core/plugins/virt_test_bootstrap.py || true
-	test -L etc/avocado/conf.d/virt-test.conf && rm -f etc/avocado/conf.d/virt-test.conf || true
+	test -L avocado/core/plugins/vt.py && rm -f avocado/core/plugins/vt.py || true
+	test -L avocado/core/plugins/vt_list.py && rm -f avocado/core/plugins/vt_list.py || true
+	test -L avocado/core/plugins/vt_bootstrap.py && rm -f avocado/core/plugins/vt_bootstrap.py || true
+	test -L etc/avocado/conf.d/vt.conf && rm -f etc/avocado/conf.d/vt.conf || true
 	test -L virttest && rm -f virttest || true
 
 install-requirements-all: install-requirements install-requirements-selftests
@@ -95,10 +95,10 @@ link_virt:
 	test -f ../avocado-virt/avocado/core/plugins/virt_bootstrap.py && ln -sf ../../../../avocado-virt/avocado/core/plugins/virt_bootstrap.py avocado/core/plugins/ || true
 
 link_vt:
-	test -f ../avocado-vt/etc/avocado/conf.d/virt-test.conf && ln -sf ../../../../avocado-vt/etc/avocado/conf.d/virt-test.conf etc/avocado/conf.d/ || true
-	test -f ../avocado-vt/avocado/core/plugins/virt_test.py && ln -sf ../../../../avocado-vt/avocado/core/plugins/virt_test.py avocado/core/plugins/ || true
-	test -f ../avocado-vt/avocado/core/plugins/virt_test_list.py && ln -sf ../../../../avocado-vt/avocado/core/plugins/virt_test_list.py avocado/core/plugins/ || true
-	test -f ../avocado-vt/avocado/core/plugins/virt_test_bootstrap.py && ln -sf ../../../../avocado-vt/avocado/core/plugins/virt_test_bootstrap.py avocado/core/plugins/ || true
+	test -f ../avocado-vt/etc/avocado/conf.d/vt.conf && ln -sf ../../../../avocado-vt/etc/avocado/conf.d/vt.conf etc/avocado/conf.d/ || true
+	test -f ../avocado-vt/avocado/core/plugins/vt.py && ln -sf ../../../../avocado-vt/avocado/core/plugins/vt.py avocado/core/plugins/ || true
+	test -f ../avocado-vt/avocado/core/plugins/vt_list.py && ln -sf ../../../../avocado-vt/avocado/core/plugins/vt_list.py avocado/core/plugins/ || true
+	test -f ../avocado-vt/avocado/core/plugins/vt_bootstrap.py && ln -sf ../../../../avocado-vt/avocado/core/plugins/vt_bootstrap.py avocado/core/plugins/ || true
 	test -d ../avocado-vt/virttest && ln -sf ../avocado-vt/virttest . || true
 
 man: man/avocado.1 man/avocado-rest-client.1
