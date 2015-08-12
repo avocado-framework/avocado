@@ -99,7 +99,7 @@ class Test(unittest.TestCase):
         self.expected_stderr_file = os.path.join(self.datadir,
                                                  'stderr.expected')
 
-        self.workdir = utils_path.init_dir(tmpdir, basename)
+        self.workdir = utils_path.init_dir(tmpdir, basename.replace(':', '_'))
         self.srcdir = utils_path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
