@@ -177,14 +177,17 @@ class TestRunner(object):
                 if not test_state['running']:
                     break
                 else:
-                    self.job.result_proxy.notify_progress(True)
+                    self.job.result_proxy.notify_progress(False)
                     if test_state['paused']:
                         msg = test_state['paused_msg']
                         if msg:
                             self.job.view.notify(event='partial', msg=msg)
 
             elif proc.is_alive():
-                self.job.result_proxy.notify_progress()
+                if test_state and not test_state.get('running'):
+                    self.job.result_proxy.notify_progress(False)
+                else:
+                    self.job.result_proxy.notify_progress(True)
             else:
                 break
 
