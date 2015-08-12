@@ -456,7 +456,7 @@ class View(object):
         self.tests_info.update(info)
 
     def _get_test_tag(self, test_name):
-        return ('(%s/%s) %s:  ' %
+        return (' (%s/%s) %s:  ' %
                 (self.tests_info['tests_run'],
                  self.tests_info['tests_total'], test_name))
 
