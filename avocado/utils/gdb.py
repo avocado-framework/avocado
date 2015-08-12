@@ -339,11 +339,19 @@ class GDB(object):
         args += self.REQUIRED_ARGS
         args += extra_args
 
-        self.process = subprocess.Popen(args,
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        close_fds=True)
+        try:
+            self.process = subprocess.Popen(args,
+                                            stdin=subprocess.PIPE,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE,
+                                            close_fds=True)
+        except OSError, details:
+            if details.errno == 2:
+                exc = OSError("File '%s' not found" % args[0])
+                exc.errno = 2
+                raise exc
+            else:
+                raise
 
         fcntl.fcntl(self.process.stdout.fileno(),
                     fcntl.F_SETFL, os.O_NONBLOCK)
@@ -649,11 +657,19 @@ class GDBServer(object):
         _, self.stderr_path = tempfile.mkstemp(prefix=prefix + 'stderr_')
         self.stderr = open(self.stderr_path, 'w')
 
-        self.process = subprocess.Popen(args,
-                                        stdin=subprocess.PIPE,
-                                        stdout=self.stdout,
-                                        stderr=self.stderr,
-                                        close_fds=True)
+        try:
+            self.process = subprocess.Popen(args,
+                                            stdin=subprocess.PIPE,
+                                            stdout=self.stdout,
+                                            stderr=self.stderr,
+                                            close_fds=True)
+        except OSError, details:
+            if details.errno == 2:
+                exc = OSError("File '%s' not found" % args[0])
+                exc.errno = 2
+                raise exc
+            else:
+                raise
 
         if wait_until_running:
             self._wait_until_running()
