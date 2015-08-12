@@ -274,11 +274,18 @@ class SubProcess(object):
                 cmd = shlex.split(self.cmd)
             else:
                 cmd = self.cmd
-            self._popen = subprocess.Popen(cmd,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.PIPE,
-                                           shell=self.shell,
-                                           env=self.env)
+            try:
+                self._popen = subprocess.Popen(cmd,
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.PIPE,
+                                               shell=self.shell,
+                                               env=self.env)
+            except OSError, details:
+                if details.errno == 2:
+                    exc = OSError("File '%s' not found" % self.cmd.split[0])
+                    exc.errno = 2
+                    raise exc
+
             self.start_time = time.time()
             self.stdout_file = StringIO.StringIO()
             self.stderr_file = StringIO.StringIO()
