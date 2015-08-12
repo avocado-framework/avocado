@@ -423,13 +423,22 @@ class View(object):
                   skip_newline=True)
 
     def set_test_status(self, status, state):
-        mapping = {'PASS': self._log_ui_status_pass,
-                   'ERROR': self._log_ui_status_error,
-                   'FAIL': self._log_ui_status_fail,
-                   'SKIP': self._log_ui_status_skip,
-                   'WARN': self._log_ui_status_warn,
-                   'INTERRUPTED': self._log_ui_status_interrupt}
-        mapping[status](state['time_elapsed'])
+        """
+        Log a test status message
+        :param status: the test status
+        :param state: test state (used to get 'time_elapsed')
+        """
+        mapping = {'PASS': term_support.pass_str,
+                   'ERROR': term_support.error_str,
+                   'FAIL': term_support.error_str,
+                   'SKIP': term_support.skip_str,
+                   'WARN': term_support.warn_str,
+                   'INTERRUPTED': term_support.interrupt_str}
+        if status == 'SKIP':
+            msg = mapping[status]()
+        else:
+            msg = mapping[status]() + " (%.2f s)" % state['time_elapsed']
+        self._log_ui_info(msg)
 
     def set_tests_info(self, info):
         self.tests_info.update(info)
@@ -525,60 +534,6 @@ class View(object):
         :param msg: Message to write.
         """
         self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
-
-    def _log_ui_status_pass(self, t_elapsed):
-        """
-        Log a PASS status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_pass_msg = term_support.pass_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_info(normal_pass_msg)
-
-    def _log_ui_status_error(self, t_elapsed):
-        """
-        Log an ERROR status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_error_msg = term_support.error_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error_base(normal_error_msg)
-
-    def _log_ui_status_interrupt(self, t_elapsed):
-        """
-        Log an INTERRUPT status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_error_msg = term_support.interrupt_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error_base(normal_error_msg)
-
-    def _log_ui_status_fail(self, t_elapsed):
-        """
-        Log a FAIL status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_fail_msg = term_support.fail_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error_base(normal_fail_msg)
-
-    def _log_ui_status_skip(self, t_elapsed):
-        """
-        Log a SKIP status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_skip_msg = term_support.skip_str()
-        self._log_ui_info(normal_skip_msg)
-
-    def _log_ui_status_warn(self, t_elapsed):
-        """
-        Log a WARN status message for a given operation.
-
-        :param t_elapsed: Time it took for the operation to complete.
-        """
-        normal_warn_msg = term_support.warn_str() + " (%.2f s)" % t_elapsed
-        self._log_ui_error_base(normal_warn_msg)
 
     def _log_ui_throbber_progress(self, progress_from_test=False):
         """
