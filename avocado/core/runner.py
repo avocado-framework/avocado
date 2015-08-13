@@ -180,7 +180,7 @@ class TestRunner(object):
                     if not test_state['running']:
                         break
                     else:
-                        self.job.result_proxy.notify_progress(True)
+                        self.job.result_proxy.notify_progress(False)
                         if test_state['paused']:
                             msg = test_state['paused_msg']
                             if msg:
@@ -188,7 +188,10 @@ class TestRunner(object):
 
                 elif proc.is_alive():
                     if ctrl_c_count == 0:
-                        self.job.result_proxy.notify_progress()
+                        if test_state and not test_state.get('running'):
+                            self.job.result_proxy.notify_progress(False)
+                        else:
+                            self.job.result_proxy.notify_progress(True)
                 else:
                     break
             except KeyboardInterrupt:
