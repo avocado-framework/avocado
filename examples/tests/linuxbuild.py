@@ -23,10 +23,6 @@ class LinuxBuildTest(Test):
         if linux_config is not None:
             linux_config = self.get_data_path(linux_config)
 
-        # make doesn't play well with commands that have ":", and it happens
-        # that the srcdir for instrumented tests include it, so, let's use
-        # a simpler srcdir for this specific test
-        self.srcdir = tempfile.mkdtemp()
         self.linux_build = kernel_build.KernelBuild(kernel_version,
                                                     linux_config,
                                                     self.srcdir)
@@ -36,9 +32,6 @@ class LinuxBuildTest(Test):
 
     def test(self):
         self.linux_build.build()
-
-    def tearDown(self):
-        shutil.rmtree(self.srcdir)
 
 
 if __name__ == "__main__":
