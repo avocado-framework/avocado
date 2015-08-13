@@ -267,17 +267,25 @@ class TestRunner(object):
         for test_template in test_suite:
             test_template[1]['base_logdir'] = self.job.logdir
             test_template[1]['job'] = self.job
+            break_loop = False
             for test_factory in mux.itertests(test_template):
                 if deadline is not None and time.time() > deadline:
                     test_parameters = test_factory[1]
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
-                    self.run_test(test_factory, queue, failures)
+                    break_loop = not self.run_test(test_factory, queue,
+                                                   failures)
+                    if break_loop:
+                        break
                 else:
-                    if not self.run_test(test_factory, queue, failures, deadline):
+                    break_loop = not self.run_test(test_factory, queue, failures,
+                                                   deadline)
+                    if break_loop:
                         break
             runtime.CURRENT_TEST = None
+            if break_loop:
+                break
         self.result.end_tests()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
