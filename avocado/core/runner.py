@@ -197,25 +197,19 @@ class TestRunner(object):
             except KeyboardInterrupt:
                 time_elapsed = time.time() - ignore_time_started
                 ctrl_c_count += 1
-                if ctrl_c_count == 2:
+                if ctrl_c_count == 1:
                     if not stage_1_msg_displayed:
-                        k_msg_1 = ("SIGINT sent to tests, waiting for their "
-                                   "reaction")
-                        k_msg_2 = ("Ignoring Ctrl+C during the next "
-                                   "%d seconds so they can try to finish" %
+                        k_msg_1 = ('\nInterrupt requested. Waiting %d seconds '
+                                   'for test to finish '
+                                   '(ignoring new Ctrl+C until then)' %
                                    ignore_window)
-                        k_msg_3 = ("A new Ctrl+C sent after that will send a "
-                                   "SIGKILL to them")
                         self.job.view.notify(event='message', msg=k_msg_1)
-                        self.job.view.notify(event='message', msg=k_msg_2)
-                        self.job.view.notify(event='message', msg=k_msg_3)
                         stage_1_msg_displayed = True
                     ignore_time_started = time.time()
-                if (ctrl_c_count > 2) and (time_elapsed > ignore_window):
+                if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
-                        k_msg_3 = ("Ctrl+C received after the ignore window. "
-                                   "Killing all active tests")
-                        self.job.view.notify(event='message', msg=k_msg_3)
+                        k_msg_2 = "Killing test subprocess %s" % proc.pid
+                        self.job.view.notify(event='message', msg=k_msg_2)
                         stage_2_msg_displayed = True
                     os.kill(proc.pid, signal.SIGKILL)
 
