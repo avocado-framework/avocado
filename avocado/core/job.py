@@ -401,6 +401,11 @@ class Job(object):
                 job_log.info(line)
             job_log.info('')
 
+    def _log_tmp_dir(self):
+        job_log = _TEST_LOGGER
+        job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
+        job_log.info('')
+
     def _log_job_debug_info(self, mux):
         """
         Log relevant debug information to the job log.
@@ -411,6 +416,7 @@ class Job(object):
         self._log_avocado_config()
         self._log_avocado_datadir()
         self._log_mux_tree(mux)
+        self._log_tmp_dir()
         self._log_job_id()
 
     def _run(self, urls=None):
