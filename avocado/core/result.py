@@ -264,11 +264,6 @@ class HumanTestResult(TestResult):
         TestResult.start_tests(self)
         self.stream.notify(event="message", msg="JOB ID     : %s" % self.stream.job_unique_id)
         self.stream.notify(event="message", msg="JOB LOG    : %s" % self.stream.logfile)
-        if self.args is not None:
-            if 'html_output' in self.args:
-                logdir = os.path.dirname(self.stream.logfile)
-                html_file = os.path.join(logdir, 'html', 'results.html')
-                self.stream.notify(event="message", msg="JOB HTML   : %s" % html_file)
         self.stream.notify(event="message", msg="TESTS      : %s" % self.tests_total)
         self.stream.set_tests_info({'tests_total': self.tests_total})
 
@@ -283,6 +278,12 @@ class HumanTestResult(TestResult):
                                (len(self.passed), len(self.errors),
                                 len(self.failed), len(self.skipped),
                                 len(self.warned), len(self.interrupted)))
+        if self.args is not None:
+            if 'html_output' in self.args:
+                logdir = os.path.dirname(self.stream.logfile)
+                html_file = os.path.join(logdir, 'html', 'results.html')
+                self.stream.notify(event="message", msg=("JOB HTML   : %s" %
+                                                         html_file))
         self.stream.notify(event="message",
                            msg="TIME       : %.2f s" % self.total_time)
 
