@@ -475,10 +475,13 @@ class View(object):
             if hasattr(self.app_args, 'show_job_log'):
                 show_job_log = self.app_args.show_job_log
         if not (silent or show_job_log):
-            if self.use_paginator and (level < logging.ERROR):
+            if self.use_paginator:
                 if not skip_newline:
                     msg += '\n'
                 self.paginator.write(msg)
+                if level >= logging.ERROR:
+                    extra = {'skip_newline': skip_newline}
+                    self.console_log.log(level=level, msg=msg, extra=extra)
             else:
                 extra = {'skip_newline': skip_newline}
                 self.console_log.log(level=level, msg=msg, extra=extra)

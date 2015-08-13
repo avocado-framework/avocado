@@ -15,6 +15,7 @@
 import sys
 
 from . import plugin
+from . import builtin
 from .. import test
 from .. import loader
 from .. import output
@@ -33,6 +34,12 @@ class TestLister(object):
         self.view = output.View(app_args=args, use_paginator=use_paginator)
         self.term_support = output.TermSupport()
         loader.loader.load_plugins(args)
+        if self.view.use_paginator:
+            if builtin.ErrorsLoading:
+                for name, reason in builtin.ErrorsLoading:
+                    self.view.notify(event='error',
+                                     msg=('Error loading %s -> %s' %
+                                          (name, reason)))
         self.args = args
 
     def _extra_listing(self):
