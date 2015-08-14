@@ -42,6 +42,11 @@ from ..utils import process
 from ..utils import stacktrace
 
 
+INNER_RUNNER = None
+INNER_RUNNER_TESTDIR = None
+INNER_RUNNER_CHDIR = None
+
+
 class Test(unittest.TestCase):
 
     """
@@ -549,7 +554,10 @@ class SimpleTest(Test):
                                 r' \d\d:\d\d:\d\d WARN \|')
 
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
-        self.path = os.path.abspath(name)
+        if INNER_RUNNER is None:
+            self.path = os.path.abspath(name)
+        else:
+            self.path = name
         super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
         basedir = os.path.dirname(self.path)
@@ -577,9 +585,36 @@ class SimpleTest(Test):
         try:
             test_params = dict([(str(key), str(val)) for key, val in
                                 self.params.iteritems()])
+
+            pre_cwd = os.getcwd()
+            new_cwd = None
+            if INNER_RUNNER is not None:
+                self.log.info('Running test with the inner level test '
+                              'runner: "%s"', INNER_RUNNER)
+
+                # Change work directory if needed by the inner runner
+                if INNER_RUNNER_CHDIR == 'runner':
+                    new_cwd = os.path.dirname(INNER_RUNNER)
+                elif INNER_RUNNER_CHDIR == 'test':
+                    new_cwd = INNER_RUNNER_TESTDIR
+                else:
+                    new_cwd = None
+                if new_cwd is not None:
+                    self.log.debug('Changing working directory to "%s" '
+                                   'because of inner runner requirements ',
+                                   new_cwd)
+                    os.chdir(new_cwd)
+
+                command = "%s %s" % (INNER_RUNNER, self.path)
+            else:
+                command = pipes.quote(self.path)
+
             # process.run uses shlex.split(), the self.path needs to be escaped
-            result = process.run(pipes.quote(self.path), verbose=True,
+            result = process.run(command, verbose=True,
                                  env=test_params)
+            if new_cwd is not None:
+                os.chdir(pre_cwd)
+
             self._log_detailed_cmd_info(result)
         except process.CmdError, details:
             self._log_detailed_cmd_info(details.result)

@@ -179,6 +179,70 @@ instrumented and simple tests::
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
     TIME      : 1.04 s
 
+.. _running-inner-runner:
+
+Running Tests With An Inner Runner
+==================================
+
+It's quite common to have organically grown test suites in most
+software projects. These usually include a custom built, very specific
+test runner that knows how to find and run their own tests.
+
+Still, running those tests inside Avocado may be a good idea for
+various reasons, including being able to have results in different
+human and machine readable formats, collecting system information
+alongside those tests (the Avocado's `sysinfo` functionality), and
+more.
+
+Avocado makes that possible by means of its "inner runner" feature. The
+most basic way of using it is::
+
+    $ avocado run --inner-runner=/path/to/inner_runner foo bar baz
+
+In this example, Avocado will report individual test results for tests
+`foo`, `bar` and `baz`. The actual results will be based on the return
+code of individual executions of `/path/to/inner_runner foo`,
+`/path/to/inner_runner bar` and finally `/path/to/inner_runner baz`.
+
+As another way to explain an show how this feature works, think of the
+"inner runner" as some kind of interpreter and the individual tests as
+anything that this interpreter recognizes and is able to execute. A
+UNIX shell, say `/bin/sh` could be considered an inner runner, and
+files with shell code could be considered tests::
+
+    $ echo "exit 0" > /tmp/pass
+    $ echo "exit 1" > /tmp/fail
+    $ avocado run --inner-runner=/bin/sh /tmp/pass /tmp/fail
+    JOB ID     : 4a2a1d259690cc7b226e33facdde4f628ab30741
+    JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
+    TESTS      : 2
+    (1/2) /tmp/pass: PASS (0.01 s)
+    (2/2) /tmp/fail: FAIL (0.01 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    TIME       : 0.01 s
+
+This example is pretty obvious, and could be achieved by giving
+`/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
+them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
+"SIMPLE" tests.
+
+But now consider the following example::
+
+    $ avocado run --inner-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
+                                           http://remote-avocado-server:9405/jobs/
+    JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
+    JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
+    TESTS      : 2
+    (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
+    (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    TIME       : 3.04 s
+
+This effectively makes `/bin/curl` an "inner test runner", responsible for
+trying to fetch those URLs, and reporting PASS or FAIL for each of them.
+
 Debugging tests
 ===============
 
