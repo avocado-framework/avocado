@@ -52,7 +52,6 @@ class TestRunner(object):
         """
         self.job = job
         self.result = test_result
-        self.current_test_subprocess = None
 
     def _run_test(self, test_factory, queue):
         """
@@ -135,8 +134,6 @@ class TestRunner(object):
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
 
-        self.current_test_subprocess = proc
-
         cycle_timeout = 1
         time_started = time.time()
         test_state = None
@@ -163,33 +160,58 @@ class TestRunner(object):
         else:
             deadline = test_deadline
 
+        ctrl_c_count = 0
+        ignore_window = 2.0
+        ignore_time_started = time.time()
+        stage_1_msg_displayed = False
+        stage_2_msg_displayed = False
         first = 0.01
         step = 0.1
 
         while True:
-            if time.time() >= deadline:
-                os.kill(proc.pid, signal.SIGUSR1)
-                break
-            wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
-                          cycle_timeout, first, step)
-            if not queue.empty():
-                test_state = queue.get()
-                if not test_state['running']:
+            try:
+                if time.time() >= deadline:
+                    os.kill(proc.pid, signal.SIGUSR1)
                     break
-                else:
-                    self.job.result_proxy.notify_progress(False)
-                    if test_state['paused']:
-                        msg = test_state['paused_msg']
-                        if msg:
-                            self.job.view.notify(event='partial', msg=msg)
+                wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
+                              cycle_timeout, first, step)
+                if not queue.empty():
+                    test_state = queue.get()
+                    if not test_state['running']:
+                        break
+                    else:
+                        self.job.result_proxy.notify_progress(False)
+                        if test_state['paused']:
+                            msg = test_state['paused_msg']
+                            if msg:
+                                self.job.view.notify(event='partial', msg=msg)
 
-            elif proc.is_alive():
-                if test_state and not test_state.get('running'):
-                    self.job.result_proxy.notify_progress(False)
+                elif proc.is_alive():
+                    if ctrl_c_count == 0:
+                        if test_state and not test_state.get('running'):
+                            self.job.result_proxy.notify_progress(False)
+                        else:
+                            self.job.result_proxy.notify_progress(True)
                 else:
-                    self.job.result_proxy.notify_progress(True)
-            else:
-                break
+                    break
+            except KeyboardInterrupt:
+                time_elapsed = time.time() - ignore_time_started
+                ctrl_c_count += 1
+                if ctrl_c_count == 1:
+                    if not stage_1_msg_displayed:
+                        k_msg_1 = ('\nInterrupt requested. Waiting %d seconds '
+                                   'for test to finish '
+                                   '(ignoring new Ctrl+C until then)' %
+                                   ignore_window)
+                        self.job.view.notify(event='message', msg=k_msg_1)
+                        stage_1_msg_displayed = True
+                    ignore_time_started = time.time()
+                if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
+                    if not stage_2_msg_displayed:
+                        k_msg_2 = "Killing test subprocess %s" % proc.pid
+                        self.job.view.notify(event='message', msg=k_msg_2)
+                        stage_2_msg_displayed = True
+                    os.kill(proc.pid, signal.SIGKILL)
 
         # If test_state is None, the test was aborted before it ended.
         if test_state is None:
@@ -204,10 +226,16 @@ class TestRunner(object):
                                'Test aborted unexpectedly',
                                test_state['name'])
 
+        # don't process other tests from the list
+        if ctrl_c_count > 0:
+            self.job.view.notify(event='minor', msg='')
+
         self.result.check_test(test_state)
         if not status.mapping[test_state['status']]:
             failures.append(test_state['name'])
 
+        if ctrl_c_count > 0:
+            return False
         return True
 
     def run_suite(self, test_suite, mux, timeout=0):
@@ -219,44 +247,6 @@ class TestRunner(object):
         :param timeout: maximum amount of time (in seconds) to execute.
         :return: a list of test failures.
         """
-        def wait_and_ignore_interrupt(ignore_window=2.0):
-            try:
-                signal.signal(signal.SIGINT, signal.SIG_IGN)
-                self.job.view.notify(event='minor', msg='')
-                self.job.view.notify(event='message',
-                                     msg=('Interrupt requested. Waiting %d '
-                                          'seconds for test to finish '
-                                          '(ignoring new Ctrl+C until then)' %
-                                          ignore_window))
-                end_time = time.time() + ignore_window
-
-                while time.time() < end_time:
-                    if not self.current_test_subprocess.is_alive():
-                        return
-                    time.sleep(1.0)
-            finally:
-                return
-
-        def kill_test_subprocess(signum, frame):
-            try:
-                self.job.view.notify(event='minor', msg='')
-                self.job.view.notify(event='message',
-                                     msg=('Killing test subprocess PID %s' %
-                                          self.current_test_subprocess.pid))
-                os.kill(self.current_test_subprocess.pid, signal.SIGKILL)
-            except OSError:
-                pass
-
-        def clean_test_subprocess():
-            try:
-                signal.signal(signal.SIGINT, kill_test_subprocess)
-                if self.current_test_subprocess.is_alive():
-                    self.job.view.notify(event='message',
-                                         msg=('Test still active. Press '
-                                              'Ctrl+C to kill it'))
-            except (OSError, AssertionError):
-                pass
-
         failures = []
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
@@ -269,24 +259,27 @@ class TestRunner(object):
             deadline = None
 
         for test_template in test_suite:
-            try:
-                test_template[1]['base_logdir'] = self.job.logdir
-                test_template[1]['job'] = self.job
-                for test_factory in mux.itertests(test_template):
-                    if deadline is not None and time.time() > deadline:
-                        test_parameters = test_factory[1]
-                        if 'methodName' in test_parameters:
-                            del test_parameters['methodName']
-                        test_factory = (test.TimeOutSkipTest, test_parameters)
-                        self.run_test(test_factory, queue, failures)
-                    else:
-                        if not self.run_test(test_factory, queue, failures, deadline):
-                            break
-            except KeyboardInterrupt:
-                wait_and_ignore_interrupt(ignore_window=3.0)
-                clean_test_subprocess()
-                break
+            test_template[1]['base_logdir'] = self.job.logdir
+            test_template[1]['job'] = self.job
+            break_loop = False
+            for test_factory in mux.itertests(test_template):
+                if deadline is not None and time.time() > deadline:
+                    test_parameters = test_factory[1]
+                    if 'methodName' in test_parameters:
+                        del test_parameters['methodName']
+                    test_factory = (test.TimeOutSkipTest, test_parameters)
+                    break_loop = not self.run_test(test_factory, queue,
+                                                   failures)
+                    if break_loop:
+                        break
+                else:
+                    break_loop = not self.run_test(test_factory, queue, failures,
+                                                   deadline)
+                    if break_loop:
+                        break
             runtime.CURRENT_TEST = None
+            if break_loop:
+                break
         self.result.end_tests()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
