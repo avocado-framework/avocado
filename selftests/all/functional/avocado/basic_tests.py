@@ -259,6 +259,52 @@ class RunnerOperationTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
+class RunnerHumanOutputTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def test_output_pass(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest' % self.tmpdir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn('passtest.py:PassTest.test:  PASS', result.stdout)
+
+    def test_output_fail(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s failtest' % self.tmpdir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn('failtest.py:FailTest.test:  FAIL', result.stdout)
+
+    def test_output_error(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s errortest' % self.tmpdir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 1
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn('errortest.py:ErrorTest.test:  ERROR', result.stdout)
+
+    def test_output_skip(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s skiponsetup' % self.tmpdir
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = 0
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:  SKIP', result.stdout)
+
+
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
