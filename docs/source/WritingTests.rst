@@ -156,12 +156,12 @@ generation for sleeptest just like::
     $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
     TESTS     : 3
-    (1/3) sleeptest: PASS (0.50 s)
-    (2/3) sleeptest.1: PASS (1.01 s)
-    (3/3) sleeptest.2: PASS (5.01 s)
+     (1/3) sleeptest: PASS (0.50 s)
+     (2/3) sleeptest.1: PASS (1.01 s)
+     (3/3) sleeptest.2: PASS (5.01 s)
     RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
     TIME : 6.52 s
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
@@ -188,22 +188,17 @@ You can also execute multiple tests with the same multiplex file::
     ./scripts/avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID     : 72166988c13fec26fcc9c2e504beec8edaad4761
     JOB LOG    : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/job.log
-    JOB HTML   : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/html/results.html
     TESTS      : 8
-    (1/8) sleeptest.py: PASS (1.00 s)
-    (2/8) sleeptest.py.1: PASS (1.00 s)
-    (3/8) sleeptest.py.2: PASS (1.00 s)
-    (4/8) sleeptest.py.3: PASS (1.00 s)
-    (5/8) synctest.py: PASS (1.31 s)
-    (6/8) synctest.py.1: PASS (1.48 s)
-    (7/8) synctest.py.2: PASS (3.36 s)
-    (8/8) synctest.py.3: PASS (3.59 s)
-    PASS       : 8
-    ERROR      : 0
-    FAIL       : 0
-    SKIP       : 0
-    WARN       : 0
-    INTERRUPT  : 0
+     (1/8) sleeptest.py: PASS (1.00 s)
+     (2/8) sleeptest.py.1: PASS (1.00 s)
+     (3/8) sleeptest.py.2: PASS (1.00 s)
+     (4/8) sleeptest.py.3: PASS (1.00 s)
+     (5/8) synctest.py: PASS (1.31 s)
+     (6/8) synctest.py.1: PASS (1.48 s)
+     (7/8) synctest.py.2: PASS (3.36 s)
+     (8/8) synctest.py.3: PASS (3.59 s)
+    RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML   : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/html/results.html
     TIME       : 13.76 s
 
 :class:`unittest.TestCase` heritage
@@ -387,7 +382,7 @@ option --output-check-record all to the test runner::
     JOB ID    : bcd05e4fd33e068b159045652da9eb7448802be5
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
     TESTS     : 1
-    (1/1) synctest.py: PASS (2.20 s)
+     (1/1) synctest.py: PASS (2.20 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.20 s
 
@@ -416,7 +411,7 @@ Let's record the output for this one::
     JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
     TESTS     : 1
-    (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
+     (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.01 s
 
@@ -441,7 +436,7 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
     TESTS     : 1
-    (1/1) home/$USER/Code/avocado/output_record.sh: FAIL (0.02 s)
+     (1/1) home/$USER/Code/avocado/output_record.sh: FAIL (0.02 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.02 s
 
@@ -575,7 +570,7 @@ impact your test grid. You can account for that possibility and set up a
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
     TESTS     : 1
-    (1/1) sleeptest.1: ERROR (2.97 s)
+     (1/1) sleeptest.1: ERROR (2.97 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.97 s
 
@@ -661,7 +656,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/html/results.html
     TESTS     : 1
-    (1/1) timeouttest.1: ERROR (2.97 s)
+     (1/1) timeouttest.1: ERROR (2.97 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.97 s
 
