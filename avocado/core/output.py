@@ -442,7 +442,7 @@ class View(object):
         """
         mapping = {'PASS': term_support.pass_str,
                    'ERROR': term_support.error_str,
-                   'FAIL': term_support.error_str,
+                   'FAIL': term_support.fail_str,
                    'SKIP': term_support.skip_str,
                    'WARN': term_support.warn_str,
                    'INTERRUPTED': term_support.interrupt_str}
