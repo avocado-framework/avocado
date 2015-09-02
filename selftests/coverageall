@@ -1,4 +1,0 @@
-#!/bin/bash
-echo "Cleaning up coverage and running 'selftests/all'"
-./selftests/run --with-coverage --cover-package=avocado --cover-erase selftests/all
-exit $?

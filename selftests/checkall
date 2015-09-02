@@ -15,5 +15,5 @@ run_rc 'inspekt style'
 echo ""
 run_rc 'selftests/modules_boundaries'
 echo ""
-run_rc 'selftests/run selftests/all'
+run_rc 'selftests/run'
 exit ${GR}

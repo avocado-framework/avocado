@@ -8,7 +8,7 @@ URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver
-BuildRequires: python2-devel, python-docutils, python-nose, python-mock
+BuildRequires: python2-devel, python-docutils, python-mock
 
 %if 0%{?el6}
 Requires: PyYAML
