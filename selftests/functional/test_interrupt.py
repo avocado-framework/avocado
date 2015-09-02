@@ -3,7 +3,6 @@ import sys
 import tempfile
 import time
 import shutil
-import logging
 
 import aexpect
 import psutil
@@ -72,8 +71,7 @@ class InterruptTest(unittest.TestCase):
                                   bad_test.path,
                                   bad_test.path,
                                   bad_test.path))
-        proc = aexpect.Expect(command=cmd_line, linesep='',
-                              output_func=logging.critical)
+        proc = aexpect.Expect(command=cmd_line, linesep='')
         proc.read_until_last_line_matches(os.path.basename(bad_test.path))
         proc.sendline('\x03')
         proc.read_until_last_line_matches('Interrupt requested. Waiting 2 '
@@ -113,8 +111,7 @@ class InterruptTest(unittest.TestCase):
                                   good_test.path,
                                   good_test.path,
                                   good_test.path))
-        proc = aexpect.Expect(command=cmd_line, linesep='',
-                              output_func=logging.critical)
+        proc = aexpect.Expect(command=cmd_line, linesep='')
         proc.read_until_last_line_matches(os.path.basename(good_test.path))
         proc.sendline('\x03')
         proc.read_until_last_line_matches('TIME       : %d s')
