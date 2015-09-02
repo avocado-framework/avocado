@@ -7,15 +7,13 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-# simple magic for using scripts within a source tree
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-if os.path.isdir(os.path.join(basedir, 'avocado')):
-    sys.path.insert(0, basedir)
-
 from avocado.core import data_dir
 from avocado.core import job_id
 from avocado.utils import process
+
+
+basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+basedir = os.path.abspath(basedir)
 
 
 class ArgumentParsingTest(unittest.TestCase):

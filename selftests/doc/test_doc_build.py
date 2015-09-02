@@ -6,12 +6,6 @@ This is geared towards documentation build regression testing.
 import os
 import sys
 
-# simple magic for using scripts within a source tree
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
-basedir = os.path.abspath(basedir)
-if os.path.isdir(os.path.join(basedir, 'avocado')):
-    sys.path.insert(0, basedir)
-
 from avocado.utils import process
 
 

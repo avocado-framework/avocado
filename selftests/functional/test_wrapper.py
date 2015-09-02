@@ -4,14 +4,13 @@ import unittest
 import tempfile
 import shutil
 
-# simple magic for using scripts within a source tree
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-basedir = os.path.abspath(basedir)
-if os.path.isdir(os.path.join(basedir, 'avocado')):
-    sys.path.insert(0, basedir)
-
 from avocado.utils import process
 from avocado.utils import script
+
+
+basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+basedir = os.path.abspath(basedir)
+
 
 SCRIPT_CONTENT = """#!/bin/bash
 touch %s

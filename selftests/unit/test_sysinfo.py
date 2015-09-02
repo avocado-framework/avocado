@@ -8,12 +8,6 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-# simple magic for using scripts within a source tree
-basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-basedir = os.path.dirname(basedir)
-if os.path.isdir(os.path.join(basedir, 'avocado')):
-    sys.path.insert(0, basedir)
-
 from avocado.core import sysinfo
 
 
