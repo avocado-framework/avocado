@@ -2,8 +2,8 @@ import os
 import sys
 import tempfile
 import time
-import logging
 import shutil
+import logging
 
 import aexpect
 import psutil
@@ -14,8 +14,7 @@ else:
     import unittest
 
 # simple magic for using scripts within a source tree
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
-                       '..', '..')
+basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 if os.path.isdir(os.path.join(basedir, 'avocado')):
     sys.path.insert(0, basedir)
