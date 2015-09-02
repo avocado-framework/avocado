@@ -17,7 +17,7 @@ import glob
 import os
 # pylint: disable=E0611
 
-from distutils.core import setup
+from setuptools import setup
 
 from avocado import VERSION
 
@@ -123,4 +123,5 @@ if __name__ == '__main__':
               'avocado/core/plugins/resources')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
-                   'scripts/avocado-rest-client'])
+                   'scripts/avocado-rest-client'],
+          test_suite='selftests')
