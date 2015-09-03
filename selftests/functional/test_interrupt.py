@@ -84,9 +84,16 @@ class InterruptTest(unittest.TestCase):
 
         # Make sure the bad test will be really gone from the process table
         def wait_until_no_badtest():
-            bad_test_processes = [psutil.Process(p) for p in psutil.pids()
-                                  if bad_test.path in
-                                  " ".join(psutil.Process(p).cmdline())]
+            bad_test_processes = []
+            for p in psutil.pids():
+                p_obj = None
+                try:
+                    p_obj = psutil.Process(p)
+                except psutil.NoSuchProcess:
+                    pass
+                if p_obj is not None:
+                    if bad_test.path in " ".join(psutil.Process(p).cmdline()):
+                        bad_test_processes.append(p_obj)
             return len(bad_test_processes) == 0
 
         wait.wait_for(wait_until_no_badtest, timeout=2)
@@ -118,9 +125,16 @@ class InterruptTest(unittest.TestCase):
 
         # Make sure the good test will be really gone from the process table
         def wait_until_no_goodtest():
-            good_test_processes = [psutil.Process(p) for p in psutil.pids()
-                                   if good_test.path in
-                                   " ".join(psutil.Process(p).cmdline())]
+            good_test_processes = []
+            for p in psutil.pids():
+                p_obj = None
+                try:
+                    p_obj = psutil.Process(p)
+                except psutil.NoSuchProcess:
+                    pass
+                if p_obj is not None:
+                    if good_test.path in " ".join(psutil.Process(p).cmdline()):
+                        good_test_processes.append(p_obj)
             return len(good_test_processes) == 0
 
         wait.wait_for(wait_until_no_goodtest, timeout=2)
