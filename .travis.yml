@@ -27,6 +27,4 @@ script:
     - inspekt style
     - ./selftests/cyclical_deps avocado
     - ./selftests/modules_boundaries
-    - ./selftests/run -v selftests/all/doc
-    - ./selftests/run -v selftests/all/functional
-    - ./selftests/run -v selftests/all/unit
+    - ./selftests/run
