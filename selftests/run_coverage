@@ -1,0 +1,13 @@
+#!/bin/bash +x
+# Execute all unittests with coverage and report code coverage.
+#
+# Copyright: Red Hat Inc.
+# License: GPLv2
+# Author: Lukas Doktor <ldoktor@redhat.com>
+
+coverage erase
+coverage run --include "avocado/*" ./selftests/run
+echo
+coverage report -m --include "avocado/core/*"
+echo
+coverage report -m --include "avocado/utils/*"
