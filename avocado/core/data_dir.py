@@ -117,9 +117,8 @@ def _usable_ro_dir(directory):
 
 
 def _get_rw_dir(settings_location, system_location, user_location):
-    if not settings.intree:
-        if _usable_rw_dir(settings_location):
-            return settings_location
+    if _usable_rw_dir(settings_location):
+        return settings_location
 
     if _usable_rw_dir(system_location):
         return system_location
