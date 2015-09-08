@@ -39,6 +39,11 @@ require read access, others, read and write access), Avocado will fall back to s
 wants to write logs to ``/root/avocado/logs``, Avocado will not use that directory, since it can't write files to that
 place. A new location, by default ``~/avocado/job-results`` will be selected instead.
 
+The order of files described in this section is only valid if avocado was installed in the system. For people using
+avocado from git repos (usually avocado developers), that did not install it in the system, keep in mind that avocado
+will read the config files present in the git repos, and will ignore the system wide config files. Running
+``avocado config`` will let you know which files are actually being used.
+
 Plugin config files
 ===================
 
@@ -64,6 +69,8 @@ So the file parsing order is:
 * ``~/.config/avocado/avocado.conf``
 
 In this order, meaning that what you set on your local config file may override what's defined in the system wide files.
+
+.. note::  Please note that if avocado is running from git repos, those files will be ignored in favor of in tree configuration files. This is something that would normally only affect people developing avocado, and if you are in doubt, ``avocado config`` will tell you exactly which files are being used in any given situation.
 
 Order of precedence for values used in tests
 ============================================
