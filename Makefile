@@ -3,7 +3,8 @@ DESTDIR=/
 BUILDIR=$(CURDIR)/debian/avocado
 PROJECT=avocado
 VERSION=`$(CURDIR)/avocado/core/version.py`
-AVOCADO_PLUGINS=$(filter-out ../avocado/Makefile, $(wildcard ../*/Makefile))
+AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
+AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(wildcard ../*))
 
 all:
 	@echo "make source - Create source package"
@@ -61,7 +62,7 @@ clean:
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do make -f $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 
 install-requirements-all: install-requirements install-requirements-selftests
@@ -83,7 +84,7 @@ modules_boundaries:
 
 link:
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do make -f $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 
 man: man/avocado.1 man/avocado-rest-client.1
