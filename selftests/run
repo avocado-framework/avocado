@@ -28,4 +28,6 @@ def test_suite():
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
-    runner.run(test_suite())
+    result = runner.run(test_suite())
+    if result.failures or result.errors:
+        sys.exit(1)
