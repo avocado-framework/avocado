@@ -91,7 +91,7 @@ Avocado finds and populates ``self.params`` with all parameters you define on
 a Multiplex Config file (see :doc:`MultiplexConfig`). As an example, consider
 the following multiplex file for sleeptest::
 
-    sleeptest:
+    sleeptest: !mux
         type: "builtin"
         short:
             sleep_length: 0.5
