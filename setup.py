@@ -124,4 +124,5 @@ if __name__ == '__main__':
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
+          zip_safe=False,
           test_suite='selftests')
