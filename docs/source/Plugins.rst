@@ -91,33 +91,6 @@ point. In this code example it will simply print the plugin's docstring.
 :func:`activate <avocado.core.plugins.plugin.Plugin.activate>`, if necessary,
 will activate your plugin, overriding Avocado core functionality.
 
-Make Avocado aware of the new plugin
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Avocado command line tool has a ``--plugins`` option that allows you to
-provide a filesystem location that contains plugins that will be automatically
-loaded.
-
-Note that all external plugin files must be prefixed with the ``avocado_`` name,
-otherwise it will not be loaded.
-
-In the Avocado source tree, the ``avocado_hello.py`` example is available under
-``examples/plugins``. So, in order to enable the hello plugin, you can do a::
-
-    $ avocado --plugins examples/plugins/ plugins
-    Plugins enabled:
-        ...
-        hello_world - The classical Hello World! plugin example.
-	...
-
-Run it
-~~~~~~
-
-To run the newly created plugin, you can simply call the Avocado command line
-tool with newly registered runner command ``hello``::
-
-    $ avocado --plugins examples/plugins/ hello
-        The classical Hello World! plugin example.
 
 Wrap Up
 ~~~~~~~

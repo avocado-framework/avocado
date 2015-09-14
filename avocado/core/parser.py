@@ -43,9 +43,6 @@ class Parser(object):
             description=DESCRIPTION)
         self.application.add_argument('-v', '--version', action='version',
                                       version='Avocado %s' % VERSION)
-        self.application.add_argument('--plugins', action='store',
-                                      help='Load extra plugins from directory',
-                                      dest='plugins_dir', default='')
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       help='Use custom configuration from a file')
 
