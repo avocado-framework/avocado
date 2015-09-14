@@ -14,3 +14,7 @@ pygraphviz==1.3rc2
 mock==1.2.0
 aexpect==1.0.0
 psutil==3.1.1
+setuptools>=18.0.0
+six>=1.9.0
+pbr>=1.7.0
+stevedore>=1.2.0

@@ -21,6 +21,7 @@ import os
 from .log import configure
 from .parser import Parser
 from .plugins.manager import get_plugin_manager
+from .plugins.manager import CLIRunDispatcher
 
 
 class AvocadoApp(object):
@@ -36,13 +37,18 @@ class AvocadoApp(object):
 
         configure()
         self.plugin_manager = None
+        self.cli_run_dispatcher = CLIRunDispatcher()
         self.parser = Parser()
         self.parser.start()
         self.load_plugin_manager()
+        if self.cli_run_dispatcher.extensions:
+            self.cli_run_dispatcher.map_method('configure', self.parser)
         self.ready = True
         try:
             self.parser.resume()
             self.plugin_manager.activate(self.parser.args)
+            if self.cli_run_dispatcher.extensions:
+                self.cli_run_dispatcher.map_method('activate', self.parser.args)
             self.parser.finish()
         except IOError:
             self.ready = False

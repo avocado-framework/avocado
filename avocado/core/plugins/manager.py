@@ -16,12 +16,54 @@
 
 import logging
 
+from stevedore import ExtensionManager
+from stevedore.named import NamedExtensionManager
+
 from .builtin import load_builtins
 
 
 DefaultPluginManager = None
 
 log = logging.getLogger("avocado.plugins")
+
+
+class CLIRunDispatcher(ExtensionManager):
+
+    """
+    Calls extensions on configure/activate/before_run/after_run
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.cli.run'
+    """
+
+    def __init__(self):
+        super(CLIRunDispatcher, self).__init__(
+            namespace='avocado.plugins.cli.run',
+            invoke_on_load=True
+        )
+
+
+class ResultWriterDispatcher(NamedExtensionManager):
+
+    """
+    Calls extensions to output result in various formats/destinations
+
+    Only adds extensions explicitly given by name. These names come from the
+    command line '--result' option and map to extensions with entry points
+    registered to the 'avocado.plugins.results' namespace.
+    """
+
+    def __init__(self, args):
+        if 'result' in args:
+            names = args.result
+        else:
+            names = []
+        super(ResultWriterDispatcher, self).__init__(
+            names=names,
+            namespace='avocado.plugins.results',
+            invoke_on_load=True,
+            invoke_args=()
+        )
 
 
 class PluginManager(object):

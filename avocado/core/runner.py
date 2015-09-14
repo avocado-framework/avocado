@@ -43,15 +43,17 @@ class TestRunner(object):
     """
     DEFAULT_TIMEOUT = 86400
 
-    def __init__(self, job, test_result):
+    def __init__(self, job, test_result, result_writer_dispatcher):
         """
         Creates an instance of TestRunner class.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         :param test_result: an instance of :class:`avocado.core.result.TestResultProxy`.
+        :param result_dispatcher: an instance of :class:`avocado.core.result.ResultWriterDispatcher`.
         """
         self.job = job
         self.result = test_result
+        self.result_writer_dispatcher = result_writer_dispatcher
 
     def _run_test(self, test_factory, queue):
         """
@@ -97,6 +99,8 @@ class TestRunner(object):
         signal.signal(signal.SIGINT, interrupt_handler)
 
         self.result.start_test(early_state)
+        if self.result_writer_dispatcher.extensions:
+            self.result_writer_dispatcher.map_method('update_test', **early_state)
         try:
             instance.run_avocado()
         finally:
@@ -231,6 +235,8 @@ class TestRunner(object):
             self.job.view.notify(event='minor', msg='')
 
         self.result.check_test(test_state)
+        if self.result_writer_dispatcher.extensions:
+            self.result_writer_dispatcher.map_method('update_test', **test_state)
         if not status.mapping[test_state['status']]:
             failures.append(test_state['name'])
 
@@ -248,9 +254,13 @@ class TestRunner(object):
         :return: a list of test failures.
         """
         failures = []
+        if self.result_writer_dispatcher.extensions:
+            self.result_writer_dispatcher.map_method('start', self.job.logdir)
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
         self.result.start_tests()
+        if self.result_writer_dispatcher.extensions:
+            self.result_writer_dispatcher.map_method('start_tests', count=len(test_suite))
         queue = queues.SimpleQueue()
 
         if timeout > 0:
@@ -281,6 +291,10 @@ class TestRunner(object):
             if break_loop:
                 break
         self.result.end_tests()
+        if self.result_writer_dispatcher.extensions:
+            self.result_writer_dispatcher.map_method('end_tests')
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
+        if self.result_writer_dispatcher.extensions:
+            self.result_writer_dispatcher.map_method('end')
         return failures
