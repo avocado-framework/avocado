@@ -87,10 +87,16 @@ class Remote(object):
         """
         result = process.CmdResult()
         start_time = time.time()
-        fabric_result = fabric.operations.run(command=command,
-                                              quiet=self.quiet,
-                                              warn_only=True,
-                                              timeout=timeout)
+        end_time = time.time() + timeout
+        # Fabric sometimes returns NetworkError even when timeout not reached
+        while time.time() < end_time:
+            try:
+                fabric_result = fabric.operations.run(command=command,
+                                                      quiet=self.quiet,
+                                                      warn_only=True,
+                                                      timeout=timeout)
+            except fabric.network.NetworkError:
+                timeout = end_time - time.time()
         end_time = time.time()
         duration = end_time - start_time
         result.command = command
