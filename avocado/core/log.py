@@ -70,6 +70,9 @@ DEFAULT_LOGGING = {
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['null']
+        },
         'avocado': {
             'handlers': ['console'],
         },
