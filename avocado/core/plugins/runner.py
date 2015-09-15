@@ -64,6 +64,9 @@ class TestRunner(plugin.Plugin):
                                  help=('Forces to use of an alternate job '
                                        'results directory.'))
 
+        self.parser.add_argument('--result', nargs='+', default=[], metavar='FORMAT',
+                                 help='Enable a given result FORMAT')
+
         self.parser.add_argument('--job-timeout', action='store',
                                  default=None, metavar='SECONDS',
                                  help=('Set the maximum amount of time (in SECONDS) that '

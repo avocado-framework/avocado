@@ -454,48 +454,6 @@ class InnerRunnerTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class ExternalPluginsTest(unittest.TestCase):
-
-    def setUp(self):
-        self.base_sourcedir = tempfile.mkdtemp(prefix='avocado_source_plugins')
-        self.tmpdir = tempfile.mkdtemp()
-
-    def test_void_plugin(self):
-        self.void_plugin = script.make_script(
-            os.path.join(self.base_sourcedir, 'avocado_void.py'),
-            VOID_PLUGIN_CONTENTS)
-        os.chdir(basedir)
-        cmd_line = './scripts/avocado --plugins %s plugins' % self.base_sourcedir
-        result = process.run(cmd_line, ignore_status=True)
-        expected_output = 'noname'
-        self.assertIn(expected_output, result.stdout)
-
-    def test_syntax_error_plugin(self):
-        self.syntax_err_plugin = script.make_script(
-            os.path.join(self.base_sourcedir, 'avocado_syntax_err.py'),
-            SYNTAX_ERROR_PLUGIN_CONTENTS)
-        os.chdir(basedir)
-        cmd_line = './scripts/avocado --plugins %s' % self.base_sourcedir
-        result = process.run(cmd_line, ignore_status=True)
-        expected_output = 'invalid syntax'
-        self.assertIn(expected_output, result.stderr)
-
-    def test_hello_plugin(self):
-        self.hello_plugin = script.make_script(
-            os.path.join(self.base_sourcedir, 'avocado_hello.py'),
-            HELLO_PLUGIN_CONTENTS)
-        os.chdir(basedir)
-        cmd_line = './scripts/avocado --plugins %s hello' % self.base_sourcedir
-        result = process.run(cmd_line, ignore_status=True)
-        expected_output = 'Hello World!'
-        self.assertIn(expected_output, result.stdout)
-
-    def tearDown(self):
-        shutil.rmtree(self.tmpdir)
-        if os.path.isdir(self.base_sourcedir):
-            shutil.rmtree(self.base_sourcedir, ignore_errors=True)
-
-
 class PluginsTest(unittest.TestCase):
 
     def setUp(self):

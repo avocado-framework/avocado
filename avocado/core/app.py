@@ -21,6 +21,7 @@ import os
 from .log import configure
 from .parser import Parser
 from .plugins.manager import get_plugin_manager
+from .plugins.manager import CLIRunDispatcher
 
 
 class AvocadoApp(object):
@@ -29,34 +30,36 @@ class AvocadoApp(object):
     Avocado application.
     """
 
-    def __init__(self, external_plugins=None):
+    def __init__(self):
 
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
         configure()
-        self.external_plugins = external_plugins
         self.plugin_manager = None
+        self.cli_run_dispatcher = CLIRunDispatcher()
         self.parser = Parser()
         self.parser.start()
-        self.load_plugin_manager(self.parser.args.plugins_dir)
+        self.load_plugin_manager()
+        if self.cli_run_dispatcher.extensions:
+            self.cli_run_dispatcher.map_method('configure', self.parser)
         self.ready = True
         try:
             self.parser.resume()
             self.plugin_manager.activate(self.parser.args)
+            if self.cli_run_dispatcher.extensions:
+                self.cli_run_dispatcher.map_method('activate', self.parser.args)
             self.parser.finish()
         except IOError:
             self.ready = False
 
-    def load_plugin_manager(self, plugins_dir):
+    def load_plugin_manager(self):
         """Load Plugin Manager.
 
         :param plugins_dir: Extra plugins directory.
         """
         self.plugin_manager = get_plugin_manager()
-        self.plugin_manager.load_plugins(plugins_dir)
-        if self.external_plugins:
-            self.plugin_manager.add_plugins(self.external_plugins)
+        self.plugin_manager.load_plugins()
         self.plugin_manager.configure(self.parser)
 
     def run(self):
