@@ -359,8 +359,9 @@ class Test(unittest.TestCase):
         except exceptions.TestNAError, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestNAError(details)
-        except Exception, details:
+        except:     # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
         try:
             testMethod()
@@ -371,8 +372,11 @@ class Test(unittest.TestCase):
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
-        except Exception, details:
+        except:     # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            details = sys.exc_info()[1]
+            if not isinstance(details, Exception):  # Avoid passing nasty exc
+                details = exceptions.TestError("%r: %s" % (details, details))
             test_exception = details
         finally:
             try:
@@ -384,9 +388,10 @@ class Test(unittest.TestCase):
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
-            except Exception, details:
+            except:     # avoid old-style exception failures
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-                cleanup_exception = details
+                details = sys.exc_info()[1]
+                cleanup_exception = exceptions.TestSetupFail(details)
 
         whiteboard_file = os.path.join(self.logdir, 'whiteboard')
         genio.write_file(whiteboard_file, self.whiteboard)
@@ -423,7 +428,7 @@ class Test(unittest.TestCase):
         if test_exception is not None:
             raise test_exception
         elif cleanup_exception is not None:
-            raise exceptions.TestSetupFail(cleanup_exception)
+            raise cleanup_exception
         elif stdout_check_exception is not None:
             raise stdout_check_exception
         elif stderr_check_exception is not None:
