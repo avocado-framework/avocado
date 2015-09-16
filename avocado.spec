@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.28.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -40,14 +40,6 @@ these days a framework) to perform automated testing.
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
-
-# Running the unittests is currently disabled on EL6 because fabric is
-# missing on EPEL 6 and also on EL7 because python-flexmock is missing
-# on EPEL7.
-%if !0%{?rhel}
-%check
-selftests/run
-%endif
 
 %files
 %defattr(-,root,root,-)
