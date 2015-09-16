@@ -1,7 +1,7 @@
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.27.0
-Release: 3%{?dist}
+Version: 0.28.0
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -104,6 +104,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Sep 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.28.0-1
+- New upstream release 0.28.0
+
 * Tue Aug 4 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.27.0-3
 - Added 'gdb' and 'gdb-gdbserver' as requirements
 
