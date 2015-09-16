@@ -13,7 +13,6 @@ else:
     import unittest
 
 from avocado.utils import wait
-from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import data_factory
 
@@ -85,7 +84,13 @@ class InterruptTest(unittest.TestCase):
         # Make sure the bad test will be really gone from the process table
         def wait_until_no_badtest():
             bad_test_processes = []
-            for p in psutil.pids():
+
+            try:
+                process_list = psutil.pids()
+            except AttributeError:
+                process_list = psutil.get_pid_list()
+
+            for p in process_list:
                 p_obj = None
                 try:
                     p_obj = psutil.Process(p)
@@ -126,7 +131,13 @@ class InterruptTest(unittest.TestCase):
         # Make sure the good test will be really gone from the process table
         def wait_until_no_goodtest():
             good_test_processes = []
-            for p in psutil.pids():
+
+            try:
+                process_list = psutil.pids()
+            except AttributeError:
+                process_list = psutil.get_pid_list()
+
+            for p in process_list:
                 p_obj = None
                 try:
                     p_obj = psutil.Process(p)
