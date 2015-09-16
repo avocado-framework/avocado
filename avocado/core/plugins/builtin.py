@@ -15,11 +15,13 @@
 """Builtin plugins."""
 
 import os
+import sys
 import logging
 from importlib import import_module
 
 from .plugin import Plugin
 from ..settings import settings
+from ...utils import stacktrace
 
 
 log = logging.getLogger("avocado.app")
@@ -59,6 +61,8 @@ def load_builtins():
             if name not in skip_notify:
                 log.error('Error loading %s -> %s', name, reason)
             ErrorsLoading.append((name, reason))
+            stacktrace.log_exc_info(sys.exc_info(),
+                                    'avocado.app.tracebacks')
             continue
         for name in plugin_mod.__dict__:
             obj = getattr(plugin_mod, name)
