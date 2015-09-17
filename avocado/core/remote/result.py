@@ -44,7 +44,7 @@ class RemoteTestResult(HumanTestResult):
         self.output = '-'
         self.command_line_arg_name = '--remote-hostname'
 
-    def copy_tests(self):
+    def copy_files(self):
         """
         Gather test directories and copy them recursively to
         $remote_test_dir + $test_absolute_path.
@@ -71,6 +71,10 @@ class RemoteTestResult(HumanTestResult):
             test_data = path + '.data'
             if os.path.isdir(test_data):
                 self.remote.send_files(test_data, os.path.dirname(rpath))
+        for mux_file in getattr(self.args, 'multiplex_files') or []:
+            rpath = os.path.join(self.remote_test_dir, mux_file)
+            self.remote.makedir(os.path.dirname(rpath))
+            self.remote.send_files(mux_file, rpath)
 
     def setup(self):
         """ Setup remote environment and copy test directories """

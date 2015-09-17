@@ -79,15 +79,17 @@ _=/usr/bin/env''', exit_status=0)
          .once().and_return(urls_result))
 
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
-                "--json - --archive sleeptest")
+                "--json - --archive sleeptest --multiplex-files "
+                "~/avocado/tests/foo.yaml ~/avocado/tests/bar/baz.yaml")
         (Remote.should_receive('run')
          .with_args(args, timeout=61, ignore_status=True)
          .once().and_return(test_results))
         Results = flexmock(remote=Remote, urls=['sleeptest'],
                            stream=stream, timeout=None,
-                           args=flexmock(show_job_log=False))
+                           args=flexmock(show_job_log=False,
+                           multiplex_files=['foo.yaml', 'bar/baz.yaml']))
         Results.should_receive('setup').once().ordered()
-        Results.should_receive('copy_tests').once().ordered()
+        Results.should_receive('copy_files').once().ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
                 'name': u'sleeptest.1', 'class_name': 'RemoteTest',

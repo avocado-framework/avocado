@@ -71,6 +71,12 @@ class RemoteTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
+        extra_params = ""
+        mux_files = [os.path.join(self.remote_test_dir, mux_file)
+                     for mux_file in getattr(self.result.args,
+                                             'multiplex_files') or []]
+        if mux_files:
+            extra_params += "--multiplex-files %s" % " ".join(mux_files)
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
@@ -82,9 +88,9 @@ class RemoteTestRunner(TestRunner):
             raise exceptions.JobError(check_urls_result.stdout)
 
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
-                       '--archive %s' % (self.remote_test_dir,
-                                         self.result.stream.job_unique_id,
-                                         urls_str))
+                       '--archive %s %s' % (self.remote_test_dir,
+                                            self.result.stream.job_unique_id,
+                                            urls_str, extra_params))
         try:
             result = self.result.remote.run(avocado_cmd, ignore_status=True,
                                             timeout=timeout)
@@ -156,7 +162,7 @@ class RemoteTestRunner(TestRunner):
                 if not avocado_installed:
                     raise exceptions.JobError('Remote machine does not seem to have '
                                               'avocado installed')
-                self.result.copy_tests()
+                self.result.copy_files()
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
