@@ -282,7 +282,7 @@ class SubProcess(object):
                                                env=self.env)
             except OSError, details:
                 if details.errno == 2:
-                    exc = OSError("File '%s' not found" % self.cmd.split[0])
+                    exc = OSError("File '%s' not found" % self.cmd.split()[0])
                     exc.errno = 2
                     raise exc
                 else:
