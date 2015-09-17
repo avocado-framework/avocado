@@ -1,14 +1,14 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.28.0
-Release: 1%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver
-BuildRequires: python2-devel, python-docutils, python-mock
+BuildRequires: python2-devel, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum
 
 %if 0%{?el6}
 Requires: PyYAML
@@ -40,14 +40,6 @@ these days a framework) to perform automated testing.
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
-
-# Running the unittests is currently disabled on EL6 because fabric is
-# missing on EPEL 6 and also on EL7 because python-flexmock is missing
-# on EPEL7.
-%if !0%{?rhel}
-%check
-selftests/run selftests/all/unit
-%endif
 
 %files
 %defattr(-,root,root,-)
@@ -104,6 +96,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Sep 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.28.0-2
+- Add pystache, aexpect, psutil, sphinx and yum/dnf dependencies for functional/unittests
+
 * Wed Sep 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.28.0-1
 - New upstream release 0.28.0
 
