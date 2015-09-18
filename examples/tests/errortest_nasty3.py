@@ -4,9 +4,9 @@ from avocado import Test
 from avocado import main
 
 
-class NastyException(Exception):
+class NastyException:
 
-    """ Please never use something like this!!! """
+    """ Please never use something like this!!! (old-style exception) """
 
     def __init__(self, msg):
         self.msg = msg
@@ -18,14 +18,14 @@ class NastyException(Exception):
 class FailTest(Test):
 
     """
-    Very nasty exception test
+    This test raises old-style-class exception
     """
 
     def test(self):
         """
-        Should fail.
+        Avocado should report this as TestError.
         """
-        raise NastyException(None)  # str(Exception) fails!
+        raise NastyException("Nasty-string-like-exception")
 
 
 if __name__ == "__main__":
