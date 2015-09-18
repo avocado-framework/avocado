@@ -87,16 +87,30 @@ class Remote(object):
         """
         result = process.CmdResult()
         start_time = time.time()
-        end_time = time.time() + timeout
+        end_time = time.time() + (timeout or 0)   # Support timeout=None
         # Fabric sometimes returns NetworkError even when timeout not reached
-        while time.time() < end_time:
+        fabric_result = None
+        fabric_exception = None
+        while True:
             try:
                 fabric_result = fabric.operations.run(command=command,
                                                       quiet=self.quiet,
                                                       warn_only=True,
                                                       timeout=timeout)
-            except fabric.network.NetworkError:
+                break
+            except fabric.network.NetworkError, details:
+                fabric_exception = details
                 timeout = end_time - time.time()
+            if time.time() < end_time:
+                break
+        if fabric_result is None:
+            if fabric_exception is not None:
+                raise fabric_exception  # it's not None pylint: disable=E0702
+            else:
+                raise fabric.network.NetworkError("Remote execution of '%s'"
+                                                  "failed without any "
+                                                  "exception. This should not "
+                                                  "happen." % command)
         end_time = time.time()
         duration = end_time - start_time
         result.command = command
