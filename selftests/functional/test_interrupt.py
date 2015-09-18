@@ -85,10 +85,12 @@ class InterruptTest(unittest.TestCase):
         def wait_until_no_badtest():
             bad_test_processes = []
 
+            old_psutil = False
             try:
                 process_list = psutil.pids()
             except AttributeError:
                 process_list = psutil.get_pid_list()
+                old_psutil = True
 
             for p in process_list:
                 p_obj = None
@@ -97,7 +99,11 @@ class InterruptTest(unittest.TestCase):
                 except psutil.NoSuchProcess:
                     pass
                 if p_obj is not None:
-                    if bad_test.path in " ".join(psutil.Process(p).cmdline()):
+                    if old_psutil:
+                        cmdline_list = psutil.Process(p).cmdline
+                    else:
+                        cmdline_list = psutil.Process(p).cmdline()
+                    if bad_test.path in " ".join(cmdline_list):
                         bad_test_processes.append(p_obj)
             return len(bad_test_processes) == 0
 
@@ -132,10 +138,12 @@ class InterruptTest(unittest.TestCase):
         def wait_until_no_goodtest():
             good_test_processes = []
 
+            old_psutil = False
             try:
                 process_list = psutil.pids()
             except AttributeError:
                 process_list = psutil.get_pid_list()
+                old_psutil = True
 
             for p in process_list:
                 p_obj = None
@@ -144,7 +152,11 @@ class InterruptTest(unittest.TestCase):
                 except psutil.NoSuchProcess:
                     pass
                 if p_obj is not None:
-                    if good_test.path in " ".join(psutil.Process(p).cmdline()):
+                    if old_psutil:
+                        cmdline_list = psutil.Process(p).cmdline
+                    else:
+                        cmdline_list = psutil.Process(p).cmdline()
+                    if good_test.path in " ".join(cmdline_list):
                         good_test_processes.append(p_obj)
             return len(good_test_processes) == 0
 
