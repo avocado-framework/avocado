@@ -23,9 +23,9 @@ class FailTest(Test):
 
     def test(self):
         """
-        Should fail not-that-badly
+        Avocado should report this as TestError.
         """
-        raise NastyException("Nasty-string-like-exception")
+        raise NastyException(None)  # str(Exception) fails!
 
 
 if __name__ == "__main__":
