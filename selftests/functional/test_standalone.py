@@ -62,6 +62,13 @@ class StandaloneTests(unittest.TestCase):
         self.assertIn("Exception: Unable to get exception, check the traceback"
                       " for details.", result.stdout)
 
+    def test_failtest_nasty3(self):
+        cmd_line = './examples/tests/failtest_nasty3.py -r'
+        expected_rc = 1
+        result = self.run_and_check(cmd_line, expected_rc, 'failtest_nasty3')
+        self.assertIn("TestError: <failtest_nasty3.NastyException instance at ",
+                      result.stdout)
+
     def test_errortest(self):
         cmd_line = './examples/tests/errortest.py -r'
         expected_rc = 1
