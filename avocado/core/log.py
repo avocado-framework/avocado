@@ -17,6 +17,7 @@ __all__ = ['configure', 'DEFAULT_LOGGING']
 
 
 import logging
+import os
 
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = 'logging.NullHandler'
@@ -82,7 +83,8 @@ DEFAULT_LOGGING = {
             'propagate': False,
         },
         'avocado.app.tracebacks': {
-            'handlers': ['null'],   # change this to 'error' to see tracebacks
+            # Set DEBUG=true to enable debugs
+            'handlers': ['error' if os.environ.get('DEBUG') else 'null'],
             'level': 'ERROR',
             'propagate': False,
         },
