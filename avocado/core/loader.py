@@ -175,7 +175,7 @@ class TestLoaderProxy(object):
         if unhandled_urls:
             if list_tests:
                 tests.extend([(test.MissingTest, {'name': url})
-                              for url in list_tests])
+                              for url in unhandled_urls])
             else:
                 raise LoaderUnhandledUrlError(unhandled_urls,
                                               self._initialized_plugins)
