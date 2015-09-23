@@ -17,16 +17,19 @@
 Test loader module.
 """
 
+import collections
 import imp
 import inspect
 import os
 import re
 import sys
+import shlex
 import fnmatch
 
 from . import data_dir
 from . import output
 from . import test
+from . import exceptions
 from .settings import settings
 from ..utils import path
 from ..utils import stacktrace
@@ -254,6 +257,38 @@ class FilteredOut(object):
     pass
 
 
+def add_file_loader_options(parser):
+    loader = parser.add_argument_group('loader options')
+    loader.add_argument('--inner-runner', default=None,
+                        metavar='EXECUTABLE',
+                        help=('Path to an specific test runner that '
+                              'allows the use of its own tests. This '
+                              'should be used for running tests that '
+                              'do not conform to Avocado\' SIMPLE test'
+                              'interface and can not run standalone'))
+
+    chdir_help = ('Change directory before executing tests. This option '
+                  'may be necessary because of requirements and/or '
+                  'limitations of the inner test runner. If the inner '
+                  'runner requires to be run from its own base directory,'
+                  'use "runner" here. If the inner runner runs tests based'
+                  ' on files and requires to be run from the directory '
+                  'where those files are located, use "test" here and '
+                  'specify the test directory with the option '
+                  '"--inner-runner-testdir". Defaults to "%(default)s"')
+    loader.add_argument('--inner-runner-chdir', default='off',
+                        choices=('runner', 'test', 'off'),
+                        help=chdir_help)
+
+    loader.add_argument('--inner-runner-testdir', metavar='DIRECTORY',
+                        default=None,
+                        help=('Where test files understood by the inner'
+                              ' test runner are located in the '
+                              'filesystem. Obviously this assumes and '
+                              'only applies to inner test runners that '
+                              'run tests from files'))
+
+
 class FileLoader(TestLoader):
 
     """
@@ -262,8 +297,52 @@ class FileLoader(TestLoader):
 
     name = 'file'
 
+    def __init__(self, args):
+        super(FileLoader, self).__init__(args)
+        self._inner_runner = self._process_inner_runner(args)
+
+    def _process_inner_runner(self, args):
+        runner = getattr(args, 'inner_runner', None)
+        chdir = getattr(args, 'inner_runner_chdir', None)
+        test_dir = getattr(args, 'inner_runner_testdir', None)
+
+        if runner:
+            inner_runner_and_args = shlex.split(runner)
+            if len(inner_runner_and_args) > 1:
+                executable = inner_runner_and_args[0]
+            else:
+                executable = runner
+            if not os.path.exists(executable):
+                msg = ('Could not find the inner runner executable "%s"'
+                       % executable)
+                raise LoaderError(msg)
+            if chdir == 'test':
+                if not test_dir:
+                    msg = ('Option "--inner-runner-testdir" is mandatory when '
+                           '"--inner-runner-chdir=test" is used.')
+                    raise LoaderError(msg)
+            elif test_dir:
+                msg = ('Option "--inner-runner-testdir" requires '
+                       '"--inner-runner-chdir=test".')
+                raise LoaderError(msg)
+
+            InnerRunner = collections.namedtuple('InnerRunner',
+                                                 ['runner', 'chdir',
+                                                  'test_dir'])
+            return InnerRunner(runner, chdir, test_dir)
+
+        elif chdir != "off":
+            msg = ('The use of "--inner-runner-chdir" requires '
+                   '"--inner-runner" to be specified.')
+            raise LoaderError(msg)
+        elif test_dir:
+            msg = ('The use of "--inner-runner-test-dir" requires '
+                   '"--inner-runner" to be specified.')
+            raise LoaderError(msg)
+
     def get_type_label_mapping(self):
         return {test.SimpleTest: 'SIMPLE',
+                test.InnerRunnerTest: 'INNER_RUNNER',
                 test.BuggyTest: 'BUGGY',
                 test.NotATest: 'NOT_A_TEST',
                 test.MissingTest: 'MISSING',
@@ -275,6 +354,7 @@ class FileLoader(TestLoader):
     def get_decorator_mapping(self):
         term_support = output.TermSupport()
         return {test.SimpleTest: term_support.healthy_str,
+                test.InnerRunnerTest: term_support.healthy_str,
                 test.BuggyTest: term_support.fail_header_str,
                 test.NotATest: term_support.warn_header_str,
                 test.MissingTest: term_support.fail_header_str,
@@ -294,8 +374,8 @@ class FileLoader(TestLoader):
         :param list_tests: list corrupted/invalid tests too
         :return: list of matching tests
         """
-        if test.INNER_RUNNER is not None:
-            return self._make_tests(url, [], [])
+        if self._inner_runner:
+            return self._make_inner_runner_test(url)
 
         if url is None:
             if list_tests is DEFAULT:
@@ -453,6 +533,14 @@ class FileLoader(TestLoader):
         params.setdefault('id', uid)
         return [(klass, {'name': uid, 'params': params})]
 
+    def _make_inner_runner_test(self, test_path):
+        """
+        Creates inner-runner test (adds self._inner_runner as test argument)
+        """
+        tst = self._make_test(test.InnerRunnerTest, test_path)
+        tst[0][1]['inner_runner'] = self._inner_runner
+        return tst
+
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
         """
         Create test templates from given path
@@ -463,9 +551,6 @@ class FileLoader(TestLoader):
         def ignore_broken(klass, uid, params=None):
             """ Always return empty list """
             return []
-
-        if test.INNER_RUNNER is not None:
-            return self._make_test(test.SimpleTest, test_path)
 
         if list_non_tests:   # return broken test with params
             make_broken = self._make_test
