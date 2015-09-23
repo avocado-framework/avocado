@@ -375,7 +375,7 @@ class Job(object):
             disabled_matrix = []
             for plug in sorted(disabled):
                 disabled_matrix.append([plug.name, plug.description])
-            job_log.info("Plugins enabled:")
+            job_log.info("Plugins disabled:")
             for line in astring.iter_tabular_output(disabled_matrix):
                 job_log.info(line)
 
