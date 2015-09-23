@@ -42,11 +42,6 @@ from ..utils import process
 from ..utils import stacktrace
 
 
-INNER_RUNNER = None
-INNER_RUNNER_TESTDIR = None
-INNER_RUNNER_CHDIR = None
-
-
 class Test(unittest.TestCase):
 
     """
@@ -559,12 +554,9 @@ class SimpleTest(Test):
                                 r' \d\d:\d\d:\d\d WARN \|')
 
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
-        if INNER_RUNNER is None:
-            self.path = os.path.abspath(name)
-        else:
-            self.path = name
         super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
+        self.path = name
         basedir = os.path.dirname(self.path)
         basename = os.path.basename(self.path)
         datadirname = basename + '.data'
@@ -583,7 +575,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def test(self):
+    def test(self, override_command=None):
         """
         Run the executable, and log its detailed execution.
         """
@@ -591,34 +583,14 @@ class SimpleTest(Test):
             test_params = dict([(str(key), str(val)) for key, val in
                                 self.params.iteritems()])
 
-            pre_cwd = os.getcwd()
-            new_cwd = None
-            if INNER_RUNNER is not None:
-                self.log.info('Running test with the inner level test '
-                              'runner: "%s"', INNER_RUNNER)
-
-                # Change work directory if needed by the inner runner
-                if INNER_RUNNER_CHDIR == 'runner':
-                    new_cwd = os.path.dirname(INNER_RUNNER)
-                elif INNER_RUNNER_CHDIR == 'test':
-                    new_cwd = INNER_RUNNER_TESTDIR
-                else:
-                    new_cwd = None
-                if new_cwd is not None:
-                    self.log.debug('Changing working directory to "%s" '
-                                   'because of inner runner requirements ',
-                                   new_cwd)
-                    os.chdir(new_cwd)
-
-                command = "%s %s" % (INNER_RUNNER, self.path)
+            if override_command is not None:
+                command = override_command
             else:
                 command = pipes.quote(self.path)
 
             # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(command, verbose=True,
                                  env=test_params)
-            if new_cwd is not None:
-                os.chdir(pre_cwd)
 
             self._log_detailed_cmd_info(result)
         except process.CmdError, details:
@@ -632,6 +604,44 @@ class SimpleTest(Test):
                 raise exceptions.TestWarn("Test passed but there were warnings"
                                           " on stdout during execution. Check "
                                           "the log for details.")
+
+
+class InnerRunnerTest(SimpleTest):
+    def __init__(self, name, params=None, base_logdir=None, tag=None, job=None,
+                 inner_runner=None):
+        if inner_runner is None:
+            raise AssertionError("Inner runner test requires inner_runner "
+                                 "parameter, got None instead.")
+        self.inner_runner = inner_runner
+        super(InnerRunnerTest, self).__init__(name, params, base_logdir, tag,
+                                              job)
+
+    def test(self):
+        pre_cwd = os.getcwd()
+        new_cwd = None
+        try:
+            self.log.info('Running test with the inner level test '
+                          'runner: "%s"', self.inner_runner.runner)
+
+            # Change work directory if needed by the inner runner
+            if self.inner_runner.chdir == 'runner':
+                new_cwd = os.path.dirname(self.inner_runner.runner)
+            elif self.inner_runner.chdir == 'test':
+                new_cwd = self.inner_runner.test_dir
+            else:
+                new_cwd = None
+            if new_cwd is not None:
+                self.log.debug('Changing working directory to "%s" '
+                               'because of inner runner requirements ',
+                               new_cwd)
+                os.chdir(new_cwd)
+
+            command = "%s %s" % (self.inner_runner.runner, self.path)
+
+            return super(InnerRunnerTest, self).test(command)
+        finally:
+            if new_cwd is not None:
+                os.chdir(pre_cwd)
 
 
 class MissingTest(Test):
