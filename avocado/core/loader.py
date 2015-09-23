@@ -209,7 +209,8 @@ class TestLoader(object):
     def get_extra_listing(self):
         pass
 
-    def get_type_label_mapping(self):
+    @staticmethod
+    def get_type_label_mapping():
         """
         Get label mapping for display in test listing.
 
@@ -217,7 +218,8 @@ class TestLoader(object):
         """
         raise NotImplementedError
 
-    def get_decorator_mapping(self):
+    @staticmethod
+    def get_decorator_mapping():
         """
         Get label mapping for display in test listing.
 
@@ -340,7 +342,8 @@ class FileLoader(TestLoader):
                    '"--inner-runner" to be specified.')
             raise LoaderError(msg)
 
-    def get_type_label_mapping(self):
+    @staticmethod
+    def get_type_label_mapping():
         return {test.SimpleTest: 'SIMPLE',
                 test.InnerRunnerTest: 'INNER_RUNNER',
                 test.BuggyTest: 'BUGGY',
@@ -351,7 +354,8 @@ class FileLoader(TestLoader):
                 test.Test: 'INSTRUMENTED',
                 FilteredOut: 'FILTERED'}
 
-    def get_decorator_mapping(self):
+    @staticmethod
+    def get_decorator_mapping():
         term_support = output.TermSupport()
         return {test.SimpleTest: term_support.healthy_str,
                 test.InnerRunnerTest: term_support.healthy_str,
