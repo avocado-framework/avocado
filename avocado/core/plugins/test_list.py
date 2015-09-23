@@ -32,7 +32,12 @@ class TestLister(object):
         use_paginator = args.paginator == 'on'
         self.view = output.View(app_args=args, use_paginator=use_paginator)
         self.term_support = output.TermSupport()
-        loader.loader.load_plugins(args)
+        try:
+            loader.loader.load_plugins(args)
+        except loader.LoaderError, details:
+            sys.stderr.write(str(details))
+            sys.stderr.write('\n')
+            sys.exit(exit_codes.AVOCADO_FAIL)
         self.args = args
 
     def _extra_listing(self):

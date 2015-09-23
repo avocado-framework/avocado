@@ -48,6 +48,7 @@ from ..utils import archive
 from ..utils import astring
 from ..utils import path
 from ..utils import runtime
+from ..utils import stacktrace
 
 try:
     from .plugins import htmlresult
@@ -446,7 +447,12 @@ class Job(object):
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id)
-        test_suite = self._make_test_suite(urls)
+        try:
+            test_suite = self._make_test_suite(urls)
+        except loader.LoaderError, details:
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.tracebacks')
+            self._remove_job_results()
+            raise exceptions.OptionValidationError(details)
         if not test_suite:
             self._remove_job_results()
             e_msg = ("No tests found for given urls, try 'avocado list -V %s' "
