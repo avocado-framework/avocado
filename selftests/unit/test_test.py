@@ -8,6 +8,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import data_dir
 from avocado.core import test
 from avocado.utils import script
 
@@ -70,6 +71,9 @@ class TestClassTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.base_logdir)
 
+    def __del__(self):
+        data_dir.clean_tmp_files()
+
 
 class SimpleTestClassTest(unittest.TestCase):
 
@@ -107,6 +111,9 @@ class SimpleTestClassTest(unittest.TestCase):
         self.pass_script.remove()
         self.fail_script.remove()
         shutil.rmtree(self.tmpdir)
+
+    def __del__(self):
+        data_dir.clean_tmp_files()
 
 if __name__ == '__main__':
     unittest.main()
