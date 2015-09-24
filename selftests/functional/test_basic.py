@@ -59,7 +59,7 @@ class HelloWorld(Plugin):
 class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_runner_op')
 
     def verifyAvocadoTempDirs(self):
         dir_list = os.listdir(data_dir.BASE_TMP_DIR)
@@ -297,7 +297,7 @@ class RunnerOperationTest(unittest.TestCase):
 class RunnerHumanOutputTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_runner_human')
 
     def test_output_pass(self):
         os.chdir(basedir)
@@ -339,11 +339,14 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:  SKIP', result.stdout)
 
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
 
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_runner_simple')
         self.pass_script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,
@@ -435,7 +438,7 @@ class RunnerSimpleTest(unittest.TestCase):
 class InnerRunnerTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_inner_runner')
         self.pass_script = script.TemporaryScript(
             'pass',
             PASS_SHELL_CONTENTS,
@@ -490,7 +493,7 @@ class ExternalPluginsTest(unittest.TestCase):
 
     def setUp(self):
         self.base_sourcedir = tempfile.mkdtemp(prefix='avocado_source_plugins')
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_external_plugins')
 
     def test_void_plugin(self):
         self.void_plugin = script.make_script(
@@ -622,7 +625,7 @@ class ParseXMLError(Exception):
 class PluginsXunitTest(PluginsTest):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_plugins_xunit')
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
@@ -692,7 +695,7 @@ class ParseJSONError(Exception):
 class PluginsJSONTest(PluginsTest):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_plugins_json')
         super(PluginsJSONTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,

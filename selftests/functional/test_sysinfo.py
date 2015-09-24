@@ -18,7 +18,7 @@ basedir = os.path.abspath(basedir)
 class SysInfoTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_sysinfo')
 
     def test_sysinfo_enabled(self):
         os.chdir(basedir)

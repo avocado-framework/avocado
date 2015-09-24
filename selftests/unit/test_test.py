@@ -78,7 +78,7 @@ class TestClassTest(unittest.TestCase):
 class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_simple_test_class')
         self.pass_script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,
