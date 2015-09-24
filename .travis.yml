@@ -28,3 +28,4 @@ script:
     - ./selftests/cyclical_deps avocado
     - ./selftests/modules_boundaries
     - ./selftests/run
+    - ./selftests/check_tmp_dirs

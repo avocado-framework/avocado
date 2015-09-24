@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+# simple magic for using scripts within a source tree
+basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.isdir(os.path.join(basedir, 'avocado')):
+    os.environ['PATH'] += ":" + os.path.join(basedir, 'scripts')
+    os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
+    sys.path.append(basedir)
+
+from avocado.core import data_dir
+
+
+def check_tmp_dirs():
+    dirs_to_check = ['/tmp', data_dir.BASE_TMP_DIR]
+    fail = False
+    for dir_to_check in dirs_to_check:
+        dir_list = os.listdir(dir_to_check)
+        avocado_tmp_dirs = [d for d in dir_list if d.startswith('avocado')]
+        try:
+            assert len(avocado_tmp_dirs) == 0
+            print('No temporary avocado dirs lying around in %s' %
+                  dir_to_check)
+        except AssertionError:
+            print('There are temporary avocado dirs lying around after test: %s',
+                  avocado_tmp_dirs)
+            fail = True
+    if fail:
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    check_tmp_dirs()

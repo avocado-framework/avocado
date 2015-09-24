@@ -64,6 +64,8 @@ clean:
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
+	rm -rf /var/tmp/avocado*
+	rm -rf /tmp/avocado*
 
 install-requirements-all: install-requirements install-requirements-selftests
 
@@ -75,6 +77,7 @@ install-requirements-selftests:
 
 check: clean check_cyclical modules_boundaries
 	selftests/checkall
+	selftests/check_tmp_dirs
 
 check_cyclical:
 	selftests/cyclical_deps avocado
