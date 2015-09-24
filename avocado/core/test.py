@@ -40,6 +40,7 @@ from ..utils import genio
 from ..utils import path as utils_path
 from ..utils import process
 from ..utils import stacktrace
+from ..utils import data_structures
 
 
 INNER_RUNNER = None
@@ -91,8 +92,6 @@ class Test(unittest.TestCase):
 
         self.job = job
 
-        basename = os.path.basename(self.name)
-
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
         self.datadir = self.filename + '.data'
@@ -101,10 +100,6 @@ class Test(unittest.TestCase):
                                                  'stdout.expected')
         self.expected_stderr_file = os.path.join(self.datadir,
                                                  'stderr.expected')
-        tmpdir = data_dir.get_tmp_dir()
-        assert os.path.isdir(tmpdir)
-        self.workdir = utils_path.init_dir(tmpdir, basename.replace(':', '_'))
-        self.srcdir = utils_path.init_dir(self.workdir, 'src')
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
@@ -171,6 +166,18 @@ class Test(unittest.TestCase):
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    @data_structures.LazyProperty
+    def workdir(self):
+        tmp_dir = data_dir.get_tmp_dir()
+        assert os.path.isdir(tmp_dir)
+        basename = os.path.basename(self.name)
+        return utils_path.init_dir(tmp_dir, basename.replace(':', '_'))
+
+    @data_structures.LazyProperty
+    def srcdir(self):
+        assert os.path.isdir(self.workdir)
+        return utils_path.init_dir(self.workdir, 'src')
 
     def __str__(self):
         return str(self.name)

@@ -36,3 +36,27 @@ class Borg:
 
     def __init__(self):
         self.__dict__ = self.__shared_state
+
+
+class LazyProperty(object):
+
+    """
+    Lazily instantiated property.
+
+    Use this decorator when you want to set a property that will only be
+    evaluated the first time it's accessed. Inspired by the discussion in
+    the Stack Overflow thread below:
+
+    :see: http://stackoverflow.com/questions/15226721/
+    """
+
+    def __init__(self, f_get):
+        self.f_get = f_get
+        self.func_name = f_get.__name__
+
+    def __get__(self, obj, cls):
+        if obj is None:
+            return None
+        value = self.f_get(obj)
+        setattr(obj, self.func_name, value)
+        return value
