@@ -11,6 +11,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import data_dir
 from avocado.utils import process
 from avocado.utils import script
 
@@ -60,27 +61,43 @@ class RunnerOperationTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
 
+    def verifyAvocadoTempDirs(self):
+        dir_list = os.listdir(data_dir.BASE_TMP_DIR)
+        avocado_tmp_dirs = [d for d in dir_list if d.startswith('avocado')]
+        self.assertEqual(len(avocado_tmp_dirs), 0,
+                         'Found avocado tmp dirs: %s' % avocado_tmp_dirs)
+
     def test_runner_all_ok(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest passtest' % self.tmpdir
         process.run(cmd_line)
+        self.verifyAvocadoTempDirs()
 
     def test_datadir_alias(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s datadir' % self.tmpdir
         process.run(cmd_line)
+        self.verifyAvocadoTempDirs()
 
     def test_datadir_noalias(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/datadir.py '
                     'examples/tests/datadir.py' % self.tmpdir)
         process.run(cmd_line)
+        self.verifyAvocadoTempDirs()
 
     def test_runner_noalias(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/passtest.py "
                     "examples/tests/passtest.py" % self.tmpdir)
         process.run(cmd_line)
+        self.verifyAvocadoTempDirs()
+
+    def test_runner_help(self):
+        os.chdir(basedir)
+        cmd_line = ("./scripts/avocado --help")
+        process.run(cmd_line)
+        self.verifyAvocadoTempDirs()
 
     def test_runner_tests_fail(self):
         os.chdir(basedir)
@@ -89,6 +106,7 @@ class RunnerOperationTest(unittest.TestCase):
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.verifyAvocadoTempDirs()
 
     def test_runner_nonexistent_test(self):
         os.chdir(basedir)
@@ -100,6 +118,7 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+        self.verifyAvocadoTempDirs()
 
     def test_runner_doublefail(self):
         os.chdir(basedir)
@@ -117,6 +136,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn("TestFail: This test is supposed to fail",
                       output,
                       "Test did not fail with action exception:\n%s" % output)
+        self.verifyAvocadoTempDirs()
 
     def test_uncaught_exception(self):
         os.chdir(basedir)
@@ -128,6 +148,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
         self.assertIn('"status": "ERROR"', result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_fail_on_exception(self):
         os.chdir(basedir)
@@ -139,6 +160,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
         self.assertIn('"status": "FAIL"', result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_runner_timeout(self):
         os.chdir(basedir)
@@ -155,6 +177,7 @@ class RunnerOperationTest(unittest.TestCase):
                       "Test did not fail with timeout exception:\n%s" % output)
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
+        self.verifyAvocadoTempDirs()
 
     def test_runner_abort(self):
         os.chdir(basedir)
@@ -169,6 +192,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
         self.assertIn(excerpt, output)
+        self.verifyAvocadoTempDirs()
 
     def test_silent_output(self):
         os.chdir(basedir)
@@ -178,6 +202,7 @@ class RunnerOperationTest(unittest.TestCase):
         expected_output = ''
         self.assertEqual(result.exit_status, expected_rc)
         self.assertEqual(result.stderr, expected_output)
+        self.verifyAvocadoTempDirs()
 
     def test_empty_args_list(self):
         os.chdir(basedir)
@@ -187,6 +212,7 @@ class RunnerOperationTest(unittest.TestCase):
         unexpected_output = 'too few arguments'
         self.assertEqual(result.exit_status, expected_rc)
         self.assertNotIn(unexpected_output, result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_empty_test_list(self):
         os.chdir(basedir)
@@ -196,6 +222,7 @@ class RunnerOperationTest(unittest.TestCase):
         expected_output = 'No tests found for given urls'
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
+        self.verifyAvocadoTempDirs()
 
     def test_not_found(self):
         os.chdir(basedir)
@@ -205,6 +232,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn('Unable to discover url', result.stderr)
         self.assertNotIn('Unable to discover url', result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id foobar passtest'
@@ -212,6 +240,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotEqual(0, result.exit_status)
         self.assertIn('needs to be a 40 digit hex', result.stderr)
         self.assertNotIn('needs to be a 40 digit hex', result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_valid_unique_id(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
@@ -220,6 +249,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(0, result.exit_status)
         self.assertNotIn('needs to be a 40 digit hex', result.stderr)
         self.assertIn('PASS', result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_automatic_unique_id(self):
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --json -' % self.tmpdir
@@ -239,6 +269,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
         self.assertIn('"status": "ERROR"', result.stdout)
+        self.verifyAvocadoTempDirs()
 
     def test_early_latest_result(self):
         """
@@ -256,9 +287,11 @@ class RunnerOperationTest(unittest.TestCase):
                 break
         self.assertTrue(os.path.exists(link))
         self.assertTrue(os.path.islink(link))
+        self.verifyAvocadoTempDirs()
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
+        data_dir.clean_tmp_files()
 
 
 class RunnerHumanOutputTest(unittest.TestCase):
