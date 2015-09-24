@@ -496,10 +496,15 @@ class ExternalPluginsTest(unittest.TestCase):
             shutil.rmtree(self.base_sourcedir, ignore_errors=True)
 
 
-class PluginsTest(unittest.TestCase):
-
+class AbsPluginsTest(object):
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
+
+    def tearDown(self):
+        shutil.rmtree(self.base_outputdir)
+
+
+class PluginsTest(AbsPluginsTest, unittest.TestCase):
 
     def test_sysinfo_plugin(self):
         os.chdir(basedir)
@@ -579,15 +584,12 @@ class PluginsTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn("'Namespace' object has no attribute", output)
 
-    def tearDown(self):
-        shutil.rmtree(self.base_outputdir)
-
 
 class ParseXMLError(Exception):
     pass
 
 
-class PluginsXunitTest(PluginsTest):
+class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
@@ -657,7 +659,7 @@ class ParseJSONError(Exception):
     pass
 
 
-class PluginsJSONTest(PluginsTest):
+class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
