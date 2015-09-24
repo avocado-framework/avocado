@@ -93,8 +93,6 @@ class Test(unittest.TestCase):
 
         basename = os.path.basename(self.name)
 
-        tmpdir = data_dir.get_tmp_dir()
-
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
         self.datadir = self.filename + '.data'
@@ -103,7 +101,8 @@ class Test(unittest.TestCase):
                                                  'stdout.expected')
         self.expected_stderr_file = os.path.join(self.datadir,
                                                  'stderr.expected')
-
+        tmpdir = data_dir.get_tmp_dir()
+        assert os.path.isdir(tmpdir)
         self.workdir = utils_path.init_dir(tmpdir, basename.replace(':', '_'))
         self.srcdir = utils_path.init_dir(self.workdir, 'src')
         if base_logdir is None:
