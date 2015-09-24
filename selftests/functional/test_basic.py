@@ -245,15 +245,14 @@ class RunnerOperationTest(unittest.TestCase):
         Tests that the `latest` link to the latest job results is created early
         """
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/sleeptest.py '
-                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/passtest.py' % self.tmpdir)
         avocado_process = process.SubProcess(cmd_line)
         avocado_process.start()
         link = os.path.join(self.tmpdir, 'latest')
         for trial in xrange(0, 50):
             time.sleep(0.1)
             if os.path.exists(link) and os.path.islink(link):
-                avocado_process.terminate()
+                avocado_process.wait()
                 break
         self.assertTrue(os.path.exists(link))
         self.assertTrue(os.path.islink(link))
