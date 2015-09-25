@@ -98,8 +98,8 @@ _=/usr/bin/env''', exit_status=0)
                 'tagged_name': u'sleeptest.1', 'time_elapsed': 1.23,
                 'fail_class': 'Not supported yet', 'job_unique_id': '',
                 'fail_reason': 'None',
-                'logdir': '/local/path/test-results/sleeptest',
-                'logfile': '/local/path/test-results/sleeptest/debug.log'}
+                'logdir': '/local/path/test-results/sleeptest.1',
+                'logfile': '/local/path/test-results/sleeptest.1/debug.log'}
         Results.should_receive('start_test').once().with_args(args).ordered()
         Results.should_receive('check_test').once().with_args(args).ordered()
         (Remote.should_receive('receive_files')

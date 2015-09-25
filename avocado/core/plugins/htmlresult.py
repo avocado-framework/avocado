@@ -21,6 +21,7 @@ import sys
 import time
 import subprocess
 import pystache
+import urllib
 
 from . import plugin
 from .. import exit_codes
@@ -207,8 +208,8 @@ class HTMLTestResult(TestResult):
              'status': state['status'],
              'fail_reason': state['fail_reason'],
              'whiteboard': state['whiteboard'],
-             'logdir': state['logdir'],
-             'logfile': state['logfile']
+             'logdir': urllib.quote(state['logdir']),
+             'logfile': urllib.quote(state['logfile'])
              }
         self.json['tests'].append(t)
 
