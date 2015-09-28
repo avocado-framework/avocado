@@ -61,6 +61,12 @@ class RunVM(plugin.Plugin):
         self.vm_parser.add_argument('--vm-no-copy', action='store_true',
                                     help="Don't copy tests and use the "
                                     "exact uri on VM machine.")
+        self.vm_parser.add_argument('--vm-timeout', metavar='SECONDS',
+                                    help=("Amount of time (in seconds) to "
+                                          "wait for a successful connection"
+                                          " to the virtual machine. Defaults"
+                                          " to %(default)s seconds."),
+                                    default=120, type=int)
         self.configured = True
 
     @staticmethod

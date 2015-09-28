@@ -48,6 +48,7 @@ class VMTestResultTest(unittest.TestCase):
                         vm_password='password',
                         vm_cleanup=True,
                         vm_no_copy=False,
+                        vm_timeout=120,
                         vm_hypervisor_uri='my_hypervisor_uri')
         self.remote = VMTestResult(Stream, Args)
         # vm.RemoteTestResult.tear_down()
