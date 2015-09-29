@@ -92,20 +92,6 @@ class Hypervisor(object):
                 return domain
         return None
 
-    def start_domain_with_xml(self, xml):
-        """
-        Start/create domain with XML description.
-
-        :param xml: the XML description.
-        :return: an instance of :class:`libvirt.virDomain`.
-        """
-        dom = None
-        try:
-            dom = self.connection.createXML(xml)
-        except libvirt.libvirtError:
-            pass
-        return dom
-
 
 class VM(object):
 
