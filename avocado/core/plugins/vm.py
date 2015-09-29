@@ -49,8 +49,9 @@ class RunVM(plugin.Plugin):
                                           default_hypervisor_uri))
         self.vm_parser.add_argument('--vm-hostname', default=None,
                                     help=('Specify VM hostname to login. By '
-                                          'default it attempts to automatically'
-                                          ' find the VM IP address.'))
+                                          'default Avocado attempts to '
+                                          'automatically find the VM IP '
+                                          'address.'))
         self.vm_parser.add_argument('--vm-username', default=username,
                                     help='Specify the username to login on VM')
         self.vm_parser.add_argument('--vm-password',
