@@ -106,11 +106,6 @@ class VMTestResult(RemoteTestResult):
 
     def setup(self):
         # Super called after VM is found and initialized
-        if self.args.vm_domain is None:
-            e_msg = ('Please set Virtual Machine Domain with option '
-                     '--vm-domain.')
-            self.stream.notify(event='error', msg=e_msg)
-            raise exceptions.JobError(e_msg)
         if self.args.vm_hostname is None:
             e_msg = ('Please set Virtual Machine hostname with option '
                      '--vm-hostname.')
