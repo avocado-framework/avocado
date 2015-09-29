@@ -96,7 +96,8 @@ when using the ``run`` command in the Avocado command line tool::
       --vm-domain VM_DOMAIN
                             Specify domain name (Virtual Machine name)
       --vm-hostname VM_HOSTNAME
-                            Specify VM hostname to login
+                            Specify VM hostname to login. By default it attempts
+                            to automatically find the VM IP address.
       --vm-username VM_USERNAME
                             Specify the username to login on VM
       --vm-password VM_PASSWORD
@@ -107,6 +108,11 @@ when using the ``run`` command in the Avocado command line tool::
 From these options, you are normally going to use `--vm-domain`,
 `--vm-hostname` and `--vm-username` in case you did set up your VM with
 password-less SSH connection (through SSH keys).
+
+If you have the VM already running, or have had it running and it a
+"while" back, you can probably skip the `--vm-hostname` option as
+Avocado will attempt to find out the VM IP address based on the MAC
+address and ARP table.
 
 Virtual Machine Setup
 ---------------------

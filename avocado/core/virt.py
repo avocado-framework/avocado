@@ -17,6 +17,8 @@ Module to provide classes for Virtual Machines.
 """
 
 import logging
+import subprocess
+import xml.etree.cElementTree as etree
 from xml.dom import minidom
 
 from . import remoter
@@ -91,20 +93,6 @@ class Hypervisor(object):
             if name == domain.name():
                 return domain
         return None
-
-    def start_domain_with_xml(self, xml):
-        """
-        Start/create domain with XML description.
-
-        :param xml: the XML description.
-        :return: an instance of :class:`libvirt.virDomain`.
-        """
-        dom = None
-        try:
-            dom = self.connection.createXML(xml)
-        except libvirt.libvirtError:
-            pass
-        return dom
 
 
 class VM(object):
@@ -279,6 +267,27 @@ class VM(object):
                 self.logged = True
         else:
             self.logged = False
+
+    def ip_address(self):
+        """
+        Returns the IP address associated with the MAC address of this VM
+
+        Inspired from:
+        https://raw.githubusercontent.com/mcepl/virt-addr/master/virt-addr.py
+
+        :returns: either the IP address or None if not found
+        :rtype: str or None
+        """
+        desc = etree.fromstring(self.domain.XMLDesc(0))
+        mac_path = "devices/interface[@type='network']/mac"
+        mac = desc.find(mac_path).attrib["address"].lower().strip()
+        output = subprocess.Popen(["arp", "-n"],
+                                  stdout=subprocess.PIPE).communicate()[0]
+        lines = [line.split() for line in output.split("\n")[1:]]
+        addresses = [line[0] for line in lines if (line and (line[2] == mac))]
+        if addresses:
+            # Just return the first address, this is a best effort attempt
+            return addresses[0]
 
 
 def vm_connect(domain_name, hypervisor_uri='qemu:///system'):
