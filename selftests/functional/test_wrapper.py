@@ -25,7 +25,7 @@ exec -- $@
 class WrapperTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.tmpfile = tempfile.mktemp()
         self.script = script.TemporaryScript(
             'success.sh',

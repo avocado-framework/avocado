@@ -57,7 +57,7 @@ class VMCleanup(Test):
                       'been given. Please edit the "vm-cleanup.yaml" file '
                       'with the appropriate parameters')
 
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         clean_test = os.path.join(self.tmpdir, 'clean.py')
         self.clean_test_path = script.make_script(clean_test, CLEAN_TEST)
         dirty_test = os.path.join(self.tmpdir, 'dirty.py')

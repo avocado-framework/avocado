@@ -13,7 +13,7 @@ from avocado.utils import data_factory
 class ArchiveTest(unittest.TestCase):
 
     def setUp(self):
-        self.basedir = tempfile.mkdtemp(prefix='archive_datadir_unittest')
+        self.basedir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.compressdir = tempfile.mkdtemp(dir=self.basedir)
         self.decompressdir = tempfile.mkdtemp(dir=self.basedir)
         self.sys_random = random.SystemRandom()

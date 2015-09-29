@@ -38,7 +38,7 @@ test "$AVOCADO_VERSION" = "{version}" -a \
 class EnvironmentVariablesTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.script = script.TemporaryScript(
             'version.sh',
             SCRIPT_CONTENT,

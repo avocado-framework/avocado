@@ -20,7 +20,7 @@ def _get_bogus_settings(args):
 class DataDirTest(unittest.TestCase):
 
     def setUp(self):
-        tbase = tempfile.mkdtemp(prefix='avocado_datadir_unittest')
+        tbase = tempfile.mkdtemp(prefix='avocado_' + __name__)
         tdir = os.path.join(tbase, 'tests')
         tdata = os.path.join(tbase, 'data')
         tlogs = os.path.join(tbase, 'logs')

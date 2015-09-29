@@ -74,7 +74,10 @@ install-requirements-selftests:
 	grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install
 
 check: clean check_cyclical modules_boundaries
+	rm -rf /var/tmp/avocado*
+	rm -rf /tmp/avocado*
 	selftests/checkall
+	selftests/check_tmp_dirs
 
 check_cyclical:
 	selftests/cyclical_deps avocado

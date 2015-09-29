@@ -30,7 +30,7 @@ class TestClassTest(unittest.TestCase):
                 self.assertTrue(variable)
                 self.whiteboard = 'foo'
 
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_test_unittest')
+        self.base_logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass.run_avocado()
         self.tst_instance_pass_new = AvocadoPass(base_logdir=self.base_logdir)
@@ -74,7 +74,7 @@ class TestClassTest(unittest.TestCase):
 class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,

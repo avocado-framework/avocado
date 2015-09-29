@@ -50,7 +50,7 @@ if __name__ == "__main__":
 class InterruptTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_badly_behaved(self):
         """

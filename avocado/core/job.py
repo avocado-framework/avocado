@@ -127,7 +127,7 @@ class Job(object):
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
                                                            unique_id=self.unique_id)
             else:
-                self.logdir = tempfile.mkdtemp(prefix='avocado-')
+                self.logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         else:
             if logdir is None:
                 self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
@@ -478,9 +478,6 @@ class Job(object):
         if getattr(self.args, 'archive', False):
             filename = self.logdir + '.zip'
             archive.create(filename, self.logdir)
-        if not settings.get_value('runner.behavior', 'keep_tmp_files',
-                                  key_type=bool, default=False):
-            data_dir.clean_tmp_files()
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
         tests_status = not bool(failures)
@@ -539,6 +536,10 @@ class Job(object):
             self.view.notify(event='error', msg=('Report bugs visiting %s' %
                                                  _NEW_ISSUE_LINK))
             return exit_codes.AVOCADO_FAIL
+        finally:
+            if not settings.get_value('runner.behavior', 'keep_tmp_files',
+                                      key_type=bool, default=False):
+                data_dir.clean_tmp_files()
 
 
 class TestProgram(object):
