@@ -69,7 +69,7 @@ def make_dir_and_populate(basedir='/tmp'):
     :rtype: str
     """
     try:
-        path = tempfile.mkdtemp(prefix='avocado-make-dir-and-populate',
+        path = tempfile.mkdtemp(prefix='avocado_' + __name__,
                                 dir=basedir)
         n_files = _RAND_POOL.randint(100, 150)
         for _ in xrange(n_files):

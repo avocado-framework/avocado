@@ -42,7 +42,7 @@ class JSONResultTest(unittest.TestCase):
                 pass
 
         self.tmpfile = tempfile.mkstemp()
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         args = argparse.Namespace(json_output=self.tmpfile[1])
         stream = _Stream()
         stream.logfile = 'debug.log'

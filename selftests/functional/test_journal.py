@@ -17,7 +17,7 @@ class JournalPluginTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(basedir)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --json - '
                          '--journal examples/tests/passtest.py' % self.tmpdir)
         self.result = process.run(self.cmd_line, ignore_status=True)

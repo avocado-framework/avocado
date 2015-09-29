@@ -52,7 +52,7 @@ class JobTimeOutTest(unittest.TestCase):
             PYTHON_CONTENT,
             'avocado_timeout_functional')
         self.py.save()
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         os.chdir(basedir)
 
     def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures,

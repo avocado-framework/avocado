@@ -31,7 +31,7 @@ DEBUG_OUT = """Variant 16:    amd@examples/mux-environment.yaml, virtio@examples
 class MultiplexTests(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def run_and_check(self, cmd_line, expected_rc):
         os.chdir(basedir)

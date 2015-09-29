@@ -58,7 +58,7 @@ class HelloWorld(Plugin):
 class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_runner_all_ok(self):
         os.chdir(basedir)
@@ -264,7 +264,7 @@ class RunnerOperationTest(unittest.TestCase):
 class RunnerHumanOutputTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_output_pass(self):
         os.chdir(basedir)
@@ -306,11 +306,14 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:  SKIP', result.stdout)
 
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
 
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,
@@ -402,7 +405,7 @@ class RunnerSimpleTest(unittest.TestCase):
 class InnerRunnerTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'pass',
             PASS_SHELL_CONTENTS,
@@ -456,8 +459,8 @@ class InnerRunnerTest(unittest.TestCase):
 class ExternalPluginsTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_sourcedir = tempfile.mkdtemp(prefix='avocado_source_plugins')
-        self.tmpdir = tempfile.mkdtemp()
+        self.base_sourcedir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_void_plugin(self):
         self.void_plugin = script.make_script(
@@ -498,7 +501,7 @@ class ExternalPluginsTest(unittest.TestCase):
 class AbsPluginsTest(object):
 
     def setUp(self):
-        self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
+        self.base_outputdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def tearDown(self):
         shutil.rmtree(self.base_outputdir)
@@ -592,7 +595,7 @@ class ParseXMLError(Exception):
 class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
@@ -662,7 +665,7 @@ class ParseJSONError(Exception):
 class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         super(PluginsJSONTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,

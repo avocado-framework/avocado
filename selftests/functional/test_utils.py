@@ -118,7 +118,7 @@ if __name__ == '__main__':
 class ProcessTest(unittest.TestCase):
 
     def setUp(self):
-        self.base_logdir = tempfile.mkdtemp(prefix='avocado_process_functional')
+        self.base_logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.fake_vmstat = os.path.join(self.base_logdir, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)

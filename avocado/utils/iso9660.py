@@ -231,7 +231,7 @@ class Iso9660IsoRead(BaseIso9660):
 
     def __init__(self, path):
         super(Iso9660IsoRead, self).__init__(path)
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def read(self, path):
         temp_file = os.path.join(self.temp_dir, path)
@@ -261,7 +261,7 @@ class Iso9660Mount(BaseIso9660):
         :type path: str
         """
         super(Iso9660Mount, self).__init__(path)
-        self.mnt_dir = tempfile.mkdtemp()
+        self.mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         process.run('mount -t iso9660 -v -o loop,ro %s %s' %
                     (path, self.mnt_dir))
 

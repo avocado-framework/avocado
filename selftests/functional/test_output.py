@@ -22,7 +22,7 @@ basedir = os.path.abspath(basedir)
 class OutputTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_output_doublefree(self):
         os.chdir(basedir)
@@ -45,7 +45,7 @@ class OutputTest(unittest.TestCase):
 class OutputPluginTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
@@ -129,9 +129,9 @@ class OutputPluginTest(unittest.TestCase):
                 pass
 
     def test_output_compatible_setup_3(self):
-        tmpfile = tempfile.mktemp()
-        tmpfile2 = tempfile.mktemp()
-        tmpdir = tempfile.mkdtemp()
+        tmpfile = tempfile.mktemp(prefix='avocado_' + __name__)
+        tmpfile2 = tempfile.mktemp(prefix='avocado_' + __name__)
+        tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         tmpfile3 = tempfile.mktemp(dir=tmpdir)
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --xunit %s --json %s --html %s passtest' %

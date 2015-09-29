@@ -63,7 +63,7 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def setUp(self):
         os.chdir(basedir)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def _test(self, name, content, exp_str, mode=0664):
         test_script = script.TemporaryScript(name, content,

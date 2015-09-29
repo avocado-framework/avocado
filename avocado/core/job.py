@@ -127,7 +127,7 @@ class Job(object):
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
                                                            unique_id=self.unique_id)
             else:
-                self.logdir = tempfile.mkdtemp(prefix='avocado-')
+                self.logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         else:
             if logdir is None:
                 self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
