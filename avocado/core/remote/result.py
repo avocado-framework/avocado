@@ -106,11 +106,6 @@ class VMTestResult(RemoteTestResult):
 
     def setup(self):
         # Super called after VM is found and initialized
-        if self.args.vm_hostname is None:
-            e_msg = ('Please set Virtual Machine hostname with option '
-                     '--vm-hostname.')
-            self.stream.notify(event='error', msg=e_msg)
-            raise exceptions.JobError(e_msg)
         self.stream.notify(event='message', msg="DOMAIN     : %s"
                            % self.args.vm_domain)
         self.vm = virt.vm_connect(self.args.vm_domain,
@@ -122,6 +117,14 @@ class VMTestResult(RemoteTestResult):
             e_msg = "Could not start VM '%s'" % self.args.vm_domain
             raise exceptions.JobError(e_msg)
         assert self.vm.domain.isActive() is not False
+        # If hostname wasn't given, let's try to find out the IP address
+        if self.args.vm_hostname is None:
+            self.args.vm_hostname = self.vm.ip_address()
+            if self.args.vm_hostname is None:
+                e_msg = ("Could not find the IP address for VM '%s'. Please "
+                         "set it explicitly with --vm-hostname" %
+                         self.args.vm_domain)
+                raise exceptions.JobError(e_msg)
         if self.args.vm_cleanup is True:
             self.vm.create_snapshot()
             if self.vm.snapshot is None:

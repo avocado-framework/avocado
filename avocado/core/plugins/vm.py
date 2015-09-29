@@ -47,8 +47,10 @@ class RunVM(plugin.Plugin):
                                     help=('Specify hypervisor URI driver '
                                           'connection. Current: %s' %
                                           default_hypervisor_uri))
-        self.vm_parser.add_argument('--vm-hostname',
-                                    help='Specify VM hostname to login')
+        self.vm_parser.add_argument('--vm-hostname', default=None,
+                                    help=('Specify VM hostname to login. By '
+                                          'default it attempts to automatically'
+                                          ' find the VM IP address.'))
         self.vm_parser.add_argument('--vm-username', default=username,
                                     help='Specify the username to login on VM')
         self.vm_parser.add_argument('--vm-password',
@@ -89,7 +91,6 @@ class RunVM(plugin.Plugin):
         return True
 
     def activate(self, app_args):
-        if self._check_required_args(app_args, 'vm_domain',
-                                     ('vm_domain', 'vm_hostname')):
+        if self._check_required_args(app_args, 'vm_domain', ('vm_domain',)):
             self.vm_parser.set_defaults(remote_result=VMTestResult,
                                         test_runner=RemoteTestRunner)
