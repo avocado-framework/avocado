@@ -245,7 +245,14 @@ def get_tmp_dir():
         * Copies of a test suite source code
         * Compiled test suite source code
     """
-    return _tmp_tracker.get()
+    tmp_dir = _tmp_tracker.get()
+    # This assert is a security mechanism for avoiding re-creating
+    # the temporary directory, since that's a security breach.
+    msg = ('Temporary dir %s no longer exists. This likely means the '
+           'directory was incorrectly deleted before the end of the job' %
+           tmp_dir)
+    assert os.path.isdir(tmp_dir), msg
+    return tmp_dir
 
 
 def clean_tmp_files():
@@ -255,7 +262,10 @@ def clean_tmp_files():
     This is a useful function for avocado entry points looking to clean after
     tests/jobs are done. If OSError is raised, silently ignore the error.
     """
-    tmp_dir = get_tmp_dir()
+    try:
+        tmp_dir = get_tmp_dir()
+    except AssertionError:
+        return
     try:
         shutil.rmtree(tmp_dir, ignore_errors=True)
     except OSError:
