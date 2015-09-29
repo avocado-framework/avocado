@@ -87,7 +87,7 @@ _=/usr/bin/env''', exit_status=0)
         Results = flexmock(remote=Remote, urls=['sleeptest'],
                            stream=stream, timeout=None,
                            args=flexmock(show_job_log=False,
-                           multiplex_files=['foo.yaml', 'bar/baz.yaml']))
+                                         multiplex_files=['foo.yaml', 'bar/baz.yaml']))
         Results.should_receive('setup').once().ordered()
         Results.should_receive('copy_files').once().ordered()
         Results.should_receive('start_tests').once().ordered()
