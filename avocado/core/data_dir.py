@@ -232,6 +232,12 @@ class _TmpDirTracker(Borg):
             self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
         return self.tmp_dir
 
+    def __del__(self):
+        tmp_dir = getattr(self, 'tmp_dir', None)
+        if tmp_dir is not None:
+            if os.path.isdir(tmp_dir):
+                shutil.rmtree(tmp_dir)
+
 _tmp_tracker = _TmpDirTracker()
 
 
