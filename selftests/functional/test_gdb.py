@@ -14,7 +14,7 @@ basedir = os.path.abspath(basedir)
 class GDBPluginTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_test_gdb')
 
     def test_gdb_prerun_commands(self):
         os.chdir(basedir)

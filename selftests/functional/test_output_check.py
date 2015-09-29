@@ -24,7 +24,7 @@ echo "Hello, avocado!"
 class RunnerSimpleTest(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_runner_simple')
         self.output_script = script.TemporaryScript(
             'output_check.sh',
             OUTPUT_SCRIPT_CONTENTS,

@@ -46,7 +46,7 @@ class KernelBuild(object):
         self.version = version
         self.config_path = config_path
         if work_dir is None:
-            work_dir = tempfile.mkdtemp()
+            work_dir = tempfile.mkdtemp(prefix='avocado-kernelbuild')
         self.work_dir = work_dir
         self.build_dir = os.path.join(self.work_dir, 'build')
         if not os.path.isdir(self.build_dir):

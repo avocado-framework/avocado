@@ -512,17 +512,16 @@ class Job(object):
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run(urls)
+            rc = self._run(urls)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
             self.view.notify(event='error', msg=('Avocado job failed: %s: %s' %
                                                  (fail_class, details)))
-            return exit_codes.AVOCADO_JOB_FAIL
+            rc = exit_codes.AVOCADO_JOB_FAIL
         except exceptions.OptionValidationError, details:
             self.view.notify(event='error', msg=str(details))
-            return exit_codes.AVOCADO_JOB_FAIL
-
+            rc = exit_codes.AVOCADO_JOB_FAIL
         except Exception, details:
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -538,7 +537,10 @@ class Job(object):
                                                  'your bug report'))
             self.view.notify(event='error', msg=('Report bugs visiting %s' %
                                                  _NEW_ISSUE_LINK))
-            return exit_codes.AVOCADO_FAIL
+            rc = exit_codes.AVOCADO_FAIL
+        finally:
+            data_dir.clean_tmp_files()
+        return rc
 
 
 class TestProgram(object):

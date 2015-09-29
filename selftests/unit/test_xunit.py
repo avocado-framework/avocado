@@ -46,7 +46,7 @@ class xUnitSucceedTest(unittest.TestCase):
                 pass
 
         self.tmpfile = tempfile.mkstemp()
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_xunit_succeed')
         args = argparse.Namespace()
         args.xunit_output = self.tmpfile[1]
         self.test_result = xunit.xUnitTestResult(stream=_Stream(), args=args)

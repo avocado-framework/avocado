@@ -232,8 +232,6 @@ class _TmpDirTracker(Borg):
             self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
         return self.tmp_dir
 
-_tmp_tracker = _TmpDirTracker()
-
 
 def get_tmp_dir():
     """
@@ -245,6 +243,7 @@ def get_tmp_dir():
         * Copies of a test suite source code
         * Compiled test suite source code
     """
+    _tmp_tracker = _TmpDirTracker()
     return _tmp_tracker.get()
 
 
