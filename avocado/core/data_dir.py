@@ -226,10 +226,10 @@ class _TmpDirTracker(Borg):
 
     def __init__(self):
         Borg.__init__(self)
-        if not hasattr(self, 'tmp_dir'):
-            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
 
     def get(self):
+        if not hasattr(self, 'tmp_dir'):
+            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
         return self.tmp_dir
 
 _tmp_tracker = _TmpDirTracker()
