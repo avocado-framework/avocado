@@ -136,7 +136,7 @@ class RemoteTestResultTest(unittest.TestCase):
         Stream.should_receive('notify').once().ordered()
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
-         .with_args('hostname', 'username', 'password', 22)
+         .with_args('hostname', 'username', 'password', 22, 60)
          .once().ordered()
          .and_return(Remote))
         Args = flexmock(test_result_total=1,
@@ -146,7 +146,8 @@ class RemoteTestResultTest(unittest.TestCase):
                         remote_hostname='hostname',
                         remote_port=22,
                         remote_password='password',
-                        remote_no_copy=False)
+                        remote_no_copy=False,
+                        remote_timeout=60)
         self.remote = remote.RemoteTestResult(Stream, Args)
 
     def tearDown(self):

@@ -43,7 +43,7 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 port=22, timeout=60, attempts=3, quiet=False):
+                 port=22, timeout=60, attempts=10, quiet=False):
         """
         Creates an instance of :class:`Remote`.
 
@@ -51,7 +51,7 @@ class Remote(object):
         :param username: the username. Default: autodetect.
         :param password: the password. Default: try to use public key.
         :param timeout: remote command timeout, in seconds. Default: 60.
-        :param attempts: number of attempts to connect. Default: 3.
+        :param attempts: number of attempts to connect. Default: 10.
         :param quiet: performs quiet operations. Default: True.
         """
         self.hostname = hostname
@@ -66,7 +66,7 @@ class Remote(object):
                                 user=username,
                                 password=password,
                                 port=port,
-                                connection_timeout=timeout,
+                                timeout=timeout / attempts,
                                 connection_attempts=attempts,
                                 linewise=True)
 

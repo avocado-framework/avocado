@@ -79,14 +79,16 @@ class RemoteTestResult(HumanTestResult):
     def setup(self):
         """ Setup remote environment and copy test directories """
         self.stream.notify(event='message',
-                           msg=("LOGIN      : %s@%s:%d"
+                           msg=("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)"
                                 % (self.args.remote_username,
                                    self.args.remote_hostname,
-                                   self.args.remote_port)))
+                                   self.args.remote_port,
+                                   self.args.remote_timeout)))
         self.remote = remoter.Remote(self.args.remote_hostname,
                                      self.args.remote_username,
                                      self.args.remote_password,
-                                     self.args.remote_port)
+                                     self.args.remote_port,
+                                     self.args.remote_timeout)
 
     def tear_down(self):
         """ Cleanup after test execution """
@@ -137,6 +139,7 @@ class VMTestResult(RemoteTestResult):
             self.args.remote_username = self.args.vm_username
             self.args.remote_password = self.args.vm_password
             self.args.remote_no_copy = self.args.vm_no_copy
+            self.args.remote_timeout = self.args.vm_timeout
             super(VMTestResult, self).setup()
         except Exception:
             self.tear_down()
