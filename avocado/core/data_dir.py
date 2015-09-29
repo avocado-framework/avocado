@@ -235,8 +235,11 @@ class _TmpDirTracker(Borg):
     def __del__(self):
         tmp_dir = getattr(self, 'tmp_dir', None)
         if tmp_dir is not None:
-            if os.path.isdir(tmp_dir):
-                shutil.rmtree(tmp_dir)
+            try:
+                if os.path.isdir(tmp_dir):
+                    shutil.rmtree(tmp_dir)
+            except AttributeError:
+                pass
 
 _tmp_tracker = _TmpDirTracker()
 
