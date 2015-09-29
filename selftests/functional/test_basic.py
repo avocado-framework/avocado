@@ -497,6 +497,7 @@ class ExternalPluginsTest(unittest.TestCase):
 
 
 class AbsPluginsTest(object):
+
     def setUp(self):
         self.base_outputdir = tempfile.mkdtemp(prefix='avocado_plugins')
 
