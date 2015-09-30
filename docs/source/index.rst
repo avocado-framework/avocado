@@ -12,6 +12,7 @@ Contents:
    WritingTests
    ResultFormats
    Configuration
+   Loaders
    MultiplexConfig
    RunningTestsRemotely
    DebuggingWithGDB
