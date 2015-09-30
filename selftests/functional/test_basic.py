@@ -443,9 +443,10 @@ class InnerRunnerTest(unittest.TestCase):
                     '--inner-runner-chdir=test %s')
         cmd_line %= (self.tmpdir, self.pass_script.path)
         result = process.run(cmd_line, ignore_status=True)
-        expected_output = 'Option "--inner-runner-testdir" is mandatory'
+        expected_output = ('Option "--inner-runner-chdir=test" requires '
+                           '"--inner-runner-testdir" to be set')
         self.assertIn(expected_output, result.stderr)
-        expected_rc = 3
+        expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
