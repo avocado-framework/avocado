@@ -115,6 +115,9 @@ class TestLoaderProxy(object):
         loaders = getattr(args, 'loaders', None)
         if not loaders:
             loaders = settings.get_value("plugins", "loaders", list, [])
+        if '?' in loaders:
+            raise LoaderError("Loaders: %s\nTypes: %s"
+                              % (names, self._test_types.keys()))
         if "DEFAULT" in loaders:   # Replace DEFAULT with unused loaders
             idx = loaders.index("DEFAULT")
             loaders = (loaders[:idx] + [_ for _ in names if _ not in loaders] +
@@ -334,6 +337,9 @@ class FileLoader(TestLoader):
     def __init__(self, args, extra_params):
         super(FileLoader, self).__init__(args, extra_params)
         loader_options = extra_params.get('loader_options')
+        if loader_options == '?':
+            raise LoaderError("File loader accept option to sets the "
+                              "inner-runner executable.")
         self._inner_runner = self._process_inner_runner(args, loader_options)
         self.test_type = extra_params.get('allowed_test_types')
 

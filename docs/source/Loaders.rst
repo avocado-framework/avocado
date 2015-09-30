@@ -31,6 +31,8 @@ unused loaders.
 Examples which lists what tests would be executed with various options
 (with avocado-vt installed)::
 
+    $ avocado run --loaders ?
+    $ avocado run --loaders @file:?
     $ avocado run passtest boot this_does_not_exists /bin/echo
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
