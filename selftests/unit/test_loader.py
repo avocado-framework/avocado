@@ -81,7 +81,7 @@ class MultipleMethods(Test):
 class LoaderTest(unittest.TestCase):
 
     def setUp(self):
-        self.loader = loader.FileLoader({})
+        self.loader = loader.FileLoader(None, {})
         self.queue = multiprocessing.Queue()
 
     def test_load_simple(self):
