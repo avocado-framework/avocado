@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import tempfile
 import shutil
 
@@ -27,6 +28,26 @@ class PassTest(Test):
 if __name__ == "__main__":
     main()
 """
+
+
+AVOCADO_TEST_SLEEP_ELEVEN = """#!/usr/bin/python
+import time
+
+from avocado import Test
+from avocado import main
+
+class SleepEleven(Test):
+    def test(self):
+        time.sleep(10)
+    def test_2(self):
+        time.sleep(1)
+
+time.sleep(11)
+
+if __name__ == "__main__":
+    main()
+"""
+
 
 AVOCADO_TEST_BUGGY = """#!/usr/bin/python
 from avocado import Test
@@ -83,6 +104,27 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
+
+    def test_sleep_a_lot(self):
+        """
+        Verifies that the test loader, at list time, does not load the Python
+        module and thus executes its contents.
+        """
+        test_script = script.TemporaryScript('sleepeleven.py',
+                                             AVOCADO_TEST_SLEEP_ELEVEN,
+                                             'avocado_loader_test',
+                                             mode=0664)
+        test_script.save()
+        cmd_line = ('./scripts/avocado list -V %s' % test_script.path)
+        initial_time = time.time()
+        result = process.run(cmd_line, ignore_status=True)
+        test_script.remove()
+        actual_time = time.time() - initial_time
+        self.assertLess(actual_time, 3.0,
+                        ("Took more than 3 seconds to list tests. Loader "
+                         "probably loaded/executed Python code and slept for "
+                         "eleven seconds."))
+        self.assertIn('INSTRUMENTED: 2', result.stdout)
 
     def test_buggy_exec(self):
         self._test('buggytest.py', AVOCADO_TEST_BUGGY, 'SIMPLE', 0775)
