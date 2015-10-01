@@ -82,11 +82,20 @@ class TestLoaderProxy(object):
         self._initialized_plugins = []
         self.registered_plugins = []
         self.url_plugin_mapping = {}
+        self._test_types = {}
 
     def register_plugin(self, plugin):
         try:
             if issubclass(plugin, TestLoader):
                 self.registered_plugins.append(plugin)
+                for test_type in plugin.get_type_label_mapping().itervalues():
+                    if (test_type in self._test_types and
+                            self._test_types[test_type] != plugin):
+                        msg = ("Multiple plugins using the same test_type not "
+                               "yet supported (%s, %s)"
+                               % (test_type, self._test_types))
+                        raise NotImplementedError(msg)
+                    self._test_types[test_type] = plugin
             else:
                 raise ValueError
         except ValueError:
@@ -94,23 +103,45 @@ class TestLoaderProxy(object):
                                       "TestLoader" % plugin)
 
     def load_plugins(self, args):
+        def _err_list_loaders():
+            return ("Loaders: %s\nTypes: %s" % (names,
+                                                self._test_types.keys()))
         self._initialized_plugins = []
         # Add (default) file loader if not already registered
         if FileLoader not in self.registered_plugins:
-            self.registered_plugins.append(FileLoader)
+            self.register_plugin(FileLoader)
         # Load plugin by the priority from settings
-        names = [_.name for _ in self.registered_plugins]
-        priority = settings.get_value("plugins", "loader_plugins_priority",
-                                      list, [])
-        sorted_plugins = [self.registered_plugins[names.index(name)]
-                          for name in priority
-                          if name in names]
-        for plugin in sorted_plugins:
-            self._initialized_plugins.append(plugin(args))
-        for plugin in self.registered_plugins:
-            if plugin in sorted_plugins:
-                continue
-            self._initialized_plugins.append(plugin(args))
+        names = ["@" + _.name for _ in self.registered_plugins]
+        loaders = getattr(args, 'loaders', None)
+        if not loaders:
+            loaders = settings.get_value("plugins", "loaders", list, [])
+        if '?' in loaders:
+            raise LoaderError("Loaders: %s\nTypes: %s"
+                              % (names, self._test_types.keys()))
+        if "DEFAULT" in loaders:   # Replace DEFAULT with unused loaders
+            idx = loaders.index("DEFAULT")
+            loaders = (loaders[:idx] + [_ for _ in names if _ not in loaders] +
+                       loaders[idx+1:])
+            while "DEFAULT" in loaders:    # Remove duplicite DEFAULT entries
+                loaders.remove("DEFAULT")
+
+        loaders = [_.split(':', 1) for _ in loaders]
+        priority = [_[0] for _ in loaders]
+        for i, name in enumerate(priority):
+            extra_params = {}
+            if name in names:
+                plugin = self.registered_plugins[names.index(name)]
+            elif name in self._test_types:
+                plugin = self._test_types[name]
+                extra_params['allowed_test_types'] = name
+            else:
+                raise InvalidLoaderPlugin("Loader '%s' not available:\n"
+                                          "Loaders: %s\nTypes: %s"
+                                          % (name, names,
+                                             self._test_types.keys()))
+            if len(loaders[i]) == 2:
+                extra_params['loader_options'] = loaders[i][1]
+            self._initialized_plugins.append(plugin(args, extra_params))
 
     def get_extra_listing(self):
         for loader_plugin in self._initialized_plugins:
@@ -156,8 +187,7 @@ class TestLoaderProxy(object):
         if not urls:
             for loader_plugin in self._initialized_plugins:
                 try:
-                    tests.extend(loader_plugin.discover(None,
-                                                        list_tests))
+                    tests.extend(loader_plugin.discover(None, list_tests))
                 except Exception, details:
                     handle_exception(loader_plugin, details)
         else:
@@ -203,7 +233,7 @@ class TestLoader(object):
     Base for test loader classes
     """
 
-    def __init__(self, args):
+    def __init__(self, args, extra_params):    # pylint: disable=W0613
         self.args = args
 
     def get_extra_listing(self):
@@ -227,7 +257,7 @@ class TestLoader(object):
         """
         raise NotImplementedError
 
-    def discover(self, url, list_tests=False):
+    def discover(self, url, list_tests=DEFAULT):
         """
         Discover (possible) tests from an url.
 
@@ -261,6 +291,11 @@ class FilteredOut(object):
 
 def add_file_loader_options(parser):
     loader = parser.add_argument_group('loader options')
+    loader.add_argument('--loaders', nargs='*', help="Overrides the priority "
+                        "of the test loaders. You can specify either "
+                        "@loader_name or TEST_TYPE. By default it tries all "
+                        "available loaders according to priority set in "
+                        "settings->plugins.loaders.")
     loader.add_argument('--inner-runner', default=None,
                         metavar='EXECUTABLE',
                         help=('Path to an specific test runner that '
@@ -299,14 +334,28 @@ class FileLoader(TestLoader):
 
     name = 'file'
 
-    def __init__(self, args):
-        super(FileLoader, self).__init__(args)
-        self._inner_runner = self._process_inner_runner(args)
+    def __init__(self, args, extra_params):
+        super(FileLoader, self).__init__(args, extra_params)
+        loader_options = extra_params.get('loader_options')
+        if loader_options == '?':
+            raise LoaderError("File loader accept option to sets the "
+                              "inner-runner executable.")
+        self._inner_runner = self._process_inner_runner(args, loader_options)
+        self.test_type = extra_params.get('allowed_test_types')
 
-    def _process_inner_runner(self, args):
+    @staticmethod
+    def _process_inner_runner(args, extra_params):
+        """ Enables the inner_runner when asked for """
         runner = getattr(args, 'inner_runner', None)
-        chdir = getattr(args, 'inner_runner_chdir', None)
+        chdir = getattr(args, 'inner_runner_chdir', 'off')
         test_dir = getattr(args, 'inner_runner_testdir', None)
+        if extra_params:
+            if runner:
+                msg = ("Inner runner specified via booth: --loaders (%s) and "
+                       "--inner-runner (%s). Please use only one of them"
+                       % (extra_params, runner))
+                raise LoaderError(msg)
+            runner = extra_params
 
         if runner:
             inner_runner_and_args = shlex.split(runner)
@@ -320,26 +369,26 @@ class FileLoader(TestLoader):
                 raise LoaderError(msg)
             if chdir == 'test':
                 if not test_dir:
-                    msg = ('Option "--inner-runner-testdir" is mandatory when '
-                           '"--inner-runner-chdir=test" is used.')
+                    msg = ('Option "--inner-runner-chdir=test" requires '
+                           '"--inner-runner-testdir" to be set.')
                     raise LoaderError(msg)
             elif test_dir:
                 msg = ('Option "--inner-runner-testdir" requires '
                        '"--inner-runner-chdir=test".')
                 raise LoaderError(msg)
 
-            InnerRunner = collections.namedtuple('InnerRunner',
-                                                 ['runner', 'chdir',
-                                                  'test_dir'])
-            return InnerRunner(runner, chdir, test_dir)
+            cls_inner_runner = collections.namedtuple('InnerRunner',
+                                                      ['runner', 'chdir',
+                                                       'test_dir'])
+            return cls_inner_runner(runner, chdir, test_dir)
 
         elif chdir != "off":
-            msg = ('The use of "--inner-runner-chdir" requires '
-                   '"--inner-runner" to be specified.')
+            msg = ('Option "--inner-runner-chdir" requires '
+                   '"--inner-runner" to be set.')
             raise LoaderError(msg)
         elif test_dir:
-            msg = ('The use of "--inner-runner-test-dir" requires '
-                   '"--inner-runner" to be specified.')
+            msg = ('Option "--inner-runner-test-dir" requires '
+                   '"--inner-runner" to be set.')
             raise LoaderError(msg)
 
     @staticmethod
@@ -371,6 +420,39 @@ class FileLoader(TestLoader):
         """
         Discover (possible) tests from a directory.
 
+        Recursively walk in a directory and find tests params.
+        The tests are returned in alphabetic order.
+
+        Afterwards when "allowed_test_types" is supplied it verifies if all
+        found tests are of the allowed type. If not return None (even on
+        partial match).
+
+        :param url: the directory path to inspect.
+        :param list_tests: list corrupted/invalid tests too
+        :return: list of matching tests
+        """
+        tests = self._discover(url, list_tests)
+        if self.test_type:
+            mapping = self.get_type_label_mapping()
+            if self.test_type == 'INSTRUMENTED':
+                # Instrumented is parent of all of supported tests, we need to
+                # exclude the rest of the supported tests
+                filtered_clss = tuple(_ for _ in mapping.iterkeys()
+                                      if _ is not test.Test)
+                for tst in tests:
+                    if (not issubclass(tst[0], test.Test) or
+                            issubclass(tst[0], filtered_clss)):
+                        return None
+            else:
+                test_class = (key for key, value in mapping.iteritems()
+                              if value == self.test_type).next()
+                for tst in tests:
+                    if not issubclass(tst[0], test_class):
+                        return None
+        return tests
+
+    def _discover(self, url, list_tests=DEFAULT):
+        """
         Recursively walk in a directory and find tests params.
         The tests are returned in alphabetic order.
 
