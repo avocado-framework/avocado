@@ -333,6 +333,9 @@ def _create_from_yaml(path, cls_node=TreeNode):
                     ypath = value[1]
                     if not os.path.isabs(ypath):
                         ypath = os.path.join(os.path.dirname(path), ypath)
+                    if not os.path.exists(ypath):
+                        raise ValueError("File '%s' included from '%s' does not "
+                                         "exist." % (ypath, path))
                     node.merge(_create_from_yaml('/:' + ypath, cls_node))
                 elif value[0].code == YAML_USING:
                     if using:
