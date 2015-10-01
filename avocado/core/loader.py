@@ -25,6 +25,7 @@ import re
 import sys
 import shlex
 import fnmatch
+import ast
 
 from . import data_dir
 from . import output
@@ -223,6 +224,21 @@ class TestLoaderProxy(object):
         :return: an instance of :class:`avocado.core.test.Test`.
         """
         test_class, test_parameters = test_factory
+        if 'modulePath' in test_parameters:
+            test_path = test_parameters.pop('modulePath')
+        else:
+            test_path = None
+        if isinstance(test_class, str):
+            module_name = os.path.basename(test_path).split('.')[0]
+            test_module_dir = os.path.dirname(test_path)
+            f, p, d = imp.find_module(module_name, [test_module_dir])
+            test_module = imp.load_module(module_name, f, p, d)
+            for _, obj in inspect.getmembers(test_module):
+                if (inspect.isclass(obj) and
+                        inspect.getmodule(obj) == test_module):
+                    if issubclass(obj, test.Test):
+                        test_class = obj
+                        break
         test_instance = test_class(**test_parameters)
         return test_instance
 
@@ -519,27 +535,91 @@ class FileLoader(TestLoader):
                 test_methods.append((name, obj))
         return test_methods
 
+    def _find_avocado_tests(self, path):
+        """
+        Attempts to find Avocado instrumented tests from Python source files
+
+        :param path: path to a Python source code file
+        :type path: str
+        :returns: dictionary with class name and method names
+        :rtype: dict
+        """
+        # If only the Test class was imported from the avocado namespace
+        test_import = False
+        # The name used, in case of 'from avocado import Test as AvocadoTest'
+        test_import_name = None
+        # If the "avocado" module itself was imported
+        mod_import = False
+        # The name used, in case of 'import avocado as avocadolib'
+        mod_import_name = None
+        # The resulting test classes
+        result = {}
+
+        mod = ast.parse(open(path).read(), path)
+
+        for statement in mod.body:
+            # Looking for a 'from avocado import Test'
+            if (isinstance(statement, ast.ImportFrom) and
+                    statement.module == 'avocado'):
+                for name in statement.names:
+                    if name.name == 'Test':
+                        test_import = True
+                        if name.asname is not None:
+                            test_import_name = name.asname
+                        else:
+                            test_import_name = name.name
+                        break
+
+            # Looking for a 'import avocado'
+            if isinstance(statement, ast.Import):
+                for name in statement.names:
+                    if name.name == 'avocado':
+                        mod_import = True
+                        if name.asname is not None:
+                            mod_import_name = name.nasname
+                        else:
+                            mod_import_name = name.name
+
+            # Looking for a 'class FooTest(Test):'
+            if isinstance(statement, ast.ClassDef) and test_import:
+                base_ids = [base.id for base in statement.bases]
+                if test_import_name in base_ids:
+                    functions = [st.name for st in statement.body if
+                                 isinstance(st, ast.FunctionDef) and
+                                 st.name.startswith('test')]
+                    result[statement.name] = functions
+
+            # Looking for a 'class FooTest(avocado.Test):'
+            if isinstance(statement, ast.ClassDef) and mod_import:
+                for base in statement.bases:
+                    module = base.value.id
+                    klass = base.attr
+                    if module == mod_import_name and klass == 'Test':
+                        functions = [st.name for st in statement.body if
+                                     isinstance(st, ast.FunctionDef) and
+                                     st.name.startswith('test')]
+                        result[statement.name] = functions
+
+        return result
+
     def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
                             test_name=None):
         if test_name is None:
             test_name = test_path
         module_name = os.path.basename(test_path).split('.')[0]
-        test_module_dir = os.path.dirname(test_path)
-        sys.path.insert(0, test_module_dir)
-        stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         try:
-            sys.stdin = None
-            sys.stdout = StringIO.StringIO()
-            sys.stderr = StringIO.StringIO()
-            f, p, d = imp.find_module(module_name, [test_module_dir])
-            test_module = imp.load_module(module_name, f, p, d)
-            f.close()
-            for _, obj in inspect.getmembers(test_module):
-                if (inspect.isclass(obj) and
-                        inspect.getmodule(obj) == test_module):
-                    if issubclass(obj, test.Test):
-                        test_class = obj
-                        break
+            tests = self._find_avocado_tests(test_path)
+            if tests:
+                test_factories = []
+                for test_class, test_methods in tests.items():
+                    if isinstance(test_class, str):
+                        for test_method in test_methods:
+                            name = test_name + ':%s.%s' % (test_class, test_method)
+                            tst = (test_class, {'name': name,
+                                                'modulePath': test_path,
+                                                'methodName': test_method})
+                            test_factories.append(tst)
+                return test_factories
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
@@ -549,7 +629,7 @@ class FileLoader(TestLoader):
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
                     return make_broken(test.NotATest, test_path)
-            if test_class is not None:
+
                 # Module is importable and does have an avocado test class
                 # inside, let's proceed.
                 if self._is_unittests_like(test_class):
@@ -584,25 +664,7 @@ class FileLoader(TestLoader):
                 # execute it.
                 return self._make_test(test.SimpleTest, test_path)
             else:
-                # Module can't be imported and it's not an executable. Let's
-                # see if there's an avocado import into the test. Although
-                # not entirely reliable, we hope it'll be good enough.
-                with open(test_path, 'r') as test_file_obj:
-                    test_contents = test_file_obj.read()
-                    # Actual tests will have imports starting on column 0
-                    patterns = ['^from avocado.* import', '^import avocado.*']
-                    for pattern in patterns:
-                        if re.search(pattern, test_contents, re.MULTILINE):
-                            break
-                    else:
-                        return make_broken(test.NotATest, test_path)
-                    return make_broken(test.BuggyTest, test_path,
-                                       {'exception': details})
-        finally:
-            sys.stdin = stdin
-            sys.stdout = stdout
-            sys.stderr = stderr
-            sys.path.remove(test_module_dir)
+                return make_broken(test.NotATest, test_path)
 
     @staticmethod
     def _make_test(klass, uid, params=None):
