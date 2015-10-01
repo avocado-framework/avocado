@@ -49,6 +49,25 @@ if __name__ == "__main__":
 """
 
 
+AVOCADO_TEST_MULTIPLE_CLASSES = """#!/usr/bin/python
+import time
+
+from avocado import Test
+from avocado import main
+
+class First(Test):
+    def test(self):
+        pass
+
+class Second(Test):
+    def test(self):
+        pass
+
+if __name__ == "__main__":
+    main()
+"""
+
+
 AVOCADO_TEST_BUGGY = """#!/usr/bin/python
 from avocado import Test
 from avocado import main
@@ -86,14 +105,14 @@ class LoaderTestFunctional(unittest.TestCase):
         os.chdir(basedir)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    def _test(self, name, content, exp_str, mode=0664):
+    def _test(self, name, content, exp_str, mode=0664, count=1):
         test_script = script.TemporaryScript(name, content,
                                              'avocado_loader_test',
                                              mode=mode)
         test_script.save()
         cmd_line = ('./scripts/avocado list -V %s' % test_script.path)
         result = process.run(cmd_line)
-        self.assertIn('%s: 1' % exp_str, result.stdout)
+        self.assertIn('%s: %s' % (exp_str, count), result.stdout)
         test_script.remove()
 
     def test_simple(self):
@@ -125,6 +144,10 @@ class LoaderTestFunctional(unittest.TestCase):
                          "probably loaded/executed Python code and slept for "
                          "eleven seconds."))
         self.assertIn('INSTRUMENTED: 2', result.stdout)
+
+    def test_multiple_class(self):
+        self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
+                   'INSTRUMENTED', 0664, 2)
 
     def test_buggy_exec(self):
         self._test('buggytest.py', AVOCADO_TEST_BUGGY, 'SIMPLE', 0775)
