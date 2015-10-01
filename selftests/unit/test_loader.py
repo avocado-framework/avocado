@@ -89,11 +89,7 @@ class LoaderTest(unittest.TestCase):
         avocado_pass_test.save()
         test_class, test_parameters = (
             self.loader.discover(avocado_pass_test.path, True)[0])
-        self.assertTrue(str(test_class) == "<class 'passtest.PassTest'>",
-                        str(test_class))
-        self.assertTrue(issubclass(test_class, test.Test))
-        tc = test_class(**test_parameters)
-        tc.test()
+        self.assertTrue(test_class == 'PassTest', test_class)
         avocado_pass_test.remove()
 
     def test_load_not_a_test(self):
