@@ -258,6 +258,31 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertTrue(os.path.exists(link))
         self.assertTrue(os.path.islink(link))
 
+    def test_dry_run(self):
+        os.chdir(basedir)
+        cmd = ("./scripts/avocado run --sysinfo=off passtest failtest "
+               "errortest --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a "
+               "foo:bar:b foo:baz:c bar:bar:bar --dry-run")
+        result = json.loads(process.run(cmd).stdout)
+        debuglog = result['debuglog']
+        log = open(debuglog, 'r').read()
+        # Remove the result dir
+        shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
+        self.assertIn('/tmp', debuglog)   # Use tmp dir, not default location
+        self.assertEqual(result['job_id'], u'0' * 40)
+        # Check if all tests were skipped
+        self.assertEqual(result['skip'], 3)
+        for i in xrange(3):
+            test = result['tests'][i]
+            self.assertEqual(test['fail_reason'],
+                             u'Test skipped due to --dry-run')
+        # Check if all params are listed
+        # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
+        # from test.
+        for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
+                     "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
+            self.assertEqual(log.count(line), 3)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
