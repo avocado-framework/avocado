@@ -89,11 +89,23 @@ keep reading.
 Listing tests
 -------------
 
-The ``avocado`` command line tool also has a ``list`` command, that lists the
-known tests in a given path, be it a path to an individual test, or a path
-to a directory. If no arguments provided, Avocado will inspect the contents
-of the test location being used by Avocado (if you are in doubt about which
-one is that, you may use ``avocado config --datadir``). The output looks like::
+You have two ways of discovering the tests. You can simulate the execution by
+using the ``--dry-run`` argument::
+
+    avocado run /bin/true --dry-run
+    JOB ID     : 0000000000000000000000000000000000000000
+    JOB LOG    : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/job.log
+    TESTS      : 1
+     (1/1) /bin/true: SKIP
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
+    JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
+    TIME       : 0.00 s
+
+which supports all ``run`` arguments, simulates the run and even lists the test params.
+
+The other way is to use ``list`` subcommand that lists the discovered tests
+If no arguments provided, Avocado lists "default" tests per each plugin.
+The output might look like this::
 
     $ avocado list
     INSTRUMENTED /usr/share/avocado/tests/abort.py
