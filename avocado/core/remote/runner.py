@@ -77,6 +77,9 @@ class RemoteTestRunner(TestRunner):
                                              'multiplex_files') or []]
         if mux_files:
             extra_params.append(" --multiplex-files %s" % " ".join(mux_files))
+
+        if getattr(self.result.args, "dry_run", False):
+            extra_params.append(" --dry-run" % self.result.args.dry_run)
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
