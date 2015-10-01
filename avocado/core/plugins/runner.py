@@ -22,6 +22,7 @@ from . import plugin
 from .. import exit_codes
 from .. import output
 from .. import job
+from .. import loader
 from .. import multiplexer
 from ..settings import settings
 
@@ -114,6 +115,8 @@ class TestRunner(plugin.Plugin):
                                      'be checked, even if there are reference files '
                                      'present for the test. '
                                      'Current: on (output check enabled)'))
+
+        loader.add_file_loader_options(self.parser)
 
         if multiplexer.MULTIPLEX_CAPABLE:
             mux = self.parser.add_argument_group('multiplexer use on test execution')
