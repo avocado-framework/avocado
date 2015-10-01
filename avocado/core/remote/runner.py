@@ -71,12 +71,12 @@ class RemoteTestRunner(TestRunner):
         :param urls: a string with test URLs.
         :return: a dictionary with test results.
         """
-        extra_params = ""
+        extra_params = []
         mux_files = [os.path.join(self.remote_test_dir, mux_file)
                      for mux_file in getattr(self.result.args,
                                              'multiplex_files') or []]
         if mux_files:
-            extra_params += "--multiplex-files %s" % " ".join(mux_files)
+            extra_params.append(" --multiplex-files %s" % " ".join(mux_files))
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
@@ -90,7 +90,7 @@ class RemoteTestRunner(TestRunner):
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s %s' % (self.remote_test_dir,
                                             self.result.stream.job_unique_id,
-                                            urls_str, extra_params))
+                                            urls_str, " ".join(extra_params)))
         try:
             result = self.result.remote.run(avocado_cmd, ignore_status=True,
                                             timeout=timeout)
