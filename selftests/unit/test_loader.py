@@ -41,18 +41,6 @@ SIMPLE_TEST = """#!/bin/sh
 true
 """
 
-AVOCADO_BASE_CLASS_TEST = """from avocado import Test
-
-class MyBaseTest(Test):
-    pass
-"""
-
-AVOCADO_INHERITED_CLASS_TEST = """from base import MyBaseTest
-
-class MyInheritedTest(MyBaseTest):
-    pass
-"""
-
 AVOCADO_MULTIPLE_TESTS = """from avocado import Test
 
 class MultipleMethods(Test):
@@ -107,27 +95,6 @@ class LoaderTest(unittest.TestCase):
         tc = test_class(**test_parameters)
         tc.test()
         avocado_pass_test.remove()
-
-    def test_load_inherited(self):
-        avocado_base_test = script.TemporaryScript('base.py',
-                                                   AVOCADO_BASE_CLASS_TEST,
-                                                   'avocado_loader_unittest')
-        avocado_base_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_base_test.path, True)[0])
-        self.assertTrue(str(test_class) == "<class 'base.MyBaseTest'>",
-                        str(test_class))
-
-        avocado_inherited_test = script.TemporaryScript('inherited.py',
-                                                        AVOCADO_INHERITED_CLASS_TEST,
-                                                        'avocado_loader_unittest')
-        avocado_inherited_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_inherited_test.path, True)[0])
-        self.assertTrue(str(test_class) == "<class 'inherited.MyInheritedTest'>",
-                        str(test_class))
-        avocado_base_test.remove()
-        avocado_inherited_test.remove()
 
     def test_load_not_a_test(self):
         avocado_not_a_test = script.TemporaryScript('notatest.py',
