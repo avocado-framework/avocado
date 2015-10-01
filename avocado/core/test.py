@@ -611,6 +611,7 @@ class SimpleTest(Test):
 
 
 class InnerRunnerTest(SimpleTest):
+
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None,
                  inner_runner=None):
         self.assertIsNotNone(inner_runner, "Inner runner test requires "
