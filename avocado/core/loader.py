@@ -395,7 +395,6 @@ class FileLoader(TestLoader):
     def get_type_label_mapping():
         return {test.SimpleTest: 'SIMPLE',
                 test.InnerRunnerTest: 'INNER_RUNNER',
-                test.BuggyTest: 'BUGGY',
                 test.NotATest: 'NOT_A_TEST',
                 test.MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
@@ -408,7 +407,6 @@ class FileLoader(TestLoader):
         term_support = output.TermSupport()
         return {test.SimpleTest: term_support.healthy_str,
                 test.InnerRunnerTest: term_support.healthy_str,
-                test.BuggyTest: term_support.fail_header_str,
                 test.NotATest: term_support.warn_header_str,
                 test.MissingTest: term_support.fail_header_str,
                 BrokenSymlink: term_support.fail_header_str,

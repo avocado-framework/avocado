@@ -205,7 +205,6 @@ along with summary information::
 
     SIMPLE: 0
     INSTRUMENTED: 0
-    BUGGY: 0
     MISSING: 0
     NOT_A_TEST: 2
 

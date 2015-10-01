@@ -140,7 +140,6 @@ display files that were found by Avocado, but are not considered Avocado tests::
 
     SIMPLE: 0
     INSTRUMENTED: 0
-    BUGGY: 0
     MISSING: 0
     NOT_A_TEST: 2
 

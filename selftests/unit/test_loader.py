@@ -24,19 +24,6 @@ if __name__ == "__main__":
     main()
 """
 
-AVOCADO_TEST_BUGGY = """#!/usr/bin/python
-from avocado import Test
-from avocado import main
-import adsh
-
-class PassTest(Test):
-    def test(self):
-        pass
-
-if __name__ == "__main__":
-    main()
-"""
-
 NOT_A_TEST = """
 def hello():
     print('Hello World!')
@@ -141,31 +128,6 @@ class LoaderTest(unittest.TestCase):
                         str(test_class))
         avocado_base_test.remove()
         avocado_inherited_test.remove()
-
-    def test_load_buggy_exec(self):
-        avocado_buggy_test = script.TemporaryScript('buggytest.py',
-                                                    AVOCADO_TEST_BUGGY,
-                                                    'avocado_loader_unittest')
-        avocado_buggy_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_buggy_test.path, True)[0])
-        self.assertTrue(test_class == test.SimpleTest, test_class)
-        tc = test_class(**test_parameters)
-        self.assertRaises(exceptions.TestFail, tc.test)
-        avocado_buggy_test.remove()
-
-    def test_load_buggy_not_exec(self):
-        avocado_buggy_test = script.TemporaryScript('buggytest.py',
-                                                    AVOCADO_TEST_BUGGY,
-                                                    'avocado_loader_unittest',
-                                                    mode=0664)
-        avocado_buggy_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_buggy_test.path, True)[0])
-        self.assertTrue(test_class == test.BuggyTest, test_class)
-        tc = test_class(**test_parameters)
-        self.assertRaises(ImportError, tc.test)
-        avocado_buggy_test.remove()
 
     def test_load_not_a_test(self):
         avocado_not_a_test = script.TemporaryScript('notatest.py',

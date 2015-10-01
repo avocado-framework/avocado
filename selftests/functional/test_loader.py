@@ -68,19 +68,6 @@ if __name__ == "__main__":
 """
 
 
-AVOCADO_TEST_BUGGY = """#!/usr/bin/python
-from avocado import Test
-from avocado import main
-import adsh
-
-class PassTest(Test):
-    def test(self):
-        pass
-
-if __name__ == "__main__":
-    main()
-"""
-
 NOT_A_TEST = """
 def hello():
     print('Hello World!')
@@ -148,12 +135,6 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
                    'INSTRUMENTED', 0664, 2)
-
-    def test_buggy_exec(self):
-        self._test('buggytest.py', AVOCADO_TEST_BUGGY, 'SIMPLE', 0775)
-
-    def test_buggy_not_exec(self):
-        self._test('buggytest.py', AVOCADO_TEST_BUGGY, 'BUGGY')
 
     def test_load_not_a_test(self):
         self._test('notatest.py', NOT_A_TEST, 'SIMPLE', 0775)
