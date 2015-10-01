@@ -65,7 +65,10 @@ class TestLister(object):
 
         for cls, params in test_suite:
             id_label = ''
-            type_label = cls.__name__
+            if isinstance(cls, str):
+                type_label = cls
+            else:
+                type_label = cls.__name__
 
             if 'params' in params:
                 id_label = params['params']['id']
@@ -81,7 +84,14 @@ class TestLister(object):
                 stats[type_label.lower()] += 1
                 type_label = decorator(type_label)
             except KeyError:
-                if issubclass(cls, test.Test):
+                if isinstance(cls, str):
+                    cls = test.Test
+                    type_label = type_label_mapping[cls]
+                    decorator = decorator_mapping[cls]
+                    stats[type_label.lower()] += 1
+                    type_label = decorator(type_label)
+                    id_label = params['name']
+                elif issubclass(cls, test.Test):
                     cls = test.Test
                     type_label = type_label_mapping[cls]
                     decorator = decorator_mapping[cls]

@@ -661,20 +661,6 @@ class MissingTest(Test):
         raise exceptions.TestNotFoundError(e_msg)
 
 
-class BuggyTest(Test):
-
-    """
-    Used when the python module could not be imported.
-
-    That means it is possibly a buggy test, but it could also be a random
-    buggy python module.
-    """
-
-    def test(self):
-        # pylint: disable=E0702
-        raise self.params.get('exception')
-
-
 class NotATest(Test):
 
     """
