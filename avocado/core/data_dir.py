@@ -213,13 +213,29 @@ def create_job_logs_dir(logdir=None, unique_id=None):
     start_time = time.strftime('%Y-%m-%dT%H.%M')
     if logdir is None:
         logdir = get_logs_dir()
+    if not os.path.exists(logdir):
+        utils_path.init_dir(logdir)
     # Stand alone tests handling
     if unique_id is None:
         unique_id = job_id.create_unique_job_id()
 
-    debugbase = 'job-%s-%s' % (start_time, unique_id[:7])
-    debugdir = utils_path.init_dir(logdir, debugbase)
-    return debugdir
+    debugdir = os.path.join(logdir, 'job-%s-%s' % (start_time, unique_id[:7]))
+    for i in xrange(7, len(unique_id)):
+        try:
+            os.mkdir(debugdir)
+        except OSError:
+            debugdir += unique_id[i]
+            continue
+        return debugdir
+    debugdir += "."
+    for i in xrange(1000):
+        try:
+            os.mkdir(debugdir + str(i))
+        except OSError:
+            continue
+        return debugdir + str(i)
+    raise IOError("Unable to create unique logdir in 1000 iterations: %s"
+                  % (debugdir))
 
 
 class _TmpDirTracker(Borg):
