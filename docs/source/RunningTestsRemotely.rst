@@ -133,7 +133,7 @@ Running your test
 
 Once the virtual machine is properly setup, you may run your test. Example::
 
-    $ scripts/avocado run --vm-domain fedora20 --vm-hostname 192.168.122.30 --vm-username autotest --vm examples/tests/sleeptest.py examples/tests/failtest.py
+    $ scripts/avocado run --vm-domain fedora20 --vm-username autotest --vm examples/tests/sleeptest.py examples/tests/failtest.py
     VM DOMAIN : fedora20
     VM LOGIN  : autotest@192.168.122.30
     JOB ID    : 60ddd718e7d7bb679f258920ce3c39ce73cb9779
