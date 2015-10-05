@@ -10,13 +10,6 @@ branches:
 
 sudo: false
 
-addons:
-    apt:
-        packages:
-            - python-libvirt
-            - python-lzma
-            - libyaml-dev
-
 install:
     - pip install -r requirements-travis.txt
     - if [ $TRAVIS_PYTHON_VERSION == '2.6' ]; then pip install -r requirements-travis-python26.txt; fi
