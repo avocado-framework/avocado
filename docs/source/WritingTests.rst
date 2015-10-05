@@ -331,8 +331,8 @@ Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
 :func:`avocado.Test.get_data_path`, then uncompress the tarball through
 :func:`avocado.utils.archive.extract`, an API that will
-decompress the suite tarball, followed by ``build.make``, that will build the
-suite.
+decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
+the suite.
 
 The ``setUp`` method is the only place in avocado where you are allowed to
 call the ``skip`` method, given that, if a test started to be executed, by
