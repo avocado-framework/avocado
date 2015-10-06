@@ -122,7 +122,7 @@ class TestLoaderProxy(object):
         if "DEFAULT" in loaders:   # Replace DEFAULT with unused loaders
             idx = loaders.index("DEFAULT")
             loaders = (loaders[:idx] + [_ for _ in names if _ not in loaders] +
-                       loaders[idx+1:])
+                       loaders[idx + 1:])
             while "DEFAULT" in loaders:    # Remove duplicite DEFAULT entries
                 loaders.remove("DEFAULT")
 
