@@ -46,6 +46,28 @@ AVAILABLE = None    # Available tests (for listing purposes)
 ALL = True          # All tests (inicluding broken ones)
 
 
+#: Gets the tag value from a string. Used to tag a test class in various ways
+AVOCADO_DOCSTRING_TAG_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
+
+
+def get_docstring_tag(docstring):
+    if docstring is None:
+        return None
+    result = AVOCADO_DOCSTRING_TAG_RE.search(docstring)
+    if result is not None:
+        return result.groups()[0]
+
+
+def is_docstring_tag_enable(docstring):
+    result = get_docstring_tag(docstring)
+    return result == 'enable'
+
+
+def is_docstring_tag_disable(docstring):
+    result = get_docstring_tag(docstring)
+    return result == 'disable'
+
+
 class LoaderError(Exception):
 
     """ Loader exception """
@@ -122,7 +144,7 @@ class TestLoaderProxy(object):
         if "DEFAULT" in loaders:   # Replace DEFAULT with unused loaders
             idx = loaders.index("DEFAULT")
             loaders = (loaders[:idx] + [_ for _ in names if _ not in loaders] +
-                       loaders[idx+1:])
+                       loaders[idx + 1:])
             while "DEFAULT" in loaders:    # Remove duplicite DEFAULT entries
                 loaders.remove("DEFAULT")
 
@@ -561,6 +583,7 @@ class FileLoader(TestLoader):
             # Looking for a 'from avocado import Test'
             if (isinstance(statement, ast.ImportFrom) and
                     statement.module == 'avocado'):
+
                 for name in statement.names:
                     if name.name == 'Test':
                         test_import = True
@@ -571,7 +594,7 @@ class FileLoader(TestLoader):
                         break
 
             # Looking for a 'import avocado'
-            if isinstance(statement, ast.Import):
+            elif isinstance(statement, ast.Import):
                 for name in statement.names:
                     if name.name == 'avocado':
                         mod_import = True
@@ -580,25 +603,39 @@ class FileLoader(TestLoader):
                         else:
                             mod_import_name = name.name
 
-            # Looking for a 'class FooTest(Test):'
-            if isinstance(statement, ast.ClassDef) and test_import:
-                base_ids = [base.id for base in statement.bases]
-                if test_import_name in base_ids:
+            # Looking for a 'class Anything(anything):'
+            elif isinstance(statement, ast.ClassDef):
+                docstring = ast.get_docstring(statement)
+                # Looking for a class that has in the docstring either
+                # ":avocado: enable" or ":avocado: disable
+                if is_docstring_tag_disable(docstring):
+                    continue
+                elif is_docstring_tag_enable(docstring):
                     functions = [st.name for st in statement.body if
                                  isinstance(st, ast.FunctionDef) and
                                  st.name.startswith('test')]
                     result[statement.name] = functions
+                    continue
 
-            # Looking for a 'class FooTest(avocado.Test):'
-            if isinstance(statement, ast.ClassDef) and mod_import:
-                for base in statement.bases:
-                    module = base.value.id
-                    klass = base.attr
-                    if module == mod_import_name and klass == 'Test':
+                if test_import:
+                    base_ids = [base.id for base in statement.bases]
+                    # Looking for a 'class FooTest(Test):'
+                    if test_import_name in base_ids:
                         functions = [st.name for st in statement.body if
                                      isinstance(st, ast.FunctionDef) and
                                      st.name.startswith('test')]
                         result[statement.name] = functions
+
+                # Looking for a 'class FooTest(avocado.Test):'
+                elif mod_import:
+                    for base in statement.bases:
+                        module = base.value.id
+                        klass = base.attr
+                        if module == mod_import_name and klass == 'Test':
+                            functions = [st.name for st in statement.body if
+                                         isinstance(st, ast.FunctionDef) and
+                                         st.name.startswith('test')]
+                            result[statement.name] = functions
 
         return result
 
