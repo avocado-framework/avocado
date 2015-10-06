@@ -99,7 +99,11 @@ class TestLoaderProxy(object):
             types = [mapping[_[0]]
                      for _ in plugin.get_decorator_mapping().iteritems()
                      if _[1].__func__ is healthy_func]
-            return [name + '.' + _ for _ in types]
+            if len(types) > 1:
+                # Return types only when multiple ones are supported
+                return [name + '.' + _ for _ in types]
+            else:
+                return []
 
         def _str_loaders():
             """
@@ -147,7 +151,11 @@ class TestLoaderProxy(object):
             if len(loaders[i]) == 2:
                 extra_params['loader_options'] = loaders[i][1]
             plugin = self.registered_plugins[supported_loaders.index(name)]
-            self._initialized_plugins.append(plugin(args, extra_params))
+            try:
+                self._initialized_plugins.append(plugin(args, **extra_params))
+            except TypeError, details:
+                raise LoaderError("Unable to initialize plugin '%s' with "
+                                  "extra_params=%s" % (name, extra_params))
 
     def get_extra_listing(self):
         for loader_plugin in self._initialized_plugins:
@@ -254,7 +262,7 @@ class TestLoader(object):
     Base for test loader classes
     """
 
-    def __init__(self, args, extra_params):  # pylint: disable=W0613
+    def __init__(self, args):  # pylint: disable=W0613
         self.args = args
 
     def get_extra_listing(self):
@@ -357,9 +365,9 @@ class FileLoader(TestLoader):
 
     name = 'file'
 
-    def __init__(self, args, extra_params):
-        super(FileLoader, self).__init__(args, extra_params)
-        self.test_type = extra_params.get('allowed_test_types')
+    def __init__(self, args, allowed_test_types=None):
+        super(FileLoader, self).__init__(args)
+        self.test_type = allowed_test_types
 
     @staticmethod
     def get_type_label_mapping():
@@ -679,9 +687,8 @@ class ExternalLoader(TestLoader):
     """
     name = 'external'
 
-    def __init__(self, args, extra_params):
-        super(ExternalLoader, self).__init__(args, extra_params)
-        loader_options = extra_params.get('loader_options')
+    def __init__(self, args, loader_options=None):
+        super(ExternalLoader, self).__init__(args)
         if loader_options == '?':
             raise LoaderError("File loader accepts an option to set the "
                               "external-runner executable.")
