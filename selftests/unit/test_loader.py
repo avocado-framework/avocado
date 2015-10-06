@@ -1,9 +1,14 @@
 import os
+import re
 import sys
-import unittest
 import multiprocessing
 import tempfile
 import shutil
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado.core import test
 from avocado.core import exceptions
@@ -153,6 +158,33 @@ class LoaderTest(unittest.TestCase):
         self.assertEqual(len(suite), 2)
         avocado_multiple_tests.remove()
 
+
+class DocstringTagTests(unittest.TestCase):
+
+    def test_longline(self):
+        docstring = ("This is a very long docstring in a single line. "
+                     "Since we have nothing useful to put in here let's just "
+                     "mention avocado: it's awesome, but that was not a tag. "
+                     "a tag would be something line this: :avocado: enable")
+        self.assertIsNotNone(loader.get_docstring_tag(docstring))
+
+    def test_newlines(self):
+        docstring = ("\n\n\nThis is a docstring with many new\n\nlines "
+                     "followed by an avocado tag\n"
+                     "\n\n:avocado: enable\n\n")
+        self.assertIsNotNone(loader.get_docstring_tag(docstring))
+
+    def test_enabled(self):
+        self.assertTrue(loader.is_docstring_tag_enable(":avocado: enable"))
+        self.assertTrue(loader.is_docstring_tag_enable(":avocado:\tenable"))
+        self.assertFalse(loader.is_docstring_tag_enable(":AVOCADO: ENABLE"))
+        self.assertFalse(loader.is_docstring_tag_enable(":avocado: enabled"))
+
+    def test_disabled(self):
+        self.assertTrue(loader.is_docstring_tag_disable(":avocado: disable"))
+        self.assertTrue(loader.is_docstring_tag_disable(":avocado:\tdisable"))
+        self.assertFalse(loader.is_docstring_tag_disable(":AVOCADO: DISABLE"))
+        self.assertFalse(loader.is_docstring_tag_disable(":avocado: disabled"))
 
 if __name__ == '__main__':
     unittest.main()

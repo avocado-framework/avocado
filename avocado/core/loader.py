@@ -23,6 +23,7 @@ import fnmatch
 import imp
 import inspect
 import os
+import re
 import shlex
 import sys
 
@@ -37,6 +38,28 @@ from .settings import settings
 DEFAULT = False  # Show default tests (for execution)
 AVAILABLE = None  # Available tests (for listing purposes)
 ALL = True  # All tests (inicluding broken ones)
+
+
+#: Gets the tag value from a string. Used to tag a test class in various ways
+AVOCADO_DOCSTRING_TAG_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
+
+
+def get_docstring_tag(docstring):
+    if docstring is None:
+        return None
+    result = AVOCADO_DOCSTRING_TAG_RE.search(docstring)
+    if result is not None:
+        return result.groups()[0]
+
+
+def is_docstring_tag_enable(docstring):
+    result = get_docstring_tag(docstring)
+    return result == 'enable'
+
+
+def is_docstring_tag_disable(docstring):
+    result = get_docstring_tag(docstring)
+    return result == 'disable'
 
 
 class LoaderError(Exception):
