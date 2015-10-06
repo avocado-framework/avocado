@@ -111,12 +111,12 @@ class TestLoaderProxy(object):
         # Add (default) file loader if not already registered
         if FileLoader not in self.registered_plugins:
             self.register_plugin(FileLoader)
-        if InnerRunner not in self.registered_plugins:
-            self.register_plugin(InnerRunner)
-        # Register inner runner when --inner-runner is used
-        if getattr(args, "inner_runner", None):
-            self.register_plugin(InnerRunner)
-            args.loaders = ["inner_runner:%s" % args.inner_runner]
+        if ExternalLoader not in self.registered_plugins:
+            self.register_plugin(ExternalLoader)
+        # Register external runner when --external-runner is used
+        if getattr(args, "external_runner", None):
+            self.register_plugin(ExternalLoader)
+            args.loaders = ["external:%s" % args.external_runner]
         supported_loaders = [_.name for _ in self.registered_plugins]
         supported_types = []
         for plugin in self.registered_plugins:
@@ -317,35 +317,35 @@ def add_loader_options(parser):
                         "@loader_name or TEST_TYPE. By default it tries all "
                         "available loaders according to priority set in "
                         "settings->plugins.loaders.")
-    loader.add_argument('--inner-runner', default=None,
+    loader.add_argument('--external-runner', default=None,
                         metavar='EXECUTABLE',
                         help=('Path to an specific test runner that '
                               'allows the use of its own tests. This '
                               'should be used for running tests that '
                               'do not conform to Avocado\' SIMPLE test'
                               'interface and can not run standalone. Note: '
-                              'the use of --inner-runner overwrites the --'
-                              'loaders to "inner_runner"'))
+                              'the use of --external-runner overwrites the --'
+                              'loaders to "external_runner"'))
 
     chdir_help = ('Change directory before executing tests. This option '
                   'may be necessary because of requirements and/or '
-                  'limitations of the inner test runner. If the inner '
+                  'limitations of the external test runner. If the external '
                   'runner requires to be run from its own base directory,'
-                  'use "runner" here. If the inner runner runs tests based'
+                  'use "runner" here. If the external runner runs tests based'
                   ' on files and requires to be run from the directory '
                   'where those files are located, use "test" here and '
                   'specify the test directory with the option '
-                  '"--inner-runner-testdir". Defaults to "%(default)s"')
-    loader.add_argument('--inner-runner-chdir', default='off',
+                  '"--external-runner-testdir". Defaults to "%(default)s"')
+    loader.add_argument('--external-runner-chdir', default='off',
                         choices=('runner', 'test', 'off'),
                         help=chdir_help)
 
-    loader.add_argument('--inner-runner-testdir', metavar='DIRECTORY',
+    loader.add_argument('--external-runner-testdir', metavar='DIRECTORY',
                         default=None,
-                        help=('Where test files understood by the inner'
+                        help=('Where test files understood by the external'
                               ' test runner are located in the '
                               'filesystem. Obviously this assumes and '
-                              'only applies to inner test runners that '
+                              'only applies to external test runners that '
                               'run tests from files'))
 
 
@@ -672,79 +672,80 @@ class FileLoader(TestLoader):
                 return make_broken(test.MissingTest, test_name)
 
 
-class InnerRunner(TestLoader):
+class ExternalLoader(TestLoader):
 
     """
-    Inner-runner loader class
+    External-runner loader class
     """
-    name = 'inner_runner'
+    name = 'external'
 
     def __init__(self, args, extra_params):
-        super(InnerRunner, self).__init__(args, extra_params)
+        super(ExternalLoader, self).__init__(args, extra_params)
         loader_options = extra_params.get('loader_options')
         if loader_options == '?':
             raise LoaderError("File loader accepts an option to set the "
-                              "inner-runner executable.")
-        self._inner_runner = self._process_inner_runner(args, loader_options)
+                              "external-runner executable.")
+        self._external_runner = self._process_external_runner(
+            args, loader_options)
 
     @staticmethod
-    def _process_inner_runner(args, runner):
-        """ Enables the inner_runner when asked for """
-        chdir = getattr(args, 'inner_runner_chdir', 'off')
-        test_dir = getattr(args, 'inner_runner_testdir', None)
+    def _process_external_runner(args, runner):
+        """ Enables the external_runner when asked for """
+        chdir = getattr(args, 'external_runner_chdir', 'off')
+        test_dir = getattr(args, 'external_runner_testdir', None)
 
         if runner:
-            inner_runner_and_args = shlex.split(runner)
-            if len(inner_runner_and_args) > 1:
-                executable = inner_runner_and_args[0]
+            external_runner_and_args = shlex.split(runner)
+            if len(external_runner_and_args) > 1:
+                executable = external_runner_and_args[0]
             else:
                 executable = runner
             if not os.path.exists(executable):
-                msg = ('Could not find the inner runner executable "%s"'
+                msg = ('Could not find the external runner executable "%s"'
                        % executable)
                 raise LoaderError(msg)
             if chdir == 'test':
                 if not test_dir:
-                    msg = ('Option "--inner-runner-chdir=test" requires '
-                           '"--inner-runner-testdir" to be set.')
+                    msg = ('Option "--external-runner-chdir=test" requires '
+                           '"--external-runner-testdir" to be set.')
                     raise LoaderError(msg)
             elif test_dir:
-                msg = ('Option "--inner-runner-testdir" requires '
-                       '"--inner-runner-chdir=test".')
+                msg = ('Option "--external-runner-testdir" requires '
+                       '"--external-runner-chdir=test".')
                 raise LoaderError(msg)
 
-            cls_inner_runner = collections.namedtuple('InnerRunner',
-                                                      ['runner', 'chdir',
-                                                       'test_dir'])
-            return cls_inner_runner(runner, chdir, test_dir)
+            cls_external_runner = collections.namedtuple('ExternalLoader',
+                                                         ['runner', 'chdir',
+                                                          'test_dir'])
+            return cls_external_runner(runner, chdir, test_dir)
         elif chdir != "off":
-            msg = ('Option "--inner-runner-chdir" requires '
-                   '"--inner-runner" to be set.')
+            msg = ('Option "--external-runner-chdir" requires '
+                   '"--external-runner" to be set.')
             raise LoaderError(msg)
         elif test_dir:
-            msg = ('Option "--inner-runner-testdir" requires '
-                   '"--inner-runner" to be set.')
+            msg = ('Option "--external-runner-testdir" requires '
+                   '"--external-runner" to be set.')
             raise LoaderError(msg)
-        return None     # Skip inner runner
+        return None  # Skip external runner
 
     def discover(self, url, list_tests=DEFAULT):
         """
-        :param url: arguments passed to the inner_runner
+        :param url: arguments passed to the external_runner
         :param list_tests: list corrupted/invalid tests too
         :return: list of matching tests
         """
-        if not self._inner_runner:
+        if not self._external_runner:
             return None
-        return [(test.InnerRunnerTest, {'name': url, 'params': {'id': url},
-                                        'inner_runner': self._inner_runner})]
+        return [(test.ExternalRunnerTest, {'name': url, 'params': {'id': url},
+                                           'external_runner': self._external_runner})]
 
     @staticmethod
     def get_type_label_mapping():
-        return {test.InnerRunnerTest: 'INNER_RUNNER'}
+        return {test.ExternalRunnerTest: 'EXTERNAL'}
 
     @staticmethod
     def get_decorator_mapping():
-        return {test.InnerRunnerTest: output.term_support.healthy_str}
+        return {test.ExternalRunnerTest: output.term_support.healthy_str}
 
 
 loader = TestLoaderProxy()

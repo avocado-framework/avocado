@@ -408,24 +408,24 @@ class RunnerSimpleTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class InnerRunnerTest(unittest.TestCase):
+class ExternalRunnerTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'pass',
             PASS_SHELL_CONTENTS,
-            'avocado_innerrunner_functional')
+            'avocado_externalrunner_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript(
             'fail',
             FAIL_SHELL_CONTENTS,
-            'avocado_innerrunner_functional')
+            'avocado_externalrunner_functional')
         self.fail_script.save()
 
-    def test_innerrunner_pass(self):
+    def test_externalrunner_pass(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --inner-runner=/bin/sh %s'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --external-runner=/bin/sh %s'
         cmd_line %= (self.tmpdir, self.pass_script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
@@ -433,9 +433,9 @@ class InnerRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    def test_innerrunner_fail(self):
+    def test_externalrunner_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --inner-runner=/bin/sh %s'
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --external-runner=/bin/sh %s'
         cmd_line %= (self.tmpdir, self.fail_script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
@@ -443,14 +443,14 @@ class InnerRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    def test_innerrunner_chdir_no_testdir(self):
+    def test_externalrunner_chdir_no_testdir(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --inner-runner=/bin/sh '
-                    '--inner-runner-chdir=test %s')
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --external-runner=/bin/sh '
+                    '--external-runner-chdir=test %s')
         cmd_line %= (self.tmpdir, self.pass_script.path)
         result = process.run(cmd_line, ignore_status=True)
-        expected_output = ('Option "--inner-runner-chdir=test" requires '
-                           '"--inner-runner-testdir" to be set')
+        expected_output = ('Option "--external-runner-chdir=test" requires '
+                           '"--external-runner-testdir" to be set')
         self.assertIn(expected_output, result.stderr)
         expected_rc = 2
         self.assertEqual(result.exit_status, expected_rc,
