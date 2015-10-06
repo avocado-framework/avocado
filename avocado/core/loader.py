@@ -17,33 +17,26 @@
 Test loader module.
 """
 
+import ast
 import collections
+import fnmatch
 import imp
 import inspect
 import os
-import re
-import sys
 import shlex
-import fnmatch
-import ast
+import sys
 
 from . import data_dir
 from . import output
 from . import test
-from . import exceptions
-from .settings import settings
 from ..utils import path
 from ..utils import stacktrace
-
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
+from .settings import settings
 
 
-DEFAULT = False     # Show default tests (for execution)
-AVAILABLE = None    # Available tests (for listing purposes)
-ALL = True          # All tests (inicluding broken ones)
+DEFAULT = False  # Show default tests (for execution)
+AVAILABLE = None  # Available tests (for listing purposes)
+ALL = True  # All tests (inicluding broken ones)
 
 
 class LoaderError(Exception):
@@ -134,12 +127,12 @@ class TestLoaderProxy(object):
             loaders = settings.get_value("plugins", "loaders", list, [])
         if '?' in loaders:
             raise LoaderError("Available loader plugins: %s" % _str_loaders())
-        if "@DEFAULT" in loaders:   # Replace @DEFAULT with unused loaders
+        if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
                                         if plugin not in loaders] +
-                       loaders[idx+1:])
-            while "@DEFAULT" in loaders:    # Remove duplicite @DEFAULT entries
+                       loaders[idx + 1:])
+            while "@DEFAULT" in loaders:  # Remove duplicite @DEFAULT entries
                 loaders.remove("@DEFAULT")
 
         loaders = [_.split(':', 1) for _ in loaders]
@@ -213,7 +206,7 @@ class TestLoaderProxy(object):
                             tests.extend(_test)
                             handled = True
                             if not list_tests:
-                                break    # Don't process other plugins
+                                break  # Don't process other plugins
                     except Exception, details:
                         handle_exception(loader_plugin, details)
                 if not handled:
@@ -261,7 +254,7 @@ class TestLoader(object):
     Base for test loader classes
     """
 
-    def __init__(self, args, extra_params):    # pylint: disable=W0613
+    def __init__(self, args, extra_params):  # pylint: disable=W0613
         self.args = args
 
     def get_extra_listing(self):
@@ -432,7 +425,7 @@ class FileLoader(TestLoader):
         """
         if url is None:
             if list_tests is DEFAULT:
-                return []   # Return empty set when not listing details
+                return []  # Return empty set when not listing details
             else:
                 url = data_dir.get_test_dir()
         ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
@@ -442,7 +435,7 @@ class FileLoader(TestLoader):
         subtests_filter = None
         if ':' in url:
             _url, _subtests_filter = url.split(':', 1)
-            if os.path.exists(_url):    # otherwise it's ':' in the file name
+            if os.path.exists(_url):  # otherwise it's ':' in the file name
                 url = _url
                 subtests_filter = _subtests_filter
 
@@ -459,9 +452,9 @@ class FileLoader(TestLoader):
             """ Always return None """
             return None
 
-        if list_tests:      # ALL => include everything
+        if list_tests:  # ALL => include everything
             onerror = add_test_from_exception
-        else:               # DEFAULT, AVAILABLE => skip missing tests
+        else:  # DEFAULT, AVAILABLE => skip missing tests
             onerror = skip_non_test
 
         for dirpath, _, filenames in os.walk(url, onerror=onerror):
@@ -567,7 +560,8 @@ class FileLoader(TestLoader):
                 for test_class, test_methods in tests.items():
                     if isinstance(test_class, str):
                         for test_method in test_methods:
-                            name = test_name + ':%s.%s' % (test_class, test_method)
+                            name = test_name + \
+                                ':%s.%s' % (test_class, test_method)
                             tst = (test_class, {'name': name,
                                                 'modulePath': test_path,
                                                 'methodName': test_method})
@@ -611,7 +605,7 @@ class FileLoader(TestLoader):
         # will not crash.
         except BaseException, details:  # Ugly python files can raise any exc
             if isinstance(details, KeyboardInterrupt):
-                raise   # Don't ignore ctrl+c
+                raise  # Don't ignore ctrl+c
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
@@ -643,9 +637,9 @@ class FileLoader(TestLoader):
             """ Always return empty list """
             return []
 
-        if list_non_tests:   # return broken test with params
+        if list_non_tests:  # return broken test with params
             make_broken = self._make_test
-        else:               # return empty set instead
+        else:  # return empty set instead
             make_broken = ignore_broken
         test_name = test_path
         if os.path.exists(test_path):

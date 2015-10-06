@@ -245,7 +245,8 @@ class RunnerOperationTest(unittest.TestCase):
         Tests that the `latest` link to the latest job results is created early
         """
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/passtest.py' % self.tmpdir)
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'examples/tests/passtest.py' % self.tmpdir)
         avocado_process = process.SubProcess(cmd_line)
         avocado_process.start()
         link = os.path.join(self.tmpdir, 'latest')
@@ -304,7 +305,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:  SKIP', result.stdout)
+        self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
+                      '  SKIP', result.stdout)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -319,15 +321,16 @@ class RunnerSimpleTest(unittest.TestCase):
             PASS_SCRIPT_CONTENTS,
             'avocado_simpletest_functional')
         self.pass_script.save()
-        self.fail_script = script.TemporaryScript(
-            'avocado_fail.sh',
-            FAIL_SCRIPT_CONTENTS,
-            'avocado_simpletest_functional')
+        self.fail_script = script.TemporaryScript('avocado_fail.sh',
+                                                  FAIL_SCRIPT_CONTENTS,
+                                                  'avocado_simpletest_'
+                                                  'functional')
         self.fail_script.save()
 
     def test_simpletest_pass(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, self.pass_script.path)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
+                    ' %s' % (self.tmpdir, self.pass_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 0
         self.assertEqual(result.exit_status, expected_rc,
@@ -336,7 +339,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_simpletest_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, self.fail_script.path)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
+                    ' %s' % (self.tmpdir, self.fail_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = 1
         self.assertEqual(result.exit_status, expected_rc,
@@ -353,7 +357,8 @@ class RunnerSimpleTest(unittest.TestCase):
         """
         os.chdir(basedir)
         one_hundred = 'failtest ' * 100
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, one_hundred)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
+                    ' %s' % (self.tmpdir, one_hundred))
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
@@ -369,7 +374,8 @@ class RunnerSimpleTest(unittest.TestCase):
         """
         os.chdir(basedir)
         sleep_fail_sleep = 'sleeptest ' + 'failtest ' * 100 + 'sleeptest'
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, sleep_fail_sleep)
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (
+            self.tmpdir, sleep_fail_sleep)
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         actual_time = time.time() - initial_time
@@ -602,7 +608,8 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
                       e_nnotfound, e_nfailures, e_nskip):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --xunit - %s' % (self.tmpdir, testname)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
+                    ' --xunit - %s' % (self.tmpdir, testname))
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
         self.assertEqual(result.exit_status, e_rc,

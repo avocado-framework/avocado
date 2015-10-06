@@ -10,8 +10,8 @@
 #
 # This code was inspired in the autotest project,
 # client/shared/test.py
-# Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
-import re
+# Authors: Martin J Bligh <mbligh@google.com>,
+#          Andy Whitcroft <apw@shadowen.org>
 
 """
 Contains the base test implementation, used as a base for the actual
@@ -22,25 +22,27 @@ import inspect
 import logging
 import os
 import pipes
+import re
 import shutil
 import sys
 import time
+
+from . import data_dir
+from . import exceptions
+from . import multiplexer
+from . import sysinfo
+from ..utils import data_structures
+from ..utils import genio
+from ..utils import path as utils_path
+from ..utils import process
+from ..utils import stacktrace
+from .version import VERSION
+
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
     import unittest
-
-from . import data_dir
-from . import sysinfo
-from . import exceptions
-from . import multiplexer
-from .version import VERSION
-from ..utils import genio
-from ..utils import path as utils_path
-from ..utils import process
-from ..utils import stacktrace
-from ..utils import data_structures
 
 
 class Test(unittest.TestCase):
@@ -358,7 +360,7 @@ class Test(unittest.TestCase):
         except exceptions.TestNAError, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestNAError(details)
-        except:     # Old-style exceptions are not inherited from Exception()
+        except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
@@ -371,7 +373,7 @@ class Test(unittest.TestCase):
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
-        except:     # Old-style exceptions are not inherited from Exception()
+        except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
             if not isinstance(details, Exception):  # Avoid passing nasty exc
@@ -387,7 +389,7 @@ class Test(unittest.TestCase):
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
-            except:     # avoid old-style exception failures
+            except:  # avoid old-style exception failures
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 details = sys.exc_info()[1]
                 cleanup_exception = exceptions.TestSetupFail(details)
@@ -410,12 +412,14 @@ class Test(unittest.TestCase):
                     try:
                         self.check_reference_stdout()
                     except Exception, details:
-                        stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                        stacktrace.log_exc_info(sys.exc_info(),
+                                                logger='avocado.test')
                         stdout_check_exception = details
                     try:
                         self.check_reference_stderr()
                     except Exception, details:
-                        stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                        stacktrace.log_exc_info(sys.exc_info(),
+                                                logger='avocado.test')
                         stderr_check_exception = details
             elif not job_standalone:
                 if output_check_record in ['all', 'stdout']:
