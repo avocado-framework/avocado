@@ -449,13 +449,10 @@ class FileLoader(TestLoader):
         if self.test_type:
             mapping = self.get_type_label_mapping()
             if self.test_type == 'INSTRUMENTED':
-                # Instrumented is parent of all of supported tests, we need to
-                # exclude the rest of the supported tests
-                filtered_clss = tuple(_ for _ in mapping.iterkeys()
-                                      if _ is not test.Test)
+                # Instrumented tests are defined as string and loaded at the
+                # execution time.
                 for tst in tests:
-                    if (not issubclass(tst[0], test.Test) or
-                            issubclass(tst[0], filtered_clss)):
+                    if not isinstance(tst[0], str):
                         return None
             else:
                 if self.test_type == 'SIMPLE':
@@ -465,7 +462,8 @@ class FileLoader(TestLoader):
                 test_class = (key for key, value in mapping.iteritems()
                               if value == self.test_type).next()
                 for tst in tests:
-                    if not issubclass(tst[0], test_class) or tst[0] == exclude:
+                    if (isinstance(tst[0], str) or
+                            not issubclass(tst[0], test_class)):
                         return None
         return tests
 
