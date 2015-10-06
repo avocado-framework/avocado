@@ -83,20 +83,11 @@ class TestLoaderProxy(object):
         self._initialized_plugins = []
         self.registered_plugins = []
         self.url_plugin_mapping = {}
-        self._test_types = {}
 
     def register_plugin(self, plugin):
         try:
             if issubclass(plugin, TestLoader):
                 self.registered_plugins.append(plugin)
-                for test_type in plugin.get_type_label_mapping().itervalues():
-                    if (test_type in self._test_types and
-                            self._test_types[test_type] != plugin):
-                        msg = ("Multiple plugins using the same test_type not "
-                               "yet supported (%s, %s)"
-                               % (test_type, self._test_types))
-                        raise NotImplementedError(msg)
-                    self._test_types[test_type] = plugin
             else:
                 raise ValueError
         except ValueError:
@@ -104,44 +95,59 @@ class TestLoaderProxy(object):
                                       "TestLoader" % plugin)
 
     def load_plugins(self, args):
-        def _err_list_loaders():
-            return ("Loaders: %s\nTypes: %s" % (names,
-                                                self._test_types.keys()))
+        def _good_test_types(plugin):
+            """
+            List all supported test types (excluding incorrect ones)
+            """
+            name = plugin.name
+            mapping = plugin.get_type_label_mapping()
+            # Using im_func to avoid problem with different term_supp instances
+            healthy_func = getattr(output.term_support.healthy_str, 'im_func')
+            types = [mapping[_[0]]
+                     for _ in plugin.get_decorator_mapping().iteritems()
+                     if _[1].im_func is healthy_func]
+            return [name + '.' + _ for _ in types]
+
+        def _str_loaders():
+            """
+            :return: string of sorted loaders and types
+            """
+            return ", ".join(sorted(supported_types + supported_loaders))
+
         self._initialized_plugins = []
         # Add (default) file loader if not already registered
         if FileLoader not in self.registered_plugins:
             self.register_plugin(FileLoader)
+        supported_loaders = [_.name for _ in self.registered_plugins]
+        supported_types = []
+        for plugin in self.registered_plugins:
+            supported_types.extend(_good_test_types(plugin))
         # Load plugin by the priority from settings
-        names = ["@" + _.name for _ in self.registered_plugins]
         loaders = getattr(args, 'loaders', None)
         if not loaders:
             loaders = settings.get_value("plugins", "loaders", list, [])
         if '?' in loaders:
-            raise LoaderError("Loaders: %s\nTypes: %s"
-                              % (names, self._test_types.keys()))
-        if "DEFAULT" in loaders:   # Replace DEFAULT with unused loaders
-            idx = loaders.index("DEFAULT")
-            loaders = (loaders[:idx] + [_ for _ in names if _ not in loaders] +
+            raise LoaderError("Available loader plugins: %s" % _str_loaders())
+        if "@DEFAULT" in loaders:   # Replace @DEFAULT with unused loaders
+            idx = loaders.index("@DEFAULT")
+            loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
+                                        if plugin not in loaders] +
                        loaders[idx+1:])
-            while "DEFAULT" in loaders:    # Remove duplicite DEFAULT entries
-                loaders.remove("DEFAULT")
+            while "@DEFAULT" in loaders:    # Remove duplicite @DEFAULT entries
+                loaders.remove("@DEFAULT")
 
         loaders = [_.split(':', 1) for _ in loaders]
         priority = [_[0] for _ in loaders]
         for i, name in enumerate(priority):
             extra_params = {}
-            if name in names:
-                plugin = self.registered_plugins[names.index(name)]
-            elif name in self._test_types:
-                plugin = self._test_types[name]
-                extra_params['allowed_test_types'] = name
-            else:
-                raise InvalidLoaderPlugin("Loader '%s' not available:\n"
-                                          "Loaders: %s\nTypes: %s"
-                                          % (name, names,
-                                             self._test_types.keys()))
+            if name in supported_types:
+                name, extra_params['allowed_test_types'] = name.split('.', 1)
+            elif name not in supported_loaders:
+                raise InvalidLoaderPlugin("Loader '%s' not available (%s)"
+                                          % (name, _str_loaders()))
             if len(loaders[i]) == 2:
                 extra_params['loader_options'] = loaders[i][1]
+            plugin = self.registered_plugins[supported_loaders.index(name)]
             self._initialized_plugins.append(plugin(args, extra_params))
 
     def get_extra_listing(self):
