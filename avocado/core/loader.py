@@ -420,15 +420,14 @@ class FileLoader(TestLoader):
 
     @staticmethod
     def get_decorator_mapping():
-        term_support = output.TermSupport()
-        return {test.SimpleTest: term_support.healthy_str,
-                test.InnerRunnerTest: term_support.healthy_str,
-                test.NotATest: term_support.warn_header_str,
-                test.MissingTest: term_support.fail_header_str,
-                BrokenSymlink: term_support.fail_header_str,
-                AccessDeniedPath: term_support.fail_header_str,
-                test.Test: term_support.healthy_str,
-                FilteredOut: term_support.warn_header_str}
+        return {test.SimpleTest: output.term_support.healthy_str,
+                test.InnerRunnerTest: output.term_support.healthy_str,
+                test.NotATest: output.term_support.warn_header_str,
+                test.MissingTest: output.term_support.fail_header_str,
+                BrokenSymlink: output.term_support.fail_header_str,
+                AccessDeniedPath: output.term_support.fail_header_str,
+                test.Test: output.term_support.healthy_str,
+                FilteredOut: output.term_support.warn_header_str}
 
     def discover(self, url, list_tests=DEFAULT):
         """
