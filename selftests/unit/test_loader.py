@@ -29,6 +29,22 @@ if __name__ == "__main__":
     main()
 """
 
+AVOCADO_TEST_OK_DISABLED = """#!/usr/bin/python
+from avocado import Test
+from avocado import main
+
+class PassTest(Test):
+    '''
+    Instrumented test, but disabled using an Avocado docstring tag
+    :avocado: disable
+    '''
+    def test(self):
+        pass
+
+if __name__ == "__main__":
+    main()
+"""
+
 NOT_A_TEST = """
 def hello():
     print('Hello World!')
@@ -54,6 +70,22 @@ class MultipleMethods(Test):
     def testTwo(self):
         pass
     def foo(self):
+        pass
+"""
+
+
+AVOCADO_FOREIGN_TAGGED_ENABLE = """from foreignlib import Base
+
+class First(Base):
+    '''
+    First actual test based on library base class
+
+    This Base class happens to, fictionally, inherit from avocado.Test. Because
+    Avocado can't tell that, a tag is necessary to signal that.
+
+    :avocado: enable
+    '''
+    def test(self):
         pass
 """
 
@@ -157,6 +189,27 @@ class LoaderTest(unittest.TestCase):
         suite = self.loader.discover(avocado_multiple_tests.path, True)
         self.assertEqual(len(suite), 2)
         avocado_multiple_tests.remove()
+
+    def test_load_foreign(self):
+        avocado_pass_test = script.TemporaryScript('foreign.py',
+                                                   AVOCADO_FOREIGN_TAGGED_ENABLE,
+                                                   'avocado_loader_unittest')
+        avocado_pass_test.save()
+        test_class, test_parameters = (
+            self.loader.discover(avocado_pass_test.path, True)[0])
+        self.assertTrue(test_class == 'First', test_class)
+        avocado_pass_test.remove()
+
+    def test_load_pass_disable(self):
+        avocado_pass_test = script.TemporaryScript('disable.py',
+                                                   AVOCADO_TEST_OK_DISABLED,
+                                                   'avocado_loader_unittest',
+                                                   0664)
+        avocado_pass_test.save()
+        test_class, test_parameters = (
+            self.loader.discover(avocado_pass_test.path, True)[0])
+        self.assertTrue(test_class == test.NotATest)
+        avocado_pass_test.remove()
 
 
 class DocstringTagTests(unittest.TestCase):
