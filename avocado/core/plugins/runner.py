@@ -116,7 +116,7 @@ class TestRunner(plugin.Plugin):
                                      'present for the test. '
                                      'Current: on (output check enabled)'))
 
-        loader.add_file_loader_options(self.parser)
+        loader.add_loader_options(self.parser)
 
         if multiplexer.MULTIPLEX_CAPABLE:
             mux = self.parser.add_argument_group('multiplexer use on test execution')
