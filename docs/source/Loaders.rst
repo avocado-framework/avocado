@@ -24,13 +24,14 @@ settings (``/etc/avocado/``), or temporarily using ``--loaders``
 This option allows you to specify order and some params of the available test
 loaders. You can specify either loader_name (``file``), loader_name +
 TEST_TYPE (``file.SIMPLE``) and for some loaders even additional params
-passed after ``:`` (``@file:/bin/echo -e``. You can also supply ``@DEFAULT``,
-which injects into that position all the remaining unused loaders.
+passed after ``:`` (``inner_runner:/bin/echo -e``. You can also supply
+``@DEFAULT``, which injects into that position all the remaining unused
+loaders.
 
 To get help about ``--loaders``::
 
     $ avocado run --loaders ?
-    $ avocado run --loaders file:?
+    $ avocado run --loaders inner_runner:?
 
 Example of how ``--loaders`` affects the produced tests (manually gathered
 as some of them result in error)::
@@ -40,12 +41,12 @@ as some of them result in error)::
         > VT           io-github-autotest-qemu.boot
         > MISSING      this_does_not_exist
         > SIMPLE       /bin/echo
-    $ avocado run passtest boot this_does_not_exist /bin/echo --loaders @DEFAULT "file:/bin/echo -e"
+    $ avocado run passtest boot this_does_not_exist /bin/echo --loaders @DEFAULT "inner_runner:/bin/echo -e"
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > INNER_RUNNER this_does_not_exist
         > SIMPLE       /bin/echo
-    $ avocado run passtest boot this_does_not_exist /bin/echo --loaders file.SIMPLE file.INSTRUMENTED @DEFAULT file.INNER_RUNNER:/bin/echo
+    $ avocado run passtest boot this_does_not_exist /bin/echo --loaders file.SIMPLE file.INSTRUMENTED @DEFAULT inner_runner.INNER_RUNNER:/bin/echo
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > INNER_RUNNER this_does_not_exist

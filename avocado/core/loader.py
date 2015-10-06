@@ -118,6 +118,12 @@ class TestLoaderProxy(object):
         # Add (default) file loader if not already registered
         if FileLoader not in self.registered_plugins:
             self.register_plugin(FileLoader)
+        if InnerRunner not in self.registered_plugins:
+            self.register_plugin(InnerRunner)
+        # Register inner runner when --inner-runner is used
+        if getattr(args, "inner_runner", None):
+            self.register_plugin(InnerRunner)
+            args.loaders = ["inner_runner:%s" % args.inner_runner]
         supported_loaders = [_.name for _ in self.registered_plugins]
         supported_types = []
         for plugin in self.registered_plugins:
@@ -311,7 +317,7 @@ class FilteredOut(object):
     pass
 
 
-def add_file_loader_options(parser):
+def add_loader_options(parser):
     loader = parser.add_argument_group('loader options')
     loader.add_argument('--loaders', nargs='*', help="Overrides the priority "
                         "of the test loaders. You can specify either "
@@ -324,7 +330,9 @@ def add_file_loader_options(parser):
                               'allows the use of its own tests. This '
                               'should be used for running tests that '
                               'do not conform to Avocado\' SIMPLE test'
-                              'interface and can not run standalone'))
+                              'interface and can not run standalone. Note: '
+                              'the use of --inner-runner overwrites the --'
+                              'loaders to "inner_runner"'))
 
     chdir_help = ('Change directory before executing tests. This option '
                   'may be necessary because of requirements and/or '
@@ -358,65 +366,11 @@ class FileLoader(TestLoader):
 
     def __init__(self, args, extra_params):
         super(FileLoader, self).__init__(args, extra_params)
-        loader_options = extra_params.get('loader_options')
-        if loader_options == '?':
-            raise LoaderError("File loader accept option to sets the "
-                              "inner-runner executable.")
-        self._inner_runner = self._process_inner_runner(args, loader_options)
         self.test_type = extra_params.get('allowed_test_types')
-
-    @staticmethod
-    def _process_inner_runner(args, extra_params):
-        """ Enables the inner_runner when asked for """
-        runner = getattr(args, 'inner_runner', None)
-        chdir = getattr(args, 'inner_runner_chdir', 'off')
-        test_dir = getattr(args, 'inner_runner_testdir', None)
-        if extra_params:
-            if runner:
-                msg = ("Inner runner specified via booth: --loaders (%s) and "
-                       "--inner-runner (%s). Please use only one of them"
-                       % (extra_params, runner))
-                raise LoaderError(msg)
-            runner = extra_params
-
-        if runner:
-            inner_runner_and_args = shlex.split(runner)
-            if len(inner_runner_and_args) > 1:
-                executable = inner_runner_and_args[0]
-            else:
-                executable = runner
-            if not os.path.exists(executable):
-                msg = ('Could not find the inner runner executable "%s"'
-                       % executable)
-                raise LoaderError(msg)
-            if chdir == 'test':
-                if not test_dir:
-                    msg = ('Option "--inner-runner-chdir=test" requires '
-                           '"--inner-runner-testdir" to be set.')
-                    raise LoaderError(msg)
-            elif test_dir:
-                msg = ('Option "--inner-runner-testdir" requires '
-                       '"--inner-runner-chdir=test".')
-                raise LoaderError(msg)
-
-            cls_inner_runner = collections.namedtuple('InnerRunner',
-                                                      ['runner', 'chdir',
-                                                       'test_dir'])
-            return cls_inner_runner(runner, chdir, test_dir)
-
-        elif chdir != "off":
-            msg = ('Option "--inner-runner-chdir" requires '
-                   '"--inner-runner" to be set.')
-            raise LoaderError(msg)
-        elif test_dir:
-            msg = ('Option "--inner-runner-test-dir" requires '
-                   '"--inner-runner" to be set.')
-            raise LoaderError(msg)
 
     @staticmethod
     def get_type_label_mapping():
         return {test.SimpleTest: 'SIMPLE',
-                test.InnerRunnerTest: 'INNER_RUNNER',
                 test.NotATest: 'NOT_A_TEST',
                 test.MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
@@ -427,7 +381,6 @@ class FileLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.SimpleTest: output.term_support.healthy_str,
-                test.InnerRunnerTest: output.term_support.healthy_str,
                 test.NotATest: output.term_support.warn_header_str,
                 test.MissingTest: output.term_support.fail_header_str,
                 BrokenSymlink: output.term_support.fail_header_str,
@@ -460,10 +413,6 @@ class FileLoader(TestLoader):
                     if not isinstance(tst[0], str):
                         return None
             else:
-                if self.test_type == 'SIMPLE':
-                    exclude = test.InnerRunnerTest   # InnerRunner is inherited
-                else:
-                    exclude = None
                 test_class = (key for key, value in mapping.iteritems()
                               if value == self.test_type).next()
                 for tst in tests:
@@ -481,9 +430,6 @@ class FileLoader(TestLoader):
         :param list_tests: list corrupted/invalid tests too
         :return: list of matching tests
         """
-        if self._inner_runner:
-            return self._make_inner_runner_test(url)
-
         if url is None:
             if list_tests is DEFAULT:
                 return []   # Return empty set when not listing details
@@ -686,14 +632,6 @@ class FileLoader(TestLoader):
         params.setdefault('id', uid)
         return [(klass, {'name': uid, 'params': params})]
 
-    def _make_inner_runner_test(self, test_path):
-        """
-        Creates inner-runner test (adds self._inner_runner as test argument)
-        """
-        tst = self._make_test(test.InnerRunnerTest, test_path)
-        tst[0][1]['inner_runner'] = self._inner_runner
-        return tst
-
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
         """
         Create test templates from given path
@@ -738,6 +676,81 @@ class FileLoader(TestLoader):
                                                 subtests_filter, rel_path)
             else:
                 return make_broken(test.MissingTest, test_name)
+
+
+class InnerRunner(TestLoader):
+
+    """
+    Inner-runner loader class
+    """
+    name = 'inner_runner'
+
+    def __init__(self, args, extra_params):
+        super(InnerRunner, self).__init__(args, extra_params)
+        loader_options = extra_params.get('loader_options')
+        if loader_options == '?':
+            raise LoaderError("File loader accepts an option to set the "
+                              "inner-runner executable.")
+        self._inner_runner = self._process_inner_runner(args, loader_options)
+
+    @staticmethod
+    def _process_inner_runner(args, runner):
+        """ Enables the inner_runner when asked for """
+        chdir = getattr(args, 'inner_runner_chdir', 'off')
+        test_dir = getattr(args, 'inner_runner_testdir', None)
+
+        if runner:
+            inner_runner_and_args = shlex.split(runner)
+            if len(inner_runner_and_args) > 1:
+                executable = inner_runner_and_args[0]
+            else:
+                executable = runner
+            if not os.path.exists(executable):
+                msg = ('Could not find the inner runner executable "%s"'
+                       % executable)
+                raise LoaderError(msg)
+            if chdir == 'test':
+                if not test_dir:
+                    msg = ('Option "--inner-runner-chdir=test" requires '
+                           '"--inner-runner-testdir" to be set.')
+                    raise LoaderError(msg)
+            elif test_dir:
+                msg = ('Option "--inner-runner-testdir" requires '
+                       '"--inner-runner-chdir=test".')
+                raise LoaderError(msg)
+
+            cls_inner_runner = collections.namedtuple('InnerRunner',
+                                                      ['runner', 'chdir',
+                                                       'test_dir'])
+            return cls_inner_runner(runner, chdir, test_dir)
+        elif chdir != "off":
+            msg = ('Option "--inner-runner-chdir" requires '
+                   '"--inner-runner" to be set.')
+            raise LoaderError(msg)
+        elif test_dir:
+            msg = ('Option "--inner-runner-testdir" requires '
+                   '"--inner-runner" to be set.')
+            raise LoaderError(msg)
+        return None     # Skip inner runner
+
+    def discover(self, url, list_tests=DEFAULT):
+        """
+        :param url: arguments passed to the inner_runner
+        :param list_tests: list corrupted/invalid tests too
+        :return: list of matching tests
+        """
+        if not self._inner_runner:
+            return None
+        return [(test.InnerRunnerTest, {'name': url, 'params': {'id': url},
+                                        'inner_runner': self._inner_runner})]
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {test.InnerRunnerTest: 'INNER_RUNNER'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {test.InnerRunnerTest: output.term_support.healthy_str}
 
 
 loader = TestLoaderProxy()
