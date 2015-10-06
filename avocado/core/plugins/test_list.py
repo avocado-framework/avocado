@@ -174,7 +174,7 @@ class TestList(plugin.Plugin):
                                  choices=('on', 'off'), default='on',
                                  help='Turn the paginator on/off. '
                                       'Current: %(default)s')
-        loader.add_file_loader_options(self.parser)
+        loader.add_loader_options(self.parser)
         super(TestList, self).configure(self.parser)
         parser.lister = self.parser
 
