@@ -6,6 +6,7 @@ This is geared towards documentation build regression testing.
 import os
 import sys
 import unittest
+import urllib
 
 from avocado.utils import process
 
@@ -18,8 +19,26 @@ class DocBuildError(Exception):
     pass
 
 
+def has_no_external_connectivity():
+    """
+    Check condition for building the docs with Sphinx
+
+    Sphinx will attempt to fetch the Python objects inventory during the build
+    process. If for some reason, this test is being run on a machine that can
+    not access that address simply because of network restrictions (or the
+    developer may simply be on a plane) then it's better to SKIP the test than
+    to give a false positive.
+    """
+    try:
+        urllib.urlopen('http://docs.python.org/objects.inv')
+        return False
+    except:
+        return True
+
+
 class DocBuildTest(unittest.TestCase):
 
+    @unittest.skipIf(has_no_external_connectivity(), "No external connectivity")
     def test_build_docs(self):
         """
         Build avocado HTML docs, reporting failures
@@ -52,3 +71,7 @@ class DocBuildTest(unittest.TestCase):
             e_msg += ('Full output: %s\n' % '\n'.join(output_lines))
             e_msg += 'Please check the output and fix your docstrings/.rst docs'
             raise DocBuildError(e_msg)
+
+
+if __name__ == '__main__':
+    unittest.main()
