@@ -458,10 +458,14 @@ class FileLoader(TestLoader):
                             issubclass(tst[0], filtered_clss)):
                         return None
             else:
+                if self.test_type == 'SIMPLE':
+                    exclude = test.InnerRunnerTest   # InnerRunner is inherited
+                else:
+                    exclude = None
                 test_class = (key for key, value in mapping.iteritems()
                               if value == self.test_type).next()
                 for tst in tests:
-                    if not issubclass(tst[0], test_class):
+                    if not issubclass(tst[0], test_class) or tst[0] == exclude:
                         return None
         return tests
 
