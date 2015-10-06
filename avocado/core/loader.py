@@ -17,33 +17,26 @@
 Test loader module.
 """
 
+import ast
 import collections
+import fnmatch
 import imp
 import inspect
 import os
-import re
-import sys
 import shlex
-import fnmatch
-import ast
+import sys
 
 from . import data_dir
 from . import output
 from . import test
-from . import exceptions
-from .settings import settings
 from ..utils import path
 from ..utils import stacktrace
-
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
+from .settings import settings
 
 
-DEFAULT = False     # Show default tests (for execution)
-AVAILABLE = None    # Available tests (for listing purposes)
-ALL = True          # All tests (inicluding broken ones)
+DEFAULT = False  # Show default tests (for execution)
+AVAILABLE = None  # Available tests (for listing purposes)
+ALL = True  # All tests (inicluding broken ones)
 
 
 class LoaderError(Exception):
@@ -83,20 +76,11 @@ class TestLoaderProxy(object):
         self._initialized_plugins = []
         self.registered_plugins = []
         self.url_plugin_mapping = {}
-        self._test_types = {}
 
     def register_plugin(self, plugin):
         try:
             if issubclass(plugin, TestLoader):
                 self.registered_plugins.append(plugin)
-                for test_type in plugin.get_type_label_mapping().itervalues():
-                    if (test_type in self._test_types and
-                            self._test_types[test_type] != plugin):
-                        msg = ("Multiple plugins using the same test_type not "
-                               "yet supported (%s, %s)"
-                               % (test_type, self._test_types))
-                        raise NotImplementedError(msg)
-                    self._test_types[test_type] = plugin
             else:
                 raise ValueError
         except ValueError:
@@ -104,45 +88,74 @@ class TestLoaderProxy(object):
                                       "TestLoader" % plugin)
 
     def load_plugins(self, args):
-        def _err_list_loaders():
-            return ("Loaders: %s\nTypes: %s" % (names,
-                                                self._test_types.keys()))
+        def _good_test_types(plugin):
+            """
+            List all supported test types (excluding incorrect ones)
+            """
+            name = plugin.name
+            mapping = plugin.get_type_label_mapping()
+            # Using __func__ to avoid problem with different term_supp instances
+            healthy_func = getattr(output.term_support.healthy_str, '__func__')
+            types = [mapping[_[0]]
+                     for _ in plugin.get_decorator_mapping().iteritems()
+                     if _[1].__func__ is healthy_func]
+            if len(types) > 1:
+                # Return types only when multiple ones are supported
+                return [name + '.' + _ for _ in types]
+            else:
+                return []
+
+        def _str_loaders():
+            """
+            :return: string of sorted loaders and types
+            """
+            return ", ".join(sorted(supported_types + supported_loaders))
+
         self._initialized_plugins = []
         # Add (default) file loader if not already registered
         if FileLoader not in self.registered_plugins:
             self.register_plugin(FileLoader)
+        if ExternalLoader not in self.registered_plugins:
+            self.register_plugin(ExternalLoader)
+        # Register external runner when --external-runner is used
+        if getattr(args, "external_runner", None):
+            self.register_plugin(ExternalLoader)
+            args.loaders = ["external:%s" % args.external_runner]
+        supported_loaders = [_.name for _ in self.registered_plugins]
+        supported_types = []
+        for plugin in self.registered_plugins:
+            supported_types.extend(_good_test_types(plugin))
         # Load plugin by the priority from settings
-        names = ["@" + _.name for _ in self.registered_plugins]
         loaders = getattr(args, 'loaders', None)
         if not loaders:
             loaders = settings.get_value("plugins", "loaders", list, [])
         if '?' in loaders:
-            raise LoaderError("Loaders: %s\nTypes: %s"
-                              % (names, self._test_types.keys()))
-        if "DEFAULT" in loaders:   # Replace DEFAULT with unused loaders
-            idx = loaders.index("DEFAULT")
-            loaders = (loaders[:idx] + [_ for _ in names if _ not in loaders] +
-                       loaders[idx+1:])
-            while "DEFAULT" in loaders:    # Remove duplicite DEFAULT entries
-                loaders.remove("DEFAULT")
+            raise LoaderError("Available loader plugins: %s" % _str_loaders())
+        if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
+            idx = loaders.index("@DEFAULT")
+            loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
+                                        if plugin not in loaders] +
+                       loaders[idx + 1:])
+            while "@DEFAULT" in loaders:  # Remove duplicite @DEFAULT entries
+                loaders.remove("@DEFAULT")
 
         loaders = [_.split(':', 1) for _ in loaders]
         priority = [_[0] for _ in loaders]
         for i, name in enumerate(priority):
             extra_params = {}
-            if name in names:
-                plugin = self.registered_plugins[names.index(name)]
-            elif name in self._test_types:
-                plugin = self._test_types[name]
-                extra_params['allowed_test_types'] = name
-            else:
-                raise InvalidLoaderPlugin("Loader '%s' not available:\n"
-                                          "Loaders: %s\nTypes: %s"
-                                          % (name, names,
-                                             self._test_types.keys()))
+            if name in supported_types:
+                name, extra_params['allowed_test_types'] = name.split('.', 1)
+            elif name not in supported_loaders:
+                raise InvalidLoaderPlugin("Loader '%s' not available (%s)"
+                                          % (name, _str_loaders()))
             if len(loaders[i]) == 2:
                 extra_params['loader_options'] = loaders[i][1]
-            self._initialized_plugins.append(plugin(args, extra_params))
+            plugin = self.registered_plugins[supported_loaders.index(name)]
+            try:
+                self._initialized_plugins.append(plugin(args, **extra_params))
+            except TypeError, details:
+                raise LoaderError("Unable to initialize plugin '%s' with "
+                                  "extra_params=%s" % (name, extra_params))
 
     def get_extra_listing(self):
         for loader_plugin in self._initialized_plugins:
@@ -201,7 +214,7 @@ class TestLoaderProxy(object):
                             tests.extend(_test)
                             handled = True
                             if not list_tests:
-                                break    # Don't process other plugins
+                                break  # Don't process other plugins
                     except Exception, details:
                         handle_exception(loader_plugin, details)
                 if not handled:
@@ -249,7 +262,7 @@ class TestLoader(object):
     Base for test loader classes
     """
 
-    def __init__(self, args, extra_params):    # pylint: disable=W0613
+    def __init__(self, args):  # pylint: disable=W0613
         self.args = args
 
     def get_extra_listing(self):
@@ -305,40 +318,42 @@ class FilteredOut(object):
     pass
 
 
-def add_file_loader_options(parser):
+def add_loader_options(parser):
     loader = parser.add_argument_group('loader options')
     loader.add_argument('--loaders', nargs='*', help="Overrides the priority "
                         "of the test loaders. You can specify either "
                         "@loader_name or TEST_TYPE. By default it tries all "
                         "available loaders according to priority set in "
                         "settings->plugins.loaders.")
-    loader.add_argument('--inner-runner', default=None,
+    loader.add_argument('--external-runner', default=None,
                         metavar='EXECUTABLE',
                         help=('Path to an specific test runner that '
                               'allows the use of its own tests. This '
                               'should be used for running tests that '
                               'do not conform to Avocado\' SIMPLE test'
-                              'interface and can not run standalone'))
+                              'interface and can not run standalone. Note: '
+                              'the use of --external-runner overwrites the --'
+                              'loaders to "external_runner"'))
 
     chdir_help = ('Change directory before executing tests. This option '
                   'may be necessary because of requirements and/or '
-                  'limitations of the inner test runner. If the inner '
+                  'limitations of the external test runner. If the external '
                   'runner requires to be run from its own base directory,'
-                  'use "runner" here. If the inner runner runs tests based'
+                  'use "runner" here. If the external runner runs tests based'
                   ' on files and requires to be run from the directory '
                   'where those files are located, use "test" here and '
                   'specify the test directory with the option '
-                  '"--inner-runner-testdir". Defaults to "%(default)s"')
-    loader.add_argument('--inner-runner-chdir', default='off',
+                  '"--external-runner-testdir". Defaults to "%(default)s"')
+    loader.add_argument('--external-runner-chdir', default='off',
                         choices=('runner', 'test', 'off'),
                         help=chdir_help)
 
-    loader.add_argument('--inner-runner-testdir', metavar='DIRECTORY',
+    loader.add_argument('--external-runner-testdir', metavar='DIRECTORY',
                         default=None,
-                        help=('Where test files understood by the inner'
+                        help=('Where test files understood by the external'
                               ' test runner are located in the '
                               'filesystem. Obviously this assumes and '
-                              'only applies to inner test runners that '
+                              'only applies to external test runners that '
                               'run tests from files'))
 
 
@@ -350,67 +365,13 @@ class FileLoader(TestLoader):
 
     name = 'file'
 
-    def __init__(self, args, extra_params):
-        super(FileLoader, self).__init__(args, extra_params)
-        loader_options = extra_params.get('loader_options')
-        if loader_options == '?':
-            raise LoaderError("File loader accept option to sets the "
-                              "inner-runner executable.")
-        self._inner_runner = self._process_inner_runner(args, loader_options)
-        self.test_type = extra_params.get('allowed_test_types')
-
-    @staticmethod
-    def _process_inner_runner(args, extra_params):
-        """ Enables the inner_runner when asked for """
-        runner = getattr(args, 'inner_runner', None)
-        chdir = getattr(args, 'inner_runner_chdir', 'off')
-        test_dir = getattr(args, 'inner_runner_testdir', None)
-        if extra_params:
-            if runner:
-                msg = ("Inner runner specified via booth: --loaders (%s) and "
-                       "--inner-runner (%s). Please use only one of them"
-                       % (extra_params, runner))
-                raise LoaderError(msg)
-            runner = extra_params
-
-        if runner:
-            inner_runner_and_args = shlex.split(runner)
-            if len(inner_runner_and_args) > 1:
-                executable = inner_runner_and_args[0]
-            else:
-                executable = runner
-            if not os.path.exists(executable):
-                msg = ('Could not find the inner runner executable "%s"'
-                       % executable)
-                raise LoaderError(msg)
-            if chdir == 'test':
-                if not test_dir:
-                    msg = ('Option "--inner-runner-chdir=test" requires '
-                           '"--inner-runner-testdir" to be set.')
-                    raise LoaderError(msg)
-            elif test_dir:
-                msg = ('Option "--inner-runner-testdir" requires '
-                       '"--inner-runner-chdir=test".')
-                raise LoaderError(msg)
-
-            cls_inner_runner = collections.namedtuple('InnerRunner',
-                                                      ['runner', 'chdir',
-                                                       'test_dir'])
-            return cls_inner_runner(runner, chdir, test_dir)
-
-        elif chdir != "off":
-            msg = ('Option "--inner-runner-chdir" requires '
-                   '"--inner-runner" to be set.')
-            raise LoaderError(msg)
-        elif test_dir:
-            msg = ('Option "--inner-runner-test-dir" requires '
-                   '"--inner-runner" to be set.')
-            raise LoaderError(msg)
+    def __init__(self, args, allowed_test_types=None):
+        super(FileLoader, self).__init__(args)
+        self.test_type = allowed_test_types
 
     @staticmethod
     def get_type_label_mapping():
         return {test.SimpleTest: 'SIMPLE',
-                test.InnerRunnerTest: 'INNER_RUNNER',
                 test.NotATest: 'NOT_A_TEST',
                 test.MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
@@ -420,15 +381,13 @@ class FileLoader(TestLoader):
 
     @staticmethod
     def get_decorator_mapping():
-        term_support = output.TermSupport()
-        return {test.SimpleTest: term_support.healthy_str,
-                test.InnerRunnerTest: term_support.healthy_str,
-                test.NotATest: term_support.warn_header_str,
-                test.MissingTest: term_support.fail_header_str,
-                BrokenSymlink: term_support.fail_header_str,
-                AccessDeniedPath: term_support.fail_header_str,
-                test.Test: term_support.healthy_str,
-                FilteredOut: term_support.warn_header_str}
+        return {test.SimpleTest: output.term_support.healthy_str,
+                test.NotATest: output.term_support.warn_header_str,
+                test.MissingTest: output.term_support.fail_header_str,
+                BrokenSymlink: output.term_support.fail_header_str,
+                AccessDeniedPath: output.term_support.fail_header_str,
+                test.Test: output.term_support.healthy_str,
+                FilteredOut: output.term_support.warn_header_str}
 
     def discover(self, url, list_tests=DEFAULT):
         """
@@ -449,19 +408,17 @@ class FileLoader(TestLoader):
         if self.test_type:
             mapping = self.get_type_label_mapping()
             if self.test_type == 'INSTRUMENTED':
-                # Instrumented is parent of all of supported tests, we need to
-                # exclude the rest of the supported tests
-                filtered_clss = tuple(_ for _ in mapping.iterkeys()
-                                      if _ is not test.Test)
+                # Instrumented tests are defined as string and loaded at the
+                # execution time.
                 for tst in tests:
-                    if (not issubclass(tst[0], test.Test) or
-                            issubclass(tst[0], filtered_clss)):
+                    if not isinstance(tst[0], str):
                         return None
             else:
                 test_class = (key for key, value in mapping.iteritems()
                               if value == self.test_type).next()
                 for tst in tests:
-                    if not issubclass(tst[0], test_class):
+                    if (isinstance(tst[0], str) or
+                            not issubclass(tst[0], test_class)):
                         return None
         return tests
 
@@ -474,12 +431,9 @@ class FileLoader(TestLoader):
         :param list_tests: list corrupted/invalid tests too
         :return: list of matching tests
         """
-        if self._inner_runner:
-            return self._make_inner_runner_test(url)
-
         if url is None:
             if list_tests is DEFAULT:
-                return []   # Return empty set when not listing details
+                return []  # Return empty set when not listing details
             else:
                 url = data_dir.get_test_dir()
         ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
@@ -489,7 +443,7 @@ class FileLoader(TestLoader):
         subtests_filter = None
         if ':' in url:
             _url, _subtests_filter = url.split(':', 1)
-            if os.path.exists(_url):    # otherwise it's ':' in the file name
+            if os.path.exists(_url):  # otherwise it's ':' in the file name
                 url = _url
                 subtests_filter = _subtests_filter
 
@@ -506,9 +460,9 @@ class FileLoader(TestLoader):
             """ Always return None """
             return None
 
-        if list_tests:      # ALL => include everything
+        if list_tests:  # ALL => include everything
             onerror = add_test_from_exception
-        else:               # DEFAULT, AVAILABLE => skip missing tests
+        else:  # DEFAULT, AVAILABLE => skip missing tests
             onerror = skip_non_test
 
         for dirpath, _, filenames in os.walk(url, onerror=onerror):
@@ -614,7 +568,8 @@ class FileLoader(TestLoader):
                 for test_class, test_methods in tests.items():
                     if isinstance(test_class, str):
                         for test_method in test_methods:
-                            name = test_name + ':%s.%s' % (test_class, test_method)
+                            name = test_name + \
+                                ':%s.%s' % (test_class, test_method)
                             tst = (test_class, {'name': name,
                                                 'modulePath': test_path,
                                                 'methodName': test_method})
@@ -658,7 +613,7 @@ class FileLoader(TestLoader):
         # will not crash.
         except BaseException, details:  # Ugly python files can raise any exc
             if isinstance(details, KeyboardInterrupt):
-                raise   # Don't ignore ctrl+c
+                raise  # Don't ignore ctrl+c
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
@@ -679,14 +634,6 @@ class FileLoader(TestLoader):
         params.setdefault('id', uid)
         return [(klass, {'name': uid, 'params': params})]
 
-    def _make_inner_runner_test(self, test_path):
-        """
-        Creates inner-runner test (adds self._inner_runner as test argument)
-        """
-        tst = self._make_test(test.InnerRunnerTest, test_path)
-        tst[0][1]['inner_runner'] = self._inner_runner
-        return tst
-
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
         """
         Create test templates from given path
@@ -698,9 +645,9 @@ class FileLoader(TestLoader):
             """ Always return empty list """
             return []
 
-        if list_non_tests:   # return broken test with params
+        if list_non_tests:  # return broken test with params
             make_broken = self._make_test
-        else:               # return empty set instead
+        else:  # return empty set instead
             make_broken = ignore_broken
         test_name = test_path
         if os.path.exists(test_path):
@@ -731,6 +678,81 @@ class FileLoader(TestLoader):
                                                 subtests_filter, rel_path)
             else:
                 return make_broken(test.MissingTest, test_name)
+
+
+class ExternalLoader(TestLoader):
+
+    """
+    External-runner loader class
+    """
+    name = 'external'
+
+    def __init__(self, args, loader_options=None):
+        super(ExternalLoader, self).__init__(args)
+        if loader_options == '?':
+            raise LoaderError("File loader accepts an option to set the "
+                              "external-runner executable.")
+        self._external_runner = self._process_external_runner(
+            args, loader_options)
+
+    @staticmethod
+    def _process_external_runner(args, runner):
+        """ Enables the external_runner when asked for """
+        chdir = getattr(args, 'external_runner_chdir', 'off')
+        test_dir = getattr(args, 'external_runner_testdir', None)
+
+        if runner:
+            external_runner_and_args = shlex.split(runner)
+            if len(external_runner_and_args) > 1:
+                executable = external_runner_and_args[0]
+            else:
+                executable = runner
+            if not os.path.exists(executable):
+                msg = ('Could not find the external runner executable "%s"'
+                       % executable)
+                raise LoaderError(msg)
+            if chdir == 'test':
+                if not test_dir:
+                    msg = ('Option "--external-runner-chdir=test" requires '
+                           '"--external-runner-testdir" to be set.')
+                    raise LoaderError(msg)
+            elif test_dir:
+                msg = ('Option "--external-runner-testdir" requires '
+                       '"--external-runner-chdir=test".')
+                raise LoaderError(msg)
+
+            cls_external_runner = collections.namedtuple('ExternalLoader',
+                                                         ['runner', 'chdir',
+                                                          'test_dir'])
+            return cls_external_runner(runner, chdir, test_dir)
+        elif chdir != "off":
+            msg = ('Option "--external-runner-chdir" requires '
+                   '"--external-runner" to be set.')
+            raise LoaderError(msg)
+        elif test_dir:
+            msg = ('Option "--external-runner-testdir" requires '
+                   '"--external-runner" to be set.')
+            raise LoaderError(msg)
+        return None  # Skip external runner
+
+    def discover(self, url, list_tests=DEFAULT):
+        """
+        :param url: arguments passed to the external_runner
+        :param list_tests: list corrupted/invalid tests too
+        :return: list of matching tests
+        """
+        if not self._external_runner:
+            return None
+        return [(test.ExternalRunnerTest, {'name': url, 'params': {'id': url},
+                                           'external_runner': self._external_runner})]
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {test.ExternalRunnerTest: 'EXTERNAL'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {test.ExternalRunnerTest: output.term_support.healthy_str}
 
 
 loader = TestLoaderProxy()

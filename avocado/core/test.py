@@ -10,8 +10,8 @@
 #
 # This code was inspired in the autotest project,
 # client/shared/test.py
-# Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
-import re
+# Authors: Martin J Bligh <mbligh@google.com>,
+#          Andy Whitcroft <apw@shadowen.org>
 
 """
 Contains the base test implementation, used as a base for the actual
@@ -22,25 +22,27 @@ import inspect
 import logging
 import os
 import pipes
+import re
 import shutil
 import sys
 import time
+
+from . import data_dir
+from . import exceptions
+from . import multiplexer
+from . import sysinfo
+from ..utils import data_structures
+from ..utils import genio
+from ..utils import path as utils_path
+from ..utils import process
+from ..utils import stacktrace
+from .version import VERSION
+
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
     import unittest
-
-from . import data_dir
-from . import sysinfo
-from . import exceptions
-from . import multiplexer
-from .version import VERSION
-from ..utils import genio
-from ..utils import path as utils_path
-from ..utils import process
-from ..utils import stacktrace
-from ..utils import data_structures
 
 
 class Test(unittest.TestCase):
@@ -358,7 +360,7 @@ class Test(unittest.TestCase):
         except exceptions.TestNAError, details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestNAError(details)
-        except:     # Old-style exceptions are not inherited from Exception()
+        except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
@@ -371,7 +373,7 @@ class Test(unittest.TestCase):
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
-        except:     # Old-style exceptions are not inherited from Exception()
+        except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
             if not isinstance(details, Exception):  # Avoid passing nasty exc
@@ -387,7 +389,7 @@ class Test(unittest.TestCase):
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
-            except:     # avoid old-style exception failures
+            except:  # avoid old-style exception failures
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 details = sys.exc_info()[1]
                 cleanup_exception = exceptions.TestSetupFail(details)
@@ -410,12 +412,14 @@ class Test(unittest.TestCase):
                     try:
                         self.check_reference_stdout()
                     except Exception, details:
-                        stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                        stacktrace.log_exc_info(sys.exc_info(),
+                                                logger='avocado.test')
                         stdout_check_exception = details
                     try:
                         self.check_reference_stderr()
                     except Exception, details:
-                        stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                        stacktrace.log_exc_info(sys.exc_info(),
+                                                logger='avocado.test')
                         stderr_check_exception = details
             elif not job_standalone:
                 if output_check_record in ['all', 'stdout']:
@@ -610,39 +614,39 @@ class SimpleTest(Test):
                                           "the log for details.")
 
 
-class InnerRunnerTest(SimpleTest):
+class ExternalRunnerTest(SimpleTest):
 
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None,
-                 inner_runner=None):
-        self.assertIsNotNone(inner_runner, "Inner runner test requires "
-                             "inner_runner parameter, got None instead.")
-        self.inner_runner = inner_runner
-        super(InnerRunnerTest, self).__init__(name, params, base_logdir, tag,
-                                              job)
+                 external_runner=None):
+        self.assertIsNotNone(external_runner, "External runner test requires "
+                             "external_runner parameter, got None instead.")
+        self.external_runner = external_runner
+        super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
+                                                 tag, job)
 
     def test(self):
         pre_cwd = os.getcwd()
         new_cwd = None
         try:
-            self.log.info('Running test with the inner level test '
-                          'runner: "%s"', self.inner_runner.runner)
+            self.log.info('Running test with the external level test '
+                          'runner: "%s"', self.external_runner.runner)
 
-            # Change work directory if needed by the inner runner
-            if self.inner_runner.chdir == 'runner':
-                new_cwd = os.path.dirname(self.inner_runner.runner)
-            elif self.inner_runner.chdir == 'test':
-                new_cwd = self.inner_runner.test_dir
+            # Change work directory if needed by the external runner
+            if self.external_runner.chdir == 'runner':
+                new_cwd = os.path.dirname(self.external_runner.runner)
+            elif self.external_runner.chdir == 'test':
+                new_cwd = self.external_runner.test_dir
             else:
                 new_cwd = None
             if new_cwd is not None:
                 self.log.debug('Changing working directory to "%s" '
-                               'because of inner runner requirements ',
+                               'because of external runner requirements ',
                                new_cwd)
                 os.chdir(new_cwd)
 
-            command = "%s %s" % (self.inner_runner.runner, self.path)
+            command = "%s %s" % (self.external_runner.runner, self.path)
 
-            return super(InnerRunnerTest, self).test(command)
+            return super(ExternalRunnerTest, self).test(command)
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)
