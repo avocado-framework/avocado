@@ -21,6 +21,7 @@ Contents:
    ReferenceGuide
    ContributionGuide
    DevelopmentTips
+   MaintenanceGuide
 
 .. _api-reference:
 
