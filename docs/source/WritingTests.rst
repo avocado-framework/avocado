@@ -691,6 +691,98 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     15:54:31 test       L0387 INFO |
 
 
+Test Tags
+=========
+
+The need may arise for more complex tests, that use more advanced python features
+such as inheritance. Due to the fact that avocado uses a safe test introspection
+method, that is more limited than actual loading of the test classes, avocado
+may need your help to identify those tests. For example, let's say you are
+defining a new test class that inherits from the avocado base test class and
+putting it in ``mylibrary.py``::
+
+    from avocado import Test
+
+
+    class MyOwnDerivedTest(Test):
+        def __init__(self, methodName='test', name=None, params=None,
+                     base_logdir=None, tag=None, job=None, runner_queue=None):
+            super(MyOwnDerivedTest, self).__init__(methodName, name, params,
+                                                   base_logdir, tag, job,
+                                                   runner_queue)
+            self.log('Derived class example')
+
+
+Then implement your actual test using that derived class, in ``mytest.py``::
+
+    import mylibrary
+
+
+    class MyTest(mylibrary.MyOwnDerivedTest):
+
+        def test1(self):
+            self.log('Testing something important')
+
+        def test2(self):
+            self.log('Testing something even more important')
+
+
+If you try to list the tests in that file, this is what you'll get::
+
+    scripts/avocado list mytest.py -V
+    Type       Test
+    NOT_A_TEST mytest.py
+
+    ACCESS_DENIED: 0
+    BROKEN_SYMLINK: 0
+    EXTERNAL: 0
+    FILTERED: 0
+    INSTRUMENTED: 0
+    MISSING: 0
+    NOT_A_TEST: 1
+    SIMPLE: 0
+    VT: 0
+
+You need to give avocado a little help by adding a docstring tag. That docstring
+tag is ``:avocado: enable``. That tag tells the avocado safe test detection
+code to consider it as an avocado test, regardless of what the (admittedly simple)
+detection code thinks of it. Let's see how that works out. Add the docstring,
+as you can see the example below::
+
+    import mylibrary
+
+
+    class MyTest(mylibrary.MyOwnDerivedTest):
+        """
+        :avocado: enable
+        """
+        def test1(self):
+            self.log('Testing something important')
+
+        def test2(self):
+            self.log('Testing something even more important')
+
+
+Now, trying to list the tests on the ``mytest.py`` file again::
+
+    scripts/avocado list mytest.py -V
+    Type         Test
+    INSTRUMENTED mytest.py:MyTest.test1
+    INSTRUMENTED mytest.py:MyTest.test2
+
+    ACCESS_DENIED: 0
+    BROKEN_SYMLINK: 0
+    EXTERNAL: 0
+    FILTERED: 0
+    INSTRUMENTED: 2
+    MISSING: 0
+    NOT_A_TEST: 0
+    SIMPLE: 0
+    VT: 0
+
+You can also use the ``:avocado: disable`` tag, that works the opposite way:
+Something looks like an avocado test, but we force it to not be listed as one.
+
 Environment Variables for Simple Tests
 ======================================
 
