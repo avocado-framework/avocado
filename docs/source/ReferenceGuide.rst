@@ -127,6 +127,19 @@ it:
 
 .. figure:: diagram.png
 
+It's important to note that the inspection mechanism is safe (that is, python
+classes and files are not actually loaded and executed on discovery and
+inspection stage). Due to the fact Avocado doesn't actually load the code
+and classes, the introspection is simple and will *not* catch things like
+buggy test modules, missing imports and miscellaneous bugs in the code you
+want to list or run. We recommend only running tests from sources you trust,
+use of static checking and reviews in your test development process.
+
+Due to the simple test inspection mechanism, avocado will not recognize test
+classes that inherit from a class derived from :class:`avocado.Test`. Please
+refer to the :doc:`WritingTests` documentation on how to use the tags functionality
+to mark derived classes as avocado test classes.
+
 Results Specification
 =====================
 
