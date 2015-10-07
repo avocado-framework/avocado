@@ -254,7 +254,33 @@ class TestLoader(object):
     Base for test loader classes
     """
 
+    name = None     # Human friendly name of the loader
+
     def __init__(self, args, extra_params):  # pylint: disable=W0613
+        if "allowed_test_types" in extra_params:
+            mapping = self.get_type_label_mapping()
+            types = extra_params.pop("allowed_test_types")
+            if len(mapping) != 1:
+                msg = ("Loader '%s' supports multiple test types but does not "
+                       "handle the 'allowed_test_types'. Either don't use "
+                       "'%s' instead of '%s.%s' or take care of the "
+                       "'allowed_test_types' in the plugin."
+                       % (self.name, self.name, self.name, types))
+                raise LoaderError(msg)
+            elif mapping.itervalues().next() != types:
+                raise LoaderError("Loader '%s' doesn't support test type '%s',"
+                                  " it supports only '%s'"
+                                  % (self.name, types,
+                                     mapping.itervalues().next()))
+        if "loader_options" in extra_params:
+            raise LoaderError("Loader '%s' doesn't support 'loader_options', "
+                              "please don't use --loader %s:%s"
+                              % (self.name, self.name,
+                                 extra_params.get("loader_options")))
+        if extra_params:
+            raise LoaderError("Loader '%s' doesn't handle extra params %s, "
+                              "please adjust your plugin to take care of them."
+                              % (self.name, extra_params))
         self.args = args
 
     def get_extra_listing(self):
@@ -358,8 +384,9 @@ class FileLoader(TestLoader):
     name = 'file'
 
     def __init__(self, args, extra_params):
+        test_type = extra_params.pop('allowed_test_types', None)
         super(FileLoader, self).__init__(args, extra_params)
-        self.test_type = extra_params.get('allowed_test_types')
+        self.test_type = test_type
 
     @staticmethod
     def get_type_label_mapping():
@@ -680,8 +707,8 @@ class ExternalLoader(TestLoader):
     name = 'external'
 
     def __init__(self, args, extra_params):
+        loader_options = extra_params.pop('loader_options', None)
         super(ExternalLoader, self).__init__(args, extra_params)
-        loader_options = extra_params.get('loader_options')
         if loader_options == '?':
             raise LoaderError("File loader accepts an option to set the "
                               "external-runner executable.")
