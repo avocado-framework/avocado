@@ -27,7 +27,6 @@ from . import aurl
 from . import output
 from . import crypto
 
-
 log = logging.getLogger('avocado.test')
 
 

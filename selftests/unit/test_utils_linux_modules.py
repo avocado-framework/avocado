@@ -1,6 +1,4 @@
 import unittest
-import os
-import sys
 
 from avocado.utils import linux_modules
 

@@ -21,7 +21,6 @@ import stat
 
 from . import aurl
 
-
 PY_EXTENSIONS = ['.py']
 SHEBANG = '#!'
 

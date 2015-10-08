@@ -23,7 +23,6 @@ from .plugin import Plugin
 from ..settings import settings
 from ...utils import stacktrace
 
-
 log = logging.getLogger("avocado.app")
 
 __all__ = ['load_builtins']

@@ -34,7 +34,6 @@ from ..utils import path
 from ..utils import stacktrace
 from .settings import settings
 
-
 DEFAULT = False  # Show default tests (for execution)
 AVAILABLE = None  # Available tests (for listing purposes)
 ALL = True  # All tests (inicluding broken ones)

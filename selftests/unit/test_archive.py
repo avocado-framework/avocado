@@ -1,7 +1,6 @@
 import unittest
 import tempfile
 import os
-import sys
 import shutil
 import random
 

@@ -23,7 +23,6 @@ either in userspace tools or on the Linux kernel itself (via mount).
 
 __all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount']
 
-
 import os
 import logging
 import tempfile

@@ -26,7 +26,6 @@ import re
 
 from . import tree
 
-
 MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
 
 

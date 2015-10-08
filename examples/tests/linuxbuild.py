@@ -1,8 +1,5 @@
 #!/usr/bin/python
 
-import shutil
-import tempfile
-
 from avocado import Test
 from avocado import main
 from avocado.utils import kernel_build

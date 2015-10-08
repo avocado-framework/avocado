@@ -38,7 +38,6 @@ from .settings import settings
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
 
-
 _BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
 _BASE_DIR = os.path.abspath(_BASE_DIR)
 _IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'examples', 'tests')
