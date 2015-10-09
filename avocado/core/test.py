@@ -38,7 +38,6 @@ from ..utils import process
 from ..utils import stacktrace
 from .version import VERSION
 
-
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:

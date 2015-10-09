@@ -1,5 +1,3 @@
-import os
-import sys
 import unittest
 
 from avocado.core.restclient import response

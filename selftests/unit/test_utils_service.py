@@ -17,6 +17,7 @@
 #  the file called "COPYING".
 
 import unittest
+
 from mock import MagicMock, patch
 
 from avocado.utils import service

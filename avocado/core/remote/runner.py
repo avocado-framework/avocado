@@ -19,6 +19,8 @@ import os
 import re
 import logging
 
+from fabric.exceptions import CommandTimeout
+
 from .test import RemoteTest
 from .. import output
 from .. import exceptions
@@ -26,7 +28,6 @@ from .. import status
 from ..runner import TestRunner
 from ...utils import archive
 from ...utils import stacktrace
-from fabric.exceptions import CommandTimeout
 
 
 class RemoteTestRunner(TestRunner):

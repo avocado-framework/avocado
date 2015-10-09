@@ -1,5 +1,3 @@
-import sys
-import os
 import unittest
 
 from avocado.core.plugins import plugin

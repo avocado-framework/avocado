@@ -16,18 +16,14 @@
 This is the main entry point for the rest client cli application
 """
 
-
 import sys
 import types
 import importlib
-import functools
 
 from . import parser
 from .. import connection
-from ... import settings
 from ... import output
 from ... import exit_codes
-
 
 __all__ = ['App']
 

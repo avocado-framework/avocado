@@ -1,5 +1,4 @@
 import os
-import sys
 import unittest
 import tempfile
 import shutil
@@ -7,7 +6,6 @@ import shutil
 from avocado import VERSION
 from avocado.utils import process
 from avocado.utils import script
-
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)

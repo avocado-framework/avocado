@@ -5,11 +5,9 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core import data_dir
 from avocado.core import remote
 from avocado.core import remoter
 from avocado.utils import archive
-
 
 cwd = os.getcwd()
 

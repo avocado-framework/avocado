@@ -1,13 +1,11 @@
 import unittest
 import os
-import sys
 import json
 import sqlite3
 import tempfile
 import shutil
 
 from avocado.utils import process
-
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)

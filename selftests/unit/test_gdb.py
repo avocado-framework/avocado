@@ -1,5 +1,3 @@
-import os
-import sys
 import unittest
 
 from avocado.utils import gdb

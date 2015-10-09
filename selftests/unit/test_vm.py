@@ -9,7 +9,6 @@ from avocado.core.remote import VMTestResult
 from avocado.core.remote import RemoteTestResult
 from avocado.core import virt
 
-
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"test": "sleeptest.1", "url": "sleeptest", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'

@@ -23,7 +23,6 @@ import glob
 
 from ..utils import path
 
-
 if 'VIRTUAL_ENV' in os.environ:
     CFG_DIR = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
 else:

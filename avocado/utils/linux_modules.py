@@ -20,6 +20,7 @@ APIs to list and load/unload linux kernel modules.
 
 import re
 import logging
+
 from . import process
 
 LOG = logging.getLogger('avocado.test')

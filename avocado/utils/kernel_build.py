@@ -21,7 +21,6 @@ import tempfile
 
 from . import download, archive, build
 
-
 log = logging.getLogger('avocado.test')
 
 

@@ -20,8 +20,9 @@ import shutil
 import sys
 import time
 import subprocess
-import pystache
 import urllib
+
+import pystache
 
 from . import plugin
 from .. import exit_codes

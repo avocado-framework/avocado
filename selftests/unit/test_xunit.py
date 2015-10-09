@@ -1,7 +1,6 @@
 import argparse
 import unittest
 import os
-import sys
 from xml.dom import minidom
 import tempfile
 import shutil
