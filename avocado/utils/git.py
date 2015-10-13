@@ -18,6 +18,7 @@ APIs to download/update git repositories from inside python scripts.
 
 import os
 import logging
+import tempfile
 
 from . import process
 from . import astring
@@ -58,7 +59,9 @@ class GitRepoHelper(object):
 
         if destination_dir is None:
             uri_basename = uri.split("/")[-1]
-            self.destination_dir = os.path.join("/tmp", uri_basename)
+            prefix = 'avocado_%s_%s_' % (__name__, uri_basename)
+            base_dir = os.environ.get('TMPDIR', '/var/tmp')
+            self.destination_dir = tempfile.mkdtemp(prefix=prefix, dir=base_dir)
         else:
             self.destination_dir = destination_dir
         if lbranch is None:

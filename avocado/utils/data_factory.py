@@ -57,7 +57,7 @@ def generate_random_string(length, ignore=string.punctuation,
     return result
 
 
-def make_dir_and_populate(basedir='/tmp'):
+def make_dir_and_populate(basedir=None):
     """
     Create a directory in basedir and populate with a number of files.
 
@@ -68,6 +68,8 @@ def make_dir_and_populate(basedir='/tmp'):
     :return: Path of the dir created and populated.
     :rtype: str
     """
+    if basedir is None:
+        basedir = os.environ.get('TMPDIR', '/var/tmp')
     try:
         path = tempfile.mkdtemp(prefix='avocado_' + __name__,
                                 dir=basedir)
