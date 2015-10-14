@@ -1,14 +1,14 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.29.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source: avocado-%{version}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver
-BuildRequires: python2-devel, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum
+BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum
 
 %if 0%{?el6}
 Requires: PyYAML
@@ -104,6 +104,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Oct 7 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.29.0-2
+- Add python-setuptools to BuildRequires
+
 * Wed Oct 7 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.29.0-1
 - New upstream release 0.29.0
 
