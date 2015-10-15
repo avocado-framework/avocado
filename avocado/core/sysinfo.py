@@ -166,6 +166,39 @@ class Command(Collectible):
                             verbose=False)
 
 
+class DmesgDiffLog(Collectible):
+    """
+    Collects dmesg between __init__ and `stop`.
+    """
+    def __init__(self, cmd, logf=None):
+        if logf is None:
+            logf = cmd.replace(" ", "_")
+        super(DmesgDiffLog, self).__init__(logf)
+        self.cmd = cmd
+        self.last_line = None
+        try:
+            out = subprocess.check_output(cmd, shell=True,
+                                          stderr=subprocess.STDOUT)
+            for line in out.splitlines()[::-1]:
+                line = line.strip()
+                if line:
+                    self.last_line = line
+                    break
+        except subprocess.CalledProcessError:
+            pass
+
+    def run(self, logdir):
+        """ Store dmesg output from the last line """
+        if self.last_line is None:
+            return
+        out = subprocess.check_output(self.cmd)
+        try:
+            out = out[out.index(self.last_line):]
+        except ValueError:  # dmesg was rotated, store everything
+            pass
+        open(os.path.join(logdir, self.logf), 'w').write(out)
+
+
 class Daemon(Command):
 
     """
@@ -422,6 +455,10 @@ class SysInfo(object):
             self.end_test_collectibles.add(self._get_syslog_watcher())
         except ValueError, details:
             log.info(details)
+
+        # Add non-standard collectibles
+        self.start_job_collectibles.add(Command("dmesg"))
+        self.end_job_collectibles.add(DmesgDiffLog("dmesg"))
 
     def _get_collectibles(self, hook):
         collectibles = self.hook_mapping.get(hook)
