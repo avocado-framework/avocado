@@ -1,10 +1,15 @@
-PYTHON=`which python`
+PYTHON=$(shell which python)
+VERSION=$(shell $(PYTHON) $(CURDIR)/avocado/core/version.py)
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/avocado
 PROJECT=avocado
-VERSION=`$(CURDIR)/avocado/core/version.py`
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
 AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(wildcard ../*))
+RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
+RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
+
+COMMIT=$(shell git log --pretty=format:'%H' -n 1)
+SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 
 all:
 	@echo "make source - Create source package"
@@ -12,15 +17,23 @@ all:
 	@echo "make build-deb-src - Generate a source debian package"
 	@echo "make build-deb-bin - Generate a binary debian package"
 	@echo "make build-deb-all - Generate both source and binary debian packages"
-	@echo "make build-rpm-src - Generate a source RPM package (.srpm)"
-	@echo "make build-rpm-all - Generate both source and binary RPMs"
+	@echo "make srpm - Generate a source RPM package (.srpm)"
+	@echo "make rpm  - Generate binary RPMs"
 	@echo "make man - Generate the avocado man page"
 	@echo "make check - Runs tree static check, unittests and functional tests"
 	@echo "make clean - Get rid of scratch and byte files"
+	@echo "Release related targets:"
+	@echo "make source-release - Create source package for the latest tagged release"
+	@echo "make srpm-release - Generate a source RPM package (.srpm) for the latest tagged release"
+	@echo "make rpm-release  - Generate binary RPMs for the latest tagged release"
 
-source:
+source: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(VERSION)/" -o "SOURCES/avocado-$(VERSION).tar.gz" HEAD
+	git archive --prefix="avocado-$(COMMIT)/" -o "SOURCES/avocado-$(VERSION)-$(SHORT_COMMIT).tar.gz" HEAD
+
+source-release: clean
+	if test ! -d SOURCES; then mkdir SOURCES; fi
+	git archive --prefix="avocado-$(RELEASE_COMMIT)/" -o "SOURCES/avocado-$(VERSION)-$(RELEASE_SHORT_COMMIT).tar.gz" $(VERSION)
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -44,13 +57,21 @@ build-deb-all: prepare-source
 	# build both source and binary packages
 	dpkg-buildpackage -i -I -rfakeroot
 
-build-rpm-src: source
-	rpmbuild --define '_topdir %{getenv:PWD}' \
-		 -bs avocado.spec
+srpm: source
+	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
+	mock --resultdir BUILD/SRPM -D "commit $(COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
 
-build-rpm-all: source
-	rpmbuild --define '_topdir %{getenv:PWD}' \
-		 -ba avocado.spec
+rpm: srpm
+	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
+	mock --resultdir BUILD/RPM -D "commit $(COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
+
+srpm-release: source-release
+	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
+	mock --resultdir BUILD/SRPM -D "commit $(RELEASE_COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
+
+rpm-release: srpm-release
+	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
+	mock --resultdir BUILD/RPM -D "commit $(RELEASE_COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
 
 clean:
 	$(PYTHON) setup.py clean
