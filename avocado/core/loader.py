@@ -801,7 +801,7 @@ class ExternalLoader(TestLoader):
         :return: list of matching tests
         """
         if not self._external_runner:
-            return None
+            return []
         return [(test.ExternalRunnerTest, {'name': url, 'params': {'id': url},
                                            'external_runner': self._external_runner})]
 
