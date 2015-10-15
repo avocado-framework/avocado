@@ -637,8 +637,35 @@ class FileLoader(TestLoader):
                     # Module does not have an avocado test class inside but
                     # it's executable, let's execute it.
                     return self._make_test(test.SimpleTest, test_path)
+                mod_contents = open(test_path).read()
+                mod = ast.parse(mod_contents, test_path)
+                execute_as_simple = False
+                for statement in mod.body:
+                    if isinstance(statement, ast.Import):
+                        for name in statement.names:
+                            if name.name == 'unittest':
+                                execute_as_simple = True
+                                break
+                    if isinstance(statement, ast.Import):
+                        for name in statement.names:
+                            if name.name == 'unittest':
+                                execute_as_simple = True
+                                break
+                    if isinstance(statement, ast.If):
+                        if isinstance(statement.body[0], ast.Import):
+                            # Let's use this to identify avocado unittests
+                            # (they have to use the backported unittest2
+                            # module to run on python 2.6)
+                            try:
+                                if statement.body[0].names[0].name == 'unittest2':
+                                    execute_as_simple = True
+                                    break
+                            except (IndexError, AttributeError):
+                                pass
+                if execute_as_simple:
+                    return self._make_test(test.SimpleTest, test_path)
                 else:
-                    # Module does not have an avocado test class inside, and
+                    # Module does not appear to be a unittest, and
                     # it's not executable. Not a Test.
                     return make_broken(test.NotATest, test_path)
 

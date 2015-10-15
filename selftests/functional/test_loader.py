@@ -16,6 +16,16 @@ from avocado.utils import process
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+PYTHON_UNITTEST = """#!/usr/bin/python
+import unittest
+
+class PassTest(unittest.TestCase):
+    def test(self):
+        pass
+
+if __name__ == "__main__":
+    unittest.main()
+"""
 
 AVOCADO_TEST_OK = """#!/usr/bin/python
 from avocado import Test
@@ -107,6 +117,9 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_simple_not_exec(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST')
+
+    def test_unittest_not_exec(self):
+        self._test('my_unittest.py', PYTHON_UNITTEST, 'SIMPLE')
 
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
