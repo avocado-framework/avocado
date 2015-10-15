@@ -1,3 +1,9 @@
+%global modulename avocado
+%if ! 0%{?commit:1}
+ %define commit 4cfe3872bc104151c57928577f6deea501def8a4
+%endif
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.29.0
@@ -5,7 +11,7 @@ Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
-Source: avocado-%{version}.tar.gz
+Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver
 BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum
@@ -29,7 +35,7 @@ Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{commit}
 
 %build
 %{__python} setup.py build
