@@ -98,7 +98,7 @@ class TestAvocadoParams(unittest.TestCase):
         repr(self.params1)
         str(self.params1)
         str(multiplexer.AvocadoParams([], 'Unittest', None, [], {}))
-        self.assertEqual(26, sum([1 for _ in self.params1.iteritems()]))
+        self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
     def test_get_abs_path(self):
         # /ch0/ is not leaf thus it's not queryable
