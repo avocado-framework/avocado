@@ -587,7 +587,7 @@ class SimpleTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
-            test_params = dict([(str(key), str(val)) for key, val in
+            test_params = dict([(str(key), str(val)) for path, key, val in
                                 self.params.iteritems()])
 
             if override_command is not None:
