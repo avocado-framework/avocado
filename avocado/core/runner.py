@@ -140,6 +140,18 @@ class TestRunner(object):
 
         proc.start()
 
+        end = time.time() + 10
+        while queue.empty():
+            if not proc.is_alive() and queue.empty():
+                raise exceptions.TestError("Process died before it pushed "
+                                           "early state.")
+            if time.time() > end:
+                msg = ("Unable to receive test's early-state in 10s, "
+                       "something wrong happened probably in the "
+                       "avocado framework.")
+                os.kill(proc.pid, 9)
+                raise exceptions.TestError(msg)
+            time.sleep(0)
         early_state = queue.get()
 
         if 'load_exception' in early_state:
