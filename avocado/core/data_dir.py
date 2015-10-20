@@ -32,6 +32,7 @@ import sys
 import shutil
 import time
 import tempfile
+import stat
 
 from . import job_id
 from .settings import settings
@@ -245,6 +246,9 @@ class _TmpDirTracker(Borg):
     def get(self):
         if not hasattr(self, 'tmp_dir'):
             self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
+            # Let the temp dir executable
+            st = os.stat(self.tmp_dir)
+            os.chmod(self.tmp_dir, st.st_mode | stat.S_IXUSR | stat.S_IXOTH)
         return self.tmp_dir
 
     def __del__(self):
