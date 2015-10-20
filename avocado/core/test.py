@@ -611,9 +611,9 @@ class ExternalRunnerTest(SimpleTest):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
-        name = external_runner.runner + " " + name
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
+        self.path = external_runner.runner + " " + name
 
     def test(self):
         pre_cwd = os.getcwd()
