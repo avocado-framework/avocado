@@ -578,7 +578,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def test(self, override_command=None):
+    def test(self):
         """
         Run the executable, and log its detailed execution.
         """
@@ -586,13 +586,8 @@ class SimpleTest(Test):
             test_params = dict([(str(key), str(val)) for key, val in
                                 self.params.iteritems()])
 
-            if override_command is not None:
-                command = override_command
-            else:
-                command = pipes.quote(self.path)
-
             # process.run uses shlex.split(), the self.path needs to be escaped
-            result = process.run(command, verbose=True,
+            result = process.run(self.path, verbose=True,
                                  env=test_params)
 
             self._log_detailed_cmd_info(result)
@@ -616,6 +611,7 @@ class ExternalRunnerTest(SimpleTest):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
+        name = external_runner.runner + " " + name
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
 
@@ -639,9 +635,7 @@ class ExternalRunnerTest(SimpleTest):
                                new_cwd)
                 os.chdir(new_cwd)
 
-            command = "%s %s" % (self.external_runner.runner, self.path)
-
-            return super(ExternalRunnerTest, self).test(command)
+            return super(ExternalRunnerTest, self).test()
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)
