@@ -140,6 +140,11 @@ class TestRunner(object):
 
         proc.start()
 
+        while queue.empty():
+            if not proc.is_alive() and queue.empty():
+                raise exceptions.TestError("Process died before it pushed "
+                                           "early state.")
+            time.sleep(0)
         early_state = queue.get()
 
         if 'load_exception' in early_state:
