@@ -24,6 +24,7 @@ import imp
 import inspect
 import os
 import re
+import pipes
 import shlex
 import sys
 
@@ -718,7 +719,8 @@ class FileLoader(TestLoader):
                                                 subtests_filter)
             else:
                 if os.access(test_path, os.X_OK):
-                    return self._make_test(test.SimpleTest, test_path)
+                    return self._make_test(test.SimpleTest,
+                                           pipes.quote(test_path))
                 else:
                     return make_broken(test.NotATest, test_path)
         else:
