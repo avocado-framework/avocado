@@ -491,6 +491,11 @@ class FileLoader(TestLoader):
                 subtests_filter = _subtests_filter
 
         if not os.path.isdir(url):  # Single file
+            if not self._make_tests(url, DEFAULT, subtests_filter):
+                split_url = shlex.split(url)
+                if (os.access(split_url[0], os.X_OK) and
+                        not os.path.isdir(split_url[0])):
+                    return self._make_test(test.SimpleTest, url)
             return self._make_tests(url, which_tests, subtests_filter)
 
         tests = []
