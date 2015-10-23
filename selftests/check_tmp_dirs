@@ -2,6 +2,7 @@
 
 import os
 import sys
+import tempfile
 
 # simple magic for using scripts within a source tree
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,7 +15,7 @@ from avocado.core import data_dir
 
 
 def check_tmp_dirs():
-    dirs_to_check = ['/tmp', data_dir.BASE_TMP_DIR]
+    dirs_to_check = [tempfile.gettempdir()]
     fail = False
     for dir_to_check in dirs_to_check:
         dir_list = os.listdir(dir_to_check)

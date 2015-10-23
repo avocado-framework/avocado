@@ -59,8 +59,6 @@ USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
 
-BASE_TMP_DIR = os.environ.get('TMPDIR', '/var/tmp')
-
 
 def _usable_rw_dir(directory):
     """
@@ -244,7 +242,7 @@ class _TmpDirTracker(Borg):
 
     def get(self):
         if not hasattr(self, 'tmp_dir'):
-            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_', dir=BASE_TMP_DIR)
+            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_')
         return self.tmp_dir
 
     def __del__(self):
