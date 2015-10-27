@@ -1,3 +1,6 @@
+.. image:: https://badge.waffle.io/avocado-framework/avocado.png?label=ready&title=Ready 
+ :target: https://waffle.io/avocado-framework/avocado
+ :alt: 'Stories in Ready'
 Avocado Test Framework
 ======================
 
