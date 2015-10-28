@@ -17,7 +17,6 @@
 import logging
 
 from .builtin import load_builtins
-from .plugin import Plugin
 
 
 DefaultPluginManager = None
@@ -80,44 +79,7 @@ class BuiltinPluginManager(PluginManager):
                           name, err)
 
 
-class ExternalPluginManager(PluginManager):
-
-    """
-    Load external plugins.
-    """
-
-    def load_plugins(self, path, pattern='avocado_*.py'):
-        from glob import glob
-        import os
-        import imp
-        plugins = []
-        if path:
-            candidates = glob(os.path.join(path, pattern))
-            candidates = [(os.path.splitext(os.path.basename(x))[0], path)
-                          for x in candidates]
-            candidates = [(x[0], imp.find_module(x[0], [path]))
-                          for x in candidates]
-            for candidate in candidates:
-                try:
-                    mod = imp.load_module(candidate[0], *candidate[1])
-                except Exception as err:
-                    log.error("Could not load module plugin '%s': %s",
-                              candidate[0], err)
-                else:
-                    any_plugin = False
-                    for name in mod.__dict__:
-                        x = getattr(mod, name)
-                        if isinstance(x, type) and issubclass(x, Plugin):
-                            plugins.append(x)
-                            any_plugin = True
-                    if not any_plugin:
-                        log.error("Could not find any plugin in module '%s'",
-                                  candidate[0])
-        for plugin in sorted(plugins, key=lambda plugin: plugin.priority):
-            self.add_plugin(plugin())
-
-
-class AvocadoPluginManager(BuiltinPluginManager, ExternalPluginManager):
+class AvocadoPluginManager(BuiltinPluginManager):
 
     """
     Avocado Plugin Manager.
@@ -127,11 +89,9 @@ class AvocadoPluginManager(BuiltinPluginManager, ExternalPluginManager):
 
     def __init__(self):
         BuiltinPluginManager.__init__(self)
-        ExternalPluginManager.__init__(self)
 
-    def load_plugins(self, path=None):
+    def load_plugins(self):
         BuiltinPluginManager.load_plugins(self)
-        ExternalPluginManager.load_plugins(self, path)
 
 
 def get_plugin_manager():
