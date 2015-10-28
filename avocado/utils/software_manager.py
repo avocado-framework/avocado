@@ -387,13 +387,7 @@ class YumBackend(RpmBackend):
         """
         Installs package [name]. Handles local installs.
         """
-        if os.path.isfile(name):
-            name = os.path.abspath(name)
-            command = 'localinstall'
-        else:
-            command = 'install'
-
-        i_cmd = self.base_command + ' ' + command + ' ' + name
+        i_cmd = self.base_command + ' ' + 'install' + ' ' + name
 
         try:
             process.system(i_cmd)
