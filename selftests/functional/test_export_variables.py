@@ -4,6 +4,7 @@ import tempfile
 import shutil
 
 from avocado import VERSION
+from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
@@ -47,7 +48,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, self.script.path)
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))

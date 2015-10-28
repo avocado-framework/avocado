@@ -5,6 +5,7 @@ import sqlite3
 import tempfile
 import shutil
 
+from avocado.core import exit_codes
 from avocado.utils import process
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
@@ -25,8 +26,10 @@ class JournalPluginTests(unittest.TestCase):
         self.db = sqlite3.connect(jfile)
 
     def test_journal_job_id(self):
-        self.assertEqual(self.result.exit_status, 0,
-                         "Command '%s' did not return 0" % self.cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(self.result.exit_status, expected_rc,
+                         "Command '%s' did not return %s" % (self.cmd_line,
+                                                             expected_rc))
         cur = self.db.cursor()
         cur.execute('SELECT unique_id FROM job_info;')
         db_job_id = cur.fetchone()[0]
@@ -34,8 +37,10 @@ class JournalPluginTests(unittest.TestCase):
                          "The job ids differs, expected %s got %s" % (self.job_id, db_job_id))
 
     def test_journal_count_entries(self):
-        self.assertEqual(self.result.exit_status, 0,
-                         "Command '%s' did not return 0" % self.cmd_line)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(self.result.exit_status, expected_rc,
+                         "Command '%s' did not return %s" % (self.cmd_line,
+                                                             expected_rc))
         cur = self.db.cursor()
         cur.execute('SELECT COUNT(*) FROM test_journal;')
         db_count = cur.fetchone()[0]

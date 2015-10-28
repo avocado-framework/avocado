@@ -6,6 +6,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import exit_codes
 from avocado.utils import process
 
 
@@ -32,22 +33,22 @@ class StandaloneTests(unittest.TestCase):
 
     def test_passtest(self):
         cmd_line = './examples/tests/passtest.py -r'
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, 'passtest')
 
     def test_warntest(self):
         cmd_line = './examples/tests/warntest.py -r'
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, 'warntest')
 
     def test_failtest(self):
         cmd_line = './examples/tests/failtest.py -r'
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc, 'failtest')
 
     def test_errortest_nasty(self):
         cmd_line = './examples/tests/errortest_nasty.py -r'
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
         exc = "NastyException: Nasty-string-like-exception"
         count = result.stdout.count("\n%s" % exc)
@@ -57,21 +58,21 @@ class StandaloneTests(unittest.TestCase):
 
     def test_errortest_nasty2(self):
         cmd_line = './examples/tests/errortest_nasty2.py -r'
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty2')
         self.assertIn("Exception: Unable to get exception, check the traceback"
                       " for details.", result.stdout)
 
     def test_errortest_nasty3(self):
         cmd_line = './examples/tests/errortest_nasty3.py -r'
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty3')
         self.assertIn("TestError: <errortest_nasty3.NastyException instance at ",
                       result.stdout)
 
     def test_errortest(self):
         cmd_line = './examples/tests/errortest.py -r'
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc, 'errortest')
 
 if __name__ == '__main__':

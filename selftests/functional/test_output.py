@@ -11,9 +11,9 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado.utils import process
+from avocado.core import exit_codes
 from avocado.core.output import TermSupport
-
+from avocado.utils import process
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
@@ -28,7 +28,7 @@ class OutputTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off doublefree' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         output = result.stdout + result.stderr
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
@@ -61,7 +61,7 @@ class OutputPluginTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --xunit - --json - passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         output = result.stdout + result.stderr
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
@@ -74,7 +74,7 @@ class OutputPluginTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --html - passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         output = result.stdout + result.stderr
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
@@ -90,7 +90,7 @@ class OutputPluginTest(unittest.TestCase):
                     (self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         try:
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
@@ -111,7 +111,7 @@ class OutputPluginTest(unittest.TestCase):
                     (self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         try:
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
@@ -138,7 +138,7 @@ class OutputPluginTest(unittest.TestCase):
                     (self.tmpdir, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         tmpdir_contents = os.listdir(tmpdir)
         self.assertEqual(len(tmpdir_contents), 5,
                          'Not all resources dir were created: %s' % tmpdir_contents)
@@ -169,7 +169,7 @@ class OutputPluginTest(unittest.TestCase):
                     (self.tmpdir, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         try:
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
@@ -192,7 +192,7 @@ class OutputPluginTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -209,7 +209,7 @@ class OutputPluginTest(unittest.TestCase):
                     self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -220,7 +220,7 @@ class OutputPluginTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -236,7 +236,7 @@ class OutputPluginTest(unittest.TestCase):
             cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off whiteboard --json %s' %
                         (self.tmpdir, tmpfile))
             result = process.run(cmd_line, ignore_status=True)
-            expected_rc = 0
+            expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
@@ -261,7 +261,7 @@ class OutputPluginTest(unittest.TestCase):
                         "--sysinfo=off gendata --json %s" %
                         (self.tmpdir, tmpfile))
             result = process.run(cmd_line, ignore_status=True)
-            expected_rc = 0
+            expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
@@ -300,7 +300,7 @@ class OutputPluginTest(unittest.TestCase):
                         (self.tmpdir, redirected_output_path))
             result = process.run(cmd_line, ignore_status=True, shell=True)
             output = result.stdout + result.stderr
-            expected_rc = 0
+            expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
