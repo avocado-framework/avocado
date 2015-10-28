@@ -57,7 +57,7 @@ from . import path as utils_path
 log = logging.getLogger('avocado.test')
 
 
-SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper']
+SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
 
 
 class SystemInspector(object):
@@ -98,6 +98,9 @@ class SystemInspector(object):
             if ('apt-get' in list_supported and
                     self.distro in ('debian', 'ubuntu')):
                 pm_supported = 'apt-get'
+            elif ('dnf' in list_supported and
+                  self.distro in ('redhat', 'fedora')):
+                pm_supported = 'dnf'
             elif ('yum' in list_supported and
                   self.distro in ('redhat', 'fedora')):
                 pm_supported = 'yum'
@@ -137,6 +140,7 @@ class SoftwareManager(object):
             backend_type = inspector.get_package_management()
             backend_mapping = {'apt-get': AptBackend,
                                'yum': YumBackend,
+                               'dnf': DnfBackend,
                                'zypper': ZypperBackend}
 
             if backend_type not in backend_mapping.keys():
@@ -493,6 +497,39 @@ class YumBackend(RpmBackend):
             return str(provides_list[0])
         else:
             return None
+
+
+class DnfBackend(YumBackend):
+
+    """
+    Implements the dnf backend for software manager.
+
+    DNF is the successor to yum in recent Fedora.
+    """
+    def __init__(self):
+        """
+        Initializes the base command and the yum package repository.
+        """
+        super(DnfBackend, self).__init__()
+        executable = utils_path.find_command('dnf')
+        base_arguments = '-y'
+        self.base_command = executable + ' ' + base_arguments
+
+    def install(self, name):
+        """
+        Installs package [name]. Handles local installs.
+        """
+        command = 'install'
+        if os.path.isfile(name):
+            name = os.path.abspath(name)
+
+        i_cmd = self.base_command + ' ' + command + ' ' + name
+
+        try:
+            process.system(i_cmd)
+            return True
+        except process.CmdError:
+            return False
 
 
 class ZypperBackend(RpmBackend):
