@@ -10,6 +10,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import exit_codes
 from avocado.utils import process
 
 
@@ -43,12 +44,12 @@ class MultiplexTests(unittest.TestCase):
 
     def test_mplex_plugin(self):
         cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_mplex_plugin_nonexistent(self):
         cmd_line = './scripts/avocado multiplex nonexist'
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr)
 
@@ -58,20 +59,20 @@ class MultiplexTests(unittest.TestCase):
                     '/:examples/mux-environment.yaml '
                     '/:examples/mux-selftest.yaml '
                     '/:examples/mux-environment.yaml')
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(DEBUG_OUT, result.stdout)
 
     def test_run_mplex_noid(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_doublepass(self):
@@ -82,14 +83,14 @@ class MultiplexTests(unittest.TestCase):
     def test_run_mplex_failtest(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest failtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_double_mplex(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --multiplex '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_params(self):
@@ -97,7 +98,7 @@ class MultiplexTests(unittest.TestCase):
                     '--multiplex examples/tests/env_variables.sh.data'
                     '/env_variables.yaml '
                     '--show-job-log' % self.tmpdir)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
             msg = ('[stdout] Custom variable: ' +

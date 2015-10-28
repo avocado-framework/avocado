@@ -9,6 +9,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
@@ -107,43 +108,43 @@ class JobTimeOutTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
                     (self.tmpdir, self.script.path))
-        self.run_and_check(cmd_line, 1, 2, 1, 0, 1)
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 2, 1, 0, 1)
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s' %
                     (self.tmpdir, self.py.path))
-        self.run_and_check(cmd_line, 1, 3, 1, 0, 2)
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 3, 1, 0, 2)
 
     def test_invalid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=0 examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 3)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertIn('Invalid number', result.stderr)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123x examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 3)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertIn('Invalid number', result.stderr)
 
     def test_valid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123 examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 0)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123s examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 0)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123m examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 0)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123h examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        self.assertEqual(result.exit_status, 0)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
 
     def tearDown(self):
         self.script.remove()
