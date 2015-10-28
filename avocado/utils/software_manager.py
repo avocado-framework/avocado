@@ -57,7 +57,7 @@ from . import path as utils_path
 log = logging.getLogger('avocado.test')
 
 
-SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper']
+SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
 
 
 class SystemInspector(object):
@@ -98,6 +98,9 @@ class SystemInspector(object):
             if ('apt-get' in list_supported and
                     self.distro in ('debian', 'ubuntu')):
                 pm_supported = 'apt-get'
+            elif ('dnf' in list_supported and
+                  self.distro in ('redhat', 'fedora')):
+                pm_supported = 'dnf'
             elif ('yum' in list_supported and
                   self.distro in ('redhat', 'fedora')):
                 pm_supported = 'yum'
@@ -137,6 +140,7 @@ class SoftwareManager(object):
             backend_type = inspector.get_package_management()
             backend_mapping = {'apt-get': AptBackend,
                                'yum': YumBackend,
+                               'dnf': DnfBackend,
                                'zypper': ZypperBackend}
 
             if backend_type not in backend_mapping.keys():
@@ -348,12 +352,12 @@ class YumBackend(RpmBackend):
     Enterprise Linux.
     """
 
-    def __init__(self):
+    def __init__(self, cmd='yum'):
         """
         Initializes the base command and the yum package repository.
         """
         super(YumBackend, self).__init__()
-        executable = utils_path.find_command('yum')
+        executable = utils_path.find_command(cmd)
         base_arguments = '-y'
         self.base_command = executable + ' ' + base_arguments
         self.repo_file_path = '/etc/yum.repos.d/avocado-managed.repo'
@@ -368,14 +372,15 @@ class YumBackend(RpmBackend):
         except IndexError:
             ver = out
         self.pm_version = ver
-        log.debug('Yum version: %s' % self.pm_version)
+        log.debug('%s version: %s', cmd, self.pm_version)
 
         if HAS_YUM_MODULE:
             self.yum_base = yum.YumBase()
         else:
             self.yum_base = None
-            log.error("yum module for Python is required. "
-                      "Using the basic support from rpm and yum commands")
+            log.error("%s module for Python is required. "
+                      "Using the basic support from rpm and %s commands", cmd,
+                      cmd)
 
     def _cleanup(self):
         """
@@ -487,6 +492,21 @@ class YumBackend(RpmBackend):
             return str(provides_list[0])
         else:
             return None
+
+
+class DnfBackend(YumBackend):
+
+    """
+    Implements the dnf backend for software manager.
+
+    DNF is the successor to yum in recent Fedora.
+    """
+
+    def __init__(self):
+        """
+        Initializes the base command and the DNF package repository.
+        """
+        super(DnfBackend, self).__init__(cmd='dnf')
 
 
 class ZypperBackend(RpmBackend):
