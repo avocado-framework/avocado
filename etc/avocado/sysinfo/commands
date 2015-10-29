@@ -1,5 +1,5 @@
 df -mP
-dmesg -c
+dmesg
 uname -a
 lspci -vvnn
 gcc --version
