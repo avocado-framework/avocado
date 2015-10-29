@@ -121,3 +121,23 @@ class NamedFileLocationDiscovery(FileLocationDiscovery):
 class PythonFileLocationDiscovery(NamedFileLocationDiscovery):
 
     INCLUDE_LOCATION_NAMES = [re.compile('.*\.py$')]
+
+
+class AccessFileLocationDiscovery(FileLocationDiscovery):
+
+    INCLUDE_MODES = []
+
+    def __init__(self, root):
+        super(AccessFileLocationDiscovery, self).__init__(root)
+        self.INCLUDE_CHECK_FUNCTIONS = [self._check_access_mode]
+
+    def _check_access_mode(self, location):
+        for include_mode in self.INCLUDE_MODES:
+            if os.access(location, include_mode):
+                return True
+        return False
+
+
+class ReadableExecutableFileLocationDiscovery(AccessFileLocationDiscovery):
+
+    INCLUDE_MODES = [os.R_OK | os.X_OK]
