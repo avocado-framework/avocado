@@ -166,6 +166,50 @@ class Command(Collectible):
                             verbose=False)
 
 
+class CmdDiffStore(Collectible):
+
+    """
+    Stores the output of the given cmd between `__init__` and `run`.
+    """
+
+    def __init__(self, cmd, logf=None):
+        """
+        Store last (non-empty) line of the $cmd output
+        """
+        if logf is None:
+            logf = cmd.replace(" ", "_")
+        super(CmdDiffStore, self).__init__(logf)
+        self.cmd = cmd
+        self.last_line = None
+
+        ps = subprocess.Popen(cmd, shell=True, stdin=open(os.devnull, 'r'),
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT)
+        out = ps.communicate()[0]
+        if ps.wait() == 0:
+            self.last_line = out.strip().splitlines()[-1]
+
+    def run(self, logdir):
+        """
+        Find the last_line in the output of the $cmd and store only the new
+        output from this position.
+        """
+        if self.last_line is None:
+            return
+        ps = subprocess.Popen(self.cmd, shell=True,
+                              stdin=open(os.devnull, 'r'),
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT)
+        out = ps.communicate()[0]
+        if ps.wait() == 0:
+            if self.last_line:
+                try:
+                    out = out[out.index(self.last_line):]
+                except ValueError:  # Not found, log everything
+                    pass
+        open(os.path.join(logdir, self.logf), 'w').write(out)
+
+
 class Daemon(Command):
 
     """
@@ -422,6 +466,10 @@ class SysInfo(object):
             self.end_test_collectibles.add(self._get_syslog_watcher())
         except ValueError, details:
             log.info(details)
+
+        # Add non-standard collectibles
+        self.start_job_collectibles.add(Command("dmesg"))
+        self.end_job_collectibles.add(CmdDiffStore("dmesg"))
 
     def _get_collectibles(self, hook):
         collectibles = self.hook_mapping.get(hook)
