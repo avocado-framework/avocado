@@ -102,13 +102,9 @@ class Test(unittest.TestCase):
         base_logdir = os.path.join(base_logdir, 'test-results')
         self.tagged_name = self.get_tagged_name(base_logdir)
 
-        # Let's avoid trouble at logdir init time, since we're interested
-        # in a relative directory here
-        tagged_name = self.tagged_name
-        if tagged_name.startswith('/'):
-            tagged_name = tagged_name[1:]
-
-        self.logdir = utils_path.init_dir(base_logdir, tagged_name)
+        # Replace '/' with '_' to avoid splitting name into multiple dirs
+        self.logdir = utils_path.init_dir(base_logdir,
+                                          self.tagged_name.replace('/', '_'))
         genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
