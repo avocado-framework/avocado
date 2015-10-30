@@ -519,11 +519,11 @@ class Job(object):
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.view.notify(event='error', msg=('Avocado job failed: %s: %s' %
-                                                 (fail_class, details)))
+            self.view.notify(event='error', msg=('\nAvocado job failed: %s: %s'
+                                                 % (fail_class, details)))
             return exit_codes.AVOCADO_JOB_FAIL
         except exceptions.OptionValidationError, details:
-            self.view.notify(event='error', msg=str(details))
+            self.view.notify(event='error', msg='\n' + str(details))
             return exit_codes.AVOCADO_JOB_FAIL
 
         except Exception, details:
@@ -532,7 +532,7 @@ class Job(object):
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             fail_class = details.__class__.__name__
-            self.view.notify(event='error', msg=('Avocado crashed: %s: %s' %
+            self.view.notify(event='error', msg=('\nAvocado crashed: %s: %s' %
                                                  (fail_class, details)))
             for line in tb_info:
                 self.view.notify(event='minor', msg=line)
