@@ -298,15 +298,19 @@ class AvocadoParams(object):
 
     def iteritems(self):
         """
-        Very basic implementation which iterates through __ALL__ params,
-        which generates lots of duplicite entries due to inherited values.
+        Iterate through all available params and yield origin, key and value
+        of each unique value.
         """
+        env = []
         for param in self._rel_paths:
-            for pair in param.iteritems():
-                self.log(pair[0], '/*', None, pair[1])
-                yield pair
-        for pair in self._abs_path.iteritems():
-            yield pair
+            for path, key, value in param.iteritems():
+                if (path, key) not in env:
+                    env.append((path, key))
+                    yield (path, key, value)
+        for path, key, value in self._abs_path.iteritems():
+            if (path, key) not in env:
+                env.append((path, key))
+                yield (path, key, value)
 
 
 class AvocadoParam(object):
@@ -376,8 +380,8 @@ class AvocadoParam(object):
         which generates lots of duplicite entries due to inherited values.
         """
         for leaf in self._leaves:
-            for pair in leaf.environment.iteritems():
-                yield pair
+            for key, value in leaf.environment.iteritems():
+                yield (leaf.environment_origin[key].path, key, value)
 
 
 class Mux(object):
