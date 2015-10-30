@@ -9,6 +9,7 @@ else:
 
 from avocado.core import data_dir
 from avocado.core import job_id
+from avocado.core import exit_codes
 from avocado.utils import process
 
 
@@ -22,7 +23,7 @@ class ArgumentParsingTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado whacky-command-that-doesnt-exist'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
@@ -30,7 +31,7 @@ class ArgumentParsingTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=foo passtest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
@@ -38,7 +39,7 @@ class ArgumentParsingTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --whacky-argument passtest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
@@ -59,7 +60,7 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id=%s %s'
         cmd_line %= (job, complement_args)
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 2
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         path_job_glob = os.path.join(log_dir, "job-*-%s" % job[0:7])

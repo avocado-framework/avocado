@@ -8,6 +8,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
@@ -36,7 +37,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record none' %
                     (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -50,7 +51,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record stdout' %
                     (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -64,7 +65,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record all' %
                     (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -78,7 +79,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
                     (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -92,7 +93,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --xunit -' %
                     (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 1
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
@@ -107,7 +108,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check=off --xunit -' %
                     (self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
