@@ -24,6 +24,7 @@ import imp
 import inspect
 import os
 import re
+import pipes
 import shlex
 import sys
 
@@ -489,6 +490,11 @@ class FileLoader(TestLoader):
                 subtests_filter = _subtests_filter
 
         if not os.path.isdir(url):  # Single file
+            if not self._make_tests(url, DEFAULT, subtests_filter):
+                split_url = shlex.split(url)
+                if (os.access(split_url[0], os.X_OK) and
+                        not os.path.isdir(split_url[0])):
+                    return self._make_test(test.SimpleTest, url)
             return self._make_tests(url, list_tests, subtests_filter)
 
         tests = []
@@ -717,7 +723,8 @@ class FileLoader(TestLoader):
                                                 subtests_filter)
             else:
                 if os.access(test_path, os.X_OK):
-                    return self._make_test(test.SimpleTest, test_path)
+                    return self._make_test(test.SimpleTest,
+                                           pipes.quote(test_path))
                 else:
                     return make_broken(test.NotATest, test_path)
         else:
