@@ -8,6 +8,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import exit_codes
 from avocado.utils import process
 
 
@@ -24,7 +25,7 @@ class SysInfoTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=on passtest' % self.tmpdir
         result = process.run(cmd_line)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         output = result.stdout + result.stderr
@@ -45,7 +46,7 @@ class SysInfoTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir
         result = process.run(cmd_line)
-        expected_rc = 0
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         output = result.stdout + result.stderr
