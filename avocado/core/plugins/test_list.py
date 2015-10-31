@@ -44,10 +44,10 @@ class TestLister(object):
         loader.loader.get_extra_listing()
 
     def _get_test_suite(self, paths):
-        list_tests = loader.ALL if self.args.verbose else loader.AVAILABLE
+        which_tests = loader.ALL if self.args.verbose else loader.AVAILABLE
         try:
             return loader.loader.discover(paths,
-                                          list_tests=list_tests)
+                                          which_tests=which_tests)
         except loader.LoaderUnhandledUrlError, details:
             self.view.notify(event="error", msg=str(details))
             self.view.cleanup()

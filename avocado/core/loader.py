@@ -193,13 +193,13 @@ class TestLoaderProxy(object):
             mapping.update(loader_plugin.get_decorator_mapping())
         return mapping
 
-    def discover(self, urls, list_tests=False):
+    def discover(self, urls, which_tests=DEFAULT):
         """
         Discover (possible) tests from test urls.
 
         :param urls: a list of tests urls; if [] use plugin defaults
         :type urls: builtin.list
-        :param list_tests: Limit tests to be displayed (loader.ALL|DEFAULT...)
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
         :return: A list of test factories (tuples (TestClass, test_params))
         """
         def handle_exception(plugin, details):
@@ -215,7 +215,7 @@ class TestLoaderProxy(object):
         if not urls:
             for loader_plugin in self._initialized_plugins:
                 try:
-                    tests.extend(loader_plugin.discover(None, list_tests))
+                    tests.extend(loader_plugin.discover(None, which_tests))
                 except Exception, details:
                     handle_exception(loader_plugin, details)
         else:
@@ -223,18 +223,18 @@ class TestLoaderProxy(object):
                 handled = False
                 for loader_plugin in self._initialized_plugins:
                     try:
-                        _test = loader_plugin.discover(url, list_tests)
+                        _test = loader_plugin.discover(url, which_tests)
                         if _test:
                             tests.extend(_test)
                             handled = True
-                            if not list_tests:
+                            if not which_tests:
                                 break  # Don't process other plugins
                     except Exception, details:
                         handle_exception(loader_plugin, details)
                 if not handled:
                     unhandled_urls.append(url)
         if unhandled_urls:
-            if list_tests:
+            if which_tests:
                 tests.extend([(test.MissingTest, {'name': url})
                               for url in unhandled_urls])
             else:
@@ -326,12 +326,13 @@ class TestLoader(object):
         """
         raise NotImplementedError
 
-    def discover(self, url, list_tests=DEFAULT):
+    def discover(self, url, which_tests=DEFAULT):
         """
         Discover (possible) tests from an url.
 
         :param url: the url to be inspected.
         :type url: str
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
         :return: a list of test matching the url as params.
         """
         raise NotImplementedError
@@ -430,7 +431,7 @@ class FileLoader(TestLoader):
                 test.Test: output.term_support.healthy_str,
                 FilteredOut: output.term_support.warn_header_str}
 
-    def discover(self, url, list_tests=DEFAULT):
+    def discover(self, url, which_tests=DEFAULT):
         """
         Discover (possible) tests from a directory.
 
@@ -442,10 +443,10 @@ class FileLoader(TestLoader):
         partial match).
 
         :param url: the directory path to inspect.
-        :param list_tests: list corrupted/invalid tests too
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
         :return: list of matching tests
         """
-        tests = self._discover(url, list_tests)
+        tests = self._discover(url, which_tests)
         if self.test_type:
             mapping = self.get_type_label_mapping()
             if self.test_type == 'INSTRUMENTED':
@@ -463,17 +464,17 @@ class FileLoader(TestLoader):
                         return None
         return tests
 
-    def _discover(self, url, list_tests=DEFAULT):
+    def _discover(self, url, which_tests=DEFAULT):
         """
         Recursively walk in a directory and find tests params.
         The tests are returned in alphabetic order.
 
         :param url: the directory path to inspect.
-        :param list_tests: list corrupted/invalid tests too
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
         :return: list of matching tests
         """
         if url is None:
-            if list_tests is DEFAULT:
+            if which_tests is DEFAULT:
                 return []  # Return empty set when not listing details
             else:
                 url = data_dir.get_test_dir()
@@ -489,19 +490,19 @@ class FileLoader(TestLoader):
                 subtests_filter = _subtests_filter
 
         if not os.path.isdir(url):  # Single file
-            return self._make_tests(url, list_tests, subtests_filter)
+            return self._make_tests(url, which_tests, subtests_filter)
 
         tests = []
 
         def add_test_from_exception(exception):
             """ If the exc.filename is valid test it's added to tests """
-            tests.extend(self._make_tests(exception.filename, list_tests))
+            tests.extend(self._make_tests(exception.filename, which_tests))
 
         def skip_non_test(exception):
             """ Always return None """
             return None
 
-        if list_tests:  # ALL => include everything
+        if which_tests is ALL:
             onerror = add_test_from_exception
         else:  # DEFAULT, AVAILABLE => skip missing tests
             onerror = skip_non_test
@@ -514,7 +515,7 @@ class FileLoader(TestLoader):
                             break
                     else:
                         pth = os.path.join(dirpath, file_name)
-                        tests.extend(self._make_tests(pth, list_tests))
+                        tests.extend(self._make_tests(pth, which_tests))
         return tests
 
     def _is_unittests_like(self, test_class, pattern='test'):
@@ -794,10 +795,10 @@ class ExternalLoader(TestLoader):
             raise LoaderError(msg)
         return None  # Skip external runner
 
-    def discover(self, url, list_tests=DEFAULT):
+    def discover(self, url, which_tests=DEFAULT):
         """
         :param url: arguments passed to the external_runner
-        :param list_tests: list corrupted/invalid tests too
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
         :return: list of matching tests
         """
         if not self._external_runner:
