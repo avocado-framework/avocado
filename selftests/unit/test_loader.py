@@ -58,6 +58,17 @@ SIMPLE_TEST = """#!/bin/sh
 true
 """
 
+PYTHON_UNIT_TEST = """import unittest
+
+class MultipleMethods(unittest.TestCase):
+    def test_one(self):
+        pass
+    def testTwo(self):
+        pass
+    def foo(self):
+        pass
+"""
+
 AVOCADO_MULTIPLE_TESTS = """from avocado import Test
 
 class MultipleMethods(Test):
@@ -156,6 +167,17 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_pass_test.path, True)[0])
         self.assertTrue(test_class == 'PassTest', test_class)
         avocado_pass_test.remove()
+
+    def test_load_unittest(self):
+        my_unittest = script.TemporaryScript('myunittest.py',
+                                             PYTHON_UNIT_TEST,
+                                             'avocado_loader_unittest',
+                                             mode=0664)
+        my_unittest.save()
+        test_class, test_parameters = (
+            self.loader.discover(my_unittest.path, True)[0])
+        self.assertTrue(test_class == test.SimpleTest, test_class)
+        my_unittest.remove()
 
     def test_load_not_a_test(self):
         avocado_not_a_test = script.TemporaryScript('notatest.py',

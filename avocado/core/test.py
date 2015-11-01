@@ -595,6 +595,10 @@ class SimpleTest(Test):
             else:
                 command = pipes.quote(self.path)
 
+            p_analyzer = utils_path.PathInspector(self.path)
+            if p_analyzer.is_python() and not p_analyzer.has_exec_permission():
+                command = '%s %s' % (utils_path.find_command('python'), command)
+
             # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(command, verbose=True,
                                  env=test_params)
