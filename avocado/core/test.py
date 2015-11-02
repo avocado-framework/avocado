@@ -587,7 +587,7 @@ class SimpleTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
-            test_params = dict([(str(key), str(val)) for key, val in
+            test_params = dict([(str(key), str(val)) for path, key, val in
                                 self.params.iteritems()])
 
             if override_command is not None:
@@ -688,9 +688,25 @@ class TimeOutSkipTest(Test):
     It will never have a chance to execute.
     """
 
+    _skip_reason = "Test skipped due a job timeout!"
+
     def setUp(self):
-        e_msg = 'Test skipped due a job timeout!'
-        raise exceptions.TestNAError(e_msg)
+        raise exceptions.TestNAError(self._skip_reason)
 
     def test(self):
-        pass
+        raise NotImplementedError("This should never be executed!")
+
+
+class DryRunTest(TimeOutSkipTest):
+
+    """
+    Fake test which logs itself and reports as SKIP
+    """
+
+    _skip_reason = "Test skipped due to --dry-run"
+
+    def setUp(self):
+        self.log.info("Test params:")
+        for path, key, value in self.params.iteritems():
+            self.log.info("%s:%s ==> %s", path, key, value)
+        super(DryRunTest, self).setUp()

@@ -39,6 +39,7 @@ from . import job_id
 from . import output
 from . import multiplexer
 from . import tree
+from . import test
 from .settings import settings
 from .plugins import manager
 from .plugins import jsonresult
@@ -81,6 +82,13 @@ class Job(object):
             args = argparse.Namespace()
         self.args = args
         self.standalone = getattr(self.args, 'standalone', False)
+        if getattr(self.args, "dry_run", False):  # Modify args for dry-run
+            if not self.args.unique_job_id:
+                self.args.unique_job_id = "0" * 40
+            self.args.sysinfo = False
+            if self.args.logdir is None:
+                self.args.logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
+
         unique_id = getattr(self.args, 'unique_job_id', None)
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
@@ -259,13 +267,19 @@ class Job(object):
         urls = self._handle_urls(urls)
         loader.loader.load_plugins(self.args)
         try:
-            return loader.loader.discover(urls)
+            suite = loader.loader.discover(urls)
         except loader.LoaderUnhandledUrlError, details:
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
             self._remove_job_results()
             raise exceptions.JobError('Command interrupted by user...')
+
+        if not getattr(self.args, "dry_run", False):
+            return suite
+        for i in xrange(len(suite)):
+            suite[i] = [test.DryRunTest, suite[i][1]]
+        return suite
 
     def _filter_test_suite(self, test_suite):
         # Filter tests methods with params.filter and methodName
@@ -466,7 +480,7 @@ class Job(object):
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
-        if not self.standalone:
+        if not (self.standalone or getattr(self.args, "dry_run", False)):
             self._update_latest_link()
         self._make_test_runner()
         self._start_sysinfo()
