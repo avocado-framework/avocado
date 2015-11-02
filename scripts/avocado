@@ -14,8 +14,62 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-import os
 import sys
+try:
+    import logging
+    import os
+    import tempfile
+    import traceback
+except:
+    sys.stderr.write("Unable to import basic python libraries, please "
+                     "reinstall avocado and dependencies.\n")
+    # This exit code is replicated from avocado/core/exit_codes.py and not
+    # imported because we are dealing with import failures
+    sys.exit(-1)
+
+
+def handle_exception(*exc_info):
+    # Print traceback into avocado.app.traceback if initialized
+    msg = "Avocado crashed:\n" + "".join(traceback.format_exception(*exc_info))
+    log = logging.getLogger("avocado.app.tracebacks")
+    if getattr(log, "handlers", False):
+        log.error(msg)
+    # Store traceback in data_dir or TMPDIR
+    crash_dir = None
+    prefix = "avocado-traceback-"
+    try:
+        import time
+        prefix += time.strftime("%F_%T") + "-"
+        from avocado.core import data_dir
+        _crash_dir = os.path.join(data_dir.get_data_dir(), "crashes")
+        os.makedirs(_crash_dir)
+        crash_dir = _crash_dir
+    except:
+        pass
+    tmp, name = tempfile.mkstemp(".log", prefix, crash_dir)
+    os.write(tmp, msg)
+    os.close(tmp)
+    # Print friendly message in console-like output
+    msg = ("Avocado crashed unexpectidly: %s\nYou can find details in %s"
+           % (exc_info[1], name))
+    for name in ("avocado.app", "avocado.test", None):
+        log = logging.getLogger(name)
+        for handler in getattr(log, "handlers", []):
+            if isinstance(handler, logging.StreamHandler):
+                break
+        else:
+            continue
+        log.critical(msg)
+        break
+    else:       # Log not found, use stderr and hope it's enabled
+        sys.stderr.write(msg + '\n')
+    # This exit code is replicated from avocado/core/exit_codes.py and not
+    # imported because we are dealing with import failures
+    sys.exit(-1)
+
+if __name__ == '__main__':
+    sys.excepthook = handle_exception
+
 
 # simple magic for using scripts within a source tree
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

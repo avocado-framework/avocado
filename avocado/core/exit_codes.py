@@ -37,3 +37,5 @@ AVOCADO_FAIL = 3
 #: The job was explicitly interrupted. Usually this means that a user
 #: hit CTRL+C while the job was still running.
 AVOCADO_JOB_INTERRUPTED = 4
+#: Avocado generic crash
+AVOCADO_GENERIC_CRASH = -1
