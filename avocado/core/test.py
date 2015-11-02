@@ -102,13 +102,9 @@ class Test(unittest.TestCase):
         base_logdir = os.path.join(base_logdir, 'test-results')
         self.tagged_name = self.get_tagged_name(base_logdir)
 
-        # Let's avoid trouble at logdir init time, since we're interested
-        # in a relative directory here
-        tagged_name = self.tagged_name
-        if tagged_name.startswith('/'):
-            tagged_name = tagged_name[1:]
-
-        self.logdir = utils_path.init_dir(base_logdir, tagged_name)
+        # Replace '/' with '_' to avoid splitting name into multiple dirs
+        self.logdir = utils_path.init_dir(base_logdir,
+                                          self.tagged_name.replace('/', '_'))
         genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
@@ -582,7 +578,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def test(self, override_command=None):
+    def test(self):
         """
         Run the executable, and log its detailed execution.
         """
@@ -590,13 +586,8 @@ class SimpleTest(Test):
             test_params = dict([(str(key), str(val)) for path, key, val in
                                 self.params.iteritems()])
 
-            if override_command is not None:
-                command = override_command
-            else:
-                command = pipes.quote(self.path)
-
             # process.run uses shlex.split(), the self.path needs to be escaped
-            result = process.run(command, verbose=True,
+            result = process.run(self.path, verbose=True,
                                  env=test_params)
 
             self._log_detailed_cmd_info(result)
@@ -620,6 +611,7 @@ class ExternalRunnerTest(SimpleTest):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
+        name = external_runner.runner + " " + name
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
 
@@ -643,9 +635,7 @@ class ExternalRunnerTest(SimpleTest):
                                new_cwd)
                 os.chdir(new_cwd)
 
-            command = "%s %s" % (self.external_runner.runner, self.path)
-
-            return super(ExternalRunnerTest, self).test(command)
+            return super(ExternalRunnerTest, self).test()
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)

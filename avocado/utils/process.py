@@ -343,6 +343,11 @@ class SubProcess(object):
         while True:
             tmp = os.read(fileno, 1024)
             if tmp == '':
+                if self.verbose and bfr:
+                    for line in bfr.splitlines():
+                        log.debug(prefix, line)
+                        if stream_logger is not None:
+                            stream_logger.debug(stream_prefix, line)
                 break
             lock.acquire()
             try:
@@ -350,10 +355,10 @@ class SubProcess(object):
                 if self.verbose:
                     bfr += tmp
                     if tmp.endswith('\n'):
-                        for l in bfr.splitlines():
-                            log.debug(prefix, l)
+                        for line in bfr.splitlines():
+                            log.debug(prefix, line)
                             if stream_logger is not None:
-                                stream_logger.debug(stream_prefix, l)
+                                stream_logger.debug(stream_prefix, line)
                         bfr = ''
             finally:
                 lock.release()
