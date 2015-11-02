@@ -480,7 +480,7 @@ class Job(object):
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
-        if not self.standalone:
+        if not (self.standalone or getattr(self.args, "dry_run", False)):
             self._update_latest_link()
         self._make_test_runner()
         self._start_sysinfo()
