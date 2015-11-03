@@ -25,6 +25,7 @@ string. Even with the dot notation, people may try to do things like
 And not notice until their code starts failing.
 """
 
+import os.path
 import re
 
 
@@ -192,3 +193,12 @@ def tabular_output(matrix, header=None):
     :rtype: str
     """
     return "\n".join(iter_tabular_output(matrix, header))
+
+
+def string_to_safe_path(string):
+    """
+    Convert string to a valid file/dir name.
+    :param string: String to be converted
+    :return: String which is safe to pass as a file/dir name (on recent fs)
+    """
+    return string.replace(os.path.sep, '_')

@@ -70,14 +70,14 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args_version, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
-        args = 'cd ~/avocado/tests; avocado list sleeptest --paginator=off'
+        args = 'cd ~/avocado/tests; avocado list "sleeptest" --paginator=off'
         urls_result = flexmock(exit_status=0)
         (Remote.should_receive('run')
          .with_args(args, timeout=60, ignore_status=True)
          .once().and_return(urls_result))
 
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
-                "--json - --archive sleeptest --multiplex-files "
+                "--json - --archive \"sleeptest\" --multiplex-files "
                 "~/avocado/tests/foo.yaml ~/avocado/tests/bar/baz.yaml "
                 "--dry-run")
         (Remote.should_receive('run')

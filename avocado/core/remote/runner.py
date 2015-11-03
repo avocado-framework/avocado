@@ -16,6 +16,7 @@
 import sys
 import json
 import os
+import pipes
 import re
 import logging
 
@@ -26,6 +27,7 @@ from .. import output
 from .. import exceptions
 from .. import status
 from ..runner import TestRunner
+from ...utils import astring
 from ...utils import archive
 from ...utils import stacktrace
 
@@ -81,7 +83,10 @@ class RemoteTestRunner(TestRunner):
 
         if getattr(self.result.args, "dry_run", False):
             extra_params.append("--dry-run")
-        urls_str = " ".join(urls)
+        # There are multiple levels of quotation, use "$url" and escape "
+        urls_str = '" "'.join(_.replace('\\"', '\\\\\\\\\\\\"') for _ in urls)
+        if urls_str:
+            urls_str = '"' + urls_str + '"'
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
                                                        urls_str))
@@ -118,7 +123,7 @@ class RemoteTestRunner(TestRunner):
         for t_dict in json_result['tests']:
             logdir = os.path.dirname(self.result.stream.debuglog)
             logdir = os.path.join(logdir, 'test-results')
-            relative_path = t_dict['test'].lstrip('/')
+            relative_path = astring.string_to_safe_path(t_dict['test'])
             logdir = os.path.join(logdir, relative_path)
             t_dict['logdir'] = logdir
             t_dict['logfile'] = os.path.join(logdir, 'debug.log')
