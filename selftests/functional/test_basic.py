@@ -5,6 +5,7 @@ import time
 import sys
 import tempfile
 import xml.dom.minidom
+import glob
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -333,6 +334,32 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
                       '  SKIP', result.stdout)
+
+    def test_ugly_echo_cmd(self):
+        if not os.path.exists("/bin/echo"):
+            self.skipTest("Program /bin/echo does not exist")
+        os.chdir(basedir)
+        cmd_line = ('./scripts/avocado run "/bin/echo -ne '
+                    'foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
+                    ' --sysinfo=off  --show-job-log' % self.tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %s:\n%s" %
+                         (expected_rc, result))
+        self.assertIn('[stdout] foo', result.stdout, result)
+        self.assertIn('[stdout] \'"', result.stdout, result)
+        self.assertIn('[stdout] bar/baz', result.stdout, result)
+        self.assertIn('PASS /bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz',
+                      result.stdout, result)
+        # logdir name should escape special chars (/)
+        test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
+                                           'test-results', '*'))
+        self.assertEqual(len(test_dirs), 1, "There are multiple directories in"
+                         " test-results dir, but only one test was executed: "
+                         "%s" % (test_dirs))
+        self.assertEqual(os.path.basename(test_dirs[0]),
+                         '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -695,6 +722,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         n_skip = json_data['skip']
         self.assertEqual(n_skip, e_nskip,
                          "Different number of skipped tests")
+        return json_data
 
     def test_json_plugin_passtest(self):
         self.run_and_check('passtest', exit_codes.AVOCADO_ALL_OK,
@@ -711,6 +739,19 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
+
+    def test_ugly_echo_cmd(self):
+        if not os.path.exists("/bin/echo"):
+            self.skipTest("Program /bin/echo does not exist")
+        data = self.run_and_check('"/bin/echo -ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
+                                  'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
+                                  0, 0)
+        # The executed test should be this
+        self.assertEqual(data['tests'][0]['url'],
+                         '/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz')
+        # logdir name should escape special chars (/)
+        self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
+                         '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

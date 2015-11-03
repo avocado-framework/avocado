@@ -21,7 +21,6 @@ framework tests.
 import inspect
 import logging
 import os
-import pipes
 import re
 import shutil
 import sys
@@ -31,6 +30,7 @@ from . import data_dir
 from . import exceptions
 from . import multiplexer
 from . import sysinfo
+from ..utils import astring
 from ..utils import data_structures
 from ..utils import genio
 from ..utils import path as utils_path
@@ -103,7 +103,7 @@ class Test(unittest.TestCase):
         self.tagged_name = self.get_tagged_name(base_logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
-        safe_tagged_name = self.tagged_name.replace(os.path.sep, '_')
+        safe_tagged_name = astring.string_to_safe_path(self.tagged_name)
         self.logdir = utils_path.init_dir(base_logdir, safe_tagged_name)
         genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
