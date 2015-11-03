@@ -21,7 +21,6 @@ framework tests.
 import inspect
 import logging
 import os
-import pipes
 import re
 import shutil
 import sys
