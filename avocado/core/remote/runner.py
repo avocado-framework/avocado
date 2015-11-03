@@ -81,7 +81,10 @@ class RemoteTestRunner(TestRunner):
 
         if getattr(self.result.args, "dry_run", False):
             extra_params.append("--dry-run")
-        urls_str = " ".join(urls)
+        # There are multiple levels of quotation, use "$url" and escape "
+        urls_str = '" "'.join(_.replace('\\"', '\\\\\\\\\\\\"') for _ in urls)
+        if urls_str:
+            urls_str = '"' + urls_str + '"'
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
                                                        urls_str))
