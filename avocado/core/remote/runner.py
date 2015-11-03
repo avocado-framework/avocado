@@ -16,6 +16,7 @@
 import sys
 import json
 import os
+import pipes
 import re
 import logging
 
@@ -26,6 +27,7 @@ from .. import output
 from .. import exceptions
 from .. import status
 from ..runner import TestRunner
+from ...utils import astring
 from ...utils import archive
 from ...utils import stacktrace
 
@@ -121,7 +123,7 @@ class RemoteTestRunner(TestRunner):
         for t_dict in json_result['tests']:
             logdir = os.path.dirname(self.result.stream.debuglog)
             logdir = os.path.join(logdir, 'test-results')
-            relative_path = t_dict['test'].lstrip('/')
+            relative_path = astring.string_to_safe_path(t_dict['test'])
             logdir = os.path.join(logdir, relative_path)
             t_dict['logdir'] = logdir
             t_dict['logfile'] = os.path.join(logdir, 'debug.log')
