@@ -36,7 +36,7 @@ from .settings import settings
 
 DEFAULT = False  # Show default tests (for execution)
 AVAILABLE = None  # Available tests (for listing purposes)
-ALL = True  # All tests (inicluding broken ones)
+ALL = True  # All tests (including broken ones)
 
 
 #: Gets the tag value from a string. Used to tag a test class in various ways
