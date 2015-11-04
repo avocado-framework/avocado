@@ -663,6 +663,13 @@ class AptBackend(DpkgBackend):
         self.pm_version = ver
 
         log.debug('apt-get version: %s' % self.pm_version)
+        # gdebi-core is necessary for local installation with dependency
+        # handling
+        if not self.check_installed('gdebi-core'):
+            if not self.install('gdebi-core'):
+                log.info("System can't install packages locally with "
+                         "dependency handling: Package 'gdebi-core' could "
+                         "not be installed")
 
     def install(self, name):
         """
@@ -670,8 +677,11 @@ class AptBackend(DpkgBackend):
 
         :param name: Package name.
         """
-        command = 'install'
-        i_cmd = self.base_command + ' ' + command + ' ' + name
+        if os.path.isfile(name):
+            i_cmd = utils_path.find_command('gdebi') + ' -n -q ' + name
+        else:
+            command = 'install'
+            i_cmd = self.base_command + ' ' + command + ' ' + name
 
         try:
             process.system(i_cmd)
