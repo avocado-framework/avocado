@@ -19,7 +19,6 @@ Test loader module.
 
 import ast
 import collections
-import fnmatch
 import imp
 import inspect
 import os
@@ -37,7 +36,7 @@ from .settings import settings
 
 DEFAULT = False  # Show default tests (for execution)
 AVAILABLE = None  # Available tests (for listing purposes)
-ALL = True  # All tests (inicluding broken ones)
+ALL = True  # All tests (including broken ones)
 
 
 #: Gets the tag value from a string. Used to tag a test class in various ways
@@ -524,19 +523,6 @@ class FileLoader(TestLoader):
                         tests.extend(self._make_tests(pth, which_tests))
         return tests
 
-    def _is_unittests_like(self, test_class, pattern='test'):
-        for name, _ in inspect.getmembers(test_class, inspect.ismethod):
-            if name.startswith(pattern):
-                return True
-        return False
-
-    def _make_unittests_like(self, test_class, pattern='test'):
-        test_methods = []
-        for name, obj in inspect.getmembers(test_class, inspect.ismethod):
-            if name.startswith(pattern):
-                test_methods.append((name, obj))
-        return test_methods
-
     def _find_avocado_tests(self, path):
         """
         Attempts to find Avocado instrumented tests from Python source files
@@ -625,7 +611,6 @@ class FileLoader(TestLoader):
                             test_name=None):
         if test_name is None:
             test_name = test_path
-        module_name = os.path.basename(test_path).split('.')[0]
         try:
             tests = self._find_avocado_tests(test_path)
             if tests:
@@ -649,29 +634,6 @@ class FileLoader(TestLoader):
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
                     return make_broken(test.NotATest, test_path)
-
-                # Module is importable and does have an avocado test class
-                # inside, let's proceed.
-                if self._is_unittests_like(test_class):
-                    test_factories = []
-                    test_parameters = {'name': test_name}
-                    if subtests_filter:
-                        test_parameters['params'] = {'filter': subtests_filter}
-                    for test_method in self._make_unittests_like(test_class):
-                        name = test_name + ':%s.%s' % (test_class.__name__,
-                                                       test_method[0])
-                        if (subtests_filter is not None and
-                                not fnmatch.fnmatch(test_method[0],
-                                                    subtests_filter)):
-                            test_factories.extend(make_broken(FilteredOut,
-                                                              name))
-                        else:
-                            tst = (test_class, {'name': name,
-                                                'methodName': test_method[0]})
-                            test_factories.append(tst)
-                    return test_factories
-                else:
-                    return self._make_test(test_class, test_name)
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
