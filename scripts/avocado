@@ -50,7 +50,7 @@ def handle_exception(*exc_info):
     os.write(tmp, msg)
     os.close(tmp)
     # Print friendly message in console-like output
-    msg = ("Avocado crashed unexpectidly: %s\nYou can find details in %s"
+    msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s"
            % (exc_info[1], name))
     for name in ("avocado.app", "avocado.test", None):
         log = logging.getLogger(name)
