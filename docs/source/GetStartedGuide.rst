@@ -9,9 +9,8 @@ The first step towards using Avocado is, quite obviously, installing it.
 Installing Avocado
 ==================
 
-Avocado is available in `RPM packages for Fedora`_, and `DEB packages for Ubuntu`_.
+Avocado is available in RPM packages for Fedora, and `DEB packages for Ubuntu`_.
 
-.. _RPM Packages For Fedora: http://copr.fedoraproject.org/coprs/lmr/Autotest
 .. _DEB packages for Ubuntu: https://launchpad.net/~lmr/+archive/avocado
 
 .. Note: the following text should instead reference the distro tiers levels
