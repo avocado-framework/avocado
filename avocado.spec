@@ -6,8 +6,8 @@
 
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.29.0
-Release: 2%{?dist}
+Version: 0.30.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -110,6 +110,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Thu Nov  5 2015 Cleber Rosa <cleber@redhat.com> - 0.30.0-0
+- New upstream release 0.30.0
+
 * Wed Oct 7 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.29.0-2
 - Add python-setuptools to BuildRequires
 
