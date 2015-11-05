@@ -24,11 +24,18 @@ Fedora
 
 You can install the RPM packages by running the following commands::
 
-    sudo curl http://copr.fedoraproject.org/coprs/lmr/Autotest/repo/fedora-20/lmr-Autotest-fedora-20.repo -o /etc/yum.repos.d/autotest.repo
-    sudo yum update
+    sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo -o /etc/yum.repos.d/avocado.repo
+    sudo dnf install avocado
+
+Enterprise Linux
+----------------
+
+If you're running either Red Hat Enterprise Linux or one of the derivatives
+such as CentOS, just adapt to the following URL and commands::
+
+    sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     sudo yum install avocado
 
-Don't mind the Fedora version here, the same repo file should work for newer distros.
 
 Ubuntu
 ------
