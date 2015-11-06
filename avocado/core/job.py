@@ -50,6 +50,8 @@ from ..utils import astring
 from ..utils import path
 from ..utils import runtime
 from ..utils import stacktrace
+from ..utils import data_structures
+
 
 try:
     from .plugins import htmlresult
@@ -127,6 +129,9 @@ class Job(object):
         self.result_proxy = result.TestResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
+        self.funcatexit = data_structures.CallbackRegister("JobExit %s"
+                                                           % self.unique_id,
+                                                           _TEST_LOGGER)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)

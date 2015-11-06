@@ -14,10 +14,14 @@
 # Authors: Ruda Moura <rmoura@redhat.com>
 #          Lucas Meneghel Rodrigues <lmr@redhat.com>
 #
+
 """
 This module contains handy classes that can be used inside
 avocado core code or plugins.
 """
+
+
+import sys
 
 
 class Borg:
@@ -60,3 +64,61 @@ class LazyProperty(object):
         value = self.f_get(obj)
         setattr(obj, self.func_name, value)
         return value
+
+
+class CallbackRegister(object):
+
+    """
+    Registers pickable functions to be executed later.
+    """
+
+    def __init__(self, name, log):
+        """
+        :param name: Human readable identificator of this register
+        """
+        self._name = name
+        self._items = []
+        self._log = log
+
+    def register(self, func, args, kwargs, once=False):
+        """
+        Register function/args to be called on self.destroy()
+        :param func: Pickable function
+        :param args: Pickable positional arguments
+        :param kwargs: Pickable keyword arguments
+        :param once: Add unique (func,args,kwargs) combination only once
+        """
+        item = (func, args, kwargs)
+        if not once or item not in self._items:
+            self._items.append(item)
+
+    def unregister(self, func, args, kwargs):
+        """
+        Unregister (func,args,kwargs) combination
+        :param func: Pickable function
+        :param args: Pickable positional arguments
+        :param kwargs: Pickable keyword arguments
+        """
+        item = (func, args, kwargs)
+        if item in self._items:
+            self._items.remove(item)
+
+    def run(self):
+        """
+        Call all registered function
+        """
+        while self._items:
+            item = self._items.pop()
+            try:
+                func, args, kwargs = item
+                func(*args, **kwargs)
+            except:     # Ignore all exceptions pylint: disable=W0702
+                self._log.error("%s failed to destroy %s:\n%s",
+                                self._name, item, sys.exc_info()[1])
+
+    def __del__(self):
+        """
+        :warning: Always call self.run() manually, this is not guarranteed
+                  to be executed!
+        """
+        self.run()
