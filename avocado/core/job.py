@@ -35,6 +35,7 @@ from . import sysinfo
 from . import result
 from . import exit_codes
 from . import exceptions
+from . import funcatexit
 from . import job_id
 from . import output
 from . import multiplexer
@@ -127,6 +128,7 @@ class Job(object):
         self.result_proxy = result.TestResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
+        self.funcatexit = funcatexit.FuncAtExit("JobExit %s" % self.unique_id)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
