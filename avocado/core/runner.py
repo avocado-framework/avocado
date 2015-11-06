@@ -36,6 +36,119 @@ from ..utils import stacktrace
 from ..utils import runtime
 
 
+class TestStatus(object):
+
+    """
+    Test status handler
+    """
+
+    def __init__(self, job, queue):
+        """
+        :param job: Associated job
+        :param queue: test message queue
+        """
+        self.job = job
+        self.queue = queue
+        self._early_status = None
+        self.status = {}
+
+    @property
+    def early_status(self):
+        """
+        Get early status
+        """
+        if self._early_status:
+            return self._early_status
+        else:
+            queue = []
+            while not self.queue.empty():
+                msg = self.queue.get()
+                if "early_status" in msg:
+                    self._early_status = msg
+                    for _ in queue:     # Return all unprocessed messages back
+                        self.queue.put(_)
+                    return msg
+                elif "load_exception" in msg:
+                    raise exceptions.TestError("Avocado crashed during test "
+                                               "load. Some reports might have "
+                                               "not been generated. "
+                                               "Aborting...")
+                else:   # Not an early_status message
+                    queue.append(msg)
+
+    def wait_for_early_status(self, proc, timeout):
+        """
+        Wait until early_status is obtained
+        :param proc: test process
+        :param timeout: timeout for early_state
+        :raise exceptions.TestError: On timeout/error
+        """
+        end = time.time() + timeout
+        while not self.early_status:
+            if not proc.is_alive():
+                if not self.early_status:
+                    raise exceptions.TestError("Process died before it pushed "
+                                               "early test_status.")
+            if time.time() > end and not self.early_status:
+                msg = ("Unable to receive test's early-status in 10s, "
+                       "something wrong happened probably in the "
+                       "avocado framework.")
+                os.kill(proc.pid, 9)
+                raise exceptions.TestError(msg)
+            time.sleep(0)
+
+    def check(self):
+        """
+        Check if there are messages queued and handle them
+        :return: True if everything is ok, False on interruption (break)
+        """
+        res = True
+        while not self.queue.empty():
+            msg = self.queue.get()
+            if not msg.get("running", True):
+                self.status = msg
+                res = False
+                continue
+            elif "paused" in msg:
+                self.status = msg
+                self.job.result_proxy.notify_progress(False)
+                if msg['paused']:
+                    reason = msg['paused_msg']
+                    if reason:
+                        self.job.view.notify(event='partial', msg=reason)
+            else:       # test_status
+                self.status = msg
+        return res
+
+    def abort(self, test_alive, started, timeout, first, step):
+        """
+        Handle job abortion
+        :param test_alive: Whether the test process is still alive
+        :param started: Time when the test started
+        :param timeout: Timeout for waiting on status
+        :param first: Delay before first check
+        :param step: Step between checks for the status
+        """
+        if test_alive and wait.wait_for(lambda: not self.check(), timeout,
+                                        first, step):
+            return self.status
+        else:
+            test_state = self.early_status
+            test_state['time_elapsed'] = time.time() - started
+            test_state['fail_reason'] = 'Test process aborted'
+            test_state['status'] = exceptions.TestAbortError.status
+            test_state['fail_class'] = (exceptions.TestAbortError.__class__.
+                                        __name__)
+            test_state['traceback'] = 'Traceback not available'
+            with open(test_state['logfile'], 'r') as log_file_obj:
+                test_state['text_output'] = log_file_obj.read()
+            test_log = logging.getLogger('avocado.test')
+            test_log.error('ERROR %s -> TestAbortedError: '
+                           'Test aborted unexpectedly',
+                           test_state['name'])
+            return test_state
+
+
 class TestRunner(object):
 
     """
@@ -84,6 +197,7 @@ class TestRunner(object):
                 instance.runner_queue = queue
             runtime.CURRENT_TEST = instance
             early_state = instance.get_state()
+            early_state['early_status'] = True
             queue.put(early_state)
         except Exception:
             exc_info = sys.exc_info()
@@ -102,22 +216,6 @@ class TestRunner(object):
         finally:
             queue.put(instance.get_state())
 
-    def _fill_aborted_test_state(self, test_state):
-        """
-        Fill details necessary to process aborted tests.
-
-        :param test_state: Test state.
-        :type test_state: dict
-        :param time_started: When the test started
-        """
-        test_state['fail_reason'] = 'Test process aborted'
-        test_state['status'] = exceptions.TestAbortError.status
-        test_state['fail_class'] = exceptions.TestAbortError.__class__.__name__
-        test_state['traceback'] = 'Traceback not available'
-        with open(test_state['logfile'], 'r') as log_file_obj:
-            test_state['text_output'] = log_file_obj.read()
-        return test_state
-
     def run_test(self, test_factory, queue, failures, job_deadline=0):
         """
         Run a test instance inside a subprocess.
@@ -133,36 +231,18 @@ class TestRunner(object):
         """
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
+        test_status = TestStatus(self.job, queue)
 
         cycle_timeout = 1
         time_started = time.time()
-        test_state = None
-
         proc.start()
 
-        end = time.time() + 10
-        while queue.empty():
-            if not proc.is_alive() and queue.empty():
-                raise exceptions.TestError("Process died before it pushed "
-                                           "early state.")
-            if time.time() > end:
-                msg = ("Unable to receive test's early-state in 10s, "
-                       "something wrong happened probably in the "
-                       "avocado framework.")
-                os.kill(proc.pid, 9)
-                raise exceptions.TestError(msg)
-            time.sleep(0)
-        early_state = queue.get()
-
-        if 'load_exception' in early_state:
-            raise exceptions.TestError('Avocado crashed during test load. '
-                                       'Some reports might have not been '
-                                       'generated. Aborting...')
+        test_status.wait_for_early_status(proc, 10)
 
         # At this point, the test is already initialized and we know
         # for sure if there's a timeout set.
-        timeout = float(early_state.get('params', {}).get('timeout') or
-                        self.DEFAULT_TIMEOUT)
+        timeout = test_status.early_status.get('params', {}).get('timeout')
+        timeout = float(timeout or self.DEFAULT_TIMEOUT)
 
         test_deadline = time_started + timeout
         if job_deadline > 0:
@@ -185,20 +265,11 @@ class TestRunner(object):
                     break
                 wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
                               cycle_timeout, first, step)
-                if not queue.empty():
-                    test_state = queue.get()
-                    if not test_state['running']:
-                        break
-                    else:
-                        self.job.result_proxy.notify_progress(False)
-                        if test_state['paused']:
-                            msg = test_state['paused_msg']
-                            if msg:
-                                self.job.view.notify(event='partial', msg=msg)
-
-                elif proc.is_alive():
+                if not test_status.check():
+                    break
+                if proc.is_alive():
                     if ctrl_c_count == 0:
-                        if test_state and not test_state.get('running'):
+                        if test_status.status.get('running'):
                             self.job.result_proxy.notify_progress(False)
                         else:
                             self.job.result_proxy.notify_progress(True)
@@ -224,17 +295,12 @@ class TestRunner(object):
                     os.kill(proc.pid, signal.SIGKILL)
 
         # If test_state is None, the test was aborted before it ended.
-        if test_state is None:
-            if proc.is_alive() and wait.wait_for(lambda: not queue.empty(),
-                                                 cycle_timeout, first, step):
-                test_state = queue.get()
-            else:
-                early_state['time_elapsed'] = time.time() - time_started
-                test_state = self._fill_aborted_test_state(early_state)
-                test_log = logging.getLogger('avocado.test')
-                test_log.error('ERROR %s -> TestAbortedError: '
-                               'Test aborted unexpectedly',
-                               test_state['name'])
+        test_status.check()
+        if test_status.status:
+            test_state = test_status.status
+        else:
+            test_state = test_status.abort(proc.is_alive(), time_started,
+                                           cycle_timeout, first, step)
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
