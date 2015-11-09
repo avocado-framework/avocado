@@ -301,10 +301,9 @@ class DpkgBackend(BaseBackend):
 
     def check_installed(self, name):
         if os.path.isfile(name):
-            n_cmd = (self.lowlevel_base_cmd + ' -f ' + name +
-                     ' Package 2>/dev/null')
+            n_cmd = self.lowlevel_base_cmd + ' -f ' + name + ' Package'
             name = process.system_output(n_cmd)
-        i_cmd = self.lowlevel_base_cmd + " -s " + name + ' 2>/dev/null'
+        i_cmd = self.lowlevel_base_cmd + " -s " + name
         # Checking if package is installed
         package_status = process.system_output(i_cmd, ignore_status=True)
         dpkg_installed = (self.INSTALLED_OUTPUT in package_status)
