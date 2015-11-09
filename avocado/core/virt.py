@@ -280,7 +280,15 @@ class VM(object):
         """
         desc = etree.fromstring(self.domain.XMLDesc(0))
         mac_path = "devices/interface[@type='network']/mac"
-        mac = desc.find(mac_path).attrib["address"].lower().strip()
+        node = desc.find(mac_path)
+        if node is None:
+            return None
+
+        mac = node.get("address")
+        if mac is None:
+            return None
+
+        mac = mac.lower().strip()
         output = subprocess.Popen(["arp", "-n"],
                                   stdout=subprocess.PIPE).communicate()[0]
         lines = [line.split() for line in output.split("\n")[1:]]
