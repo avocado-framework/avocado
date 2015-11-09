@@ -304,14 +304,13 @@ class DpkgBackend(BaseBackend):
             n_cmd = (self.lowlevel_base_cmd + ' -f ' + name +
                      ' Package 2>/dev/null')
             name = process.system_output(n_cmd)
-        i_cmd = (self.lowlevel_base_cmd + "--show -f='${Status}' " +
-                 name + ' 2>/dev/null')
+        i_cmd = self.lowlevel_base_cmd + " -s " + name + ' 2>/dev/null'
         # Checking if package is installed
         package_status = process.system_output(i_cmd, ignore_status=True)
-        dpkg_not_installed = (package_status != self.INSTALLED_OUTPUT)
-        if dpkg_not_installed:
-            return False
-        return True
+        dpkg_installed = (self.INSTALLED_OUTPUT in package_status)
+        if dpkg_installed:
+            return True
+        return False
 
     def list_all(self):
         """
