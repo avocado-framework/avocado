@@ -64,9 +64,10 @@ UNDEFINED_BEHAVIOR_EXCEPTION = None
 
 class CmdError(Exception):
 
-    def __init__(self, command=None, result=None):
+    def __init__(self, command=None, result=None, additional_text=None):
         self.command = command
         self.result = result
+        self.additional_text = additional_text
 
     def __str__(self):
         if self.result is not None:
@@ -78,6 +79,8 @@ class CmdError(Exception):
             else:
                 msg = "Command '%s' failed (rc=%d)"
                 msg %= (self.command, self.result.exit_status)
+            if self.additional_text:
+                msg += ", " + self.additional_text
             return msg
         else:
             return "CmdError"
