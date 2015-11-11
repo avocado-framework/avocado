@@ -274,6 +274,8 @@ class SubProcess(object):
             if self.verbose:
                 log.info("Running '%s'", self.cmd)
             if self.shell is False:
+                self.cmd = self.cmd.replace('\'', '\\\'')
+                self.cmd = self.cmd.replace('\"', '\\\"')
                 cmd = shlex.split(self.cmd)
             else:
                 cmd = self.cmd
@@ -577,6 +579,8 @@ class GDBSubProcess(object):
 
         self.cmd = cmd
 
+        cmd = cmd.replace('\'', '\\\'')
+        cmd = cmd.replace('\"', '\\\"')
         self.args = shlex.split(cmd)
         self.binary = self.args[0]
         self.binary_path = os.path.abspath(self.cmd)
@@ -864,6 +868,8 @@ def should_run_inside_gdb(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
+    cmd = cmd.replace('\'', '\\\'')
+    cmd = cmd.replace('\"', '\\\"')
     args = shlex.split(cmd)
     cmd_binary_name = os.path.basename(args[0])
 
@@ -882,6 +888,8 @@ def should_run_inside_wrapper(cmd):
     """
     global CURRENT_WRAPPER
     CURRENT_WRAPPER = None
+    cmd = cmd.replace('\'', '\\\'')
+    cmd = cmd.replace('\"', '\\\"')
     args = shlex.split(cmd)
     cmd_binary_name = args[0]
 
