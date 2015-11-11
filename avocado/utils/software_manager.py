@@ -303,15 +303,15 @@ class DpkgBackend(BaseBackend):
         if os.path.isfile(name):
             n_cmd = (self.lowlevel_base_cmd + ' -f ' + name +
                      ' Package 2>/dev/null')
-            name = process.system_output(n_cmd)
-        i_cmd = (self.lowlevel_base_cmd + "--show -f='${Status}' " +
-                 name + ' 2>/dev/null')
+            name = process.system_output(n_cmd, shell=True)
+        i_cmd = self.lowlevel_base_cmd + " -s " + name + ' 2>/dev/null'
         # Checking if package is installed
-        package_status = process.system_output(i_cmd, ignore_status=True)
-        dpkg_not_installed = (package_status != self.INSTALLED_OUTPUT)
-        if dpkg_not_installed:
-            return False
-        return True
+        package_status = process.system_output(i_cmd, shell=True,
+                                               ignore_status=True)
+        dpkg_installed = (self.INSTALLED_OUTPUT in package_status)
+        if dpkg_installed:
+            return True
+        return False
 
     def list_all(self):
         """
@@ -664,6 +664,13 @@ class AptBackend(DpkgBackend):
         self.pm_version = ver
 
         log.debug('apt-get version: %s' % self.pm_version)
+        # gdebi-core is necessary for local installation with dependency
+        # handling
+        if not self.check_installed('gdebi-core'):
+            if not self.install('gdebi-core'):
+                log.info("SoftwareManager (AptBackend) can't install packages "
+                         "from local .deb files with dependency resolution: "
+                         "Package 'gdebi-core' could not be installed")
 
     def install(self, name):
         """
@@ -671,8 +678,11 @@ class AptBackend(DpkgBackend):
 
         :param name: Package name.
         """
-        command = 'install'
-        i_cmd = self.base_command + ' ' + command + ' ' + name
+        if os.path.isfile(name):
+            i_cmd = utils_path.find_command('gdebi') + ' -n -q ' + name
+        else:
+            command = 'install'
+            i_cmd = self.base_command + ' ' + command + ' ' + name
 
         try:
             process.system(i_cmd)
