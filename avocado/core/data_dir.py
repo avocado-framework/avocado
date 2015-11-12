@@ -243,6 +243,7 @@ class _TmpDirTracker(Borg):
     def get(self):
         if not hasattr(self, 'tmp_dir'):
             self.tmp_dir = tempfile.mkdtemp(prefix='avocado_')
+            os.chmod(self.tmp_dir, 0755)
         return self.tmp_dir
 
     def __del__(self):
