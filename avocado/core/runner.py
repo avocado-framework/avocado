@@ -105,7 +105,12 @@ class TestStatus(object):
         res = True
         while not self.queue.empty():
             msg = self.queue.get()
-            if not msg.get("running", True):
+            if "func_at_exit" in msg:
+                self.job.funcatexit.register(msg["func_at_exit"],
+                                             msg.get("args", tuple()),
+                                             msg.get("kwargs", {}),
+                                             msg.get("once", False))
+            elif not msg.get("running", True):
                 self.status = msg
                 res = False
                 continue
@@ -357,6 +362,7 @@ class TestRunner(object):
             if break_loop:
                 break
         self.result.end_tests()
+        self.job.funcatexit.run()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
         return failures
