@@ -18,7 +18,7 @@ The core Avocado application.
 
 import os
 
-from .log import configure
+from .log import configure as configure_log
 from .parser import Parser
 from .plugins.manager import get_plugin_manager
 
@@ -34,7 +34,7 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
-        configure()
+        configure_log()
         self.plugin_manager = None
         self.parser = Parser()
         self.parser.start()
