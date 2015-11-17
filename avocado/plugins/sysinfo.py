@@ -15,18 +15,18 @@
 System information plugin
 """
 
-from . import plugin
-from .. import sysinfo
+from .base import CLICmdBase
+from avocado.core import sysinfo
 
 
-class SystemInformation(plugin.Plugin):
+class SysInfo(CLICmdBase):
 
     """
     Collect system information
     """
 
     name = 'sysinfo'
-    enabled = True
+    description = 'Collect system information'
 
     def configure(self, parser):
         """
@@ -34,13 +34,10 @@ class SystemInformation(plugin.Plugin):
 
         :param parser: Main test runner parser.
         """
-        self.parser = parser.subcommands.add_parser(
-            'sysinfo',
-            help='Collect system information')
-        self.parser.add_argument('sysinfodir', type=str,
-                                 help='Dir where to dump sysinfo',
-                                 nargs='?', default='')
-        super(SystemInformation, self).configure(self.parser)
+        parser = super(SysInfo, self).configure(parser)
+        parser.add_argument('sysinfodir', type=str,
+                            help='Dir where to dump sysinfo',
+                            nargs='?', default='')
 
     def run(self, args):
         sysinfo.collect_sysinfo(args)
