@@ -98,24 +98,28 @@ class JobTimeOutTest(unittest.TestCase):
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sleep_longer_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
                     (self.tmpdir, self.script.path))
         self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sleep_short_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
                     (self.tmpdir, self.script.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 2, 1, 0, 1)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s' %
                     (self.tmpdir, self.py.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 3, 1, 0, 2)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_invalid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=0 examples/tests/passtest.py' % self.tmpdir)
@@ -128,6 +132,7 @@ class JobTimeOutTest(unittest.TestCase):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
         self.assertIn('Invalid number', result.stderr)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_valid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123 examples/tests/passtest.py' % self.tmpdir)
