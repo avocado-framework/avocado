@@ -161,7 +161,7 @@ class TestRunner(object):
         Creates an instance of TestRunner class.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param test_result: an instance of :class:`avocado.core.result.TestResult`.
+        :param test_result: an instance of :class:`avocado.core.result.TestResultProxy`.
         """
         self.job = job
         self.result = test_result
