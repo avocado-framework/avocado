@@ -21,3 +21,5 @@ networkx>=1.9.1
 pygraphviz>=1.3rc2
 aexpect>=1.0.0
 psutil>=3.1.1
+# stevedore for loading "new style" plugins
+stevedore>=1.8.0
