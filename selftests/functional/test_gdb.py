@@ -1,7 +1,11 @@
 import os
-import unittest
 import shutil
 import tempfile
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado.utils import process
 
