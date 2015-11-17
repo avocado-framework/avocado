@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
+# Copyright: Red Hat Inc. 2013-2015
 """
 Libexec PATHs modifier
 """
@@ -17,32 +17,18 @@ Libexec PATHs modifier
 import os
 import sys
 
-from . import plugin
-from .. import exit_codes, output
+from .base import CLICmdBase
+from avocado.core import exit_codes, output
 
 
-class ExecPath(plugin.Plugin):
+class ExecPath(CLICmdBase):
 
     """
     Implements the avocado 'exec-path' subcommand
     """
 
-    name = 'exec_path'
-    enabled = True
-    priority = 0
-    view = None
-
-    def configure(self, parser):
-        """
-        Add the subparser for the exec-path action.
-
-        :param parser: Main test runner parser.
-        """
-        self.parser = parser.subcommands.add_parser(
-            'exec-path',
-            help='Returns path to avocado bash libraries and exits.')
-
-        super(ExecPath, self).configure(self.parser)
+    name = 'exec-path'
+    description = 'Returns path to avocado bash libraries and exits.'
 
     def run(self, args):
         """
