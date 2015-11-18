@@ -13,36 +13,38 @@ file is the visible separation of different scopes. Even very advanced setups
 are still human readable, unlike traditional sparse, multi-dimensional-matrices
 of parameters.
 
-Let's start with an example (line numbers added at the beginning)::
+Let's start with an example (line numbers at the first columns are for
+documentation purposes only, they are not part of the multiplex file
+format)::
 
-     1    hw:
-     2        cpu: !mux
-     3            intel:
-     4                cpu_CFLAGS: '-march=core2'
-     5            amd:
-     6                cpu_CFLAGS: '-march=athlon64'
-     7            arm:
-     8                cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
-     9        disk: !mux
-    10            scsi:
-    11                disk_type: 'scsi'
-    12            virtio:
-    13                disk_type: 'virtio'
-    14    distro: !mux
-    15        fedora:
-    16            init: 'systemd'
-    17        mint:
-    18            init: 'systemv'
-    19    env: !mux
-    20        debug:
-    21            opt_CFLAGS: '-O0 -g'
-    22        prod:
-    23            opt_CFLAGS: '-O2'
+     1  hw:
+     2      cpu: !mux
+     3          intel:
+     4              cpu_CFLAGS: '-march=core2'
+     5          amd:
+     6              cpu_CFLAGS: '-march=athlon64'
+     7          arm:
+     8              cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+     9      disk: !mux
+    10          scsi:
+    11              disk_type: 'scsi'
+    12          virtio:
+    13              disk_type: 'virtio'
+    14  distro: !mux
+    15      fedora:
+    16          init: 'systemd'
+    17      mint:
+    18          init: 'systemv'
+    19  env: !mux
+    20      debug:
+    21          opt_CFLAGS: '-O0 -g'
+    22      prod:
+    23          opt_CFLAGS: '-O2'
 
 
-There are couple of key=>value pairs (4,6,8,11,13,...) and there are
-named nodes which define scope (1,2,3,5,7,9,...). There are also additional
-flags (2, 9, 14, 19) which modifies the behavior.
+There are couple of key=>value pairs (lines 4,6,8,11,13,...) and there are
+named nodes which define scope (lines 1,2,3,5,7,9,...). There are also additional
+flags (lines 2, 9, 14, 19) which modifies the behavior.
 
 
 Nodes
