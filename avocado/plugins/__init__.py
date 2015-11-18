@@ -9,12 +9,5 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
-# Author: Ruda Moura <rmoura@redhat.com>
-
-"""Plugin Managers."""
-
-import logging
-
-
-log = logging.getLogger("avocado.plugins")
+# Copyright: Red Hat Inc. 2015
+# Author: Cleber Rosa <cleber@redhat.com>

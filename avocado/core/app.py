@@ -18,9 +18,9 @@ The core Avocado application.
 
 import os
 
-from .log import configure
+from .log import configure as configure_log
 from .parser import Parser
-from .plugins.manager import get_plugin_manager
+from .dispatcher import CLICmdDispatcher
 
 
 class AvocadoApp(object):
@@ -34,28 +34,23 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
-        configure()
-        self.plugin_manager = None
+        configure_log()
         self.parser = Parser()
+        self.cli_cmd_dispatcher = CLICmdDispatcher()
         self.parser.start()
-        self.load_plugin_manager()
+        if self.cli_cmd_dispatcher.extensions:
+            self.cli_cmd_dispatcher.map_method('configure', self.parser)
         self.ready = True
         try:
             self.parser.resume()
-            self.plugin_manager.activate(self.parser.args)
             self.parser.finish()
         except IOError:
             self.ready = False
 
-    def load_plugin_manager(self):
-        """Load Plugin Manager.
-
-        :param plugins_dir: Extra plugins directory.
-        """
-        self.plugin_manager = get_plugin_manager()
-        self.plugin_manager.load_plugins()
-        self.plugin_manager.configure(self.parser)
-
     def run(self):
         if self.ready:
-            return self.parser.take_action()
+            subcommand = self.parser.args.subcommand
+            if subcommand in self.cli_cmd_dispatcher:
+                extension = self.cli_cmd_dispatcher[subcommand]
+                method = extension.obj.run
+                return method(self.parser.args)

@@ -12,32 +12,29 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-from . import plugin
-from .. import output
-from .. import data_dir
-from ..settings import settings
+from .base import CLICmdBase
+from avocado.core import output
+from avocado.core import data_dir
+from avocado.core.settings import settings
 
 
-class ConfigOptions(plugin.Plugin):
+class Config(CLICmdBase):
 
     """
     Implements the avocado 'config' subcommand
     """
 
     name = 'config'
-    enabled = True
+    description = 'Shows avocado config keys'
 
     def configure(self, parser):
-        self.parser = parser.subcommands.add_parser(
-            'config',
-            help='Shows avocado config keys')
-        self.parser.add_argument('--datadir', action='store_true', default=False,
-                                 help='Shows the data directories currently being used by avocado')
-        self.parser.add_argument('--paginator',
-                                 choices=('on', 'off'), default='on',
-                                 help='Turn the paginator on/off. '
-                                      'Current: %(default)s')
-        super(ConfigOptions, self).configure(self.parser)
+        parser = super(Config, self).configure(parser)
+        parser.add_argument('--datadir', action='store_true', default=False,
+                            help='Shows the data directories currently being used by avocado')
+        parser.add_argument('--paginator',
+                            choices=('on', 'off'), default='on',
+                            help='Turn the paginator on/off. '
+                            'Current: %(default)s')
 
     def run(self, args):
         view = output.View(use_paginator=(args.paginator == 'on'))
