@@ -611,7 +611,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         if sys.version_info[:2] >= (2, 7, 0):
             self.assertNotIn('Disabled', output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_config_plugin(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado config --paginator off'
@@ -623,7 +622,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('Disabled', output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_config_plugin_datadir(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado config --datadir --paginator off'
