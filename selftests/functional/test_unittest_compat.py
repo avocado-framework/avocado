@@ -67,12 +67,14 @@ class UnittestCompat(unittest.TestCase):
             'avocado_as_unittest_functional')
         self.unittest_script_error.save()
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_pass(self):
         cmd_line = '%s %s' % (sys.executable, self.unittest_script_good)
         result = process.run(cmd_line)
         self.assertEqual(0, result.exit_status)
         self.assertIn('Ran 1 test in', result.stderr)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_fail(self):
         cmd_line = '%s %s' % (sys.executable, self.unittest_script_fail)
         result = process.run(cmd_line, ignore_status=True)
@@ -81,6 +83,7 @@ class UnittestCompat(unittest.TestCase):
         self.assertIn('This test is supposed to fail', result.stderr)
         self.assertIn('FAILED (failures=1)', result.stderr)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_error(self):
         cmd_line = '%s %s' % (sys.executable, self.unittest_script_error)
         result = process.run(cmd_line, ignore_status=True)

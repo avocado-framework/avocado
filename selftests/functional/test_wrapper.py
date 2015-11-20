@@ -1,7 +1,12 @@
 import os
-import unittest
+import sys
 import tempfile
 import shutil
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
@@ -37,6 +42,7 @@ class WrapperTest(unittest.TestCase):
             'avocado_wrapper_functional')
         self.dummy.save()
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_global_wrapper(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s '
@@ -51,6 +57,7 @@ class WrapperTest(unittest.TestCase):
                         "%s\nCmdline: %s" %
                         (self.tmpfile, result.stdout, cmd_line))
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_process_wrapper(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s:*/datadir '
@@ -65,6 +72,7 @@ class WrapperTest(unittest.TestCase):
                         "%s\nStdout: %s" %
                         (self.tmpfile, cmd_line, result.stdout))
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_both_wrappers(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s --wrapper %s:*/datadir '
