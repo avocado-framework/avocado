@@ -126,6 +126,9 @@ if __name__ == '__main__':
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
           entry_points={
+              'avocado.plugins.cli': [
+                  'gdb = avocado.plugins.gdb:GDB',
+                  ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
                   'distro = avocado.plugins.distro:Distro',
