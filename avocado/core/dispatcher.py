@@ -17,6 +17,22 @@
 from stevedore import ExtensionManager
 
 
+class CLIDispatcher(ExtensionManager):
+
+    """
+    Calls extensions on configure/run
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.cli'
+    """
+
+    def __init__(self):
+        super(CLIDispatcher, self).__init__(
+            namespace='avocado.plugins.cli',
+            invoke_on_load=True
+        )
+
+
 class CLICmdDispatcher(ExtensionManager):
 
     """
