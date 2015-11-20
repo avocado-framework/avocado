@@ -128,6 +128,7 @@ if __name__ == '__main__':
           entry_points={
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
+                  'distro = avocado.plugins.distro:Distro',
                   'exec-path = avocado.plugins.exec_path:ExecPath',
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   ]
