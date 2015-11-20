@@ -125,5 +125,10 @@ if __name__ == '__main__':
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
+          entry_points={
+              'avocado.plugins.cli.cmd': [
+                  'exec-path = avocado.plugins.exec_path:ExecPath',
+                  ]
+              },
           zip_safe=False,
           test_suite='selftests')
