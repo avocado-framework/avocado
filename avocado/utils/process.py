@@ -864,7 +864,11 @@ def should_run_inside_gdb(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    args = shlex.split(cmd)
+    try:
+        args = shlex.split(cmd)
+    except ValueError:
+        return False
+
     cmd_binary_name = os.path.basename(args[0])
 
     for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:

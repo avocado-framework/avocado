@@ -33,6 +33,11 @@ class TestGDBProcess(unittest.TestCase):
         self.assertTrue(process.should_run_inside_gdb('bar 1 2 3'))
         self.assertTrue(process.should_run_inside_gdb('/usr/bin/bar 1 2 3'))
 
+    def test_should_run_inside_gdb_malformed_command(self):
+        gdb.GDB_RUN_BINARY_NAMES_EXPR = ['/bin/virsh']
+        cmd = """/bin/virsh node-memory-tune --shm-sleep-millisecs ~!@#$%^*()-=[]{}|_+":;'`,>?. """
+        self.assertFalse(process.should_run_inside_gdb(cmd))
+
     def test_get_sub_process_klass(self):
         gdb.GDB_RUN_BINARY_NAMES_EXPR = []
         self.assertIs(process.get_sub_process_klass('/bin/true'),
