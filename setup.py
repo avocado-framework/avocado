@@ -129,6 +129,7 @@ if __name__ == '__main__':
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
                   'exec-path = avocado.plugins.exec_path:ExecPath',
+                  'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   ]
               },
           zip_safe=False,
