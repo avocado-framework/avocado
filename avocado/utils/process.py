@@ -274,7 +274,7 @@ class SubProcess(object):
             if self.verbose:
                 log.info("Running '%s'", self.cmd)
             if self.shell is False:
-                cmd = shlex.split(self.cmd)
+                cmd = safe_split(self.cmd)
             else:
                 cmd = self.cmd
             try:
@@ -858,13 +858,43 @@ def split_gdb_expr(expr):
     return r
 
 
+def safe_split(cmd):
+    """
+    Try to split a cmd safely (even the ones with unclosed quotations).
+
+    We can only do so much here, such as try to escape unclosed quotations
+    in case we have an error. If it still doesn't work, prompt the user
+    to fix their commands by escaping it.
+
+    :param cmd: The command to split.
+    :raise: ValueError in case trying to escape the string doesn't work
+        (we're basically passing up shlex's error along).
+    """
+    try:
+        return shlex.split(cmd)
+    except ValueError, original_exception:
+        return _try_to_escape(cmd, original_exception)
+
+
+def _try_to_escape(cmd, original_exception):
+    cmd = cmd.replace('\'', '\\\'')
+    cmd = cmd.replace('\"', '\\\"')
+    try:
+        return shlex.split(cmd)
+    except ValueError:
+        raise ValueError("Error trying to split command %s: %s. "
+                         "Please consider escaping unclosed "
+                         "characters in your command." %
+                         (cmd, original_exception))
+
+
 def should_run_inside_gdb(cmd):
     """
     Wether the given command should be run inside the GNU debugger
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    args = shlex.split(cmd)
+    args = safe_split(cmd)
     cmd_binary_name = os.path.basename(args[0])
 
     for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
@@ -882,7 +912,7 @@ def should_run_inside_wrapper(cmd):
     """
     global CURRENT_WRAPPER
     CURRENT_WRAPPER = None
-    args = shlex.split(cmd)
+    args = safe_split(cmd)
     cmd_binary_name = args[0]
 
     for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:
