@@ -47,10 +47,7 @@ class MuxTree(object):
             if node.is_leaf:
                 self.pools.append(node)
             else:
-                pools = []
-                for mux_child in node.children:
-                    pools.append(MuxTree(mux_child))
-                self.pools.append(pools)
+                self.pools.append([MuxTree(child) for child in node.children])
 
     @staticmethod
     def _iter_mux_leaves(node):
@@ -75,19 +72,12 @@ class MuxTree(object):
             if isinstance(pool, list):
                 pools.append(itertools.chain(*pool))
             else:
-                pools.append([pool])
+                pools.append(pool)
         pools = itertools.product(*pools)
         while True:
             # TODO: Implement 2nd level filteres here
             # TODO: This part takes most of the time, optimize it
-            dirty = pools.next()
-            ret = []
-            for pool in dirty:
-                if isinstance(pool, list):
-                    ret.extend(pool)
-                else:
-                    ret.append(pool)
-            yield ret
+            yield list(itertools.chain(*pools.next()))
 
 
 def yaml2tree(input_yamls, filter_only=None, filter_out=None,
