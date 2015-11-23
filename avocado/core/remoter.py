@@ -26,10 +26,12 @@ LOG = logging.getLogger('avocado.test')
 
 try:
     import fabric.api
+    import fabric.network
     import fabric.operations
 except ImportError:
     REMOTE_CAPABLE = False
     LOG.info('Remote module is disabled: could not import fabric')
+    fabric = None
 else:
     REMOTE_CAPABLE = True
 
