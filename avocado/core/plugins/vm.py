@@ -52,6 +52,10 @@ class RunVM(plugin.Plugin):
                                           'default Avocado attempts to '
                                           'automatically find the VM IP '
                                           'address.'))
+        self.vm_parser.add_argument('--vm-port', dest='vm_port',
+                                    default=22, type=int, help='Specify '
+                                    'the port number to login on VM. '
+                                    'Current: 22')
         self.vm_parser.add_argument('--vm-username', default=username,
                                     help='Specify the username to login on VM')
         self.vm_parser.add_argument('--vm-password',

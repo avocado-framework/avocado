@@ -136,6 +136,7 @@ class VMTestResult(RemoteTestResult):
         try:
             # Finish remote setup and copy the tests
             self.args.remote_hostname = self.args.vm_hostname
+            self.args.remote_port = self.args.vm_port
             self.args.remote_username = self.args.vm_username
             self.args.remote_password = self.args.vm_password
             self.args.remote_no_copy = self.args.vm_no_copy
