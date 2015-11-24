@@ -14,3 +14,4 @@ pygraphviz==1.3rc2
 mock==1.2.0
 aexpect==1.0.0
 psutil==3.1.1
+boto3==1.2.1
