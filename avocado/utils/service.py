@@ -399,17 +399,22 @@ def _get_name_of_init(run=process.run):
     Internal function to determine what executable is PID 1
 
     It does that by checking /proc/1/exe.
+    Fall back to checking /proc/1/cmdline (local execution).
 
     :return: executable name for PID 1, aka init
     :rtype:  str
     """
-    # /proc/1/comm was added in 2.6.33 and is not in RHEL6.x, so use cmdline
-    # Non-root can read cmdline
-    # return os.path.basename(open("/proc/1/cmdline").read().split(chr(0))[0])
-    # readlink /proc/1/exe requires root
-    # inspired by openvswitch.py:ServiceManagerInterface.get_version()
-    output = run("readlink /proc/1/exe").stdout.strip()
-    return os.path.basename(output)
+    if run == process.run:
+        # On a local run, there are better ways to check
+        # our PID 1 executable name.
+        try:
+            return os.readlink('/proc/1/exe')
+        except OSError:
+            with open('/proc/1/cmdline', 'r') as cmdline:
+                return os.path.basename(cmdline.read().split(chr(0))[0])
+    else:
+        output = run("readlink /proc/1/exe").stdout.strip()
+        return os.path.basename(output)
 
 
 def get_name_of_init(run=process.run):
