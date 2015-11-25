@@ -59,6 +59,15 @@ log = logging.getLogger('avocado.test')
 
 SUPPORTED_PACKAGE_MANAGERS = ['apt-get', 'yum', 'zypper', 'dnf']
 
+_UID = os.getuid()
+
+
+def _requires_root_cmd(cmd):
+    if _UID != 0:
+        cmd = ("%s --non-interactive %s" %
+               (utils_path.find_command('sudo'), cmd))
+    return cmd
+
 
 class SystemInspector(object):
 
@@ -384,13 +393,16 @@ class YumBackend(RpmBackend):
         """
         Clean up the yum cache so new package information can be downloaded.
         """
-        process.system("yum clean all")
+        cmd = _requires_root_cmd("yum clean all")
+
+        process.system(cmd)
 
     def install(self, name):
         """
         Installs package [name]. Handles local installs.
         """
-        i_cmd = self.base_command + ' ' + 'install' + ' ' + name
+        i_cmd = _requires_root_cmd(self.base_command +
+                                   ' ' + 'install' + ' ' + name)
 
         try:
             process.system(i_cmd)
@@ -404,7 +416,8 @@ class YumBackend(RpmBackend):
 
         :param name: Package name (eg. 'ipython').
         """
-        r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
+        r_cmd = _requires_root_cmd(self.base_command +
+                                   ' ' + 'erase' + ' ' + name)
         try:
             process.system(r_cmd)
             return True
@@ -461,6 +474,8 @@ class YumBackend(RpmBackend):
             r_cmd = self.base_command + ' ' + 'update'
         else:
             r_cmd = self.base_command + ' ' + 'update' + ' ' + name
+
+        r_cmd = _requires_root_cmd(r_cmd)
 
         try:
             process.system(r_cmd)
@@ -538,7 +553,7 @@ class ZypperBackend(RpmBackend):
 
         :param name: Package Name.
         """
-        i_cmd = self.base_command + ' install -l ' + name
+        i_cmd = _requires_root_cmd(self.base_command + ' install -l ' + name)
         try:
             process.system(i_cmd)
             return True
@@ -551,7 +566,7 @@ class ZypperBackend(RpmBackend):
 
         :param url: URL for the package repository.
         """
-        ar_cmd = self.base_command + ' addrepo ' + url
+        ar_cmd = _requires_root_cmd(self.base_command + ' addrepo ' + url)
         try:
             process.system(ar_cmd)
             return True
@@ -564,7 +579,7 @@ class ZypperBackend(RpmBackend):
 
         :param url: URL for the package repository.
         """
-        rr_cmd = self.base_command + ' removerepo ' + url
+        rr_cmd = _requires_root_cmd(self.base_command + ' removerepo ' + url)
         try:
             process.system(rr_cmd)
             return True
@@ -575,7 +590,8 @@ class ZypperBackend(RpmBackend):
         """
         Removes package [name].
         """
-        r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
+        r_cmd = _requires_root_cmd(self.base_command +
+                                   ' ' + 'erase' + ' ' + name)
 
         try:
             process.system(r_cmd)
@@ -596,6 +612,8 @@ class ZypperBackend(RpmBackend):
             u_cmd = self.base_command + ' update -l'
         else:
             u_cmd = self.base_command + ' ' + 'update' + ' ' + name
+
+        u_cmd = _requires_root_cmd(u_cmd)
 
         try:
             process.system(u_cmd)
@@ -682,6 +700,8 @@ class AptBackend(DpkgBackend):
             command = 'install'
             i_cmd = self.base_command + ' ' + command + ' ' + name
 
+        i_cmd = _requires_root_cmd(i_cmd)
+
         try:
             process.system(i_cmd)
             return True
@@ -696,7 +716,8 @@ class AptBackend(DpkgBackend):
         """
         command = 'remove'
         flag = '--purge'
-        r_cmd = self.base_command + ' ' + command + ' ' + flag + ' ' + name
+        r_cmd = _requires_root_cmd(self.base_command +
+                                   ' ' + command + ' ' + flag + ' ' + name)
 
         try:
             process.system(r_cmd)
@@ -744,7 +765,7 @@ class AptBackend(DpkgBackend):
         :type name: str
         """
         ud_command = 'update'
-        ud_cmd = self.base_command + ' ' + ud_command
+        ud_cmd = _requires_root_cmd(self.base_command + ' ' + ud_command)
         try:
             process.system(ud_cmd)
         except process.CmdError:
@@ -757,6 +778,7 @@ class AptBackend(DpkgBackend):
             up_command = 'upgrade'
             up_cmd = self.base_command + ' ' + up_command
 
+        up_cmd = _requires_root_cmd(up_cmd)
         try:
             process.system(up_cmd)
             return True
