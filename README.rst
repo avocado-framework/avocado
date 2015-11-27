@@ -25,11 +25,15 @@ Using avocado
 The most straightforward way of `using` avocado is to install packages
 available for your distro:
 
-1) Fedora
+1) Fedora/RHEL
 
-   To use the latest version of avocado, or to use it while it's not officially
-   packaged in Fedora yet, you should use `Avocado's copr repository
-   <http://copr.fedoraproject.org/coprs/lmr/Autotest/>`__.
+   Avocado is not yet officially packed in Fedora/RHEL, but you can use avocado
+   yum repositories by putting corresponding file into ``/etc/yum.repos.d``.
+
+   *  `Fedora repo <https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo>`__
+   *  `RHEL repo <https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo>`__
+
+   and install it by ``yum install avocado`` (or using ``dnf``)
 
 Once you install it, you can start exploring it by checking the output of
 ``avocado --help`` and the test runner man-page, accessible via ``man avocado``.
