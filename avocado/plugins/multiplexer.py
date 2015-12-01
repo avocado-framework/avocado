@@ -14,22 +14,22 @@
 
 import sys
 
-from .. import multiplexer
-from .. import exit_codes
-from .. import output
-from .. import tree
-from . import plugin
-from ..settings import settings
+from base import CLICmd
+from avocado.core import multiplexer
+from avocado.core import exit_codes
+from avocado.core import output
+from avocado.core import tree
+from avocado.core.settings import settings
 
 
-class Multiplexer(plugin.Plugin):
+class Multiplexer(CLICmd):
 
     """
     Implements the avocado 'multiplex' subcommand
     """
 
     name = 'multiplexer'
-    enabled = True
+    description = 'Generate a list of dictionaries with params from a multiplex file'
 
     def __init__(self, *args, **kwargs):
         super(Multiplexer, self).__init__(*args, **kwargs)
@@ -37,41 +37,38 @@ class Multiplexer(plugin.Plugin):
 
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
-            self.enabled = False
             return
-        self.parser = parser.subcommands.add_parser(
-            'multiplex',
-            help='Generate a list of dictionaries with params from a multiplex file')
-        self.parser.add_argument('multiplex_files', nargs='+',
-                                 help='Path(s) to a multiplex file(s)')
 
-        self.parser.add_argument('--filter-only', nargs='*', default=[],
-                                 help='Filter only path(s) from multiplexing')
+        parser = super(Multiplexer, self).configure(parser)
+        parser.add_argument('multiplex_files', nargs='+',
+                            help='Path(s) to a multiplex file(s)')
 
-        self.parser.add_argument('--filter-out', nargs='*', default=[],
-                                 help='Filter out path(s) from multiplexing')
-        self.parser.add_argument('-s', '--system-wide', action='store_true',
-                                 help="Combine the files with the default "
-                                 "tree.")
-        self.parser.add_argument('-c', '--contents', action='store_true',
-                                 default=False, help="Shows the node content "
-                                 "(variables)")
-        self.parser.add_argument('--mux-inject', default=[], nargs='*',
-                                 help="Inject [path:]key:node values into "
-                                 "the final multiplex tree.")
-        env_parser = self.parser.add_argument_group("environment view options")
+        parser.add_argument('--filter-only', nargs='*', default=[],
+                            help='Filter only path(s) from multiplexing')
+
+        parser.add_argument('--filter-out', nargs='*', default=[],
+                            help='Filter out path(s) from multiplexing')
+        parser.add_argument('-s', '--system-wide', action='store_true',
+                            help="Combine the files with the default "
+                            "tree.")
+        parser.add_argument('-c', '--contents', action='store_true',
+                            default=False, help="Shows the node content "
+                            "(variables)")
+        parser.add_argument('--mux-inject', default=[], nargs='*',
+                            help="Inject [path:]key:node values into "
+                            "the final multiplex tree.")
+        env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
                                 default=False, help="Debug multiplexed "
                                 "files.")
-        tree_parser = self.parser.add_argument_group("tree view options")
+        tree_parser = parser.add_argument_group("tree view options")
         tree_parser.add_argument('-t', '--tree', action='store_true',
                                  default=False, help='Shows the multiplex '
                                  'tree structure')
         tree_parser.add_argument('-i', '--inherit', action="store_true",
                                  help="Show the inherited values")
-        super(Multiplexer, self).configure(self.parser)
 
-    def activate(self, args):
+    def _activate(self, args):
         # Extend default multiplex tree of --env values
         for value in getattr(args, "mux_inject", []):
             value = value.split(':', 2)
@@ -85,6 +82,7 @@ class Multiplexer(plugin.Plugin):
                 node.value[value[1]] = value[2]
 
     def run(self, args):
+        self._activate(args)
         view = output.View(app_args=args)
         err = None
         if args.tree and args.debug:

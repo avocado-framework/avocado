@@ -17,12 +17,12 @@ import bz2
 import sys
 import json
 
-from . import plugin
-from .. import output
-from .. import exit_codes
-from ...utils import process
-from ...utils import path as utils_path
-from ...utils import distro as utils_distro
+from .base import CLICmd
+from avocado.core import output
+from avocado.core import exit_codes
+from avocado.utils import process
+from avocado.utils import path as utils_path
+from avocado.utils import distro as utils_distro
 
 
 class SoftwarePackage(object):
@@ -289,41 +289,38 @@ def load_from_tree(name, version, release, arch, package_type, path):
     return distro_def
 
 
-class DistroOptions(plugin.Plugin):
+class Distro(CLICmd):
 
     """
     Implements the avocado 'distro' subcommand
     """
 
     name = 'distro'
-    enabled = True
+    description = 'Shows detected Linux distribution'
 
     def configure(self, parser):
-        self.parser = parser.subcommands.add_parser(
-            'distro',
-            help='Shows detected Linux distribution')
-        self.parser.add_argument('--distro-def-create',
-                                 action='store_true', default=False,
-                                 help=('Creates a distro definition file '
-                                       'based on the path given'))
-        self.parser.add_argument('--distro-def-name',
-                                 help='Distribution short name')
-        self.parser.add_argument('--distro-def-version',
-                                 help='Distribution major version number')
-        self.parser.add_argument('---distro-def-release', default='',
-                                 help='Distribution release version number')
-        self.parser.add_argument('--distro-def-arch',
-                                 help=('Primary architecture that the distro '
-                                       'targets'))
-        self.parser.add_argument('--distro-def-path',
-                                 help=('Top level directory of the distro '
-                                       'installation files'))
+        parser = super(Distro, self).configure(parser)
+        parser.add_argument('--distro-def-create',
+                            action='store_true', default=False,
+                            help=('Creates a distro definition file '
+                                  'based on the path given'))
+        parser.add_argument('--distro-def-name',
+                            help='Distribution short name')
+        parser.add_argument('--distro-def-version',
+                            help='Distribution major version number')
+        parser.add_argument('---distro-def-release', default='',
+                            help='Distribution release version number')
+        parser.add_argument('--distro-def-arch',
+                            help=('Primary architecture that the distro '
+                                  'targets'))
+        parser.add_argument('--distro-def-path',
+                            help=('Top level directory of the distro '
+                                  'installation files'))
         type_choices = DISTRO_PKG_INFO_LOADERS.keys()
         type_choices_hlp = ', '.join(type_choices)
         type_help_msg = 'Distro type (one of: %s)' % type_choices_hlp
-        self.parser.add_argument('--distro-def-type', choices=type_choices,
-                                 help=type_help_msg)
-        super(DistroOptions, self).configure(self.parser)
+        parser.add_argument('--distro-def-type', choices=type_choices,
+                            help=type_help_msg)
 
     def get_output_file_name(self, args):
         """
