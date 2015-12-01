@@ -40,16 +40,16 @@ class AvocadoApp(object):
         self.cli_dispatcher = CLIDispatcher()
         self.cli_cmd_dispatcher = CLICmdDispatcher()
         self.parser.start()
+        self.parser.resume()
         if self.cli_cmd_dispatcher.extensions:
             self.cli_cmd_dispatcher.map_method('configure', self.parser)
         if self.cli_dispatcher.extensions:
             self.cli_dispatcher.map_method('configure', self.parser)
         self.ready = True
+        self.parser.finish()
         try:
-            self.parser.resume()
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('run', self.parser.args)
-            self.parser.finish()
         except IOError:
             self.ready = False
 
