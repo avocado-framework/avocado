@@ -269,7 +269,10 @@ class TestRunner(object):
         while True:
             try:
                 if time.time() >= deadline:
-                    os.kill(proc.pid, signal.SIGUSR1)
+                    try:
+                        os.kill(proc.pid, signal.SIGUSR1)
+                    except OSError:
+                        pass
                     break
                 wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
                               cycle_timeout, first, step)
