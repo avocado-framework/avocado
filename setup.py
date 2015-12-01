@@ -139,6 +139,7 @@ if __name__ == '__main__':
                   'list = avocado.plugins.list:List',
                   'run = avocado.plugins.run:Run',
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
+                  'plugins = avocado.plugins.plugins:Plugins',
                   ]
               },
           zip_safe=False,
