@@ -42,17 +42,20 @@ class MultiplexTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_mplex_plugin(self):
         cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_mplex_plugin_nonexistent(self):
         cmd_line = './scripts/avocado multiplex nonexist'
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_mplex_debug(self):
         cmd_line = ('./scripts/avocado multiplex -c -d '
                     '/:examples/mux-selftest.yaml '
@@ -63,29 +66,34 @@ class MultiplexTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(DEBUG_OUT, result.stdout)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_mplex_noid(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_mplex_passtest(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_mplex_doublepass(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest passtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         self.run_and_check(cmd_line, expected_rc=0)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_mplex_failtest(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest failtest '
                     '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_double_mplex(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --multiplex '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
@@ -93,6 +101,7 @@ class MultiplexTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_run_mplex_params(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off examples/tests/env_variables.sh '
                     '--multiplex examples/tests/env_variables.sh.data'
