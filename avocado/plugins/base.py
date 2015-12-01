@@ -23,6 +23,38 @@ class Plugin(object):
     """
 
 
+class CLI(Plugin):
+
+    """
+    Base plugin interface for adding options (non-commands) to the command line
+
+    Plugins that want to add extra options to the core command line application
+    or to sub commands should use the 'avocado.plugins.cli' namespace.
+    """
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self):
+        super(CLI, self).__init__()
+
+    @abc.abstractmethod
+    def configure(self, parser):
+        """
+        Configures the command line parser with options specific to this plugin
+        """
+
+    @abc.abstractmethod
+    def run(self, args):
+        """
+        Execute any action the plugin intends.
+
+        Example of action may include activating a special features upon
+        finding that the requested command line options were set by the user.
+
+        Note: this plugin class is not intended for adding new commands, for
+        that please use `CLICmd`.
+        """
+
+
 class CLICmd(Plugin):
 
     """
