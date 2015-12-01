@@ -52,7 +52,6 @@ class InterruptTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_badly_behaved(self):
         """
         Make sure avocado can cleanly get out of a loop of badly behaved tests.
@@ -112,7 +111,6 @@ class InterruptTest(unittest.TestCase):
         # Make sure the Killing test subprocess message did appear
         self.assertIn('Killing test subprocess', proc.get_output())
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_well_behaved(self):
         """
         Make sure avocado can cleanly get out of a loop of well behaved tests.

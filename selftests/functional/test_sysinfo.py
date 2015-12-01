@@ -21,7 +21,6 @@ class SysInfoTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sysinfo_enabled(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=on passtest' % self.tmpdir
@@ -43,7 +42,6 @@ class SysInfoTest(unittest.TestCase):
             msg = 'The sysinfo/%s subdirectory does not exist:\n%s' % (hook, result)
             self.assertTrue(os.path.exists(sysinfo_subdir), msg)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sysinfo_disabled(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir

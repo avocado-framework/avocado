@@ -62,33 +62,28 @@ class RunnerOperationTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_all_ok(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest passtest' % self.tmpdir
         process.run(cmd_line)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_datadir_alias(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s datadir' % self.tmpdir
         process.run(cmd_line)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_datadir_noalias(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/datadir.py '
                     'examples/tests/datadir.py' % self.tmpdir)
         process.run(cmd_line)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_noalias(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/passtest.py "
                     "examples/tests/passtest.py" % self.tmpdir)
         process.run(cmd_line)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_tests_fail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest failtest passtest' % self.tmpdir
@@ -97,7 +92,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_nonexistent_test(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s bogustest' % self.tmpdir
@@ -183,7 +177,6 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
         self.assertIn(excerpt, output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_silent_output(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest --silent' % self.tmpdir
@@ -203,7 +196,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_empty_test_list(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off'
@@ -213,7 +205,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_not_found(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off sbrubles'
@@ -223,7 +214,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('Unable to discover url', result.stderr)
         self.assertNotIn('Unable to discover url', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_invalid_unique_id(self):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id foobar passtest'
         result = process.run(cmd_line, ignore_status=True)
@@ -231,7 +221,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('needs to be a 40 digit hex', result.stderr)
         self.assertNotIn('needs to be a 40 digit hex', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_valid_unique_id(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 passtest' % self.tmpdir)
@@ -261,7 +250,6 @@ class RunnerOperationTest(unittest.TestCase):
                                                                 result))
         self.assertIn('"status": "ERROR"', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_early_latest_result(self):
         """
         Tests that the `latest` link to the latest job results is created early
@@ -315,7 +303,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_pass(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest' % self.tmpdir
@@ -326,7 +313,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('passtest.py:PassTest.test:  PASS', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_fail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s failtest' % self.tmpdir
@@ -337,7 +323,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('failtest.py:FailTest.test:  FAIL', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_error(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s errortest' % self.tmpdir
@@ -348,7 +333,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('errortest.py:ErrorTest.test:  ERROR', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_skip(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s skiponsetup' % self.tmpdir
@@ -360,7 +344,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
                       '  SKIP', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_ugly_echo_cmd(self):
         if not os.path.exists("/bin/echo"):
             self.skipTest("Program /bin/echo does not exist")
@@ -406,7 +389,6 @@ class RunnerSimpleTest(unittest.TestCase):
                                                   'functional')
         self.fail_script.save()
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_simpletest_pass(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
@@ -417,7 +399,6 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_simpletest_fail(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
@@ -428,7 +409,6 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_onehundred_fail_timing(self):
         """
         We can be pretty sure that a failtest should return immediattely. Let's
@@ -449,7 +429,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_sleep_fail_sleep_timing(self):
         """
         Sleeptest is supposed to take 1 second, let's make a sandwich of
@@ -467,7 +446,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_simplewarning(self):
         """
         simplewarning.sh uses the avocado-bash-utils
@@ -508,7 +486,6 @@ class ExternalRunnerTest(unittest.TestCase):
             'avocado_externalrunner_functional')
         self.fail_script.save()
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_externalrunner_pass(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --external-runner=/bin/sh %s'
@@ -519,7 +496,6 @@ class ExternalRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_externalrunner_fail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --external-runner=/bin/sh %s'
@@ -530,7 +506,6 @@ class ExternalRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_externalrunner_chdir_no_testdir(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --external-runner=/bin/sh '
