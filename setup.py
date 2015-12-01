@@ -127,6 +127,7 @@ if __name__ == '__main__':
                    'scripts/avocado-rest-client'],
           entry_points={
               'avocado.plugins.cli.cmd': [
+                  'config = avocado.plugins.config:Config',
                   'exec-path = avocado.plugins.exec_path:ExecPath',
                   ]
               },
