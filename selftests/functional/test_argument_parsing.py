@@ -19,7 +19,6 @@ basedir = os.path.abspath(basedir)
 
 class ArgumentParsingTest(unittest.TestCase):
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_unknown_command(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado whacky-command-that-doesnt-exist'
