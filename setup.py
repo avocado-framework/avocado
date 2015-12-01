@@ -129,6 +129,7 @@ if __name__ == '__main__':
               'avocado.plugins.cli': [
                   'gdb = avocado.plugins.gdb:GDB',
                   'journal = avocado.plugins.journal:Journal',
+                  'wrapper = avocado.plugins.wrapper:Wrapper',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',

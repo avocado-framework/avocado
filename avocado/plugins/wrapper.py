@@ -15,24 +15,24 @@
 import os
 import sys
 
-from . import plugin
-from .. import exit_codes
-from .. import output
-from ...utils import process
+from .base import CLI
+from avocado.core import exit_codes
+from avocado.core import output
+from avocado.utils import process
 
 
-class Wrapper(plugin.Plugin):
+class Wrapper(CLI):
 
     """
     Implements the '--wrapper' flag for the 'run' subcommand
     """
 
-    name = 'wrapper'
-    enabled = True
-
     def configure(self, parser):
-        self.parser = parser
-        wrap_group = self.parser.runner.add_argument_group(
+        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        if run_subcommand_parser is None:
+            return
+
+        wrap_group = run_subcommand_parser.add_argument_group(
             'wrapper support')
         wrap_group.add_argument('--wrapper', action='append', default=[],
                                 metavar='SCRIPT[:EXECUTABLE]',
@@ -43,13 +43,16 @@ class Wrapper(plugin.Plugin):
                                 'plus a shell like glob to the target EXECUTABLE. '
                                 'Multiple wrapper options are allowed, but '
                                 'only one global wrapper can be defined.')
-        self.configured = True
 
-    def activate(self, app_args):
-        try:
-            if not app_args.wrapper:    # Not enabled
-                return
+    def run(self, app_args):
+        if 'wrapper' in app_args:
             view = output.View(app_args=app_args)
+            if 'gdb_run_bin' in app_args and app_args.gdb_run_bin:
+                view.notify(event='error',
+                            msg='Command line option --wrapper is incompatible'
+                                ' with option --gdb-run-bin.')
+                sys.exit(exit_codes.AVOCADO_FAIL)
+
             for wrap in app_args.wrapper:
                 if ':' not in wrap:
                     if process.WRAP_PROCESS is None:
@@ -68,10 +71,3 @@ class Wrapper(plugin.Plugin):
                     view.notify(event='error',
                                 msg="Wrapper '%s' not found!" % script)
                     sys.exit(exit_codes.AVOCADO_FAIL)
-            if app_args.gdb_run_bin:
-                view.notify(event='error',
-                            msg='Command line option --wrapper is incompatible'
-                                ' with option --gdb-run-bin.')
-                sys.exit(exit_codes.AVOCADO_FAIL)
-        except AttributeError:
-            pass
