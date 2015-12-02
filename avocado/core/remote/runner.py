@@ -16,7 +16,6 @@
 import sys
 import json
 import os
-import pipes
 import re
 import logging
 

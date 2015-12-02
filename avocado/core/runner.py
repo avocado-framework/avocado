@@ -29,7 +29,6 @@ from . import test
 from . import exceptions
 from . import output
 from . import status
-from . import exit_codes
 from .loader import loader
 from ..utils import wait
 from ..utils import stacktrace
