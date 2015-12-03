@@ -133,6 +133,11 @@ class LoaderTest(unittest.TestCase):
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         tc.test()
+        # Load with params
+        simple_with_params = simple_test.path + " 'foo bar' --baz"
+        suite = self.loader.discover(simple_with_params, True)
+        self.assertEqual(len(suite), 1)
+        self.assertEqual(suite[0][1]["name"], simple_with_params)
         simple_test.remove()
 
     def test_load_simple_not_exec(self):
