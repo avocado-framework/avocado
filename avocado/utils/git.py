@@ -41,15 +41,15 @@ class GitRepoHelper(object):
         :param uri: git repository url
         :type branch: string
         :param branch: git remote branch
-        :type destination_dir: string
-        :param destination_dir: path of a dir where to save downloaded code
-        :type commit: string
-        :param commit: specific commit to download
         :type lbranch: string
         :param lbranch: git local branch name, if different from remote
+        :type commit: string
+        :param commit: specific commit to download
+        :type destination_dir: string
+        :param destination_dir: path of a dir where to save downloaded code
         :type base_uri: string
         :param base_uri: a closer, usually local, git repository url from where
-                         to fetch content first
+                         to fetch content first from
         """
         self.uri = uri
         self.base_uri = base_uri
@@ -186,14 +186,14 @@ def get_repo(uri, branch='master', lbranch=None, commit=None,
     :param uri: git repository url
     :type branch: string
     :param branch: git remote branch
-    :type destination_dir: string
-    :param destination_dir: path of a dir where to save downloaded code
-    :type commit: string
-    :param commit: specific commit to download
     :type lbranch: string
     :param lbranch: git local branch name, if different from remote
+    :type commit: string
+    :param commit: specific commit to download
+    :type destination_dir: string
+    :param destination_dir: path of a dir where to save downloaded code
     :type base_uri: string
-    :param uri: a closer, usually local, git repository url from where to
+    :param base_uri: a closer, usually local, git repository url from where to
                 fetch content first from
     """
     repo = GitRepoHelper(uri, branch, lbranch, commit, destination_dir,
