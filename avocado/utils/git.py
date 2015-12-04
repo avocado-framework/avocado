@@ -32,7 +32,7 @@ class GitRepoHelper(object):
     Helps to deal with git repos, mostly fetching content from a repo
     """
 
-    def __init__(self, uri, branch='master', lbranch='master', commit=None,
+    def __init__(self, uri, branch='master', lbranch=None, commit=None,
                  destination_dir=None, base_uri=None):
         """
         Instantiates a new GitRepoHelper
@@ -177,7 +177,7 @@ class GitRepoHelper(object):
         self.checkout()
 
 
-def get_repo(uri, branch='master', lbranch='master', commit=None,
+def get_repo(uri, branch='master', lbranch=None, commit=None,
              destination_dir=None, base_uri=None):
     """
     Utility function that retrieves a given git code repository.
