@@ -32,7 +32,7 @@ class GitRepoHelper(object):
     Helps to deal with git repos, mostly fetching content from a repo
     """
 
-    def __init__(self, uri, branch='master', lbranch='master', commit=None,
+    def __init__(self, uri, branch='master', lbranch=None, commit=None,
                  destination_dir=None, base_uri=None):
         """
         Instantiates a new GitRepoHelper
@@ -41,15 +41,15 @@ class GitRepoHelper(object):
         :param uri: git repository url
         :type branch: string
         :param branch: git remote branch
-        :type destination_dir: string
-        :param destination_dir: path of a dir where to save downloaded code
-        :type commit: string
-        :param commit: specific commit to download
         :type lbranch: string
         :param lbranch: git local branch name, if different from remote
+        :type commit: string
+        :param commit: specific commit to download
+        :type destination_dir: string
+        :param destination_dir: path of a dir where to save downloaded code
         :type base_uri: string
         :param base_uri: a closer, usually local, git repository url from where
-                         to fetch content first
+                         to fetch content first from
         """
         self.uri = uri
         self.base_uri = base_uri
@@ -177,7 +177,7 @@ class GitRepoHelper(object):
         self.checkout()
 
 
-def get_repo(uri, branch='master', lbranch='master', commit=None,
+def get_repo(uri, branch='master', lbranch=None, commit=None,
              destination_dir=None, base_uri=None):
     """
     Utility function that retrieves a given git code repository.
@@ -186,14 +186,14 @@ def get_repo(uri, branch='master', lbranch='master', commit=None,
     :param uri: git repository url
     :type branch: string
     :param branch: git remote branch
-    :type destination_dir: string
-    :param destination_dir: path of a dir where to save downloaded code
-    :type commit: string
-    :param commit: specific commit to download
     :type lbranch: string
     :param lbranch: git local branch name, if different from remote
+    :type commit: string
+    :param commit: specific commit to download
+    :type destination_dir: string
+    :param destination_dir: path of a dir where to save downloaded code
     :type base_uri: string
-    :param uri: a closer, usually local, git repository url from where to
+    :param base_uri: a closer, usually local, git repository url from where to
                 fetch content first from
     """
     repo = GitRepoHelper(uri, branch, lbranch, commit, destination_dir,
