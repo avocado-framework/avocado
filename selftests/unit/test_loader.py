@@ -133,6 +133,11 @@ class LoaderTest(unittest.TestCase):
         self.assertTrue(test_class == test.SimpleTest, test_class)
         tc = test_class(**test_parameters)
         tc.test()
+        # Load with params
+        simple_with_params = simple_test.path + " 'foo bar' --baz"
+        suite = self.loader.discover(simple_with_params, True)
+        self.assertEqual(len(suite), 1)
+        self.assertEqual(suite[0][1]["name"], simple_with_params)
         simple_test.remove()
 
     def test_load_simple_not_exec(self):
@@ -216,6 +221,23 @@ class LoaderTest(unittest.TestCase):
         avocado_multiple_tests.save()
         suite = self.loader.discover(avocado_multiple_tests.path, True)
         self.assertEqual(len(suite), 2)
+        # Try to load only some of the tests
+        suite = self.loader.discover(avocado_multiple_tests.path +
+                                     ':MultipleMethods.testTwo', True)
+        self.assertEqual(len(suite), 1)
+        self.assertEqual(suite[0][1]["methodName"], 'testTwo')
+        # Load using regexp
+        suite = self.loader.discover(avocado_multiple_tests.path +
+                                     ':.*_one', True)
+        self.assertEqual(len(suite), 1)
+        self.assertEqual(suite[0][1]["methodName"], 'test_one')
+        # Load booth
+        suite = self.loader.discover(avocado_multiple_tests.path +
+                                     ':test.*', True)
+        self.assertEqual(len(suite), 2)
+        # Load none should return no tests
+        self.assertTrue(not self.loader.discover(avocado_multiple_tests.path +
+                                                 ":no_match", True))
         avocado_multiple_tests.remove()
 
     def test_load_foreign(self):

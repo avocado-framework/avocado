@@ -487,10 +487,11 @@ class FileLoader(TestLoader):
             _url, _subtests_filter = url.split(':', 1)
             if os.path.exists(_url):  # otherwise it's ':' in the file name
                 url = _url
-                subtests_filter = _subtests_filter
+                subtests_filter = re.compile(_subtests_filter)
 
         if not os.path.isdir(url):  # Single file
-            if not self._make_tests(url, DEFAULT, subtests_filter):
+            if (not self._make_tests(url, DEFAULT, subtests_filter) and
+                    not subtests_filter):
                 split_url = shlex.split(url)
                 if (os.access(split_url[0], os.X_OK) and
                         not os.path.isdir(split_url[0])):
@@ -620,6 +621,9 @@ class FileLoader(TestLoader):
                         for test_method in test_methods:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
+                            if (subtests_filter and
+                                    not subtests_filter.search(name)):
+                                continue
                             tst = (test_class, {'name': name,
                                                 'modulePath': test_path,
                                                 'methodName': test_method})
