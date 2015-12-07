@@ -11,7 +11,7 @@ else:
 
 from avocado.utils import process
 
-FAKE_VMSTAT_CONTENTS = """#!/usr/bin/python
+FAKE_VMSTAT_CONTENTS = """#!/usr/bin/env python
 import time
 import random
 import signal
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     vmstat.start()
 """
 
-FAKE_UPTIME_CONTENTS = """#!/usr/bin/python
+FAKE_UPTIME_CONTENTS = """#!/usr/bin/env python
 if __name__ == '__main__':
     print("17:56:34 up  8:06,  7 users,  load average: 0.26, 0.20, 0.21")
 

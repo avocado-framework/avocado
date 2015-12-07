@@ -33,7 +33,7 @@ if __name__ == "__main__":
         time.sleep(0.1)
 """
 
-GOOD_TEST = """#!/usr/bin/python
+GOOD_TEST = """#!/usr/bin/env python
 import time
 from avocado import Test
 from avocado import main
