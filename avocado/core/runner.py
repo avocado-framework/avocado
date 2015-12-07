@@ -50,6 +50,7 @@ class TestStatus(object):
         self.queue = queue
         self._early_status = None
         self.status = {}
+        self.interrupt = None
 
     @property
     def early_status(self):
@@ -75,6 +76,12 @@ class TestStatus(object):
                 else:   # Not an early_status message
                     queue.append(msg)
 
+    def __getattribute__(self, name):
+        # Update state before returning the value
+        if name in ("status", "interrupt"):
+            self._tick()
+        return super(TestStatus, self).__getattribute__(name)
+
     def wait_for_early_status(self, proc, timeout):
         """
         Wait until early_status is obtained
@@ -96,12 +103,10 @@ class TestStatus(object):
                 raise exceptions.TestError(msg)
             time.sleep(0)
 
-    def check(self):
+    def _tick(self):
         """
-        Check if there are messages queued and handle them
-        :return: True if everything is ok, False on interruption (break)
+        Process the queue and update current status
         """
-        res = True
         while not self.queue.empty():
             msg = self.queue.get()
             if "func_at_exit" in msg:
@@ -111,8 +116,7 @@ class TestStatus(object):
                                              msg.get("once", False))
             elif not msg.get("running", True):
                 self.status = msg
-                res = False
-                continue
+                self.interrupt = True
             elif "paused" in msg:
                 self.status = msg
                 self.job.result_proxy.notify_progress(False)
@@ -122,7 +126,6 @@ class TestStatus(object):
                         self.job.view.notify(event='partial', msg=reason)
             else:       # test_status
                 self.status = msg
-        return res
 
     def abort(self, test_alive, started, timeout, first, step):
         """
@@ -133,7 +136,7 @@ class TestStatus(object):
         :param first: Delay before first check
         :param step: Step between checks for the status
         """
-        if test_alive and wait.wait_for(lambda: not self.check(), timeout,
+        if test_alive and wait.wait_for(lambda: self.status, timeout,
                                         first, step):
             return self.status
         else:
@@ -265,11 +268,14 @@ class TestRunner(object):
         while True:
             try:
                 if time.time() >= deadline:
-                    os.kill(proc.pid, signal.SIGUSR1)
+                    try:
+                        os.kill(proc.pid, signal.SIGUSR1)
+                    except OSError:
+                        pass
                     break
                 wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
                               cycle_timeout, first, step)
-                if not test_status.check():
+                if test_status.interrupt:
                     break
                 if proc.is_alive():
                     if ctrl_c_count == 0:
@@ -299,7 +305,6 @@ class TestRunner(object):
                     os.kill(proc.pid, signal.SIGKILL)
 
         # Get/update the test status
-        test_status.check()
         if test_status.status:
             test_state = test_status.status
         else:
