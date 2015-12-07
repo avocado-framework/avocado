@@ -13,7 +13,7 @@ from avocado.utils import script
 
 # We need to access protected members pylint: disable=W0212
 
-AVOCADO_TEST_OK = """#!/usr/bin/python
+AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test
 from avocado import main
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     main()
 """
 
-AVOCADO_TEST_OK_DISABLED = """#!/usr/bin/python
+AVOCADO_TEST_OK_DISABLED = """#!/usr/bin/env python
 from avocado import Test
 from avocado import main
 
@@ -46,7 +46,7 @@ def hello():
     print('Hello World!')
 """
 
-PY_SIMPLE_TEST = """#!/usr/bin/python
+PY_SIMPLE_TEST = """#!/usr/bin/env python
 def hello():
     print('Hello World!')
 

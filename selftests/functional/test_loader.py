@@ -17,7 +17,7 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
 
-AVOCADO_TEST_OK = """#!/usr/bin/python
+AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test
 from avocado import main
 
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 """
 
 
-AVOCADO_TEST_SLEEP_ELEVEN = """#!/usr/bin/python
+AVOCADO_TEST_SLEEP_ELEVEN = """#!/usr/bin/env python
 import time
 
 from avocado import Test
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 """
 
 
-AVOCADO_TEST_MULTIPLE_CLASSES = """#!/usr/bin/python
+AVOCADO_TEST_MULTIPLE_CLASSES = """#!/usr/bin/env python
 import time
 
 from avocado import Test
@@ -73,7 +73,7 @@ def hello():
     print('Hello World!')
 """
 
-PY_SIMPLE_TEST = """#!/usr/bin/python
+PY_SIMPLE_TEST = """#!/usr/bin/env python
 def hello():
     print('Hello World!')
 
