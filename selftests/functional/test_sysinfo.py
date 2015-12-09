@@ -29,10 +29,12 @@ class SysInfoTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         output = result.stdout + result.stderr
+        sysinfo_dir = None
         for line in output.splitlines():
             if 'JOB LOG' in line:
                 job_log = line.split()[-1]
                 sysinfo_dir = os.path.join(os.path.dirname(job_log), 'sysinfo')
+        self.assertIsNotNone(sysinfo_dir, "Could not find sysinfo dir from human output")
         msg = "Avocado didn't create sysinfo directory %s:\n%s" % (sysinfo_dir, result)
         self.assertTrue(os.path.isdir(sysinfo_dir), msg)
         msg = 'The sysinfo directory is empty:\n%s' % result
@@ -50,10 +52,12 @@ class SysInfoTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         output = result.stdout + result.stderr
+        sysinfo_dir = None
         for line in output.splitlines():
             if 'JOB LOG' in line:
                 job_log = line.split()[-1]
                 sysinfo_dir = os.path.join(os.path.dirname(job_log), 'sysinfo')
+        self.assertIsNotNone(sysinfo_dir, "Could not find sysinfo dir from human output")
         msg = 'Avocado created sysinfo directory %s:\n%s' % (sysinfo_dir, result)
         self.assertFalse(os.path.isdir(sysinfo_dir), msg)
 
