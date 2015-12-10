@@ -225,6 +225,8 @@ class OutputPluginTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         output_lines = output.splitlines()
+        self.assertGreater(len(output_lines), 5,
+                           "Basic human interface did not produce the expect output")
         second_line = output_lines[1]
         debug_log = second_line.split()[-1]
         self.check_output_files(debug_log)
