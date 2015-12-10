@@ -81,5 +81,15 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
 from avocado.core.app import AvocadoApp
 
 if __name__ == '__main__':
+    # Override tmp in case it's not set in env
+    for attr in ("TMP", "TEMP", "TMPDIR"):
+        if attr in os.environ:
+            break
+    else:   # TMP not set by user, use /var/tmp if exists
+        # TMP not set by user in environment. Try to use /var/tmp to avoid
+        # possible problems with "/tmp" being mounted as TMPFS without the
+        # support for O_DIRECT
+        if os.path.exists("/var/tmp"):
+            os.environ["TMP"] = "/var/tmp"
     app = AvocadoApp()
     sys.exit(app.run())
