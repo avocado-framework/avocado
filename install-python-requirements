@@ -1,0 +1,72 @@
+#!/bin/env python
+import sys
+import pip
+import argparse
+
+version = None
+PY_26 = False
+PY_27 = False
+# Add the try/except block just in case we're running on some ancient
+# python version (pre 2.0)
+try:
+    version = sys.version_info[0:2]
+except AttributeError:
+    pass
+if version == (2, 6):
+    PY_26 = True
+elif version == (2, 7):
+    PY_27 = True
+else:
+    if version is None:
+        version = 'pre 2.0'
+    print('Incorrect python version %s. avocado is currently supported '
+          'on python 2.6 or 2.7' % version)
+    sys.exit(1)
+
+
+class Parser(argparse.ArgumentParser):
+
+    def __init__(self):
+        super(Parser, self).__init__(
+            prog='install-python-deps.py',
+            description='Install python dependencies')
+
+        self.add_argument('-m', '--mode', default='install',
+                          help="Install mode ('install' for deps needed for "
+                               "avocado itself to work, 'selftests' for deps "
+                               "needed to run the unit and regression tests)")
+
+
+class App(object):
+
+    def __init__(self):
+        self.parser = Parser()
+        self.args = None
+
+    def run(self):
+        self.args, _ = self.parser.parse_known_args()
+        return self.install_requirements(self.args.mode)
+
+    @staticmethod
+    def install_requirements(mode='install'):
+        valid_modes = ['install', 'selftests']
+        if mode not in valid_modes:
+            print('Invalid install requirements mode %s' % mode)
+            return 2
+
+        if PY_26:
+            if mode == 'install':
+                pip.main(args=['install', '-r', 'requirements-python26.txt'])
+            elif mode == 'selftests':
+                pip.main(args=['install', '-r',
+                               'requirements-selftests-python26.txt'])
+        elif PY_27:
+            if mode == 'install':
+                pip.main(args=['install', '-r', 'requirements.txt'])
+            elif mode == 'selftests':
+                pip.main(args=['install', '-r', 'requirements-selftests.txt'])
+        return 0
+
+if __name__ == '__main__':
+    app = App()
+    sys.exit(app.run())

@@ -1,0 +1,25 @@
+# Avocado test requirements
+# Setuptools
+setuptools>=18.0.0
+# sphinx (doc build test)
+Sphinx>=1.3b1
+# flexmock (some unittests use it)
+flexmock>=0.9.7
+# inspektor (static and style checks)
+inspektor>=0.1.16
+# mock (some unittests use it)
+mock>=1.0.0
+# six
+six>=1.9.0
+# funcsigs
+funcsigs>=0.4
+# To run make check
+pep8>=1.6.2
+Pillow>=2.2.1
+snakefood>=1.4
+networkx>=1.9.1
+pygraphviz>=1.3rc2
+aexpect>=1.0.0
+psutil>=3.1.1
+# All python 2.6 specific requirements (backports)
+unittest2>=1.0.0
