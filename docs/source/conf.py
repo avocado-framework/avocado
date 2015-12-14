@@ -32,22 +32,29 @@ API_SECTIONS = {"Test APIs": (None,
                               "This is the bare mininum set of APIs that users "
                               "should use, and can rely on, while writing tests.",
                               "test",
-                              ("core", "utils"),
+                              ("core", "utils", "plugins"),
                               ("modules.rst", )),
 
                 "Utilities APIs": ("utils",
                                    "This is a set of utility APIs that Avocado "
                                    "provides as added value to test writers.",
                                    "utils",
-                                   ("core", ),
+                                   ("core", "plugins"),
                                    ("avocado.rst", "modules.rst"),),
 
                 "Internal (Core) APIs": ("core",
                                          "Internal APIs that may be of interest to "
-                                         "Avocado hackers or plugin writers.",
+                                         "Avocado hackers.",
                                          "core",
-                                         ("utils", ),
-                                         ("avocado.rst", "modules.rst"))}
+                                         ("utils", "plugins"),
+                                         ("avocado.rst", "modules.rst")),
+
+                "Extension (plugin) APIs": ("plugins",
+                                            "Extension APIs that may be of interest to "
+                                            "plugin writers.",
+                                            "plugins",
+                                            ("core", "utils"),
+                                            ("avocado.rst", "modules.rst"))}
 
 # clean up all previous rst files. RTD is known to keep them from previous runs
 process.run("find %s -name '*.rst' -delete" % base_api_output_dir)

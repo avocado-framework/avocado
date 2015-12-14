@@ -20,7 +20,8 @@ import os
 
 from .log import configure as configure_log
 from .parser import Parser
-from .plugins.manager import get_plugin_manager
+from .dispatcher import CLIDispatcher
+from .dispatcher import CLICmdDispatcher
 
 
 class AvocadoApp(object):
@@ -35,27 +36,27 @@ class AvocadoApp(object):
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
         configure_log()
-        self.plugin_manager = None
         self.parser = Parser()
+        self.cli_dispatcher = CLIDispatcher()
+        self.cli_cmd_dispatcher = CLICmdDispatcher()
         self.parser.start()
-        self.load_plugin_manager()
+        self.parser.resume()
+        if self.cli_cmd_dispatcher.extensions:
+            self.cli_cmd_dispatcher.map_method('configure', self.parser)
+        if self.cli_dispatcher.extensions:
+            self.cli_dispatcher.map_method('configure', self.parser)
         self.ready = True
+        self.parser.finish()
         try:
-            self.parser.resume()
-            self.plugin_manager.activate(self.parser.args)
-            self.parser.finish()
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('run', self.parser.args)
         except IOError:
             self.ready = False
 
-    def load_plugin_manager(self):
-        """Load Plugin Manager.
-
-        :param plugins_dir: Extra plugins directory.
-        """
-        self.plugin_manager = get_plugin_manager()
-        self.plugin_manager.load_plugins()
-        self.plugin_manager.configure(self.parser)
-
     def run(self):
         if self.ready:
-            return self.parser.take_action()
+            subcommand = self.parser.args.subcommand
+            if subcommand in self.cli_cmd_dispatcher:
+                extension = self.cli_cmd_dispatcher[subcommand]
+                method = extension.obj.run
+                return method(self.parser.args)

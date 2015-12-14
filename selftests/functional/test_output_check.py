@@ -84,6 +84,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_tamper_stdout(self):
         self.test_output_record_all()
         tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
@@ -99,6 +100,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn(tampered_msg, result.stdout)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_disable_output_check(self):
         self.test_output_record_all()
         tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"

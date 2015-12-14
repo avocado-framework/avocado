@@ -118,11 +118,29 @@ if __name__ == '__main__':
                     'avocado.core.restclient',
                     'avocado.core.restclient.cli',
                     'avocado.core.restclient.cli.args',
-                    'avocado.core.restclient.cli.actions'],
+                    'avocado.core.restclient.cli.actions',
+                    'avocado.plugins'],
           package_data={'avocado.core.plugins': _get_plugin_resource_files(
               'avocado/core/plugins/resources')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
+          entry_points={
+              'avocado.plugins.cli': [
+                  'gdb = avocado.plugins.gdb:GDB',
+                  'journal = avocado.plugins.journal:Journal',
+                  'wrapper = avocado.plugins.wrapper:Wrapper',
+                  ],
+              'avocado.plugins.cli.cmd': [
+                  'config = avocado.plugins.config:Config',
+                  'distro = avocado.plugins.distro:Distro',
+                  'exec-path = avocado.plugins.exec_path:ExecPath',
+                  'multiplex = avocado.plugins.multiplex:Multiplex',
+                  'list = avocado.plugins.list:List',
+                  'run = avocado.plugins.run:Run',
+                  'sysinfo = avocado.plugins.sysinfo:SysInfo',
+                  'plugins = avocado.plugins.plugins:Plugins',
+                  ]
+              },
           zip_safe=False,
           test_suite='selftests')
