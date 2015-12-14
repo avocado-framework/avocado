@@ -98,10 +98,10 @@ clean:
 install-requirements-all: install-requirements install-requirements-selftests
 
 install-requirements:
-	grep -v '^#' requirements.txt | xargs -n 1 pip install
+	grep -v '^#' requirements.txt | xargs -n 1 pip install --upgrade
 
 install-requirements-selftests:
-	grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install
+	grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
 check: clean check_cyclical modules_boundaries
 	rm -rf /var/tmp/avocado*
