@@ -21,24 +21,30 @@ COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 
 all:
+	@echo
 	@echo "Development related targets:"
 	@echo "check:  Runs tree static check, unittests and functional tests"
 	@echo "clean:  Get rid of scratch and byte files"
 	@echo
-	@echo "Distribution/installtion related targets:"
-	@echo "source:         Create source package"
-	@echo "install:        Install on local system"
-	@echo "deb:            Generate both source and binary debian packages"
-	@echo "deb-src:        Generate a source debian package"
-	@echo "deb-bin:        Generate a binary debian package"
-	@echo "srpm:           Generate a source RPM package (.srpm)"
-	@echo "rpm:            Generate binary RPMs"
-	@echo "man:            Generate the avocado man page"
+	@echo "Platform independent distribution/installtion related targets:"
+	@echo "source:   Create source package"
+	@echo "install:  Install on local system"
+	@echo "man:      Generate the avocado man page"
+	@echo
+	@echo "RPM related targets:"
+	@echo "srpm:  Generate a source RPM package (.srpm)"
+	@echo "rpm:   Generate binary RPMs"
+	@echo
+	@echo "Debian related targets:"
+	@echo "deb:      Generate both source and binary debian packages"
+	@echo "deb-src:  Generate a source debian package"
+	@echo "deb-bin:  Generate a binary debian package"
 	@echo
 	@echo "Release related targets:"
 	@echo "source-release:  Create source package for the latest tagged release"
 	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
 	@echo "rpm-release:     Generate binary RPMs for the latest tagged release"
+	@echo
 
 source: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
