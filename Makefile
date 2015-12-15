@@ -21,20 +21,34 @@ COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 
 all:
-	@echo "make source - Create source package"
-	@echo "make install - Install on local system"
-	@echo "make build-deb-src - Generate a source debian package"
-	@echo "make build-deb-bin - Generate a binary debian package"
-	@echo "make build-deb-all - Generate both source and binary debian packages"
-	@echo "make srpm - Generate a source RPM package (.srpm)"
-	@echo "make rpm  - Generate binary RPMs"
-	@echo "make man - Generate the avocado man page"
-	@echo "make check - Runs tree static check, unittests and functional tests"
-	@echo "make clean - Get rid of scratch and byte files"
+	@echo
+	@echo "Development related targets:"
+	@echo "check:  Runs tree static check, unittests and functional tests"
+	@echo "clean:  Get rid of scratch and byte files"
+	@echo
+	@echo "Package requirements related targets"
+	@echo "requirements:            Install runtime requirements"
+	@echo "requirements-selftests:  Install runtime and selftests requirements"
+	@echo
+	@echo "Platform independent distribution/installtion related targets:"
+	@echo "source:   Create source package"
+	@echo "install:  Install on local system"
+	@echo "man:      Generate the avocado man page"
+	@echo
+	@echo "RPM related targets:"
+	@echo "srpm:  Generate a source RPM package (.srpm)"
+	@echo "rpm:   Generate binary RPMs"
+	@echo
+	@echo "Debian related targets:"
+	@echo "deb:      Generate both source and binary debian packages"
+	@echo "deb-src:  Generate a source debian package"
+	@echo "deb-bin:  Generate a binary debian package"
+	@echo
 	@echo "Release related targets:"
-	@echo "make source-release - Create source package for the latest tagged release"
-	@echo "make srpm-release - Generate a source RPM package (.srpm) for the latest tagged release"
-	@echo "make rpm-release  - Generate binary RPMs for the latest tagged release"
+	@echo "source-release:  Create source package for the latest tagged release"
+	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
+	@echo "rpm-release:     Generate binary RPMs for the latest tagged release"
+	@echo
 
 source: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
@@ -47,22 +61,22 @@ source-release: clean
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
-prepare-source:
+deb-prepare-source:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
 	dch -D "vivid" -M -v "$(VERSION)" "Automated (make builddeb) build."
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 
-build-deb-src: prepare-source
+deb-src: deb-prepare-source
 	# build the source package
 	dpkg-buildpackage -S -elookkas@gmail.com -rfakeroot
 
-build-deb-bin: prepare-source
+deb-bin: deb-prepare-source
 	# build binary package
 	dpkg-buildpackage -b -rfakeroot
 
-build-deb-all: prepare-source
+deb: deb-prepare-source
 	# build both source and binary packages
 	dpkg-buildpackage -i -I -rfakeroot
 
@@ -95,13 +109,12 @@ clean:
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 
-install-requirements-all: install-requirements install-requirements-selftests
+requirements:
+	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
+	- grep -v '^#' requirements.txt | xargs -n 1 pip install --upgrade
 
-install-requirements:
-	grep -v '^#' requirements.txt | xargs -n 1 pip install
-
-install-requirements-selftests:
-	grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install
+requirements-selftests: requirements
+	- grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
 check: clean check_cyclical modules_boundaries
 	rm -rf /var/tmp/avocado*
