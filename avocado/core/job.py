@@ -40,6 +40,7 @@ from . import output
 from . import multiplexer
 from . import tree
 from . import test
+from . import replay
 from .settings import settings
 from .plugins import manager
 from .plugins import jsonresult
@@ -153,6 +154,9 @@ class Job(object):
         self.idfile = os.path.join(self.logdir, "id")
         with open(self.idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
+
+    def _setup_job_replay(self):
+        self.replay = replay.Replay(self.logdir)
 
     def _update_latest_link(self):
         """
@@ -269,10 +273,10 @@ class Job(object):
                      Optionally, a list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
-        urls = self._handle_urls(urls)
+        self.urls = self._handle_urls(urls)
         loader.loader.load_plugins(self.args)
         try:
-            suite = loader.loader.discover(urls)
+            suite = loader.loader.discover(self.urls)
         except loader.LoaderUnhandledUrlError, details:
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
@@ -450,6 +454,15 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
+    def _record_job_replay_info(self):
+        """
+        Record required information for job replay
+        """
+        self.replay.record_urls(self.urls)
+        self.replay.record_config()
+        if getattr(self.args, 'multiplex_files', None):
+            self.replay.record_mux(self.args.multiplex_files)
+
     def _run(self, urls=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
@@ -463,6 +476,7 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
+        self._setup_job_replay()
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id)
@@ -491,6 +505,7 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
+        self._record_job_replay_info()
 
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
