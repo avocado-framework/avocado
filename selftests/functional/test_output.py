@@ -266,7 +266,7 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skipIf(image_output_uncapable,
+    @unittest.skipIf(image_output_uncapable(),
                      "Uncapable of generating images with PIL library")
     def test_gendata(self):
         tmpfile = tempfile.mktemp()
