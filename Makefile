@@ -105,14 +105,12 @@ clean:
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 
-install-requirements-all: install-requirements install-requirements-selftests
-
 install-requirements:
-	grep -v '^#' requirements.txt | xargs -n 1 pip install --upgrade
-	if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
+	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
+	- grep -v '^#' requirements.txt | xargs -n 1 pip install --upgrade
 
-install-requirements-selftests:
-	grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
+install-requirements-selftests: install-requirements
+	- grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
 check: clean check_cyclical modules_boundaries
 	rm -rf /var/tmp/avocado*
