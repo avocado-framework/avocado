@@ -43,13 +43,16 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 port=22, timeout=60, attempts=10, quiet=False):
+                 key_filename=None, port=22, timeout=60, attempts=10,
+                 quiet=False):
         """
         Creates an instance of :class:`Remote`.
 
         :param hostname: the hostname.
         :param username: the username. Default: autodetect.
         :param password: the password. Default: try to use public key.
+        :param key_filename: path to an identity file (Example: .pem files
+            from Amazon EC2).
         :param timeout: remote command timeout, in seconds. Default: 60.
         :param attempts: number of attempts to connect. Default: 10.
         :param quiet: performs quiet operations. Default: True.
@@ -65,6 +68,7 @@ class Remote(object):
         self._setup_environment(host_string=hostname,
                                 user=username,
                                 password=password,
+                                key_filename=key_filename,
                                 port=port,
                                 timeout=timeout / attempts,
                                 connection_attempts=attempts,
@@ -80,8 +84,11 @@ class Remote(object):
         Run a remote command.
 
         :param command: the command string to execute.
+        :param ignore_status: Whether to not raise exceptions in case the
+            command's return code is different than zero.
+        :param timeout: Maximum time allowed for the command to return.
 
-        :return: the result of the remote program's output.
+        :return: the result of the remote program's execution.
         :rtype: :class:`avocado.utils.process.CmdResult`.
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """

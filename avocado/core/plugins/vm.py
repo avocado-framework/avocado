@@ -52,11 +52,20 @@ class RunVM(plugin.Plugin):
                                           'default Avocado attempts to '
                                           'automatically find the VM IP '
                                           'address.'))
+        self.vm_parser.add_argument('--vm-port', dest='vm_port',
+                                    default=22, type=int, help='Specify '
+                                    'the port number to login on VM. '
+                                    'Current: 22')
         self.vm_parser.add_argument('--vm-username', default=username,
                                     help='Specify the username to login on VM')
         self.vm_parser.add_argument('--vm-password',
                                     default=None,
                                     help='Specify the password to login on VM')
+        self.vm_parser.add_argument('--vm-key-file',
+                                    dest='vm_key_file', default=None,
+                                    help='Specify an identity file with '
+                                    'a private key instead of a password '
+                                    '(Example: .pem files from Amazon EC2)')
         self.vm_parser.add_argument('--vm-cleanup',
                                     action='store_true', default=False,
                                     help='Restore VM to a previous state, '
