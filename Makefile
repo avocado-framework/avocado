@@ -26,6 +26,10 @@ all:
 	@echo "check:  Runs tree static check, unittests and functional tests"
 	@echo "clean:  Get rid of scratch and byte files"
 	@echo
+	@echo "Package requirements related targets"
+	@echo "requirements:            Install runtime requirements"
+	@echo "requirements-selftests:  Install runtime and selftests requirements"
+	@echo
 	@echo "Platform independent distribution/installtion related targets:"
 	@echo "source:   Create source package"
 	@echo "install:  Install on local system"
@@ -105,11 +109,11 @@ clean:
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 
-install-requirements:
+requirements:
 	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
 	- grep -v '^#' requirements.txt | xargs -n 1 pip install --upgrade
 
-install-requirements-selftests: install-requirements
+requirements-selftests: requirements
 	- grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
 check: clean check_cyclical modules_boundaries
