@@ -21,20 +21,24 @@ COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 
 all:
-	@echo "make source - Create source package"
-	@echo "make install - Install on local system"
-	@echo "make build-deb-src - Generate a source debian package"
-	@echo "make build-deb-bin - Generate a binary debian package"
-	@echo "make build-deb-all - Generate both source and binary debian packages"
-	@echo "make srpm - Generate a source RPM package (.srpm)"
-	@echo "make rpm  - Generate binary RPMs"
-	@echo "make man - Generate the avocado man page"
-	@echo "make check - Runs tree static check, unittests and functional tests"
-	@echo "make clean - Get rid of scratch and byte files"
+	@echo "Development related targets:"
+	@echo "check:  Runs tree static check, unittests and functional tests"
+	@echo "clean:  Get rid of scratch and byte files"
+	@echo
+	@echo "Distribution/installtion related targets:"
+	@echo "source:         Create source package"
+	@echo "install:        Install on local system"
+	@echo "build-deb-src:  Generate a source debian package"
+	@echo "build-deb-bin:  Generate a binary debian package"
+	@echo "build-deb-all:  Generate both source and binary debian packages"
+	@echo "srpm:           Generate a source RPM package (.srpm)"
+	@echo "rpm:            Generate binary RPMs"
+	@echo "man:            Generate the avocado man page"
+	@echo
 	@echo "Release related targets:"
-	@echo "make source-release - Create source package for the latest tagged release"
-	@echo "make srpm-release - Generate a source RPM package (.srpm) for the latest tagged release"
-	@echo "make rpm-release  - Generate binary RPMs for the latest tagged release"
+	@echo "source-release:  Create source package for the latest tagged release"
+	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
+	@echo "rpm-release:     Generate binary RPMs for the latest tagged release"
 
 source: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
