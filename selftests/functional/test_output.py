@@ -19,6 +19,14 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
 
+def image_output_uncapable():
+    try:
+        import PIL
+        return False
+    except ImportError:
+        return True
+
+
 class OutputTest(unittest.TestCase):
 
     def setUp(self):
@@ -258,6 +266,8 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
+    @unittest.skipIf(image_output_uncapable,
+                     "Uncapable of generating images with PIL library")
     def test_gendata(self):
         tmpfile = tempfile.mktemp()
         try:
