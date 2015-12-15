@@ -28,9 +28,9 @@ all:
 	@echo "Distribution/installtion related targets:"
 	@echo "source:         Create source package"
 	@echo "install:        Install on local system"
-	@echo "build-deb-src:  Generate a source debian package"
-	@echo "build-deb-bin:  Generate a binary debian package"
-	@echo "build-deb-all:  Generate both source and binary debian packages"
+	@echo "deb:            Generate both source and binary debian packages"
+	@echo "deb-src:        Generate a source debian package"
+	@echo "deb-bin:        Generate a binary debian package"
 	@echo "srpm:           Generate a source RPM package (.srpm)"
 	@echo "rpm:            Generate binary RPMs"
 	@echo "man:            Generate the avocado man page"
@@ -51,22 +51,22 @@ source-release: clean
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
-prepare-source:
+deb-prepare-source:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
 	dch -D "vivid" -M -v "$(VERSION)" "Automated (make builddeb) build."
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 
-build-deb-src: prepare-source
+deb-src: deb-prepare-source
 	# build the source package
 	dpkg-buildpackage -S -elookkas@gmail.com -rfakeroot
 
-build-deb-bin: prepare-source
+deb-bin: deb-prepare-source
 	# build binary package
 	dpkg-buildpackage -b -rfakeroot
 
-build-deb-all: prepare-source
+deb: deb-prepare-source
 	# build both source and binary packages
 	dpkg-buildpackage -i -I -rfakeroot
 
