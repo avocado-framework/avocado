@@ -41,8 +41,8 @@ from . import multiplexer
 from . import tree
 from . import test
 from . import xunit
+from . import jsonresult
 from .settings import settings
-from .plugins import jsonresult
 from ..utils import archive
 from ..utils import astring
 from ..utils import path

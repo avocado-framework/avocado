@@ -65,7 +65,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(json_output))
         minidom.parse(xunit_output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --xunit - --json - passtest' % self.tmpdir
@@ -93,7 +92,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertIn(error_excerpt, output,
                       "Missing excerpt error message from output:\n%s" % output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
@@ -115,7 +113,6 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
@@ -174,7 +171,6 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_compatible_setup_nooutput(self):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
@@ -248,7 +244,6 @@ class OutputPluginTest(unittest.TestCase):
         debug_log = second_line.split()[-1]
         self.check_output_files(debug_log)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_verify_whiteboard_save(self):
         tmpfile = tempfile.mktemp()
         try:
@@ -273,7 +268,6 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     @unittest.skipIf(image_output_uncapable(),
                      "Uncapable of generating images with PIL library")
     def test_gendata(self):

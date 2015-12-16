@@ -120,7 +120,6 @@ class RunnerOperationTest(unittest.TestCase):
                       output,
                       "Test did not fail with action exception:\n%s" % output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_uncaught_exception(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
@@ -132,7 +131,6 @@ class RunnerOperationTest(unittest.TestCase):
                                                                 result))
         self.assertIn('"status": "ERROR"', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_fail_on_exception(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
@@ -225,7 +223,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn('needs to be a 40 digit hex', result.stderr)
         self.assertIn('PASS', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_automatic_unique_id(self):
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --json -' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
@@ -234,7 +231,6 @@ class RunnerOperationTest(unittest.TestCase):
         int(r['job_id'], 16)  # it's an hex number
         self.assertEqual(len(r['job_id']), 40)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_skip_outside_setup(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
@@ -264,7 +260,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertTrue(os.path.exists(link))
         self.assertTrue(os.path.islink(link))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_dry_run(self):
         os.chdir(basedir)
         cmd = ("./scripts/avocado run --sysinfo=off passtest failtest "
@@ -729,27 +724,22 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                          "Different number of skipped tests")
         return json_data
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_json_plugin_passtest(self):
         self.run_and_check('passtest', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_json_plugin_failtest(self):
         self.run_and_check('failtest', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 0, 1, 0)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_json_plugin_skiponsetuptest(self):
         self.run_and_check('skiponsetup', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 1)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_ugly_echo_cmd(self):
         if not os.path.exists("/bin/echo"):
             self.skipTest("Program /bin/echo does not exist")

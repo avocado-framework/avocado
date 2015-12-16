@@ -6,7 +6,7 @@ import tempfile
 import shutil
 
 from avocado import Test
-from avocado.core.plugins import jsonresult
+from avocado.core import jsonresult
 from avocado.core import job
 
 
