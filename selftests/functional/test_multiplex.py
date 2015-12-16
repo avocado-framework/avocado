@@ -42,20 +42,17 @@ class MultiplexTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_mplex_plugin(self):
         cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_mplex_plugin_nonexistent(self):
         cmd_line = './scripts/avocado multiplex nonexist'
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_mplex_debug(self):
         cmd_line = ('./scripts/avocado multiplex -c -d '
                     '/:examples/mux-selftest.yaml '
