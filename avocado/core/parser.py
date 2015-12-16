@@ -70,12 +70,6 @@ class Parser(object):
             description='valid subcommands',
             help='subcommand help')
 
-    def resume(self):
-        """
-        Resume the parsing of arguments.
-
-        Side effect: update attribute `args` (the namespace).
-        """
         if tree.MULTIPLEX_CAPABLE:
             # Allow overriding multiplex variants by plugins args
             self.args.default_multiplex_tree = tree.TreeNode()
