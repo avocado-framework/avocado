@@ -17,9 +17,8 @@
 import datetime
 from xml.sax.saxutils import quoteattr
 
-from . import plugin
-from .. import output
-from ..result import TestResult
+from . import output
+from .result import TestResult
 
 
 # We use a subset of the XML format defined in this URL:
@@ -214,28 +213,3 @@ class xUnitTestResult(TestResult):
         else:
             with open(self.output, 'w') as xunit_output:
                 xunit_output.write(contents)
-
-
-class XUnit(plugin.Plugin):
-
-    """
-    xUnit output
-    """
-
-    name = 'xunit'
-    enabled = True
-
-    def configure(self, parser):
-        self.parser = parser
-        self.parser.runner.output.add_argument(
-            '--xunit', type=str, dest='xunit_output', metavar='FILE',
-            help=('Enable xUnit result format and write it to FILE. '
-                  "Use '-' to redirect to the standard output."))
-        self.configured = True
-
-    def activate(self, app_args):
-        try:
-            if app_args.xunit_output:
-                self.parser.application.set_defaults(xunit_result=xUnitTestResult)
-        except AttributeError:
-            pass
