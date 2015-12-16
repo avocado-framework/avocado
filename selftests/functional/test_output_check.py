@@ -32,7 +32,6 @@ class RunnerSimpleTest(unittest.TestCase):
             'avocado_output_check_functional')
         self.output_script.save()
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_record_none(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record none' %
@@ -47,7 +46,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertFalse(os.path.isfile(stdout_file))
         self.assertFalse(os.path.isfile(stderr_file))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_record_stdout(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record stdout' %
@@ -62,7 +60,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(stdout_file))
         self.assertFalse(os.path.isfile(stderr_file))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_record_all(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record all' %
@@ -77,7 +74,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(stdout_file))
         self.assertTrue(os.path.isfile(stderr_file))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_record_and_check(self):
         self.test_output_record_all()
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
