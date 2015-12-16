@@ -40,6 +40,7 @@ from . import output
 from . import multiplexer
 from . import tree
 from . import test
+from . import replay
 from .settings import settings
 from .plugins import manager
 from .plugins import jsonresult
@@ -491,6 +492,7 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
+        replay.record(self.args, self.logdir)
 
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
