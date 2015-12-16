@@ -561,7 +561,6 @@ class AbsPluginsTest(object):
 
 class PluginsTest(AbsPluginsTest, unittest.TestCase):
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sysinfo_plugin(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado sysinfo %s' % self.base_outputdir
