@@ -9,5 +9,5 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Copyright: Red Hat Inc. 2015
+# Author: Cleber Rosa <cleber@redhat.com>

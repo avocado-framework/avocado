@@ -36,6 +36,7 @@ API Reference
    api/test/avocado.rst
    api/utils/avocado.utils.rst
    api/core/avocado.core.rst
+   api/plugins/avocado.plugins.rst
 
 
 Indices and tables
