@@ -128,6 +128,7 @@ if __name__ == '__main__':
           entry_points={
               'avocado.plugins.cli': [
                   'gdb = avocado.plugins.gdb:GDB',
+                  'wrapper = avocado.plugins.wrapper:Wrapper',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
