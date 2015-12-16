@@ -14,31 +14,36 @@
 
 """Run tests on a remote machine."""
 
+import sys
 import getpass
 
-from . import plugin
-from .. import remoter
-from ..remote import RemoteTestResult
-from ..remote import RemoteTestRunner
+from avocado.core import output
+from avocado.core import exit_codes
+from avocado.core import remoter
+from avocado.core.remote import RemoteTestResult
+from avocado.core.remote import RemoteTestRunner
+from .base import CLI
 
 
-class RunRemote(plugin.Plugin):
+class Remote(CLI):
 
     """
     Run tests on a remote machine
     """
 
-    name = 'run_remote'
-    enabled = True
-    remote_parser = None
+    name = 'remote'
+    description = "Remote machine options for 'run' subcommand"
 
     def configure(self, parser):
         if remoter.REMOTE_CAPABLE is False:
-            self.enabled = False
             return
-        username = getpass.getuser()
+
+        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        if run_subcommand_parser is None:
+            return
+
         msg = 'test execution on a remote machine'
-        self.remote_parser = parser.runner.add_argument_group(msg)
+        self.remote_parser = run_subcommand_parser.add_argument_group(msg)
         self.remote_parser.add_argument('--remote-hostname',
                                         dest='remote_hostname', default=None,
                                         help='Specify the hostname to login on'
@@ -49,7 +54,7 @@ class RunRemote(plugin.Plugin):
                                         'machine. Current: 22')
         self.remote_parser.add_argument('--remote-username',
                                         dest='remote_username',
-                                        default=username,
+                                        default=getpass.getuser(),
                                         help='Specify the username to login on'
                                         ' remote machine. Current: '
                                         '%(default)s')
@@ -71,22 +76,20 @@ class RunRemote(plugin.Plugin):
         self.configured = True
 
     @staticmethod
-    def _check_required_args(app_args, enable_arg, required_args):
+    def _check_required_args(args, enable_arg, required_args):
         """
         :return: True when enable_arg enabled and all required args are set
         :raise sys.exit: When missing required argument.
         """
-        if (not hasattr(app_args, enable_arg) or
-                not getattr(app_args, enable_arg)):
+        if (not hasattr(args, enable_arg) or
+                not getattr(args, enable_arg)):
             return False
         missing = []
         for arg in required_args:
-            if not getattr(app_args, arg):
+            if not getattr(args, arg):
                 missing.append(arg)
         if missing:
-            from .. import output, exit_codes
-            import sys
-            view = output.View(app_args=app_args)
+            view = output.View(app_args=args)
             e_msg = ('Use of %s requires %s arguments to be set. Please set %s'
                      '.' % (enable_arg, ', '.join(required_args),
                             ', '.join(missing)))
@@ -95,8 +98,8 @@ class RunRemote(plugin.Plugin):
             return sys.exit(exit_codes.AVOCADO_FAIL)
         return True
 
-    def activate(self, app_args):
-        if self._check_required_args(app_args, 'remote_hostname',
+    def run(self, args):
+        if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
-            self.remote_parser.set_defaults(remote_result=RemoteTestResult,
-                                            test_runner=RemoteTestRunner)
+            args.remote_result = RemoteTestResult
+            args.test_runner = RemoteTestRunner
