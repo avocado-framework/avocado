@@ -84,7 +84,7 @@ def get_data_files():
     return data_files
 
 
-def _get_plugin_resource_files(path):
+def _get_resource_files(path):
     """
     Given a path, return all the files in there to package
     """
@@ -92,7 +92,7 @@ def _get_plugin_resource_files(path):
     for root, _, files in sorted(os.walk(path)):
         for name in files:
             fullname = os.path.join(root, name)
-            flist.append(fullname[len('avocado/core/plugins/'):])
+            flist.append(fullname[len('avocado/core/'):])
     return flist
 
 
@@ -111,7 +111,6 @@ if __name__ == '__main__':
           url='http://avocado-framework.github.io/',
           packages=['avocado',
                     'avocado.core',
-                    'avocado.core.plugins',
                     'avocado.utils',
                     'avocado.utils.external',
                     'avocado.core.remote',
@@ -120,8 +119,8 @@ if __name__ == '__main__':
                     'avocado.core.restclient.cli.args',
                     'avocado.core.restclient.cli.actions',
                     'avocado.plugins'],
-          package_data={'avocado.core.plugins': _get_plugin_resource_files(
-              'avocado/core/plugins/resources')},
+          package_data={'avocado.core': _get_resource_files(
+              'avocado/core/resources')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
