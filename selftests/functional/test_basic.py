@@ -103,7 +103,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_doublefail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - doublefail' % self.tmpdir
@@ -145,7 +144,6 @@ class RunnerOperationTest(unittest.TestCase):
                                                                 result))
         self.assertIn('"status": "FAIL"', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_timeout(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - timeouttest' % self.tmpdir
@@ -162,7 +160,6 @@ class RunnerOperationTest(unittest.TestCase):
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_runner_abort(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - abort' % self.tmpdir
@@ -669,22 +666,18 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_xunit_plugin_passtest(self):
         self.run_and_check('passtest', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0, 0)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_xunit_plugin_failtest(self):
         self.run_and_check('failtest', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 0, 0, 1, 0)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_xunit_plugin_skiponsetuptest(self):
         self.run_and_check('skiponsetup', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0, 1)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_xunit_plugin_errortest(self):
         self.run_and_check('errortest', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0, 0)

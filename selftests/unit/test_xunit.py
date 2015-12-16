@@ -6,7 +6,7 @@ import tempfile
 import shutil
 
 from avocado import Test
-from avocado.core.plugins import xunit
+from avocado.core import xunit
 from avocado.core import job
 
 

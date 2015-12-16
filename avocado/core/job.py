@@ -40,9 +40,9 @@ from . import output
 from . import multiplexer
 from . import tree
 from . import test
+from . import xunit
 from .settings import settings
 from .plugins import jsonresult
-from .plugins import xunit
 from ..utils import archive
 from ..utils import astring
 from ..utils import path
