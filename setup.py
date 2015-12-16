@@ -133,6 +133,7 @@ if __name__ == '__main__':
                   'config = avocado.plugins.config:Config',
                   'distro = avocado.plugins.distro:Distro',
                   'exec-path = avocado.plugins.exec_path:ExecPath',
+                  'multiplex = avocado.plugins.multiplex:Multiplex',
                   'run = avocado.plugins.run:Run',
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   ]
