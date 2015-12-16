@@ -34,6 +34,19 @@ class Dispatcher(ExtensionManager):
         manager.load_failures.append((entrypoint, exception))
 
 
+class CLIDispatcher(Dispatcher):
+
+    """
+    Calls extensions on configure/run
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.cli'
+    """
+
+    def __init__(self):
+        super(CLIDispatcher, self).__init__('avocado.plugins.cli')
+
+
 class CLICmdDispatcher(Dispatcher):
 
     """

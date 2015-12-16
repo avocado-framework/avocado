@@ -20,6 +20,7 @@ import os
 
 from .log import configure as configure_log
 from .parser import Parser
+from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
 
 
@@ -36,11 +37,16 @@ class AvocadoApp(object):
 
         configure_log()
         self.parser = Parser()
+        self.cli_dispatcher = CLIDispatcher()
         self.cli_cmd_dispatcher = CLICmdDispatcher()
         self.parser.start()
         if self.cli_cmd_dispatcher.extensions:
             self.cli_cmd_dispatcher.map_method('configure', self.parser)
+        if self.cli_dispatcher.extensions:
+            self.cli_dispatcher.map_method('configure', self.parser)
         self.parser.finish()
+        if self.cli_dispatcher.extensions:
+            self.cli_dispatcher.map_method('run', self.parser.args)
         self.ready = True
 
     def run(self):
