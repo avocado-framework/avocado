@@ -32,7 +32,6 @@ class OutputTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_doublefree(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off doublefree' % self.tmpdir
@@ -203,7 +202,6 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_show_job_log(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log' % self.tmpdir
@@ -219,7 +217,6 @@ class OutputPluginTest(unittest.TestCase):
         job_id = job_id_list[0]
         self.assertEqual(len(job_id), 40)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log --silent' %
@@ -232,7 +229,6 @@ class OutputPluginTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertEqual(output, "")
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_default_enabled_plugins(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir
@@ -319,7 +315,6 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_redirect_output(self):
         redirected_output_path = tempfile.mktemp()
         try:
