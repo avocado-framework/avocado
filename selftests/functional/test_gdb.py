@@ -1,7 +1,12 @@
 import os
-import unittest
+import sys
 import shutil
 import tempfile
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado.utils import process
 
@@ -14,12 +19,14 @@ class GDBPluginTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_gdb_prerun_commands(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--gdb-prerun-commands=/dev/null passtest' % self.tmpdir)
         process.run(cmd_line)
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_gdb_multiple_prerun_commands(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --gdb-prerun-commands=/dev/null '
