@@ -41,10 +41,8 @@ from . import multiplexer
 from . import tree
 from . import test
 from .settings import settings
-from .plugins import manager
 from .plugins import jsonresult
 from .plugins import xunit
-from .plugins.builtin import ErrorsLoading
 from ..utils import archive
 from ..utils import astring
 from ..utils import path
@@ -300,13 +298,6 @@ class Job(object):
                     filtered_suite.append(test_template)
         return filtered_suite
 
-    @staticmethod
-    def _log_plugin_load_errors():
-        job_log = _TEST_LOGGER
-        for plugin_failed in ErrorsLoading:
-            job_log.error('Error loading %s -> %s' % plugin_failed)
-        job_log.error('')
-
     def _log_job_id(self):
         job_log = _TEST_LOGGER
         job_log.info('Job ID: %s', self.unique_id)
@@ -375,42 +366,6 @@ class Job(object):
         job_log.info('logs     ' + data_dir.get_logs_dir())
         job_log.info('')
 
-    @staticmethod
-    def _log_avocado_plugins():
-        job_log = _TEST_LOGGER
-        pm = manager.get_plugin_manager()
-
-        enabled = [p for p in pm.plugins if p.enabled]
-        disabled = [p for p in pm.plugins if not p.enabled]
-
-        if enabled:
-            enabled_matrix = []
-            for plug in sorted(enabled):
-                enabled_matrix.append([plug.name, plug.description])
-            job_log.info("Plugins enabled:")
-            for line in astring.iter_tabular_output(enabled_matrix):
-                job_log.info(line)
-
-        if disabled:
-            disabled_matrix = []
-            for plug in sorted(disabled):
-                disabled_matrix.append([plug.name, plug.description])
-            job_log.info("Plugins disabled:")
-            for line in astring.iter_tabular_output(disabled_matrix):
-                job_log.info(line)
-
-        if ErrorsLoading:
-            unloadable_matrix = []
-            for load_error in sorted(ErrorsLoading):
-                unloadable_matrix.append([plug.name, "%s -> %s" %
-                                          (load_error[0], load_error[1])])
-
-            job_log.info("Unloadable plugin modules:")
-            for line in astring.iter_tabular_output(unloadable_matrix):
-                job_log.info(line)
-
-        job_log.info('')
-
     def _log_mux_tree(self, mux):
         job_log = _TEST_LOGGER
         tree_repr = tree.tree_view(mux.variants.root, verbose=True,
@@ -442,7 +397,6 @@ class Job(object):
         """
         self._log_cmdline()
         self._log_avocado_version()
-        self._log_avocado_plugins()
         self._log_avocado_config()
         self._log_avocado_datadir()
         self._log_mux_tree(mux)

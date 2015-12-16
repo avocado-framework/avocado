@@ -1,7 +1,12 @@
 import os
-import unittest
+import sys
 import tempfile
 import shutil
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from avocado import VERSION
 from avocado.core import exit_codes
@@ -44,6 +49,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
             'avocado_env_vars_functional')
         self.script.save()
 
+    @unittest.skip("Temporary plugin infrastructure removal")
     def test_environment_vars(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, self.script.path)
