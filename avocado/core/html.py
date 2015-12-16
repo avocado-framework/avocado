@@ -24,12 +24,10 @@ import urllib
 
 import pystache
 
-from . import plugin
-from .. import exit_codes
-from .. import output
-from ..result import TestResult
-from ...utils import path as utils_path
-from ...utils import runtime
+from . import output
+from .result import TestResult
+from ..utils import path as utils_path
+from ..utils import runtime
 
 
 class ReportModel(object):
@@ -231,8 +229,9 @@ class HTMLTestResult(TestResult):
 
     def _render_report(self):
         context = ReportModel(json_input=self.json, html_output=self.output)
-        html = HTML()
-        template = html.get_resource_path('templates', 'report.mustache')
+        base_path = os.path.dirname(sys.modules[__name__].__file__)
+        html_resources_path = os.path.join(base_path, 'resources', 'htmlresult')
+        template = os.path.join(html_resources_path, 'templates', 'report.mustache')
 
         # pylint: disable=E0611
         if hasattr(pystache, 'Renderer'):
@@ -243,7 +242,7 @@ class HTMLTestResult(TestResult):
             v = view.View(open(template, 'r').read(), context)
             report_contents = v.render('utf8')
 
-        static_basedir = html.get_resource_path('static')
+        static_basedir = os.path.join(html_resources_path, 'static')
         output_dir = os.path.dirname(os.path.abspath(self.output))
         utils_path.init_dir(output_dir)
         for resource_dir in os.listdir(static_basedir):
@@ -266,50 +265,3 @@ class HTMLTestResult(TestResult):
                 cmd = ['xdg-open', self.output]
                 subprocess.Popen(cmd, close_fds=True, stdin=inout, stdout=inout,
                                  stderr=inout, preexec_fn=setsid)
-
-
-class HTML(plugin.Plugin):
-
-    """
-    HTML job report
-    """
-
-    name = 'htmlresult'
-    enabled = True
-
-    def configure(self, parser):
-        self.parser = parser
-        self.parser.runner.output.add_argument(
-            '--html', type=str,
-            dest='html_output', metavar='FILE',
-            help=('Enable HTML output to the FILE where the result should be '
-                  'written. The value - (output to stdout) is not supported '
-                  'since not all HTML resources can be embedded into a '
-                  'single file (page resources will be copied to the '
-                  'output file dir)'))
-        self.parser.runner.output.add_argument(
-            '--open-browser',
-            dest='open_browser',
-            action='store_true',
-            default=False,
-            help='Open the generated report on your preferred browser. '
-                 'This works even if --html was not explicitly passed, '
-                 'since an HTML report is always generated on the job '
-                 'results dir. Current: %s' % False)
-        self.configured = True
-
-    def activate(self, app_args):
-        try:
-            if app_args.html_output:
-                if app_args.html_output == '-':
-                    view = output.View(app_args=app_args)
-                    view.notify(event='error',
-                                msg='HTML to stdout not supported '
-                                    '(not all HTML resources can be embedded '
-                                    'on a single file)')
-                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                else:
-                    self.parser.application.set_defaults(
-                        html_result=HTMLTestResult)
-        except AttributeError:
-            pass

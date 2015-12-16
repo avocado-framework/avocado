@@ -78,7 +78,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertIn(error_excerpt, output,
                       "Missing excerpt error message from output:\n%s" % output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off --html - passtest' % self.tmpdir
@@ -137,7 +136,6 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_output_compatible_setup_3(self):
         tmpfile = tempfile.mktemp(prefix='avocado_' + __name__)
         tmpfile2 = tempfile.mktemp(prefix='avocado_' + __name__)
