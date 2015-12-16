@@ -130,6 +130,7 @@ if __name__ == '__main__':
                   'gdb = avocado.plugins.gdb:GDB',
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnit',
+                  'json = avocado.plugins.json:JSON',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
