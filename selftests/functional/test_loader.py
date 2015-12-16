@@ -102,19 +102,15 @@ class LoaderTestFunctional(unittest.TestCase):
         self.assertIn('%s: %s' % (exp_str, count), result.stdout)
         test_script.remove()
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_simple(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', 0775)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_simple_not_exec(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST')
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_sleep_a_lot(self):
         """
         Verifies that the test loader, at list time, does not load the Python
@@ -136,16 +132,13 @@ class LoaderTestFunctional(unittest.TestCase):
                          "eleven seconds."))
         self.assertIn('INSTRUMENTED: 2', result.stdout)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
                    'INSTRUMENTED', 0664, 2)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_load_not_a_test(self):
         self._test('notatest.py', NOT_A_TEST, 'SIMPLE', 0775)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_load_not_a_test_not_exec(self):
         self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')
 

@@ -134,6 +134,7 @@ if __name__ == '__main__':
                   'distro = avocado.plugins.distro:Distro',
                   'exec-path = avocado.plugins.exec_path:ExecPath',
                   'multiplex = avocado.plugins.multiplex:Multiplex',
+                  'list = avocado.plugins.list:List',
                   'run = avocado.plugins.run:Run',
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   ]
