@@ -52,7 +52,7 @@ from ..utils import data_structures
 
 
 try:
-    from .plugins import htmlresult
+    from . import html
     HTML_REPORT_SUPPORT = True
 except ImportError:
     HTML_REPORT_SUPPORT = False
@@ -226,14 +226,14 @@ class Job(object):
         json_plugin = jsonresult.JSONTestResult(self.view, args)
         self.result_proxy.add_output_plugin(json_plugin)
 
-        # Setup the json plugin to output to the debug directory
+        # Setup the html output to the results directory
         if HTML_REPORT_SUPPORT:
             html_file = os.path.join(self.logdir, 'html', 'results.html')
             args = argparse.Namespace()
             args.html_output = html_file
             args.open_browser = getattr(self.args, 'open_browser', False)
             args.relative_links = True
-            html_plugin = htmlresult.HTMLTestResult(self.view, args)
+            html_plugin = html.HTMLTestResult(self.view, args)
             self.result_proxy.add_output_plugin(html_plugin)
 
         op_set_stdout = self.result_proxy.output_plugins_using_stdout()
