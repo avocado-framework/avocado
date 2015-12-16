@@ -569,7 +569,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertIn("Unable to discover url", output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_plugin_list(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado plugins'
@@ -604,7 +603,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('Disabled', output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_Namespace_object_has_no_attribute(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado plugins'
