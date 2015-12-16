@@ -547,7 +547,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         sysinfo_files = os.listdir(self.base_outputdir)
         self.assertGreater(len(sysinfo_files), 0, "Empty sysinfo files dir")
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_list_plugin(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado list'
@@ -559,7 +558,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('No tests were found on current tests dir', output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_list_error_output(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado list sbrubles'

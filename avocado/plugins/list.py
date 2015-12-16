@@ -14,12 +14,12 @@
 
 import sys
 
-from . import plugin
-from .. import test
-from .. import loader
-from .. import output
-from .. import exit_codes
-from ...utils import astring
+from .base import CLICmd
+from avocado.core import test
+from avocado.core import loader
+from avocado.core import output
+from avocado.core import exit_codes
+from avocado.utils import astring
 
 
 class TestLister(object):
@@ -139,15 +139,14 @@ class TestLister(object):
         return rc
 
 
-class TestList(plugin.Plugin):
+class List(CLICmd):
 
     """
     Implements the avocado 'list' subcommand
     """
 
-    name = 'test_lister'
-    enabled = True
-    priority = 0
+    name = 'list'
+    description = 'List available tests'
 
     def configure(self, parser):
         """
@@ -155,28 +154,26 @@ class TestList(plugin.Plugin):
 
         :param parser: Main test runner parser.
         """
-        self.parser = parser.subcommands.add_parser('list', help='List available test modules')
-        self.parser.add_argument('keywords', type=str, default=[], nargs='*',
-                                 help="List of paths, aliases or other "
-                                      "keywords used to locate tests. "
-                                      "If empty, avocado will list tests on "
-                                      "the configured test source, "
-                                      "(see 'avocado config --datadir') Also, "
-                                      "if there are other test loader plugins "
-                                      "active, tests from those plugins might "
-                                      "also show up (behavior may vary among "
-                                      "plugins)")
-        self.parser.add_argument('-V', '--verbose',
-                                 action='store_true', default=False,
-                                 help='Whether to show extra information '
-                                      '(headers and summary). Current: %(default)s')
-        self.parser.add_argument('--paginator',
-                                 choices=('on', 'off'), default='on',
-                                 help='Turn the paginator on/off. '
-                                      'Current: %(default)s')
-        loader.add_loader_options(self.parser)
-        super(TestList, self).configure(self.parser)
-        parser.lister = self.parser
+        parser = super(List, self).configure(parser)
+        parser.add_argument('keywords', type=str, default=[], nargs='*',
+                            help="List of paths, aliases or other "
+                            "keywords used to locate tests. "
+                            "If empty, avocado will list tests on "
+                            "the configured test source, "
+                            "(see 'avocado config --datadir') Also, "
+                            "if there are other test loader plugins "
+                            "active, tests from those plugins might "
+                            "also show up (behavior may vary among "
+                            "plugins)")
+        parser.add_argument('-V', '--verbose',
+                            action='store_true', default=False,
+                            help='Whether to show extra information '
+                            '(headers and summary). Current: %(default)s')
+        parser.add_argument('--paginator',
+                            choices=('on', 'off'), default='on',
+                            help='Turn the paginator on/off. '
+                            'Current: %(default)s')
+        loader.add_loader_options(parser)
 
     def run(self, args):
         test_lister = TestLister(args)
