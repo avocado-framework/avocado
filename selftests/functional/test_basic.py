@@ -193,7 +193,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc)
         self.assertEqual(result.stderr, expected_output)
 
-    @unittest.skip("Temporary plugin infrastructure removal")
     def test_empty_args_list(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado'

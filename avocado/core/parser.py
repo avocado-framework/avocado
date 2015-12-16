@@ -17,7 +17,6 @@
 Avocado application command line parsing.
 """
 
-import sys
 import argparse
 
 from . import tree
@@ -68,7 +67,8 @@ class Parser(object):
         self.subcommands = self.application.add_subparsers(
             title='subcommands',
             description='valid subcommands',
-            help='subcommand help')
+            help='subcommand help',
+            dest='subcommand')
 
         if tree.MULTIPLEX_CAPABLE:
             # Allow overriding multiplex variants by plugins args
@@ -81,9 +81,3 @@ class Parser(object):
         Side effect: set the final value for attribute `args`.
         """
         self.args = self.application.parse_args(namespace=self.args)
-
-    def take_action(self):
-        """
-        Take some action after parsing arguments.
-        """
-        return self.args.dispatch(self.args)

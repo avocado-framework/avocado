@@ -45,4 +45,8 @@ class AvocadoApp(object):
 
     def run(self):
         if self.ready:
-            return self.parser.take_action()
+            subcommand = self.parser.args.subcommand
+            if subcommand in self.cli_cmd_dispatcher:
+                extension = self.cli_cmd_dispatcher[subcommand]
+                method = extension.obj.run
+                return method(self.parser.args)
