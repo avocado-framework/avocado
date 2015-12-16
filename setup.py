@@ -131,6 +131,7 @@ if __name__ == '__main__':
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnit',
                   'json = avocado.plugins.json:JSON',
+                  'journal = avocado.plugins.journal:Journal',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
