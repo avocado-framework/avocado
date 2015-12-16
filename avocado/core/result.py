@@ -263,6 +263,8 @@ class HumanTestResult(TestResult):
         """
         TestResult.start_tests(self)
         self.stream.notify(event="message", msg="JOB ID     : %s" % self.stream.job_unique_id)
+        if self.stream.replay_sourcejob:
+            self.stream.notify(event="message", msg="SRC JOB ID : %s" % self.stream.replay_sourcejob)
         self.stream.notify(event="message", msg="JOB LOG    : %s" % self.stream.logfile)
         self.stream.notify(event="message", msg="TESTS      : %s" % self.tests_total)
         self.stream.set_tests_info({'tests_total': self.tests_total})

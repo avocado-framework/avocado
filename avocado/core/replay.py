@@ -22,17 +22,16 @@ from .settings import settings
 from ..utils import path
 
 """
-Record information and replay jobs using the information recorded
+Record/retrieve job information for job replay
 """
 
 
-def record(args, logdir):
+def record(args, logdir, urls=None):
     replay_dir = path.init_dir(logdir, 'replay')
     path_cfg = os.path.join(replay_dir, 'config')
     path_urls = os.path.join(replay_dir, 'urls')
     path_mux = path.init_dir(replay_dir, 'multiplex')
 
-    urls = getattr(args, 'url', None)
     if urls:
         with open(path_urls, 'w') as f:
             f.write('%s' % urls)
@@ -45,6 +44,52 @@ def record(args, logdir):
 
     with open(path_cfg, 'w') as f:
         settings.config.write(f)
+
+
+def retrieve_urls(resultsdir):
+    recorded_urls = os.path.join(resultsdir, "replay", "urls")
+    with open(recorded_urls, 'r') as f:
+        urls = f.read()
+
+    return ast.literal_eval(urls)
+
+
+def retrieve_mux(resultsdir):
+    recorded_mux_files = os.path.join(resultsdir, 'replay', 'multiplex',
+                                      '*.yaml')
+    return glob.glob(recorded_mux_files)
+
+
+def retrieve_replay_map(resultsdir, replay_filter):
+    replay_map = None
+    resultsfile = os.path.join(resultsdir, "results.json")
+    with open(resultsfile, 'r') as results_file_obj:
+        results = json.loads(results_file_obj.read())
+
+    if replay_filter:
+        replay_map = [index for index, test in enumerate(results['tests'])
+                      if test['status'] in replay_filter]
+    else:
+        replay_map = None
+
+    return replay_map
+
+
+def get_resultsdir(logdir, jobid):
+    matches = 0
+    idfile_pattern = os.path.join(logdir, 'job-*', 'id')
+    for id_file in glob.glob(idfile_pattern):
+        with open(id_file, 'r') as f:
+            fileid = f.read().strip('\n')
+        if re.search(jobid, fileid):
+            match_file = id_file
+            sourcejob = fileid
+            matches += 1
+
+    if matches == 1:
+        return os.path.dirname(match_file), sourcejob
+    else:
+        return None, None
 
 
 def _get_unused_path(directory, filename):
