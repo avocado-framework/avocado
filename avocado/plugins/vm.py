@@ -14,45 +14,48 @@
 
 """Run tests on Virtual Machine."""
 
+import sys
 import getpass
 
-from . import plugin
-from .. import virt
-from ..remote import VMTestResult
-from ..remote import RemoteTestRunner
+from avocado.core import output
+from avocado.core import exit_codes
+from avocado.core import virt
+from avocado.core.remote import VMTestResult
+from avocado.core.remote import RemoteTestRunner
+from .base import CLI
 
 
-class RunVM(plugin.Plugin):
+class VM(CLI):
 
     """
     Run tests on a Virtual Machine
     """
 
-    name = 'run_vm'
-    enabled = True
-    vm_parser = None
+    name = 'vm'
+    description = "Virtual Machine options for 'run' subcommand"
 
     def configure(self, parser):
         if virt.VIRT_CAPABLE is False:
-            self.enabled = False
             return
-        username = getpass.getuser()
-        default_hypervisor_uri = 'qemu:///system'
+
+        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        if run_subcommand_parser is None:
+            return
+
         msg = 'test execution on a Virtual Machine'
-        self.vm_parser = parser.runner.add_argument_group(msg)
+        self.vm_parser = run_subcommand_parser.add_argument_group(msg)
         self.vm_parser.add_argument('--vm-domain',
                                     help=('Specify Libvirt Domain Name'))
         self.vm_parser.add_argument('--vm-hypervisor-uri',
-                                    default=default_hypervisor_uri,
+                                    default='qemu:///system',
                                     help=('Specify hypervisor URI driver '
-                                          'connection. Current: %s' %
-                                          default_hypervisor_uri))
+                                          'connection. Current: %(default)s'))
         self.vm_parser.add_argument('--vm-hostname', default=None,
                                     help=('Specify VM hostname to login. By '
                                           'default Avocado attempts to '
                                           'automatically find the VM IP '
                                           'address.'))
-        self.vm_parser.add_argument('--vm-username', default=username,
+        self.vm_parser.add_argument('--vm-username', default=getpass.getuser(),
                                     help='Specify the username to login on VM')
         self.vm_parser.add_argument('--vm-password',
                                     default=None,
@@ -73,22 +76,20 @@ class RunVM(plugin.Plugin):
         self.configured = True
 
     @staticmethod
-    def _check_required_args(app_args, enable_arg, required_args):
+    def _check_required_args(args, enable_arg, required_args):
         """
         :return: True when enable_arg enabled and all required args are set
         :raise sys.exit: When missing required argument.
         """
-        if (not hasattr(app_args, enable_arg) or
-                not getattr(app_args, enable_arg)):
+        if (not hasattr(args, enable_arg) or
+                not getattr(args, enable_arg)):
             return False
         missing = []
         for arg in required_args:
-            if not getattr(app_args, arg):
+            if not getattr(args, arg):
                 missing.append(arg)
         if missing:
-            from .. import output, exit_codes
-            import sys
-            view = output.View(app_args=app_args)
+            view = output.View(app_args=args)
             e_msg = ('Use of %s requires %s arguments to be set. Please set %s'
                      '.' % (enable_arg, ', '.join(required_args),
                             ', '.join(missing)))
@@ -97,7 +98,7 @@ class RunVM(plugin.Plugin):
             return sys.exit(exit_codes.AVOCADO_FAIL)
         return True
 
-    def activate(self, app_args):
-        if self._check_required_args(app_args, 'vm_domain', ('vm_domain',)):
-            self.vm_parser.set_defaults(remote_result=VMTestResult,
-                                        test_runner=RemoteTestRunner)
+    def run(self, args):
+        if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
+            args.remote_result = VMTestResult
+            args.test_runner = RemoteTestRunner
