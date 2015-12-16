@@ -18,7 +18,9 @@ Avocado application command line parsing.
 """
 
 import argparse
+import os
 
+from . import replay
 from . import tree
 from . import settings
 from .version import VERSION
@@ -52,7 +54,23 @@ class Parser(object):
         At the end of this method, the support for subparsers is activated.
         Side effect: update attribute `args` (the namespace).
         """
-        self.args, _ = self.application.parse_known_args()
+        self.args, extra = self.application.parse_known_args()
+
+        # Load settings from the source job, if this is a replay job
+        if '--replay' in extra:
+            self.application.add_argument('--replay')
+            self.application.add_argument('--replay-ignore')
+            self.args, extra = self.application.parse_known_args()
+            if (self.args.replay_ignore is not None and
+               'config' not in self.args.replay_ignore):
+                logs_dir = settings.settings.get_value('datadir.paths',
+                                                       'logs_dir',
+                                                       default=None)
+                logs = os.path.expanduser(logs_dir)
+                resultsdir, _ = replay.get_resultsdir(logs, self.args.replay)
+                replay_config = os.path.join(resultsdir, 'replay', 'config')
+                with open(replay_config, 'r') as f:
+                    settings.settings.process_config_path(f.read())
 
         # Load settings from file, if user provides one
         if self.args.config is not None:
