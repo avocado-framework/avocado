@@ -14,26 +14,29 @@
 
 """Run tests with GDB goodies enabled."""
 
-from . import plugin
-from .. import exceptions
-from ..settings import settings
-from ...utils import gdb
-from ...utils import process
-from ...utils import path as utils_path
+from .base import CLI
+from avocado.core import exceptions
+from avocado.core.settings import settings
+from avocado.utils import gdb
+from avocado.utils import process
+from avocado.utils import path as utils_path
 
 
-class GDB(plugin.Plugin):
+class GDB(CLI):
 
     """
     Run tests with GDB goodies enabled
     """
 
     name = 'gdb'
-    enabled = True
+    description = "GDB options for the 'run' subcommand"
 
     def configure(self, parser):
-        self.parser = parser
-        gdb_grp = self.parser.runner.add_argument_group('GNU Debugger support')
+        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        if run_subcommand_parser is None:
+            return
+
+        gdb_grp = run_subcommand_parser.add_argument_group('GNU Debugger support')
         gdb_grp.add_argument('--gdb-run-bin', action='append',
                              default=[], metavar='EXECUTABLE[:BREAKPOINT]',
                              help=('Run a given executable inside the GNU '
@@ -57,27 +60,28 @@ class GDB(plugin.Plugin):
                                    ' inferior process received a fatal signal '
                                    'such as SIGSEGV or SIGABRT'))
 
-        self.configured = True
-
-    def activate(self, app_args):
-        try:
-            for binary in app_args.gdb_run_bin:
+    def run(self, args):
+        if 'gdb_run_bin' in args:
+            for binary in args.gdb_run_bin:
                 gdb.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
-            for commands in app_args.gdb_prerun_commands:
+
+        if 'gdb_prerun_commands' in args:
+            for commands in args.gdb_prerun_commands:
                 if ':' in commands:
                     binary, commands_path = commands.split(':', 1)
                     gdb.GDB_PRERUN_COMMANDS['binary'] = commands_path
                 else:
                     gdb.GDB_PRERUN_COMMANDS[''] = commands
-            gdb.GDB_ENABLE_CORE = True if app_args.gdb_coredump == 'on' else False
-            system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
-            gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
-                                              default=system_gdb_path)
-            system_gdbserver_path = utils_path.find_command('gdbserver',
-                                                            '/usr/bin/gdbserver')
-            gdb.GDBSERVER_PATH = settings.get_value('gdb.paths',
-                                                    'gdbserver',
-                                                    default=system_gdbserver_path)
-            process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestError
-        except AttributeError:
-            pass
+
+        if 'gdb_coredump' in args:
+            gdb.GDB_ENABLE_CORE = True if args.gdb_coredump == 'on' else False
+
+        system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
+        gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
+                                          default=system_gdb_path)
+        system_gdbserver_path = utils_path.find_command('gdbserver',
+                                                        '/usr/bin/gdbserver')
+        gdb.GDBSERVER_PATH = settings.get_value('gdb.paths',
+                                                'gdbserver',
+                                                default=system_gdbserver_path)
+        process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestError
