@@ -40,6 +40,7 @@ from . import output
 from . import multiplexer
 from . import tree
 from . import test
+from . import replay
 from .settings import settings
 from .plugins import manager
 from .plugins import jsonresult
@@ -132,6 +133,10 @@ class Job(object):
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
+        self.replay_jobid = getattr(self.args, 'replay_jobid', False)
+        self.replay_filter = getattr(self.args, 'replay_filter', False)
+        self.replay_ignore = getattr(self.args, 'replay_ignore', False)
+        self.replay_sourcejob = None
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -269,7 +274,6 @@ class Job(object):
                      Optionally, a list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
-        urls = self._handle_urls(urls)
         loader.loader.load_plugins(self.args)
         try:
             suite = loader.loader.discover(urls)
@@ -450,7 +454,7 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
-    def _run(self, urls=None):
+    def _run(self, urls=None, replay_map=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
@@ -462,10 +466,10 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        self._setup_job_results()
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
-                                     self.unique_id)
+                                     self.unique_id,
+                                     self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
@@ -491,9 +495,10 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
+        replay.record(self.args, self.logdir, urls)
 
         self.view.logfile = self.logfile
-        failures = self.test_runner.run_suite(test_suite, mux,
+        failures = self.test_runner.run_suite(test_suite, mux, replay_map,
                                               timeout=self.timeout)
         self.view.stop_file_logging()
         # If it's all good so far, set job status to 'PASS'
@@ -510,6 +515,53 @@ class Job(object):
             return exit_codes.AVOCADO_ALL_OK
         else:
             return exit_codes.AVOCADO_TESTS_FAIL
+
+    def _replay(self, urls=None):
+        logdir = getattr(self.args, 'logdir', None)
+        if not logdir:
+            logdir = os.path.dirname(self.logdir)
+        resultsdir, sourcejob = replay.get_resultsdir(logdir,
+                                                      self.replay_jobid)
+        self.replay_sourcejob = sourcejob
+
+        if resultsdir:
+            if urls:
+                msg = 'You\'re using --replay option and providing urls at '\
+                      'at the same time. The recorded urls will be ignored '\
+                      'and the provided urls will be used instead.'
+                self.view.notify(event='warning', msg=(msg))
+            else:
+                urls = replay.retrieve_urls(resultsdir)
+
+            if getattr(self.args, 'multiplex_files', None):
+                msg = 'You\'re using --replay option and providing multiplex '\
+                      'at the same time. The recorded multiplex will be '\
+                      'ignored and the provided multiplex will be used '\
+                      'instead.'
+                self.view.notify(event='warning', msg=(msg))
+            else:
+                setattr(self.args, 'multiplex_files',
+                        replay.retrieve_mux(resultsdir))
+
+            if self.replay_filter and (urls or getattr(self.args,
+                                                       'multiplex_files',
+                                                       None)):
+                replay_map = None
+                msg = 'You\'re using --replay-test-status option and '\
+                      'providing custom job information (either urls or '\
+                      'multiplex) at the same time. The --replay-test-status '\
+                      'option will be ignored.'
+                self.view.notify(event='warning', msg=(msg))
+            else:
+                replay_map = replay.retrieve_replay_map(resultsdir,
+                                                        self.replay_filter)
+
+            return self._run(urls, replay_map)
+        else:
+            msg = 'Job not found. Please make sure you\'re informing a ' \
+                  'valid and unique enough hash.'
+            self.view.notify(event='error', msg=(msg))
+            return exit_codes.AVOCADO_JOB_FAIL
 
     def run(self, urls=None):
         """
@@ -533,8 +585,13 @@ class Job(object):
                  :mod:`avocado.core.exit_codes` for more information.
         """
         runtime.CURRENT_JOB = self
+        self._setup_job_results()
+        urls = self._handle_urls(urls)
         try:
-            return self._run(urls)
+            if self.replay_jobid:
+                return self._replay(urls)
+            else:
+                return self._run(urls)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
