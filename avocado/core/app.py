@@ -20,6 +20,7 @@ import os
 
 from .log import configure as configure_log
 from .parser import Parser
+from .output import View
 from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
 
@@ -39,6 +40,7 @@ class AvocadoApp(object):
         self.parser = Parser()
         self.cli_dispatcher = CLIDispatcher()
         self.cli_cmd_dispatcher = CLICmdDispatcher()
+        self._print_plugin_failures()
         self.parser.start()
         if self.cli_cmd_dispatcher.extensions:
             self.cli_cmd_dispatcher.map_method('configure', self.parser)
@@ -47,6 +49,17 @@ class AvocadoApp(object):
         self.parser.finish()
         if self.cli_dispatcher.extensions:
             self.cli_dispatcher.map_method('run', self.parser.args)
+
+    def _print_plugin_failures(self):
+        failures = (self.cli_dispatcher.load_failures +
+                    self.cli_cmd_dispatcher.load_failures)
+        if failures:
+            view = View(self.parser.args)
+            msg_fmt = 'Failed to load plugin from module "%s": %s'
+            for failure in failures:
+                msg = msg_fmt % (failure[0].module_name,
+                                 failure[1].__repr__())
+                view.notify(event='error', msg=msg)
 
     def run(self):
         subcommand = self.parser.args.subcommand
