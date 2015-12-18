@@ -10,35 +10,25 @@ The ``avocado`` command line tool has a builtin ``plugins`` command that lets
 you list available plugins. The usage is pretty simple::
 
  $ avocado plugins
- Plugins enabled:
-    config                               Implements the avocado 'config' subcommand
-    distro                               Implements the avocado 'distro' subcommand
-    exec_path                            Implements the avocado 'exec-path' subcommand
-    gdb                                  Run tests with GDB goodies enabled
-    htmlresult                           HTML job report
-    json                                 JSON output
-    ...
+ Plugins that add new commands (avocado.plugins.cli.cmd):
+ exec-path Returns path to avocado bash libraries and exits.
+ run       Run one or more tests (native test, test alias, binary or script)
+ sysinfo   Collect system information
+ ...
+ Plugins that add new options to commands (avocado.plugins.cli):
+ remote  Remote machine options for 'run' subcommand
+ journal Journal options for the 'run' subcommand
+ ...
 
 Since plugins are (usually small) bundles of Python code, they may fail to load if
 the Python code is broken for any reason. Example::
 
  $ avocado plugins
- Plugins enabled:
-    config                               Implements the avocado 'config' subcommand
-  ...
-  Unloadable plugin modules:
-    avocado.core.plugins.htmlresult      ImportError No module named pystache
-
-Besides load errors, plugins may also disable themselves due to, say, missing
-requirements on your environment. This is the case for the ``run_vm`` plugin when
-it's run on machine not capable of (``libvirt`` based) virtualization::
-
- $ avocado plugins
-  Plugins enabled:
-    config                               Implements the avocado 'config' subcommand
-  ...
-  Plugins disabled:
-    run_vm                               Disabled during plugin configuration
+ Failed to load plugin from module "avocado.plugins.exec_path": ImportError('No module named foo',)
+ Plugins that add new commands (avocado.plugins.cli.cmd):
+ run       Run one or more tests (native test, test alias, binary or script)
+ sysinfo   Collect system information
+ ...
 
 .. _Writing Plugins:
 
@@ -54,46 +44,55 @@ Code example
 Let's say you want to write a plugin that adds a new subcommand to the test
 runner, ``hello``. This is how you'd do it::
 
-    from avocado.core.plugins import plugin
+    from avocado.plugins.base import CLICmd
 
 
-    class HelloWorld(plugin.Plugin):
+    class HelloWorld(CLICmd):
 
-        """
-        The classical Hello World! plugin example.
-        """
-
-        name = 'hello_world'
-        enabled = True
-
-        def configure(self, parser):
-            self.parser = parser.subcommands.add_parser(
-                'hello',
-                 help='Hello World! plugin example')
-            super(HelloWorld, self).configure(self.parser)
+        name = 'hello'
+        description = 'The classical Hello World! plugin example.'
 
         def run(self, args):
-            print(self.__doc__)
+            print(self.description)
 
-As you can see, plugins inherit from :class:`avocado.core.plugins.plugin.Plugin`.
-Its most important methods are :func:`configure
-<avocado.core.plugins.plugin.Plugin.configure>`, :func:`run
-<avocado.core.plugins.plugin.Plugin.run>` and
-:func:`activate <avocado.core.plugins.plugin.Plugin.activate>`.
+As you can see, this plugins inherits from :class:`avocado.plugins.base.CLICmd`.
+This specific base class allows for the creation of new commands for the Avocado
+CLI tool. The only mandatory method to be implemented is :func:`run
+<avocado.plugins.base.CLICmd.run>` and it's the plugin main entry point.
+In this code example it will simply print the plugin's description.
 
-:func:`configure <avocado.core.plugins.plugin.Plugin.configure>` adds the command
-parser to the test runner. In this code example method, we added a new parser for
-the new ``hello`` command.
+Registering Plugins
+~~~~~~~~~~~~~~~~~~~
 
-The :func:`run <avocado.core.plugins.plugin.Plugin.run>` method is the main entry
-point. In this code example it will simply print the plugin's docstring.
+Avocado makes use of the `Stevedore`_ library to load and activate plugins.
+Stevedore itself uses `setuptools`_ and its `entry points`_ to register
+and find Python objects. So, to make your new plugin visible to Avocado, you need
+to add to your setuptools based `setup.py` file something like::
 
-:func:`activate <avocado.core.plugins.plugin.Plugin.activate>`, if necessary,
-will activate your plugin, overriding Avocado core functionality.
+ setup(name='mypluginpack',
+ ...
+ entry_points={
+    'avocado.plugins.cli': [
+       'hello = mypluginpack.hello:HelloWorld',
+    ]
+ }
+ ...
 
+Then, by running either ``$ python setup.py install`` or ``$ python setup.py
+develop`` your plugin should be visible to Avocado.
 
 Wrap Up
 ~~~~~~~
 
-We have briefly discussed the making of Avocado plugins. A look at the module
-:mod:`avocado.core.plugins` is also recommended.
+We have briefly discussed the making of Avocado plugins. We recommend
+the `Stevedore documentation`_ and also a look at the
+:mod:`avocado.plugins.base` module for the various plugin interface definitions.
+
+Finally, exploring the real plugins shipped with Avocado in :mod:`avocado.plugins`
+is the final "documentation" source.
+
+
+.. _Stevedore: https://github.com/openstack/stevedore
+.. _Stevedore documentation: http://docs.openstack.org/developer/stevedore/index.html
+.. _setuptools: https://pythonhosted.org/setuptools/
+.. _entry points: https://pythonhosted.org/setuptools/pkg_resources.html#entry-points

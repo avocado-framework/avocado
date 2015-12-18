@@ -11,11 +11,10 @@ in it.
 
 You can check if this feature (a plugin) is enabled by running::
 
-    $ scripts/avocado plugins
-    Plugins enabled:
-        ...
-        run_remote - Run tests on a remote machine
-        ...
+    $ avocado plugins
+    ...
+    remote  Remote machine options for 'run' subcommand
+    ...
 
 Assuming this feature is enabled, you should be able to pass the following options
 when using the ``run`` command in the Avocado command line tool::
@@ -81,11 +80,10 @@ set them up.
 
 You can check if this feature (a plugin) is enabled by running::
 
-    $ scripts/avocado plugins
-    Plugins enabled:
-        ...
-        run_vm - Run tests on a Virtual Machine
-        ...
+    $ avocado plugins
+    ...
+    vm      Virtual Machine options for 'run' subcommand
+    ...
 
 Assuming this feature is enabled, you should be able to pass the following options
 when using the ``run`` command in the Avocado command line tool::
