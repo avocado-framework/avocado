@@ -21,6 +21,7 @@ import os
 from .log import configure as configure_log
 from .parser import Parser
 from .output import View
+from .settings import settings
 from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
 
@@ -56,7 +57,12 @@ class AvocadoApp(object):
         if failures:
             view = View(self.parser.args)
             msg_fmt = 'Failed to load plugin from module "%s": %s'
+            silenced = settings.get_value('plugins',
+                                          'skip_broken_plugin_notification',
+                                          list, [])
             for failure in failures:
+                if failure[0].module_name in silenced:
+                    continue
                 msg = msg_fmt % (failure[0].module_name,
                                  failure[1].__repr__())
                 view.notify(event='error', msg=msg)
