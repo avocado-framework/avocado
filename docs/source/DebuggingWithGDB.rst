@@ -10,7 +10,7 @@ other:
   command line option, the executable is run on GDB. This allows the user
   to interact with GDB, but to the test itself, things are pretty much
   transparent.
-* The :mod:`avocado.gdb` APIs that allows a test to interact with GDB,
+* The :mod:`avocado.utils.gdb` APIs that allows a test to interact with GDB,
   including setting a executable to be run, setting breakpoints or any
   other types of commands. This requires a test written with that
   approach and API in mind.
@@ -140,14 +140,14 @@ execute `qemu` in the background.
 This limitation will be addressed in future versions of `avocado` and `avocado-virt`.
 
 
-:mod:`avocado.gdb` APIs
------------------------
+:mod:`avocado.utils.gdb` APIs
+-----------------------------
 
 Avocado's GDB module, provides three main classes that lets a test writer
 interact with a `gdb` process, a `gdbserver` process and also use the GDB
 remote protocol for interaction with a remote target.
 
-Please refer to :mod:`avocado.gdb` for more information.
+Please refer to :mod:`avocado.utils.gdb` for more information.
 
 Example
 ~~~~~~~
@@ -171,9 +171,10 @@ Take a look at ``examples/tests/modify_variable.py`` test::
         app.exit()
         self.assertIn("MY VARIABLE 'A' IS: ff", out)
 
-You can see that instead of running the executable using ``process.run`` we invoke
-``gdb.GDB``. This allows us to automate the interaction with the GDB in means
-of setting breakpoints, executing commands and querying for output.
+You can see that instead of running the executable using
+``process.run`` we invoke :class:`avocado.utils.gdb.GDB`. This allows
+us to automate the interaction with the GDB in means of setting
+breakpoints, executing commands and querying for output.
 
 When you check the output (``--show-job-log``) you can see that despite
 declaring the variable as 0, ff is injected and printed instead.
