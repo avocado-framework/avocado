@@ -20,7 +20,10 @@ import os
 
 from .log import configure as configure_log
 from .parser import Parser
-from .plugins.manager import get_plugin_manager
+from .output import View
+from .settings import settings
+from .dispatcher import CLIDispatcher
+from .dispatcher import CLICmdDispatcher
 
 
 class AvocadoApp(object):
@@ -35,27 +38,38 @@ class AvocadoApp(object):
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
         configure_log()
-        self.plugin_manager = None
         self.parser = Parser()
+        self.cli_dispatcher = CLIDispatcher()
+        self.cli_cmd_dispatcher = CLICmdDispatcher()
+        self._print_plugin_failures()
         self.parser.start()
-        self.load_plugin_manager()
-        self.ready = True
-        try:
-            self.parser.resume()
-            self.plugin_manager.activate(self.parser.args)
-            self.parser.finish()
-        except IOError:
-            self.ready = False
+        if self.cli_cmd_dispatcher.extensions:
+            self.cli_cmd_dispatcher.map_method('configure', self.parser)
+        if self.cli_dispatcher.extensions:
+            self.cli_dispatcher.map_method('configure', self.parser)
+        self.parser.finish()
+        if self.cli_dispatcher.extensions:
+            self.cli_dispatcher.map_method('run', self.parser.args)
 
-    def load_plugin_manager(self):
-        """Load Plugin Manager.
-
-        :param plugins_dir: Extra plugins directory.
-        """
-        self.plugin_manager = get_plugin_manager()
-        self.plugin_manager.load_plugins()
-        self.plugin_manager.configure(self.parser)
+    def _print_plugin_failures(self):
+        failures = (self.cli_dispatcher.load_failures +
+                    self.cli_cmd_dispatcher.load_failures)
+        if failures:
+            view = View(self.parser.args)
+            msg_fmt = 'Failed to load plugin from module "%s": %s'
+            silenced = settings.get_value('plugins',
+                                          'skip_broken_plugin_notification',
+                                          list, [])
+            for failure in failures:
+                if failure[0].module_name in silenced:
+                    continue
+                msg = msg_fmt % (failure[0].module_name,
+                                 failure[1].__repr__())
+                view.notify(event='error', msg=msg)
 
     def run(self):
-        if self.ready:
-            return self.parser.take_action()
+        subcommand = self.parser.args.subcommand
+        if subcommand in self.cli_cmd_dispatcher:
+            extension = self.cli_cmd_dispatcher[subcommand]
+            method = extension.obj.run
+            return method(self.parser.args)

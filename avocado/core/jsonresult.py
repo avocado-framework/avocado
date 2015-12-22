@@ -18,9 +18,8 @@ JSON output module.
 
 import json
 
-from . import plugin
-from .. import output
-from ..result import TestResult
+from . import output
+from .result import TestResult
 
 
 class JSONTestResult(TestResult):
@@ -89,29 +88,3 @@ class JSONTestResult(TestResult):
             self.view.notify(event='minor', msg=self.json)
         else:
             self._save_json()
-
-
-class JSON(plugin.Plugin):
-
-    """
-    JSON output
-    """
-
-    name = 'json'
-    enabled = True
-
-    def configure(self, parser):
-        self.parser = parser
-        self.parser.runner.output.add_argument(
-            '--json', type=str,
-            dest='json_output', metavar='FILE',
-            help='Enable JSON result format and write it to FILE. '
-                 "Use '-' to redirect to the standard output.")
-        self.configured = True
-
-    def activate(self, app_args):
-        try:
-            if app_args.json_output:
-                self.parser.application.set_defaults(json_result=JSONTestResult)
-        except AttributeError:
-            pass

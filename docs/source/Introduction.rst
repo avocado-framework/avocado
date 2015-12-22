@@ -19,7 +19,7 @@ Avocado is composed of:
   You can find more information about what libraries are intended for test writers
   at :ref:`libraries-apis`.
 
-* :mod:`Plugins <avocado.core.plugins>` that can extend and add new functionality
+* :mod:`Plugins <avocado.plugins>` that can extend and add new functionality
   to the Avocado Framework.
 
 Avocado tries as much as possible to comply with standard Python testing

@@ -18,8 +18,8 @@ import os
 import sqlite3
 import datetime
 
-from . import plugin
-from ..result import TestResult
+from .base import CLI
+from avocado.core.result import TestResult
 
 JOURNAL_FILENAME = ".journal.sqlite"
 
@@ -111,25 +111,24 @@ class TestResultJournal(TestResult):
         self._shutdown_journal()
 
 
-class Journal(plugin.Plugin):
+class Journal(CLI):
 
     """
     Test journal
     """
 
     name = 'journal'
-    enabled = True
+    description = "Journal options for the 'run' subcommand"
 
     def configure(self, parser):
-        self.parser = parser
-        self.parser.runner.output.add_argument(
-            '--journal', action='store_true',
-            help='Records test status changes')
-        self.configured = True
+        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        if run_subcommand_parser is None:
+            return
 
-    def activate(self, args):
-        try:
-            if args.journal:
-                self.parser.application.set_defaults(journal_result=TestResultJournal)
-        except AttributeError:
-            pass
+        self.parser = parser
+        run_subcommand_parser.output.add_argument('--journal', action='store_true',
+                                                  help='Records test status changes')
+
+    def run(self, args):
+        if 'journal' in args and args.journal is True:
+            args.journal_result = TestResultJournal

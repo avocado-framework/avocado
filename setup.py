@@ -84,7 +84,7 @@ def get_data_files():
     return data_files
 
 
-def _get_plugin_resource_files(path):
+def _get_resource_files(path):
     """
     Given a path, return all the files in there to package
     """
@@ -92,7 +92,7 @@ def _get_plugin_resource_files(path):
     for root, _, files in sorted(os.walk(path)):
         for name in files:
             fullname = os.path.join(root, name)
-            flist.append(fullname[len('avocado/core/plugins/'):])
+            flist.append(fullname[len('avocado/core/'):])
     return flist
 
 
@@ -111,18 +111,40 @@ if __name__ == '__main__':
           url='http://avocado-framework.github.io/',
           packages=['avocado',
                     'avocado.core',
-                    'avocado.core.plugins',
                     'avocado.utils',
                     'avocado.utils.external',
                     'avocado.core.remote',
                     'avocado.core.restclient',
                     'avocado.core.restclient.cli',
                     'avocado.core.restclient.cli.args',
-                    'avocado.core.restclient.cli.actions'],
-          package_data={'avocado.core.plugins': _get_plugin_resource_files(
-              'avocado/core/plugins/resources')},
+                    'avocado.core.restclient.cli.actions',
+                    'avocado.plugins'],
+          package_data={'avocado.core': _get_resource_files(
+              'avocado/core/resources')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
+          entry_points={
+              'avocado.plugins.cli': [
+                  'gdb = avocado.plugins.gdb:GDB',
+                  'wrapper = avocado.plugins.wrapper:Wrapper',
+                  'xunit = avocado.plugins.xunit:XUnit',
+                  'json = avocado.plugins.json:JSON',
+                  'journal = avocado.plugins.journal:Journal',
+                  'html = avocado.plugins.html:HTML',
+                  'remote = avocado.plugins.remote:Remote',
+                  'vm = avocado.plugins.vm:VM',
+                  ],
+              'avocado.plugins.cli.cmd': [
+                  'config = avocado.plugins.config:Config',
+                  'distro = avocado.plugins.distro:Distro',
+                  'exec-path = avocado.plugins.exec_path:ExecPath',
+                  'multiplex = avocado.plugins.multiplex:Multiplex',
+                  'list = avocado.plugins.list:List',
+                  'run = avocado.plugins.run:Run',
+                  'sysinfo = avocado.plugins.sysinfo:SysInfo',
+                  'plugins = avocado.plugins.plugins:Plugins',
+                  ]
+              },
           zip_safe=False,
           test_suite='selftests')
