@@ -58,7 +58,7 @@ Then to install Avocado from the git repository run::
 
     git clone git://github.com/avocado-framework/avocado.git
     cd avocado
-    sudo pip install -r requirements.txt
+    sudo make requirements
     sudo python setup.py install
 
 Note that `python` and `pip` should point to the Python interpreter version 2.7.x.
