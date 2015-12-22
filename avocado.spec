@@ -14,7 +14,7 @@ URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver, python-stevedore
-BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum
+BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore
 
 %if 0%{?el6}
 Requires: PyYAML
@@ -74,8 +74,8 @@ selftests/run
 %{_mandir}/man1/avocado-rest-client.1.gz
 %{_docdir}/avocado/avocado.rst
 %{_docdir}/avocado/avocado-rest-client.rst
-%exclude %{python_sitelib}/avocado/core/plugins/htmlresult.py*
-%exclude %{python_sitelib}/avocado/core/plugins/resources/htmlresult/*
+%exclude %{python_sitelib}/avocado/plugins/html.py*
+%exclude %{python_sitelib}/avocado/core/resources/htmlresult/*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -92,8 +92,8 @@ directory. It also gives the user the ability to write a report on an
 arbitrary filesystem location.
 
 %files plugins-output-html
-%{python_sitelib}/avocado/core/plugins/htmlresult.py*
-%{python_sitelib}/avocado/core/plugins/resources/htmlresult/*
+%{python_sitelib}/avocado/plugins/html.py*
+%{python_sitelib}/avocado/core/resources/htmlresult/*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
