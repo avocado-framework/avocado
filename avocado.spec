@@ -1,13 +1,13 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit bde85d53a2e1ffde02b2f65ef1f29f912acf5d32
+ %define commit 4bfd40f234b5873b1a138e24b431da875c75bc3a
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.30.0
-Release: 1%{?dist}
+Version: 0.31.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -110,6 +110,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Dec 23 2015 Cleber Rosa <cleber@redhat.com> - 0.31.0-0
+- New upstream release 0.30.0
+
 * Tue Nov 17 2015 Cleber Rosa <cleber@redhat.com> - 0.30.0-1
 - Add python-stevedore to Requires
 
