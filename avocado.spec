@@ -1,6 +1,6 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit 4bfd40f234b5873b1a138e24b431da875c75bc3a
+ %define commit d4364ffbffd02dd863aed38fb492a0956e87dd70
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
