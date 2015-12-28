@@ -177,18 +177,16 @@ class TestRunner(object):
         """
         Run a test instance.
 
+        This code is the first thing that runs inside a new process, known here
+        as the test process. It communicates to the test runner by using
+        :param:`queue`. It's important that this early state is given to the
+        test runner in a reliable way.
+
         :param test_factory: Test factory (test class and parameters).
         :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
-        def timeout_handler(signum, frame):
-            e_msg = "Timeout reached waiting for %s to end" % instance
-            raise exceptions.TestTimeoutError(e_msg)
-
-        def interrupt_handler(signum, frame):
-            e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestInterruptedError(e_msg)
         logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
                               logging.getLogger('avocado.test'),
                               logging.getLogger('paramiko')]
@@ -213,6 +211,14 @@ class TestRunner(object):
             tb_info = stacktrace.tb_info(exc_info)
             queue.put({'load_exception': tb_info})
             return
+
+        def timeout_handler(signum, frame):
+            e_msg = "Timeout reached waiting for %s to end" % instance
+            raise exceptions.TestTimeoutError(e_msg)
+
+        def interrupt_handler(signum, frame):
+            e_msg = "Test %s interrupted by user" % instance
+            raise exceptions.TestInterruptedError(e_msg)
 
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
