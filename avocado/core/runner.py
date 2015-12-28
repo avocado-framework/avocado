@@ -182,13 +182,6 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
-        def timeout_handler(signum, frame):
-            e_msg = "Timeout reached waiting for %s to end" % instance
-            raise exceptions.TestTimeoutError(e_msg)
-
-        def interrupt_handler(signum, frame):
-            e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestInterruptedError(e_msg)
         logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
                               logging.getLogger('avocado.test'),
                               logging.getLogger('paramiko')]
@@ -213,6 +206,14 @@ class TestRunner(object):
             tb_info = stacktrace.tb_info(exc_info)
             queue.put({'load_exception': tb_info})
             return
+
+        def timeout_handler(signum, frame):
+            e_msg = "Timeout reached waiting for %s to end" % instance
+            raise exceptions.TestTimeoutError(e_msg)
+
+        def interrupt_handler(signum, frame):
+            e_msg = "Test %s interrupted by user" % instance
+            raise exceptions.TestInterruptedError(e_msg)
 
         signal.signal(signal.SIGUSR1, timeout_handler)
         signal.signal(signal.SIGINT, interrupt_handler)
