@@ -177,6 +177,11 @@ class TestRunner(object):
         """
         Run a test instance.
 
+        This code is the first thing that runs inside a new process, known here
+        as the test process. It communicates to the test runner by using
+        :param:`queue`. It's important that this early state is given to the
+        test runner in a reliable way.
+
         :param test_factory: Test factory (test class and parameters).
         :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
