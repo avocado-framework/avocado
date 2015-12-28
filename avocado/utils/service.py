@@ -27,6 +27,7 @@ import logging
 from tempfile import mktemp
 
 from . import process
+from . import path
 
 LOG = logging.getLogger('avocado.test')
 
@@ -322,18 +323,19 @@ def systemd_command_generator(command):
     return method
 
 
+# mapping command/whether it requires root
 COMMANDS = (
-    "start",
-    "stop",
-    "reload",
-    "restart",
-    "condrestart",
-    "status",
-    "enable",
-    "disable",
-    "is_enabled",
-    "list",
-    "set_target",
+    ("start", True),
+    ("stop", True),
+    ("reload", True),
+    ("restart", True),
+    ("condrestart", True),
+    ("status", False),
+    ("enable", True),
+    ("disable", True),
+    ("is_enabled", False),
+    ("list", False),
+    ("set_target", True),
 )
 
 
@@ -355,7 +357,7 @@ class _ServiceResultParser(object):
         :type command_list: list
         """
         self.commands = command_list
-        for command in self.commands:
+        for command, requires_root in self.commands:
             setattr(self, command, result_parser(command))
 
     @staticmethod
@@ -390,7 +392,7 @@ class _ServiceCommandGenerator(object):
             :type command_list: list
         """
         self.commands = command_list
-        for command in self.commands:
+        for command, requires_root in self.commands:
             setattr(self, command, command_generator(command))
 
 
@@ -399,17 +401,22 @@ def _get_name_of_init(run=process.run):
     Internal function to determine what executable is PID 1
 
     It does that by checking /proc/1/exe.
+    Fall back to checking /proc/1/cmdline (local execution).
 
     :return: executable name for PID 1, aka init
     :rtype:  str
     """
-    # /proc/1/comm was added in 2.6.33 and is not in RHEL6.x, so use cmdline
-    # Non-root can read cmdline
-    # return os.path.basename(open("/proc/1/cmdline").read().split(chr(0))[0])
-    # readlink /proc/1/exe requires root
-    # inspired by openvswitch.py:ServiceManagerInterface.get_version()
-    output = run("readlink /proc/1/exe").stdout.strip()
-    return os.path.basename(output)
+    if run == process.run:
+        # On a local run, there are better ways to check
+        # our PID 1 executable name.
+        try:
+            return os.readlink('/proc/1/exe')
+        except OSError:
+            with open('/proc/1/cmdline', 'r') as cmdline:
+                return os.path.basename(cmdline.read().split(chr(0))[0])
+    else:
+        output = run("readlink /proc/1/exe").stdout.strip()
+        return os.path.basename(output)
 
 
 def get_name_of_init(run=process.run):
@@ -452,7 +459,7 @@ class _SpecificServiceManager(object):
                 object, default process.run
         :type run: function
         """
-        for cmd in service_command_generator.commands:
+        for cmd, requires_root in service_command_generator.commands:
             run_func = run
             parse_func = getattr(service_result_parser, cmd)
             command = getattr(service_command_generator, cmd)
@@ -460,10 +467,12 @@ class _SpecificServiceManager(object):
                     self.generate_run_function(run_func=run_func,
                                                parse_func=parse_func,
                                                command=command,
-                                               service_name=service_name))
+                                               service_name=service_name,
+                                               requires_root=requires_root))
 
     @staticmethod
-    def generate_run_function(run_func, parse_func, command, service_name):
+    def generate_run_function(run_func, parse_func, command, service_name,
+                              requires_root):
         """
         Generate the wrapped call to process.run for the given service_name.
 
@@ -476,6 +485,8 @@ class _SpecificServiceManager(object):
         :type command: function
         :param service_name: init service name or systemd unit name
         :type service_name: str
+        :param requires_root: whether command needs superuser privileges
+        :type requires_root: bool
         :return: wrapped process.run function.
         :rtype: function
         """
@@ -495,7 +506,12 @@ class _SpecificServiceManager(object):
             if run_func is process.run:
                 LOG.debug("Setting ignore_status to True.")
                 kwargs["ignore_status"] = True
-            result = run_func(" ".join(command(service_name)), **kwargs)
+            cmd = " ".join(command(service_name))
+            uid = os.getcwd()
+            if uid != 0 and requires_root:
+                cmd = ("%s --non-interactive %s" %
+                       (path.find_command('sudo'), cmd))
+            result = run_func(cmd, **kwargs)
             return parse_func(result)
         return run
 
@@ -525,16 +541,17 @@ class _GenericServiceManager(object):
         :param run: function to call the run the commands, default process.run
         :type run: function
         """
-        for cmd in service_command_generator.commands:
+        for cmd, requires_root in service_command_generator.commands:
             parse_func = getattr(service_result_parser, cmd)
             command = getattr(service_command_generator, cmd)
             setattr(self, cmd,
                     self.generate_run_function(run_func=run,
                                                parse_func=parse_func,
-                                               command=command))
+                                               command=command,
+                                               requires_root=requires_root))
 
     @staticmethod
-    def generate_run_function(run_func, parse_func, command):
+    def generate_run_function(run_func, parse_func, command, requires_root):
         """
         Generate the wrapped call to process.run for the service command.
 
@@ -542,6 +559,8 @@ class _GenericServiceManager(object):
         :type run_func:  function
         :param command: partial function that generates the command list
         :type command: function
+        :param requires_root: whether command needs superuser privileges
+        :type requires_root: bool
         :return: wrapped process.run function.
         :rtype: function
         """
@@ -561,7 +580,12 @@ class _GenericServiceManager(object):
             if run_func is process.run:
                 LOG.debug("Setting ignore_status to True.")
                 kwargs["ignore_status"] = True
-            result = run_func(" ".join(command(service)), **kwargs)
+            uid = os.getcwd()
+            cmd = " ".join(command(service))
+            if uid != 0 and requires_root:
+                cmd = ("%s --non-interactive %s" %
+                       (path.find_command('sudo'), cmd))
+            result = run_func(cmd, **kwargs)
             return parse_func(result)
         return run
 
@@ -772,7 +796,8 @@ def _auto_create_specific_service_result_parser(run=process.run):
     """
     result_parser = _result_parsers[get_name_of_init(run)]
     # remove list method
-    command_list = [c for c in COMMANDS if c not in ["list", "set_target"]]
+    command_list = [(c, r) for (c, r) in COMMANDS if
+                    c not in ["list", "set_target"]]
     return _ServiceResultParser(result_parser, command_list)
 
 
@@ -791,7 +816,8 @@ def _auto_create_specific_service_command_generator(run=process.run):
     """
     command_generator = _command_generators[get_name_of_init(run)]
     # remove list method
-    command_list = [c for c in COMMANDS if c not in ["list", "set_target"]]
+    command_list = [(c, r) for (c, r) in COMMANDS if
+                    c not in ["list", "set_target"]]
     return _ServiceCommandGenerator(command_generator, command_list)
 
 
