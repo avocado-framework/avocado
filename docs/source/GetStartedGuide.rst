@@ -32,6 +32,9 @@ Enterprise Linux
 If you're running either Red Hat Enterprise Linux or one of the derivatives
 such as CentOS, just adapt to the following URL and commands::
 
+    # If not already, enable epel (for RHEL7 it's following cmd)
+    sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    # Add avocado repository and install avocado
     sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     sudo yum install avocado
 
