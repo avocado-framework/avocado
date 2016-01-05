@@ -68,8 +68,9 @@ class AvocadoApp(object):
                 view.notify(event='error', msg=msg)
 
     def run(self):
-        subcommand = self.parser.args.subcommand
-        if subcommand in self.cli_cmd_dispatcher:
-            extension = self.cli_cmd_dispatcher[subcommand]
-            method = extension.obj.run
-            return method(self.parser.args)
+        try:
+            extension = self.cli_cmd_dispatcher[self.parser.args.subcommand]
+        except KeyError:
+            return
+        method = extension.obj.run
+        return method(self.parser.args)
