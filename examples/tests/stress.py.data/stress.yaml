@@ -1,0 +1,15 @@
+setup:
+    duration: !mux
+        default:
+            stress_lenght: 60
+        quick:
+            stress_lenght: 5
+    workers: !mux
+        default:
+            threads: null
+        minimal:
+            threads: 1
+    memory:
+        memory_per_thread: null
+    files:
+        file_size_per_thread: null
