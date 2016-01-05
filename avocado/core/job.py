@@ -42,6 +42,7 @@ from . import tree
 from . import test
 from . import xunit
 from . import jsonresult
+from . import replay
 from .settings import settings
 from ..utils import archive
 from ..utils import astring
@@ -130,6 +131,10 @@ class Job(object):
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
+        self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
+        self.replay_resultsdir = getattr(self.args, 'replay_resultsdir', None)
+        self.replay_teststatus = getattr(args, 'replay_teststatus', None)
+        self.replay_ignore = getattr(args, 'replay_ignore', None)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -267,7 +272,6 @@ class Job(object):
                      Optionally, a list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
-        urls = self._handle_urls(urls)
         loader.loader.load_plugins(self.args)
         try:
             suite = loader.loader.discover(urls)
@@ -302,6 +306,12 @@ class Job(object):
         job_log = _TEST_LOGGER
         job_log.info('Job ID: %s', self.unique_id)
         job_log.info('')
+
+    def _log_replay_sourcejob_id(self):
+        if self.replay_sourcejob is not None:
+            job_log = _TEST_LOGGER
+            job_log.info('Replay of Job ID: %s', self.replay_sourcejob)
+            job_log.info('')
 
     @staticmethod
     def _log_cmdline():
@@ -403,8 +413,9 @@ class Job(object):
         self._log_tmp_dir()
         self._log_mux_variants(mux)
         self._log_job_id()
+        self._log_replay_sourcejob_id()
 
-    def _run(self, urls=None):
+    def _run(self, urls=None, mux=None, replay_map=None):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
@@ -416,10 +427,10 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        self._setup_job_results()
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
-                                     self.unique_id)
+                                     self.unique_id,
+                                     self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
@@ -432,10 +443,12 @@ class Job(object):
                      "for details" % (" ".join(urls) if urls else "\b"))
             raise exceptions.OptionValidationError(e_msg)
 
-        try:
-            mux = multiplexer.Mux(self.args)
-        except (IOError, ValueError), details:
-            raise exceptions.OptionValidationError(details)
+        if mux is None:
+            try:
+                mux = multiplexer.Mux(self.args)
+            except (IOError, ValueError), details:
+                raise exceptions.OptionValidationError(details)
+
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
@@ -445,9 +458,10 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
+        replay.record(self.args, self.logdir, mux, urls)
 
         self.view.logfile = self.logfile
-        failures = self.test_runner.run_suite(test_suite, mux,
+        failures = self.test_runner.run_suite(test_suite, mux, replay_map,
                                               timeout=self.timeout)
         self.view.stop_file_logging()
         # If it's all good so far, set job status to 'PASS'
@@ -487,8 +501,13 @@ class Job(object):
                  :mod:`avocado.core.exit_codes` for more information.
         """
         runtime.CURRENT_JOB = self
+        self._setup_job_results()
+        urls = self._handle_urls(urls)
         try:
-            return self._run(urls)
+            if self.replay_sourcejob is not None:
+                return self._replay(urls)
+            else:
+                return self._run(urls)
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
@@ -519,6 +538,50 @@ class Job(object):
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
+
+    def _replay(self, urls):
+        mux = None
+        replay_map = None
+
+        multiplex_files = getattr(self.args, 'multiplex_files', None)
+        if self.replay_teststatus is not None:
+            if urls or multiplex_files is not None:
+                msg = '* --replay-test-status will be ignored (test urls '\
+                      'and/or multiplex-files provided in addition to '\
+                      '--replay-test-status).'
+                self.view.notify(event='warning', msg=(msg))
+            else:
+                replay_map = replay.retrieve_replay_map(self.replay_resultsdir,
+                                                        self.replay_teststatus)
+                if replay_map is None:
+                    msg = 'Source job results data not found. Aborting.'
+                    self.view.notify(event='error', msg=(msg))
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        if multiplex_files is not None:
+            msg = '* --replay will ignore original job multiplex '\
+                  '(multiplex provided in addition to --replay).'
+            self.view.notify(event='warning', msg=(msg))
+        else:
+            if self.replay_ignore is None or 'mux' not in self.replay_ignore:
+                mux = replay.retrieve_mux(self.replay_resultsdir)
+                if mux is None:
+                    msg = 'Source job multiplex data not found. Aborting.'
+                    self.view.notify(event='error', msg=(msg))
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        if urls:
+            msg = '* --replay will ignore original job test urls (test '\
+                  'urls provided in addition to --replay).'
+            self.view.notify(event='warning', msg=(msg))
+        else:
+            urls = replay.retrieve_urls(self.replay_resultsdir)
+            if urls is None:
+                msg = 'Source job urls data not found. Aborting.'
+                self.view.notify(event='error', msg=(msg))
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        return self._run(urls, mux, replay_map)
 
 
 class TestProgram(object):

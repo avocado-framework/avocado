@@ -329,12 +329,13 @@ class TestRunner(object):
             return False
         return True
 
-    def run_suite(self, test_suite, mux, timeout=0):
+    def run_suite(self, test_suite, mux, replay_map=None, timeout=0):
         """
         Run one or more tests and report with test result.
 
         :param test_suite: a list of tests to run.
         :param mux: the multiplexer.
+        :param replay_map: list with the test indexes to replay.
         :param timeout: maximum amount of time (in seconds) to execute.
         :return: a list of test failures.
         """
@@ -349,13 +350,18 @@ class TestRunner(object):
         else:
             deadline = None
 
+        index = -1
         for test_template in test_suite:
             test_template[1]['base_logdir'] = self.job.logdir
             test_template[1]['job'] = self.job
             break_loop = False
             for test_factory in mux.itertests(test_template):
+                index += 1
+                test_parameters = test_factory[1]
+                if replay_map is not None and index not in replay_map:
+                    test_factory = (test.ReplaySkipTest, test_parameters)
+
                 if deadline is not None and time.time() > deadline:
-                    test_parameters = test_factory[1]
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
