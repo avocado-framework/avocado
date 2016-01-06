@@ -84,6 +84,13 @@ class RunnerOperationTest(unittest.TestCase):
                     "examples/tests/passtest.py" % self.tmpdir)
         process.run(cmd_line)
 
+    def test_runner_test_with_local_imports(self):
+        os.chdir(basedir)
+        cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
+                    "examples/tests/test_local_imports/test_local_imports.py " %
+                    self.tmpdir)
+        process.run(cmd_line)
+
     def test_runner_tests_fail(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest failtest passtest' % self.tmpdir
