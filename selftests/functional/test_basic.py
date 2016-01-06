@@ -56,6 +56,20 @@ class HelloWorld(Plugin):
         print('Hello World!')
 """
 
+HELLO_LIB_CONTENTS = """
+def hello():
+    return 'Hello world'
+"""
+
+LOCAL_IMPORT_TEST_CONTENTS = '''
+from avocado import Test
+from mylib import hello
+
+class LocalImportTest(Test):
+    def test(self):
+        self.log.info(hello())
+'''
+
 
 class RunnerOperationTest(unittest.TestCase):
 
@@ -82,6 +96,21 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/passtest.py "
                     "examples/tests/passtest.py" % self.tmpdir)
+        process.run(cmd_line)
+
+    def test_runner_test_with_local_imports(self):
+        mylib = script.TemporaryScript(
+            'mylib.py',
+            HELLO_LIB_CONTENTS,
+            'avocado_simpletest_functional')
+        mylib.save()
+        mytest = script.Script(
+            os.path.join(os.path.dirname(mylib.path), 'test_local_imports.py'),
+            LOCAL_IMPORT_TEST_CONTENTS)
+        os.chdir(basedir)
+        mytest.save()
+        cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
+                    "%s" % (self.tmpdir, mytest))
         process.run(cmd_line)
 
     def test_runner_tests_fail(self):
