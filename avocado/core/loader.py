@@ -258,8 +258,13 @@ class TestLoaderProxy(object):
         if isinstance(test_class, str):
             module_name = os.path.basename(test_path).split('.')[0]
             test_module_dir = os.path.dirname(test_path)
-            f, p, d = imp.find_module(module_name, [test_module_dir])
-            test_module = imp.load_module(module_name, f, p, d)
+            # Tests with local dir imports need this
+            try:
+                sys.path.insert(0, test_module_dir)
+                f, p, d = imp.find_module(module_name, [test_module_dir])
+                test_module = imp.load_module(module_name, f, p, d)
+            finally:
+                sys.path.pop(0)
             for _, obj in inspect.getmembers(test_module):
                 if (inspect.isclass(obj) and obj.__name__ == test_class and
                         inspect.getmodule(obj) == test_module):
@@ -267,6 +272,7 @@ class TestLoaderProxy(object):
                         test_class = obj
                         break
         test_instance = test_class(**test_parameters)
+
         return test_instance
 
 
