@@ -33,29 +33,6 @@ false
 
 FAIL_SHELL_CONTENTS = "exit 1"
 
-VOID_PLUGIN_CONTENTS = """#!/usr/bin/env python
-from avocado.core.plugins.plugin import Plugin
-class VoidPlugin(Plugin):
-    pass
-"""
-
-SYNTAX_ERROR_PLUGIN_CONTENTS = """#!/usr/bin/env python
-from avocado.core.plugins.plugin import Plugin
-class VoidPlugin(Plugin)
-"""
-
-HELLO_PLUGIN_CONTENTS = """#!/usr/bin/env python
-from avocado.core.plugins.plugin import Plugin
-class HelloWorld(Plugin):
-    name = 'hello'
-    enabled = True
-    def configure(self, parser):
-        self.parser = parser.subcommands.add_parser('hello')
-        super(HelloWorld, self).configure(self.parser)
-    def run(self, args):
-        print('Hello World!')
-"""
-
 HELLO_LIB_CONTENTS = """
 def hello():
     return 'Hello world'
