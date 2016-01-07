@@ -1,0 +1,33 @@
+# Usage: compilebench [options]
+# version: 0.6
+# 
+# Options:
+#   -h, --help            show this help message and exit
+#   -b BUFFER_SIZE, --buffer-size=BUFFER_SIZE
+#                         buffer size (bytes)
+#   -i INITIAL_DIRS, --initial-dirs=INITIAL_DIRS
+#                         number of dirs initially created
+#   -r RUNS, --runs=RUNS  number of rand op runs
+#   -D DIRECTORY, --directory=DIRECTORY
+#                         working directory
+#   -s SOURCES, --sources=SOURCES
+#                         data set source file directory
+#   -t TRACE, --trace=TRACE
+#                         blktrace output file
+#   -d DEVICE, --device=DEVICE
+#                         blktrace device
+#   -m, --makej           simulate a make -j on the initial dirs and exit
+#   -n, --no-sync         don't sync and drop caches between each iteration
+
+# Valid options in avocado test are bellow:
+setup:
+    trees: !mux
+        default:
+            INITIAL_DIRS: null
+        quick:
+            INITIAL_DIRS: 5
+    runs: !mux
+        default:
+            RUNS: null
+        minimal:
+            RUNS: 1

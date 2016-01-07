@@ -36,7 +36,10 @@ class RemoteTestRunner(TestRunner):
     """ Tooled TestRunner to run on remote machine using ssh """
     remote_test_dir = '~/avocado/tests'
 
-    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\.(\d+)$')
+    # Let's use re.MULTILINE because sometimes servers might have MOTD
+    # that will introduce a line break on output.
+    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\.(\d+)$',
+                                   re.MULTILINE)
 
     def check_remote_avocado(self):
         """
@@ -60,11 +63,14 @@ class RemoteTestRunner(TestRunner):
         if result.exit_status == 127:
             return (False, None)
 
-        match = self.remote_version_re.match(result.stdout)
+        match = self.remote_version_re.findall(result.stdout)
         if match is None:
             return (False, None)
 
-        return (True, tuple(map(int, match.groups())))
+        try:
+            return (True, tuple(map(int, match[0])))
+        except IndexError:
+            return (False, None)
 
     def run_test(self, urls, timeout):
         """
