@@ -650,6 +650,7 @@ class AptBackend(DpkgBackend):
         executable = utils_path.find_command('apt-get')
         self.base_command = executable + ' --yes --allow-unauthenticated'
         self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'
+        self.dpkg_force_confdef = '-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"'
         cmd_result = process.run('apt-get -v | head -1',
                                  ignore_status=True,
                                  verbose=False,
@@ -669,6 +670,7 @@ class AptBackend(DpkgBackend):
                 log.info("SoftwareManager (AptBackend) can't install packages "
                          "from local .deb files with dependency resolution: "
                          "Package 'gdebi-core' could not be installed")
+        os.environ['DEBIAN_FRONTEND'] = 'noninteractive'
 
     def install(self, name):
         """
@@ -680,10 +682,10 @@ class AptBackend(DpkgBackend):
             i_cmd = utils_path.find_command('gdebi') + ' -n -q ' + name
         else:
             command = 'install'
-            i_cmd = self.base_command + ' ' + command + ' ' + name
+            i_cmd = " ".join([self.base_command, self.dpkg_force_confdef, command, name])
 
         try:
-            process.system(i_cmd)
+            process.system(i_cmd, shell=True)
             return True
         except process.CmdError:
             return False
@@ -752,13 +754,13 @@ class AptBackend(DpkgBackend):
 
         if name:
             up_command = 'install --only-upgrade'
-            up_cmd = self.base_command + ' ' + up_command + ' ' + name
+            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef, up_command, name])
         else:
             up_command = 'upgrade'
-            up_cmd = self.base_command + ' ' + up_command
+            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef, up_command])
 
         try:
-            process.system(up_cmd)
+            process.system(up_cmd, shell=True)
             return True
         except process.CmdError:
             return False
