@@ -136,6 +136,27 @@ class Run(CLICmd):
                              help="Inject [path:]key:node values into the "
                              "final multiplex tree.")
 
+        replay = parser.add_argument_group('replay job options')
+
+        replay.add_argument('--replay', dest='replay_jobid', type=str,
+                            default=None,
+                            help='Replay a job identified by its (partial) '
+                                 'hash id.')
+
+        replay.add_argument('--replay-test-status', dest='replay_filter',
+                            type=str, default=None,
+                            help='Filter tests to replay by status '
+                                 '(FAIL,PASS).')
+
+        replay.add_argument('--replay-ignore', dest='replay_ignore',
+                            type=str, default=None,
+                            help='Ignore multiplex(mux) and/or config from the '
+                                 ' source job.')
+
+        super(TestRunner, self).configure(self.parser)
+        # Export the test runner parser back to the main parser
+        parser.runner = self.parser
+
     def _activate(self, args):
         # Extend default multiplex tree of --mux_inject values
         for value in getattr(args, "mux_inject", []):
