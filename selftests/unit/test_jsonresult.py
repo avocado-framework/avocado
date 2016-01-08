@@ -12,10 +12,10 @@ from avocado.core import job
 
 class _Stream(object):
 
-    def start_file_logging(self, param1, param2):
+    def start_job_logging(self, param1, param2):
         pass
 
-    def stop_file_logging(self):
+    def stop_job_logging(self):
         pass
 
     def set_tests_info(self, info):
