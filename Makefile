@@ -1,7 +1,10 @@
 #
 # NOTE: to build Avocado RPM packages extra deps not present out of the box
 # are necessary. These packages are currently hosted at:
-# https://copr.fedoraproject.org/coprs/lmr/Autotest/
+#
+# https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo
+# or
+# https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo
 #
 # Since the RPM build steps are based on mock, edit your chroot config
 # file (/etc/mock/<your-config>.cnf) and add the COPR repo configuration there.
