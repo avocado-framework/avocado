@@ -424,7 +424,7 @@ class Job(object):
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
-            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.tracebacks')
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         if not test_suite:
