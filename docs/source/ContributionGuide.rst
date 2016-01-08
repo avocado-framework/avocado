@@ -4,6 +4,22 @@ Contribution and Community Guide
 
 Useful pointers on how to participate of the Avocado community and contribute.
 
+.. _hacking-and-using:
+
+Hacking and Using Avocado
+=========================
+
+Since version 0.31.0, our plugin system requires Setuptools entry points to be
+registered. If you're hacking on Avocado and want to use the same, possibly modified,
+source for running your tests and experiments, you may do so with one additional step::
+
+  $ python setup develop --user
+
+On POSIX systems this will create an "egg link" to your original source tree under
+"$HOME/.local/lib/pythonX.Y/site-packages". Then, on your original source tree, an
+"egg info" directory will be created, containing, among other things, the Setuptools
+entry points mentioned before.
+
 Contact information
 ===================
 
