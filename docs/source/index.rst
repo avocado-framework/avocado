@@ -1,6 +1,6 @@
-======================
-Avocado Test Framework
-======================
+====================
+Avocado User's Guide
+====================
 
 Contents:
 
@@ -18,13 +18,20 @@ Contents:
    DebuggingWithGDB
    WrapProcess
    Plugins
+
+===============================
+Advanced Topics and Maintenance
+===============================
+
+.. toctree::
+   :maxdepth: 2
+
    ReferenceGuide
    ContributionGuide
    DevelopmentTips
    MaintenanceGuide
 
 .. _api-reference:
-
 
 =============
 API Reference
