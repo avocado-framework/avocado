@@ -18,7 +18,7 @@ The core Avocado application.
 
 import os
 
-from .log import configure as configure_log
+from . import log
 from .parser import Parser
 from .output import View
 from .settings import settings
@@ -37,19 +37,27 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
-        configure_log()
         self.parser = Parser()
-        self.cli_dispatcher = CLIDispatcher()
-        self.cli_cmd_dispatcher = CLICmdDispatcher()
-        self._print_plugin_failures()
-        self.parser.start()
-        if self.cli_cmd_dispatcher.extensions:
-            self.cli_cmd_dispatcher.map_method('configure', self.parser)
-        if self.cli_dispatcher.extensions:
-            self.cli_dispatcher.map_method('configure', self.parser)
-        self.parser.finish()
-        if self.cli_dispatcher.extensions:
-            self.cli_dispatcher.map_method('run', self.parser.args)
+        log.early_start()
+        initialized = False
+        try:
+            self.cli_dispatcher = CLIDispatcher()
+            self.cli_cmd_dispatcher = CLICmdDispatcher()
+            self._print_plugin_failures()
+            self.parser.start()
+            if self.cli_cmd_dispatcher.extensions:
+                self.cli_cmd_dispatcher.map_method('configure', self.parser)
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('configure', self.parser)
+            self.parser.finish()
+            initialized = True
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('run', self.parser.args)
+        finally:
+            if not initialized:
+                log.enable_stderr()
+                self.parser.args = ["app"]
+            log.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
         failures = (self.cli_dispatcher.load_failures +

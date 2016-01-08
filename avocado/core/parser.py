@@ -18,6 +18,7 @@ Avocado application command line parsing.
 """
 
 import argparse
+import sys
 
 from . import tree
 from . import settings
@@ -25,6 +26,27 @@ from .version import VERSION
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
+
+
+def log_type(value):
+    valid_streams = ["app", "test", "debug", "remote", "early", "all", "none"]
+    value = value.split(',')
+    if any(_ not in valid_streams for _ in value):
+        sys.stderr.write("Invalid logging stream selected. Supported log "
+                         "streams are:\n app - application output\n "
+                         "test - test output\n debug - tracebacks and other "
+                         "debugging info\n remote - fabric/paramiko debug\n "
+                         "early - early logging of other streams (very "
+                         "verbose\n all - everything\n none - disable "
+                         "everything\n")
+        sys.exit(-1)
+
+    if 'all' in value:
+        return ["app", "test", "debug", "remote", "early"]
+    elif 'none' in value:
+        return []
+    else:
+        return value
 
 
 class Parser(object):
@@ -44,6 +66,12 @@ class Parser(object):
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       help='Use custom configuration from a file')
+        self.application.add_argument('--log', action="store",
+                                      type=log_type,
+                                      metavar='STREAMS', default=['app'],
+                                      help="Comma separated list of logging "
+                                      "streams to be enabled (app,test,debug,"
+                                      "remote,early); By default 'app'")
 
     def start(self):
         """

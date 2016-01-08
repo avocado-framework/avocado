@@ -106,20 +106,6 @@ class Job(object):
             self.loglevel = mapping[raw_log_level]
         else:
             self.loglevel = logging.DEBUG
-        self.show_job_log = getattr(self.args, 'show_job_log', False)
-        self.silent = getattr(self.args, 'silent', False)
-
-        if self.standalone:
-            self.show_job_log = True
-            if self.args is not None:
-                setattr(self.args, 'show_job_log', True)
-
-        if self.show_job_log:
-            if not self.silent:
-                output.add_console_handler(_TEST_LOGGER)
-                output.add_console_handler(logging.getLogger())
-                _TEST_LOGGER.setLevel(self.loglevel)
-                _TEST_LOGGER.propagate = False
 
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
@@ -417,13 +403,14 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        self.view.start_file_logging(self.logfile,
-                                     self.loglevel,
-                                     self.unique_id)
+        self.view.start_job_logging(self.logfile,
+                                    self.loglevel,
+                                    self.unique_id)
+
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
-            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.tracebacks')
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         if not test_suite:
@@ -449,7 +436,7 @@ class Job(object):
         self.view.logfile = self.logfile
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout)
-        self.view.stop_file_logging()
+        self.view.stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -530,6 +517,8 @@ class TestProgram(object):
     def __init__(self):
         self.defaultTest = sys.argv[0]
         self.progName = os.path.basename(sys.argv[0])
+        output.add_log_handler("", output.ProgressStreamHandler,
+                               fmt="%(message)s")
         self.parseArgs(sys.argv[1:])
         self.runTests()
 
@@ -545,6 +534,7 @@ class TestProgram(object):
     def runTests(self):
         exit_status = exit_codes.AVOCADO_ALL_OK
         self.args.standalone = True
+        self.args.log = ["test", "early"]
         self.job = Job(self.args)
         if self.defaultTest is not None:
             exit_status = self.job.run(urls=[self.defaultTest])
