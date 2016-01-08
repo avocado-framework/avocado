@@ -547,7 +547,7 @@ class View(object):
         """
         self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
 
-    def start_file_logging(self, logfile, loglevel, unique_id):
+    def start_job_logging(self, logfile, loglevel, unique_id):
         """
         Start the main file logging.
 
@@ -572,7 +572,7 @@ class View(object):
         root_logger.addHandler(self.file_handler)
         root_logger.setLevel(loglevel)
 
-    def stop_file_logging(self):
+    def stop_job_logging(self):
         """
         Simple helper for removing a handler from the current logger.
         """
