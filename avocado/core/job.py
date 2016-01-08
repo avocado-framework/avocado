@@ -53,7 +53,7 @@ from ..utils import data_structures
 
 try:
     from . import html
-    HTML_REPORT_SUPPORT = True
+    HTML_REPORT_SUPPORT = html.check_resource_requirements()
 except ImportError:
     HTML_REPORT_SUPPORT = False
 
