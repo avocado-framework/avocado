@@ -68,7 +68,7 @@ Note that `python` and `pip` should point to the Python interpreter version 2.7.
 If you're having trouble to install, you can try again and use the command line
 utilities `python2.7` and `pip2.7`.
 
-For Debian users, use `apt-get` to install the proper dependencies that `yum` installs.
+If you intend to hack on Avocado, you may want to look at :ref:`hacking-and-using`.
 
 Using Avocado
 =============
