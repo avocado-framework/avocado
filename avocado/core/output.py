@@ -22,6 +22,12 @@ import sys
 from .settings import settings
 from ..utils import path as utils_path
 
+if hasattr(logging, 'NullHandler'):
+    NULL_HANDLER = logging.NullHandler
+else:
+    import logutils
+    NULL_HANDLER = logutils.NullHandler
+
 
 class FilterError(logging.Filter):
 
@@ -56,6 +62,18 @@ class ProgressStreamHandler(logging.StreamHandler):
             raise
         except Exception:
             self.handleError(record)
+
+
+class MemStreamHandler(logging.StreamHandler):
+
+    """
+    Handler that stores all records in self.log (shared in all instances)
+    """
+
+    log = []
+
+    def emit(self, record):
+        self.log.append(record)
 
 
 class PagerNotFoundError(Exception):
@@ -135,6 +153,15 @@ def add_log_handler(logger, klass=None, stream=None, level=None, fmt=None):
     console_handler.setFormatter(formatter)
     logging.getLogger(logger).addHandler(console_handler)
     logging.getLogger(logger).propagate = False
+
+
+def disable_log_handler(logger):
+    logger = logging.getLogger(logger)
+    # Handlers might be reused elsewhere, can't delete them
+    while logger.handlers:
+        logger.handlers.pop()
+    logger.handlers.append(NULL_HANDLER())
+    logger.propagate = False
 
 
 class TermSupport(object):
@@ -415,6 +442,8 @@ class View(object):
             self.paginator = None
         self.throbber = Throbber()
         self.tests_info = {}
+        self.file_handler = None
+        self.stream_handler = None
 
     def cleanup(self):
         if self.use_paginator:
@@ -481,14 +510,8 @@ class View(object):
         :param msg: Message to write
         :type msg: string
         """
-        silent = False
-        show_job_log = False
-        if self.app_args is not None:
-            if hasattr(self.app_args, 'silent'):
-                silent = self.app_args.silent
-            if hasattr(self.app_args, 'show_job_log'):
-                show_job_log = self.app_args.show_job_log
-        if not (silent or show_job_log):
+        enabled = getattr(self.app_args, "log", [])
+        if "app" in enabled:
             if self.use_paginator and (level < logging.ERROR):
                 if not skip_newline:
                     msg += '\n'
@@ -571,6 +594,7 @@ class View(object):
         """
         self.job_unique_id = unique_id
         self.debuglog = logfile
+        # File loggers
         self.file_handler = logging.FileHandler(filename=logfile)
         self.file_handler.setLevel(loglevel)
 
@@ -585,15 +609,24 @@ class View(object):
         root_logger = logging.getLogger()
         root_logger.addHandler(self.file_handler)
         root_logger.setLevel(loglevel)
+        # Console loggers
+        if ('test' in self.app_args.log and
+                'early' not in self.app_args.log):
+            self.stream_handler = ProgressStreamHandler()
+            test_logger.addHandler(self.stream_handler)
+            root_logger.addHandler(self.stream_handler)
 
     def stop_job_logging(self):
         """
         Simple helper for removing a handler from the current logger.
         """
+        # File loggers
         test_logger = logging.getLogger('avocado.test')
-        linux_logger = logging.getLogger('avocado.linux')
         root_logger = logging.getLogger()
         test_logger.removeHandler(self.file_handler)
-        linux_logger.removeHandler(self.file_handler)
         root_logger.removeHandler(self.file_handler)
         self.file_handler.close()
+        # Console loggers
+        if self.stream_handler:
+            test_logger.removeHandler(self.stream_handler)
+            root_logger.removeHandler(self.stream_handler)
