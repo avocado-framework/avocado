@@ -30,6 +30,18 @@ from ..utils import path as utils_path
 from ..utils import runtime
 
 
+def check_resource_requirements():
+    """
+    Checks if necessary resource files to render the report are in place
+
+    Currently, only the template file is looked for
+    """
+    base_path = os.path.dirname(sys.modules[__name__].__file__)
+    html_resources_path = os.path.join(base_path, 'resources', 'htmlresult')
+    template = os.path.join(html_resources_path, 'templates', 'report.mustache')
+    return os.path.exists(template)
+
+
 class ReportModel(object):
 
     """
