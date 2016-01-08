@@ -38,7 +38,7 @@ class RemoteTestRunner(TestRunner):
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
-    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\.(\d+)$',
+    remote_version_re = re.compile(r'Avocado (\d+)\.(\d+)\.(\d+)$',
                                    re.MULTILINE)
 
     def check_remote_avocado(self):
