@@ -144,7 +144,7 @@ def add_log_handler(logger, klass=None, stream=None, level=None, fmt=None):
     if stream is None:
         stream = sys.stdout
     if level is None:
-        level = "INFO"
+        level = logging.INFO
     if fmt is None:
         fmt = '%(name)s: %(message)s'
     console_handler = klass(stream)
