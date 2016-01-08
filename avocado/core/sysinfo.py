@@ -541,7 +541,7 @@ def collect_sysinfo(args):
 
     :param args: :class:`argparse.Namespace` object with command line params.
     """
-    output.add_console_handler(log)
+    output.add_log_handler(log.name)
 
     basedir = args.sysinfodir
     if not basedir:
