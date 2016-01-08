@@ -353,11 +353,11 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %s:\n%s" %
                          (expected_rc, result))
-        self.assertIn('[stdout] foo', result.stdout, result)
-        self.assertIn('[stdout] \'"', result.stdout, result)
-        self.assertIn('[stdout] bar/baz', result.stdout, result)
+        self.assertIn('[stdout] foo', result.stderr, result)
+        self.assertIn('[stdout] \'"', result.stderr, result)
+        self.assertIn('[stdout] bar/baz', result.stderr, result)
         self.assertIn('PASS /bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz',
-                      result.stdout, result)
+                      result.stderr, result)
         # logdir name should escape special chars (/)
         test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
                                            'test-results', '*'))
@@ -462,12 +462,12 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %s:\n%s" %
                          (expected_rc, result))
-        self.assertIn('DEBUG| Debug message', result.stdout, result)
-        self.assertIn('INFO | Info message', result.stdout, result)
+        self.assertIn('DEBUG| Debug message', result.stderr, result)
+        self.assertIn('INFO | Info message', result.stderr, result)
         self.assertIn('WARN | Warning message (should cause this test to '
-                      'finish with warning)', result.stdout, result)
+                      'finish with warning)', result.stderr, result)
         self.assertIn('ERROR| Error message (ordinary message not changing '
-                      'the results)', result.stdout, result)
+                      'the results)', result.stderr, result)
 
     def test_non_absolute_path(self):
         avocado_path = os.path.join(basedir, 'scripts', 'avocado')
