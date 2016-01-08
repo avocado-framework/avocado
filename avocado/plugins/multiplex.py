@@ -90,7 +90,6 @@ class Multiplex(CLICmd):
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"
         if err:
-            view.notify(event="minor", msg=self.parser.format_help())
             view.notify(event="error", msg=err)
             sys.exit(exit_codes.AVOCADO_FAIL)
         try:
