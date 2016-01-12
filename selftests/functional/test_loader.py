@@ -67,6 +67,23 @@ if __name__ == "__main__":
     main()
 """
 
+AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME = """#!/usr/bin/env python
+import time
+
+from avocado import Test
+from avocado import main
+
+class Multiple(Test):
+    def test(self):
+        raise
+
+    def test(self):
+        pass
+
+if __name__ == "__main__":
+    main()
+"""
+
 
 NOT_A_TEST = """
 def hello():
@@ -135,6 +152,10 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
                    'INSTRUMENTED', 0664, 2)
+
+    def test_multiple_methods_same_name(self):
+        self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
+                   'INSTRUMENTED', 0664, 1)
 
     def test_load_not_a_test(self):
         self._test('notatest.py', NOT_A_TEST, 'SIMPLE', 0775)

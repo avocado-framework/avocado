@@ -587,6 +587,7 @@ class FileLoader(TestLoader):
                     functions = [st.name for st in statement.body if
                                  isinstance(st, ast.FunctionDef) and
                                  st.name.startswith('test')]
+                    functions = list(set(functions))
                     result[statement.name] = functions
                     continue
 
@@ -598,6 +599,7 @@ class FileLoader(TestLoader):
                         functions = [st.name for st in statement.body if
                                      isinstance(st, ast.FunctionDef) and
                                      st.name.startswith('test')]
+                        functions = list(set(functions))
                         result[statement.name] = functions
                         continue
 
@@ -610,6 +612,7 @@ class FileLoader(TestLoader):
                             functions = [st.name for st in statement.body if
                                          isinstance(st, ast.FunctionDef) and
                                          st.name.startswith('test')]
+                            functions = list(set(functions))
                             result[statement.name] = functions
 
         return result
