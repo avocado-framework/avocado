@@ -69,6 +69,16 @@ class MultipleMethods(Test):
         pass
 """
 
+AVOCADO_MULTIPLE_TESTS_SAME_NAME = """from avocado import Test
+
+class MultipleMethods(Test):
+    def test(self):
+        raise
+    def test(self):
+        raise
+    def test(self):
+        pass
+"""
 
 AVOCADO_FOREIGN_TAGGED_ENABLE = """from foreignlib import Base
 
@@ -238,6 +248,21 @@ class LoaderTest(unittest.TestCase):
         # Load none should return no tests
         self.assertTrue(not self.loader.discover(avocado_multiple_tests.path +
                                                  ":no_match", True))
+        avocado_multiple_tests.remove()
+
+    def test_multiple_methods_same_name(self):
+        avocado_multiple_tests = script.TemporaryScript('multipletests.py',
+                                                        AVOCADO_MULTIPLE_TESTS_SAME_NAME,
+                                                        'avocado_multiple_tests_unittest',
+                                                        mode=0664)
+        avocado_multiple_tests.save()
+        suite = self.loader.discover(avocado_multiple_tests.path, True)
+        self.assertEqual(len(suite), 1)
+        # Try to load only some of the tests
+        suite = self.loader.discover(avocado_multiple_tests.path +
+                                     ':MultipleMethods.test', True)
+        self.assertEqual(len(suite), 1)
+        self.assertEqual(suite[0][1]["methodName"], 'test')
         avocado_multiple_tests.remove()
 
     def test_load_foreign(self):

@@ -530,6 +530,12 @@ class FileLoader(TestLoader):
                         tests.extend(self._make_tests(pth, which_tests))
         return tests
 
+    @staticmethod
+    def _unique_ordered_list(method_list):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in method_list if not (x in seen or seen_add(x))]
+
     def _find_avocado_tests(self, path):
         """
         Attempts to find Avocado instrumented tests from Python source files
@@ -587,6 +593,7 @@ class FileLoader(TestLoader):
                     functions = [st.name for st in statement.body if
                                  isinstance(st, ast.FunctionDef) and
                                  st.name.startswith('test')]
+                    functions = self._unique_ordered_list(functions)
                     result[statement.name] = functions
                     continue
 
@@ -598,6 +605,7 @@ class FileLoader(TestLoader):
                         functions = [st.name for st in statement.body if
                                      isinstance(st, ast.FunctionDef) and
                                      st.name.startswith('test')]
+                        functions = self._unique_ordered_list(functions)
                         result[statement.name] = functions
                         continue
 
@@ -610,6 +618,7 @@ class FileLoader(TestLoader):
                             functions = [st.name for st in statement.body if
                                          isinstance(st, ast.FunctionDef) and
                                          st.name.startswith('test')]
+                            functions = self._unique_ordered_list(functions)
                             result[statement.name] = functions
 
         return result
