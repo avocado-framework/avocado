@@ -263,8 +263,13 @@ class TestLoaderProxy(object):
                 sys.path.insert(0, test_module_dir)
                 f, p, d = imp.find_module(module_name, [test_module_dir])
                 test_module = imp.load_module(module_name, f, p, d)
+            except ImportError, details:
+                raise ImportError("Unable to import test's module with "
+                                  "sys.path=%s\n\n%s" % (", ".join(sys.path),
+                                                         details))
             finally:
-                sys.path.pop(0)
+                if test_module_dir in sys.path:
+                    sys.path.remove(test_module_dir)
             for _, obj in inspect.getmembers(test_module):
                 if (inspect.isclass(obj) and obj.__name__ == test_class and
                         inspect.getmodule(obj) == test_module):
