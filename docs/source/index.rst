@@ -14,6 +14,7 @@ Contents:
    Configuration
    Loaders
    MultiplexConfig
+   Replay
    RunningTestsRemotely
    DebuggingWithGDB
    WrapProcess
