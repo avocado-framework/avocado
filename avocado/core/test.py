@@ -687,6 +687,23 @@ class TimeOutSkipTest(Test):
         raise NotImplementedError("This should never be executed!")
 
 
+class ReplaySkipTest(Test):
+
+    """
+    Skip test due to replay filter.
+
+    This test is skipped due to a job replay filter.
+    """
+
+    _skip_reason = "Test skipped due a job replay filter!"
+
+    def setUp(self):
+        raise exceptions.TestNAError(self._skip_reason)
+
+    def test(self):
+        raise NotImplementedError("This should never be executed!")
+
+
 class DryRunTest(TimeOutSkipTest):
 
     """
