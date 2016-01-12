@@ -52,6 +52,26 @@ class TestStatus(object):
         self.status = {}
         self.interrupt = None
 
+    def _get_msg_from_queue(self):
+        """
+        Helper method to handle safely getting messages from the queue.
+
+        :return: Message, None if exception happened.
+        :rtype: dict
+        """
+        try:
+            return self.queue.get()
+        # Let's catch all exceptions, since errors here mean a
+        # crash in avocado.
+        except Exception, details:
+            e_msg = ("\nError receiving message from test: %s -> %s" %
+                     (details.__class__, details))
+            self.job.view.notify(event="error",
+                                 msg=e_msg)
+            stacktrace.log_exc_info(sys.exc_info(),
+                                    'avocado.app.tracebacks')
+            return None
+
     @property
     def early_status(self):
         """
@@ -62,7 +82,9 @@ class TestStatus(object):
         else:
             queue = []
             while not self.queue.empty():
-                msg = self.queue.get()
+                msg = self._get_msg_from_queue()
+                if msg is None:
+                    break
                 if "early_status" in msg:
                     self._early_status = msg
                     for _ in queue:     # Return all unprocessed messages back
@@ -108,7 +130,9 @@ class TestStatus(object):
         Process the queue and update current status
         """
         while not self.queue.empty():
-            msg = self.queue.get()
+            msg = self._get_msg_from_queue()
+            if msg is None:
+                break
             if "func_at_exit" in msg:
                 self.job.funcatexit.register(msg["func_at_exit"],
                                              msg.get("args", tuple()),
