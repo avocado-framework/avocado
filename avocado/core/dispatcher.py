@@ -27,7 +27,8 @@ class Dispatcher(ExtensionManager):
         self.load_failures = []
         super(Dispatcher, self).__init__(namespace=namespace,
                                          invoke_on_load=True,
-                                         on_load_failure_callback=self.store_load_failure)
+                                         on_load_failure_callback=self.store_load_failure,
+                                         propagate_map_exceptions=True)
 
     @staticmethod
     def store_load_failure(manager, entrypoint, exception):
