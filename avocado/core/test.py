@@ -700,3 +700,14 @@ class DryRunTest(TimeOutSkipTest):
         for path, key, value in self.params.iteritems():
             self.log.info("%s:%s ==> %s", path, key, value)
         super(DryRunTest, self).setUp()
+
+
+class ReplaySkipTest(TimeOutSkipTest):
+    """
+    Skip test due to job replay filter.
+
+    This test is skipped due to a job replay filter.
+    It will never have a chance to execute.
+    """
+
+    _skip_reason = "Test skipped due to a job replay filter!"

@@ -133,6 +133,7 @@ if __name__ == '__main__':
                   'journal = avocado.plugins.journal:Journal',
                   'html = avocado.plugins.html:HTML',
                   'remote = avocado.plugins.remote:Remote',
+                  'replay = avocado.plugins.replay:Replay',
                   'vm = avocado.plugins.vm:VM',
                   ],
               'avocado.plugins.cli.cmd': [

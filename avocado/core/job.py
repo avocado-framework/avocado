@@ -42,6 +42,7 @@ from . import tree
 from . import test
 from . import xunit
 from . import jsonresult
+from . import replay
 from .settings import settings
 from ..utils import archive
 from ..utils import astring
@@ -130,6 +131,7 @@ class Job(object):
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
+        self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -267,7 +269,6 @@ class Job(object):
                      Optionally, a list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
-        urls = self._handle_urls(urls)
         loader.loader.load_plugins(self.args)
         try:
             suite = loader.loader.discover(urls)
@@ -301,6 +302,8 @@ class Job(object):
     def _log_job_id(self):
         job_log = _TEST_LOGGER
         job_log.info('Job ID: %s', self.unique_id)
+        if self.replay_sourcejob is not None:
+            job_log.info('Replay of Job ID: %s', self.replay_sourcejob)
         job_log.info('')
 
     @staticmethod
@@ -417,9 +420,11 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
+        urls = self._handle_urls(urls)
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
-                                     self.unique_id)
+                                     self.unique_id,
+                                     self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
@@ -432,10 +437,13 @@ class Job(object):
                      "for details" % (" ".join(urls) if urls else "\b"))
             raise exceptions.OptionValidationError(e_msg)
 
-        try:
-            mux = multiplexer.Mux(self.args)
-        except (IOError, ValueError), details:
-            raise exceptions.OptionValidationError(details)
+        if getattr(self.args, 'replay_mux', None) is not None:
+            mux = self.args.replay_mux
+        else:
+            try:
+                mux = multiplexer.Mux(self.args)
+            except (IOError, ValueError), details:
+                raise exceptions.OptionValidationError(details)
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
         self._make_test_result()
@@ -445,10 +453,13 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
+        replay.record(self.args, self.logdir, mux, urls)
 
         self.view.logfile = self.logfile
+        replay_map = getattr(self.args, 'replay_map', None)
         failures = self.test_runner.run_suite(test_suite, mux,
-                                              timeout=self.timeout)
+                                              timeout=self.timeout,
+                                              replay_map=replay_map)
         self.view.stop_file_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
