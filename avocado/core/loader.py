@@ -102,7 +102,8 @@ class TestLoaderProxy(object):
     def register_plugin(self, plugin):
         try:
             if issubclass(plugin, TestLoader):
-                self.registered_plugins.append(plugin)
+                if plugin not in self.registered_plugins:
+                    self.registered_plugins.append(plugin)
             else:
                 raise ValueError
         except ValueError:
