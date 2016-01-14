@@ -132,7 +132,7 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout):
+    def run_suite(self, test_suite, mux, timeout, replay_map=None):
         """
         Run one or more tests and report with test result.
 
