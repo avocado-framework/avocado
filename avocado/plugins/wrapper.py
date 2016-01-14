@@ -48,9 +48,10 @@ class Wrapper(CLI):
                                 'only one global wrapper can be defined.')
 
     def run(self, args):
-        if 'wrapper' in args:
+        wraps = getattr(args, "wrapper", None)
+        if wraps:
             view = output.View(app_args=args)
-            if 'gdb_run_bin' in args and args.gdb_run_bin:
+            if getattr(args, 'gdb_run_bin', None):
                 view.notify(event='error',
                             msg='Command line option --wrapper is incompatible'
                                 ' with option --gdb-run-bin.')
