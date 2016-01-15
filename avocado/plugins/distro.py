@@ -12,17 +12,18 @@
 # Copyright: Red Hat Inc. 2015
 # Author: Cleber Rosa <cleber@redhat.com>
 
-import os
 import bz2
-import sys
 import json
+import logging
+import os
+import sys
+
+from avocado.core import exit_codes
+from avocado.utils import distro as utils_distro
+from avocado.utils import path as utils_path
+from avocado.utils import process
 
 from .base import CLICmd
-from avocado.core import output
-from avocado.core import exit_codes
-from avocado.utils import process
-from avocado.utils import path as utils_path
-from avocado.utils import distro as utils_distro
 
 
 class SoftwarePackage(object):
@@ -340,25 +341,23 @@ class Distro(CLICmd):
                                         args.distro_def_arch)
 
     def run(self, args):
-        view = output.View()
+        log = logging.getLogger("avocado.app")
         if args.distro_def_create:
             if not (args.distro_def_name and args.distro_def_version and
                     args.distro_def_arch and args.distro_def_type and
                     args.distro_def_path):
-                error_msg = ('Required arguments: name, version, arch, type '
-                             'and path')
-                view.notify(event="error", msg=error_msg)
+                log.error('Required arguments: name, version, arch, type '
+                          'and path')
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
             output_file_name = self.get_output_file_name(args)
             if os.path.exists(output_file_name):
                 error_msg = ('Output file "%s" already exists, will not '
-                             'overwrite it' % output_file_name)
-                view.notify(event="error", msg=error_msg)
+                             'overwrite it', output_file_name)
+                log.error(error_msg)
             else:
-                view.notify(event="message",
-                            msg=("Loading distro information from tree... "
-                                 "Please wait..."))
+                log.debug("Loading distro information from tree... "
+                          "Please wait...")
                 distro = load_from_tree(args.distro_def_name,
                                         args.distro_def_version,
                                         args.distro_def_release,
@@ -366,14 +365,10 @@ class Distro(CLICmd):
                                         args.distro_def_type,
                                         args.distro_def_path)
                 save_distro(distro, output_file_name)
-                view.notify(event="message",
-                            msg=('Distro information saved '
-                                 'to "%s"' % output_file_name))
+                log.debug('Distro information saved to "%s"',
+                          output_file_name)
         else:
             detected = utils_distro.detect()
-            msg = 'Detected distribution: %s (%s) version %s release %s' % (
-                detected.name,
-                detected.arch,
-                detected.version,
-                detected.release)
-            view.notify(event="message", msg=msg)
+            log.debug('Detected distribution: %s (%s) version %s release %s',
+                      detected.name, detected.arch, detected.version,
+                      detected.release)

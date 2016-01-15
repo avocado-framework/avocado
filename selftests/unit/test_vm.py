@@ -49,7 +49,8 @@ class VMTestResultTest(unittest.TestCase):
                         vm_no_copy=False,
                         vm_timeout=120,
                         vm_hypervisor_uri='my_hypervisor_uri')
-        self.remote = VMTestResult(Stream, Args)
+        job = flexmock(args=Args, unique_id="id")
+        self.remote = VMTestResult(job)
         # vm.RemoteTestResult.tear_down()
         RemoteTestResult.should_receive('tear_down').once().ordered()
         mock_vm.should_receive('stop').once().ordered()
