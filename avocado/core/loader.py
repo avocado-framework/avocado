@@ -194,7 +194,7 @@ class TestLoaderProxy(object):
             mapping.update(loader_plugin.get_decorator_mapping())
         return mapping
 
-    def discover(self, urls, which_tests=DEFAULT):
+    def discover(self, urls, which_tests=DEFAULT, replay_path=None):
         """
         Discover (possible) tests from test urls.
 
@@ -213,6 +213,8 @@ class TestLoaderProxy(object):
                                     'avocado.app.tracebacks')
         tests = []
         unhandled_urls = []
+        if replay_path is not None and os.path.exists(replay_path):
+            os.chdir(replay_path)
         if not urls:
             for loader_plugin in self._initialized_plugins:
                 try:

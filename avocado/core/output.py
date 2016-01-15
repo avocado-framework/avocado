@@ -547,7 +547,7 @@ class View(object):
         """
         self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
 
-    def start_file_logging(self, logfile, loglevel, unique_id):
+    def start_file_logging(self, logfile, loglevel, unique_id, sourcejob=None):
         """
         Start the main file logging.
 
@@ -571,6 +571,7 @@ class View(object):
         root_logger = logging.getLogger()
         root_logger.addHandler(self.file_handler)
         root_logger.setLevel(loglevel)
+        self.replay_sourcejob = sourcejob
 
     def stop_file_logging(self):
         """

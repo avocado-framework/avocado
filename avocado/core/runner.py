@@ -329,7 +329,7 @@ class TestRunner(object):
             return False
         return True
 
-    def run_suite(self, test_suite, mux, timeout=0):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
         """
         Run one or more tests and report with test result.
 
@@ -349,13 +349,15 @@ class TestRunner(object):
         else:
             deadline = None
 
+        index = -1
         for test_template in test_suite:
             test_template[1]['base_logdir'] = self.job.logdir
             test_template[1]['job'] = self.job
             break_loop = False
             for test_factory in mux.itertests(test_template):
+                index += 1
+                test_parameters = test_factory[1]
                 if deadline is not None and time.time() > deadline:
-                    test_parameters = test_factory[1]
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
@@ -364,6 +366,10 @@ class TestRunner(object):
                     if break_loop:
                         break
                 else:
+                    if (replay_map is not None and
+                            replay_map[index] is not None):
+                        test_factory = (replay_map[index], test_parameters)
+
                     break_loop = not self.run_test(test_factory, queue, failures,
                                                    deadline)
                     if break_loop:
