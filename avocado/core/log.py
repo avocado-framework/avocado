@@ -13,125 +13,120 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-__all__ = ['configure', 'DEFAULT_LOGGING']
-
-
+from StringIO import StringIO
 import logging
 import os
+import sys
+
+from . import output
+
+
+__all__ = ["early_start", "enable_stderr", "reconfigure"]
+
 
 if hasattr(logging, 'NullHandler'):
-    NULL_HANDLER = 'logging.NullHandler'
+    NULL_HANDLER = logging.NullHandler
 else:
-    NULL_HANDLER = 'logutils.NullHandler'
-
-DEFAULT_LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'brief': {
-            'format': '%(message)s',
-        },
-    },
-    'filters': {
-        'error': {
-            '()': 'avocado.core.output.FilterError',
-        },
-        'info': {
-            '()': 'avocado.core.output.FilterInfo',
-        },
-    },
-    'handlers': {
-        'null': {
-            'level': 'INFO',
-            'class': NULL_HANDLER,
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'brief',
-        },
-        'app': {
-            'level': 'INFO',
-            'class': 'avocado.core.output.ProgressStreamHandler',
-            'formatter': 'brief',
-            'filters': ['info'],
-            'stream': 'ext://sys.stdout',
-        },
-        'error': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler',
-            'formatter': 'brief',
-            'filters': ['error'],
-        },
-        'debug': {
-            'level': 'DEBUG',
-            'class': 'avocado.core.output.ProgressStreamHandler',
-            'formatter': 'brief',
-            'stream': 'ext://sys.stdout',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['null']
-        },
-        'avocado': {
-            'handlers': ['console'],
-        },
-        'avocado.app': {
-            'handlers': ['app', 'error'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'avocado.app.tracebacks': {
-            # Set DEBUG=true to enable debugs
-            'handlers': ['error' if os.environ.get('DEBUG') else 'null'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'avocado.test': {
-            'handlers': ['null'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'avocado.fabric': {
-            'handlers': ['null'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'paramiko': {
-            'handlers': ['null'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'avocado.test.stdout': {
-            'handlers': ['null'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'avocado.test.stderr': {
-            'handlers': ['null'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'avocado.sysinfo': {
-            'handlers': ['error'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'avocado.debug': {
-            'handlers': ['debug'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    }
-}
+    import logutils
+    NULL_HANDLER = logutils.NullHandler
 
 
-def configure(logging_config=DEFAULT_LOGGING):
-    from logging import config
-    if not hasattr(config, 'dictConfig'):
-        from logutils import dictconfig
-        cfg_func = dictconfig.dictConfig
+STDOUT = sys.stdout
+STDERR = sys.stderr
+
+
+def early_start():
+    """
+    Replace all outputs with in-memory handlers
+    """
+    if os.environ.get('DEBUG_AVOCADO'):
+        output.add_log_handler("avocado.app.debug", None, STDERR,
+                               logging.DEBUG)
+    if os.environ.get('DEBUG_EARLY'):
+        output.add_log_handler("", None, STDERR, logging.DEBUG)
+        output.add_log_handler("avocado.test", None, STDERR, logging.DEBUG)
     else:
-        cfg_func = config.dictConfig
-    cfg_func(logging_config)
+        sys.stdout = StringIO()
+        sys.stderr = sys.stdout
+        output.add_log_handler("", output.MemStreamHandler, None,
+                               logging.DEBUG)
+    logging.root.level = logging.DEBUG
+
+
+def enable_stderr():
+    """
+    Enable direct stdout/stderr (useful for handling errors)
+    """
+    if hasattr(sys.stdout, 'getvalue'):
+        STDERR.write(sys.stdout.getvalue())
+    sys.stdout = STDOUT
+    sys.stderr = STDERR
+
+
+def reconfigure(args):
+    """
+    Adjust logging handlers accordingly to app args and re-log messages.
+    """
+    # Reconfigure stream loggers
+    enabled = getattr(args, "log", ["app,early,debug"])
+    if os.environ.get("DEBUG_EARLY") and "early" not in enabled:
+        enabled.append("early")
+    if os.environ.get("DEBUG_AVOCADO") and "debug" not in enabled:
+        enabled.append("debug")
+    if getattr(args, "show_job_log", False) and "test" not in enabled:
+        enabled.append("test")
+    if getattr(args, "silent", False):
+        del enabled[:]
+    if "app" in enabled:
+        app_logger = logging.getLogger("avocado.app")
+        app_handler = output.ProgressStreamHandler()
+        app_handler.setFormatter(logging.Formatter("%(message)s"))
+        app_handler.addFilter(output.FilterInfo())
+        app_handler.stream = STDOUT
+        app_logger.addHandler(app_handler)
+        app_logger.propagate = False
+        app_logger.level = logging.INFO
+        app_err_handler = output.logging.StreamHandler()
+        app_err_handler.setFormatter(logging.Formatter("%(message)s"))
+        app_err_handler.addFilter(output.FilterError())
+        app_err_handler.stream = STDERR
+        app_logger.addHandler(app_err_handler)
+        app_logger.propagate = False
+    else:
+        output.disable_log_handler("avocado.app")
+    if not os.environ.get("DEBUG_EARLY"):
+        logging.getLogger("avocado.test.stdout").propagate = False
+        logging.getLogger("avocado.test.stderr").propagate = False
+        if "early" in enabled:
+            enable_stderr()
+            output.add_log_handler("", None, STDERR, logging.DEBUG)
+            output.add_log_handler("avocado.test", None, STDERR,
+                                   logging.DEBUG)
+        else:
+            # FIXME: When log and output are merged, to this in
+            # start_job_logging
+            # Don't relog old messages!
+            sys.stdout = STDOUT
+            sys.stderr = STDERR
+            output.disable_log_handler("")
+            output.disable_log_handler("avocado.test")
+    if "remote" in enabled:
+        output.add_log_handler("avocado.fabric", stream=STDERR)
+        output.add_log_handler("paramiko", stream=STDERR)
+    else:
+        output.disable_log_handler("avocado.fabric")
+        output.disable_log_handler("paramiko")
+    if not os.environ.get('DEBUG_AVOCADO'):     # Not already enabled by env
+        if "debug" in enabled:
+            output.add_log_handler("avocado.app.debug", stream=STDERR)
+        else:
+            output.disable_log_handler("avocado.app.debug")
+
+    # Remove the in-memory handlers
+    for handler in logging.root.handlers:
+        if isinstance(handler, output.MemStreamHandler):
+            logging.root.handlers.remove(handler)
+
+    # Log early_messages
+    for record in output.MemStreamHandler.log:
+        logging.getLogger(record.name).handle(record)
