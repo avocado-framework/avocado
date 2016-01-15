@@ -100,7 +100,7 @@ class RemoteTestRunner(TestRunner):
 
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s %s' % (self.remote_test_dir,
-                                            self.result.stream.job_unique_id,
+                                            self.result.job_unique_id,
                                             urls_str, " ".join(extra_params)))
         try:
             result = self.result.remote.run(avocado_cmd, ignore_status=True,
@@ -123,7 +123,7 @@ class RemoteTestRunner(TestRunner):
                              "\n%s" % result.stdout)
 
         for t_dict in json_result['tests']:
-            logdir = os.path.dirname(self.result.stream.debuglog)
+            logdir = os.path.dirname(self.result.logfile)
             logdir = os.path.join(logdir, 'test-results')
             relative_path = astring.string_to_safe_path(t_dict['test'])
             logdir = os.path.join(logdir, relative_path)
@@ -194,7 +194,7 @@ class RemoteTestRunner(TestRunner):
                 self.result.check_test(state)
                 if not status.mapping[state['status']]:
                     failures.append(state['tagged_name'])
-            local_log_dir = os.path.dirname(self.result.stream.debuglog)
+            local_log_dir = os.path.dirname(self.result.logfile)
             zip_filename = remote_log_dir + '.zip'
             zip_path_filename = os.path.join(local_log_dir,
                                              os.path.basename(zip_filename))
