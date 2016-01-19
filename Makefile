@@ -27,7 +27,8 @@ all:
 	@echo
 	@echo "Development related targets:"
 	@echo "check:  Runs tree static check, unittests and functional tests"
-	@echo "clean:  Get rid of scratch and byte files"
+	@echo "link:   Runs 'python setup.py --develop' in all subprojects and links the needed resources"
+	@echo "clean:  Get rid of scratch, byte files and removes the links to other subprojects"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements:            Install runtime requirements"
@@ -111,6 +112,7 @@ clean:
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
+	$(PYTHON) setup.py develop --uninstall --user
 
 requirements:
 	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
@@ -132,6 +134,7 @@ modules_boundaries:
 	selftests/modules_boundaries
 
 link:
+	$(PYTHON) setup.py develop --user
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
