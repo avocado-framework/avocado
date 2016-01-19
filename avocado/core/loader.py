@@ -544,6 +544,19 @@ class FileLoader(TestLoader):
         seen_add = seen.add
         return [x for x in method_list if not (x in seen or seen_add(x))]
 
+    @staticmethod
+    def _main_called(mod):
+        for statement in mod.body:
+            if (isinstance(statement, ast.If) and
+                    statement.test.left.id == '__name__' and
+                    statement.test.comparators[0].s == '__main__'):
+                for item in statement.body:
+                    if (isinstance(item, ast.Expr) and
+                            item.value.func.id == 'main'):
+                        return True
+
+        return False
+
     def _find_avocado_tests(self, path):
         """
         Attempts to find Avocado instrumented tests from Python source files
@@ -555,6 +568,8 @@ class FileLoader(TestLoader):
         """
         # If only the Test class was imported from the avocado namespace
         test_import = False
+        # If only the main class was imported from the avocado namespace
+        main_import = False
         # The name used, in case of 'from avocado import Test as AvocadoTest'
         test_import_name = None
         # If the "avocado" module itself was imported
@@ -578,7 +593,9 @@ class FileLoader(TestLoader):
                             test_import_name = name.asname
                         else:
                             test_import_name = name.name
-                        break
+
+                    if name.name == 'main':
+                        main_import = True
 
             # Looking for a 'import avocado'
             elif isinstance(statement, ast.Import):
@@ -628,6 +645,18 @@ class FileLoader(TestLoader):
                                          st.name.startswith('test')]
                             functions = self._unique_ordered_list(functions)
                             result[statement.name] = functions
+                            continue
+
+                # Ultimate test to avoid infinite loop.
+                # If avocado.main was imported and main() was called,
+                # then this is not a simple test and we should look for
+                # any classes that have test functions in it.
+                if main_import and self._main_called(mod):
+                    functions = [st.name for st in statement.body if
+                                 isinstance(st, ast.FunctionDef) and
+                                 st.name.startswith('test')]
+                    functions = self._unique_ordered_list(functions)
+                    result[statement.name] = functions
 
         return result
 
