@@ -167,6 +167,12 @@ class Replay(CLI):
                                                     args.replay_teststatus)
             setattr(args, 'replay_map', replay_map)
 
+        # Use the original directory to discover test urls properly
         pwd = replay.retrieve_pwd(resultsdir)
         if pwd is not None:
-            setattr(args, 'replay_path', pwd)
+            if os.path.exists(pwd):
+                os.chdir(pwd)
+            else:
+                view.notify(event="warning", msg="Directory used in the replay"
+                            " source job '%s' does not exists, using '.' "
+                            "instead" % pwd)

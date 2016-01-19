@@ -271,8 +271,7 @@ class Job(object):
         """
         loader.loader.load_plugins(self.args)
         try:
-            replay_path = getattr(self.args, 'replay_path', None)
-            suite = loader.loader.discover(urls, replay_path=replay_path)
+            suite = loader.loader.discover(urls)
         except loader.LoaderUnhandledUrlError, details:
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
