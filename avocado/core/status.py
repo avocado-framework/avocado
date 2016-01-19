@@ -28,6 +28,13 @@ mapping = {"TEST_NA": True,
            "NOSTATUS": False,
            "INTERRUPTED": False}
 
+user_facing_statusmap = {"SKIP": "TEST_NA",
+                         "ERROR": "ERROR",
+                         "WARN": "WARN",
+                         "FAIL": "FAIL",
+                         "PASS": "PASS",
+                         "INTERRUPT": "INTERRUPTED"}
+
 feedback = {
     # Test did not advertise current status, but process running the test is
     # known to be still running

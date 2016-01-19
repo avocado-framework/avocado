@@ -66,10 +66,10 @@ class Replay(CLI):
     def _valid_status(self, string):
         status_list = string.split(',')
         for item in status_list:
-            if item not in status.mapping:
+            if item not in status.user_facing_statusmap:
                 msg = 'Invalid --replay-test-status option. Valid ' \
                      'options are (more than one allowed): %s' % \
-                     ','.join([item for item in status.mapping])
+                     ','.join([item for item in status.user_facing_statusmap])
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list
@@ -163,8 +163,10 @@ class Replay(CLI):
                     setattr(args, 'replay_mux', mux)
 
         if args.replay_teststatus:
+            internal_status = [status.user_facing_statusmap[item]
+                               for item in args.replay_teststatus]
             replay_map = replay.retrieve_replay_map(resultsdir,
-                                                    args.replay_teststatus)
+                                                    internal_status)
             setattr(args, 'replay_map', replay_map)
 
         pwd = replay.retrieve_pwd(resultsdir)
