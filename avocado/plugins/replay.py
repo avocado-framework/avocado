@@ -39,29 +39,29 @@ class Replay(CLI):
             return
 
         msg = 'job replay'
-        self.replay_parser = run_subcommand_parser.add_argument_group(msg)
-        self.replay_parser.add_argument('--replay', dest='replay_jobid',
-                                        default=None,
-                                        help='Replay a job identified by its '
-                                        '(partial) hash id')
-        self.replay_parser.add_argument('--replay-test-status',
-                                        dest='replay_teststatus',
-                                        type=self._valid_status,
-                                        default=None,
-                                        help='Filter tests to replay by '
-                                        'test status')
-        self.replay_parser.add_argument('--replay-ignore',
-                                        dest='replay_ignore',
-                                        type=self._valid_ignore,
-                                        default=None,
-                                        help='Ignore multiplex (mux) and/or '
-                                        'configuration (config) from the '
-                                        'source job')
-        self.replay_parser.add_argument('--replay-data-dir',
-                                        dest='replay_datadir',
-                                        default=None,
-                                        help='Load replay data from an '
-                                        'alternative location')
+        replay_parser = run_subcommand_parser.add_argument_group(msg)
+        replay_parser.add_argument('--replay', dest='replay_jobid',
+                                   default=None,
+                                   help='Replay a job identified by its '
+                                   '(partial) hash id')
+        replay_parser.add_argument('--replay-test-status',
+                                   dest='replay_teststatus',
+                                   type=self._valid_status,
+                                   default=None,
+                                   help='Filter tests to replay by '
+                                   'test status')
+        replay_parser.add_argument('--replay-ignore',
+                                   dest='replay_ignore',
+                                   type=self._valid_ignore,
+                                   default=None,
+                                   help='Ignore multiplex (mux) and/or '
+                                   'configuration (config) from the '
+                                   'source job')
+        replay_parser.add_argument('--replay-data-dir',
+                                   dest='replay_datadir',
+                                   default=None,
+                                   help='Load replay data from an '
+                                   'alternative location')
 
     def _valid_status(self, string):
         status_list = string.split(',')
