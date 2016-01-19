@@ -39,29 +39,29 @@ class Replay(CLI):
             return
 
         msg = 'job replay'
-        self.replay_parser = run_subcommand_parser.add_argument_group(msg)
-        self.replay_parser.add_argument('--replay', dest='replay_jobid',
-                                        default=None,
-                                        help='Replay a job identified by its '
-                                        '(partial) hash id')
-        self.replay_parser.add_argument('--replay-test-status',
-                                        dest='replay_teststatus',
-                                        type=self._valid_status,
-                                        default=None,
-                                        help='Filter tests to replay by '
-                                        'test status')
-        self.replay_parser.add_argument('--replay-ignore',
-                                        dest='replay_ignore',
-                                        type=self._valid_ignore,
-                                        default=None,
-                                        help='Ignore multiplex (mux) and/or '
-                                        'configuration (config) from the '
-                                        'source job')
-        self.replay_parser.add_argument('--replay-data-dir',
-                                        dest='replay_datadir',
-                                        default=None,
-                                        help='Load replay data from an '
-                                        'alternative location')
+        replay_parser = run_subcommand_parser.add_argument_group(msg)
+        replay_parser.add_argument('--replay', dest='replay_jobid',
+                                   default=None,
+                                   help='Replay a job identified by its '
+                                   '(partial) hash id')
+        replay_parser.add_argument('--replay-test-status',
+                                   dest='replay_teststatus',
+                                   type=self._valid_status,
+                                   default=None,
+                                   help='Filter tests to replay by '
+                                   'test status')
+        replay_parser.add_argument('--replay-ignore',
+                                   dest='replay_ignore',
+                                   type=self._valid_ignore,
+                                   default=None,
+                                   help='Ignore multiplex (mux) and/or '
+                                   'configuration (config) from the '
+                                   'source job')
+        replay_parser.add_argument('--replay-data-dir',
+                                   dest='replay_datadir',
+                                   default=None,
+                                   help='Load replay data from an '
+                                   'alternative location')
 
     def _valid_status(self, string):
         status_list = string.split(',')
@@ -153,6 +153,9 @@ class Replay(CLI):
                 msg = 'Overriding the replay multiplex with '\
                       '--multiplex-file.'
                 view.notify(event='warning', msg=(msg))
+                # Use absolute paths to avoid problems with os.chdir
+                args.multiplex_files = [os.path.abspath(_)
+                                        for _ in args.multiplex_files]
             else:
                 mux = replay.retrieve_mux(resultsdir)
                 if mux is None:
@@ -160,13 +163,19 @@ class Replay(CLI):
                     view.notify(event='error', msg=(msg))
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
-                    setattr(args, 'replay_mux', mux)
+                    setattr(args, "multiplex_files", mux)
 
         if args.replay_teststatus:
             replay_map = replay.retrieve_replay_map(resultsdir,
                                                     args.replay_teststatus)
             setattr(args, 'replay_map', replay_map)
 
+        # Use the original directory to discover test urls properly
         pwd = replay.retrieve_pwd(resultsdir)
         if pwd is not None:
-            setattr(args, 'replay_path', pwd)
+            if os.path.exists(pwd):
+                os.chdir(pwd)
+            else:
+                view.notify(event="warning", msg="Directory used in the replay"
+                            " source job '%s' does not exists, using '.' "
+                            "instead" % pwd)

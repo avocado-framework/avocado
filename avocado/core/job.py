@@ -271,8 +271,7 @@ class Job(object):
         """
         loader.loader.load_plugins(self.args)
         try:
-            replay_path = getattr(self.args, 'replay_path', None)
-            suite = loader.loader.discover(urls, replay_path=replay_path)
+            suite = loader.loader.discover(urls)
         except loader.LoaderUnhandledUrlError, details:
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
@@ -438,8 +437,9 @@ class Job(object):
                      "for details" % (" ".join(urls) if urls else "\b"))
             raise exceptions.OptionValidationError(e_msg)
 
-        if getattr(self.args, 'replay_mux', None) is not None:
-            mux = self.args.replay_mux
+        if isinstance(getattr(self.args, 'multiplex_files', None),
+                      multiplexer.Mux):
+            mux = self.args.multiplex_files     # pylint: disable=E1101
         else:
             try:
                 mux = multiplexer.Mux(self.args)
