@@ -153,6 +153,9 @@ class Replay(CLI):
                 msg = 'Overriding the replay multiplex with '\
                       '--multiplex-file.'
                 view.notify(event='warning', msg=(msg))
+                # Use absolute paths to avoid problems with os.chdir
+                args.multiplex_files = [os.path.abspath(_)
+                                        for _ in args.multiplex_files]
             else:
                 mux = replay.retrieve_mux(resultsdir)
                 if mux is None:
@@ -160,7 +163,7 @@ class Replay(CLI):
                     view.notify(event='error', msg=(msg))
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
-                    setattr(args, 'replay_mux', mux)
+                    setattr(args, "multiplex_files", mux)
 
         if args.replay_teststatus:
             replay_map = replay.retrieve_replay_map(resultsdir,
