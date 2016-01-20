@@ -157,16 +157,16 @@ class TestAbortError(TestBaseException):
     status = "ERROR"
 
 
-class TestNAError(TestBaseException):
+class TestSkipError(TestBaseException):
 
     """
-    Indictates that the test is Not Applicable.
+    Indictates that the test is skipped.
 
     Should be thrown when various conditions are such that the test is
     inappropriate. For example, inappropriate architecture, wrong OS version,
     program being tested does not have the expected capability (older version).
     """
-    status = "TEST_NA"
+    status = "SKIP"
 
 
 class TestFail(TestBaseException, AssertionError):

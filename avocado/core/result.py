@@ -243,7 +243,7 @@ class TestResult(object):
         status_map = {'PASS': self.add_pass,
                       'ERROR': self.add_error,
                       'FAIL': self.add_fail,
-                      'TEST_NA': self.add_skip,
+                      'SKIP': self.add_skip,
                       'WARN': self.add_warn,
                       'INTERRUPTED': self.add_interrupt}
         add = status_map[state['status']]

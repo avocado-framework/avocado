@@ -189,7 +189,7 @@ class xUnitTestResult(TestResult):
         TestResult.end_test(self, state)
         if state['status'] in ('PASS', 'WARN'):
             self.xml.add_success(state)
-        elif state['status'] == 'TEST_NA':
+        elif state['status'] == 'SKIP':
             self.xml.add_skip(state)
         elif state['status'] == 'FAIL':
             self.xml.add_failure(state)

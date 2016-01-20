@@ -44,7 +44,7 @@ as a simple test.
 The instrumented tests allows the writer finer control over the process
 including logging, test result status and other more sophisticated test APIs.
 
-Test statuses ``PASS``, ``WARN``, ``START`` and ``TEST_NA`` are considered as
+Test statuses ``PASS``, ``WARN``, ``START`` and ``SKIP`` are considered as
 successful builds. The ``ABORT``, ``ERROR``, ``FAIL``, ``ALERT``, ``RUNNING``,
 ``NOSTATUS`` and ``INTERRUPTED`` are considered as failed ones.
 
