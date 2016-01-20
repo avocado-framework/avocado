@@ -100,5 +100,5 @@ class VM(CLI):
 
     def run(self, args):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
-            args.remote_result = VMTestResult
-            args.test_runner = RemoteTestRunner
+            self.vm_parser.set_defaults(remote_result=VMTestResult,
+                                        test_runner=RemoteTestRunner)

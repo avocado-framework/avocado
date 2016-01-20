@@ -101,5 +101,5 @@ class Remote(CLI):
     def run(self, args):
         if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
-            args.remote_result = RemoteTestResult
-            args.test_runner = RemoteTestRunner
+            self.remote_parser.set_defaults(remote_result=RemoteTestResult,
+                                            test_runner=RemoteTestRunner)
