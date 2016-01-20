@@ -97,8 +97,7 @@ class ReplayTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = 'Invalid --replay-test-status option. Valid options are (more ' \
-              'than one allowed): SKIP,NOSTATUS,INTERRUPTED,WARN,START,ERROR,'\
-              'FAIL,PASS,ALERT,RUNNING,ABORT'
+              'than one allowed): SKIP,ERROR,FAIL,WARN,PASS,INTERRUPTED'
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_statusfail(self):
