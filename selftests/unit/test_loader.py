@@ -95,6 +95,26 @@ class First(Base):
         pass
 """
 
+AVOCADO_FOREIGN_UNTAGGED_MAIN_IMPORTED = """from foreignlib import Base
+from avocado import Test
+from avocado import main
+
+class First(Base):
+    '''
+
+    This Base class fictionally inherits from avocado.Test.
+    Avocado can't tell that, but the combination of avocado.Test,
+    avocado.main and the main() call makes this class an avocado test
+    class.
+
+    '''
+    def test(self):
+        pass
+
+if __name__ == '__main__':
+    main()
+"""
+
 AVOCADO_TEST_NESTED_TAGGED = """from avocado import Test
 import avocado
 import fmaslkfdsaf
@@ -268,6 +288,16 @@ class LoaderTest(unittest.TestCase):
     def test_load_foreign(self):
         avocado_pass_test = script.TemporaryScript('foreign.py',
                                                    AVOCADO_FOREIGN_TAGGED_ENABLE,
+                                                   'avocado_loader_unittest')
+        avocado_pass_test.save()
+        test_class, test_parameters = (
+            self.loader.discover(avocado_pass_test.path, True)[0])
+        self.assertTrue(test_class == 'First', test_class)
+        avocado_pass_test.remove()
+
+    def test_load_foreign_untagged_main_imported(self):
+        avocado_pass_test = script.TemporaryScript('foreign.py',
+                                                   AVOCADO_FOREIGN_UNTAGGED_MAIN_IMPORTED,
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
         test_class, test_parameters = (
