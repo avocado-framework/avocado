@@ -33,8 +33,6 @@ class RemoteTestRunnerTest(unittest.TestCase):
         self.remote.job = flexmock(logdir='.')
 
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
-        stream = flexmock(job_unique_id='sleeptest.1',
-                          debuglog='/local/path/dirname')
         Remote = flexmock()
         args_version = 'avocado -v'
         version_result = flexmock(stdout='Avocado 1.2.3', exit_status=0)
@@ -84,7 +82,8 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args, timeout=61, ignore_status=True)
          .once().and_return(test_results))
         Results = flexmock(remote=Remote, urls=['sleeptest'],
-                           stream=stream, timeout=None,
+                           job_unique_id='sleeptest.1',
+                           logfile='/local/path/dirname', timeout=None,
                            args=flexmock(show_job_log=False,
                                          multiplex_files=['foo.yaml', 'bar/baz.yaml'],
                                          dry_run=True))
@@ -130,10 +129,8 @@ class RemoteTestResultTest(unittest.TestCase):
 
     def setUp(self):
         Remote = flexmock()
-        Stream = flexmock()
         (flexmock(os).should_receive('getcwd')
          .and_return('/current/directory').ordered())
-        Stream.should_receive('notify').once().ordered()
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
          .with_args('hostname', 'username', 'password', 22, 60)
@@ -148,7 +145,8 @@ class RemoteTestResultTest(unittest.TestCase):
                         remote_password='password',
                         remote_no_copy=False,
                         remote_timeout=60)
-        self.remote = remote.RemoteTestResult(Stream, Args)
+        job = flexmock(args=Args, unique_id="id")
+        self.remote = remote.RemoteTestResult(job)
 
     def tearDown(self):
         flexmock_teardown()

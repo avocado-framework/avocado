@@ -11,19 +11,18 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
 """
 The core Avocado application.
 """
 
+import logging
 import os
 
-from . import log
-from .parser import Parser
-from .output import View
-from .settings import settings
-from .dispatcher import CLIDispatcher
+from . import output
 from .dispatcher import CLICmdDispatcher
+from .dispatcher import CLIDispatcher
+from .parser import Parser
+from .settings import settings
 
 
 class AvocadoApp(object):
@@ -38,7 +37,7 @@ class AvocadoApp(object):
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
         self.parser = Parser()
-        log.early_start()
+        output.early_start()
         initialized = False
         try:
             self.cli_dispatcher = CLIDispatcher()
@@ -55,15 +54,15 @@ class AvocadoApp(object):
                 self.cli_dispatcher.map_method('run', self.parser.args)
         finally:
             if not initialized:
-                log.enable_stderr()
+                output.enable_stderr()
                 self.parser.args = ["app"]
-            log.reconfigure(self.parser.args)
+            output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
         failures = (self.cli_dispatcher.load_failures +
                     self.cli_cmd_dispatcher.load_failures)
         if failures:
-            view = View(self.parser.args)
+            log = logging.getLogger("avocado.app")
             msg_fmt = 'Failed to load plugin from module "%s": %s'
             silenced = settings.get_value('plugins',
                                           'skip_broken_plugin_notification',
@@ -71,14 +70,19 @@ class AvocadoApp(object):
             for failure in failures:
                 if failure[0].module_name in silenced:
                     continue
-                msg = msg_fmt % (failure[0].module_name,
-                                 failure[1].__repr__())
-                view.notify(event='error', msg=msg)
+                log.error(msg_fmt, failure[0].module_name,
+                          failure[1].__repr__())
 
     def run(self):
         try:
-            extension = self.cli_cmd_dispatcher[self.parser.args.subcommand]
-        except KeyError:
-            return
-        method = extension.obj.run
-        return method(self.parser.args)
+            try:
+                subcmd = self.parser.args.subcommand
+                extension = self.cli_cmd_dispatcher[subcmd]
+            except KeyError:
+                return
+            method = extension.obj.run
+            return method(self.parser.args)
+        finally:
+            # XXX: This makes sure we cleanup the console (stty echo). The only
+            # way to avoid cleaning it is to kill the less (paginator) directly
+            output.stop_logging()
