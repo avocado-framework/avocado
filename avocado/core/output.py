@@ -272,10 +272,12 @@ def add_log_handler(logger, klass=None, stream=None, level=None, fmt=None):
         fmt = '%(name)s: %(message)s'
     console_handler = klass(stream)
     console_handler.setLevel(level)
-    formatter = logging.Formatter(fmt=fmt)
-    console_handler.setFormatter(formatter)
+    if isinstance(fmt, str):
+        fmt = logging.Formatter(fmt=fmt)
+    console_handler.setFormatter(fmt)
     logging.getLogger(logger).addHandler(console_handler)
     logging.getLogger(logger).propagate = False
+    return console_handler
 
 
 def disable_log_handler(logger):
