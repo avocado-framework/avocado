@@ -540,6 +540,12 @@ class TestProgram(object):
     """
 
     def __init__(self):
+        # Avoid fork loop/bomb when running a test via avocado.main() that
+        # calls avocado.main() itself
+        if os.environ.get('AVOCADO_STANDALONE_IN_MAIN', False):
+            return
+        os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
+
         self.defaultTest = sys.argv[0]
         self.progName = os.path.basename(sys.argv[0])
         self.parseArgs(sys.argv[1:])
