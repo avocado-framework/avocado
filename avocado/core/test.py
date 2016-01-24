@@ -90,8 +90,6 @@ class Test(unittest.TestCase):
 
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
-        self.datadir = self.filename + '.data'
-
         self.expected_stdout_file = os.path.join(self.datadir,
                                                  'stdout.expected')
         self.expected_stderr_file = os.path.join(self.datadir,
@@ -159,6 +157,14 @@ class Test(unittest.TestCase):
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    @property
+    def datadir(self):
+        """
+        Returns the path to the directory that contains test data files
+        """
+        filename = inspect.getfile(self.__class__).rstrip('co')
+        return filename + '.data'
 
     @data_structures.LazyProperty
     def workdir(self):
@@ -560,14 +566,13 @@ class SimpleTest(Test):
         super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
         self.path = name
-        basedir = os.path.dirname(self.path)
-        basename = os.path.basename(self.path)
-        datadirname = basename + '.data'
-        self.datadir = os.path.join(basedir, datadirname)
-        self.expected_stdout_file = os.path.join(self.datadir,
-                                                 'stdout.expected')
-        self.expected_stderr_file = os.path.join(self.datadir,
-                                                 'stderr.expected')
+
+    @property
+    def datadir(self):
+        """
+        Returns the path to the directory that contains test data files
+        """
+        return self.name + '.data'
 
     def _log_detailed_cmd_info(self, result):
         """
