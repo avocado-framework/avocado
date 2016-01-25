@@ -66,10 +66,10 @@ class Replay(CLI):
     def _valid_status(self, string):
         status_list = string.split(',')
         for item in status_list:
-            if item not in status.mapping:
+            if item not in status.user_facing_status:
                 msg = 'Invalid --replay-test-status option. Valid ' \
                      'options are (more than one allowed): %s' % \
-                     ','.join([item for item in status.mapping])
+                     ','.join([item for item in status.user_facing_status])
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list

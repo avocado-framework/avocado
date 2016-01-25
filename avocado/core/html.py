@@ -114,7 +114,7 @@ class ReportModel(object):
 
     @property
     def tests(self):
-        mapping = {"TEST_NA": "warning",
+        mapping = {"SKIP": "warning",
                    "ABORT": "danger",
                    "ERROR": "danger",
                    "FAIL": "danger",

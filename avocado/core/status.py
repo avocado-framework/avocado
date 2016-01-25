@@ -16,7 +16,7 @@ This is used by methods and functions to return a cut and dry answer to wether
 a test or a job in avocado PASSed or FAILed.
 """
 
-mapping = {"TEST_NA": True,
+mapping = {"SKIP": True,
            "ABORT": False,
            "ERROR": False,
            "FAIL": False,
@@ -27,6 +27,13 @@ mapping = {"TEST_NA": True,
            "RUNNING": False,
            "NOSTATUS": False,
            "INTERRUPTED": False}
+
+user_facing_status = ["SKIP",
+                      "ERROR",
+                      "FAIL",
+                      "WARN",
+                      "PASS",
+                      "INTERRUPTED"]
 
 feedback = {
     # Test did not advertise current status, but process running the test is
