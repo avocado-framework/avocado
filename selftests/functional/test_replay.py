@@ -75,7 +75,7 @@ class ReplayTests(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --replay %s --replay-ignore foo'
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir, self.jobdir))
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = 'Invalid --replay-ignore option. Valid options are ' \
               '(more than one allowed): mux,config'
@@ -94,7 +94,7 @@ class ReplayTests(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --replay %s --replay-test-status E '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir, self.jobdir))
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = 'Invalid --replay-test-status option. Valid options are (more ' \
               'than one allowed): SKIP,ERROR,FAIL,WARN,PASS,INTERRUPTED'

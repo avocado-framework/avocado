@@ -23,7 +23,7 @@ class ArgumentParsingTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado whacky-command-that-doesnt-exist'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
@@ -31,7 +31,7 @@ class ArgumentParsingTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=foo passtest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
@@ -39,14 +39,14 @@ class ArgumentParsingTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --whacky-argument passtest'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
 
 
 class ArgumentParsingErrorEarlyTest(unittest.TestCase):
 
-    def run_but_fail_before_create_job_dir(self, complement_args):
+    def run_but_fail_before_create_job_dir(self, complement_args, expected_rc):
         """
         Runs avocado but checks that it fails before creating the job dir
 
@@ -60,17 +60,18 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off --force-job-id=%s %s'
         cmd_line %= (job, complement_args)
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         path_job_glob = os.path.join(log_dir, "job-*-%s" % job[0:7])
         self.assertEquals(glob.glob(path_job_glob), [])
 
     def test_whacky_option(self):
-        self.run_but_fail_before_create_job_dir('--whacky-option passtest')
+        self.run_but_fail_before_create_job_dir('--whacky-option passtest',
+                                                exit_codes.AVOCADO_FAIL)
 
     def test_empty_option(self):
-        self.run_but_fail_before_create_job_dir('')
+        self.run_but_fail_before_create_job_dir('',
+                                                exit_codes.AVOCADO_JOB_FAIL)
 
 if __name__ == '__main__':
     unittest.main()
