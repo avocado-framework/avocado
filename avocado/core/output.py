@@ -82,7 +82,11 @@ def reconfigure(args):
     if getattr(args, "show_job_log", False) and "test" not in enabled:
         enabled.append("test")
     if getattr(args, "silent", False):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = sys.stdout
+        logging.disable(logging.CRITICAL)
         del enabled[:]
+        return
     if "app" in enabled:
         app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
@@ -109,6 +113,8 @@ def reconfigure(args):
             add_log_handler("avocado.test", None, STDERR,
                             logging.DEBUG)
         else:
+            sys.stdout = STDOUT
+            sys.stderr = STDERR
             disable_log_handler("")
             disable_log_handler("avocado.test")
     if "remote" in enabled:
