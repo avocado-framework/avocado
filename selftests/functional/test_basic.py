@@ -191,7 +191,7 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = './scripts/avocado'
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         expected_output = 'error: too few arguments'
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
