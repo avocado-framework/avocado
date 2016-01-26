@@ -36,6 +36,7 @@ except ImportError:
 
 from . import gdb
 from . import runtime
+from . import path
 
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
@@ -217,7 +218,7 @@ class SubProcess(object):
     """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None):
+                 shell=False, env=None, sudo=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -238,8 +239,15 @@ class SubProcess(object):
         :type shell: bool
         :param env: Use extra environment variables.
         :type env: dict
+        :param sudo: Whether the command requires admin privileges to run,
+                     so that a sudo_cmd will be prepended to the command.
+                     The assumption here is that the user running the command
+                     has a sudo configuration such that a password won't be
+                     prompted. If that's not the case, the command will
+                     straight out fail.
         """
-        self.cmd = cmd
+        # Now assemble the final command considering the need for sudo
+        self.cmd = self._append_sudo(cmd, sudo, shell)
         self.verbose = verbose
         self.allow_output_check = allow_output_check
         self.result = CmdResult(self.cmd)
@@ -268,6 +276,24 @@ class SubProcess(object):
         else:
             rc = '(finished with exit status=%d)' % self.result.exit_status
         return '%s %s' % (self.cmd, rc)
+
+    @classmethod
+    def _append_sudo(cls, cmd, sudo, shell):
+        if sudo:
+            if not os.getuid() == 0:
+                try:
+                    sudo_cmd = '%s -n' % path.find_command('sudo')
+                except path.CmdNotFoundError, details:
+                    log.error(details)
+                    log.error('Parameter sudo=True provided, but sudo was '
+                              'not found. Please consider adding sudo to '
+                              'your OS image')
+                    return cmd
+                if shell:
+                    if ' -s' not in sudo_cmd:
+                        sudo_cmd = '%s -s' % sudo_cmd
+                cmd = '%s %s' % (sudo_cmd, cmd)
+        return cmd
 
     def _init_subprocess(self):
         if self._popen is None:
@@ -535,7 +561,7 @@ class WrapSubProcess(SubProcess):
     """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None, wrapper=None):
+                 shell=False, env=None, wrapper=None, sudo=False):
         if wrapper is None and CURRENT_WRAPPER is not None:
             wrapper = CURRENT_WRAPPER
         self.wrapper = wrapper
@@ -544,7 +570,7 @@ class WrapSubProcess(SubProcess):
                 raise IOError("No such wrapper: '%s'" % self.wrapper)
             cmd = wrapper + ' ' + cmd
         super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
-                                             shell, env)
+                                             shell, env, sudo)
 
 
 class GDBSubProcess(object):
@@ -554,7 +580,7 @@ class GDBSubProcess(object):
     """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None):
+                 shell=False, env=None, sudo=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -573,6 +599,9 @@ class GDBSubProcess(object):
                                    none to be recorded. Currently unused and
                                    provided for compatibility only.
         :type allow_output_check: str
+        :param sudo: This param will be ignored in this implementation,
+                     since the GDB wrapping code does not have support to run
+                     commands under sudo just yet.
         """
 
         self.cmd = cmd
@@ -923,7 +952,7 @@ def get_sub_process_klass(cmd):
 
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
-        allow_output_check='all', shell=False, env=None):
+        allow_output_check='all', shell=False, env=None, sudo=False):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -952,13 +981,20 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     :type shell: bool
     :param env: Use extra environment variables
     :type env: dict
+    :param sudo: Whether the command requires admin privileges to run,
+                 so that a sudo_cmd will be prepended to the command.
+                 The assumption here is that the user running the command
+                 has a sudo configuration such that a password won't be
+                 prompted. If that's not the case, the command will
+                 straight out fail.
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
-               allow_output_check=allow_output_check, shell=shell, env=env)
+               allow_output_check=allow_output_check, shell=shell, env=env,
+               sudo=sudo)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -967,7 +1003,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
 
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check='all', shell=False, env=None):
+           allow_output_check='all', shell=False, env=None, sudo=False):
     """
     Run a subprocess, returning its exit code.
 
@@ -996,18 +1032,25 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     :type shell: bool
     :param env: Use extra environment variables.
     :type env: dict
+    :param sudo: Whether the command requires admin privileges to run,
+                 so that a sudo_cmd will be prepended to the command.
+                 The assumption here is that the user running the command
+                 has a sudo configuration such that a password won't be
+                 prompted. If that's not the case, the command will
+                 straight out fail.
 
     :return: Exit code.
     :rtype: int
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check, shell=shell, env=env)
+                     allow_output_check=allow_output_check, shell=shell, env=env,
+                     sudo=sudo)
     return cmd_result.exit_status
 
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
-                  allow_output_check='all', shell=False, env=None):
+                  allow_output_check='all', shell=False, env=None, sudo=False):
     """
     Run a subprocess, returning its output.
 
@@ -1035,11 +1078,18 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type shell: bool
     :param env: Use extra environment variables
     :type env: dict
+    :param sudo: Whether the command requires admin privileges to run,
+                 so that a sudo_cmd will be prepended to the command.
+                 The assumption here is that the user running the command
+                 has a sudo configuration such that a password won't be
+                 prompted. If that's not the case, the command will
+                 straight out fail.
 
     :return: Command output.
     :rtype: str
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check, shell=shell, env=env)
+                     allow_output_check=allow_output_check, shell=shell, env=env,
+                     sudo=sudo)
     return cmd_result.stdout
