@@ -90,8 +90,6 @@ class Test(unittest.TestCase):
 
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
-        self.datadir = self.filename + '.data'
-
         self.expected_stdout_file = os.path.join(self.datadir,
                                                  'stdout.expected')
         self.expected_stderr_file = os.path.join(self.datadir,
@@ -159,6 +157,14 @@ class Test(unittest.TestCase):
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    @property
+    def datadir(self):
+        """
+        Returns the path to the directory that contains test data files
+        """
+        filename = inspect.getfile(self.__class__).rstrip('co')
+        return filename + '.data'
 
     @data_structures.LazyProperty
     def workdir(self):
@@ -315,15 +321,15 @@ class Test(unittest.TestCase):
         """
         pass
 
-    def record_reference_stdout(self):
+    def _record_reference_stdout(self):
         utils_path.init_dir(self.datadir)
         shutil.copyfile(self.stdout_file, self.expected_stdout_file)
 
-    def record_reference_stderr(self):
+    def _record_reference_stderr(self):
         utils_path.init_dir(self.datadir)
         shutil.copyfile(self.stderr_file, self.expected_stderr_file)
 
-    def check_reference_stdout(self):
+    def _check_reference_stdout(self):
         if os.path.isfile(self.expected_stdout_file):
             expected = genio.read_file(self.expected_stdout_file)
             actual = genio.read_file(self.stdout_file)
@@ -331,7 +337,7 @@ class Test(unittest.TestCase):
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
-    def check_reference_stderr(self):
+    def _check_reference_stderr(self):
         if os.path.isfile(self.expected_stderr_file):
             expected = genio.read_file(self.expected_stderr_file)
             actual = genio.read_file(self.stderr_file)
@@ -405,22 +411,22 @@ class Test(unittest.TestCase):
             if job_standalone or no_record_mode:
                 if not disable_output_check:
                     try:
-                        self.check_reference_stdout()
+                        self._check_reference_stdout()
                     except Exception, details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger='avocado.test')
                         stdout_check_exception = details
                     try:
-                        self.check_reference_stderr()
+                        self._check_reference_stderr()
                     except Exception, details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger='avocado.test')
                         stderr_check_exception = details
             elif not job_standalone:
                 if output_check_record in ['all', 'stdout']:
-                    self.record_reference_stdout()
+                    self._record_reference_stdout()
                 if output_check_record in ['all', 'stderr']:
-                    self.record_reference_stderr()
+                    self._record_reference_stderr()
 
         # pylint: disable=E0702
         if test_exception is not None:
@@ -560,14 +566,13 @@ class SimpleTest(Test):
         super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
                                          params=params, tag=tag, job=job)
         self.path = name
-        basedir = os.path.dirname(self.path)
-        basename = os.path.basename(self.path)
-        datadirname = basename + '.data'
-        self.datadir = os.path.join(basedir, datadirname)
-        self.expected_stdout_file = os.path.join(self.datadir,
-                                                 'stdout.expected')
-        self.expected_stderr_file = os.path.join(self.datadir,
-                                                 'stderr.expected')
+
+    @property
+    def datadir(self):
+        """
+        Returns the path to the directory that contains test data files
+        """
+        return self.name + '.data'
 
     def _log_detailed_cmd_info(self, result):
         """
