@@ -173,7 +173,7 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --silent --xunit %s --json %s passtest' %
+        cmd_line = ('./scripts/avocado --silent run --job-results-dir %s --sysinfo=off --xunit %s --json %s passtest' %
                     (self.tmpdir, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
@@ -204,16 +204,16 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        job_id_list = re.findall('Job ID: (.*)', result.stdout,
+        job_id_list = re.findall('Job ID: (.*)', result.stderr,
                                  re.MULTILINE)
-        self.assertTrue(job_id_list, 'No Job ID in stdout:\n%s' %
-                        result.stdout)
+        self.assertTrue(job_id_list, 'No Job ID in stderr:\n%s' %
+                        result.stderr)
         job_id = job_id_list[0]
         self.assertEqual(len(job_id), 40)
 
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log --silent' %
+        cmd_line = ('./scripts/avocado --silent run --job-results-dir %s --sysinfo=off passtest --show-job-log' %
                     self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
