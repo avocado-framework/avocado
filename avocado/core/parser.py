@@ -18,6 +18,7 @@ Avocado application command line parsing.
 """
 
 import argparse
+import sys
 
 from . import tree
 from . import settings
@@ -80,4 +81,16 @@ class Parser(object):
 
         Side effect: set the final value for attribute `args`.
         """
-        self.args = self.application.parse_args(namespace=self.args)
+        self.args, _ = self.application.parse_known_args(namespace=self.args)
+        if _:
+            for sub in self.application._subparsers._actions:
+                if sub.dest == 'subcommand':
+                    sub.choices[self.args.subcommand].print_usage()
+                    # Respecting the argparse exit code on unknown arg.
+                    # Using exit_codes.AVOCADO_JOB_FAIL here seems just wrong.
+                    sys.exit(2)
+
+            self.application.print_usage()
+            # Respecting the argparse exit code on unknown arg.
+            # Using exit_codes.AVOCADO_JOB_FAIL here seems just wrong.
+            sys.exit(2)
