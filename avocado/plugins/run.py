@@ -91,10 +91,6 @@ class Run(CLICmd):
         parser.output = parser.add_argument_group('output and result format')
 
         parser.output.add_argument(
-            '-s', '--silent', action='store_true', default=False,
-            help='Silence stdout')
-
-        parser.output.add_argument(
             '--show-job-log', action='store_true', default=False,
             help=('Display only the job log on stdout. Useful '
                   'for test debugging purposes. No output will '

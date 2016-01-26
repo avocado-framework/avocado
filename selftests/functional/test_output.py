@@ -173,7 +173,7 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --silent --xunit %s --json %s passtest' %
+        cmd_line = ('./scripts/avocado --silent run --job-results-dir %s --sysinfo=off --xunit %s --json %s passtest' %
                     (self.tmpdir, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
@@ -213,7 +213,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --show-job-log --silent' %
+        cmd_line = ('./scripts/avocado --silent run --job-results-dir %s --sysinfo=off passtest --show-job-log' %
                     self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr

@@ -74,6 +74,8 @@ class Parser(object):
                                       "optionally followed by LEVEL. "
                                       "Use '?' to get additional info; "
                                       "By default 'app:DEBUG'")
+        self.application.add_argument('-s', '--silent', action='store_true',
+                                      default=False, help='Silence stdout')
 
     def start(self):
         """
