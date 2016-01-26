@@ -16,7 +16,12 @@
 #  The full GNU General Public License is included in this distribution in
 #  the file called "COPYING".
 
-import unittest
+import sys
+
+if sys.version_info[:2] == (2, 6):
+    import unittest2 as unittest
+else:
+    import unittest
 
 from mock import MagicMock, patch
 
@@ -33,7 +38,9 @@ class TestSystemd(unittest.TestCase):
             command_generator)
 
     def test_all_commands(self):
-        for cmd in (c for c in self.service_command_generator.commands if c not in ["list", "set_target"]):
+        for cmd, requires_root in ((c, r) for (c, r) in
+                                   self.service_command_generator.commands if
+                                   c not in ["list", "set_target"]):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
@@ -57,7 +64,9 @@ class TestSysVInit(unittest.TestCase):
 
     def test_all_commands(self):
         command_name = "service"
-        for cmd in (c for c in self.service_command_generator.commands if c not in ["list", "set_target"]):
+        for cmd, requires_root in ((c, r) for (c, r) in
+                                   self.service_command_generator.commands if
+                                   c not in ["list", "set_target"]):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
@@ -98,16 +107,16 @@ class TestSpecificServiceManager(unittest.TestCase):
             service_result_parser, self.run_mock)
 
     def test_start(self):
-        service = "lldpad"
+        srv = "lldpad"
         self.service_manager.start()
-        assert self.run_mock.call_args[0][
-            0] == "service boot.%s start" % service
+        cmd = "service boot.%s start" % srv
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_stop_with_args(self):
-        service = "lldpad"
+        srv = "lldpad"
         self.service_manager.stop(ignore_status=True)
-        assert self.run_mock.call_args[0][
-            0] == "service boot.%s stop" % service
+        cmd = "service boot.%s stop" % srv
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_list_is_not_present_in_SpecifcServiceManager(self):
         assert not hasattr(self.service_manager, "list")
@@ -139,10 +148,10 @@ class TestSystemdServiceManager(TestServiceManager):
                                                                                  self.run_mock)
 
     def test_start(self):
-        service = "lldpad"
-        self.service_manager.start(service)
-        assert self.run_mock.call_args[0][
-            0] == "systemctl start %s.service" % service
+        srv = "lldpad"
+        self.service_manager.start(srv)
+        cmd = ("systemctl start %s.service" % srv)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_list(self):
         list_result_mock = MagicMock(exit_status=0, stdout="sshd.service enabled\n"
@@ -218,9 +227,10 @@ class TestSysVInitServiceManager(TestServiceManager):
                                'xinetd': {'amanda': "off", 'chargen-dgram': "on"}}
 
     def test_enable(self):
-        service = "lldpad"
-        self.service_manager.enable(service)
-        assert self.run_mock.call_args[0][0] == "chkconfig lldpad on"
+        srv = "lldpad"
+        self.service_manager.enable(srv)
+        cmd = "chkconfig lldpad on"
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_unknown_runlevel(self):
         self.assertRaises(ValueError,
