@@ -93,18 +93,20 @@ class InterruptTest(unittest.TestCase):
                 old_psutil = True
 
             for p in process_list:
-                p_obj = None
                 try:
                     p_obj = psutil.Process(p)
+                    if p_obj is not None:
+                        if old_psutil:
+                            cmdline_list = psutil.Process(p).cmdline
+                        else:
+                            cmdline_list = psutil.Process(p).cmdline()
+                        if bad_test.path in " ".join(cmdline_list):
+                            bad_test_processes.append(p_obj)
+                # psutil.NoSuchProcess happens when the original
+                # process already ended and left the process table
                 except psutil.NoSuchProcess:
                     pass
-                if p_obj is not None:
-                    if old_psutil:
-                        cmdline_list = psutil.Process(p).cmdline
-                    else:
-                        cmdline_list = psutil.Process(p).cmdline()
-                    if bad_test.path in " ".join(cmdline_list):
-                        bad_test_processes.append(p_obj)
+
             return len(bad_test_processes) == 0
 
         wait.wait_for(wait_until_no_badtest, timeout=2)
@@ -146,23 +148,19 @@ class InterruptTest(unittest.TestCase):
                 old_psutil = True
 
             for p in process_list:
-                p_obj = None
                 try:
                     p_obj = psutil.Process(p)
-                except psutil.NoSuchProcess:
-                    pass
-                if p_obj is not None:
-                    try:
+                    if p_obj is not None:
                         if old_psutil:
                             cmdline_list = psutil.Process(p).cmdline
                         else:
                             cmdline_list = psutil.Process(p).cmdline()
                         if good_test.path in " ".join(cmdline_list):
                             good_test_processes.append(p_obj)
-                    # psutil.NoSuchProcess happens when the original
-                    # process already ended and left the process table
-                    except psutil.NoSuchProcess:
-                        pass
+                # psutil.NoSuchProcess happens when the original
+                # process already ended and left the process table
+                except psutil.NoSuchProcess:
+                    pass
 
             return len(good_test_processes) == 0
 
