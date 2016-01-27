@@ -90,10 +90,15 @@ class Test(unittest.TestCase):
 
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
-        self._expected_stdout_file = os.path.join(self.datadir,
-                                                  'stdout.expected')
-        self._expected_stderr_file = os.path.join(self.datadir,
-                                                  'stderr.expected')
+
+        if self.datadir is None:
+            self._expected_stdout_file = None
+            self._expected_stderr_file = None
+        else:
+            self._expected_stdout_file = os.path.join(self.datadir,
+                                                      'stdout.expected')
+            self._expected_stderr_file = os.path.join(self.datadir,
+                                                      'stderr.expected')
 
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
