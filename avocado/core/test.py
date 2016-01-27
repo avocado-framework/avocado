@@ -88,12 +88,14 @@ class Test(unittest.TestCase):
 
         self.job = job
 
-        self.filename = inspect.getfile(self.__class__).rstrip('co')
-        self.basedir = os.path.dirname(self.filename)
-        self.expected_stdout_file = os.path.join(self.datadir,
-                                                 'stdout.expected')
-        self.expected_stderr_file = os.path.join(self.datadir,
-                                                 'stderr.expected')
+        if self.datadir is None:
+            self._expected_stdout_file = None
+            self._expected_stderr_file = None
+        else:
+            self._expected_stdout_file = os.path.join(self.datadir,
+                                                      'stdout.expected')
+            self._expected_stderr_file = os.path.join(self.datadir,
+                                                      'stderr.expected')
 
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
@@ -107,8 +109,8 @@ class Test(unittest.TestCase):
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
 
-        self.stdout_file = os.path.join(self.logdir, 'stdout')
-        self.stderr_file = os.path.join(self.logdir, 'stderr')
+        self._stdout_file = os.path.join(self.logdir, 'stdout')
+        self._stderr_file = os.path.join(self.logdir, 'stderr')
 
         self.outputdir = utils_path.init_dir(self.logdir, 'data')
         self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
@@ -159,12 +161,26 @@ class Test(unittest.TestCase):
         unittest.TestCase.__init__(self, methodName=methodName)
 
     @property
+    def basedir(self):
+        """
+        The directory where this test (when backed by a file) is located at
+        """
+        if self.filename is not None:
+            return os.path.dirname(self.filename)
+
+    @property
     def datadir(self):
         """
         Returns the path to the directory that contains test data files
         """
-        filename = inspect.getfile(self.__class__).rstrip('co')
-        return filename + '.data'
+        return self.filename + '.data'
+
+    @property
+    def filename(self):
+        """
+        Returns the name of the file (path) that holds the current test
+        """
+        return inspect.getfile(self.__class__).rstrip('co')
 
     @data_structures.LazyProperty
     def workdir(self):
@@ -262,10 +278,10 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self.stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
-                                                                   self.stdout_file)
-        self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
-                                                                   self.stderr_file)
+        self._stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
+                                                                    self._stdout_file)
+        self._stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
+                                                                    self._stderr_file)
         self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
                                                        formatter,
                                                        self._ssh_logfile)
@@ -323,24 +339,24 @@ class Test(unittest.TestCase):
 
     def _record_reference_stdout(self):
         utils_path.init_dir(self.datadir)
-        shutil.copyfile(self.stdout_file, self.expected_stdout_file)
+        shutil.copyfile(self._stdout_file, self._expected_stdout_file)
 
     def _record_reference_stderr(self):
         utils_path.init_dir(self.datadir)
-        shutil.copyfile(self.stderr_file, self.expected_stderr_file)
+        shutil.copyfile(self._stderr_file, self._expected_stderr_file)
 
     def _check_reference_stdout(self):
-        if os.path.isfile(self.expected_stdout_file):
-            expected = genio.read_file(self.expected_stdout_file)
-            actual = genio.read_file(self.stdout_file)
+        if os.path.isfile(self._expected_stdout_file):
+            expected = genio.read_file(self._expected_stdout_file)
+            actual = genio.read_file(self._stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
     def _check_reference_stderr(self):
-        if os.path.isfile(self.expected_stderr_file):
-            expected = genio.read_file(self.expected_stderr_file)
-            actual = genio.read_file(self.stderr_file)
+        if os.path.isfile(self._expected_stderr_file):
+            expected = genio.read_file(self._expected_stderr_file)
+            actual = genio.read_file(self._stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
@@ -447,8 +463,10 @@ class Test(unittest.TestCase):
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
-        os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
-        os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
+        if self.basedir is not None:
+            os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
+        if self.datadir is not None:
+            os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
         os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
         os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
@@ -563,16 +581,16 @@ class SimpleTest(Test):
                                 r' \d\d:\d\d:\d\d WARN \|')
 
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
-        super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
-                                         params=params, tag=tag, job=job)
+        super(SimpleTest, self).__init__(name=name, params=params,
+                                         base_logdir=base_logdir, tag=tag, job=job)
         self.path = name
 
     @property
-    def datadir(self):
+    def filename(self):
         """
-        Returns the path to the directory that contains test data files
+        Returns the name of the file (path) that holds the current test
         """
-        return self.name + '.data'
+        return os.path.abspath(self.name)
 
     def _log_detailed_cmd_info(self, result):
         """
