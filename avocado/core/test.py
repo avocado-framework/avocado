@@ -592,6 +592,13 @@ class SimpleTest(Test):
         """
         return self.name + '.data'
 
+    @property
+    def filename(self):
+        """
+        Returns the name of the file (path) that holds the current test
+        """
+        return os.path.abspath(self.name)
+
     def _log_detailed_cmd_info(self, result):
         """
         Log detailed command information.
