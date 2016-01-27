@@ -563,8 +563,8 @@ class SimpleTest(Test):
                                 r' \d\d:\d\d:\d\d WARN \|')
 
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
-        super(SimpleTest, self).__init__(name=name, base_logdir=base_logdir,
-                                         params=params, tag=tag, job=job)
+        super(SimpleTest, self).__init__(name=name, params=params,
+                                         base_logdir=base_logdir, tag=tag, job=job)
         self.path = name
 
     @property
