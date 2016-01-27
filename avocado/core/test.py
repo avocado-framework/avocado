@@ -109,8 +109,8 @@ class Test(unittest.TestCase):
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
 
-        self.stdout_file = os.path.join(self.logdir, 'stdout')
-        self.stderr_file = os.path.join(self.logdir, 'stderr')
+        self._stdout_file = os.path.join(self.logdir, 'stdout')
+        self._stderr_file = os.path.join(self.logdir, 'stderr')
 
         self.outputdir = utils_path.init_dir(self.logdir, 'data')
         self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
@@ -280,10 +280,10 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self.stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
-                                                                   self.stdout_file)
-        self.stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
-                                                                   self.stderr_file)
+        self._stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
+                                                                    self._stdout_file)
+        self._stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
+                                                                    self._stderr_file)
         self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
                                                        formatter,
                                                        self._ssh_logfile)
@@ -341,16 +341,16 @@ class Test(unittest.TestCase):
 
     def _record_reference_stdout(self):
         utils_path.init_dir(self.datadir)
-        shutil.copyfile(self.stdout_file, self._expected_stdout_file)
+        shutil.copyfile(self._stdout_file, self._expected_stdout_file)
 
     def _record_reference_stderr(self):
         utils_path.init_dir(self.datadir)
-        shutil.copyfile(self.stderr_file, self._expected_stderr_file)
+        shutil.copyfile(self._stderr_file, self._expected_stderr_file)
 
     def _check_reference_stdout(self):
         if os.path.isfile(self._expected_stdout_file):
             expected = genio.read_file(self._expected_stdout_file)
-            actual = genio.read_file(self.stdout_file)
+            actual = genio.read_file(self._stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
@@ -358,7 +358,7 @@ class Test(unittest.TestCase):
     def _check_reference_stderr(self):
         if os.path.isfile(self._expected_stderr_file):
             expected = genio.read_file(self._expected_stderr_file)
-            actual = genio.read_file(self.stderr_file)
+            actual = genio.read_file(self._stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
