@@ -41,6 +41,7 @@ import re
 import logging
 import ConfigParser
 import optparse
+import tempfile
 
 try:
     import yum
@@ -384,7 +385,7 @@ class YumBackend(RpmBackend):
         """
         Clean up the yum cache so new package information can be downloaded.
         """
-        process.system("yum clean all")
+        process.system("yum clean all", sudo=True)
 
     def install(self, name):
         """
@@ -393,7 +394,7 @@ class YumBackend(RpmBackend):
         i_cmd = self.base_command + ' ' + 'install' + ' ' + name
 
         try:
-            process.system(i_cmd)
+            process.system(i_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -406,7 +407,7 @@ class YumBackend(RpmBackend):
         """
         r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
         try:
-            process.system(r_cmd)
+            process.system(r_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -429,12 +430,21 @@ class YumBackend(RpmBackend):
             section_name += data_factory.generate_random_string(4)
             if not self.cfgparser.has_section(section_name):
                 break
-        self.cfgparser.add_section(section_name)
-        self.cfgparser.set(section_name, 'name', 'Avocado managed repository')
-        self.cfgparser.set(section_name, 'url', url)
-        self.cfgparser.set(section_name, 'enabled', 1)
-        self.cfgparser.set(section_name, 'gpgcheck', 0)
-        self.cfgparser.write(open(self.repo_file_path, "w"))
+        try:
+            self.cfgparser.add_section(section_name)
+            self.cfgparser.set(section_name, 'name',
+                               'Avocado managed repository')
+            self.cfgparser.set(section_name, 'url', url)
+            self.cfgparser.set(section_name, 'enabled', 1)
+            self.cfgparser.set(section_name, 'gpgcheck', 0)
+            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
+            self.cfgparser.write(open(tmp_file_repo, "w"))
+            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
+                           sudo=True)
+            return True
+        except (OSError, process.CmdError), details:
+            log.error(details)
+            return False
 
     def remove_repo(self, url):
         """
@@ -442,11 +452,19 @@ class YumBackend(RpmBackend):
 
         :param url: Universal Resource Locator of the repository.
         """
-        for section in self.cfgparser.sections():
-            for option, value in self.cfgparser.items(section):
-                if option == 'url' and value == url:
-                    self.cfgparser.remove_section(section)
-                    self.cfgparser.write(open(self.repo_file_path, "w"))
+        try:
+            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
+            for section in self.cfgparser.sections():
+                for option, value in self.cfgparser.items(section):
+                    if option == 'url' and value == url:
+                        self.cfgparser.remove_section(section)
+                        self.cfgparser.write(open(tmp_file_repo, "w"))
+            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
+                           sudo=True)
+            return True
+        except (OSError, process.CmdError), details:
+            log.error(details)
+            return False
 
     def upgrade(self, name=None):
         """
@@ -463,7 +481,7 @@ class YumBackend(RpmBackend):
             r_cmd = self.base_command + ' ' + 'update' + ' ' + name
 
         try:
-            process.system(r_cmd)
+            process.system(r_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -540,7 +558,7 @@ class ZypperBackend(RpmBackend):
         """
         i_cmd = self.base_command + ' install -l ' + name
         try:
-            process.system(i_cmd)
+            process.system(i_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -553,7 +571,7 @@ class ZypperBackend(RpmBackend):
         """
         ar_cmd = self.base_command + ' addrepo ' + url
         try:
-            process.system(ar_cmd)
+            process.system(ar_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -566,7 +584,7 @@ class ZypperBackend(RpmBackend):
         """
         rr_cmd = self.base_command + ' removerepo ' + url
         try:
-            process.system(rr_cmd)
+            process.system(rr_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -578,7 +596,7 @@ class ZypperBackend(RpmBackend):
         r_cmd = self.base_command + ' ' + 'erase' + ' ' + name
 
         try:
-            process.system(r_cmd)
+            process.system(r_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -598,7 +616,7 @@ class ZypperBackend(RpmBackend):
             u_cmd = self.base_command + ' ' + 'update' + ' ' + name
 
         try:
-            process.system(u_cmd)
+            process.system(u_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -685,7 +703,7 @@ class AptBackend(DpkgBackend):
             i_cmd = " ".join([self.base_command, self.dpkg_force_confdef, command, name])
 
         try:
-            process.system(i_cmd, shell=True)
+            process.system(i_cmd, shell=True, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -701,7 +719,7 @@ class AptBackend(DpkgBackend):
         r_cmd = self.base_command + ' ' + command + ' ' + flag + ' ' + name
 
         try:
-            process.system(r_cmd)
+            process.system(r_cmd, sudo=True)
             return True
         except process.CmdError:
             return False
@@ -713,10 +731,15 @@ class AptBackend(DpkgBackend):
         :param repo: Repository string. Example:
                 'deb http://archive.ubuntu.com/ubuntu/ maverick universe'
         """
-        repo_file = open(self.repo_file_path, 'a')
-        repo_file_contents = repo_file.read()
-        if repo not in repo_file_contents:
-            repo_file.write(repo)
+        with open(self.repo_file_path, 'r') as repo_file:
+            repo_file_contents = repo_file.read()
+            if repo not in repo_file_contents:
+                try:
+                    add_cmd = "echo '%s' > %s" % (repo, self.repo_file_path)
+                    process.system(add_cmd, shell=True, sudo=True)
+                    return True
+                except process.CmdError:
+                    return False
 
     def remove_repo(self, repo):
         """
@@ -725,16 +748,21 @@ class AptBackend(DpkgBackend):
         :param repo: Repository string. Example:
                 'deb http://archive.ubuntu.com/ubuntu/ maverick universe'
         """
-        repo_file = open(self.repo_file_path, 'r')
-        new_file_contents = []
-        for line in repo_file.readlines():
-            if not line == repo:
-                new_file_contents.append(line)
-        repo_file.close()
-        new_file_contents = "\n".join(new_file_contents)
-        repo_file.open(self.repo_file_path, 'w')
-        repo_file.write(new_file_contents)
-        repo_file.close()
+        try:
+            new_file_contents = []
+            with open(self.repo_file_path, 'r') as repo_file:
+                for line in repo_file.readlines():
+                    if not line == repo:
+                        new_file_contents.append(line)
+            new_file_contents = "\n".join(new_file_contents)
+            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
+            with open(tmp_file_repo, 'w') as tmp_file_repo:
+                tmp_file_repo.write(new_file_contents)
+            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
+                           sudo=True)
+        except (OSError, process.CmdError), details:
+            log.error(details)
+            return False
 
     def upgrade(self, name=None):
         """
@@ -760,7 +788,7 @@ class AptBackend(DpkgBackend):
             up_cmd = " ".join([self.base_command, self.dpkg_force_confdef, up_command])
 
         try:
-            process.system(up_cmd, shell=True)
+            process.system(up_cmd, shell=True, sudo=True)
             return True
         except process.CmdError:
             return False
