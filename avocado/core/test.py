@@ -88,7 +88,6 @@ class Test(unittest.TestCase):
 
         self.job = job
 
-        self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
 
         if self.datadir is None:
@@ -168,8 +167,14 @@ class Test(unittest.TestCase):
         """
         Returns the path to the directory that contains test data files
         """
-        filename = inspect.getfile(self.__class__).rstrip('co')
-        return filename + '.data'
+        return self.filename + '.data'
+
+    @property
+    def filename(self):
+        """
+        Returns the name of the file (path) that holds the current test
+        """
+        return inspect.getfile(self.__class__).rstrip('co')
 
     @data_structures.LazyProperty
     def workdir(self):
