@@ -18,13 +18,27 @@ Avocado application command line parsing.
 """
 
 import argparse
+import sys
 
+from . import exit_codes
 from . import tree
 from . import settings
 from .version import VERSION
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
+
+
+class ArgumentParser(argparse.ArgumentParser):
+
+    """
+    Class to override argparse functions
+    """
+
+    def error(self, message):
+        msg = '%s: error: %s\n' % (self.prog, message)
+        self.print_help(sys.stderr)
+        self.exit(exit_codes.AVOCADO_FAIL, msg)
 
 
 class Parser(object):
@@ -36,10 +50,9 @@ class Parser(object):
     def __init__(self):
         self.args = None
         self.subcommands = None
-        self.application = argparse.ArgumentParser(
-            prog=PROG,
-            add_help=False,  # see parent parsing
-            description=DESCRIPTION)
+        self.application = ArgumentParser(prog=PROG,
+                                          add_help=False,  # see parent parsing
+                                          description=DESCRIPTION)
         self.application.add_argument('-v', '--version', action='version',
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
@@ -59,9 +72,9 @@ class Parser(object):
             settings.settings.process_config_path(self.args.config)
 
         # Use parent parsing to avoid breaking the output of --help option
-        self.application = argparse.ArgumentParser(prog=PROG,
-                                                   description=DESCRIPTION,
-                                                   parents=[self.application])
+        self.application = ArgumentParser(prog=PROG,
+                                          description=DESCRIPTION,
+                                          parents=[self.application])
 
         # Subparsers where Avocado subcommands are plugged
         self.subcommands = self.application.add_subparsers(
@@ -80,4 +93,11 @@ class Parser(object):
 
         Side effect: set the final value for attribute `args`.
         """
-        self.args = self.application.parse_args(namespace=self.args)
+        self.args, extra = self.application.parse_known_args(namespace=self.args)
+        if extra:
+            msg = 'unrecognized arguments: %s' % ' '.join(extra)
+            for sub in self.application._subparsers._actions:
+                if sub.dest == 'subcommand':
+                    sub.choices[self.args.subcommand].error(msg)
+
+            self.application.error(msg)
