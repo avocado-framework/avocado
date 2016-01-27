@@ -465,8 +465,10 @@ class Test(unittest.TestCase):
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
-        os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
-        os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
+        if self.basedir is not None:
+            os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
+        if self.datadir is not None:
+            os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
         os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
         os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
