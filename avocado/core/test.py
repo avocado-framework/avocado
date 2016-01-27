@@ -175,7 +175,10 @@ class Test(unittest.TestCase):
         """
         Returns the path to the directory that contains test data files
         """
-        return self.filename + '.data'
+        if self.filename is not None:
+            return self.filename + '.data'
+        else:
+            return None
 
     @property
     def filename(self):
