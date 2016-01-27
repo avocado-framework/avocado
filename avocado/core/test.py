@@ -90,10 +90,10 @@ class Test(unittest.TestCase):
 
         self.filename = inspect.getfile(self.__class__).rstrip('co')
         self.basedir = os.path.dirname(self.filename)
-        self.expected_stdout_file = os.path.join(self.datadir,
-                                                 'stdout.expected')
-        self.expected_stderr_file = os.path.join(self.datadir,
-                                                 'stderr.expected')
+        self._expected_stdout_file = os.path.join(self.datadir,
+                                                  'stdout.expected')
+        self._expected_stderr_file = os.path.join(self.datadir,
+                                                  'stderr.expected')
 
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
@@ -323,23 +323,23 @@ class Test(unittest.TestCase):
 
     def _record_reference_stdout(self):
         utils_path.init_dir(self.datadir)
-        shutil.copyfile(self.stdout_file, self.expected_stdout_file)
+        shutil.copyfile(self.stdout_file, self._expected_stdout_file)
 
     def _record_reference_stderr(self):
         utils_path.init_dir(self.datadir)
-        shutil.copyfile(self.stderr_file, self.expected_stderr_file)
+        shutil.copyfile(self.stderr_file, self._expected_stderr_file)
 
     def _check_reference_stdout(self):
-        if os.path.isfile(self.expected_stdout_file):
-            expected = genio.read_file(self.expected_stdout_file)
+        if os.path.isfile(self._expected_stdout_file):
+            expected = genio.read_file(self._expected_stdout_file)
             actual = genio.read_file(self.stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
     def _check_reference_stderr(self):
-        if os.path.isfile(self.expected_stderr_file):
-            expected = genio.read_file(self.expected_stderr_file)
+        if os.path.isfile(self._expected_stderr_file):
+            expected = genio.read_file(self._expected_stderr_file)
             actual = genio.read_file(self.stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
