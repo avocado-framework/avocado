@@ -278,7 +278,18 @@ class TestRunner(object):
 
         # At this point, the test is already initialized and we know
         # for sure if there's a timeout set.
-        timeout = test_status.early_status.get('params', {}).get('timeout')
+        early_params = test_status.early_status.get('params', {})
+        # Give preference to timeouts defined for specific methods, if any
+        timeout = None
+        try:
+            method_name = test_factory[1]['methodName']
+            method_params = early_params.get(method_name, None)
+            if method_params is not None:
+                timeout = method_params.get('timeout', None)
+        except KeyError:
+            pass
+        if timeout is None:
+            timeout = early_params.get('timeout')
         timeout = float(timeout or self.DEFAULT_TIMEOUT)
 
         test_deadline = time_started + timeout
