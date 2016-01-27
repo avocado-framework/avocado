@@ -586,13 +586,6 @@ class SimpleTest(Test):
         self.path = name
 
     @property
-    def datadir(self):
-        """
-        Returns the path to the directory that contains test data files
-        """
-        return self.name + '.data'
-
-    @property
     def filename(self):
         """
         Returns the name of the file (path) that holds the current test
