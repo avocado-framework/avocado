@@ -88,8 +88,6 @@ class Test(unittest.TestCase):
 
         self.job = job
 
-        self.basedir = os.path.dirname(self.filename)
-
         if self.datadir is None:
             self._expected_stdout_file = None
             self._expected_stderr_file = None
@@ -161,6 +159,14 @@ class Test(unittest.TestCase):
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    @property
+    def basedir(self):
+        """
+        The directory where this test (when backed by a file) is located at
+        """
+        if self.filename is not None:
+            return os.path.dirname(self.filename)
 
     @property
     def datadir(self):
