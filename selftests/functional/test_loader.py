@@ -1,14 +1,17 @@
 import os
 import sys
+import subprocess
 import time
 import tempfile
 import shutil
+import signal
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
     import unittest
 
+from avocado.core import exit_codes
 from avocado.utils import script
 from avocado.utils import process
 
@@ -82,7 +85,6 @@ if __name__ == "__main__":
     main()
 """
 
-
 NOT_A_TEST = """
 def hello():
     print('Hello World!')
@@ -98,6 +100,40 @@ if __name__ == "__main__":
 
 SIMPLE_TEST = """#!/bin/sh
 true
+"""
+
+AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES = """#!/usr/bin/env python
+# A simple test (executable bit set when saved to file) that looks like
+# an Avocado instrumented test, with base class on separate file
+from avocado import Test
+from avocado import main
+from test2 import *
+
+class BasicTestSuite(SuperTest):
+
+    def test1(self):
+        self.xxx()
+        self.assertTrue(True)
+
+if __name__ == '__main__':
+    main()
+"""
+
+AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES_LIB = """
+#!/usr/bin/python
+
+from avocado import Test
+
+class SuperTest(Test):
+    def xxx(self):
+        print "ahoj"
+"""
+
+AVOCADO_TEST_SIMPLE_USING_MAIN = """#!/usr/bin/env python
+from avocado import main
+
+if __name__ == "__main__":
+    main()
 """
 
 
@@ -116,6 +152,18 @@ class LoaderTestFunctional(unittest.TestCase):
         result = process.run(cmd_line)
         self.assertIn('%s: %s' % (exp_str, count), result.stdout)
         test_script.remove()
+
+    def _run_with_timeout(self, cmd_line, timeout):
+        current_time = time.time()
+        deadline = current_time + timeout
+        test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                        preexec_fn=os.setsid)
+        while not test_process.poll():
+            if time.time() > deadline:
+                os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
+                self.fail("Failed to run test under %s seconds" % timeout)
+            time.sleep(0.05)
+        self.assertEquals(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', 0775)
@@ -160,6 +208,47 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_load_not_a_test_not_exec(self):
         self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')
+
+    def test_runner_simple_python_like_multiple_files(self):
+        mylib = script.TemporaryScript(
+            'test2.py',
+            AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES_LIB,
+            'avocado_simpletest_functional',
+            0644)
+        mylib.save()
+        mytest = script.Script(
+            os.path.join(os.path.dirname(mylib.path), 'test.py'),
+            AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
+        os.chdir(basedir)
+        mytest.save()
+        cmd_line = "./scripts/avocado list -V %s" % mytest
+        result = process.run(cmd_line)
+        self.assertIn('SIMPLE: 1', result.stdout)
+        # job should be able to finish under 5 seconds. If this fails, it's
+        # possible that we hit the "simple test fork bomb" bug
+        cmd_line = ['./scripts/avocado',
+                    'run',
+                    '--sysinfo=off',
+                    '--job-results-dir',
+                    "%s" % self.tmpdir,
+                    "%s" % mytest]
+        self._run_with_timeout(cmd_line, 5)
+
+    def test_simple_using_main(self):
+        mytest = script.TemporaryScript("simple_using_main.py",
+                                        AVOCADO_TEST_SIMPLE_USING_MAIN,
+                                        'avocado_simpletest_functional')
+        mytest.save()
+        os.chdir(basedir)
+        # job should be able to finish under 5 seconds. If this fails, it's
+        # possible that we hit the "simple test fork bomb" bug
+        cmd_line = ['./scripts/avocado',
+                    'run',
+                    '--sysinfo=off',
+                    '--job-results-dir',
+                    "%s" % self.tmpdir,
+                    "%s" % mytest]
+        self._run_with_timeout(cmd_line, 5)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
