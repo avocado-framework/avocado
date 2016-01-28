@@ -101,8 +101,11 @@ class Remote(object):
         Run a remote command.
 
         :param command: the command string to execute.
+        :param ignore_status: Whether to not raise exceptions in case the
+            command's return code is different than zero.
+        :param timeout: Maximum time allowed for the command to return.
 
-        :return: the result of the remote program's output.
+        :return: the result of the remote program's execution.
         :rtype: :class:`avocado.utils.process.CmdResult`.
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
