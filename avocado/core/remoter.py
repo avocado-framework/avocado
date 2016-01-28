@@ -83,23 +83,18 @@ class Remote(object):
                                                  'disable_known_hosts',
                                                  key_type=bool,
                                                  default=False)
-        self._setup_environment(host_string=hostname,
-                                user=username,
-                                password=password,
-                                key_filename=key_filename,
-                                port=port,
-                                timeout=timeout / attempts,
-                                connection_attempts=attempts,
-                                linewise=True,
-                                abort_on_prompts=True,
-                                abort_exception=ConnectionError,
-                                reject_unknown_hosts=reject_unknown_hosts,
-                                disable_known_hosts=disable_known_hosts)
-
-    @staticmethod
-    def _setup_environment(**kwargs):
-        """ Setup fabric environemnt """
-        fabric.api.env.update(kwargs)
+        fabric.api.env.update(host_string=hostname,
+                              user=username,
+                              password=password,
+                              key_filename=key_filename,
+                              port=port,
+                              timeout=timeout / attempts,
+                              connection_attempts=attempts,
+                              linewise=True,
+                              abort_on_prompts=True,
+                              abort_exception=ConnectionError,
+                              reject_unknown_hosts=reject_unknown_hosts,
+                              disable_known_hosts=disable_known_hosts)
 
     def run(self, command, ignore_status=False, timeout=60):
         """
