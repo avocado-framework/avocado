@@ -66,6 +66,11 @@ class VM(CLI):
         self.vm_parser.add_argument('--vm-password',
                                     default=None,
                                     help='Specify the password to login on VM')
+        self.vm_parser.add_argument('--vm-key-file',
+                                    dest='vm_key_file', default=None,
+                                    help='Specify an identity file with '
+                                    'a private key instead of a password '
+                                    '(Example: .pem files from Amazon EC2)')
         self.vm_parser.add_argument('--vm-cleanup',
                                     action='store_true', default=False,
                                     help='Restore VM to a previous state, '

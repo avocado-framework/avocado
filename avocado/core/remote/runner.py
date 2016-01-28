@@ -83,11 +83,12 @@ class RemoteTestRunner(TestRunner):
                           self.job.args.remote_hostname,
                           self.job.args.remote_port,
                           self.job.args.remote_timeout)
-        self.remote = remoter.Remote(self.job.args.remote_hostname,
-                                     self.job.args.remote_username,
-                                     self.job.args.remote_password,
-                                     self.job.args.remote_port,
-                                     self.job.args.remote_timeout)
+        self.remote = remoter.Remote(hostname=self.job.args.remote_hostname,
+                                     username=self.job.args.remote_username,
+                                     password=self.job.args.remote_password,
+                                     key_filename=self.job.args.remote_key_file,
+                                     port=self.job.args.remote_port,
+                                     timeout=self.job.args.remote_timeout)
 
     def check_remote_avocado(self):
         """
@@ -296,6 +297,7 @@ class VMTestRunner(RemoteTestRunner):
             self.job.args.remote_port = self.job.args.vm_port
             self.job.args.remote_username = self.job.args.vm_username
             self.job.args.remote_password = self.job.args.vm_password
+            self.job.args.remote_key_file = self.job.args.vm_key_file
             self.job.args.remote_no_copy = self.job.args.vm_no_copy
             self.job.args.remote_timeout = self.job.args.vm_timeout
             super(VMTestRunner, self).setup()

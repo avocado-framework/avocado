@@ -52,13 +52,16 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 port=22, timeout=60, attempts=10, quiet=False):
+                 key_filename=None, port=22, timeout=60, attempts=10,
+                 quiet=False):
         """
         Creates an instance of :class:`Remote`.
 
         :param hostname: the hostname.
         :param username: the username. Default: autodetect.
         :param password: the password. Default: try to use public key.
+        :param key_filename: path to an identity file (Example: .pem files
+            from Amazon EC2).
         :param timeout: remote command timeout, in seconds. Default: 60.
         :param attempts: number of attempts to connect. Default: 10.
         :param quiet: performs quiet operations. Default: True.
@@ -67,6 +70,7 @@ class Remote(object):
         if username is None:
             username = getpass.getuser()
         self.username = username
+        self.key_filename = key_filename
         # None = use public key
         self.password = password
         self.port = port
@@ -82,6 +86,7 @@ class Remote(object):
         self._setup_environment(host_string=hostname,
                                 user=username,
                                 password=password,
+                                key_filename=key_filename,
                                 port=port,
                                 timeout=timeout / attempts,
                                 connection_attempts=attempts,
