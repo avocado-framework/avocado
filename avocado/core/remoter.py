@@ -66,19 +66,14 @@ class Remote(object):
         self.password = password
         self.port = port
         self.quiet = quiet
-        self._setup_environment(host_string=hostname,
-                                user=username,
-                                password=password,
-                                key_filename=key_filename,
-                                port=port,
-                                timeout=timeout / attempts,
-                                connection_attempts=attempts,
-                                linewise=True)
-
-    @staticmethod
-    def _setup_environment(**kwargs):
-        """ Setup fabric environemnt """
-        fabric.api.env.update(kwargs)
+        fabric.api.env.update(host_string=hostname,
+                              user=username,
+                              password=password,
+                              key_filename=key_filename,
+                              port=port,
+                              timeout=timeout / attempts,
+                              connection_attempts=attempts,
+                              linewise=True)
 
     def run(self, command, ignore_status=False, timeout=60):
         """
