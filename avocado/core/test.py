@@ -351,7 +351,8 @@ class Test(unittest.TestCase):
         shutil.copyfile(self._stderr_file, self._expected_stderr_file)
 
     def _check_reference_stdout(self):
-        if os.path.isfile(self._expected_stdout_file):
+        if (self._expected_stdout_file is not None and
+                os.path.isfile(self._expected_stdout_file)):
             expected = genio.read_file(self._expected_stdout_file)
             actual = genio.read_file(self._stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
@@ -359,7 +360,8 @@ class Test(unittest.TestCase):
             self.assertEqual(expected, actual, msg)
 
     def _check_reference_stderr(self):
-        if os.path.isfile(self._expected_stderr_file):
+        if (self._expected_stderr_file is not None and
+                os.path.isfile(self._expected_stderr_file)):
             expected = genio.read_file(self._expected_stderr_file)
             actual = genio.read_file(self._stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
