@@ -46,6 +46,16 @@ class ConnectionError(RemoterError):
     pass
 
 
+class AuthenticationError(ConnectionError):
+
+    def __init__(self, msg):
+        self.fabric_msg = msg
+
+    def __str__(self):
+        return ('Auth error (wrong credentials, '
+                'or paramiko bug): {}'.format(self.fabric_msg))
+
+
 def run(command, ignore_status=False, quiet=True, timeout=60):
     """
     Executes a command on the defined fabric hosts.
@@ -78,7 +88,7 @@ def run(command, ignore_status=False, quiet=True, timeout=60):
                                                   warn_only=True,
                                                   timeout=timeout)
             break
-        except fabric.network.NetworkError, details:
+        except (fabric.network.NetworkError, AuthenticationError), details:
             fabric_exception = details
             timeout = end_time - time.time()
         if time.time() < end_time:
@@ -119,7 +129,7 @@ def send_files(local_path, remote_path):
     try:
         fabric.operations.put(local_path, remote_path,
                               mirror_local_mode=True)
-    except ValueError:
+    except (ValueError, AuthenticationError):
         return False
     return True
 
@@ -137,7 +147,7 @@ def receive_files(local_path, remote_path):
     try:
         fabric.operations.get(remote_path,
                               local_path)
-    except ValueError:
+    except (ValueError, AuthenticationError):
         return False
     return True
 
