@@ -52,8 +52,7 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 key_filename=None, port=22, timeout=60, attempts=10,
-                 quiet=False):
+                 key_filename=None, port=22, timeout=60, attempts=10):
         """
         Creates an instance of :class:`Remote`.
 
@@ -64,7 +63,6 @@ class Remote(object):
             from Amazon EC2).
         :param timeout: remote command timeout, in seconds. Default: 60.
         :param attempts: number of attempts to connect. Default: 10.
-        :param quiet: performs quiet operations. Default: True.
         """
         self.hostname = hostname
         if username is None:
@@ -74,7 +72,6 @@ class Remote(object):
         # None = use public key
         self.password = password
         self.port = port
-        self.quiet = quiet
         reject_unknown_hosts = settings.get_value('remoter.behavior',
                                                   'reject_unknown_hosts',
                                                   key_type=bool,
@@ -96,7 +93,7 @@ class Remote(object):
                               reject_unknown_hosts=reject_unknown_hosts,
                               disable_known_hosts=disable_known_hosts)
 
-    def run(self, command, ignore_status=False, timeout=60):
+    def run(self, command, ignore_status=False, quiet=True, timeout=60):
         """
         Run a remote command.
 
@@ -104,16 +101,19 @@ class Remote(object):
         :param ignore_status: Whether to not raise exceptions in case the
             command's return code is different than zero.
         :param timeout: Maximum time allowed for the command to return.
+        :param quiet: Whether to not log command stdout/err. Default: True.
 
         :return: the result of the remote program's execution.
         :rtype: :class:`avocado.utils.process.CmdResult`.
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
         return_dict = fabric.tasks.execute(self._run, command, ignore_status,
-                                           timeout, hosts=[self.hostname])
+                                           quiet, timeout,
+                                           hosts=[self.hostname])
         return return_dict[self.hostname]
 
-    def _run(self, command, ignore_status=False, timeout=60):
+    @staticmethod
+    def _run(command, ignore_status=False, quiet=True, timeout=60):
         result = process.CmdResult()
         start_time = time.time()
         end_time = time.time() + (timeout or 0)   # Support timeout=None
@@ -123,7 +123,7 @@ class Remote(object):
         while True:
             try:
                 fabric_result = fabric.operations.run(command=command,
-                                                      quiet=self.quiet,
+                                                      quiet=quiet,
                                                       warn_only=True,
                                                       timeout=timeout,
                                                       pty=False)
