@@ -45,6 +45,7 @@ class VMTestResultTest(unittest.TestCase):
                         vm_hostname='hostname',
                         vm_port=22,
                         vm_password='password',
+                        vm_key_file=None,
                         vm_cleanup=True,
                         vm_no_copy=False,
                         vm_timeout=120,
