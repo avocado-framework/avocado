@@ -132,6 +132,22 @@ def receive_files(local_path, remote_path):
     return True
 
 
+def _update_fabric_env(method):
+    """
+    Update fabric env with the appropriate parameters.
+
+    :param method: Remote method to wrap.
+    :return: Wrapped method.
+    """
+    def wrapper(*args, **kwargs):
+        fabric.api.env.update(host_string=args[0].hostname,
+                              user=args[0].username,
+                              key_filename=args[0].key_filename,
+                              port=args[0].port)
+        return method(*args, **kwargs)
+    return wrapper
+
+
 class Remote(object):
 
     """
@@ -168,6 +184,7 @@ class Remote(object):
                               connection_attempts=attempts,
                               linewise=True)
 
+    @_update_fabric_env
     def run(self, command, ignore_status=False, quiet=True, timeout=60):
         """
         Run a command on the remote host.
@@ -207,6 +224,7 @@ class Remote(object):
         """
         self.run('mkdir -p %s' % remote_path)
 
+    @_update_fabric_env
     def send_files(self, local_path, remote_path):
         """
         Send files to remote host.
@@ -218,6 +236,7 @@ class Remote(object):
                                            remote_path, hosts=[self.hostname])
         return result_dict[self.hostname]
 
+    @_update_fabric_env
     def receive_files(self, local_path, remote_path):
         """
         Receive files from the remote host.
