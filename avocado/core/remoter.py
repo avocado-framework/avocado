@@ -109,6 +109,11 @@ class Remote(object):
         :rtype: :class:`avocado.utils.process.CmdResult`.
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
+        return_dict = fabric.tasks.execute(self._run, command, ignore_status,
+                                           timeout, hosts=[self.hostname])
+        return return_dict[self.hostname]
+
+    def _run(self, command, ignore_status=False, timeout=60):
         result = process.CmdResult()
         start_time = time.time()
         end_time = time.time() + (timeout or 0)   # Support timeout=None
@@ -173,6 +178,12 @@ class Remote(object):
         self.run('mkdir -p %s' % remote_path)
 
     def send_files(self, local_path, remote_path):
+        result_dict = fabric.tasks.execute(self._send_files, local_path,
+                                           remote_path, hosts=[self.hostname])
+        return result_dict[self.hostname]
+
+    @staticmethod
+    def _send_files(local_path, remote_path):
         """
         Send files to remote.
 
@@ -187,6 +198,12 @@ class Remote(object):
         return True
 
     def receive_files(self, local_path, remote_path):
+        result_dict = fabric.tasks.execute(self._receive_files, local_path,
+                                           remote_path, hosts=[self.hostname])
+        return result_dict[self.hostname]
+
+    @staticmethod
+    def _receive_files(self, local_path, remote_path):
         """
         receive remote files.
 
