@@ -540,6 +540,16 @@ class TestProgram(object):
     """
 
     def __init__(self):
+        # Avoid fork loop/bomb when running a test via avocado.main() that
+        # calls avocado.main() itself
+        if os.environ.get('AVOCADO_STANDALONE_IN_MAIN', False):
+            sys.stderr.write('AVOCADO_STANDALONE_IN_MAIN environment variable '
+                             'found. This means that this code is being '
+                             'called recursively. Exiting to avoid an infinite'
+                             ' fork loop.\n')
+            sys.exit(exit_codes.AVOCADO_FAIL)
+        os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
+
         self.defaultTest = sys.argv[0]
         self.progName = os.path.basename(sys.argv[0])
         self.parseArgs(sys.argv[1:])
