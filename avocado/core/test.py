@@ -590,7 +590,6 @@ class SimpleTest(Test):
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, tag=tag, job=job)
-        self.path = name
 
     @property
     def filename(self):
@@ -617,7 +616,7 @@ class SimpleTest(Test):
                                 self.params.iteritems()])
 
             # process.run uses shlex.split(), the self.path needs to be escaped
-            result = process.run(self.path, verbose=True,
+            result = process.run(self.filename, verbose=True,
                                  env=test_params)
 
             self._log_detailed_cmd_info(result)
@@ -643,7 +642,11 @@ class ExternalRunnerTest(SimpleTest):
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
-        self.path = external_runner.runner + " " + name
+        self._command = external_runner.runner + " " + name
+
+    @property
+    def filename(self):
+        return None
 
     def test(self):
         pre_cwd = os.getcwd()
@@ -665,7 +668,20 @@ class ExternalRunnerTest(SimpleTest):
                                new_cwd)
                 os.chdir(new_cwd)
 
-            return super(ExternalRunnerTest, self).test()
+            try:
+                test_params = dict([(str(key), str(val)) for path, key, val in
+                                    self.params.iteritems()])
+
+                # process.run uses shlex.split(), the self.path needs to be
+                # escaped
+                result = process.run(self._command, verbose=True,
+                                     env=test_params)
+
+                self._log_detailed_cmd_info(result)
+            except process.CmdError, details:
+                self._log_detailed_cmd_info(details.result)
+                raise exceptions.TestFail(details)
+
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)
