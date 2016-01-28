@@ -60,7 +60,9 @@ def run(command, ignore_status=False, quiet=True, timeout=60):
     :param timeout: Maximum time allowed for the command to return.
     :param quiet: Whether to not log command stdout/err. Default: True.
 
-    :return: the result of the remote program's execution.
+    :return: the result of the remote program's execution. If we had errors
+        from the SSH underlying libraries and the command did not finish,
+        the exit_status attribute of the CmdResult object will be -300.
     :rtype: :class:`avocado.utils.process.CmdResult`.
     :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
     """
@@ -83,23 +85,23 @@ def run(command, ignore_status=False, quiet=True, timeout=60):
             timeout = end_time - time.time()
         if time.time() < end_time:
             break
-    if fabric_result is None:
-        if fabric_exception is not None:
-            raise fabric_exception  # it's not None pylint: disable=E0702
-        else:
-            raise fabric.network.NetworkError("Remote execution of '%s'"
-                                              "failed without any "
-                                              "exception. This should not "
-                                              "happen." % command)
+
     end_time = time.time()
     duration = end_time - start_time
     result.command = command
-    result.stdout = str(fabric_result)
-    result.stderr = fabric_result.stderr
     result.duration = duration
-    result.exit_status = fabric_result.return_code
-    result.failed = fabric_result.failed
-    result.succeeded = fabric_result.succeeded
+    if fabric_result is None:
+        result.stdout = 'Unable to get stdout ({})'.format(fabric_exception)
+        result.stderr = 'Unable to get stderr ({})'.format(fabric_exception)
+        result.exit_status = -300
+        result.failed = True
+        result.succeeded = False
+    else:
+        result.stdout = str(fabric_result)
+        result.stderr = fabric_result.stderr
+        result.exit_status = fabric_result.return_code
+        result.failed = fabric_result.failed
+        result.succeeded = fabric_result.succeeded
     if not ignore_status:
         if result.failed:
             raise process.CmdError(command=command, result=result)
