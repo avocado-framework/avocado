@@ -48,13 +48,6 @@ class TestResultProxy(object):
     def __init__(self):
         self.output_plugins = []
 
-    def __getattr__(self, attr):
-        for output_plugin in self.output_plugins:
-            if hasattr(output_plugin, attr):
-                return getattr(output_plugin, attr)
-            else:
-                return None
-
     def notify_progress(self, progress_from_test=False):
         for output_plugin in self.output_plugins:
             if hasattr(output_plugin, 'notify_progress'):
