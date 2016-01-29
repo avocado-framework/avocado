@@ -22,6 +22,7 @@ import logging
 from fabric.exceptions import CommandTimeout
 
 from .test import RemoteTest
+from .result import RemoteTestResult
 from .. import output
 from .. import exceptions
 from .. import status
@@ -41,6 +42,21 @@ class RemoteTestRunner(TestRunner):
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\.(\d+)$',
                                    re.MULTILINE)
 
+    def __init__(self, job, test_result):
+        """
+        Creates an instance of TestRunner class.
+
+        :param job: an instance of :class:`avocado.core.job.Job`.
+        :param test_result: an instance of :class:`avocado.core.result.TestResultProxy`.
+        """
+        self.job = job
+        self.result = test_result
+
+        self.remote_result = None
+        for remote_result_instance in self.result.output_plugins:
+            if isinstance(remote_result_instance, RemoteTestResult):
+                self.remote_result = remote_result_instance
+
     def check_remote_avocado(self):
         """
         Checks if the remote system appears to have avocado installed
@@ -55,11 +71,11 @@ class RemoteTestRunner(TestRunner):
         """
         # This will be useful as extra debugging info in case avocado
         # doesn't seem to be available in the remote system.
-        self.result.remote.run('env', ignore_status=True, timeout=60)
+        self.remote_result.remote.run('env', ignore_status=True, timeout=60)
 
-        result = self.result.remote.run('avocado -v',
-                                        ignore_status=True,
-                                        timeout=60)
+        result = self.remote_result.remote.run('avocado -v',
+                                               ignore_status=True,
+                                               timeout=60)
         if result.exit_status == 127:
             return (False, None)
 
@@ -81,30 +97,30 @@ class RemoteTestRunner(TestRunner):
         """
         extra_params = []
         mux_files = [os.path.join(self.remote_test_dir, mux_file)
-                     for mux_file in getattr(self.result.args,
+                     for mux_file in getattr(self.remote_result.args,
                                              'multiplex_files') or []]
         if mux_files:
             extra_params.append("--multiplex-files %s" % " ".join(mux_files))
 
-        if getattr(self.result.args, "dry_run", False):
+        if getattr(self.remote_result.args, "dry_run", False):
             extra_params.append("--dry-run")
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
                                   '--paginator=off' % (self.remote_test_dir,
                                                        urls_str))
-        check_urls_result = self.result.remote.run(avocado_check_urls_cmd,
-                                                   ignore_status=True,
-                                                   timeout=60)
+        check_urls_result = self.remote_result.remote.run(avocado_check_urls_cmd,
+                                                          ignore_status=True,
+                                                          timeout=60)
         if check_urls_result.exit_status != 0:
             raise exceptions.JobError(check_urls_result.stdout)
 
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s %s' % (self.remote_test_dir,
-                                            self.result.stream.job_unique_id,
+                                            self.remote_result.stream.job_unique_id,
                                             urls_str, " ".join(extra_params)))
         try:
-            result = self.result.remote.run(avocado_cmd, ignore_status=True,
-                                            timeout=timeout)
+            result = self.remote_result.remote.run(avocado_cmd, ignore_status=True,
+                                                   timeout=timeout)
         except CommandTimeout:
             raise exceptions.JobError("Remote execution took longer than "
                                       "specified timeout (%s). Interrupting."
@@ -123,7 +139,7 @@ class RemoteTestRunner(TestRunner):
                              "\n%s" % result.stdout)
 
         for t_dict in json_result['tests']:
-            logdir = os.path.dirname(self.result.stream.debuglog)
+            logdir = os.path.dirname(self.remote_result.stream.debuglog)
             logdir = os.path.join(logdir, 'test-results')
             relative_path = astring.string_to_safe_path(t_dict['test'])
             logdir = os.path.join(logdir, relative_path)
@@ -161,25 +177,25 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         logger_list = [fabric_logger]
-        if self.result.args.show_job_log:
+        if self.remote_result.args.show_job_log:
             logger_list.append(app_logger)
             output.add_console_handler(paramiko_logger)
         sys.stdout = output.LoggingFile(logger=logger_list)
         sys.stderr = output.LoggingFile(logger=logger_list)
         try:
             try:
-                self.result.setup()
+                self.remote_result.setup()
                 avocado_installed, _ = self.check_remote_avocado()
                 if not avocado_installed:
                     raise exceptions.JobError('Remote machine does not seem to have '
                                               'avocado installed')
-                self.result.copy_files()
+                self.remote_result.copy_files()
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
-            results = self.run_test(self.result.urls, timeout)
+            results = self.run_test(self.remote_result.urls, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
-            self.result.start_tests()
+            self.remote_result.start_tests()
             for tst in results['tests']:
                 test = RemoteTest(name=tst['test'],
                                   time=tst['time'],
@@ -190,20 +206,20 @@ class RemoteTestRunner(TestRunner):
                                   logfile=tst['logfile'],
                                   fail_reason=tst['fail_reason'])
                 state = test.get_state()
-                self.result.start_test(state)
-                self.result.check_test(state)
+                self.remote_result.start_test(state)
+                self.remote_result.check_test(state)
                 if not status.mapping[state['status']]:
                     failures.append(state['tagged_name'])
-            local_log_dir = os.path.dirname(self.result.stream.debuglog)
+            local_log_dir = os.path.dirname(self.remote_result.stream.debuglog)
             zip_filename = remote_log_dir + '.zip'
             zip_path_filename = os.path.join(local_log_dir,
                                              os.path.basename(zip_filename))
-            self.result.remote.receive_files(local_log_dir, zip_filename)
+            self.remote_result.remote.receive_files(local_log_dir, zip_filename)
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
-            self.result.end_tests()
+            self.remote_result.end_tests()
             try:
-                self.result.tear_down()
+                self.remote_result.tear_down()
             except Exception, details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
