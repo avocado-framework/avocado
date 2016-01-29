@@ -345,6 +345,71 @@ In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
 
+Fetching asset files
+====================
+To run third party test suites as mentioned above, you can be interested in
+fetch your tarball during the ``setUp()`` phase as well. To achieve that, we
+offer the ``avocado.utils.asset`` module. It can check if your file is in the
+provided ``cache_dir`` and, if not, try to dowload it from a list of locations.
+Example::
+
+    ...
+    from avocado.utils import asset
+    ...
+
+    ...
+        def setUp(self):
+            tarball = asset.fetch(self)
+            if tarball is None:
+                self.error('tarball not found')
+    ...
+
+The asset data can be provided using a multiplex file in the following format::
+
+    asset:
+        name: stress-1.0.4.tar.gz
+        md5sum: 890a4236dd1656792f3ef9a190cf99ef
+        cache_dir: null
+        location:
+            - http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz
+            - file:///usr/local/downloads/stress-1.0.4.tar.gz
+            - ftp://ftp.example.com/pub/stress-1.0.4.tar.gz
+
+The fetcher will look for the ``asset`` key to load the asset data from. This can
+be manipulated by providing a different key if you need, for example, to fetch
+more than one asset in the same job. Example::
+
+    ...
+        def setUp(self):
+            tarball = asset.fetch(self)
+            tarball2 = asset.fetch(self, search='asset2')
+    ...
+
+In that case, the yaml file will look like this::
+
+    asset:
+        name: ...
+    ...
+    asset2:
+        name: ...
+    ...
+
+Detailing the asset data:
+
+ * ``name:`` The name used to name the fetched file.
+ * ``md5sum:`` (optinal) The expected file md5 hash. If ``null`` or missing, we
+   skip the check.
+ * ``cache_dir:`` (optional) The first place we will look for the file. If the
+   file is not there, we will try to fetch from ``location`` list put there. If
+   ``null`` or missing, the temporary test directory will be used. We do
+   recommend not to use temporary directory for big files (i.e. iso files).
+ * ``location:`` (optional) If the file is not already in ``cache_dir``, we try
+   to fetch it from every location, in order. The supported locations are
+   ``http``, ``ftp`` and ``file``. Here you have to inform the full path to the
+   file. The first success will exit the loop.
+
+The expected ``return`` from ``asset.fetch()`` is the file path or ``None``.
+
 Test Output Check and Output Record Mode
 ========================================
 
