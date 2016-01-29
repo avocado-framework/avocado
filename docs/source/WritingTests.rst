@@ -345,6 +345,82 @@ In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
 
+Fetching asset files
+====================
+To run third party test suites as mentioned above, we offer an asset fetcher 
+as a method of Avocado Test class.
+The asset method looks for the ``cache_dirs`` key in ``[datadir.paths]``
+section from the configuration files. Read-only ``cache_dirs`` directories are
+also supported. When the asset file is not present in any of the
+``cache_dirs``, we will try to download the file to the first writable cache
+directory configured in ``cache_dirs``.
+
+* Use case 1: no ``cache_dirs`` key in config files, only the asset name provided
+  in the full url format::
+
+    ...
+        def setUp(self):
+            stress = 'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz'
+            tarball = self.fetch_asset(stress)
+            archive.extract(tarball, self.srcdir)
+    ...
+
+  In this case, ``fetch_asset()`` will download the file from the url provided,
+  copying it to the test temporary workdir. ``tarball`` variable  will
+  contains, for example, ``/var/tmp/avocado_BZXo2B/stress.py_Stress.test/cache/stress-1.0.4.tar.gz``.
+
+* Use case 2: Read-only cache directory provided. ``cache_dirs = /mnt/files``::
+
+    ...
+        def setUp(self):
+            stress = 'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz'
+            tarball = self.fetch_asset(stress)
+            archive.extract(tarball, self.srcdir)
+    ...
+
+  In this case, we try to find ``stress-1.0.4.tar.gz`` file in ``/mnt/files``
+  directory. If it's not there, since ``/mnt/files`` is read-only,  we will try
+  to download the asset file to the test temporary workdir.
+
+* Use case 3: Writable cache directory provided, along with a list of
+  locations. ``cache_dirs = ~/avocado/cache``::
+
+    ...
+        def setUp(self):
+            st_name = 'stress-1.0.4.tar.gz'
+            st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
+            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz',
+                      'ftp://foo.bar/stress-1.0.4.tar.gz']
+            tarball = self.fetch_asset(st_name, asset_hash=st_hash,
+                                       locations=st_loc)
+            archive.extract(tarball, self.srcdir)
+    ...
+
+  In this case, we try to download ``stress-1.0.4.tar.gz`` from the provided
+  locations list, if not already in ``~/avocado/cache``. Since the hash was
+  also provided, we will verify the hash. To do so, we first look for a hash
+  file named ``stress-1.0.4.tar.gz.sha1`` in the same directory. Only if the
+  hash file is not present we compute the hash to verify the file. We then
+  create the hash file for further usage.
+
+  The resulting ``tarball`` variable content will be ``~/avocado/cache/stress-1.0.4.tar.gz``.
+  An exception will take place if we fail to download or to verify the file.
+
+
+Detailing the ``fetch_asset()`` attributes:
+
+* ``name:`` The name used to name the fetched file. It can also contains a full
+  location.
+* ``asset_hash:`` (optinal) The expected file hash. If missing, we skip the
+  check.
+* ``algorithm:`` (optinal) Provided hash algorithm format. Default sha1.
+* ``locations:`` (optional) List of locations to try to fetch the file from.
+  The supported locations are ``http``, ``ftp`` and ``file``. Here you have to
+  inform the full url to the file. The first success will skip the next
+  locations.
+
+The expected ``return`` is the asset file path or an exception.
+
 Test Output Check and Output Record Mode
 ========================================
 
