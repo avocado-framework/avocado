@@ -345,6 +345,46 @@ In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
 
+Fetching asset files
+====================
+To run third party test suites as mentioned above, you can be interested in
+fetch your tarball during the ``setUp()`` phase as well. To achieve that, we
+offer the ``avocado.utils.asset`` module. It can check if your file is in the
+provided ``cache_dir`` and, if not, try to dowload it from a list of locations.
+Example::
+
+    ...
+    from avocado.utils import asset
+    ...
+
+    ...
+        def setUp(self):
+            lc = ['file:///usr/local/',
+                  'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz']
+            stress = asset.Asset(name='stress-1.0.4.tar.gz',
+                                 md5sum='890a4236dd1656792f3ef9a190cf99ef',
+                                 cache_dir='/var/tmp',
+                                 locations=lc)
+
+            tarball = stress.fetch()
+            if tarball is None:
+                self.error('tarball not found')
+    ...
+
+Detailing the Asset() attributes:
+
+ * ``name:`` The name used to name the fetched file.
+ * ``md5sum:`` (optinal) The expected file md5 hash. If ``null`` or missing, we
+   skip the check.
+ * ``cache_dir:`` The first place we will look for the file. If the file is not
+   there, we will try to fetch from ``locations`` list.
+ * ``location:`` (optional) If the file is not already in ``cache_dir``, we try
+   to fetch it from every location, in order. The supported locations are
+   ``http``, ``ftp`` and ``file``. Here you have to inform the full url to the
+   file. The first success will skip the next locations.
+
+The expected ``return`` from ``fetch()`` is the asset file path or ``None``.
+
 Test Output Check and Output Record Mode
 ========================================
 
