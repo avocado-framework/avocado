@@ -26,6 +26,7 @@ import shutil
 import sys
 import time
 
+from . import asset
 from . import data_dir
 from . import exceptions
 from . import multiplexer
@@ -195,6 +196,10 @@ class Test(unittest.TestCase):
     @data_structures.LazyProperty
     def srcdir(self):
         return utils_path.init_dir(self.workdir, 'src')
+
+    @data_structures.LazyProperty
+    def cachedir(self):
+        return utils_path.init_dir(self.workdir, 'cache')
 
     def __str__(self):
         return str(self.name)
@@ -476,6 +481,7 @@ class Test(unittest.TestCase):
             os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
         os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
         os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
+        os.environ['AVOCADO_TEST_CACHEDIR'] = self.cachedir
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
@@ -576,6 +582,11 @@ class Test(unittest.TestCase):
         :type message: str
         """
         raise exceptions.TestSkipError(message)
+
+    def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
+                    locations=None):
+        return asset.Asset(name, asset_hash, algorithm, locations,
+                           self.cachedir).path
 
 
 class SimpleTest(Test):
