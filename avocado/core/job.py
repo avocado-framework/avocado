@@ -188,15 +188,10 @@ class Job(object):
                                              test_result=self.result_proxy)
 
     def _set_output_plugins(self):
-        for key in self.args.__dict__.keys():
-            result_class_candidate = getattr(self.args, key)
-            try:
-                if issubclass(result_class_candidate, result.TestResult):
-                    result_plugin = result_class_candidate(self.view,
-                                                           self.args)
-                    self.result_proxy.add_output_plugin(result_plugin)
-            except TypeError:
-                pass
+        if getattr(self.args, 'test_result_classes', None) is not None:
+            for klass in self.args.test_result_classes:
+                test_result_instance = klass(self.view, self.args)
+                self.result_proxy.add_output_plugin(test_result_instance)
 
     def _make_test_result(self):
         """

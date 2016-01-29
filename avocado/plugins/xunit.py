@@ -14,6 +14,7 @@
 
 """xUnit module."""
 
+from avocado.core.result import register_test_result_class
 from avocado.core.xunit import xUnitTestResult
 from .base import CLI
 
@@ -40,4 +41,4 @@ class XUnit(CLI):
 
     def run(self, args):
         if 'xunit_output' in args and args.xunit_output is not None:
-            args.xunit_result = xUnitTestResult
+            register_test_result_class(args, xUnitTestResult)

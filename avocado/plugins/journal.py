@@ -20,6 +20,7 @@ import datetime
 
 from .base import CLI
 from avocado.core.result import TestResult
+from avocado.core.result import register_test_result_class
 
 JOURNAL_FILENAME = ".journal.sqlite"
 
@@ -131,4 +132,4 @@ class Journal(CLI):
 
     def run(self, args):
         if 'journal' in args and args.journal is True:
-            args.journal_result = TestResultJournal
+            register_test_result_class(args, TestResultJournal)

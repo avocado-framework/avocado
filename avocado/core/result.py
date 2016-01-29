@@ -27,6 +27,22 @@ class InvalidOutputPlugin(Exception):
     pass
 
 
+def register_test_result_class(application_args, klass):
+    """
+    Register the given test result class to be loaded and enabled by the job
+
+    :param application_args: the parsed application command line arguments.
+                             This is currently being abused to hold various job
+                             settings and feature choices, such as the runner.
+    :type application_args: :class:`argparse.Namespace`
+    :param klass: the test result class to enable
+    :type klass: a subclass of :class:`TestResult`
+    """
+    if getattr(application_args, 'test_result_classes', None) is None:
+        application_args.test_result_classes = set()
+    application_args.test_result_classes.add(klass)
+
+
 class TestResultProxy(object):
 
     def __init__(self):
