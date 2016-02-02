@@ -144,7 +144,8 @@ class Job(object):
                 self.logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         else:
             if logdir is None:
-                self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
+                self.logdir = data_dir.create_job_logs_dir(
+                    unique_id=self.unique_id)
             else:
                 logdir = os.path.abspath(logdir)
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
@@ -422,9 +423,9 @@ class Job(object):
         self._setup_job_results()
         urls = self._handle_urls(urls)
         self.view.start_job_logging(self.logfile,
-                                     self.loglevel,
-                                     self.unique_id,
-                                     self.replay_sourcejob)
+                                    self.loglevel,
+                                    self.unique_id,
+                                    self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
