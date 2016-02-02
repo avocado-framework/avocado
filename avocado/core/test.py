@@ -23,6 +23,7 @@ import logging
 import os
 import re
 import shutil
+import socket
 import sys
 import time
 
@@ -42,6 +43,72 @@ if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
     import unittest
+
+
+class AvocadoHandler(object):
+
+    """
+    Object which wraps advanced avocado features
+    """
+
+    def __init__(self, test):
+        self.test = test
+
+    def barrier(self, name, no_clients, timeout=60):
+        """
+        Wait until no_clients arrive to this barrier
+        :warning: Experimental feature
+        :param name: Name of the barrier
+        :param no_clients: How many clients are required to ask for it
+        :param timeout: How long to wait for other clients to join
+        """
+        def wait_for(exp, deadline):
+            data = ""
+            sock.settimeout(1)
+            while time.time() < deadline:
+                try:
+                    data += sock.recv(1024)
+                except socket.timeout:
+                    continue
+                if data == exp:
+                    break
+                elif data.startswith("ABORT") or data.startswith("ERROR"):
+                    raise ValueError("Received %s from barrier" % data)
+            else:
+                raise RuntimeError(data)
+            return data
+        server = self.test.params.get("server", "/plugins/sync/*", "0.0.0.0")
+        port = int(self.test.params.get("port", "/plugins/sync/*", 13234))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            deadline = time.time() + timeout
+            while time.time() < deadline:
+                try:
+                    sock.connect((server, port))
+                    break
+                except socket.error:
+                    pass
+            else:
+                raise RuntimeError("Unable to connect to sync server in %ss"
+                                   % timeout)
+            sock.sendall("BARRIER:%s:%s" % (no_clients, name))
+            # Wait for barrier
+            try:
+                wait_for("REACHED", deadline)
+            except RuntimeError, details:
+                raise RuntimeError("Unable to enter barrier %s in %ss: recv "
+                                   "data = %s" % (name, timeout, details))
+            # Ack we are about to enter the barier (10s)
+            sock.settimeout(None)
+            sock.sendall("ACK")
+            # Wait for ack from server
+            try:
+                wait_for("GOGOGO", time.time() + 10)
+            except RuntimeError, details:
+                raise RuntimeError("Unable to get 2nd ack from barrier %s in "
+                                   "10s, received data = %s" % (name, details))
+        finally:
+            sock.close()
 
 
 class Test(unittest.TestCase):
@@ -154,6 +221,7 @@ class Test(unittest.TestCase):
         self.paused_msg = ''
 
         self.runner_queue = runner_queue
+        self.avocado = AvocadoHandler(self)
 
         self.time_elapsed = None
         unittest.TestCase.__init__(self, methodName=methodName)

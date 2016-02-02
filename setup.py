@@ -134,6 +134,7 @@ if __name__ == '__main__':
                   'html = avocado.plugins.html:HTML',
                   'remote = avocado.plugins.remote:Remote',
                   'replay = avocado.plugins.replay:Replay',
+                  'sync = avocado.plugins.sync:Sync',
                   'vm = avocado.plugins.vm:VM',
                   ],
               'avocado.plugins.cli.cmd': [
