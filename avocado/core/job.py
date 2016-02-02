@@ -117,8 +117,8 @@ class Job(object):
 
         if self.show_job_log:
             if not self.silent:
-                output.add_console_handler(_TEST_LOGGER)
-                output.add_console_handler(logging.getLogger())
+                output.add_log_handler(_TEST_LOGGER.name)
+                output.add_log_handler(logging.getLogger().name)
                 _TEST_LOGGER.setLevel(self.loglevel)
                 _TEST_LOGGER.propagate = False
 
