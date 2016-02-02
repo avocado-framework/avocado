@@ -111,30 +111,25 @@ def get_paginator():
     return Paginator()
 
 
-def add_log_handler(logger, klass=None, stream=None, level=None, fmt=None):
+def add_log_handler(logger_name, klass=logging.StreamHandler, stream=sys.stdout,
+                    level='INFO', fmt='%(name)s: %(message)s'):
     """
     Add handler to a logger.
 
-    :param logger: `logging.Logger` instance.
-    :param klass: Handler class [`logging.StreamHandler`]
-    :param stream: Logging stream (klass argument) [`sys.stdout`]
-    :param level: Log level [`INFO`]
-    :param fmt: Formatter [`%(name)s: %(message)s`]
+    :param logger_name: the name of a :class:`logging.Logger` instance, that
+                        is, the parameter to :func:`logging.getLogger`
+    :param klass: Handler class (defaults to :class:`logging.StreamHandler`)
+    :param stream: Logging stream, to be passed as an argument to ``klass``
+                   (defaults to ``sys.stdout``)
+    :param level: Log level (defaults to `INFO``)
+    :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
     """
-    if klass is None:
-        klass = logging.StreamHandler
-    if stream is None:
-        stream = sys.stdout
-    if level is None:
-        level = "INFO"
-    if fmt is None:
-        fmt = '%(name)s: %(message)s'
-    console_handler = klass(stream)
-    console_handler.setLevel(level)
+    handler = klass(stream)
+    handler.setLevel(level)
     formatter = logging.Formatter(fmt=fmt)
-    console_handler.setFormatter(formatter)
-    logging.getLogger(logger).addHandler(console_handler)
-    logging.getLogger(logger).propagate = False
+    handler.setFormatter(formatter)
+    logging.getLogger(logger_name).addHandler(handler)
+    logging.getLogger(logger_name).propagate = False
 
 
 class TermSupport(object):
