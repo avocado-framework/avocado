@@ -1,4 +1,5 @@
 import ast
+import re
 import sys
 
 if sys.version_info[:2] == (2, 6):
@@ -8,6 +9,17 @@ else:
 
 from avocado.core import safeloader
 from avocado.utils import script
+
+
+def get_this_file():
+    this_file = __file__
+    if this_file.endswith('.py'):
+        return this_file
+    elif (this_file.endswith('.pyc') or this_file.endswith('.pyo')):
+        return this_file[:-1]
+    else:
+        raise ValueError("Could not find the Python file associated with this "
+                         "module")
 
 
 class ModuleImportedAs(unittest.TestCase):
@@ -59,6 +71,82 @@ class DocstringTag(unittest.TestCase):
         self.assertTrue(safeloader.is_docstring_tag_disable(":avocado:\tdisable"))
         self.assertFalse(safeloader.is_docstring_tag_disable(":AVOCADO: DISABLE"))
         self.assertFalse(safeloader.is_docstring_tag_disable(":avocado: disabled"))
+
+
+class UnlimitedDiff(unittest.TestCase):
+
+    """
+    Serves two purposes: as a base class to test safeloader.find_class_and_methods
+    and, while at it, to set unlimited diff on failure results.
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+
+class FindClassAndMethods(UnlimitedDiff):
+
+    def test_self(self):
+        reference = {
+            'ModuleImportedAs': ['_test',
+                                 'test_foo',
+                                 'test_foo_as_bar',
+                                 'test_foo_as_foo',
+                                 'test_import_inside_class'],
+            'DocstringTag': ['test_longline',
+                             'test_newlines',
+                             'test_enabled',
+                             'test_disabled'],
+            'FindClassAndMethods': ['test_self',
+                                    'test_with_pattern',
+                                    'test_with_base_class',
+                                    'test_with_pattern_and_base_class'],
+            'UnlimitedDiff': ['setUp']
+        }
+        found = safeloader.find_class_and_methods(get_this_file())
+        self.assertEqual(reference, found)
+
+    def test_with_pattern(self):
+        reference = {
+            'ModuleImportedAs': ['test_foo',
+                                 'test_foo_as_bar',
+                                 'test_foo_as_foo',
+                                 'test_import_inside_class'],
+            'DocstringTag': ['test_longline',
+                             'test_newlines',
+                             'test_enabled',
+                             'test_disabled'],
+            'FindClassAndMethods': ['test_self',
+                                    'test_with_pattern',
+                                    'test_with_base_class',
+                                    'test_with_pattern_and_base_class'],
+            'UnlimitedDiff': []
+        }
+        found = safeloader.find_class_and_methods(get_this_file(),
+                                                  re.compile(r'test.*'))
+        self.assertEqual(reference, found)
+
+    def test_with_base_class(self):
+        reference = {
+            'FindClassAndMethods': ['test_self',
+                                    'test_with_pattern',
+                                    'test_with_base_class',
+                                    'test_with_pattern_and_base_class'],
+        }
+        found = safeloader.find_class_and_methods(get_this_file(),
+                                                  base_class='UnlimitedDiff')
+        self.assertEqual(reference, found)
+
+    def test_with_pattern_and_base_class(self):
+        reference = {
+            'FindClassAndMethods': ['test_with_pattern',
+                                    'test_with_base_class',
+                                    'test_with_pattern_and_base_class'],
+        }
+        found = safeloader.find_class_and_methods(get_this_file(),
+                                                  re.compile(r'test_with.*'),
+                                                  'UnlimitedDiff')
+        self.assertEqual(reference, found)
 
 
 if __name__ == '__main__':
