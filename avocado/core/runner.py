@@ -192,7 +192,8 @@ class TestRunner(object):
         Creates an instance of TestRunner class.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param test_result: an instance of :class:`avocado.core.result.TestResultProxy`.
+        :param test_result: an instance of
+                            :class:`avocado.core.result.TestResultProxy`.
         """
         self.job = job
         self.result = test_result
@@ -395,8 +396,8 @@ class TestRunner(object):
                         test_parameters["methodName"] = "test"
                         test_factory = (replay_map[index], test_parameters)
 
-                    break_loop = not self.run_test(test_factory, queue, failures,
-                                                   deadline)
+                    break_loop = not self.run_test(test_factory, queue,
+                                                   failures, deadline)
                     if break_loop:
                         break
             runtime.CURRENT_TEST = None
