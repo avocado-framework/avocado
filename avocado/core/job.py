@@ -117,8 +117,8 @@ class Job(object):
 
         if self.show_job_log:
             if not self.silent:
-                output.add_console_handler(_TEST_LOGGER)
-                output.add_console_handler(logging.getLogger())
+                output.add_log_handler(_TEST_LOGGER.name)
+                output.add_log_handler(logging.getLogger().name)
                 _TEST_LOGGER.setLevel(self.loglevel)
                 _TEST_LOGGER.propagate = False
 
@@ -144,7 +144,8 @@ class Job(object):
                 self.logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         else:
             if logdir is None:
-                self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
+                self.logdir = data_dir.create_job_logs_dir(
+                    unique_id=self.unique_id)
             else:
                 logdir = os.path.abspath(logdir)
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
@@ -421,10 +422,10 @@ class Job(object):
         """
         self._setup_job_results()
         urls = self._handle_urls(urls)
-        self.view.start_file_logging(self.logfile,
-                                     self.loglevel,
-                                     self.unique_id,
-                                     self.replay_sourcejob)
+        self.view.start_job_logging(self.logfile,
+                                    self.loglevel,
+                                    self.unique_id,
+                                    self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(urls)
         except loader.LoaderError, details:
@@ -461,7 +462,7 @@ class Job(object):
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout,
                                               replay_map=replay_map)
-        self.view.stop_file_logging()
+        self.view.stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
