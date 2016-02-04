@@ -175,7 +175,10 @@ class Test(unittest.TestCase):
         """
         Returns the path to the directory that contains test data files
         """
-        return self.filename + '.data'
+        if self.filename is not None:
+            return self.filename + '.data'
+        else:
+            return None
 
     @property
     def filename(self):
@@ -348,7 +351,8 @@ class Test(unittest.TestCase):
         shutil.copyfile(self._stderr_file, self._expected_stderr_file)
 
     def _check_reference_stdout(self):
-        if os.path.isfile(self._expected_stdout_file):
+        if (self._expected_stdout_file is not None and
+                os.path.isfile(self._expected_stdout_file)):
             expected = genio.read_file(self._expected_stdout_file)
             actual = genio.read_file(self._stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
@@ -356,7 +360,8 @@ class Test(unittest.TestCase):
             self.assertEqual(expected, actual, msg)
 
     def _check_reference_stderr(self):
-        if os.path.isfile(self._expected_stderr_file):
+        if (self._expected_stderr_file is not None and
+                os.path.isfile(self._expected_stderr_file)):
             expected = genio.read_file(self._expected_stderr_file)
             actual = genio.read_file(self._stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
@@ -585,7 +590,6 @@ class SimpleTest(Test):
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, tag=tag, job=job)
-        self.path = name
 
     @property
     def filename(self):
@@ -612,7 +616,7 @@ class SimpleTest(Test):
                                 self.params.iteritems()])
 
             # process.run uses shlex.split(), the self.path needs to be escaped
-            result = process.run(self.path, verbose=True,
+            result = process.run(self.filename, verbose=True,
                                  env=test_params)
 
             self._log_detailed_cmd_info(result)
@@ -638,7 +642,11 @@ class ExternalRunnerTest(SimpleTest):
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
-        self.path = external_runner.runner + " " + name
+        self._command = external_runner.runner + " " + name
+
+    @property
+    def filename(self):
+        return None
 
     def test(self):
         pre_cwd = os.getcwd()
@@ -660,7 +668,20 @@ class ExternalRunnerTest(SimpleTest):
                                new_cwd)
                 os.chdir(new_cwd)
 
-            return super(ExternalRunnerTest, self).test()
+            try:
+                test_params = dict([(str(key), str(val)) for path, key, val in
+                                    self.params.iteritems()])
+
+                # process.run uses shlex.split(), the self.path needs to be
+                # escaped
+                result = process.run(self._command, verbose=True,
+                                     env=test_params)
+
+                self._log_detailed_cmd_info(result)
+            except process.CmdError, details:
+                self._log_detailed_cmd_info(details.result)
+                raise exceptions.TestFail(details)
+
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)
