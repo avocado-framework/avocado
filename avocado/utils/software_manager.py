@@ -435,8 +435,8 @@ class YumBackend(RpmBackend):
             self.cfgparser.set(section_name, 'name',
                                'Avocado managed repository')
             self.cfgparser.set(section_name, 'url', url)
-            self.cfgparser.set(section_name, 'enabled', 1)
-            self.cfgparser.set(section_name, 'gpgcheck', 0)
+            self.cfgparser.set(section_name, 'enabled', '1')
+            self.cfgparser.set(section_name, 'gpgcheck', '0')
             tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
             self.cfgparser.write(open(tmp_file_repo, "w"))
             process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
