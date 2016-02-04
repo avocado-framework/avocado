@@ -207,10 +207,7 @@ class RpmBackend(BaseBackend):
         if 'not installed' in inst_version:
             return False
 
-        if inst_version >= version:
-            return True
-        else:
-            return False
+        return bool(inst_version >= version)
 
     def check_installed(self, name, version=None, arch=None):
         """
@@ -367,7 +364,7 @@ class YumBackend(RpmBackend):
                                  verbose=False, shell=True)
         out = cmd_result.stdout.strip()
         try:
-            ver = re.findall('\d*.\d*.\d*', out)[0]
+            ver = re.findall(r'\d*.\d*.\d*', out)[0]
         except IndexError:
             ver = out
         self.pm_version = ver
@@ -435,12 +432,15 @@ class YumBackend(RpmBackend):
             self.cfgparser.set(section_name, 'name',
                                'Avocado managed repository')
             self.cfgparser.set(section_name, 'url', url)
-            self.cfgparser.set(section_name, 'enabled', 1)
-            self.cfgparser.set(section_name, 'gpgcheck', 0)
-            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
-            self.cfgparser.write(open(tmp_file_repo, "w"))
-            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
-                           sudo=True)
+            self.cfgparser.set(section_name, 'enabled', '1')
+            self.cfgparser.set(section_name, 'gpgcheck', '0')
+            prefix = 'avocado_software_manager'
+            with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
+                self.cfgparser.write(tmp_file)
+                tmp_file.flush()    # Sync the content
+                process.system('cp %s %s'
+                               % (tmp_file.name, self.repo_file_path),
+                               sudo=True)
             return True
         except (OSError, process.CmdError), details:
             log.error(details)
@@ -453,15 +453,18 @@ class YumBackend(RpmBackend):
         :param url: Universal Resource Locator of the repository.
         """
         try:
-            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
-            for section in self.cfgparser.sections():
-                for option, value in self.cfgparser.items(section):
-                    if option == 'url' and value == url:
-                        self.cfgparser.remove_section(section)
-                        self.cfgparser.write(open(tmp_file_repo, "w"))
-            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
-                           sudo=True)
-            return True
+            prefix = 'avocado_software_manager'
+            with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
+                for section in self.cfgparser.sections():
+                    for option, value in self.cfgparser.items(section):
+                        if option == 'url' and value == url:
+                            self.cfgparser.remove_section(section)
+                self.cfgparser.write(tmp_file.file)
+                tmp_file.flush()    # Sync the content
+                process.system('cp %s %s'
+                               % (tmp_file.name, self.repo_file_path),
+                               sudo=True)
+                return True
         except (OSError, process.CmdError), details:
             log.error(details)
             return False
@@ -498,9 +501,9 @@ class YumBackend(RpmBackend):
             return None
         try:
             d_provides = self.yum_base.searchPackageProvides(args=[name])
-        except Exception, e:
+        except Exception, exc:
             log.error("Error searching for package that "
-                      "provides %s: %s", name, e)
+                      "provides %s: %s", name, exc)
             d_provides = []
 
         provides_list = [key for key in d_provides]
@@ -668,19 +671,20 @@ class AptBackend(DpkgBackend):
         executable = utils_path.find_command('apt-get')
         self.base_command = executable + ' --yes --allow-unauthenticated'
         self.repo_file_path = '/etc/apt/sources.list.d/avocado.list'
-        self.dpkg_force_confdef = '-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"'
+        self.dpkg_force_confdef = ('-o Dpkg::Options::="--force-confdef" '
+                                   '-o Dpkg::Options::="--force-confold"')
         cmd_result = process.run('apt-get -v | head -1',
                                  ignore_status=True,
                                  verbose=False,
                                  shell=True)
         out = cmd_result.stdout.strip()
         try:
-            ver = re.findall('\d\S*', out)[0]
+            ver = re.findall(r'\d\S*', out)[0]
         except IndexError:
             ver = out
         self.pm_version = ver
 
-        log.debug('apt-get version: %s' % self.pm_version)
+        log.debug('apt-get version: %s', self.pm_version)
         # gdebi-core is necessary for local installation with dependency
         # handling
         if not self.check_installed('gdebi-core'):
@@ -700,7 +704,8 @@ class AptBackend(DpkgBackend):
             i_cmd = utils_path.find_command('gdebi') + ' -n -q ' + name
         else:
             command = 'install'
-            i_cmd = " ".join([self.base_command, self.dpkg_force_confdef, command, name])
+            i_cmd = " ".join([self.base_command, self.dpkg_force_confdef,
+                              command, name])
 
         try:
             process.system(i_cmd, shell=True, sudo=True)
@@ -752,14 +757,16 @@ class AptBackend(DpkgBackend):
             new_file_contents = []
             with open(self.repo_file_path, 'r') as repo_file:
                 for line in repo_file.readlines():
-                    if not line == repo:
+                    if line != repo:
                         new_file_contents.append(line)
             new_file_contents = "\n".join(new_file_contents)
-            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
-            with open(tmp_file_repo, 'w') as tmp_file_repo:
-                tmp_file_repo.write(new_file_contents)
-            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
-                           sudo=True)
+            prefix = "avocado_software_manager"
+            with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
+                tmp_file.write(new_file_contents)
+                tmp_file.flush()    # Sync the content
+                process.system('cp %s %s'
+                               % (tmp_file.name, self.repo_file_path),
+                               sudo=True)
         except (OSError, process.CmdError), details:
             log.error(details)
             return False
@@ -782,10 +789,12 @@ class AptBackend(DpkgBackend):
 
         if name:
             up_command = 'install --only-upgrade'
-            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef, up_command, name])
+            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef,
+                               up_command, name])
         else:
             up_command = 'upgrade'
-            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef, up_command])
+            up_cmd = " ".join([self.base_command, self.dpkg_force_confdef,
+                               up_command])
 
         try:
             process.system(up_cmd, shell=True, sudo=True)
