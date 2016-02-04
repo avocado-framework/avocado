@@ -462,6 +462,19 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIn('ERROR| Error message (ordinary message not changing '
                       'the results)', result.stdout, result)
 
+    def test_non_absolute_path(self):
+        avocado_path = os.path.join(basedir, 'scripts', 'avocado')
+        test_base_dir = os.path.dirname(self.pass_script.path)
+        test_file_name = os.path.basename(self.pass_script.path)
+        os.chdir(test_base_dir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
+                    ' %s' % (avocado_path, self.tmpdir, test_file_name))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
     def tearDown(self):
         self.pass_script.remove()
         self.fail_script.remove()
