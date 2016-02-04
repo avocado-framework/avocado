@@ -437,10 +437,13 @@ class YumBackend(RpmBackend):
             self.cfgparser.set(section_name, 'url', url)
             self.cfgparser.set(section_name, 'enabled', '1')
             self.cfgparser.set(section_name, 'gpgcheck', '0')
-            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
-            self.cfgparser.write(open(tmp_file_repo, "w"))
-            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
-                           sudo=True)
+            prefix = 'avocado_software_manager'
+            with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
+                self.cfgparser.write(tmp_file)
+                tmp_file.flush()    # Sync the content
+                process.system('cp %s %s'
+                               % (tmp_file.name, self.repo_file_path),
+                               sudo=True)
             return True
         except (OSError, process.CmdError), details:
             log.error(details)
@@ -453,15 +456,18 @@ class YumBackend(RpmBackend):
         :param url: Universal Resource Locator of the repository.
         """
         try:
-            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
-            for section in self.cfgparser.sections():
-                for option, value in self.cfgparser.items(section):
-                    if option == 'url' and value == url:
-                        self.cfgparser.remove_section(section)
-                        self.cfgparser.write(open(tmp_file_repo, "w"))
-            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
-                           sudo=True)
-            return True
+            prefix = 'avocado_software_manager'
+            with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
+                for section in self.cfgparser.sections():
+                    for option, value in self.cfgparser.items(section):
+                        if option == 'url' and value == url:
+                            self.cfgparser.remove_section(section)
+                self.cfgparser.write(tmp_file.file)
+                tmp_file.flush()    # Sync the content
+                process.system('cp %s %s'
+                               % (tmp_file.name, self.repo_file_path),
+                               sudo=True)
+                return True
         except (OSError, process.CmdError), details:
             log.error(details)
             return False
@@ -755,11 +761,13 @@ class AptBackend(DpkgBackend):
                     if not line == repo:
                         new_file_contents.append(line)
             new_file_contents = "\n".join(new_file_contents)
-            tmp_file_repo = tempfile.mktemp(prefix='avocado_software_manager')
-            with open(tmp_file_repo, 'w') as tmp_file_repo:
-                tmp_file_repo.write(new_file_contents)
-            process.system('mv %s %s' % (tmp_file_repo, self.repo_file_path),
-                           sudo=True)
+            prefix = "avocado_software_manager"
+            with tempfile.NamedTemporaryFile("w", prefix=prefix) as tmp_file:
+                tmp_file.write(new_file_contents)
+                tmp_file.flush()    # Sync the content
+                process.system('cp %s %s'
+                               % (tmp_file.name, self.repo_file_path),
+                               sudo=True)
         except (OSError, process.CmdError), details:
             log.error(details)
             return False
