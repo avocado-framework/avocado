@@ -29,6 +29,8 @@ class RemoteTestResult(HumanTestResult):
     Remote Machine Test Result class.
     """
 
+    command_line_arg_name = '--remote-hostname'
+
     def __init__(self, stream, args):
         """
         Creates an instance of RemoteTestResult.
@@ -42,7 +44,6 @@ class RemoteTestResult(HumanTestResult):
         self.urls = self.args.url
         self.remote = None      # Remote runner initialized during setup
         self.output = '-'
-        self.command_line_arg_name = '--remote-hostname'
 
     def copy_files(self):
         """
@@ -101,10 +102,11 @@ class VMTestResult(RemoteTestResult):
     Virtual Machine Test Result class.
     """
 
+    command_line_arg_name = '--vm-domain'
+
     def __init__(self, stream, args):
         super(VMTestResult, self).__init__(stream, args)
         self.vm = None
-        self.command_line_arg_name = '--vm-domain'
 
     def setup(self):
         # Super called after VM is found and initialized
