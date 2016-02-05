@@ -367,6 +367,13 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(os.path.basename(test_dirs[0]),
                          '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
+    def test_replay_skip_skipped(self):
+        result = process.run("./scripts/avocado run skiponsetup --json -")
+        result = json.loads(result.stdout)
+        jobid = result["job_id"]
+        process.run(str("./scripts/avocado run --replay %s "
+                        "--replay-test-status PASS" % jobid))
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
