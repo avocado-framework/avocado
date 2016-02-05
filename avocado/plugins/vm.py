@@ -22,6 +22,7 @@ from avocado.core import exit_codes
 from avocado.core import virt
 from avocado.core.remote import VMTestResult
 from avocado.core.remote import RemoteTestRunner
+from avocado.core.result import register_test_result_class
 from .base import CLI
 
 
@@ -104,5 +105,5 @@ class VM(CLI):
 
     def run(self, args):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
-            args.remote_result = VMTestResult
+            register_test_result_class(args, VMTestResult)
             args.test_runner = RemoteTestRunner
