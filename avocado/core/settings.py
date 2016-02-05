@@ -33,7 +33,7 @@ _config_dir_system_extra = os.path.join(CFG_DIR, 'avocado', 'conf.d')
 _config_dir_local = os.path.join(os.path.expanduser("~"), '.config', 'avocado')
 _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
 _config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado')
-_config_path_intree_extra = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado', 'conf.d')
+_config_path_intree_extra = os.path.join(_config_path_intree, 'conf.d')
 
 config_filename = 'avocado.conf'
 config_path_system = os.path.join(_config_dir_system, config_filename)
