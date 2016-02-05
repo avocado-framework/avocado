@@ -74,9 +74,10 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_excerpt = "Options --json --xunit are trying to use stdout simultaneously"
-        self.assertIn(error_excerpt, output,
-                      "Missing excerpt error message from output:\n%s" % output)
+        error_regex = re.compile(r'Options (--json --xunit)|(--xunit --son) '
+                                 'are trying to use stdout simultaneously')
+        self.assertIsNotNone(error_regex.match(output),
+                             "Missing error message from output:\n%s" % output)
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)

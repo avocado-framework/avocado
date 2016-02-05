@@ -22,6 +22,7 @@ from avocado.core import exit_codes
 from avocado.core import remoter
 from avocado.core.remote import RemoteTestResult
 from avocado.core.remote import RemoteTestRunner
+from avocado.core.result import register_test_result_class
 from .base import CLI
 
 
@@ -101,5 +102,5 @@ class Remote(CLI):
     def run(self, args):
         if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
-            args.remote_result = RemoteTestResult
+            register_test_result_class(args, RemoteTestResult)
             args.test_runner = RemoteTestRunner
