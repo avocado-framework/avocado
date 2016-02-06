@@ -345,6 +345,58 @@ In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
 
+Fetching asset files
+====================
+To run third party test suites as mentioned above, we offer an asset fetcher 
+as a method of Avocado Test class.
+The asset method looks for the ``cache_dir`` key in ``[datadir.paths]`` section
+from the configuration file. Read-only ``cache_dir`` directory is also
+supported. See the example bellow, using the asset fetcher in ``setUp()``::
+
+    ...
+        def setUp(self):
+            st_name = 'stress-1.0.4.tar.gz'
+            st_hash = 'e1533bc704928ba6e26a362452e6db8fd58b1f0b'
+            st_loc = ['http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz']
+            tarball = self.fetch_asset(st_name, asset_hash=st_hash, locations=st_loc)
+            archive.extract(tarball, self.srcdir)
+    ...
+
+If the ``avocado.conf`` file has the ``cache_dir`` key in ``[datadir.paths]``
+section, we will use it. Otherwise we will create a temporary ``cache_dir``
+inside the test temporary directory. Below are the general steps taken for the
+snip above:
+
+1. Check is ``cache_dir`` exists. If not, it will be created.
+
+2. Check if the file exists in ``cache_dir``, returning the full path if yes.
+
+3. Case file does not exist ``cache_dir``, try to get it from the locations
+   list.
+
+If the ``asset_hash`` is provided, we will first try to find a hash file in the
+same ``cache_dir``. Still using the example above, we will look for the file
+``stress-1.0.4.tar.gz.sha1`` (or ``stress-1.0.4.tar.gz.sha1sum``) in the
+``cache_dir``. If the file exists and it contains the hash for
+``stress-1.0.4.tar.gz``, we will use such hash instead of computing the hash.
+Otherwise, we take the long road and compute the hash to verify the file
+against the provided hash. In this case, the hash file will be created to avoid
+further redundant hash calculations.
+
+
+Detailing the ``fetch_asset()`` attributes:
+
+* ``name:`` The name used to name the fetched file. It can also contains a full
+  location.
+* ``asset_hase:`` (optinal) The expected file hash. If missing, we skip the
+  check.
+* ``locations:`` (optional) List of locations to try to fetch the file from.
+  The supported locations are ``http``, ``ftp`` and ``file``. Here you have to
+  inform the full url to the file. The first success will skip the next
+  locations.
+
+The expected ``return`` is the asset file path or an exception.
+
 Test Output Check and Output Record Mode
 ========================================
 
