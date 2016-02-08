@@ -136,6 +136,9 @@ class Test(unittest.TestCase):
         self.params = multiplexer.AvocadoParams(params, self.name, self.tag,
                                                 mux_path,
                                                 self.default_params)
+        timeout = self.params.get("timeout")
+        if timeout is not None:
+            self.timeout = timeout
 
         self.log.info('START %s', self.tagged_name)
 
@@ -236,7 +239,7 @@ class Test(unittest.TestCase):
                          'tag', 'tagged_name', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
-                         'fail_class', 'params']
+                         'fail_class', 'params', "timeout"]
         state = dict([(key, self.__dict__.get(key)) for key in preserve_attr])
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
