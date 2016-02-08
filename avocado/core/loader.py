@@ -674,17 +674,14 @@ class FileLoader(TestLoader):
                 return make_broken(test.NotATest, test_path)
 
     @staticmethod
-    def _make_test(klass, uid, params=None):
+    def _make_test(klass, uid):
         """
         Create test template
         :param klass: test class
         :param uid: test uid (by default used as id and name)
         :param params: optional params (id won't be overriden when present)
         """
-        if not params:
-            params = {}
-        params.setdefault('id', uid)
-        return [(klass, {'name': uid, 'params': params})]
+        return [(klass, {'name': uid})]
 
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
         """
@@ -797,8 +794,8 @@ class ExternalLoader(TestLoader):
         """
         if not self._external_runner:
             return []
-        return [(test.ExternalRunnerTest, {'name': url, 'params': {'id': url},
-                                           'external_runner': self._external_runner})]
+        return [(test.ExternalRunnerTest, {'name': url, 'external_runner':
+                                           self._external_runner})]
 
     @staticmethod
     def get_type_label_mapping():
