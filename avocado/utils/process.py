@@ -18,6 +18,7 @@ Functions dedicated to find and run external commands.
 
 import logging
 import os
+import re
 import StringIO
 import signal
 import time
@@ -61,6 +62,10 @@ WRAP_PROCESS_NAMES_EXPR = []
 #: session. Since the information is unknown, and the behavior is
 #: undefined, this situation will be flagged by an exception.
 UNDEFINED_BEHAVIOR_EXCEPTION = None
+
+
+# variable=value bash assignment
+_RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
 
 
 class CmdError(Exception):
@@ -176,6 +181,27 @@ def get_children_pids(ppid):
     return: list of PIDs of all children/threads of ppid
     """
     return system_output("ps -L --ppid=%d -o lwp" % ppid, verbose=False).split('\n')[1:]
+
+
+def binary_from_shell_cmd(cmd):
+    """
+    Tries to find the first binary path from a simple shell-like command.
+
+    :note: It's a naive implementation, but for commands like:
+           `VAR=VAL binary -args || true` gives the right resutl (binary)
+    :param cmd: simple shell-like binary
+    :return: first found binary from the cmd
+    """
+    try:
+        cmds = shlex.split(cmd)
+    except ValueError:
+        log.warning("binary_from_shell_cmd: Shlex split of %s failed, using "
+                    "using simple split.", cmd)
+        cmds = cmd.split(" ")
+    for item in cmds:
+        if not _RE_BASH_SET_VARIABLE.match(item):
+            return item
+    raise ValueError("Unable to parse first binary from '%s'" % cmd)
 
 
 class CmdResult(object):
