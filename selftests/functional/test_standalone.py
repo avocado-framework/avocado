@@ -53,8 +53,8 @@ class StandaloneTests(unittest.TestCase):
         exc = "NastyException: Nasty-string-like-exception"
         count = result.stderr.count("\n%s" % exc)
         self.assertEqual(count, 2, "Exception \\n%s should be present twice in"
-                         "the log (once from the log, second time when parsing"
-                         "exception details." % (exc))
+                         " the log (once from the log, second time when "
+                         "parsing exception details." % (exc))
 
     def test_errortest_nasty2(self):
         cmd_line = './examples/tests/errortest_nasty2.py -r'
