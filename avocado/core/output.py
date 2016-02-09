@@ -41,15 +41,16 @@ def early_start():
     Replace all outputs with in-memory handlers
     """
     if os.environ.get('AVOCADO_LOG_DEBUG'):
-        add_log_handler("avocado.app.debug", None, STDERR,
+        add_log_handler("avocado.app.debug", logging.StreamHandler, STDERR,
                         logging.DEBUG)
     if os.environ.get('AVOCADO_LOG_EARLY'):
-        add_log_handler("", None, STDERR, logging.DEBUG)
-        add_log_handler("avocado.test", None, STDERR, logging.DEBUG)
+        add_log_handler("", logging.StreamHandler, STDERR, logging.DEBUG)
+        add_log_handler("avocado.test", logging.StreamHandler, STDERR,
+                        logging.DEBUG)
     else:
         sys.stdout = StringIO()
         sys.stderr = sys.stdout
-        add_log_handler("", MemStreamHandler, None,
+        add_log_handler("", MemStreamHandler, logging.StreamHandler,
                         logging.DEBUG)
     logging.root.level = logging.DEBUG
 
@@ -109,8 +110,8 @@ def reconfigure(args):
         logging.getLogger("avocado.test.stderr").propagate = False
         if "early" in enabled:
             enable_stderr()
-            add_log_handler("", None, STDERR, logging.DEBUG)
-            add_log_handler("avocado.test", None, STDERR,
+            add_log_handler("", logging.StreamHandler, STDERR, logging.DEBUG)
+            add_log_handler("avocado.test", logging.StreamHandler, STDERR,
                             logging.DEBUG)
         else:
             # TODO: For now enable stdout and stderr, because there are
@@ -144,7 +145,7 @@ def reconfigure(args):
                      else logging.getLevelName(name[1].upper()))
             name = name[0]
         try:
-            add_log_handler(name, None, STDERR, level)
+            add_log_handler(name, logging.StreamHandler, STDERR, level)
         except ValueError, details:
             app_logger.error("Failed to set logger for --output %s:%s: %s.",
                              name, level, details)
@@ -269,24 +270,19 @@ class Paginator(object):
             pass
 
 
-def add_log_handler(logger, klass=None, stream=None, level=None, fmt=None):
+def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
+                    level=logging.INFO, fmt='%(name)s: %(message)s'):
     """
     Add handler to a logger.
 
-    :param logger: Name of the target logger
-    :param klass: Handler class [`logging.StreamHandler`]
-    :param stream: Logging stream (klass argument) [`sys.stdout`]
-    :param level: Log level [`INFO`]
-    :param fmt: Formatter [`%(name)s: %(message)s`]
+    :param logger_name: the name of a :class:`logging.Logger` instance, that
+                        is, the parameter to :func:`logging.getLogger`
+    :param klass: Handler class (defaults to :class:`logging.StreamHandler`)
+    :param stream: Logging stream, to be passed as an argument to ``klass``
+                   (defaults to ``sys.stdout``)
+    :param level: Log level (defaults to `INFO``)
+    :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
     """
-    if klass is None:
-        klass = logging.StreamHandler
-    if stream is None:
-        stream = sys.stdout
-    if level is None:
-        level = logging.INFO
-    if fmt is None:
-        fmt = '%(name)s: %(message)s'
     console_handler = klass(stream)
     console_handler.setLevel(level)
     if isinstance(fmt, str):
