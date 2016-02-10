@@ -113,6 +113,8 @@ clean:
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 	$(PYTHON) setup.py develop --uninstall --user
+	rm -rf /var/tmp/avocado*
+	rm -rf /tmp/avocado*
 
 requirements:
 	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
@@ -122,8 +124,6 @@ requirements-selftests: requirements
 	- grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
 check: clean check_cyclical modules_boundaries
-	rm -rf /var/tmp/avocado*
-	rm -rf /tmp/avocado*
 	selftests/checkall
 	selftests/check_tmp_dirs
 
