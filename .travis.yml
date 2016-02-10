@@ -8,6 +8,10 @@ branches:
     only:
         - master
 
+cache:
+    directories:
+        - $HOME/.cache/pip
+
 sudo: false
 
 install:
