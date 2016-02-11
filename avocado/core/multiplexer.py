@@ -419,17 +419,12 @@ class Mux(object):
                 test_factory = [template[0], template[1].copy()]
                 if self._has_multiple_variants:
                     test_factory[1]['tag'] = "variant%s" % (i + 1)
-                inject_params = test_factory[1].get('params', {}).get(
-                    'avocado_inject_params', False)
-                # Test providers might want to keep their original params and
-                # only append avocado parameters to a special 'avocado_params'
-                # key. In order for that to happen, they need to set
-                # params['avocado_inject_params'] = True as well.
-                if not inject_params:
-                    test_factory[1]['params'] = (variant, self._mux_path)
-                else:
-                    test_factory[1]['params']['avocado_params'] = (
-                        variant, self._mux_path)
+                if "params" in test_factory[1]:
+                    msg = ("Unable to multiplex test %s, params are already "
+                           "present in test factory: %s"
+                           % (test_factory[0], test_factory[1]))
+                    raise ValueError(msg)
+                test_factory[1]['params'] = (variant, self._mux_path)
                 yield test_factory
             if i is None:   # No variants, use template
                 yield template
