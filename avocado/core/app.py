@@ -17,6 +17,7 @@ The core Avocado application.
 """
 
 import os
+import signal
 
 from .log import configure as configure_log
 from .parser import Parser
@@ -38,6 +39,7 @@ class AvocadoApp(object):
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
         configure_log()
+        signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
         self.cli_dispatcher = CLIDispatcher()
         self.cli_cmd_dispatcher = CLICmdDispatcher()

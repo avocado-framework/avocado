@@ -2,6 +2,15 @@
 Avocado development tips
 ========================
 
+Interrupting test
+=================
+
+In case you want to "pause" the running test, you can use SIGTSTP (ctrl+z)
+signal sent to the main avocado process. This signal is forwarded to test
+and it's children processes. To resume testing you repeat the same signal.
+
+Note: that the job/test timeouts are still enabled on stopped processes.
+
 In tree utils
 =============
 

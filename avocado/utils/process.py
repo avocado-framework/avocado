@@ -113,7 +113,7 @@ def safe_kill(pid, signal):
         return False
 
 
-def kill_process_tree(pid, sig=signal.SIGKILL):
+def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
     """
     Signal a process and all of its children.
 
@@ -129,7 +129,8 @@ def kill_process_tree(pid, sig=signal.SIGKILL):
     for child in children:
         kill_process_tree(int(child), sig)
     safe_kill(pid, sig)
-    safe_kill(pid, signal.SIGCONT)
+    if send_sigcont:
+        safe_kill(pid, signal.SIGCONT)
 
 
 def kill_process_by_pattern(pattern):
