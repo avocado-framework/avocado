@@ -123,6 +123,9 @@ requirements:
 requirements-selftests: requirements
 	- grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
+smokecheck:
+	./scripts/avocado run passtest
+
 check: clean check_cyclical modules_boundaries
 	selftests/checkall
 	selftests/check_tmp_dirs
