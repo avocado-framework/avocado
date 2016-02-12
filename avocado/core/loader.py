@@ -200,7 +200,8 @@ class TestLoaderProxy(object):
 
         :param urls: a list of tests urls; if [] use plugin defaults
         :type urls: builtin.list
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
+                            DEFAULT)
         :return: A list of test factories (tuples (TestClass, test_params))
         """
         def handle_exception(plugin, details):
@@ -344,7 +345,8 @@ class TestLoader(object):
 
         :param url: the url to be inspected.
         :type url: str
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
+                            DEFAULT)
         :return: a list of test matching the url as params.
         """
         raise NotImplementedError
@@ -372,13 +374,13 @@ class FilteredOut(object):
 
 
 def add_loader_options(parser):
-    loader = parser.add_argument_group('loader options')
-    loader.add_argument('--loaders', nargs='*', help="Overrides the priority "
+    arggrp = parser.add_argument_group('loader options')
+    arggrp.add_argument('--loaders', nargs='*', help="Overrides the priority "
                         "of the test loaders. You can specify either "
                         "@loader_name or TEST_TYPE. By default it tries all "
                         "available loaders according to priority set in "
                         "settings->plugins.loaders.")
-    loader.add_argument('--external-runner', default=None,
+    arggrp.add_argument('--external-runner', default=None,
                         metavar='EXECUTABLE',
                         help=('Path to an specific test runner that '
                               'allows the use of its own tests. This '
@@ -397,11 +399,11 @@ def add_loader_options(parser):
                   'where those files are located, use "test" here and '
                   'specify the test directory with the option '
                   '"--external-runner-testdir". Defaults to "%(default)s"')
-    loader.add_argument('--external-runner-chdir', default='off',
+    arggrp.add_argument('--external-runner-chdir', default='off',
                         choices=('runner', 'test', 'off'),
                         help=chdir_help)
 
-    loader.add_argument('--external-runner-testdir', metavar='DIRECTORY',
+    arggrp.add_argument('--external-runner-testdir', metavar='DIRECTORY',
                         default=None,
                         help=('Where test files understood by the external'
                               ' test runner are located in the '
@@ -455,7 +457,8 @@ class FileLoader(TestLoader):
         partial match).
 
         :param url: the directory path to inspect.
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
+                            DEFAULT)
         :return: list of matching tests
         """
         tests = self._discover(url, which_tests)
@@ -482,7 +485,8 @@ class FileLoader(TestLoader):
         The tests are returned in alphabetic order.
 
         :param url: the directory path to inspect.
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
+                            DEFAULT)
         :return: list of matching tests
         """
         if url is None:
@@ -674,17 +678,13 @@ class FileLoader(TestLoader):
                 return make_broken(test.NotATest, test_path)
 
     @staticmethod
-    def _make_test(klass, uid, params=None):
+    def _make_test(klass, uid):
         """
         Create test template
         :param klass: test class
         :param uid: test uid (by default used as id and name)
-        :param params: optional params (id won't be overriden when present)
         """
-        if not params:
-            params = {}
-        params.setdefault('id', uid)
-        return [(klass, {'name': uid, 'params': params})]
+        return [(klass, {'name': uid})]
 
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
         """
@@ -792,13 +792,14 @@ class ExternalLoader(TestLoader):
     def discover(self, url, which_tests=DEFAULT):
         """
         :param url: arguments passed to the external_runner
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or DEFAULT)
+        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
+                            DEFAULT)
         :return: list of matching tests
         """
         if not self._external_runner:
             return []
-        return [(test.ExternalRunnerTest, {'name': url, 'params': {'id': url},
-                                           'external_runner': self._external_runner})]
+        return [(test.ExternalRunnerTest, {'name': url, 'external_runner':
+                                           self._external_runner})]
 
     @staticmethod
     def get_type_label_mapping():
