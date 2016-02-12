@@ -152,18 +152,18 @@ class TestStatus(object):
             else:       # test_status
                 self.status = msg
 
-    def abort(self, test_alive, started, timeout, first, step):
+    def abort(self, proc, started, timeout, first, step):
         """
         Handle job abortion
-        :param test_alive: Whether the test process is still alive
+        :param proc: The test's process
         :param started: Time when the test started
         :param timeout: Timeout for waiting on status
         :param first: Delay before first check
         :param step: Step between checks for the status
         """
-        if test_alive and wait.wait_for(lambda: self.status, timeout,
-                                        first, step):
-            return self.status
+        if proc.is_alive() and wait.wait_for(lambda: self.status, timeout,
+                                             first, step):
+            status = self.status
         else:
             test_state = self.early_status
             test_state['time_elapsed'] = time.time() - started
@@ -178,7 +178,17 @@ class TestStatus(object):
             test_log.error('ERROR %s -> TestAbortedError: '
                            'Test aborted unexpectedly',
                            test_state['name'])
-            return test_state
+            status = test_state
+        if proc.is_alive():
+            for _ in xrange(5):     # I really want to destroy it
+                os.kill(proc.pid, signal.SIGKILL)
+                if not proc.is_alive():
+                    break
+                time.sleep(0.1)
+            else:
+                raise exceptions.TestError("Unable to destroy test's process "
+                                           "(%s)" % proc.pid)
+        return status
 
 
 class TestRunner(object):
@@ -367,8 +377,8 @@ class TestRunner(object):
         if test_status.status:
             test_state = test_status.status
         else:
-            test_state = test_status.abort(proc.is_alive(), time_started,
-                                           cycle_timeout, first, step)
+            test_state = test_status.abort(proc, time_started, cycle_timeout,
+                                           first, step)
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
