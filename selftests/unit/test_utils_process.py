@@ -202,5 +202,21 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+
+class MiscProcessTests(unittest.TestCase):
+
+    def test_binary_from_shell(self):
+        self.assertEqual("binary", process.binary_from_shell_cmd("binary"))
+        res = process.binary_from_shell_cmd("MY_VAR=foo myV4r=123 "
+                                            "quote='a b c' QUOTE=\"1 2 && b\" "
+                                            "QuOtE=\"1 2\"foo' 3 4' first_bin "
+                                            "second_bin VAR=xyz")
+        self.assertEqual("first_bin", res)
+        res = process.binary_from_shell_cmd("VAR=VALUE 1st_binary var=value "
+                                            "second_binary")
+        self.assertEqual("1st_binary", res)
+        res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
+        self.assertEqual("./bin", res)
+
 if __name__ == "__main__":
     unittest.main()
