@@ -31,14 +31,13 @@ class RemoteTestResult(HumanTestResult):
 
     command_line_arg_name = '--remote-hostname'
 
-    def __init__(self, stream, args):
+    def __init__(self, job):
         """
         Creates an instance of RemoteTestResult.
 
-        :param stream: an instance of :class:`avocado.core.output.View`.
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        HumanTestResult.__init__(self, stream, args)
+        HumanTestResult.__init__(self, job)
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
         self.urls = self.args.url
@@ -79,12 +78,9 @@ class RemoteTestResult(HumanTestResult):
 
     def setup(self):
         """ Setup remote environment and copy test directories """
-        self.stream.notify(event='message',
-                           msg=("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)"
-                                % (self.args.remote_username,
-                                   self.args.remote_hostname,
-                                   self.args.remote_port,
-                                   self.args.remote_timeout)))
+        self.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
+                      self.args.remote_username, self.args.remote_hostname,
+                      self.args.remote_port, self.args.remote_timeout)
         self.remote = remoter.Remote(self.args.remote_hostname,
                                      self.args.remote_username,
                                      self.args.remote_password,
@@ -104,14 +100,13 @@ class VMTestResult(RemoteTestResult):
 
     command_line_arg_name = '--vm-domain'
 
-    def __init__(self, stream, args):
-        super(VMTestResult, self).__init__(stream, args)
+    def __init__(self, job):
+        super(VMTestResult, self).__init__(job)
         self.vm = None
 
     def setup(self):
         # Super called after VM is found and initialized
-        self.stream.notify(event='message', msg="DOMAIN     : %s"
-                           % self.args.vm_domain)
+        self.log.info("DOMAIN     : %s", self.args.vm_domain)
         self.vm = virt.vm_connect(self.args.vm_domain,
                                   self.args.vm_hypervisor_uri)
         if self.vm is None:

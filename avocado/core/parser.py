@@ -29,6 +29,27 @@ PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
 
 
+def log_type(value):
+    value = value.split(',')
+    if '?' in value:
+        sys.stderr.write("Enable stdout/stderr console streams. Special values"
+                         " are:\n app - application output\n "
+                         "test - test output\n debug - tracebacks and other "
+                         "debugging info\n remote - fabric/paramiko debug\n "
+                         "early - early logging of other streams (very "
+                         "verbose)\n all - everything\n none - disable "
+                         "everything\n ? - this help\n\nYou can also supply "
+                         "any (non-colliding) stream, eg. 'my.stream'.\n")
+        sys.exit(-1)
+
+    if 'all' in value:
+        return ["app", "test", "debug", "remote", "early"]
+    elif 'none' in value:
+        return []
+    else:
+        return value
+
+
 class ArgumentParser(argparse.ArgumentParser):
 
     """
@@ -57,6 +78,16 @@ class Parser(object):
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       help='Use custom configuration from a file')
+        self.application.add_argument('--show', action="store",
+                                      type=log_type,
+                                      metavar="STREAM[:LVL]",
+                                      default=['app'], help="Comma separated "
+                                      "list of logging streams to be enabled "
+                                      "optionally followed by LEVEL. "
+                                      "Use '?' to get additional info; "
+                                      "By default 'app:DEBUG'")
+        self.application.add_argument('-s', '--silent', action='store_true',
+                                      default=False, help='Silence stdout')
 
     def start(self):
         """
