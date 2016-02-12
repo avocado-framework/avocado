@@ -104,7 +104,6 @@ clean:
 	$(PYTHON) setup.py clean
 	$(MAKE) -f $(CURDIR)/debian/rules clean || true
 	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES
-	find . -name '*.pyc' -delete
 	rm -f man/avocado.1
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
@@ -115,6 +114,7 @@ clean:
 	$(PYTHON) setup.py develop --uninstall --user
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
+	find . -name '*.pyc' -delete
 
 requirements:
 	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
