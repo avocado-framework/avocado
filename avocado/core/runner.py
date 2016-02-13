@@ -33,6 +33,7 @@ from .loader import loader
 from ..utils import wait
 from ..utils import stacktrace
 from ..utils import runtime
+from ..utils import process
 
 
 class TestStatus(object):
@@ -151,18 +152,18 @@ class TestStatus(object):
             else:       # test_status
                 self.status = msg
 
-    def abort(self, test_alive, started, timeout, first, step):
+    def abort(self, proc, started, timeout, first, step):
         """
         Handle job abortion
-        :param test_alive: Whether the test process is still alive
+        :param proc: The test's process
         :param started: Time when the test started
         :param timeout: Timeout for waiting on status
         :param first: Delay before first check
         :param step: Step between checks for the status
         """
-        if test_alive and wait.wait_for(lambda: self.status, timeout,
-                                        first, step):
-            return self.status
+        if proc.is_alive() and wait.wait_for(lambda: self.status, timeout,
+                                             first, step):
+            status = self.status
         else:
             test_state = self.early_status
             test_state['time_elapsed'] = time.time() - started
@@ -177,7 +178,17 @@ class TestStatus(object):
             test_log.error('ERROR %s -> TestAbortedError: '
                            'Test aborted unexpectedly',
                            test_state['name'])
-            return test_state
+            status = test_state
+        if proc.is_alive():
+            for _ in xrange(5):     # I really want to destroy it
+                os.kill(proc.pid, signal.SIGKILL)
+                if not proc.is_alive():
+                    break
+                time.sleep(0.1)
+            else:
+                raise exceptions.TestError("Unable to destroy test's process "
+                                           "(%s)" % proc.pid)
+        return status
 
 
 class TestRunner(object):
@@ -197,6 +208,7 @@ class TestRunner(object):
         """
         self.job = job
         self.result = test_result
+        self.sigstopped = False
 
     def _run_test(self, test_factory, queue):
         """
@@ -212,6 +224,7 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
         """
+        signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
                               logging.getLogger('avocado.test'),
                               logging.getLogger('paramiko')]
@@ -267,6 +280,30 @@ class TestRunner(object):
         :param job_deadline: Maximum time to execute.
         :type job_deadline: int.
         """
+        proc = None
+        sigtstp = multiprocessing.Lock()
+
+        def sigtstp_handler(signum, frame):     # pylint: disable=W0613
+            """ SIGSTOP all test processes on SIGTSTP """
+            if not proc:    # Ignore ctrl+z when proc not yet started
+                return
+            with sigtstp:
+                msg = "ctrl+z pressed, %%s test (%s)" % proc.pid
+                if self.sigstopped:
+                    logging.getLogger("avocado.app").info("\n" + msg,
+                                                          "resumming")
+                    logging.getLogger("avocado.test").info(msg, "resumming")
+                    process.kill_process_tree(proc.pid, signal.SIGCONT, False)
+                    self.sigstopped = False
+                else:
+                    logging.getLogger("avocado.app").info("\n" + msg,
+                                                          "stopping")
+                    logging.getLogger("avocado.test").info(msg, "stopping")
+                    process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
+                    self.sigstopped = True
+
+        signal.signal(signal.SIGTSTP, sigtstp_handler)
+
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
         test_status = TestStatus(self.job, queue)
@@ -310,7 +347,8 @@ class TestRunner(object):
                     break
                 if proc.is_alive():
                     if ctrl_c_count == 0:
-                        if test_status.status.get('running'):
+                        if (test_status.status.get('running') or
+                                self.sigstopped):
                             self.job.result_proxy.notify_progress(False)
                         else:
                             self.job.result_proxy.notify_progress(True)
@@ -339,8 +377,8 @@ class TestRunner(object):
         if test_status.status:
             test_state = test_status.status
         else:
-            test_state = test_status.abort(proc.is_alive(), time_started,
-                                           cycle_timeout, first, step)
+            test_state = test_status.abort(proc, time_started, cycle_timeout,
+                                           first, step)
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
@@ -407,4 +445,5 @@ class TestRunner(object):
         self.job.funcatexit.run()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
+        signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return failures

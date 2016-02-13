@@ -6,6 +6,8 @@ import sys
 import tempfile
 import xml.dom.minidom
 import glob
+import aexpect
+import signal
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -481,6 +483,36 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
+
+    def test_kill_stopped_sleep(self):
+        sleep = process.run("which sleep", ignore_status=True, shell=True)
+        if sleep.exit_status:
+            self.skipTest("Sleep binary not found in PATH")
+        sleep = "'%s 60'" % sleep.stdout.strip()
+        proc = aexpect.Expect("./scripts/avocado run %s --job-results-dir %s "
+                              "--sysinfo=off --job-timeout 3"
+                              % (sleep, self.tmpdir))
+        proc.read_until_output_matches(["\(1/1\)"], timeout=3,
+                                       internal_timeout=0.01)
+        # We need pid of the avocado, not the shell executing it
+        pid = int(process.get_children_pids(proc.get_pid())[0])
+        os.kill(pid, signal.SIGTSTP)   # This freezes the process
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            if not proc.is_alive():
+                break
+        else:
+            proc.kill(signal.SIGKILL)
+            self.fail("Avocado process still alive 1s after job-timeout:\n%s"
+                      % proc.get_output())
+        output = proc.get_output()
+        self.assertIn("ctrl+z pressed, stopping test", output, "SIGTSTP "
+                      "message not in the output, test was probably not "
+                      "stopped.")
+        self.assertIn("TIME", output, "TIME not in the output, avocado "
+                      "probably died unexpectadly")
+        self.assertEqual(proc.get_status(), 1, "Avocado did not finish with "
+                         "1.")
 
     def tearDown(self):
         self.pass_script.remove()
