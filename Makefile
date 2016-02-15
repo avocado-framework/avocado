@@ -11,6 +11,7 @@
 #
 
 PYTHON=$(shell which python)
+PYTHON26=$(shell $(PYTHON) -V 2>&1 | grep 2.6 -q && echo true || echo false)
 VERSION=$(shell $(PYTHON) $(CURDIR)/avocado/core/version.py)
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/avocado
@@ -111,7 +112,7 @@ clean:
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
-	$(PYTHON) setup.py develop --uninstall --user
+	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
@@ -137,7 +138,7 @@ modules_boundaries:
 	selftests/modules_boundaries
 
 link:
-	$(PYTHON) setup.py develop --user
+	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
