@@ -79,7 +79,7 @@ def mock_fail_find_cmd(cmd, default=None):
 class TestProcessRun(unittest.TestCase):
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_subprocess_nosudo(self):
         expected_command = 'ls -l'
@@ -87,7 +87,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_subprocess_nosudo_uid_0(self):
         expected_command = 'ls -l'
@@ -95,10 +95,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_subprocess_sudo(self):
-        expected_command = '/usr/bin/sudo -n ls -l'
+        expected_command = '/bin/true -n ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
@@ -110,7 +110,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_subprocess_sudo_uid_0(self):
         expected_command = 'ls -l'
@@ -118,10 +118,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_subprocess_sudo_shell(self):
-        expected_command = '/usr/bin/sudo -n -s ls -l'
+        expected_command = '/bin/true -n -s ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
@@ -133,7 +133,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_subprocess_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
@@ -141,7 +141,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_run_nosudo(self):
         expected_command = 'ls -l'
@@ -149,7 +149,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_run_nosudo_uid_0(self):
         expected_command = 'ls -l'
@@ -157,10 +157,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_run_sudo(self):
-        expected_command = '/usr/bin/sudo -n ls -l'
+        expected_command = '/bin/true -n ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
@@ -172,7 +172,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_run_sudo_uid_0(self):
         expected_command = 'ls -l'
@@ -180,10 +180,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_run_sudo_shell(self):
-        expected_command = '/usr/bin/sudo -n -s ls -l'
+        expected_command = '/bin/true -n -s ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
@@ -195,7 +195,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/usr/bin/sudo'))
+                  MagicMock(return_value='/bin/true'))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_run_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
