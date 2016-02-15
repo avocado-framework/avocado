@@ -85,11 +85,12 @@ class RemoteTestResult(HumanTestResult):
                                    self.args.remote_hostname,
                                    self.args.remote_port,
                                    self.args.remote_timeout)))
-        self.remote = remoter.Remote(self.args.remote_hostname,
-                                     self.args.remote_username,
-                                     self.args.remote_password,
-                                     self.args.remote_port,
-                                     self.args.remote_timeout)
+        self.remote = remoter.Remote(hostname=self.args.remote_hostname,
+                                     username=self.args.remote_username,
+                                     password=self.args.remote_password,
+                                     key_filename=self.args.remote_key_file,
+                                     port=self.args.remote_port,
+                                     timeout=self.args.remote_timeout)
 
     def tear_down(self):
         """ Cleanup after test execution """
@@ -141,6 +142,7 @@ class VMTestResult(RemoteTestResult):
             self.args.remote_port = self.args.vm_port
             self.args.remote_username = self.args.vm_username
             self.args.remote_password = self.args.vm_password
+            self.args.remote_key_file = self.args.vm_key_file
             self.args.remote_no_copy = self.args.vm_no_copy
             self.args.remote_timeout = self.args.vm_timeout
             super(VMTestResult, self).setup()
