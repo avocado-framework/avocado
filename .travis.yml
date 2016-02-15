@@ -25,7 +25,8 @@ script:
     - ./selftests/cyclical_deps avocado
     - ./selftests/modules_boundaries
     - python setup.py develop
-    - ./selftests/run
+    - if [ $TRAVIS_PYTHON_VERSION == '2.6' ]; then ./scripts/avocado run `./contrib/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --show-job-log --external-runner="/usr/bin/python -m unittest2"; fi
+    - ./scripts/avocado run `./contrib/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --show-job-log --external-runner="/usr/bin/python -m unittest"
     - ./selftests/check_tmp_dirs
     - |
         ERR=""

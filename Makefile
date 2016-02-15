@@ -26,9 +26,10 @@ SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 all:
 	@echo
 	@echo "Development related targets:"
-	@echo "check:  Runs tree static check, unittests and functional tests"
-	@echo "link:   Runs 'python setup.py --develop' in all subprojects and links the needed resources"
-	@echo "clean:  Get rid of scratch, byte files and removes the links to other subprojects"
+	@echo "check:      Runs tree static check, unittests and functional tests"
+	@echo "link:       Runs 'python setup.py --develop' in all subprojects and links the needed resources"
+	@echo "clean:      Get rid of scratch, byte files and removes the links to other subprojects"
+	@echo "selfcheck:  Runs tree static check, unittests and functional tests using Avocado itself"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements:            Install runtime requirements"
@@ -128,6 +129,10 @@ smokecheck:
 
 check: clean check_cyclical modules_boundaries
 	selftests/checkall
+	selftests/check_tmp_dirs
+
+selfcheck: clean check_cyclical modules_boundaries
+	AVOCADO_SELF_CHECK=1 selftests/checkall
 	selftests/check_tmp_dirs
 
 check_cyclical:
