@@ -45,12 +45,12 @@ class TestSystemd(unittest.TestCase):
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
                 cmd = "is-enabled"
-            assert ret == ["systemctl", cmd, "%s.service" % self.service_name]
+            self.assertEqual(ret, ["systemctl", cmd, "%s.service" % self.service_name])
 
     def test_set_target(self):
         ret = getattr(
             self.service_command_generator, "set_target")("multi-user.target")
-        assert ret == ["systemctl", "isolate", "multi-user.target"]
+        self.assertEqual(ret, ["systemctl", "isolate", "multi-user.target"])
 
 
 class TestSysVInit(unittest.TestCase):
@@ -78,12 +78,12 @@ class TestSysVInit(unittest.TestCase):
             elif cmd == 'disable':
                 command_name = "chkconfig"
                 cmd = "off"
-            assert ret == [command_name, self.service_name, cmd]
+            self.assertEqual(ret, [command_name, self.service_name, cmd])
 
     def test_set_target(self):
         ret = getattr(
             self.service_command_generator, "set_target")("multi-user.target")
-        assert ret == ["telinit", "3"]
+        self.assertEqual(ret, ["telinit", "3"])
 
 
 class TestSpecificServiceManager(unittest.TestCase):
@@ -119,10 +119,10 @@ class TestSpecificServiceManager(unittest.TestCase):
         self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_list_is_not_present_in_SpecifcServiceManager(self):
-        assert not hasattr(self.service_manager, "list")
+        self.assertFalse(hasattr(self.service_manager, "list"))
 
     def test_set_target_is_not_present_in_SpecifcServiceManager(self):
-        assert not hasattr(self.service_manager, "set_target")
+        self.assertFalse(hasattr(self.service_manager, "set_target"))
 
 
 class TestServiceManager(unittest.TestCase):
@@ -162,11 +162,11 @@ class TestSystemdServiceManager(TestServiceManager):
                                 self).get_service_manager_from_init_and_run(self.init_name,
                                                                             run_mock)
         list_result = service_manager.list(ignore_status=False)
-        assert run_mock.call_args[0][
-            0] == "systemctl list-unit-files --type=service --no-pager --full"
-        assert list_result == {'sshd': "enabled",
-                               'vsftpd': "disabled",
-                               'systemd-sysctl': "static"}
+        self.assertEqual(run_mock.call_args[0][0],
+                         "systemctl list-unit-files --type=service --no-pager --full")
+        self.assertEqual(list_result, {'sshd': "enabled",
+                                       'vsftpd': "disabled",
+                                       'systemd-sysctl': "static"})
 
     def test_set_default_runlevel(self):
         runlevel = service.convert_sysv_runlevel(3)
@@ -179,11 +179,11 @@ class TestSystemdServiceManager(TestServiceManager):
         @patch("os.rename", rename_mock)
         def _():
             self.service_manager.change_default_runlevel(runlevel)
-            assert mktemp_mock.called
-            assert symlink_mock.call_args[0][
-                0] == "/usr/lib/systemd/system/multi-user.target"
-            assert rename_mock.call_args[0][
-                1] == "/etc/systemd/system/default.target"
+            self.assertTrue(mktemp_mock.called)
+            self.assertEqual(symlink_mock.call_args[0][0],
+                             "/usr/lib/systemd/system/multi-user.target")
+            self.assertEqual(rename_mock.call_args[0][1],
+                             "/etc/systemd/system/default.target")
         _()
 
     def test_unknown_runlevel(self):
@@ -191,11 +191,11 @@ class TestSystemdServiceManager(TestServiceManager):
                           service.convert_systemd_target_to_runlevel, "unknown")
 
     def test_runlevels(self):
-        assert service.convert_sysv_runlevel(0) == "poweroff.target"
-        assert service.convert_sysv_runlevel(1) == "rescue.target"
-        assert service.convert_sysv_runlevel(2) == "multi-user.target"
-        assert service.convert_sysv_runlevel(5) == "graphical.target"
-        assert service.convert_sysv_runlevel(6) == "reboot.target"
+        self.assertEqual(service.convert_sysv_runlevel(0), "poweroff.target")
+        self.assertEqual(service.convert_sysv_runlevel(1), "rescue.target")
+        self.assertEqual(service.convert_sysv_runlevel(2), "multi-user.target")
+        self.assertEqual(service.convert_sysv_runlevel(5), "graphical.target")
+        self.assertEqual(service.convert_sysv_runlevel(6), "reboot.target")
 
 
 class TestSysVInitServiceManager(TestServiceManager):
@@ -220,11 +220,10 @@ class TestSysVInitServiceManager(TestServiceManager):
                                 self).get_service_manager_from_init_and_run(self.init_name,
                                                                             run_mock)
         list_result = service_manager.list(ignore_status=False)
-        assert run_mock.call_args[0][
-            0] == "chkconfig --list"
-        assert list_result == {'sshd': {0: "off", 1: "off", 2: "off", 3: "off", 4: "off", 5: "off", 6: "off"},
-                               'vsftpd': {0: "off", 1: "off", 2: "off", 3: "off", 4: "off", 5: "on", 6: "off"},
-                               'xinetd': {'amanda': "off", 'chargen-dgram': "on"}}
+        self.assertEqual(run_mock.call_args[0][0], "chkconfig --list")
+        self.assertEqual(list_result, {'sshd': {0: "off", 1: "off", 2: "off", 3: "off", 4: "off", 5: "off", 6: "off"},
+                                       'vsftpd': {0: "off", 1: "off", 2: "off", 3: "off", 4: "off", 5: "on", 6: "off"},
+                                       'xinetd': {'amanda': "off", 'chargen-dgram': "on"}})
 
     def test_enable(self):
         srv = "lldpad"
@@ -237,16 +236,16 @@ class TestSysVInitServiceManager(TestServiceManager):
                           service.convert_sysv_runlevel, "unknown")
 
     def test_runlevels(self):
-        assert service.convert_systemd_target_to_runlevel(
-            "poweroff.target") == '0'
-        assert service.convert_systemd_target_to_runlevel(
-            "rescue.target") == 's'
-        assert service.convert_systemd_target_to_runlevel(
-            "multi-user.target") == '3'
-        assert service.convert_systemd_target_to_runlevel(
-            "graphical.target") == '5'
-        assert service.convert_systemd_target_to_runlevel(
-            "reboot.target") == '6'
+        self.assertEqual(service.convert_systemd_target_to_runlevel(
+            "poweroff.target"), '0')
+        self.assertEqual(service.convert_systemd_target_to_runlevel(
+            "rescue.target"), 's')
+        self.assertEqual(service.convert_systemd_target_to_runlevel(
+            "multi-user.target"), '3')
+        self.assertEqual(service.convert_systemd_target_to_runlevel(
+            "graphical.target"), '5')
+        self.assertEqual(service.convert_systemd_target_to_runlevel(
+            "reboot.target"), '6')
 
 
 if __name__ == '__main__':
