@@ -40,10 +40,9 @@ ip6table_filter        12815  1
             'submodules': submodules
         }
 
-    @staticmethod
-    def test_parse_lsmod_is_empty():
+    def test_parse_lsmod_is_empty(self):
         lsmod_info = linux_modules.parse_lsmod_for_module("", "ebtables")
-        assert lsmod_info == {}
+        self.assertEqual(lsmod_info, {})
 
     def test_parse_lsmod_no_submodules(self):
         lsmod_info = linux_modules.parse_lsmod_for_module(self.LSMOD_OUT, "ccm")
