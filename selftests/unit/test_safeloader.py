@@ -32,5 +32,34 @@ class ModuleImportedAs(unittest.TestCase):
     def test_import_inside_class(self):
         self._test("class Foo(object): import foo as foo", {})
 
+
+class DocstringTag(unittest.TestCase):
+
+    def test_longline(self):
+        docstring = ("This is a very long docstring in a single line. "
+                     "Since we have nothing useful to put in here let's just "
+                     "mention avocado: it's awesome, but that was not a tag. "
+                     "a tag would be something line this: :avocado: enable")
+        self.assertIsNotNone(safeloader.get_docstring_tag(docstring))
+
+    def test_newlines(self):
+        docstring = ("\n\n\nThis is a docstring with many new\n\nlines "
+                     "followed by an avocado tag\n"
+                     "\n\n:avocado: enable\n\n")
+        self.assertIsNotNone(safeloader.get_docstring_tag(docstring))
+
+    def test_enabled(self):
+        self.assertTrue(safeloader.is_docstring_tag_enable(":avocado: enable"))
+        self.assertTrue(safeloader.is_docstring_tag_enable(":avocado:\tenable"))
+        self.assertFalse(safeloader.is_docstring_tag_enable(":AVOCADO: ENABLE"))
+        self.assertFalse(safeloader.is_docstring_tag_enable(":avocado: enabled"))
+
+    def test_disabled(self):
+        self.assertTrue(safeloader.is_docstring_tag_disable(":avocado: disable"))
+        self.assertTrue(safeloader.is_docstring_tag_disable(":avocado:\tdisable"))
+        self.assertFalse(safeloader.is_docstring_tag_disable(":AVOCADO: DISABLE"))
+        self.assertFalse(safeloader.is_docstring_tag_disable(":avocado: disabled"))
+
+
 if __name__ == '__main__':
     unittest.main()
