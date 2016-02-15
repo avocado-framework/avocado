@@ -19,6 +19,8 @@ Safe (AST based) test loader module utilities
 import ast
 import re
 
+from ..utils import data_structures
+
 
 def modules_imported_as(module):
     """
@@ -97,3 +99,43 @@ def is_docstring_tag_disable(docstring):
     """
     result = get_docstring_tag(docstring)
     return result == 'disable'
+
+
+def find_class_and_methods(path, method_pattern=None, base_class=None):
+    """
+    Attempts to find methods names from a given Python source file
+
+    :param path: path to a Python source code file
+    :type path: str
+    :param method_pattern: compiled regex to match against method name
+    :param base_class: only consider classes that inherit from a given
+                       base class (or classes that inherit from any class
+                       if None is given)
+    :type base_class: str or None
+    """
+    def inherits_from_base_class(class_statement, base_class_name):
+        base_ids = [base.id for base in class_statement.bases
+                    if hasattr(base, 'id')]
+        return base_class_name in base_ids
+
+    result = {}
+    mod = ast.parse(open(path).read(), path)
+    modules = modules_imported_as(mod)
+
+    for statement in mod.body:
+        if isinstance(statement, ast.ClassDef):
+            if base_class is not None:
+                if not inherits_from_base_class(statement,
+                                                base_class):
+                    continue
+            if method_pattern is None:
+                methods = [st.name for st in statement.body if
+                           isinstance(st, ast.FunctionDef)]
+                methods = data_structures.ordered_list_unique(methods)
+            else:
+                methods = [st.name for st in statement.body if
+                           isinstance(st, ast.FunctionDef) and
+                           method_pattern.match(st.name)]
+                methods = data_structures.ordered_list_unique(methods)
+            result[statement.name] = methods
+    return result
