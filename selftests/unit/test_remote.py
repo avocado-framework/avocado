@@ -5,8 +5,9 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core import remote
+from avocado.core import output
 from avocado.core import remoter
+from avocado.core import remote
 from avocado.utils import archive
 
 cwd = os.getcwd()
@@ -124,16 +125,15 @@ _=/usr/bin/env''', exit_status=0)
         flexmock_teardown()  # Checks the expectations
 
 
-class RemoteTestResultTest(unittest.TestCase):
+class RemoteTestRunnerSetup(unittest.TestCase):
 
-    """ Tests the RemoteTestResult """
+    """ Tests the RemoteTestRunner setup() method"""
 
     def setUp(self):
         Remote = flexmock()
-        Stream = flexmock()
-        (flexmock(os).should_receive('getcwd')
-         .and_return('/current/directory').ordered())
-        Stream.should_receive('notify').once().ordered()
+        View = flexmock(output.View)
+        view = output.View()
+        view.should_receive('notify')
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
          .with_args('hostname', 'username', 'password', 22, 60)
@@ -147,15 +147,17 @@ class RemoteTestResultTest(unittest.TestCase):
                         remote_port=22,
                         remote_password='password',
                         remote_no_copy=False,
-                        remote_timeout=60)
-        self.remote = remote.RemoteTestResult(Stream, Args)
+                        remote_timeout=60,
+                        show_job_log=False)
+        job = flexmock(args=Args, view=view)
+        self.runner = remote.RemoteTestRunner(job, None)
 
     def tearDown(self):
         flexmock_teardown()
 
     def test_setup(self):
         """ Tests RemoteTestResult.test_setup() """
-        self.remote.setup()
+        self.runner.setup()
         flexmock_teardown()
 
 if __name__ == '__main__':
