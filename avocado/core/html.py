@@ -246,13 +246,27 @@ class HTMLTestResult(TestResult):
         template = os.path.join(html_resources_path, 'templates', 'report.mustache')
 
         # pylint: disable=E0611
-        if hasattr(pystache, 'Renderer'):
-            renderer = pystache.Renderer('utf-8', 'utf-8')
-            report_contents = renderer.render(open(template, 'r').read(), context)
-        else:
-            from pystache import view
-            v = view.View(open(template, 'r').read(), context)
-            report_contents = v.render('utf8')
+        try:
+            if hasattr(pystache, 'Renderer'):
+                renderer = pystache.Renderer('utf-8', 'utf-8')
+                report_contents = renderer.render(open(template, 'r').read(), context)
+            else:
+                from pystache import view
+                v = view.View(open(template, 'r').read(), context)
+                report_contents = v.render('utf8')
+        except UnicodeDecodeError, details:
+            # FIXME: Removeme when UnicodeDecodeError problem is fixed
+            import logging
+            ui = logging.getLogger("avocado.app")
+            ui.critical("\n" + ("-" * 80))
+            ui.critical("HTML failed to render the template: %s\n\n",
+                        open(template, 'r').read())
+            ui.critical("-" * 80)
+            ui.critical("%s:\n\n", details)
+            ui.critical("%r\n\n", self.json)
+            ui.critical("%r", getattr(details, "object", "object not found"))
+            ui.critical("-" * 80)
+            raise
 
         static_basedir = os.path.join(html_resources_path, 'static')
         output_dir = os.path.dirname(os.path.abspath(self.output))
