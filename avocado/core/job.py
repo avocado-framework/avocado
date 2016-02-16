@@ -82,6 +82,7 @@ class Job(object):
         if args is None:
             args = argparse.Namespace()
         self.args = args
+        self.urls = getattr(args, "url", [])
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             if not self.args.unique_job_id:

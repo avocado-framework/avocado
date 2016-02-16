@@ -14,6 +14,6 @@
 
 from .test import RemoteTest
 from .result import RemoteTestResult, VMTestResult
-from .runner import RemoteTestRunner
+from .runner import RemoteTestRunner, VMTestRunner
 
-__all__ = ['RemoteTestResult', 'VMTestResult', 'RemoteTestRunner', 'RemoteTest']
+__all__ = ['RemoteTestResult', 'VMTestResult', 'RemoteTestRunner', 'VMTestRunner', 'RemoteTest']

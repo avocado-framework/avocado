@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 import unittest
-import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core.remote import VMTestResult
-from avocado.core.remote import RemoteTestResult
+from avocado.core.remote import VMTestRunner
 from avocado.core import virt
+from avocado.core import output
 
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"test": "sleeptest.1", "url": "sleeptest", '
@@ -18,25 +17,20 @@ JSON_RESULTS = ('Something other than json\n'
                 '1}\nAdditional stuff other than json')
 
 
-class VMTestResultTest(unittest.TestCase):
+class VMTestRunnerSetup(unittest.TestCase):
 
-    """ Tests the VMTestResult """
+    """ Tests the VMTestRunner setup() method """
 
     def setUp(self):
-        # remote.RemoteTestResult.__init__()
-        Stream = flexmock()
-        (flexmock(os).should_receive('getcwd')
-         .and_return('/current/directory').once().ordered())
-        # vm.VMTestResult.setup()
-        (Stream.should_receive('notify')
-         .with_args(msg="DOMAIN     : domain", event="message"))
+        View = flexmock(output.View)
+        view = output.View()
+        view.should_receive('notify')
         mock_vm = flexmock(snapshot=True,
                            domain=flexmock(isActive=lambda: True))
         flexmock(virt).should_receive('vm_connect').and_return(mock_vm).once().ordered()
         mock_vm.should_receive('start').and_return(True).once().ordered()
         mock_vm.should_receive('create_snapshot').once().ordered()
-        flexmock(RemoteTestResult).should_receive('setup').once().ordered()
-        # vm.RemoteTestResult()
+        # VMTestRunner()
         Args = flexmock(test_result_total=1,
                         url=['/tests/sleeptest', '/tests/other/test',
                              'passtest'],
@@ -49,9 +43,8 @@ class VMTestResultTest(unittest.TestCase):
                         vm_no_copy=False,
                         vm_timeout=120,
                         vm_hypervisor_uri='my_hypervisor_uri')
-        self.remote = VMTestResult(Stream, Args)
-        # vm.RemoteTestResult.tear_down()
-        RemoteTestResult.should_receive('tear_down').once().ordered()
+        job = flexmock(args=Args, view=view)
+        self.runner = VMTestRunner(job, None)
         mock_vm.should_receive('stop').once().ordered()
         mock_vm.should_receive('restore_snapshot').once().ordered()
 
@@ -59,9 +52,9 @@ class VMTestResultTest(unittest.TestCase):
         flexmock_teardown()
 
     def test_setup(self):
-        """ Tests VMTestResult.test_setup() """
-        self.remote.setup()
-        self.remote.tear_down()
+        """ Tests VMTestRunner.setup() """
+        self.runner.setup()
+        self.runner.tear_down()
         flexmock_teardown()
 
 if __name__ == '__main__':

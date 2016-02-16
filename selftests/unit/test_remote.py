@@ -5,9 +5,11 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core import remote
+from avocado.core import output
 from avocado.core import remoter
+from avocado.core import remote
 from avocado.utils import archive
+import logging
 
 cwd = os.getcwd()
 
@@ -28,14 +30,38 @@ class RemoteTestRunnerTest(unittest.TestCase):
     """ Tests RemoteTestRunner """
 
     def setUp(self):
+        View = flexmock(output.View)
+        view = output.View()
+        view.should_receive('notify')
+        Args = flexmock(test_result_total=1,
+                        remote_username='username',
+                        remote_hostname='hostname',
+                        remote_port=22,
+                        remote_password='password',
+                        remote_no_copy=False,
+                        remote_timeout=60,
+                        show_job_log=False,
+                        multiplex_files=['foo.yaml', 'bar/baz.yaml'],
+                        dry_run=True)
+        job = flexmock(args=Args, view=view,
+                       urls=['/tests/sleeptest', '/tests/other/test',
+                             'passtest'], unique_id='sleeptest.1',
+                       logdir="/local/path")
+
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
-        self.remote = remote.RemoteTestRunner(None, None)
-        self.remote.job = flexmock(logdir='.')
+        self.runner = remote.RemoteTestRunner(job, None)
+        self.runner.job = job
+        self.runner._copy_files = lambda: True  # Skip _copy_files
+
+        filehandler = logging.StreamHandler()
+        flexmock(logging).should_receive("FileHandler").and_return(filehandler)
 
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
         stream = flexmock(job_unique_id='sleeptest.1',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
+        Remoter = flexmock(remoter.Remote)
+        Remoter.new_instances(Remote)
         args_version = 'avocado -v'
         version_result = flexmock(stdout='Avocado 1.2.3', exit_status=0)
         args_env = 'env'
@@ -70,16 +96,17 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args_version, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
-        args = 'cd ~/avocado/tests; avocado list sleeptest --paginator=off'
+        args = ('cd ~/avocado/tests; avocado list /tests/sleeptest '
+                '/tests/other/test passtest --paginator=off')
         urls_result = flexmock(exit_status=0)
         (Remote.should_receive('run')
-         .with_args(args, timeout=60, ignore_status=True)
+         .with_args(args, ignore_status=True, timeout=60)
          .once().and_return(urls_result))
 
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
-                "--json - --archive sleeptest --multiplex-files "
-                "~/avocado/tests/foo.yaml ~/avocado/tests/bar/baz.yaml "
-                "--dry-run")
+                "--json - --archive /tests/sleeptest /tests/other/test "
+                "passtest --multiplex-files ~/avocado/tests/foo.yaml "
+                "~/avocado/tests/bar/baz.yaml --dry-run")
         (Remote.should_receive('run')
          .with_args(args, timeout=61, ignore_status=True)
          .once().and_return(test_results))
@@ -88,8 +115,6 @@ _=/usr/bin/env''', exit_status=0)
                            args=flexmock(show_job_log=False,
                                          multiplex_files=['foo.yaml', 'bar/baz.yaml'],
                                          dry_run=True))
-        Results.should_receive('setup').once().ordered()
-        Results.should_receive('copy_files').once().ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
                 'name': u'sleeptest.1', 'class_name': 'RemoteTest',
@@ -112,28 +137,26 @@ _=/usr/bin/env''', exit_status=0)
          .with_args('/local/path/run-2014-05-26-15.45.37.zip').once()
          .ordered())
         Results.should_receive('end_tests').once().ordered()
-        Results.should_receive('tear_down').once().ordered()
-        self.remote.result = Results
+        self.runner.result = Results
 
     def tearDown(self):
         flexmock_teardown()
 
     def test_run_suite(self):
         """ Test RemoteTestRunner.run_suite() """
-        self.remote.run_suite(None, None, 61)
+        self.runner.run_suite(None, None, 61)
         flexmock_teardown()  # Checks the expectations
 
 
-class RemoteTestResultTest(unittest.TestCase):
+class RemoteTestRunnerSetup(unittest.TestCase):
 
-    """ Tests the RemoteTestResult """
+    """ Tests the RemoteTestRunner setup() method"""
 
     def setUp(self):
         Remote = flexmock()
-        Stream = flexmock()
-        (flexmock(os).should_receive('getcwd')
-         .and_return('/current/directory').ordered())
-        Stream.should_receive('notify').once().ordered()
+        View = flexmock(output.View)
+        view = output.View()
+        view.should_receive('notify')
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
          .with_args('hostname', 'username', 'password', 22, 60)
@@ -147,15 +170,17 @@ class RemoteTestResultTest(unittest.TestCase):
                         remote_port=22,
                         remote_password='password',
                         remote_no_copy=False,
-                        remote_timeout=60)
-        self.remote = remote.RemoteTestResult(Stream, Args)
+                        remote_timeout=60,
+                        show_job_log=False)
+        job = flexmock(args=Args, view=view)
+        self.runner = remote.RemoteTestRunner(job, None)
 
     def tearDown(self):
         flexmock_teardown()
 
     def test_setup(self):
         """ Tests RemoteTestResult.test_setup() """
-        self.remote.setup()
+        self.runner.setup()
         flexmock_teardown()
 
 if __name__ == '__main__':
