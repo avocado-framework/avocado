@@ -247,15 +247,6 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
-    def _handle_urls(self, urls):
-        if urls is None:
-            urls = getattr(self.args, 'url', None)
-
-        if isinstance(urls, str):
-            urls = urls.split()
-
-        return urls
-
     def _make_test_suite(self, urls=None):
         """
         Prepares a test suite to be used for running tests
@@ -415,13 +406,13 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        urls = self._handle_urls(urls)
+        self.urls = self.preprocess_urls(urls)
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id,
                                      self.replay_sourcejob)
         try:
-            test_suite = self._make_test_suite(urls)
+            test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError, details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.tracebacks')
             self._remove_job_results()
@@ -429,7 +420,7 @@ class Job(object):
         if not test_suite:
             self._remove_job_results()
             e_msg = ("No tests found for given urls, try 'avocado list -V %s' "
-                     "for details" % (" ".join(urls) if urls else "\b"))
+                     "for details" % (" ".join(self.urls) if self.urls else "\b"))
             raise exceptions.OptionValidationError(e_msg)
 
         if isinstance(getattr(self.args, 'multiplex_files', None),
@@ -449,7 +440,7 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
-        replay.record(self.args, self.logdir, mux, urls)
+        replay.record(self.args, self.logdir, mux, self.urls)
 
         self.view.logfile = self.logfile
         replay_map = getattr(self.args, 'replay_map', None)
@@ -471,6 +462,26 @@ class Job(object):
             return exit_codes.AVOCADO_ALL_OK
         else:
             return exit_codes.AVOCADO_TESTS_FAIL
+
+    def preprocess_urls(self, urls):
+        """
+        Do any custom preprocessing of test urls
+
+        This may include transformation or sanitization of the test urls given
+        on the command line. The default implementation gets the urls from the
+        application arguments, splits them if they are a single string and
+        returns a list of urls.
+
+        :param urls: list of urls or a string with space separated urls
+        :rtype: list
+        :returns: list of preprocessed urls
+        """
+        if urls is None:
+            urls = getattr(self.args, 'url', None)
+
+        if isinstance(urls, str):
+            urls = urls.split()
+        return urls
 
     def run(self, urls=None):
         """
