@@ -5,8 +5,9 @@ import os
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core import remote
+from avocado.core import output
 from avocado.core import remoter
+from avocado.core import remote
 from avocado.utils import archive
 
 cwd = os.getcwd()
@@ -28,9 +29,24 @@ class RemoteTestRunnerTest(unittest.TestCase):
     """ Tests RemoteTestRunner """
 
     def setUp(self):
+        View = flexmock(output.View)
+        view = output.View()
+        view.should_receive('notify')
+        Args = flexmock(test_result_total=1,
+                        url=['/tests/sleeptest', '/tests/other/test',
+                             'passtest'],
+                        remote_username='username',
+                        remote_hostname='hostname',
+                        remote_port=22,
+                        remote_password='password',
+                        remote_no_copy=False,
+                        remote_timeout=60,
+                        show_job_log=False)
+        job = flexmock(logdir='.', args=Args, view=view)
+
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
-        self.remote = remote.RemoteTestRunner(None, None)
-        self.remote.job = flexmock(logdir='.')
+        self.runner = remote.RemoteTestRunner(job, None)
+        self.runner.job = job
 
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
         stream = flexmock(job_unique_id='sleeptest.1',
@@ -88,8 +104,8 @@ _=/usr/bin/env''', exit_status=0)
                            args=flexmock(show_job_log=False,
                                          multiplex_files=['foo.yaml', 'bar/baz.yaml'],
                                          dry_run=True))
-        Results.should_receive('setup').once().ordered()
-        Results.should_receive('copy_files').once().ordered()
+        Remote.should_receive('setup').once().ordered()
+        Remote.should_receive('_copy_files').once().ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
                 'name': u'sleeptest.1', 'class_name': 'RemoteTest',
@@ -112,28 +128,27 @@ _=/usr/bin/env''', exit_status=0)
          .with_args('/local/path/run-2014-05-26-15.45.37.zip').once()
          .ordered())
         Results.should_receive('end_tests').once().ordered()
-        Results.should_receive('tear_down').once().ordered()
-        self.remote.result = Results
+        Remote.should_receive('tear_down').once().ordered()
+        self.runner.result = Results
 
     def tearDown(self):
         flexmock_teardown()
 
     def test_run_suite(self):
         """ Test RemoteTestRunner.run_suite() """
-        self.remote.run_suite(None, None, 61)
+        self.runner.run_suite(None, None, 61)
         flexmock_teardown()  # Checks the expectations
 
 
-class RemoteTestResultTest(unittest.TestCase):
+class RemoteTestRunnerSetup(unittest.TestCase):
 
-    """ Tests the RemoteTestResult """
+    """ Tests the RemoteTestRunner setup() method"""
 
     def setUp(self):
         Remote = flexmock()
-        Stream = flexmock()
-        (flexmock(os).should_receive('getcwd')
-         .and_return('/current/directory').ordered())
-        Stream.should_receive('notify').once().ordered()
+        View = flexmock(output.View)
+        view = output.View()
+        view.should_receive('notify')
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
          .with_args('hostname', 'username', 'password', 22, 60)
@@ -147,15 +162,17 @@ class RemoteTestResultTest(unittest.TestCase):
                         remote_port=22,
                         remote_password='password',
                         remote_no_copy=False,
-                        remote_timeout=60)
-        self.remote = remote.RemoteTestResult(Stream, Args)
+                        remote_timeout=60,
+                        show_job_log=False)
+        job = flexmock(args=Args, view=view)
+        self.runner = remote.RemoteTestRunner(job, None)
 
     def tearDown(self):
         flexmock_teardown()
 
     def test_setup(self):
         """ Tests RemoteTestResult.test_setup() """
-        self.remote.setup()
+        self.runner.setup()
         flexmock_teardown()
 
 if __name__ == '__main__':
