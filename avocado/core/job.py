@@ -394,12 +394,10 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
-    def _run(self, urls=None):
+    def _run(self):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
-        :param urls: String with tests to run, separated by whitespace.
-                     Optionally, a list of tests (each test a string).
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         :raise: Any exception (avocado crashed), or
@@ -407,7 +405,6 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        self.urls = self.preprocess_urls(urls)
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id,
@@ -464,27 +461,7 @@ class Job(object):
         else:
             return exit_codes.AVOCADO_TESTS_FAIL
 
-    def preprocess_urls(self, urls):
-        """
-        Do any custom preprocessing of test urls
-
-        This may include transformation or sanitization of the test urls given
-        on the command line. The default implementation gets the urls from the
-        application arguments, splits them if they are a single string and
-        returns a list of urls.
-
-        :param urls: list of urls or a string with space separated urls
-        :rtype: list
-        :returns: list of preprocessed urls
-        """
-        if urls is None:
-            urls = getattr(self.args, 'url', None)
-
-        if isinstance(urls, str):
-            urls = urls.split()
-        return urls
-
-    def run(self, urls=None):
+    def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
 
@@ -500,14 +477,12 @@ class Job(object):
         The test runner figures out which tests need to be run on an empty urls
         list by assuming the first component of the shortname is the test url.
 
-        :param urls: String with tests to run, separated by whitespace.
-                     Optionally, a list of tests (each test a string).
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run(urls)
+            return self._run()
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
@@ -557,9 +532,9 @@ class TestProgram(object):
             sys.exit(exit_codes.AVOCADO_FAIL)
         os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
 
-        self.defaultTest = sys.argv[0]
         self.progName = os.path.basename(sys.argv[0])
         self.parseArgs(sys.argv[1:])
+        self.args.url = [sys.argv[0]]
         self.runTests()
 
     def parseArgs(self, argv):
@@ -572,11 +547,9 @@ class TestProgram(object):
         self.args = self.parser.parse_args(argv)
 
     def runTests(self):
-        exit_status = exit_codes.AVOCADO_ALL_OK
         self.args.standalone = True
         self.job = Job(self.args)
-        if self.defaultTest is not None:
-            exit_status = self.job.run(urls=[self.defaultTest])
+        exit_status = self.job.run()
         if self.args.remove_test_results is True:
             shutil.rmtree(self.job.logdir)
         sys.exit(exit_status)
