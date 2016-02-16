@@ -81,12 +81,12 @@ class RemoteTestRunner(TestRunner):
         """
         extra_params = []
         mux_files = [os.path.join(self.remote_test_dir, mux_file)
-                     for mux_file in getattr(self.result.args,
+                     for mux_file in getattr(self.job.args,
                                              'multiplex_files') or []]
         if mux_files:
             extra_params.append("--multiplex-files %s" % " ".join(mux_files))
 
-        if getattr(self.result.args, "dry_run", False):
+        if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")
         urls_str = " ".join(urls)
         avocado_check_urls_cmd = ('cd %s; avocado list %s '
@@ -161,7 +161,7 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         logger_list = [fabric_logger]
-        if self.result.args.show_job_log:
+        if self.job.args.show_job_log:
             logger_list.append(app_logger)
             output.add_console_handler(paramiko_logger)
         sys.stdout = output.LoggingFile(logger=logger_list)
