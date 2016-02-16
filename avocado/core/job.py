@@ -82,6 +82,7 @@ class Job(object):
         if args is None:
             args = argparse.Namespace()
         self.args = args
+        self.urls = getattr(args, "url", [])
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             if not self.args.unique_job_id:
@@ -247,15 +248,6 @@ class Job(object):
             human_plugin = result.HumanTestResult(self.view, self.args)
             self.result_proxy.add_output_plugin(human_plugin)
 
-    def _handle_urls(self, urls):
-        if urls is None:
-            urls = getattr(self.args, 'url', None)
-
-        if isinstance(urls, str):
-            urls = urls.split()
-
-        return urls
-
     def _make_test_suite(self, urls=None):
         """
         Prepares a test suite to be used for running tests
@@ -402,12 +394,10 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
-    def _run(self, urls=None):
+    def _run(self):
         """
         Unhandled job method. Runs a list of test URLs to its completion.
 
-        :param urls: String with tests to run, separated by whitespace.
-                     Optionally, a list of tests (each test a string).
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         :raise: Any exception (avocado crashed), or
@@ -415,13 +405,12 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        urls = self._handle_urls(urls)
         self.view.start_file_logging(self.logfile,
                                      self.loglevel,
                                      self.unique_id,
                                      self.replay_sourcejob)
         try:
-            test_suite = self._make_test_suite(urls)
+            test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError, details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.tracebacks')
             self._remove_job_results()
@@ -429,7 +418,7 @@ class Job(object):
         if not test_suite:
             self._remove_job_results()
             e_msg = ("No tests found for given urls, try 'avocado list -V %s' "
-                     "for details" % (" ".join(urls) if urls else "\b"))
+                     "for details" % (" ".join(self.urls) if self.urls else "\b"))
             raise exceptions.OptionValidationError(e_msg)
 
         if isinstance(getattr(self.args, 'multiplex_files', None),
@@ -449,7 +438,7 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
-        replay.record(self.args, self.logdir, mux, urls)
+        replay.record(self.args, self.logdir, mux, self.urls)
 
         self.view.logfile = self.logfile
         replay_map = getattr(self.args, 'replay_map', None)
@@ -472,7 +461,7 @@ class Job(object):
         else:
             return exit_codes.AVOCADO_TESTS_FAIL
 
-    def run(self, urls=None):
+    def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
 
@@ -488,14 +477,12 @@ class Job(object):
         The test runner figures out which tests need to be run on an empty urls
         list by assuming the first component of the shortname is the test url.
 
-        :param urls: String with tests to run, separated by whitespace.
-                     Optionally, a list of tests (each test a string).
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run(urls)
+            return self._run()
         except exceptions.JobBaseException, details:
             self.status = details.status
             fail_class = details.__class__.__name__
@@ -545,9 +532,9 @@ class TestProgram(object):
             sys.exit(exit_codes.AVOCADO_FAIL)
         os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
 
-        self.defaultTest = sys.argv[0]
         self.progName = os.path.basename(sys.argv[0])
         self.parseArgs(sys.argv[1:])
+        self.args.url = [sys.argv[0]]
         self.runTests()
 
     def parseArgs(self, argv):
@@ -560,11 +547,9 @@ class TestProgram(object):
         self.args = self.parser.parse_args(argv)
 
     def runTests(self):
-        exit_status = exit_codes.AVOCADO_ALL_OK
         self.args.standalone = True
         self.job = Job(self.args)
-        if self.defaultTest is not None:
-            exit_status = self.job.run(urls=[self.defaultTest])
+        exit_status = self.job.run()
         if self.args.remove_test_results is True:
             shutil.rmtree(self.job.logdir)
         sys.exit(exit_status)

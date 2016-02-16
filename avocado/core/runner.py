@@ -267,6 +267,18 @@ class TestRunner(object):
         finally:
             queue.put(instance.get_state())
 
+    def setup(self):
+        """
+        (Optional) initialization method for the test runner
+        """
+        pass
+
+    def tear_down(self):
+        """
+        (Optional) cleanup method for the test runner
+        """
+        pass
+
     def run_test(self, test_factory, queue, failures, job_deadline=0):
         """
         Run a test instance inside a subprocess.
