@@ -7,23 +7,23 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.33.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver, python-stevedore, procps-ng
-BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, procps-ng
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver, python-stevedore
+BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore
 
 %if 0%{?el6}
 Requires: PyYAML
-Requires: python-argparse, python-importlib, python-logutils, python-unittest2
+Requires: python-argparse, python-importlib, python-logutils, python-unittest2, procps
 BuildRequires: PyYAML
-BuildRequires: python-argparse, python-importlib, python-logutils, python-unittest2
+BuildRequires: python-argparse, python-importlib, python-logutils, python-unittest2, procps
 %else
-Requires: python-yaml
-BuildRequires: python-yaml, fabric
+Requires: python-yaml, procps-ng
+BuildRequires: python-yaml, fabric, procps-ng
 %endif
 
 %if !0%{?el7}
@@ -110,6 +110,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Feb 17 2016 Cleber Rosa <cleber@redhat.com> - 0.33.0-1
+- Updated requirement: procps for EL6, procps-ng for other distros
+
 * Tue Feb 16 2016 Cleber Rosa <cleber@redhat.com> - 0.33.0-0
 - New upstream release 0.33.0
 
