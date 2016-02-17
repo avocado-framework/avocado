@@ -56,6 +56,12 @@ class ReportModel(object):
         self.html_output = html_output
         self.html_output_dir = os.path.abspath(os.path.dirname(html_output))
 
+    def update(self, **kwargs):
+        """
+        Hook for updates not supported
+        """
+        pass
+
     def get(self, key, default):
         value = getattr(self, key, default)
         if callable(value):
