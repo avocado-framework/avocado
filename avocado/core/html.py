@@ -168,7 +168,7 @@ class ReportModel(object):
             sysinfo_dict = {}
             sysinfo_path = os.path.join(base_path, s_f)
             try:
-                with open(sysinfo_path, 'r') as sysinfo_file:
+                with codecs.open(sysinfo_path, 'r', encoding="utf-8") as sysinfo_file:
                     sysinfo_dict['file'] = " ".join(s_f.split("_"))
                     sysinfo_dict['contents'] = sysinfo_file.read()
                     sysinfo_dict['element_id'] = 'heading_%s' % s_id
