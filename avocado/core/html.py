@@ -56,6 +56,12 @@ class ReportModel(object):
         self.html_output = html_output
         self.html_output_dir = os.path.abspath(os.path.dirname(html_output))
 
+    def update(self, **kwargs):
+        """
+        Hook for updates not supported
+        """
+        pass
+
     def get(self, key, default):
         value = getattr(self, key, default)
         if callable(value):
@@ -162,7 +168,7 @@ class ReportModel(object):
             sysinfo_dict = {}
             sysinfo_path = os.path.join(base_path, s_f)
             try:
-                with open(sysinfo_path, 'r') as sysinfo_file:
+                with codecs.open(sysinfo_path, 'r', encoding="utf-8") as sysinfo_file:
                     sysinfo_dict['file'] = " ".join(s_f.split("_"))
                     sysinfo_dict['contents'] = sysinfo_file.read()
                     sysinfo_dict['element_id'] = 'heading_%s' % s_id
@@ -253,7 +259,8 @@ class HTMLTestResult(TestResult):
             else:
                 from pystache import view
                 v = view.View(open(template, 'r').read(), context)
-                report_contents = v.render('utf8')
+                report_contents = v.render('utf8')  # encodes into ascii
+                report_contents = codecs.decode("utf8")  # decode to unicode
         except UnicodeDecodeError, details:
             # FIXME: Removeme when UnicodeDecodeError problem is fixed
             import logging
