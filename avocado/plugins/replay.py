@@ -97,10 +97,18 @@ class Replay(CLI):
 
         view = output.View()
 
-        if args.remote_hostname is not None:
-            msg = "Currently we don't replay jobs in remote hosts."
-            view.notify(event='error', msg=(msg))
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        err = None
+        if args.replay_teststatus and args.multiplex_files:
+            err = "Option --replay-test-status is incompatible with "\
+                  "--multiplex-files."
+        elif args.replay_teststatus and args.url:
+            err = "Option --replay-test-status is incompatible with "\
+                  "test URLs given on the command line."
+        elif args.remote_hostname:
+            err = "Currently we don't replay jobs in remote hosts."
+        if err is not None:
+            view.notify(event="error", msg=err)
+            sys.exit(exit_codes.AVOCADO_FAIL)
 
         if args.replay_datadir is not None:
             resultsdir = args.replay_datadir
@@ -111,14 +119,14 @@ class Replay(CLI):
             resultsdir = replay.get_resultsdir(self.logdir, args.replay_jobid)
 
         if resultsdir is None:
-            msg = "can't find job results directory in '%s'" % self.logdir
+            msg = "Can't find job results directory in '%s'" % self.logdir
             view.notify(event='error', msg=(msg))
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
                                   args.replay_jobid)
         if sourcejob is None:
-            msg = "can't find matching job id '%s' in '%s' directory." % \
+            msg = "Can't find matching job id '%s' in '%s' directory." % \
                   (args.replay_jobid, resultsdir)
             view.notify(event='error', msg=(msg))
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -151,7 +159,7 @@ class Replay(CLI):
         else:
             if getattr(args, 'multiplex_files', None) is not None:
                 msg = 'Overriding the replay multiplex with '\
-                      '--multiplex-file.'
+                      '--multiplex-files.'
                 view.notify(event='warning', msg=(msg))
                 # Use absolute paths to avoid problems with os.chdir
                 args.multiplex_files = [os.path.abspath(_)
