@@ -123,21 +123,34 @@ class Replay(CLI):
             view.notify(event='error', msg=(msg))
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
+        current_args = args.__dict__
+
         sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
-                                  args.replay_jobid)
+                                  current_args['replay_jobid'])
         if sourcejob is None:
             msg = "Can't find matching job id '%s' in '%s' directory." % \
-                  (args.replay_jobid, resultsdir)
+                  (current_args['replay_jobid'], resultsdir)
             view.notify(event='error', msg=(msg))
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
+        source_args = replay.retrieve_args(resultsdir)
+        if source_args is not None:
+            args.__dict__ = source_args.__dict__
+
+        for item in current_args:
+            if current_args[item]:
+                setattr(args, item, current_args[item])
+
         setattr(args, 'replay_sourcejob', sourcejob)
 
-        if getattr(args, 'url', None):
+        if current_args['url']:
             msg = 'Overriding the replay urls with urls provided in '\
                   'command line.'
             view.notify(event='warning', msg=(msg))
+            setattr(args, 'url', current_args['url'])
         else:
+            # Retrieving urls from <job-results-dir>/replay/urls to keep
+            # the compatibility
             urls = replay.retrieve_urls(resultsdir)
             if urls is None:
                 msg = 'Source job urls data not found. Aborting.'
@@ -146,24 +159,24 @@ class Replay(CLI):
             else:
                 setattr(args, 'url', urls)
 
-        if args.replay_ignore and 'config' in args.replay_ignore:
+        if current_args['replay_ignore'] and 'config' in current_args['replay_ignore']:
             msg = "Ignoring configuration from source job with " \
                   "--replay-ignore."
             view.notify(event='warning', msg=(msg))
         else:
             self.load_config(resultsdir)
 
-        if args.replay_ignore and 'mux' in args.replay_ignore:
+        if current_args['replay_ignore'] and 'mux' in current_args['replay_ignore']:
             msg = "Ignoring multiplex from source job with --replay-ignore."
             view.notify(event='warning', msg=(msg))
         else:
-            if getattr(args, 'multiplex_files', None) is not None:
+            if current_args['multiplex_files']:
                 msg = 'Overriding the replay multiplex with '\
                       '--multiplex-files.'
                 view.notify(event='warning', msg=(msg))
                 # Use absolute paths to avoid problems with os.chdir
                 args.multiplex_files = [os.path.abspath(_)
-                                        for _ in args.multiplex_files]
+                                        for _ in current_args['multiplex_files']]
             else:
                 mux = replay.retrieve_mux(resultsdir)
                 if mux is None:
@@ -173,9 +186,9 @@ class Replay(CLI):
                 else:
                     setattr(args, "multiplex_files", mux)
 
-        if args.replay_teststatus:
+        if current_args['replay_teststatus']:
             replay_map = replay.retrieve_replay_map(resultsdir,
-                                                    args.replay_teststatus)
+                                                    current_args['replay_teststatus'])
             setattr(args, 'replay_map', replay_map)
 
         # Use the original directory to discover test urls properly

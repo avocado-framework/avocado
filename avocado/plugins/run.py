@@ -155,18 +155,22 @@ class Run(CLICmd):
         if raw_timeout is not None:
             try:
                 unit = raw_timeout[-1].lower()
+            except TypeError:
+                unit = None
+            try:
                 if unit in units:
                     mult = units[unit]
                     timeout = int(raw_timeout[:-1]) * mult
                 else:
                     timeout = int(raw_timeout)
-                if timeout < 1:
+                if timeout < 0:
                     raise ValueError()
             except (ValueError, TypeError):
                 self.view.notify(
                     event='error',
                     msg=("Invalid number '%s' for job timeout. "
-                         "Use an integer number greater than 0") % raw_timeout)
+                         "Use 0 or an integer number greater than 0") %
+                    raw_timeout)
                 sys.exit(exit_codes.AVOCADO_FAIL)
         else:
             timeout = 0
