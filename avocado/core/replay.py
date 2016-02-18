@@ -37,6 +37,7 @@ def record(args, logdir, mux, urls=None):
     path_urls = os.path.join(replay_dir, 'urls')
     path_mux = os.path.join(replay_dir, 'multiplex')
     path_pwd = os.path.join(replay_dir, 'pwd')
+    path_args = os.path.join(replay_dir, 'args')
 
     if urls:
         with open(path_urls, 'w') as f:
@@ -50,6 +51,9 @@ def record(args, logdir, mux, urls=None):
 
     with open(path_pwd, 'w') as f:
         f.write('%s' % os.getcwd())
+
+    with open(path_args, 'w') as f:
+        pickle.dump(args, f, pickle.HIGHEST_PROTOCOL)
 
 
 def retrieve_pwd(resultsdir):
@@ -74,6 +78,15 @@ def retrieve_urls(resultsdir):
 
 def retrieve_mux(resultsdir):
     pkl_path = os.path.join(resultsdir, 'replay', 'multiplex')
+    if not os.path.exists(pkl_path):
+        return None
+
+    with open(pkl_path, 'r') as f:
+        return pickle.load(f)
+
+
+def retrieve_args(resultsdir):
+    pkl_path = os.path.join(resultsdir, 'replay', 'args')
     if not os.path.exists(pkl_path):
         return None
 
