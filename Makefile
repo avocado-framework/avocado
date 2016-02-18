@@ -117,10 +117,11 @@ clean:
 	find . -name '*.pyc' -delete
 
 requirements:
-	- pip install -r requirements.txt --upgrade
+	- grep -v '^#' requirements.txt | xargs -n 1 pip install --upgrade
+	- if $$(python -V 2>&1 | grep 2.6 -q); then grep -v '^#' requirements-python26.txt | xargs -n 1 pip install --upgrade; fi
 
 requirements-selftests: requirements
-	- pip install -r requirements-selftests.txt --upgrade
+	- grep -v '^#' requirements-selftests.txt | xargs -n 1 pip install --upgrade
 
 smokecheck:
 	./scripts/avocado run passtest
