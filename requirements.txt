@@ -1,6 +1,8 @@
 # Avocado functional requirements
 # SSH lib (avocado.utils.remote)
 fabric>=1.7.0
+pycrypto>=2.6.1
+ecdsa>=0.13
 # multiplexer (avocado.core.tree)
 PyYAML>=3.11
 # vm plugin (avocado.core.plugins.vm)
