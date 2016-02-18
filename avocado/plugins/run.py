@@ -152,7 +152,7 @@ class Run(CLICmd):
     def _validate_job_timeout(self, raw_timeout):
         units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
         mult = 1
-        if raw_timeout is not None:
+        if isinstance(raw_timeout, basestring):
             try:
                 unit = raw_timeout[-1].lower()
                 if unit in units:
@@ -168,8 +168,11 @@ class Run(CLICmd):
                     msg=("Invalid number '%s' for job timeout. "
                          "Use an integer number greater than 0") % raw_timeout)
                 sys.exit(exit_codes.AVOCADO_FAIL)
-        else:
+        elif raw_timeout is None:
             timeout = 0
+        else:
+            timeout = raw_timeout
+
         return timeout
 
     def run(self, args):
