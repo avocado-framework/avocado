@@ -114,11 +114,33 @@ class ReplayTests(unittest.TestCase):
 
     def test_run_replay_remotefail(self):
         cmd_line = ('./scripts/avocado run --replay %s --remote-hostname '
-                    'localhost ' '--job-results-dir %s --replay-data-dir %s '
+                    'localhost --job-results-dir %s --replay-data-dir %s '
                     '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = "Currently we don't replay jobs in remote hosts."
+        self.assertIn(msg, result.stderr)
+
+    def test_run_replay_status_and_mux(self):
+        cmd_line = ('./scripts/avocado run --replay %s --multiplex '
+                    'examples/mux-environment.yaml --replay-test-status FAIL '
+                    '--job-results-dir %s --replay-data-dir %s '
+                    '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
+        expected_rc = exit_codes.AVOCADO_FAIL
+        result = self.run_and_check(cmd_line, expected_rc)
+        msg = "Option --replay-test-status is incompatible with "\
+              "--multiplex-files."
+        self.assertIn(msg, result.stderr)
+
+    def test_run_replay_status_and_urls(self):
+        cmd_line = ('./scripts/avocado run sleeptest --replay %s '
+                    '--replay-test-status FAIL --job-results-dir %s '
+                    '--replay-data-dir %s --sysinfo=off' %
+                    (self.jobid, self.tmpdir, self.jobdir))
+        expected_rc = exit_codes.AVOCADO_FAIL
+        result = self.run_and_check(cmd_line, expected_rc)
+        msg = "Option --replay-test-status is incompatible with informing "\
+              "new tests in command line."
         self.assertIn(msg, result.stderr)
 
     def tearDown(self):
