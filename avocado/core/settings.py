@@ -16,10 +16,14 @@
 Reads the avocado settings from a .ini file (from python ConfigParser).
 """
 import ast
-import ConfigParser
 import os
 import sys
 import glob
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 from ..utils import path
 
