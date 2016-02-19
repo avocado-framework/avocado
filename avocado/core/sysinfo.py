@@ -287,11 +287,11 @@ class LogWatcher(Collectible):
             finally:
                 out_messages.close()
                 in_messages.close()
-        except ValueError, e:
+        except ValueError as e:
             log.info(e)
         except (IOError, OSError):
             log.debug("Not logging %s (lack of permissions)", self.path)
-        except Exception, e:
+        except Exception as e:
             log.error("Log file %s collection failed: %s", self.path, e)
 
 
@@ -420,7 +420,7 @@ class SysInfo(object):
         # we have to probe and find out the correct path.
         try:
             self.end_test_collectibles.add(self._get_syslog_watcher())
-        except ValueError, details:
+        except ValueError as details:
             log.info(details)
 
     def _get_collectibles(self, hook):

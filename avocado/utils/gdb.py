@@ -345,7 +345,7 @@ class GDB(object):
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE,
                                             close_fds=True)
-        except OSError, details:
+        except OSError as details:
             if details.errno == 2:
                 exc = OSError("File '%s' not found" % args[0])
                 exc.errno = 2
@@ -663,7 +663,7 @@ class GDBServer(object):
                                             stdout=self.stdout,
                                             stderr=self.stderr,
                                             close_fds=True)
-        except OSError, details:
+        except OSError as details:
             if details.errno == 2:
                 exc = OSError("File '%s' not found" % args[0])
                 exc.errno = 2

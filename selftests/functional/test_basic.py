@@ -687,7 +687,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                          (e_rc, result))
         try:
             xunit_doc = xml.dom.minidom.parseString(xml_output)
-        except Exception, detail:
+        except Exception as detail:
             raise ParseXMLError("Failed to parse content: %s\n%s" %
                                 (detail, xml_output))
 
@@ -762,7 +762,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                          (e_rc, result))
         try:
             json_data = json.loads(json_output)
-        except Exception, detail:
+        except Exception as detail:
             raise ParseJSONError("Failed to parse content: %s\n%s" %
                                  (detail, json_output))
         self.assertTrue(json_data, "Empty JSON result:\n%s" % json_output)

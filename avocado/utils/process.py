@@ -309,7 +309,7 @@ class SubProcess(object):
         if sudo and os.getuid() != 0:
             try:
                 sudo_cmd = '%s -n' % path.find_command('sudo')
-            except path.CmdNotFoundError, details:
+            except path.CmdNotFoundError as details:
                 log.error(details)
                 log.error('Parameter sudo=True provided, but sudo was '
                           'not found. Please consider adding sudo to '
@@ -335,7 +335,7 @@ class SubProcess(object):
                                                stderr=subprocess.PIPE,
                                                shell=self.shell,
                                                env=self.env)
-            except OSError, details:
+            except OSError as details:
                 if details.errno == 2:
                     exc = OSError("File '%s' not found" % self.cmd.split()[0])
                     exc.errno = 2

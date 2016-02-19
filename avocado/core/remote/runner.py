@@ -222,7 +222,7 @@ class RemoteTestRunner(TestRunner):
                     raise exceptions.JobError('Remote machine does not seem to have '
                                               'avocado installed')
                 self._copy_files()
-            except Exception, details:
+            except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
             results = self.run_test(self.job.urls, timeout)
@@ -252,7 +252,7 @@ class RemoteTestRunner(TestRunner):
             self.result.end_tests()
             try:
                 self.tear_down()
-            except Exception, details:
+            except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
         finally:

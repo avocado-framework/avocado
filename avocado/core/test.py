@@ -383,7 +383,7 @@ class Test(unittest.TestCase):
         stderr_check_exception = None
         try:
             self.setUp()
-        except exceptions.TestSkipError, details:
+        except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
         except:  # Old-style exceptions are not inherited from Exception()
@@ -392,7 +392,7 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail(details)
         try:
             testMethod()
-        except exceptions.TestSkipError, details:
+        except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             skip_illegal_msg = ('Calling skip() in places other than '
                                 'setUp() is not allowed in avocado, you '
@@ -408,7 +408,7 @@ class Test(unittest.TestCase):
         finally:
             try:
                 self.tearDown()
-            except exceptions.TestSkipError, details:
+            except exceptions.TestSkipError as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Calling skip() in places other than '
                                     'setUp() is not allowed in avocado, '
@@ -437,13 +437,13 @@ class Test(unittest.TestCase):
                 if not disable_output_check:
                     try:
                         self._check_reference_stdout()
-                    except Exception, details:
+                    except Exception as details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger='avocado.test')
                         stdout_check_exception = details
                     try:
                         self._check_reference_stderr()
-                    except Exception, details:
+                    except Exception as details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger='avocado.test')
                         stderr_check_exception = details
@@ -493,17 +493,17 @@ class Test(unittest.TestCase):
         try:
             self._tag_start()
             self._run_avocado()
-        except exceptions.TestBaseException, detail:
+        except exceptions.TestBaseException as detail:
             self.status = detail.status
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
-        except AssertionError, detail:
+        except AssertionError as detail:
             self.status = 'FAIL'
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
-        except Exception, detail:
+        except Exception as detail:
             self.status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
@@ -623,7 +623,7 @@ class SimpleTest(Test):
                                  env=test_params)
 
             self._log_detailed_cmd_info(result)
-        except process.CmdError, details:
+        except process.CmdError as details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 

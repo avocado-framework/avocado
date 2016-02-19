@@ -98,7 +98,7 @@ class Remote(object):
                                                       warn_only=True,
                                                       timeout=timeout)
                 break
-            except fabric.network.NetworkError, details:
+            except fabric.network.NetworkError as details:
                 fabric_exception = details
                 timeout = end_time - time.time()
             if time.time() < end_time:

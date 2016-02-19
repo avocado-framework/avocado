@@ -241,7 +241,7 @@ class Settings(object):
 
         try:
             return convert_value_type(val, key_type)
-        except Exception, details:
+        except Exception as details:
             raise SettingsValueError("Could not convert value %r to type %s "
                                      "(settings key %s, section %s): %s" %
                                      (val, key_type, key, section, details))
