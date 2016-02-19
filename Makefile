@@ -117,10 +117,11 @@ clean:
 	find . -name '*.pyc' -delete
 
 requirements:
-	- pip install -r requirements.txt --upgrade
+	- pip install "pip>=6.0.1"
+	- pip install -r requirements.txt
 
 requirements-selftests: requirements
-	- pip install -r requirements-selftests.txt --upgrade
+	- pip install -r requirements-selftests.txt
 
 smokecheck:
 	./scripts/avocado run passtest
