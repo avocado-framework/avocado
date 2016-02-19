@@ -42,7 +42,7 @@ def generate_random_string(length, ignore=string.punctuation,
     :return: The generated random string.
     """
     result = ""
-    chars = string.letters + string.digits + string.punctuation
+    chars = string.ascii_letters + string.digits + string.punctuation
     if not ignore:
         ignore = ""
     for i in ignore:
