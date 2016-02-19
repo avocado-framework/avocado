@@ -47,7 +47,7 @@ def handle_exception(*exc_info):
     except:
         pass
     tmp, name = tempfile.mkstemp(".log", prefix, crash_dir)
-    os.write(tmp, msg)
+    os.write(tmp, msg.encode('utf-8'))
     os.close(tmp)
     # Print friendly message in console-like output
     msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s"
