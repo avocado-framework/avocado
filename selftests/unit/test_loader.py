@@ -1,3 +1,4 @@
+import stat
 import sys
 import multiprocessing
 
@@ -12,6 +13,12 @@ from avocado.core import loader
 from avocado.utils import script
 
 # We need to access protected members pylint: disable=W0212
+
+#: What is commonly known as "0664" or "u=rw,g=rw,o=r"
+DEFAULT_NON_EXEC_MODE = (stat.S_IRUSR | stat.S_IWUSR |
+                         stat.S_IRGRP | stat.S_IWGRP |
+                         stat.S_IROTH)
+
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test
@@ -153,7 +160,7 @@ class LoaderTest(unittest.TestCase):
     def test_load_simple_not_exec(self):
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
                                              'avocado_loader_unittest',
-                                             mode=0664)
+                                             mode=DEFAULT_NON_EXEC_MODE)
         simple_test.save()
         test_class, test_parameters = (
             self.loader.discover(simple_test.path, True)[0])
@@ -176,7 +183,7 @@ class LoaderTest(unittest.TestCase):
         avocado_not_a_test = script.TemporaryScript('notatest.py',
                                                     NOT_A_TEST,
                                                     'avocado_loader_unittest',
-                                                    mode=0664)
+                                                    mode=DEFAULT_NON_EXEC_MODE)
         avocado_not_a_test.save()
         test_class, test_parameters = (
             self.loader.discover(avocado_not_a_test.path, True)[0])
@@ -214,7 +221,7 @@ class LoaderTest(unittest.TestCase):
         avocado_simple_test = script.TemporaryScript('simpletest.py',
                                                      PY_SIMPLE_TEST,
                                                      'avocado_loader_unittest',
-                                                     mode=0664)
+                                                     mode=DEFAULT_NON_EXEC_MODE)
         avocado_simple_test.save()
         test_class, test_parameters = (
             self.loader.discover(avocado_simple_test.path, True)[0])
@@ -227,7 +234,7 @@ class LoaderTest(unittest.TestCase):
         avocado_multiple_tests = script.TemporaryScript('multipletests.py',
                                                         AVOCADO_MULTIPLE_TESTS,
                                                         'avocado_multiple_tests_unittest',
-                                                        mode=0664)
+                                                        mode=DEFAULT_NON_EXEC_MODE)
         avocado_multiple_tests.save()
         suite = self.loader.discover(avocado_multiple_tests.path, True)
         self.assertEqual(len(suite), 2)
@@ -254,7 +261,7 @@ class LoaderTest(unittest.TestCase):
         avocado_multiple_tests = script.TemporaryScript('multipletests.py',
                                                         AVOCADO_MULTIPLE_TESTS_SAME_NAME,
                                                         'avocado_multiple_tests_unittest',
-                                                        mode=0664)
+                                                        mode=DEFAULT_NON_EXEC_MODE)
         avocado_multiple_tests.save()
         suite = self.loader.discover(avocado_multiple_tests.path, True)
         self.assertEqual(len(suite), 1)
@@ -279,7 +286,7 @@ class LoaderTest(unittest.TestCase):
         avocado_pass_test = script.TemporaryScript('disable.py',
                                                    AVOCADO_TEST_OK_DISABLED,
                                                    'avocado_loader_unittest',
-                                                   0664)
+                                                   DEFAULT_NON_EXEC_MODE)
         avocado_pass_test.save()
         test_class, test_parameters = (
             self.loader.discover(avocado_pass_test.path, True)[0])
@@ -290,7 +297,7 @@ class LoaderTest(unittest.TestCase):
         avocado_nested_test = script.TemporaryScript('nested.py',
                                                      AVOCADO_TEST_NESTED_TAGGED,
                                                      'avocado_loader_unittest',
-                                                     0664)
+                                                     DEFAULT_NON_EXEC_MODE)
         avocado_nested_test.save()
         test_class, test_parameters = (
             self.loader.discover(avocado_nested_test.path, True)[0])

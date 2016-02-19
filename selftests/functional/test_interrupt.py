@@ -3,6 +3,7 @@ import sys
 import tempfile
 import time
 import shutil
+import stat
 
 import aexpect
 import psutil
@@ -20,6 +21,11 @@ from avocado.utils import data_factory
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+
+# What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
+DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+                stat.S_IRGRP | stat.S_IXGRP |
+                stat.S_IROTH | stat.S_IXOTH)
 
 BAD_TEST = """#!/usr/bin/env python
 import signal
@@ -60,7 +66,8 @@ class InterruptTest(unittest.TestCase):
                              data_factory.generate_random_string(5))
         bad_test = script.TemporaryScript(bad_test_basename, BAD_TEST,
                                           'avocado_interrupt_test',
-                                          mode=0755)
+                                          mode=DEFAULT_MODE)
+
         bad_test.save()
 
         os.chdir(basedir)
@@ -121,7 +128,7 @@ class InterruptTest(unittest.TestCase):
                               data_factory.generate_random_string(5))
         good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
                                            'avocado_interrupt_test',
-                                           mode=0755)
+                                           mode=DEFAULT_MODE)
         good_test.save()
 
         os.chdir(basedir)
