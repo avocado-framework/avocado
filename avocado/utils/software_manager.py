@@ -39,7 +39,6 @@ implement the given backend class.
 import os
 import re
 import logging
-import ConfigParser
 import optparse
 import tempfile
 
@@ -49,6 +48,11 @@ except ImportError:
     HAS_YUM_MODULE = False
 else:
     HAS_YUM_MODULE = True
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 from . import process
 from . import data_factory
