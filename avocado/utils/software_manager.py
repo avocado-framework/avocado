@@ -442,7 +442,7 @@ class YumBackend(RpmBackend):
                                % (tmp_file.name, self.repo_file_path),
                                sudo=True)
             return True
-        except (OSError, process.CmdError), details:
+        except (OSError, process.CmdError) as details:
             log.error(details)
             return False
 
@@ -465,7 +465,7 @@ class YumBackend(RpmBackend):
                                % (tmp_file.name, self.repo_file_path),
                                sudo=True)
                 return True
-        except (OSError, process.CmdError), details:
+        except (OSError, process.CmdError) as details:
             log.error(details)
             return False
 
@@ -501,7 +501,7 @@ class YumBackend(RpmBackend):
             return None
         try:
             d_provides = self.yum_base.searchPackageProvides(args=[name])
-        except Exception, exc:
+        except Exception as exc:
             log.error("Error searching for package that "
                       "provides %s: %s", name, exc)
             d_provides = []
@@ -767,7 +767,7 @@ class AptBackend(DpkgBackend):
                 process.system('cp %s %s'
                                % (tmp_file.name, self.repo_file_path),
                                sudo=True)
-        except (OSError, process.CmdError), details:
+        except (OSError, process.CmdError) as details:
             log.error(details)
             return False
 

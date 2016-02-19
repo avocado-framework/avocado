@@ -79,7 +79,7 @@ def make_dir_and_populate(basedir='/tmp'):
             for _ in xrange(n_lines):
                 os.write(fd, generate_random_string(str_length))
             os.close(fd)
-    except OSError, details:
+    except OSError as details:
         log.error("Failed to generate dir in '%s' and populate: %s" %
                   (basedir, details))
         return None

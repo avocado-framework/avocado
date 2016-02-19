@@ -245,7 +245,7 @@ class Job(object):
         loader.loader.load_plugins(self.args)
         try:
             suite = loader.loader.discover(urls)
-        except loader.LoaderUnhandledUrlError, details:
+        except loader.LoaderUnhandledUrlError as details:
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
@@ -397,7 +397,7 @@ class Job(object):
                                     self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(self.urls)
-        except loader.LoaderError, details:
+        except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
@@ -413,7 +413,7 @@ class Job(object):
         else:
             try:
                 mux = multiplexer.Mux(self.args)
-            except (IOError, ValueError), details:
+            except (IOError, ValueError) as details:
                 raise exceptions.OptionValidationError(details)
         self.args.test_result_total = mux.get_number_of_tests(test_suite)
 
@@ -469,17 +469,17 @@ class Job(object):
         runtime.CURRENT_JOB = self
         try:
             return self._run()
-        except exceptions.JobBaseException, details:
+        except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
             self.view.notify(event='error', msg=('\nAvocado job failed: %s: %s'
                                                  % (fail_class, details)))
             return exit_codes.AVOCADO_JOB_FAIL
-        except exceptions.OptionValidationError, details:
+        except exceptions.OptionValidationError as details:
             self.view.notify(event='error', msg='\n' + str(details))
             return exit_codes.AVOCADO_JOB_FAIL
 
-        except Exception, details:
+        except Exception as details:
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb_info = traceback.format_exception(exc_type, exc_value,

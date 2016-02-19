@@ -109,9 +109,9 @@ class ReportModel(object):
         try:
             with open(sysinfo_path, 'r') as sysinfo_file:
                 sysinfo_contents = sysinfo_file.read()
-        except OSError, details:
+        except OSError as details:
             sysinfo_contents = "Error reading %s: %s" % (sysinfo_path, details)
-        except IOError, details:
+        except IOError as details:
             sysinfo_contents = os.uname()[1]
         return sysinfo_contents
 
@@ -261,7 +261,7 @@ class HTMLTestResult(TestResult):
                 v = view.View(open(template, 'r').read(), context)
                 report_contents = v.render('utf8')  # encodes into ascii
                 report_contents = codecs.decode("utf8")  # decode to unicode
-        except UnicodeDecodeError, details:
+        except UnicodeDecodeError as details:
             # FIXME: Removeme when UnicodeDecodeError problem is fixed
             import logging
             ui = logging.getLogger("avocado.app")

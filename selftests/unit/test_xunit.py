@@ -68,7 +68,7 @@ class xUnitSucceedTest(unittest.TestCase):
             xml = fp.read()
         try:
             dom = minidom.parseString(xml)
-        except Exception, details:
+        except Exception as details:
             raise ParseXMLError("Error parsing XML: '%s'.\nXML Contents:\n%s" % (details, xml))
         self.assertTrue(dom)
         els = dom.getElementsByTagName('testcase')
