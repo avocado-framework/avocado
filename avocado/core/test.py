@@ -30,12 +30,14 @@ from . import data_dir
 from . import exceptions
 from . import multiplexer
 from . import sysinfo
+from ..utils import asset
 from ..utils import astring
 from ..utils import data_structures
 from ..utils import genio
 from ..utils import path as utils_path
 from ..utils import process
 from ..utils import stacktrace
+from .settings import settings
 from .version import VERSION
 
 if sys.version_info[:2] == (2, 6):
@@ -197,6 +199,17 @@ class Test(unittest.TestCase):
     @data_structures.LazyProperty
     def srcdir(self):
         return utils_path.init_dir(self.workdir, 'src')
+
+    @data_structures.LazyProperty
+    def cachedirs(self):
+        """
+        Returns the list of cache locations.
+        """
+        caches = settings.get_value('datadir.paths', 'cache_dirs', default='')
+        cache_dirs = caches.replace(' ', '').split(',')
+        cache_dirs.append(utils_path.init_dir(self.workdir, 'cache'))
+
+        return cache_dirs
 
     def __str__(self):
         return str(self.name)
@@ -578,6 +591,21 @@ class Test(unittest.TestCase):
         :type message: str
         """
         raise exceptions.TestSkipError(message)
+
+    def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
+                    locations=None):
+        """
+        Method o call the utils.asset in order to fetch and asset file
+        supporting hash check, caching and multiple locations.
+
+        :param name: the asset filename. url is also supported
+        :param asset_hash: (optional) asset hash
+        :param algorithm: (optional) hash algorithm (default sha1)
+        :param locations: (optional) list of locations fetch asset from
+        :returns: asset file local path
+        """
+        return asset.Asset(name, asset_hash, algorithm, locations,
+                           self.cachedirs).path
 
 
 class SimpleTest(Test):
