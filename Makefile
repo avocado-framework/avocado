@@ -117,6 +117,7 @@ clean:
 	find . -name '*.pyc' -delete
 
 requirements:
+	- pip install "pip>=6.0.1"
 	- pip install -r requirements.txt --upgrade
 
 requirements-selftests: requirements
