@@ -19,7 +19,6 @@ Functions dedicated to find and run external commands.
 import logging
 import os
 import re
-import StringIO
 import signal
 import time
 import stat
@@ -34,6 +33,11 @@ try:
 except ImportError:
     import subprocess
     SUBPROCESS32_SUPPORT = False
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from . import gdb
 from . import runtime
@@ -344,8 +348,8 @@ class SubProcess(object):
                     raise
 
             self.start_time = time.time()
-            self.stdout_file = StringIO.StringIO()
-            self.stderr_file = StringIO.StringIO()
+            self.stdout_file = StringIO()
+            self.stderr_file = StringIO()
             self.stdout_lock = threading.Lock()
             self.stdout_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stdout" % self.cmd,
