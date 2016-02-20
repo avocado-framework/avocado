@@ -1,5 +1,6 @@
 import os
 import sys
+import stat
 import time
 import tempfile
 import shutil
@@ -10,6 +11,12 @@ else:
     import unittest
 
 from avocado.utils import process
+
+
+# What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
+DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+                stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
+                stat.S_IROTH | stat.S_IXOTH)
 
 FAKE_VMSTAT_CONTENTS = """#!/usr/bin/env python
 import time
@@ -122,12 +129,12 @@ class ProcessTest(unittest.TestCase):
         self.fake_vmstat = os.path.join(self.base_logdir, 'vmstat')
         with open(self.fake_vmstat, 'w') as fake_vmstat_obj:
             fake_vmstat_obj.write(FAKE_VMSTAT_CONTENTS)
-        os.chmod(self.fake_vmstat, 0775)
+        os.chmod(self.fake_vmstat, DEFAULT_MODE)
 
         self.fake_uptime = os.path.join(self.base_logdir, 'uptime')
         with open(self.fake_uptime, 'w') as fake_uptime_obj:
             fake_uptime_obj.write(FAKE_UPTIME_CONTENTS)
-        os.chmod(self.fake_uptime, 0775)
+        os.chmod(self.fake_uptime, DEFAULT_MODE)
 
     def test_process_start(self):
         proc = process.SubProcess('%s 1' % self.fake_vmstat)

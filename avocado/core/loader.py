@@ -218,7 +218,7 @@ class TestLoaderProxy(object):
             for loader_plugin in self._initialized_plugins:
                 try:
                     tests.extend(loader_plugin.discover(None, which_tests))
-                except Exception, details:
+                except Exception as details:
                     handle_exception(loader_plugin, details)
         else:
             for url in urls:
@@ -231,7 +231,7 @@ class TestLoaderProxy(object):
                             handled = True
                             if not which_tests:
                                 break  # Don't process other plugins
-                    except Exception, details:
+                    except Exception as details:
                         handle_exception(loader_plugin, details)
                 if not handled:
                     unhandled_urls.append(url)
@@ -265,7 +265,7 @@ class TestLoaderProxy(object):
                 sys.path.insert(0, test_module_dir)
                 f, p, d = imp.find_module(module_name, [test_module_dir])
                 test_module = imp.load_module(module_name, f, p, d)
-            except ImportError, details:
+            except ImportError as details:
                 raise ImportError("Unable to import test's module with "
                                   "sys.path=%s\n\n%s" % (", ".join(sys.path),
                                                          details))
@@ -667,7 +667,7 @@ class FileLoader(TestLoader):
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
         # will not crash.
-        except BaseException, details:  # Ugly python files can raise any exc
+        except BaseException as details:  # Ugly python files can raise any exc
             if isinstance(details, KeyboardInterrupt):
                 raise  # Don't ignore ctrl+c
             if os.access(test_path, os.X_OK):

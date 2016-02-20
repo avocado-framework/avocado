@@ -64,7 +64,7 @@ class TestStatus(object):
             return self.queue.get()
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
-        except Exception, details:
+        except Exception as details:
             e_msg = ("\nError receiving message from test: %s -> %s" %
                      (details.__class__, details))
             self.job.view.notify(event="error",

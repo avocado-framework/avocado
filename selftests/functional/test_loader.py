@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import time
+import stat
 import tempfile
 import shutil
 import signal
@@ -139,11 +140,19 @@ if __name__ == "__main__":
 
 class LoaderTestFunctional(unittest.TestCase):
 
+    MODE_0664 = (stat.S_IRUSR | stat.S_IWUSR |
+                 stat.S_IRGRP | stat.S_IWGRP |
+                 stat.S_IROTH)
+
+    MODE_0775 = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+                 stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
+                 stat.S_IROTH | stat.S_IXOTH)
+
     def setUp(self):
         os.chdir(basedir)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    def _test(self, name, content, exp_str, mode=0664, count=1):
+    def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
         test_script = script.TemporaryScript(name, content,
                                              'avocado_loader_test',
                                              mode=mode)
@@ -166,7 +175,7 @@ class LoaderTestFunctional(unittest.TestCase):
         self.assertEquals(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
-        self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', 0775)
+        self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', self.MODE_0775)
 
     def test_simple_not_exec(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'NOT_A_TEST')
@@ -182,7 +191,7 @@ class LoaderTestFunctional(unittest.TestCase):
         test_script = script.TemporaryScript('sleepeleven.py',
                                              AVOCADO_TEST_SLEEP_ELEVEN,
                                              'avocado_loader_test',
-                                             mode=0664)
+                                             mode=self.MODE_0664)
         test_script.save()
         cmd_line = ('./scripts/avocado list -V %s' % test_script.path)
         initial_time = time.time()
@@ -197,14 +206,14 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
-                   'INSTRUMENTED', 0664, 2)
+                   'INSTRUMENTED', self.MODE_0664, 2)
 
     def test_multiple_methods_same_name(self):
         self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
                    'INSTRUMENTED', 0664, 1)
 
     def test_load_not_a_test(self):
-        self._test('notatest.py', NOT_A_TEST, 'SIMPLE', 0775)
+        self._test('notatest.py', NOT_A_TEST, 'SIMPLE', self.MODE_0775)
 
     def test_load_not_a_test_not_exec(self):
         self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')

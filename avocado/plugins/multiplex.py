@@ -97,7 +97,7 @@ class Multiplex(CLICmd):
             mux_tree = multiplexer.yaml2tree(args.multiplex_files,
                                              args.filter_only, args.filter_out,
                                              args.debug)
-        except IOError, details:
+        except IOError as details:
             view.notify(event='error',
                         msg=details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)

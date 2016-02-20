@@ -17,10 +17,17 @@ Module to handle scripts creation.
 """
 
 import os
-import tempfile
+import stat
 import shutil
+import tempfile
 
 from . import path as utils_path
+
+
+#: What is commonly known as "0775" or "u=rwx,g=rwx,o=rx"
+DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+                stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP |
+                stat.S_IROTH | stat.S_IXOTH)
 
 
 class Script(object):
@@ -29,7 +36,7 @@ class Script(object):
     Class that represents a script.
     """
 
-    def __init__(self, path, content, mode=0775):
+    def __init__(self, path, content, mode=DEFAULT_MODE):
         """
         Creates an instance of :class:`Script`.
 
@@ -38,7 +45,7 @@ class Script(object):
 
         :param path: the script file name.
         :param content: the script content.
-        :param mode: set file mode, default to 0775.
+        :param mode: set file mode, defaults what is commonly known as 0775.
         """
         self.path = path
         self.content = content
@@ -94,7 +101,7 @@ class TemporaryScript(Script):
     Class that represents a temporary script.
     """
 
-    def __init__(self, name, content, prefix='avocado_script', mode=0775):
+    def __init__(self, name, content, prefix='avocado_script', mode=DEFAULT_MODE):
         """
         Creates an instance of :class:`TemporaryScript`.
 
@@ -124,7 +131,7 @@ class TemporaryScript(Script):
             self.stored = False
 
 
-def make_script(path, content, mode=0775):
+def make_script(path, content, mode=DEFAULT_MODE):
     """
     Creates a new script stored in the file system.
 
@@ -138,7 +145,7 @@ def make_script(path, content, mode=0775):
     return scpt.path
 
 
-def make_temp_script(name, content, prefix='avocado_script', mode=0775):
+def make_temp_script(name, content, prefix='avocado_script', mode=DEFAULT_MODE):
     """
     Creates a new temporary script stored in the file system.
 

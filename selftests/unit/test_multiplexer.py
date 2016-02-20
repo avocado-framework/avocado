@@ -14,9 +14,6 @@ if __name__ == "__main__":
 else:
     PATH_PREFIX = ""
 
-TREE = tree.create_from_yaml(['/:' + PATH_PREFIX +
-                              'examples/mux-selftest.yaml'])
-
 
 def combine(leaves_pools):
     """ Joins remaining leaves and pools and create product """
@@ -26,22 +23,29 @@ def combine(leaves_pools):
 
 
 class TestMultiplex(unittest.TestCase):
-    tree = TREE
-    mux_full = tuple(multiplexer.MuxTree(tree))
 
+    def setUp(self):
+        self.mux_tree = tree.create_from_yaml(['/:' + PATH_PREFIX +
+                                               'examples/mux-selftest.yaml'])
+        self.mux_full = tuple(multiplexer.MuxTree(self.mux_tree))
+
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_empty(self):
         act = tuple(multiplexer.MuxTree(tree.TreeNode()))
         self.assertEqual(act, (['', ],))
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_partial(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
                ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
-        act = tuple(multiplexer.MuxTree(self.tree.children[0]))
+        act = tuple(multiplexer.MuxTree(self.mux_tree.children[0]))
         self.assertEqual(act, exp)
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_full(self):
         self.assertEqual(len(self.mux_full), 12)
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_create_variants(self):
         from_file = multiplexer.yaml2tree(
             ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
@@ -49,6 +53,7 @@ class TestMultiplex(unittest.TestCase):
         self.assertEqual(self.mux_full, tuple(from_file))
 
     # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_filter_only(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
         act = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
@@ -59,6 +64,7 @@ class TestMultiplex(unittest.TestCase):
         act = tuple(multiplexer.MuxTree(act))
         self.assertEqual(act, exp)
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_filter_out(self):
         act = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
                                      'examples/mux-selftest.yaml'],
@@ -77,21 +83,25 @@ class TestMultiplex(unittest.TestCase):
 
 
 class TestAvocadoParams(unittest.TestCase):
-    yamls = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
-                                   'examples/mux-selftest-params.yaml'])
-    yamls = iter(multiplexer.MuxTree(yamls))
-    params1 = multiplexer.AvocadoParams(yamls.next(), 'Unittest1', 1,
-                                        ['/ch0/*', '/ch1/*'], {})
-    yamls.next()    # Skip 2nd
-    yamls.next()    # and 3rd
-    params2 = multiplexer.AvocadoParams(yamls.next(), 'Unittest2', 1,
-                                        ['/ch1/*', '/ch0/*'], {})
 
+    def setUp(self):
+        yamls = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
+                                       'examples/mux-selftest-params.yaml'])
+        self.yamls = iter(multiplexer.MuxTree(yamls))
+        self.params1 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest1', 1,
+                                                 ['/ch0/*', '/ch1/*'], {})
+        self.yamls.next()    # Skip 2nd
+        self.yamls.next()    # and 3rd
+        self.params2 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest2', 1,
+                                                 ['/ch1/*', '/ch0/*'], {})
+
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_pickle(self):
         params = pickle.dumps(self.params1, 2)  # protocol == 2
         params = pickle.loads(params)
         self.assertEqual(self.params1, params)
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_basic(self):
         self.assertEqual(self.params1, self.params1)
         self.assertNotEqual(self.params1, self.params2)
@@ -100,6 +110,7 @@ class TestAvocadoParams(unittest.TestCase):
         str(multiplexer.AvocadoParams([], 'Unittest', None, [], {}))
         self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_get_abs_path(self):
         # /ch0/ is not leaf thus it's not queryable
         self.assertEqual(self.params1.get('root', '/ch0/', 'bbb'), 'bbb')
@@ -121,6 +132,7 @@ class TestAvocadoParams(unittest.TestCase):
                                           '/ch0/ch0.1/ch0.1.1/ch0.1.1.1/',
                                           'hhh'), 'hhh')
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_get_greedy_path(self):
         self.assertEqual(self.params1.get('unique1', '/*/*/*/ch0.1.1.1/',
                                           111), 'unique1')
@@ -144,6 +156,7 @@ class TestAvocadoParams(unittest.TestCase):
         # path matches nothing
         self.assertEqual(self.params1.get('root', '', 999), 999)
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_get_rel_path(self):
         self.assertEqual(self.params1.get('root', default='iii'), 'root')
         self.assertEqual(self.params1.get('unique1', '*', 'jjj'), 'unique1')
@@ -158,6 +171,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertEqual(self.params2.get('unique1', '*/ch0.1.1.1/', 'ooo'),
                          'ooo')
 
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_get_clashes(self):
         # One inherited, the other is new
         self.assertRaisesRegexp(ValueError, r"'clash1'.* \['/ch0/ch0.1/ch0.1.1"

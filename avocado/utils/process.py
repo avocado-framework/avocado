@@ -19,7 +19,6 @@ Functions dedicated to find and run external commands.
 import logging
 import os
 import re
-import StringIO
 import signal
 import time
 import stat
@@ -34,6 +33,11 @@ try:
 except ImportError:
     import subprocess
     SUBPROCESS32_SUPPORT = False
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from . import gdb
 from . import runtime
@@ -309,7 +313,7 @@ class SubProcess(object):
         if sudo and os.getuid() != 0:
             try:
                 sudo_cmd = '%s -n' % path.find_command('sudo')
-            except path.CmdNotFoundError, details:
+            except path.CmdNotFoundError as details:
                 log.error(details)
                 log.error('Parameter sudo=True provided, but sudo was '
                           'not found. Please consider adding sudo to '
@@ -335,7 +339,7 @@ class SubProcess(object):
                                                stderr=subprocess.PIPE,
                                                shell=self.shell,
                                                env=self.env)
-            except OSError, details:
+            except OSError as details:
                 if details.errno == 2:
                     exc = OSError("File '%s' not found" % self.cmd.split()[0])
                     exc.errno = 2
@@ -344,8 +348,8 @@ class SubProcess(object):
                     raise
 
             self.start_time = time.time()
-            self.stdout_file = StringIO.StringIO()
-            self.stderr_file = StringIO.StringIO()
+            self.stdout_file = StringIO()
+            self.stderr_file = StringIO()
             self.stdout_lock = threading.Lock()
             self.stdout_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stdout" % self.cmd,
