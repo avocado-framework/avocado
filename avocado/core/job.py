@@ -37,7 +37,6 @@ from . import exit_codes
 from . import exceptions
 from . import job_id
 from . import output
-from . import log
 from . import multiplexer
 from . import tree
 from . import test
@@ -538,7 +537,7 @@ class TestProgram(object):
     def runTests(self):
         self.args.standalone = True
         self.args.log = ["test"]
-        log.reconfigure(self.args)
+        output.reconfigure(self.args)
         self.job = Job(self.args)
         exit_status = self.job.run()
         if self.args.remove_test_results is True:

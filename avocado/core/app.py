@@ -19,9 +19,8 @@ The core Avocado application.
 import os
 import signal
 
-from . import log
 from .parser import Parser
-from .output import View
+from . import output
 from .settings import settings
 from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
@@ -40,7 +39,7 @@ class AvocadoApp(object):
 
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
-        log.early_start()
+        output.early_start()
         initialized = False
         try:
             self.cli_dispatcher = CLIDispatcher()
@@ -58,15 +57,15 @@ class AvocadoApp(object):
         finally:
             if (not initialized and
                     getattr(self.parser.args, "silent", False) is False):
-                log.enable_stderr()
-                self.parser.args.log = ["app", "test"]
-            log.reconfigure(self.parser.args)
+                output.enable_stderr()
+                self.parser.args.log = ["app"]
+            output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
         failures = (self.cli_dispatcher.load_failures +
                     self.cli_cmd_dispatcher.load_failures)
         if failures:
-            view = View(self.parser.args)
+            view = output.View(self.parser.args)
             msg_fmt = 'Failed to load plugin from module "%s": %s'
             silenced = settings.get_value('plugins',
                                           'skip_broken_plugin_notification',
