@@ -108,20 +108,6 @@ class Job(object):
             self.loglevel = mapping[raw_log_level]
         else:
             self.loglevel = logging.DEBUG
-        self.show_job_log = getattr(self.args, 'show_job_log', False)
-        self.silent = getattr(self.args, 'silent', False)
-
-        if self.standalone:
-            self.show_job_log = True
-            if self.args is not None:
-                setattr(self.args, 'show_job_log', True)
-
-        if self.show_job_log:
-            if not self.silent:
-                output.add_log_handler(_TEST_LOGGER.name, level=logging.DEBUG)
-                output.add_log_handler('', level=logging.DEBUG)
-                _TEST_LOGGER.setLevel(self.loglevel)
-                _TEST_LOGGER.propagate = False
 
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
