@@ -14,15 +14,16 @@
 
 """Run tests on Virtual Machine."""
 
-import sys
 import getpass
+import sys
 
-from avocado.core import output
 from avocado.core import exit_codes
+from avocado.core import output
 from avocado.core import virt
 from avocado.core.remote import VMTestResult
 from avocado.core.remote import VMTestRunner
 from avocado.core.result import register_test_result_class
+
 from .base import CLI
 
 

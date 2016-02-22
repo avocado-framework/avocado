@@ -20,6 +20,7 @@ from avocado.core import exit_codes
 from avocado.core import output
 from avocado.core.html import HTMLTestResult
 from avocado.core.result import register_test_result_class
+
 from .base import CLI
 
 
