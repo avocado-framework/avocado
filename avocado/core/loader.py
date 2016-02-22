@@ -210,8 +210,7 @@ class TestLoaderProxy(object):
                                    "%s" % (plugin, details),
                                    'avocado.app.exceptions')
             # FIXME: Introduce avocado.traceback logger and use here
-            stacktrace.log_exc_info(sys.exc_info(),
-                                    'avocado.app.tracebacks')
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
         tests = []
         unhandled_urls = []
         if not urls:
