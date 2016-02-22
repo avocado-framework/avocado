@@ -11,20 +11,19 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
 """
 The core Avocado application.
 """
 
+import logging
 import os
 import signal
 
-from .log import configure as configure_log
-from .parser import Parser
-from .output import View
-from .settings import settings
-from .dispatcher import CLIDispatcher
+from . import output
 from .dispatcher import CLICmdDispatcher
+from .dispatcher import CLIDispatcher
+from .parser import Parser
+from .settings import settings
 
 
 class AvocadoApp(object):
@@ -38,26 +37,34 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
-        configure_log()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
-        self.cli_dispatcher = CLIDispatcher()
-        self.cli_cmd_dispatcher = CLICmdDispatcher()
-        self._print_plugin_failures()
-        self.parser.start()
-        if self.cli_cmd_dispatcher.extensions:
-            self.cli_cmd_dispatcher.map_method('configure', self.parser)
-        if self.cli_dispatcher.extensions:
-            self.cli_dispatcher.map_method('configure', self.parser)
-        self.parser.finish()
-        if self.cli_dispatcher.extensions:
-            self.cli_dispatcher.map_method('run', self.parser.args)
+        output.early_start()
+        initialized = False
+        try:
+            self.cli_dispatcher = CLIDispatcher()
+            self.cli_cmd_dispatcher = CLICmdDispatcher()
+            self._print_plugin_failures()
+            self.parser.start()
+            if self.cli_cmd_dispatcher.extensions:
+                self.cli_cmd_dispatcher.map_method('configure', self.parser)
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('configure', self.parser)
+            self.parser.finish()
+            initialized = True
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('run', self.parser.args)
+        finally:
+            if not initialized:
+                output.enable_stderr()
+                self.parser.args = ["app"]
+            output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
         failures = (self.cli_dispatcher.load_failures +
                     self.cli_cmd_dispatcher.load_failures)
         if failures:
-            view = View(self.parser.args)
+            log = logging.getLogger("avocado.app")
             msg_fmt = 'Failed to load plugin from module "%s": %s'
             silenced = settings.get_value('plugins',
                                           'skip_broken_plugin_notification',
@@ -65,14 +72,19 @@ class AvocadoApp(object):
             for failure in failures:
                 if failure[0].module_name in silenced:
                     continue
-                msg = msg_fmt % (failure[0].module_name,
-                                 failure[1].__repr__())
-                view.notify(event='error', msg=msg)
+                log.error(msg_fmt, failure[0].module_name,
+                          failure[1].__repr__())
 
     def run(self):
         try:
-            extension = self.cli_cmd_dispatcher[self.parser.args.subcommand]
-        except KeyError:
-            return
-        method = extension.obj.run
-        return method(self.parser.args)
+            try:
+                subcmd = self.parser.args.subcommand
+                extension = self.cli_cmd_dispatcher[subcmd]
+            except KeyError:
+                return
+            method = extension.obj.run
+            return method(self.parser.args)
+        finally:
+            # XXX: This makes sure we cleanup the console (stty echo). The only
+            # way to avoid cleaning it is to kill the less (paginator) directly
+            output.stop_logging()
