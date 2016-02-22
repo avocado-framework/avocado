@@ -14,11 +14,13 @@
 Libexec PATHs modifier
 """
 
+import logging
 import os
 import sys
 
+from avocado.core import exit_codes
+
 from .base import CLICmd
-from avocado.core import exit_codes, output
 
 
 class ExecPath(CLICmd):
@@ -36,24 +38,21 @@ class ExecPath(CLICmd):
 
         :param args: Command line args received from the run subparser.
         """
-        self.view = output.View(app_args=args, use_paginator=False)
+        log = logging.getLogger("avocado.app")
         if 'VIRTUAL_ENV' in os.environ:
-            self.view.notify(event='minor', msg='libexec')
+            log.debug('libexec')
         elif os.path.exists('/usr/libexec/avocado'):
-            self.view.notify(event='minor', msg='/usr/libexec/avocado')
+            log.debug('/usr/libexec/avocado')
         elif os.path.exists('/usr/lib/avocado'):
-            self.view.notify(event='minor', msg='/usr/lib/avocado')
+            log.debug('/usr/lib/avocado')
         else:
             for path in os.environ.get('PATH').split(':'):
                 if (os.path.exists(os.path.join(path, 'avocado')) and
                     os.path.exists(os.path.join(os.path.dirname(path),
                                                 'libexec'))):
-                    self.view.notify(event='minor',
-                                     msg=os.path.join(os.path.dirname(path),
-                                                      'libexec'))
+                    log.debug(os.path.join(os.path.dirname(path), 'libexec'))
                     break
             else:
-                self.view.notify(event='error',
-                                 msg="Can't locate avocado libexec path")
+                log.error("Can't locate avocado libexec path")
                 sys.exit(exit_codes.AVOCADO_FAIL)
         return sys.exit(exit_codes.AVOCADO_ALL_OK)
