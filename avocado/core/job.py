@@ -405,10 +405,10 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        self.view.start_file_logging(self.logfile,
-                                     self.loglevel,
-                                     self.unique_id,
-                                     self.replay_sourcejob)
+        self.view.start_job_logging(self.logfile,
+                                    self.loglevel,
+                                    self.unique_id,
+                                    self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError, details:
@@ -445,7 +445,7 @@ class Job(object):
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout,
                                               replay_map=replay_map)
-        self.view.stop_file_logging()
+        self.view.stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
