@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; specifically version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2016
+# Author: Cleber Rosa <cleber@redhat.com>
+
+#
+# Simple script that, given Python file containing unittests, returns the canonical
+# location of each test, each one on its own line. The idea is to be able
+# to filter the tests you want to run by doing something like:
+#
+# $ avocado run `avocado-find-unittests <path-to-test.py> | <your-condition> | xargs`
+#
+
+import os
+import re
+import sys
+
+from avocado.core.safeloader import find_class_and_methods
+
+if __name__ == '__main__':
+    test_module_paths = sys.argv[1:]
+    result = []
+    for test_module_path in test_module_paths:
+        try:
+            test_class_methods = find_class_and_methods(test_module_path,
+                                                        re.compile(r'test.*'))
+        except:
+            continue
+        for klass, methods in test_class_methods.items():
+            if test_module_path.endswith(".py"):
+                test_module_path = test_module_path[:-3]
+            test_module_name = os.path.relpath(test_module_path)
+            test_module_name = test_module_name.replace(os.path.sep, ".")
+            result += ["%s.%s.%s" % (test_module_name, klass, method)
+                       for method in methods]
+    if result:
+        print "\n".join(result)

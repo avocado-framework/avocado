@@ -30,35 +30,15 @@ import sys
 from . import data_dir
 from . import output
 from . import test
+from . import safeloader
 from ..utils import path
 from ..utils import stacktrace
+from ..utils import data_structures
 from .settings import settings
 
 DEFAULT = False  # Show default tests (for execution)
 AVAILABLE = None  # Available tests (for listing purposes)
 ALL = True  # All tests (including broken ones)
-
-
-#: Gets the tag value from a string. Used to tag a test class in various ways
-AVOCADO_DOCSTRING_TAG_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
-
-
-def get_docstring_tag(docstring):
-    if docstring is None:
-        return None
-    result = AVOCADO_DOCSTRING_TAG_RE.search(docstring)
-    if result is not None:
-        return result.groups()[0]
-
-
-def is_docstring_tag_enable(docstring):
-    result = get_docstring_tag(docstring)
-    return result == 'enable'
-
-
-def is_docstring_tag_disable(docstring):
-    result = get_docstring_tag(docstring)
-    return result == 'disable'
 
 
 class LoaderError(Exception):
@@ -540,12 +520,6 @@ class FileLoader(TestLoader):
                         tests.extend(self._make_tests(pth, which_tests))
         return tests
 
-    @staticmethod
-    def _unique_ordered_list(method_list):
-        seen = set()
-        seen_add = seen.add
-        return [x for x in method_list if not (x in seen or seen_add(x))]
-
     def _find_avocado_tests(self, path):
         """
         Attempts to find Avocado instrumented tests from Python source files
@@ -597,13 +571,13 @@ class FileLoader(TestLoader):
                 docstring = ast.get_docstring(statement)
                 # Looking for a class that has in the docstring either
                 # ":avocado: enable" or ":avocado: disable
-                if is_docstring_tag_disable(docstring):
+                if safeloader.is_docstring_tag_disable(docstring):
                     continue
-                elif is_docstring_tag_enable(docstring):
+                elif safeloader.is_docstring_tag_enable(docstring):
                     functions = [st.name for st in statement.body if
                                  isinstance(st, ast.FunctionDef) and
                                  st.name.startswith('test')]
-                    functions = self._unique_ordered_list(functions)
+                    functions = data_structures.ordered_list_unique(functions)
                     result[statement.name] = functions
                     continue
 
@@ -615,7 +589,7 @@ class FileLoader(TestLoader):
                         functions = [st.name for st in statement.body if
                                      isinstance(st, ast.FunctionDef) and
                                      st.name.startswith('test')]
-                        functions = self._unique_ordered_list(functions)
+                        functions = data_structures.ordered_list_unique(functions)
                         result[statement.name] = functions
                         continue
 
@@ -628,7 +602,7 @@ class FileLoader(TestLoader):
                             functions = [st.name for st in statement.body if
                                          isinstance(st, ast.FunctionDef) and
                                          st.name.startswith('test')]
-                            functions = self._unique_ordered_list(functions)
+                            functions = data_structures.ordered_list_unique(functions)
                             result[statement.name] = functions
 
         return result

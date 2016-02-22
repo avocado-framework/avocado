@@ -32,41 +32,34 @@ ip6table_filter        12815  1
         lsmod_info = linux_modules.parse_lsmod_for_module(
             self.LSMOD_OUT, "ebtables")
         submodules = ['ebtable_broute', 'ebtable_nat', 'ebtable_filter']
-        assert lsmod_info['submodules'] == submodules
-        assert lsmod_info == {
-            'name': "ebtables",
-            'size': 30758,
-            'used': 3,
-            'submodules': submodules
-        }
+        self.assertEqual(lsmod_info['submodules'], submodules)
+        self.assertEqual(lsmod_info, {'name': "ebtables",
+                                      'size': 30758,
+                                      'used': 3,
+                                      'submodules': submodules})
 
-    @staticmethod
-    def test_parse_lsmod_is_empty():
+    def test_parse_lsmod_is_empty(self):
         lsmod_info = linux_modules.parse_lsmod_for_module("", "ebtables")
-        assert lsmod_info == {}
+        self.assertEqual(lsmod_info, {})
 
     def test_parse_lsmod_no_submodules(self):
         lsmod_info = linux_modules.parse_lsmod_for_module(self.LSMOD_OUT, "ccm")
         submodules = []
-        assert lsmod_info['submodules'] == submodules
-        assert lsmod_info == {
-            'name': "ccm",
-            'size': 17773,
-            'used': 2,
-            'submodules': submodules
-        }
+        self.assertEqual(lsmod_info['submodules'], submodules)
+        self.assertEqual(lsmod_info, {'name': "ccm",
+                                      'size': 17773,
+                                      'used': 2,
+                                      'submodules': submodules})
 
     def test_parse_lsmod_single_submodules(self):
         lsmod_info = linux_modules.parse_lsmod_for_module(
             self.LSMOD_OUT, "bridge")
         submodules = ['ebtable_broute']
-        assert lsmod_info['submodules'] == submodules
-        assert lsmod_info == {
-            'name': "bridge",
-            'size': 110862,
-            'used': 1,
-            'submodules': submodules
-        }
+        self.assertEqual(lsmod_info['submodules'], submodules)
+        self.assertEqual(lsmod_info, {'name': "bridge",
+                                      'size': 110862,
+                                      'used': 1,
+                                      'submodules': submodules})
 
 
 if __name__ == '__main__':
