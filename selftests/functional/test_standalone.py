@@ -51,10 +51,11 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
         exc = "NastyException: Nasty-string-like-exception"
-        count = result.stdout.count("\n%s" % exc)
-        self.assertEqual(count, 2, "Exception \\n%s should be present twice in"
-                         "the log (once from the log, second time when parsing"
-                         "exception details." % (exc))
+        count = result.stdout.count("%s" % exc)
+        self.assertEqual(count, 3, "Exception \\n%s should be present three "
+                         "times in the log (first from the traceback, then "
+                         "from the test log when raising the exception, and "
+                         "finally from the test results." % (exc))
 
     def test_errortest_nasty2(self):
         cmd_line = './examples/tests/errortest_nasty2.py -r'
