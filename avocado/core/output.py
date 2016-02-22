@@ -113,6 +113,10 @@ def reconfigure(args):
             add_log_handler("avocado.test", None, STDERR,
                             logging.DEBUG)
         else:
+            # TODO: For now enable stdout and stderr, because there are
+            # utils (avocado.utils) and libraries (virttest) which use
+            # the root logger or redefine logging. Remove this when all these
+            # places are fixed.
             sys.stdout = STDOUT
             sys.stderr = STDERR
             disable_log_handler("")
@@ -157,6 +161,7 @@ def reconfigure(args):
 
 def stop_logging():
     if isinstance(STDOUT, Paginator):
+        # Re-enable stdout in case someone uses it after our app finishes
         sys.stdout = _STDOUT
         sys.stderr = _STDERR
         STDOUT.close()
