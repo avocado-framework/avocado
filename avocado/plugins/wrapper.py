@@ -15,10 +15,11 @@
 import os
 import sys
 
-from .base import CLI
 from avocado.core import exit_codes
 from avocado.core import output
 from avocado.utils import process
+
+from .base import CLI
 
 
 class Wrapper(CLI):

@@ -16,8 +16,8 @@
 JSON output module.
 """
 
-from avocado.core.result import register_test_result_class
 from avocado.core.jsonresult import JSONTestResult
+from avocado.core.result import register_test_result_class
 
 from .base import CLI
 
