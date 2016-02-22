@@ -15,18 +15,119 @@
 """
 Manages output and logging in avocado applications.
 """
+from StringIO import StringIO
 import logging
 import os
 import sys
 
-from .settings import settings
 from ..utils import path as utils_path
+from .settings import settings
+
 
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = logging.NullHandler
 else:
     import logutils
     NULL_HANDLER = logutils.NullHandler
+
+
+STDOUT = sys.stdout
+STDERR = sys.stderr
+
+
+def early_start():
+    """
+    Replace all outputs with in-memory handlers
+    """
+    if os.environ.get('AVOCADO_LOG_DEBUG'):
+        add_log_handler("avocado.app.debug", None, STDERR, logging.DEBUG)
+    if os.environ.get('AVOCADO_LOG_EARLY'):
+        add_log_handler("", None, STDERR, logging.DEBUG)
+        add_log_handler("avocado.test", None, STDERR, logging.DEBUG)
+    else:
+        sys.stdout = StringIO()
+        sys.stderr = sys.stdout
+        add_log_handler("", MemStreamHandler, None, logging.DEBUG)
+    logging.root.level = logging.DEBUG
+
+
+def enable_stderr():
+    """
+    Enable direct stdout/stderr (useful for handling errors)
+    """
+    if hasattr(sys.stdout, 'getvalue'):
+        STDERR.write(sys.stdout.getvalue())
+    sys.stdout = STDOUT
+    sys.stderr = STDERR
+
+
+def reconfigure(args):
+    """
+    Adjust logging handlers accordingly to app args and re-log messages.
+    """
+    # Reconfigure stream loggers
+    enabled = getattr(args, "log", ["app", "early", "debug"])
+    if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
+        enabled.append("early")
+    if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
+        enabled.append("debug")
+    if getattr(args, "show_job_log", False) and "test" not in enabled:
+        enabled.append("test")
+    if getattr(args, "silent", False):
+        del enabled[:]
+    if "app" in enabled:
+        app_logger = logging.getLogger("avocado.app")
+        app_handler = ProgressStreamHandler()
+        app_handler.setFormatter(logging.Formatter("%(message)s"))
+        app_handler.addFilter(FilterInfo())
+        app_handler.stream = STDOUT
+        app_logger.addHandler(app_handler)
+        app_logger.propagate = False
+        app_logger.level = logging.INFO
+        app_err_handler = logging.StreamHandler()
+        app_err_handler.setFormatter(logging.Formatter("%(message)s"))
+        app_err_handler.addFilter(FilterError())
+        app_err_handler.stream = STDERR
+        app_logger.addHandler(app_err_handler)
+        app_logger.propagate = False
+    else:
+        disable_log_handler("avocado.app")
+    if not os.environ.get("AVOCADO_LOG_EARLY"):
+        logging.getLogger("avocado.test.stdout").propagate = False
+        logging.getLogger("avocado.test.stderr").propagate = False
+        if "early" in enabled:
+            enable_stderr()
+            add_log_handler("", None, STDERR, logging.DEBUG)
+            add_log_handler("avocado.test", None, STDERR, logging.DEBUG)
+        else:
+            # FIXME: When log and output are merged, to this in
+            # start_job_logging
+            # Don't relog old messages!
+            sys.stdout = STDOUT
+            sys.stderr = STDERR
+            disable_log_handler("")
+            disable_log_handler("avocado.test")
+    if "remote" in enabled:
+        add_log_handler("avocado.fabric", stream=STDERR)
+        add_log_handler("paramiko", stream=STDERR)
+    else:
+        disable_log_handler("avocado.fabric")
+        disable_log_handler("paramiko")
+    if not os.environ.get('AVOCADO_LOG_DEBUG'):    # Not already enabled by env
+        if "debug" in enabled:
+            add_log_handler("avocado.app.debug", stream=STDERR)
+        else:
+            disable_log_handler("avocado.app.debug")
+
+    enable_stderr()
+    # Remove the in-memory handlers
+    for handler in logging.root.handlers:
+        if isinstance(handler, MemStreamHandler):
+            logging.root.handlers.remove(handler)
+
+    # Log early_messages
+    for record in MemStreamHandler.log:
+        logging.getLogger(record.name).handle(record)
 
 
 class FilterError(logging.Filter):
