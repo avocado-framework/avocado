@@ -519,6 +519,8 @@ class TestProgram(object):
         os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
 
         self.progName = os.path.basename(sys.argv[0])
+        output.add_log_handler("", output.ProgressStreamHandler,
+                               fmt="%(message)s")
         self.parseArgs(sys.argv[1:])
         self.args.url = [sys.argv[0]]
         self.runTests()
@@ -534,6 +536,8 @@ class TestProgram(object):
 
     def runTests(self):
         self.args.standalone = True
+        self.args.log = ["test"]
+        output.reconfigure(self.args)
         self.job = Job(self.args)
         exit_status = self.job.run()
         if self.args.remove_test_results is True:
