@@ -120,7 +120,7 @@ class Replay(CLI):
 
         if resultsdir is None:
             msg = "Can't find job results directory in '%s'" % self.logdir
-            view.notify(event='error', msg=(msg))
+            view.notify(event='error', msg=msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
@@ -128,15 +128,46 @@ class Replay(CLI):
         if sourcejob is None:
             msg = "Can't find matching job id '%s' in '%s' directory." % \
                   (args.replay_jobid, resultsdir)
-            view.notify(event='error', msg=(msg))
+            view.notify(event='error', msg=msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
         setattr(args, 'replay_sourcejob', sourcejob)
+
+        replay_args = replay.retrieve_args(resultsdir)
+
+        if args.loaders:
+            msg = "Overriding the replay 'loaders' with loaders provided in "\
+                  "command line."
+            view.notify(event='warning', msg=msg)
+        else:
+            setattr(args, 'loaders', replay_args['loaders'])
+
+        if args.external_runner:
+            msg = "Overriding the replay 'external-runner' with "\
+                  "external-runner provided in command line."
+            view.notify(event='warning', msg=msg)
+        else:
+            setattr(args, 'external_runner', replay_args['external_runner'])
+
+        if args.external_runner_testdir:
+            msg = "Overriding the replay 'external-runner-testdir' with "\
+                  "external-runner-testdir provided in command line."
+            view.notify(event='warning', msg=msg)
+        else:
+            setattr(args, 'external_runner_testdir',
+                    replay_args['external_runner_testdir'])
+
+        if args.external_runner_chdir != 'off':
+            msg = "Overriding the replay 'external-runner-chdir' with "\
+                  "external-runner-chdir provided in command line."
+            view.notify(event='warning', msg=msg)
+        else:
+            setattr(args, 'external_runner_chdir',
+                    replay_args['external_runner_chdir'])
 
         if getattr(args, 'url', None):
             msg = 'Overriding the replay urls with urls provided in '\
                   'command line.'
-            view.notify(event='warning', msg=(msg))
+            view.notify(event='warning', msg=msg)
         else:
             urls = replay.retrieve_urls(resultsdir)
             if urls is None:
