@@ -18,7 +18,10 @@ URL related functions.
 The strange name is to avoid accidental naming colisions in code.
 """
 
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 
 def is_url(path):

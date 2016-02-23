@@ -24,4 +24,4 @@ RELEASE = 0
 VERSION = "%s.%s.%s" % (MAJOR, MINOR, RELEASE)
 
 if __name__ == '__main__':
-    print VERSION
+    print(VERSION)

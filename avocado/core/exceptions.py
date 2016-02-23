@@ -48,7 +48,7 @@ def fail_on(exceptions=None):
                 return func(*args, **kwargs)
             except TestBaseException:
                 raise
-            except exceptions, details:
+            except exceptions as details:
                 raise TestFail(str(details))
         return wrap
     if func:

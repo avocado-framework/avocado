@@ -34,7 +34,7 @@ class TestLister(object):
         self.term_support = output.TermSupport()
         try:
             loader.loader.load_plugins(args)
-        except loader.LoaderError, details:
+        except loader.LoaderError as details:
             sys.stderr.write(str(details))
             sys.stderr.write('\n')
             sys.exit(exit_codes.AVOCADO_FAIL)
@@ -48,7 +48,7 @@ class TestLister(object):
         try:
             return loader.loader.discover(paths,
                                           which_tests=which_tests)
-        except loader.LoaderUnhandledUrlError, details:
+        except loader.LoaderUnhandledUrlError as details:
             self.view.notify(event="error", msg=str(details))
             self.view.cleanup()
             sys.exit(exit_codes.AVOCADO_FAIL)

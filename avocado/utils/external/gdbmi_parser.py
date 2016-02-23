@@ -27,7 +27,7 @@
 import re
 import pprint
 
-import spark
+from . import spark
 
 
 def __private():
@@ -173,10 +173,10 @@ def __private():
 
         def error(self, token, i=0, tokens=None):
             if i > 2:
-                print '%s %s %s %s' % (tokens[i - 3],
+                print('%s %s %s %s' % (tokens[i - 3],
                                        tokens[i - 2],
                                        tokens[i - 1],
-                                       tokens[i])
+                                       tokens[i]))
             raise Exception("Syntax error at or near %d:'%s' token" % (i, token))
 
     class GdbMiInterpreter(spark.GenericASTTraversal):

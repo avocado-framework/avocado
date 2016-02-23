@@ -66,7 +66,7 @@ class JobTimeOutTest(unittest.TestCase):
                          (e_rc, result))
         try:
             xunit_doc = xml.dom.minidom.parseString(xml_output)
-        except Exception, detail:
+        except Exception as detail:
             raise ParseXMLError("Failed to parse content: %s\n%s" %
                                 (detail, xml_output))
 

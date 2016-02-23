@@ -16,10 +16,14 @@
 Reads the avocado settings from a .ini file (from python ConfigParser).
 """
 import ast
-import ConfigParser
 import os
 import sys
 import glob
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 from ..utils import path
 
@@ -241,7 +245,7 @@ class Settings(object):
 
         try:
             return convert_value_type(val, key_type)
-        except Exception, details:
+        except Exception as details:
             raise SettingsValueError("Could not convert value %r to type %s "
                                      "(settings key %s, section %s): %s" %
                                      (val, key_type, key, section, details))
