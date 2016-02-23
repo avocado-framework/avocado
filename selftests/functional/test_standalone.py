@@ -51,7 +51,7 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
         exc = "NastyException: Nasty-string-like-exception"
-        count = result.stdout.count("%s" % exc)
+        count = result.stderr.count("%s" % exc)
         self.assertEqual(count, 3, "Exception \\n%s should be present three "
                          "times in the log (first from the traceback, then "
                          "from the test log when raising the exception, and "
@@ -62,14 +62,14 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty2')
         self.assertIn("Exception: Unable to get exception, check the traceback"
-                      " for details.", result.stdout)
+                      " for details.", result.stderr)
 
     def test_errortest_nasty3(self):
         cmd_line = './examples/tests/errortest_nasty3.py -r'
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty3')
         self.assertIn("TestError: <errortest_nasty3.NastyException instance at ",
-                      result.stdout)
+                      result.stderr)
 
     def test_errortest(self):
         cmd_line = './examples/tests/errortest.py -r'
