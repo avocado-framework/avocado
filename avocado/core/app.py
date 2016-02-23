@@ -19,9 +19,8 @@ The core Avocado application.
 import os
 import signal
 
-from .log import configure as configure_log
 from .parser import Parser
-from .output import View
+from . import output
 from .settings import settings
 from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
@@ -38,26 +37,35 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
-        configure_log()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
-        self.cli_dispatcher = CLIDispatcher()
-        self.cli_cmd_dispatcher = CLICmdDispatcher()
-        self._print_plugin_failures()
-        self.parser.start()
-        if self.cli_cmd_dispatcher.extensions:
-            self.cli_cmd_dispatcher.map_method('configure', self.parser)
-        if self.cli_dispatcher.extensions:
-            self.cli_dispatcher.map_method('configure', self.parser)
-        self.parser.finish()
-        if self.cli_dispatcher.extensions:
-            self.cli_dispatcher.map_method('run', self.parser.args)
+        output.early_start()
+        initialized = False
+        try:
+            self.cli_dispatcher = CLIDispatcher()
+            self.cli_cmd_dispatcher = CLICmdDispatcher()
+            self._print_plugin_failures()
+            self.parser.start()
+            if self.cli_cmd_dispatcher.extensions:
+                self.cli_cmd_dispatcher.map_method('configure', self.parser)
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('configure', self.parser)
+            self.parser.finish()
+            if self.cli_dispatcher.extensions:
+                self.cli_dispatcher.map_method('run', self.parser.args)
+            initialized = True
+        finally:
+            if (not initialized and
+                    getattr(self.parser.args, "silent", False) is False):
+                output.enable_stderr()
+                self.parser.args.log = ["app"]
+            output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
         failures = (self.cli_dispatcher.load_failures +
                     self.cli_cmd_dispatcher.load_failures)
         if failures:
-            view = View(self.parser.args)
+            view = output.View(self.parser.args)
             msg_fmt = 'Failed to load plugin from module "%s": %s'
             silenced = settings.get_value('plugins',
                                           'skip_broken_plugin_notification',
