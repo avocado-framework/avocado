@@ -37,6 +37,7 @@ from . import exit_codes
 from . import exceptions
 from . import job_id
 from . import output
+from . import log
 from . import multiplexer
 from . import tree
 from . import test
@@ -108,20 +109,6 @@ class Job(object):
             self.loglevel = mapping[raw_log_level]
         else:
             self.loglevel = logging.DEBUG
-        self.show_job_log = getattr(self.args, 'show_job_log', False)
-        self.silent = getattr(self.args, 'silent', False)
-
-        if self.standalone:
-            self.show_job_log = True
-            if self.args is not None:
-                setattr(self.args, 'show_job_log', True)
-
-        if self.show_job_log:
-            if not self.silent:
-                output.add_log_handler(_TEST_LOGGER.name, level=logging.DEBUG)
-                output.add_log_handler('', level=logging.DEBUG)
-                _TEST_LOGGER.setLevel(self.loglevel)
-                _TEST_LOGGER.propagate = False
 
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
@@ -533,6 +520,8 @@ class TestProgram(object):
         os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
 
         self.progName = os.path.basename(sys.argv[0])
+        output.add_log_handler("", output.ProgressStreamHandler,
+                               fmt="%(message)s")
         self.parseArgs(sys.argv[1:])
         self.args.url = [sys.argv[0]]
         self.runTests()
@@ -548,6 +537,8 @@ class TestProgram(object):
 
     def runTests(self):
         self.args.standalone = True
+        self.args.log = ["test"]
+        log.reconfigure(self.args)
         self.job = Job(self.args)
         exit_status = self.job.run()
         if self.args.remove_test_results is True:
