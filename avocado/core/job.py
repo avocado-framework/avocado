@@ -118,8 +118,8 @@ class Job(object):
 
         if self.show_job_log:
             if not self.silent:
-                output.add_console_handler(_TEST_LOGGER)
-                output.add_console_handler(logging.getLogger())
+                output.add_log_handler(_TEST_LOGGER.name, level=logging.DEBUG)
+                output.add_log_handler('', level=logging.DEBUG)
                 _TEST_LOGGER.setLevel(self.loglevel)
                 _TEST_LOGGER.propagate = False
 
@@ -405,14 +405,14 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        self.view.start_file_logging(self.logfile,
-                                     self.loglevel,
-                                     self.unique_id,
-                                     self.replay_sourcejob)
+        self.view.start_job_logging(self.logfile,
+                                    self.loglevel,
+                                    self.unique_id,
+                                    self.replay_sourcejob)
         try:
             test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError, details:
-            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.tracebacks')
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         if not test_suite:
@@ -445,7 +445,7 @@ class Job(object):
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout,
                                               replay_map=replay_map)
-        self.view.stop_file_logging()
+        self.view.stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'

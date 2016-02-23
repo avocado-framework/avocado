@@ -94,20 +94,27 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_params(self):
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off examples/tests/env_variables.sh '
-                    '--multiplex examples/tests/env_variables.sh.data'
-                    '/env_variables.yaml '
-                    '--show-job-log' % self.tmpdir)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        result = self.run_and_check(cmd_line, expected_rc)
-        for msg in ('A', 'ASDFASDF', 'This is very long\nmultiline\ntext.'):
-            msg = ('[stdout] Custom variable: ' +
-                   '\n[stdout] '.join(msg.splitlines()))
-            self.assertIn(msg, result.stdout, "Multiplexed variable should "
-                                              "produce:"
+        for variant_msg in (('/run/short', 'A'),
+                            ('/run/medium', 'ASDFASDF'),
+                            ('/run/long', 'This is very long\nmultiline\ntext.')):
+            variant, msg = variant_msg
+            cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off examples/tests/env_variables.sh '
+                        '--multiplex examples/tests/env_variables.sh.data/env_variables.yaml '
+                        '--filter-only %s --show-job-log' % (self.tmpdir, variant))
+            expected_rc = exit_codes.AVOCADO_ALL_OK
+            result = self.run_and_check(cmd_line, expected_rc)
+
+            msg_lines = msg.splitlines()
+            msg_header = '[stdout] Custom variable: %s' % msg_lines[0]
+            self.assertIn(msg_header, result.stdout,
+                          "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
-                          % ("\n  ".join(msg.splitlines()),
-                             "\n  ".join(result.stdout.splitlines())))
+                          % (msg_header, "\n  ".join(result.stdout.splitlines())))
+            for msg_remain in msg_lines[1:]:
+                self.assertIn('[stdout] %s' % msg_remain, result.stdout,
+                              "Multiplexed variable should produce:"
+                              "\n  %s\nwhich is not present in the output:\n  %s"
+                              % (msg_remain, "\n  ".join(result.stdout.splitlines())))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

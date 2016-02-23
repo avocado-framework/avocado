@@ -111,16 +111,27 @@ def get_paginator():
     return Paginator()
 
 
-def add_console_handler(logger):
+def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
+                    level=logging.INFO, fmt='%(name)s: %(message)s'):
     """
-    Add a console handler to a logger.
+    Add handler to a logger.
 
-    :param logger: `logging.Logger` instance.
+    :param logger_name: the name of a :class:`logging.Logger` instance, that
+                        is, the parameter to :func:`logging.getLogger`
+    :param klass: Handler class (defaults to :class:`logging.StreamHandler`)
+    :param stream: Logging stream, to be passed as an argument to ``klass``
+                   (defaults to ``sys.stdout``)
+    :param level: Log level (defaults to `INFO``)
+    :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
     """
-    console_handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter(fmt='%(message)s')
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    handler = klass(stream)
+    handler.setLevel(level)
+    if isinstance(fmt, str):
+        fmt = logging.Formatter(fmt=fmt)
+    handler.setFormatter(fmt)
+    logging.getLogger(logger).addHandler(handler)
+    logging.getLogger(logger).propagate = False
+    return handler
 
 
 class TermSupport(object):
@@ -547,7 +558,7 @@ class View(object):
         """
         self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
 
-    def start_file_logging(self, logfile, loglevel, unique_id, sourcejob=None):
+    def start_job_logging(self, logfile, loglevel, unique_id, sourcejob=None):
         """
         Start the main file logging.
 
@@ -573,7 +584,7 @@ class View(object):
         root_logger.setLevel(loglevel)
         self.replay_sourcejob = sourcejob
 
-    def stop_file_logging(self):
+    def stop_job_logging(self):
         """
         Simple helper for removing a handler from the current logger.
         """
