@@ -11,12 +11,12 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
 """
 Manages output and logging in avocado applications.
 """
 import logging
 import os
+import re
 import sys
 
 from ..utils import path as utils_path
@@ -133,10 +133,22 @@ def reconfigure(args):
             add_log_handler("avocado.app.debug", stream=STDERR)
         else:
             disable_log_handler("avocado.app.debug")
-
+    # Add custom loggers
     for name in [_ for _ in enabled if _ not in ["app", "test", "debug",
                                                  "remote", "early"]]:
-        add_log_handler(name, None, STDERR, logging.DEBUG)
+        name = re.split(r'(?<!\\):', name, maxsplit=1)
+        if len(name) == 1:
+            name, level = name[0], logging.DEBUG
+        else:
+            level = (int(name[1]) if name[1].isdigit()
+                     else logging.getLevelName(name[1].upper()))
+            name = name[0]
+        try:
+            add_log_handler(name, None, STDERR, level)
+        except ValueError, details:
+            app_logger.error("Failed to set logger for --output %s:%s: %s.",
+                             name, level, details)
+            sys.exit(-1)
     # Remove the in-memory handlers
     for handler in logging.root.handlers:
         if isinstance(handler, MemStreamHandler):

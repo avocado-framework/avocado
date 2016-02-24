@@ -84,10 +84,12 @@ class Parser(object):
                                       help='Use custom configuration from a file')
         self.application.add_argument('--show', action="store",
                                       type=log_type,
-                                      metavar='STREAMS', default=['app'],
-                                      help="Comma separated list of logging "
-                                      "streams to be enabled. Use '?' to get "
-                                      "additional info; By default 'app'")
+                                      metavar="STREAM[:LVL]",
+                                      default=['app'], help="Comma separated "
+                                      "list of logging streams to be enabled "
+                                      "optionally followed by LEVEL. "
+                                      "Use '?' to get additional info; "
+                                      "By default 'app:DEBUG'")
 
     def start(self):
         """
