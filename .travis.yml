@@ -25,8 +25,8 @@ script:
     - inspekt lint
     - inspekt indent
     - inspekt style
-    - ./selftests/cyclical_deps avocado
-    - ./selftests/modules_boundaries
+    - if [ $TRAVIS_PYTHON_VERSION == '2.7' ]; then ./selftests/cyclical_deps avocado; fi
+    - if [ $TRAVIS_PYTHON_VERSION == '2.7' ]; then ./selftests/modules_boundaries; fi
     - python setup.py develop
     - ./selftests/run
     - ./selftests/check_tmp_dirs
