@@ -706,7 +706,39 @@ class NotATest(Test):
         raise exceptions.NotATestError(e_msg)
 
 
-class TimeOutSkipTest(Test):
+class SkipTest(Test):
+
+    """
+    Class intended as generic substitute for avocado tests which fails during
+    setUp phase using "self._skip_reason" message.
+    """
+
+    _skip_reason = "Generic skip test reason"
+
+    def __init__(self, *args, **kwargs):
+        """
+        This class substitutes other classes. Let's just ignore the remaining
+        arguments and only set the ones supported by avocado.Test
+        """
+        super_kwargs = dict()
+        args = list(reversed(args))
+        for arg in ["methodName", "name", "params", "base_logdir", "tag",
+                    "job", "runner_queue"]:
+            if arg in kwargs:
+                super_kwargs[arg] = kwargs[arg]
+            elif args:
+                super_kwargs[arg] = args.pop()
+        super(SkipTest, self).__init__(**super_kwargs)
+
+    def setUp(self):
+        raise exceptions.TestSkipError(self._skip_reason)
+
+    def test(self):
+        """ Should not be executed """
+        raise RuntimeError("This should never be executed!")
+
+
+class TimeOutSkipTest(SkipTest):
 
     """
     Skip test due job timeout.
@@ -717,14 +749,8 @@ class TimeOutSkipTest(Test):
 
     _skip_reason = "Test skipped due a job timeout!"
 
-    def setUp(self):
-        raise exceptions.TestSkipError(self._skip_reason)
 
-    def test(self):
-        raise NotImplementedError("This should never be executed!")
-
-
-class DryRunTest(TimeOutSkipTest):
+class DryRunTest(SkipTest):
 
     """
     Fake test which logs itself and reports as SKIP
@@ -739,7 +765,7 @@ class DryRunTest(TimeOutSkipTest):
         super(DryRunTest, self).setUp()
 
 
-class ReplaySkipTest(TimeOutSkipTest):
+class ReplaySkipTest(SkipTest):
 
     """
     Skip test due to job replay filter.
