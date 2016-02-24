@@ -55,7 +55,8 @@ class Test(unittest.TestCase):
     default_params = {}
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, tag=None, job=None, runner_queue=None):
+                 base_logdir=None, tag=None, job=None, runner_queue=None,
+                 **kargs):
         """
         Initializes the test.
 
