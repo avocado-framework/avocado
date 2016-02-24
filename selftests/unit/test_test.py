@@ -8,7 +8,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado.core import test
+from avocado.core import test, exceptions
 from avocado.utils import script
 
 PASS_SCRIPT_CONTENTS = """#!/bin/sh
@@ -107,6 +107,67 @@ class SimpleTestClassTest(unittest.TestCase):
         self.pass_script.remove()
         self.fail_script.remove()
         shutil.rmtree(self.tmpdir)
+
+
+class SkipTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tests = []
+
+    def test_init(self):
+        # No params
+        self.tests.append(test.SkipTest())
+        self.assertRaises(exceptions.TestSkipError, self.tests[-1].setUp)
+        self.assertRaises(RuntimeError, self.tests[-1].test)
+        # Positional
+        self.tests.append(test.SkipTest("test", "my_name", {}, None, "1",
+                                        None, None, "extra_param1",
+                                        "extra_param2"))
+        self.assertEqual(self.tests[-1].name, "my_name")
+        self.assertEqual(self.tests[-1].tagged_name, "my_name.1")
+        # Kwargs
+        self.tests.append(test.SkipTest(methodName="test", name="my_name2",
+                                        params={}, base_logdir=None,
+                                        tag="a", job=None, runner_queue=None,
+                                        extra1="extra_param1",
+                                        extra2="extra_param2"))
+        self.assertEqual(self.tests[-1].name, "my_name2")
+        self.assertEqual(self.tests[-1].tagged_name, "my_name2.a")
+        # both (theoretically impossible in python, but valid for nasty tests)
+        # keyword args are used as they explicitly represent what they mean
+        self.tests.append(test.SkipTest("not used", "who cares", {}, None, "0",
+                                        None, None, "extra_param1",
+                                        "extra_param2",
+                                        methodName="test", name="my_name3",
+                                        params={}, base_logdir=None,
+                                        tag="3", job=None, runner_queue=None,
+                                        extra1="extra_param3",
+                                        extra2="extra_param4"))
+        self.assertEqual(self.tests[-1].name, "my_name3")
+        self.assertEqual(self.tests[-1].tagged_name, "my_name3.3")
+        # combination
+        self.tests.append(test.SkipTest("test", "my_name4", tag="321",
+                                        other_param="Whatever"))
+        self.assertEqual(self.tests[-1].name, "my_name4")
+        self.assertEqual(self.tests[-1].tagged_name, "my_name4.321")
+        # ugly combination (positional argument overrides kwargs, this only
+        # happens when the substituted class reorders the positional arguments.
+        # We try to first match keyword args and then fall-back to positional
+        # ones.
+        name = "positional_method_name_becomes_test_name"
+        tag = "positional_base_logdir_becomes_tag"
+        self.tests.append(test.SkipTest(name, None, None, tag,
+                                        methodName="test",
+                                        other_param="Whatever"))
+        self.assertEqual(self.tests[-1].name, name)
+        self.assertEqual(self.tests[-1].tagged_name, "%s.%s" % (name, tag))
+
+    def tearDown(self):
+        for tst in self.tests:
+            try:
+                shutil.rmtree(os.path.dirname(tst.logdir))
+            except Exception:
+                pass
 
 if __name__ == '__main__':
     unittest.main()
