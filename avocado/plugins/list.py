@@ -12,14 +12,15 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import logging
 import sys
 
-from .base import CLICmd
-from avocado.core import test
+from avocado.core import exit_codes, output
 from avocado.core import loader
-from avocado.core import output
-from avocado.core import exit_codes
+from avocado.core import test
 from avocado.utils import astring
+
+from .base import CLICmd
 
 
 class TestLister(object):
@@ -29,9 +30,7 @@ class TestLister(object):
     """
 
     def __init__(self, args):
-        use_paginator = args.paginator == 'on'
-        self.view = output.View(app_args=args, use_paginator=use_paginator)
-        self.term_support = output.TermSupport()
+        self.log = logging.getLogger("avocado.app")
         try:
             loader.loader.load_plugins(args)
         except loader.LoaderError as details:
@@ -49,8 +48,7 @@ class TestLister(object):
             return loader.loader.discover(paths,
                                           which_tests=which_tests)
         except loader.LoaderUnhandledUrlError as details:
-            self.view.notify(event="error", msg=str(details))
-            self.view.cleanup()
+            self.log.error(str(details))
             sys.exit(exit_codes.AVOCADO_FAIL)
 
     def _get_test_matrix(self, test_suite):
@@ -106,15 +104,16 @@ class TestLister(object):
     def _display(self, test_matrix, stats):
         header = None
         if self.args.verbose:
-            header = (self.term_support.header_str('Type'), self.term_support.header_str('Test'))
+            header = (output.term_support.header_str('Type'),
+                      output.term_support.header_str('Test'))
 
         for line in astring.iter_tabular_output(test_matrix, header=header):
-            self.view.notify(event='minor', msg="%s" % line)
+            self.log.debug(line)
 
         if self.args.verbose:
-            self.view.notify(event='minor', msg='')
+            self.log.debug("")
             for key in sorted(stats):
-                self.view.notify(event='message', msg=("%s: %s" % (key.upper(), stats[key])))
+                self.log.info("%s: %s", key.upper(), stats[key])
 
     def _list(self):
         self._extra_listing()
@@ -123,20 +122,11 @@ class TestLister(object):
         self._display(test_matrix, stats)
 
     def list(self):
-        rc = 0
         try:
             self._list()
         except KeyboardInterrupt:
-            rc = exit_codes.AVOCADO_FAIL
-            msg = 'Command interrupted by user...'
-            if self.view is not None:
-                self.view.notify(event='error', msg=msg)
-            else:
-                sys.stderr.write(msg)
-        finally:
-            if self.view:
-                self.view.cleanup()
-        return rc
+            self.log.error('Command interrupted by user...')
+            return exit_codes.AVOCADO_FAIL
 
 
 class List(CLICmd):
