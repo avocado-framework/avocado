@@ -14,6 +14,7 @@ class PassTest(Test):
         """
         A test simply doesn't have to fail in order to pass
         """
+        self.avocado.barrier(self.params.get("barrier", default="foo"), 2, 3600)
         pass
 
 

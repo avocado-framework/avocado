@@ -98,6 +98,11 @@ DEFAULT_LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'avocado.plugins': {
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
         'paramiko': {
             'handlers': ['null'],
             'level': 'DEBUG',
