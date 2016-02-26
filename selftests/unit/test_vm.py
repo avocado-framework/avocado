@@ -6,7 +6,6 @@ from flexmock import flexmock, flexmock_teardown
 
 from avocado.core.remote import VMTestRunner
 from avocado.core import virt
-from avocado.core import output
 
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"test": "sleeptest.1", "url": "sleeptest", '
@@ -22,9 +21,6 @@ class VMTestRunnerSetup(unittest.TestCase):
     """ Tests the VMTestRunner setup() method """
 
     def setUp(self):
-        View = flexmock(output.View)
-        view = output.View()
-        view.should_receive('notify')
         mock_vm = flexmock(snapshot=True,
                            domain=flexmock(isActive=lambda: True))
         flexmock(virt).should_receive('vm_connect').and_return(mock_vm).once().ordered()
@@ -43,7 +39,9 @@ class VMTestRunnerSetup(unittest.TestCase):
                         vm_no_copy=False,
                         vm_timeout=120,
                         vm_hypervisor_uri='my_hypervisor_uri')
-        job = flexmock(args=Args, view=view)
+        log = flexmock()
+        log.should_receive("info")
+        job = flexmock(args=Args, log=log)
         self.runner = VMTestRunner(job, None)
         mock_vm.should_receive('stop').once().ordered()
         mock_vm.should_receive('restore_snapshot').once().ordered()

@@ -88,7 +88,7 @@ class ReplayTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         msg = 'Ignoring multiplex from source job with --replay-ignore.'
-        self.assertIn(msg, result.stdout)
+        self.assertIn(msg, result.stderr)
 
     def test_run_replay_invalidstatus(self):
         cmd_line = ('./scripts/avocado run --replay %s --replay-test-status E '

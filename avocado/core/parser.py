@@ -30,19 +30,19 @@ DESCRIPTION = 'Avocado Test Runner'
 
 
 def log_type(value):
-    valid_streams = ["app", "test", "debug", "remote", "early", "all", "none"]
     value = value.split(',')
-    if any(_ not in valid_streams for _ in value):
-        missing = [_ for _ in value if _ not in valid_streams]
-        msg = ("Invalid logging stream(s): %s\n"
-               "Supported logging streams are:\n"
+    if '?' in value:
+        msg = ("Enable stdout/stderr console streams. Special values are:\n"
                " app - application output\n"
                " test - test output\n"
                " debug - tracebacks and other debugging info\n"
                " remote - fabric/paramiko debug\n"
                " early - early logging of other streams (very verbose)\n"
-               " all - everything\n"
-               " none - disable everything\n" % ", ".join(missing))
+               " all - all of the above\n"
+               " none - disable console logging\n"
+               " ? - this help\n"
+               " Additionally you can specify any (non-colliding) stream, "
+               "eg. 'my.stream'.\n" % ", ".join(missing))
         sys.stderr.write(msg)
         sys.exit(-1)
 
@@ -73,7 +73,7 @@ class Parser(object):
     """
 
     def __init__(self):
-        self.args = None
+        self.args = argparse.Namespace()
         self.subcommands = None
         self.application = ArgumentParser(prog=PROG,
                                           add_help=False,  # see parent parsing
@@ -82,12 +82,12 @@ class Parser(object):
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       help='Use custom configuration from a file')
-        self.application.add_argument('--log', action="store",
+        self.application.add_argument('--show', action="store",
                                       type=log_type,
                                       metavar='STREAMS', default=['app'],
                                       help="Comma separated list of logging "
-                                      "streams to be enabled (app,test,debug,"
-                                      "remote,early); By default 'app'")
+                                      "streams to be enabled. Use '?' to get "
+                                      "additional info; By default 'app'")
 
     def start(self):
         """

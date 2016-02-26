@@ -14,10 +14,11 @@
 """
 HTML output module.
 """
+
+import logging
 import sys
 
 from avocado.core import exit_codes
-from avocado.core import output
 from avocado.core.html import HTMLTestResult
 from avocado.core.result import register_test_result_class
 
@@ -58,11 +59,9 @@ class HTML(CLI):
 
     def run(self, args):
         if 'html_output' in args and args.html_output == '-':
-            view = output.View(app_args=args)
-            view.notify(event='error',
-                        msg='HTML to stdout not supported '
-                        '(not all HTML resources can be embedded '
-                        'on a single file)')
+            log = logging.getLogger("avocado.app")
+            log.error('HTML to stdout not supported (not all HTML resources '
+                      'can be embedded on a single file)')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if 'html_output' in args and args.html_output is not None:
