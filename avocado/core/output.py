@@ -11,16 +11,19 @@
 #
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
-
 """
 Manages output and logging in avocado applications.
 """
+
 import logging
 import os
+import re
 import sys
 
+from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
+
 
 try:
     from StringIO import StringIO
@@ -133,7 +136,7 @@ def reconfigure(args):
             add_log_handler("avocado.app.debug", stream=STDERR)
         else:
             disable_log_handler("avocado.app.debug")
-
+    # Add custom loggers
     for name in [_ for _ in enabled if _ not in ["app", "test", "debug",
                                                  "remote", "early"]]:
         name = re.split(r'(?<!\\):', name, maxsplit=1)
