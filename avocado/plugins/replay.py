@@ -120,7 +120,7 @@ class Replay(CLI):
 
         if resultsdir is None:
             msg = "Can't find job results directory in '%s'" % self.logdir
-            view.notify(event='error', msg=(msg))
+            view.notify(event='error', msg=msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
@@ -128,20 +128,42 @@ class Replay(CLI):
         if sourcejob is None:
             msg = "Can't find matching job id '%s' in '%s' directory." % \
                   (args.replay_jobid, resultsdir)
-            view.notify(event='error', msg=(msg))
+            view.notify(event='error', msg=msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
         setattr(args, 'replay_sourcejob', sourcejob)
 
+        replay_args = replay.retrieve_args(resultsdir)
+        if replay_args is None:
+            msg = 'Source job args data not found. Some options might not be '\
+                  'loaded in this replay job.'
+            view.notify(event='warning', msg=msg)
+        else:
+            whitelist = ['loaders',
+                         'external_runner',
+                         'external_runner_testdir',
+                         'external_runner_chdir']
+            for option in whitelist:
+                optvalue = getattr(args, option, None)
+                if optvalue:
+                    msg = ("Overriding the replay %s with the --%s value given"
+                           " on the command line." %
+                           (option.replace('_', '-'),
+                            option.replace('_', '-')))
+                    view.notify(event='warning', msg=msg)
+                elif optvalue:
+                    setattr(args, option, replay_args[option])
+
+        # Keeping this for compatibility.
+        # TODO: Use replay_args['url'] at some point in the future.
         if getattr(args, 'url', None):
-            msg = 'Overriding the replay urls with urls provided in '\
-                  'command line.'
-            view.notify(event='warning', msg=(msg))
+            msg = 'Overriding the replay test URLs with the tet URLs given '\
+                  'on the command line.'
+            view.notify(event='warning', msg=msg)
         else:
             urls = replay.retrieve_urls(resultsdir)
             if urls is None:
                 msg = 'Source job urls data not found. Aborting.'
-                view.notify(event='error', msg=(msg))
+                view.notify(event='error', msg=msg)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 setattr(args, 'url', urls)
@@ -149,18 +171,18 @@ class Replay(CLI):
         if args.replay_ignore and 'config' in args.replay_ignore:
             msg = "Ignoring configuration from source job with " \
                   "--replay-ignore."
-            view.notify(event='warning', msg=(msg))
+            view.notify(event='warning', msg=msg)
         else:
             self.load_config(resultsdir)
 
         if args.replay_ignore and 'mux' in args.replay_ignore:
             msg = "Ignoring multiplex from source job with --replay-ignore."
-            view.notify(event='warning', msg=(msg))
+            view.notify(event='warning', msg=msg)
         else:
             if getattr(args, 'multiplex_files', None) is not None:
                 msg = 'Overriding the replay multiplex with '\
                       '--multiplex-files.'
-                view.notify(event='warning', msg=(msg))
+                view.notify(event='warning', msg=msg)
                 # Use absolute paths to avoid problems with os.chdir
                 args.multiplex_files = [os.path.abspath(_)
                                         for _ in args.multiplex_files]
@@ -168,7 +190,7 @@ class Replay(CLI):
                 mux = replay.retrieve_mux(resultsdir)
                 if mux is None:
                     msg = 'Source job multiplex data not found. Aborting.'
-                    view.notify(event='error', msg=(msg))
+                    view.notify(event='error', msg=msg)
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
                     setattr(args, "multiplex_files", mux)
