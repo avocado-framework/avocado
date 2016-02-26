@@ -91,6 +91,10 @@ class Parser(object):
                                       "DEBUG,WARNING,CRITICAL). "
                                       "Use '?' to get info about streams; "
                                       "By default 'app:DEBUG'")
+        self.application.add_argument('-s', '--silent',
+                                      default=argparse.SUPPRESS,
+                                      action="store_true",
+                                      help='Silence stdout')
 
     def start(self):
         """
