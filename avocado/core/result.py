@@ -118,16 +118,15 @@ class TestResult(object):
     #: inconsistencies come from.
     command_line_arg_name = None
 
-    def __init__(self, stream, args):
+    def __init__(self, job):
         """
         Creates an instance of TestResult.
 
-        :param stream: an instance of :class:`avocado.core.output.View`.
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        self.stream = stream
-        self.args = args
-        self.tests_total = getattr(args, 'test_result_total', 1)
+        self.args = getattr(job, "args", None)
+        self.stream = getattr(job, "view", None)
+        self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
         self.total_time = 0.0
         self.passed = []
