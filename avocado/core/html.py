@@ -15,6 +15,7 @@
 HTML output module.
 """
 import codecs
+import logging
 import os
 import shutil
 import sys
@@ -24,7 +25,6 @@ import urllib
 
 import pystache
 
-from . import output
 from .result import TestResult
 from ..utils import path as utils_path
 from ..utils import runtime
@@ -188,17 +188,24 @@ class HTMLTestResult(TestResult):
     """
 
     command_line_arg_name = '--html'
+    compatible_output_plugins = ["--remote-hostname", "--vm-domain"]
 
-    def __init__(self, job, force_html_file=None):
+    def __init__(self, job, force_html_file=None, stdout_cmd=None):
         """
         :param job: Job which defines this result
         :param force_html_file: Override the output html file location
+        :param stdout_cmd: List of enabled options that produce stdout
         """
         TestResult.__init__(self, job)
         if force_html_file:
             self.output = force_html_file
         else:
             self.output = self.args.html_output
+        self.log = logging.getLogger("avocado.app")
+        self.enable_output = True
+        if stdout_cmd and not [_ for _ in stdout_cmd
+                               if _ in self.compatible_output_plugins]:
+            self.enable_output = False
         self.json = None
 
     def start_tests(self):
@@ -206,7 +213,7 @@ class HTMLTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.json = {'debuglog': self.stream.logfile,
+        self.json = {'debuglog': self.logfile,
                      'job_id': runtime.CURRENT_JOB.unique_id,
                      'tests': []}
 
@@ -249,6 +256,8 @@ class HTMLTestResult(TestResult):
             'time': self.total_time
         })
         self._render_report()
+        if self.enable_output:
+            self.log.info("JOB HTML   : %s", self.output)
 
     def _render_report(self):
         context = ReportModel(json_input=self.json, html_output=self.output)

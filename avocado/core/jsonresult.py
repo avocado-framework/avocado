@@ -17,8 +17,8 @@ JSON output module.
 """
 
 import json
+import logging
 
-from . import output
 from .result import TestResult
 
 
@@ -31,23 +31,20 @@ class JSONTestResult(TestResult):
     command_line_arg_name = '--json'
 
     def __init__(self, job, force_json_file=None):
-        """
-        :param job: Job which defines this result
-        :param force_html_file: Override the json output file location
-        """
         TestResult.__init__(self, job)
         if force_json_file:
             self.output = force_json_file
         else:
             self.output = getattr(self.args, 'json_output', '-')
-        self.view = output.View(app_args=self.args)
+        self.json = None
+        self.log = logging.getLogger("avocado.app")
 
     def start_tests(self):
         """
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.json = {'debuglog': self.stream.logfile,
+        self.json = {'debuglog': self.logfile,
                      'tests': []}
 
     def end_test(self, state):
@@ -92,6 +89,6 @@ class JSONTestResult(TestResult):
         })
         self.json = json.dumps(self.json)
         if self.output == '-':
-            self.view.notify(event='minor', msg=self.json)
+            self.log.debug(self.json)
         else:
             self._save_json()
