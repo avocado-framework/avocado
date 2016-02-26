@@ -58,7 +58,7 @@ class AvocadoApp(object):
             if (not initialized and
                     getattr(self.parser.args, "silent", False) is False):
                 output.enable_stderr()
-                self.parser.args.log = ["app"]
+                self.parser.args.show = ["app"]
             output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
