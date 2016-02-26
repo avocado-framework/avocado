@@ -154,7 +154,10 @@ class Job(object):
             os.unlink(latest)
         except OSError:
             pass
-        os.symlink(basename, latest)
+        try:
+            os.symlink(basename, latest)
+        except OSError:
+            pass
 
     def _start_sysinfo(self):
         if hasattr(self.args, 'sysinfo'):
