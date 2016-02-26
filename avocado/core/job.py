@@ -148,13 +148,21 @@ class Job(object):
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
         latest = os.path.join(basedir, "latest")
+        errs = []
         if os.path.exists(latest) and not os.path.islink(latest):
-            raise OSError('"%s" already exists and is not a symlink' % latest)
-        try:
-            os.unlink(latest)
-        except OSError:
-            pass
-        os.symlink(basename, latest)
+            errs.append('"%s" already exists and is not a symlink' % latest)
+        else:
+            try:
+                os.unlink(latest)
+            except OSError as details:
+                errs.append("Unable to remove the $latest symlink %s" % details)
+            try:
+                os.symlink(basename, latest)
+            except OSError as details:
+                errs.append("Unable to create new $latest symlink %s" % details)
+
+        if errs:
+            logging.getLogger("avocado.test").warning("\n".join(errs))
 
     def _start_sysinfo(self):
         if hasattr(self.args, 'sysinfo'):
