@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import ast
 import glob
 import os
 import sys
@@ -23,17 +24,16 @@ class ReplayTests(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        cmd_line = ('./scripts/avocado run passtest --multiplex '
+        cmd_line = ('./scripts/avocado run examples/tests/passtest.py '
+                    '--multiplex '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    '--job-results-dir %s --sysinfo=off' %
+                    '--job-results-dir %s --sysinfo=off --json -' %
                     self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.run_and_check(cmd_line, expected_rc)
-
-        self.jobdir = ''.join(glob.glob(os.path.join(self.tmpdir, 'job-*')))
-        idfile = ''.join(os.path.join(self.jobdir, 'id'))
-        with open(idfile, 'r') as f:
-            self.jobid = f.read().strip('\n')
+        result = self.run_and_check(cmd_line, expected_rc)
+        out = ast.literal_eval(result.stdout)
+        self.jobid = out['job_id']
+        self.jobdir = os.path.dirname(out['debuglog'])
 
     def run_and_check(self, cmd_line, expected_rc):
         os.chdir(basedir)
@@ -51,7 +51,7 @@ class ReplayTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_data(self):
-        file_list = ['multiplex', 'config', 'urls', 'pwd']
+        file_list = ['multiplex', 'config', 'urls', 'pwd', 'args']
         for filename in file_list:
             path = os.path.join(self.jobdir, 'replay', filename)
             self.assertTrue(glob.glob(path))
@@ -106,10 +106,10 @@ class ReplayTests(unittest.TestCase):
                     '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = '(1/4) passtest.py:PassTest.test.variant1:  SKIP\n ' \
-              '(2/4) passtest.py:PassTest.test.variant2:  SKIP\n ' \
-              '(3/4) passtest.py:PassTest.test.variant3:  SKIP\n ' \
-              '(4/4) passtest.py:PassTest.test.variant4:  SKIP'
+        msg = '(1/4) examples/tests/passtest.py:PassTest.test.variant1:  SKIP\n '\
+              '(2/4) examples/tests/passtest.py:PassTest.test.variant2:  SKIP\n '\
+              '(3/4) examples/tests/passtest.py:PassTest.test.variant3:  SKIP\n ' \
+              '(4/4) examples/tests/passtest.py:PassTest.test.variant4:  SKIP'
         self.assertIn(msg, result.stdout)
 
     def test_run_replay_remotefail(self):
@@ -141,6 +141,17 @@ class ReplayTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         msg = "Option --replay-test-status is incompatible with "\
               "test URLs given on the command line."
+        self.assertIn(msg, result.stderr)
+
+    def test_run_replay_external_runner(self):
+        cmd_line = ('./scripts/avocado run --replay %s '
+                    '--external-runner /bin/bash '
+                    '--job-results-dir %s --replay-data-dir %s --sysinfo=off' %
+                    (self.jobid, self.tmpdir, self.jobdir))
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        result = self.run_and_check(cmd_line, expected_rc)
+        msg = "Overriding the replay external-runner with the "\
+              "--external-runner value given on the command line."
         self.assertIn(msg, result.stderr)
 
     def tearDown(self):
