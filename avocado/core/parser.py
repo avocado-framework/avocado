@@ -41,10 +41,10 @@ def log_type(value):
                " all - all of the above\n"
                " none - disable console logging\n"
                " ? - this help\n"
-               " Additionally you can specify any (non-colliding) stream, "
-               "eg. 'my.stream'.\n" % ", ".join(missing))
+               "Additionally you can specify any (non-colliding) stream, "
+               "eg. 'my.stream'.\n")
         sys.stderr.write(msg)
-        sys.exit(-1)
+        sys.exit(0)
 
     if 'all' in value:
         return ["app", "test", "debug", "remote", "early"]
@@ -84,10 +84,13 @@ class Parser(object):
                                       help='Use custom configuration from a file')
         self.application.add_argument('--show', action="store",
                                       type=log_type,
-                                      metavar='STREAMS', default=['app'],
-                                      help="Comma separated list of logging "
-                                      "streams to be enabled. Use '?' to get "
-                                      "additional info; By default 'app'")
+                                      metavar="STREAM[:LVL]",
+                                      default=['app'], help="Comma separated "
+                                      "list of logging streams to be enabled "
+                                      "optionally followed by LEVEL (INFO,"
+                                      "DEBUG,WARNING,CRITICAL). "
+                                      "Use '?' to get info about streams; "
+                                      "By default 'app:DEBUG'")
 
     def start(self):
         """
