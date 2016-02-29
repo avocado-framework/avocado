@@ -25,8 +25,8 @@ class SyncTest(Test):
         Build the synctest suite.
         """
         self.cwd = os.getcwd()
-        tarball_path = self.get_data_path(self.params.get('sync_tarball', '*',
-                                                          'synctest.tar.bz2'))
+        sync_tarball = self.params.get('sync_tarball', '*', 'synctest.tar.bz2')
+        tarball_path = os.path.join(self.datadir, sync_tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'synctest')
         if self.params.get('debug_symbols', default=True):

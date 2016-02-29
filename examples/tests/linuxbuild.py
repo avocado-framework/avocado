@@ -18,7 +18,7 @@ class LinuxBuildTest(Test):
         kernel_version = self.params.get('linux_version', default='3.19.8')
         linux_config = self.params.get('linux_config', default=None)
         if linux_config is not None:
-            linux_config = self.get_data_path(linux_config)
+            linux_config = os.path.join(self.datadir, linux_config)
 
         self.linux_build = kernel_build.KernelBuild(kernel_version,
                                                     linux_config,

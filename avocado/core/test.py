@@ -84,8 +84,7 @@ class Test(unittest.TestCase):
         else:
             self.name = self.__class__.__name__
 
-        self.tag = tag or None
-
+        self.tag = tag
         self.job = job
 
         if self.datadir is None:
@@ -100,7 +99,7 @@ class Test(unittest.TestCase):
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
-        self.tagged_name = self.get_tagged_name(base_logdir)
+        self.tagged_name = self._get_tagged_name(base_logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
         safe_tagged_name = astring.string_to_safe_path(self.tagged_name)
@@ -120,9 +119,6 @@ class Test(unittest.TestCase):
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
-
-        self.stdout_log = logging.getLogger("avocado.test.stdout")
-        self.stderr_log = logging.getLogger("avocado.test.stderr")
 
         mux_path = ['/test/*']
         if isinstance(params, dict):
@@ -187,7 +183,16 @@ class Test(unittest.TestCase):
         """
         Returns the name of the file (path) that holds the current test
         """
-        return inspect.getfile(self.__class__).rstrip('co')
+        possibly_compiled = inspect.getfile(self.__class__)
+        if possibly_compiled.endswith('.pyc') or possibly_compiled.endswith('.pyo'):
+            source = possibly_compiled[:-1]
+        else:
+            source = possibly_compiled
+
+        if os.path.exists(source):
+            return source
+        else:
+            return None
 
     @data_structures.LazyProperty
     def workdir(self):
@@ -248,19 +253,6 @@ class Test(unittest.TestCase):
         state['job_unique_id'] = self.job.unique_id
         return state
 
-    def get_data_path(self, basename):
-        """
-        Find a test dependency path inside the test data dir.
-
-        This is a short hand for an operation that will be commonly
-        used on avocado tests, so we feel it deserves its own API.
-
-        :param basename: Basename of the dep file. Ex: ``testsuite.tar.bz2``.
-
-        :return: Path where dependency is supposed to be found.
-        """
-        return os.path.join(self.datadir, basename)
-
     def _register_log_file_handler(self, logger, formatter, filename,
                                    log_level=logging.DEBUG):
         file_handler = logging.FileHandler(filename=filename)
@@ -285,10 +277,12 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self._stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
-                                                                    self._stdout_file)
-        self._stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
-                                                                    self._stderr_file)
+        self._register_log_file_handler(logging.getLogger("avocado.test.stdout"),
+                                        stream_formatter,
+                                        self._stdout_file)
+        self._register_log_file_handler(logging.getLogger("avocado.test.stderr"),
+                                        stream_formatter,
+                                        self._stderr_file)
         self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
                                                        formatter,
                                                        self._ssh_logfile)
@@ -300,7 +294,7 @@ class Test(unittest.TestCase):
         self.log.removeHandler(self.file_handler)
         logging.getLogger('paramiko').removeHandler(self._ssh_fh)
 
-    def get_tagged_name(self, logdir):
+    def _get_tagged_name(self, logdir):
         """
         Get a test tagged name.
 
@@ -323,26 +317,6 @@ class Test(unittest.TestCase):
         self.tag = "%s.%s" % (self.tag, tag) if self.tag else str(tag)
 
         return tagged_name
-
-    def setUp(self):
-        """
-        Setup stage that the test needs before passing to the actual test*.
-
-        Must be implemented by tests if they want such an stage. Commonly we'll
-        download/compile test suites, create files needed for a test, among
-        other possibilities.
-        """
-        pass
-
-    def tearDown(self):
-        """
-        Cleanup stage after the test* is done.
-
-        Examples of cleanup are deleting temporary files, restoring
-        firewall configurations or other system settings that were changed
-        in setup.
-        """
-        pass
 
     def _record_reference_stdout(self):
         utils_path.init_dir(self.datadir)

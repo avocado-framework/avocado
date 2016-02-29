@@ -308,7 +308,7 @@ an example that does that::
             """
             # Build the synctest suite
             self.cwd = os.getcwd()
-            tarball_path = self.get_data_path(self.params.sync_tarball)
+            tarball_path = os.path.join(self.datadir, self.params.sync_tarball)
             archive.extract(tarball_path, self.srcdir)
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
@@ -329,7 +329,7 @@ an example that does that::
 
 Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
-:func:`avocado.Test.get_data_path`, then uncompress the tarball through
+:meth:`avocado.Test.datadir`, then uncompress the tarball through
 :func:`avocado.utils.archive.extract`, an API that will
 decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
 the suite.
@@ -519,23 +519,32 @@ You may log something into the test logs using the methods in
                            'won't do that for you.')
             self.log.debug('Everybody look, I had a good lunch today...')
 
-If you need to write directly to the test stdout and stderr streams, there
-are another 2 class attributes for that, :mod:`avocado.Test.stdout_log`
-and :mod:`avocado.Test.stderr_log`, that have the exact same methods
-of the log object. So if you want to add stuff to your expected stdout and
-stderr streams, you can do something like::
+If you need to write directly to the test stdout and stderr streams,
+Avocado makes two preconfigured loggers available for that purpose,
+named ``avocado.test.stdout`` and ``avocado.test.stderr``. You can use
+Python's standard logging API to write to them. Example::
+
+    import logging
 
     class output_test(Test):
 
         def test(self):
-            self.log.info('This goes to the log and it is only informational')
-            self.stdout_log.info('This goes to the test stdout (will be recorded)')
-            self.stderr_log.info('This goes to the test stderr (will be recorded)')
+            stdout = logging.getLogger('avocado.test.stdout')
+            stdout.info('Informational line that will go to stdout')
+            ...
+            stderr = logging.getLogger('avocado.test.stderr')
+            stderr.info('Informational line that will go to stderr')
 
-Each one of the last 2 statements will go to the ``stdout.expected`` and
-``stderr.expected``, should you choose ``--output-check-record all``, and
-will be output to the files ``stderr`` and ``stdout`` of the job results dir
-every time that test is executed.
+Avocado will automatically save anything a test generates on STDOUT
+into a ``stdout`` file, to be found at the test results directory. The same
+applies to anything a test generates on STDERR, that is, it will be saved
+into a ``stderr`` file at the same location.
+
+Additionally, when using the runner's output recording features,
+namely the ``--output-check-record`` argument with values ``stdout``,
+``stderr`` or ``all``, everything given to those loggers will be saved
+to the files ``stdout.expected`` and ``stderr.expected`` at the test's
+data directory (which is different from the job/test results directory).
 
 Avocado Tests run on a separate process
 =======================================
