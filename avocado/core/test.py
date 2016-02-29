@@ -120,9 +120,6 @@ class Test(unittest.TestCase):
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
 
-        self.stdout_log = logging.getLogger("avocado.test.stdout")
-        self.stderr_log = logging.getLogger("avocado.test.stderr")
-
         mux_path = ['/test/*']
         if isinstance(params, dict):
             self.default_params = self.default_params.copy()
@@ -293,10 +290,12 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self._stdout_file_handler = self._register_log_file_handler(self.stdout_log, stream_formatter,
-                                                                    self._stdout_file)
-        self._stderr_file_handler = self._register_log_file_handler(self.stderr_log, stream_formatter,
-                                                                    self._stderr_file)
+        self._register_log_file_handler(logging.getLogger("avocado.test.stdout"),
+                                        stream_formatter,
+                                        self._stdout_file)
+        self._register_log_file_handler(logging.getLogger("avocado.test.stderr"),
+                                        stream_formatter,
+                                        self._stderr_file)
         self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
                                                        formatter,
                                                        self._ssh_logfile)
