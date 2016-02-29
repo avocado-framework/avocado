@@ -29,7 +29,7 @@ class TrinityTest(Test):
         Build trinity.
         """
         tarball = self.params.get('tarball', default='trinity-1.5.tar.bz2')
-        tarball_path = self.get_data_path(tarball)
+        tarball_path = os.path.join(self.datadir, tarball)
         archive.extract(tarball_path, self.srcdir)
         self.srcdir = os.path.join(self.srcdir, 'trinity-1.5')
         os.chdir(self.srcdir)

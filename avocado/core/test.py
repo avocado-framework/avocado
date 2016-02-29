@@ -253,19 +253,6 @@ class Test(unittest.TestCase):
         state['job_unique_id'] = self.job.unique_id
         return state
 
-    def get_data_path(self, basename):
-        """
-        Find a test dependency path inside the test data dir.
-
-        This is a short hand for an operation that will be commonly
-        used on avocado tests, so we feel it deserves its own API.
-
-        :param basename: Basename of the dep file. Ex: ``testsuite.tar.bz2``.
-
-        :return: Path where dependency is supposed to be found.
-        """
-        return os.path.join(self.datadir, basename)
-
     def _register_log_file_handler(self, logger, formatter, filename,
                                    log_level=logging.DEBUG):
         file_handler = logging.FileHandler(filename=filename)

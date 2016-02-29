@@ -28,12 +28,12 @@ class GdbTest(Test):
 
     def setUp(self):
         self.return99_binary_path = os.path.join(self.outputdir, 'return99')
-        return99_source_path = self.get_data_path('return99.c')
+        return99_source_path = os.path.join(self.datadir, 'return99.c')
         process.system('gcc -O0 -g %s -o %s' % (return99_source_path,
                                                 self.return99_binary_path))
 
         self.segfault_binary_path = os.path.join(self.outputdir, 'segfault')
-        segfault_source_path = self.get_data_path('segfault.c')
+        segfault_source_path = os.path.join(self.datadir, 'segfault.c')
         process.system('gcc -O0 -g %s -o %s' % (segfault_source_path,
                                                 self.segfault_binary_path))
 
