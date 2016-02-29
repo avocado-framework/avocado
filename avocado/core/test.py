@@ -333,26 +333,6 @@ class Test(unittest.TestCase):
 
         return tagged_name
 
-    def setUp(self):
-        """
-        Setup stage that the test needs before passing to the actual test*.
-
-        Must be implemented by tests if they want such an stage. Commonly we'll
-        download/compile test suites, create files needed for a test, among
-        other possibilities.
-        """
-        pass
-
-    def tearDown(self):
-        """
-        Cleanup stage after the test* is done.
-
-        Examples of cleanup are deleting temporary files, restoring
-        firewall configurations or other system settings that were changed
-        in setup.
-        """
-        pass
-
     def _record_reference_stdout(self):
         utils_path.init_dir(self.datadir)
         shutil.copyfile(self._stdout_file, self._expected_stdout_file)
