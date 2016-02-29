@@ -84,8 +84,7 @@ class Test(unittest.TestCase):
         else:
             self.name = self.__class__.__name__
 
-        self.tag = tag or None
-
+        self.tag = tag
         self.job = job
 
         if self.datadir is None:
