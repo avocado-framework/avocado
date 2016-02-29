@@ -187,7 +187,12 @@ class Test(unittest.TestCase):
         """
         Returns the name of the file (path) that holds the current test
         """
-        return inspect.getfile(self.__class__).rstrip('co')
+        possibly_compiled = inspect.getfile(self.__class__)
+        if possibly_compiled.endswith('.pyc') or possibly_compiled.endswith('.pyo'):
+            source = possibly_compiled[:-1]
+        else:
+            source = possibly_compiled
+        return source
 
     @data_structures.LazyProperty
     def workdir(self):
