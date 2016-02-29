@@ -99,7 +99,7 @@ class Test(unittest.TestCase):
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
-        self.tagged_name = self.get_tagged_name(base_logdir)
+        self.tagged_name = self._get_tagged_name(base_logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
         safe_tagged_name = astring.string_to_safe_path(self.tagged_name)
@@ -307,7 +307,7 @@ class Test(unittest.TestCase):
         self.log.removeHandler(self.file_handler)
         logging.getLogger('paramiko').removeHandler(self._ssh_fh)
 
-    def get_tagged_name(self, logdir):
+    def _get_tagged_name(self, logdir):
         """
         Get a test tagged name.
 
