@@ -60,81 +60,28 @@ USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
 
 
-def _usable_rw_dir(directory):
-    """
-    Verify wether we can use this dir (read/write).
-
-    Checks for appropriate permissions, and creates missing dirs as needed.
-
-    :param directory: Directory
-    """
-    if os.path.isdir(directory):
-        try:
-            fd, path = tempfile.mkstemp(dir=directory)
-            os.close(fd)
-            os.unlink(path)
-            return True
-        except OSError:
-            pass
-    else:
-        try:
-            utils_path.init_dir(directory)
-            return True
-        except OSError:
-            pass
-
-    return False
-
-
-def _usable_ro_dir(directory):
-    """
-    Verify whether dir exists and we can access its contents.
-
-    If a usable RO is there, use it no questions asked. If not, let's at
-    least try to create one.
-
-    :param directory: Directory
-    """
-    cwd = os.getcwd()
-    if os.path.isdir(directory):
-        try:
-            os.chdir(directory)
-            os.chdir(cwd)
-            return True
-        except OSError:
-            pass
-    else:
-        try:
-            utils_path.init_dir(directory)
-            return True
-        except OSError:
-            pass
-
-    return False
-
-
 def _get_rw_dir(settings_location, system_location, user_location):
-    if _usable_rw_dir(settings_location):
+    if utils_path.usable_rw_dir(settings_location):
         return settings_location
 
-    if _usable_rw_dir(system_location):
+    if utils_path.usable_rw_dir(system_location):
         return system_location
 
     user_location = os.path.expanduser(user_location)
-    if _usable_rw_dir(user_location):
+    if utils_path.usable_rw_dir(user_location):
         return user_location
 
 
 def _get_ro_dir(settings_location, system_location, user_location):
     if not settings.intree:
-        if _usable_ro_dir(settings_location):
+        if utils_path.usable_ro_dir(settings_location):
             return settings_location
 
-    if _usable_ro_dir(system_location):
+    if utils_path.usable_ro_dir(system_location):
         return system_location
 
     user_location = os.path.expanduser(user_location)
-    if _usable_ro_dir(user_location):
+    if utils_path.usable_ro_dir(user_location):
         return user_location
 
 
