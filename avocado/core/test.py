@@ -192,7 +192,11 @@ class Test(unittest.TestCase):
             source = possibly_compiled[:-1]
         else:
             source = possibly_compiled
-        return source
+
+        if os.path.exists(source):
+            return source
+        else:
+            return None
 
     @data_structures.LazyProperty
     def workdir(self):
