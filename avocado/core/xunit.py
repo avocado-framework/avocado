@@ -15,9 +15,9 @@
 """xUnit module."""
 
 import datetime
+import logging
 from xml.sax.saxutils import quoteattr
 
-from . import output
 from .result import TestResult
 
 
@@ -166,7 +166,7 @@ class xUnitTestResult(TestResult):
             self.output = force_xunit_file
         else:
             self.output = getattr(self.args, 'xunit_output', '-')
-        self.stream = output.View(app_args=self.args)
+        self.log = logging.getLogger("avocado.app")
         self.xml = XmlResult()
 
     def start_tests(self):
@@ -212,7 +212,7 @@ class xUnitTestResult(TestResult):
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()
         if self.output == '-':
-            self.stream.notify(event='minor', msg=contents)
+            self.log.debug(contents)
         else:
             with open(self.output, 'w') as xunit_output:
                 xunit_output.write(contents)
