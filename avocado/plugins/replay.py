@@ -79,9 +79,9 @@ class Replay(CLI):
         ignore_list = string.split(',')
         for item in ignore_list:
             if item not in options:
-                msg = 'Invalid --replay-ignore option. Valid ' \
-                       'options are (more than one allowed): %s' % \
-                       ','.join(options)
+                msg = ('Invalid --replay-ignore option. Valid '
+                       'options are (more than one allowed): %s'
+                       % ','.join(options))
                 raise argparse.ArgumentTypeError(msg)
 
         return ignore_list

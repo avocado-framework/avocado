@@ -14,12 +14,12 @@
 
 import sys
 
-from .base import CLICmd
-from avocado.core import test
+from avocado.core import exit_codes, output
 from avocado.core import loader
-from avocado.core import output
-from avocado.core import exit_codes
+from avocado.core import test
 from avocado.utils import astring
+
+from .base import CLICmd
 
 
 class TestLister(object):
@@ -31,7 +31,6 @@ class TestLister(object):
     def __init__(self, args):
         use_paginator = args.paginator == 'on'
         self.view = output.View(app_args=args, use_paginator=use_paginator)
-        self.term_support = output.TermSupport()
         try:
             loader.loader.load_plugins(args)
         except loader.LoaderError as details:
@@ -106,7 +105,8 @@ class TestLister(object):
     def _display(self, test_matrix, stats):
         header = None
         if self.args.verbose:
-            header = (self.term_support.header_str('Type'), self.term_support.header_str('Test'))
+            header = (output.term_support.header_str('Type'),
+                      output.term_support.header_str('Test'))
 
         for line in astring.iter_tabular_output(test_matrix, header=header):
             self.view.notify(event='minor', msg="%s" % line)

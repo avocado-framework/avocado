@@ -17,8 +17,9 @@ Libexec PATHs modifier
 import os
 import sys
 
-from .base import CLICmd
 from avocado.core import exit_codes, output
+
+from .base import CLICmd
 
 
 class ExecPath(CLICmd):

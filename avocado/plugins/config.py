@@ -12,10 +12,11 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-from .base import CLICmd
 from avocado.core import output
 from avocado.core import data_dir
 from avocado.core.settings import settings
+
+from .base import CLICmd
 
 
 class Config(CLICmd):
