@@ -45,14 +45,13 @@ class TestResultJournal(TestResult):
 
     command_line_arg_name = '--journal'
 
-    def __init__(self, stream=None, args=None):
+    def __init__(self, job=None):
         """
         Creates an instance of TestResultJournal.
 
-        :param stream: an instance of :class:`avocado.core.output.View`.
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        TestResult.__init__(self, stream, args)
+        TestResult.__init__(self, job)
         self.journal_initialized = False
 
     def _init_journal(self, logdir):

@@ -1,3 +1,4 @@
+from flexmock import flexmock
 import argparse
 import unittest
 import os
@@ -48,7 +49,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         args = argparse.Namespace()
         args.xunit_output = self.tmpfile[1]
-        self.test_result = xunit.xUnitTestResult(stream=_Stream(), args=args)
+        dummy_job = flexmock(view=_Stream(), args=args)
+        self.test_result = xunit.xUnitTestResult(dummy_job)
         self.test_result.start_tests()
         self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
