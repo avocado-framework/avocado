@@ -21,6 +21,7 @@ import argparse
 import commands
 import logging
 import os
+import re
 import sys
 import traceback
 import tempfile
@@ -115,8 +116,7 @@ class Job(object):
         self.result_proxy = result.TestResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
-        self.__logging_file_handler = None
-        self.__logging_stream_handler = None
+        self.__logging_handlers = {}
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
@@ -145,45 +145,59 @@ class Job(object):
             id_file_obj.write("%s\n" % self.unique_id)
 
     def __start_job_logging(self):
-        # Enable file loggers
-        self.__logging_file_handler = logging.FileHandler(filename=self.logfile)
-        self.__logging_file_handler.setLevel(self.loglevel)
-
+        # Enable test logger
         fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
                'levelname)-5.5s| %(message)s')
-        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-
-        self.__logging_file_handler.setFormatter(formatter)
-        test_logger = logging.getLogger('avocado.test')
-        test_logger.addHandler(self.__logging_file_handler)
-        test_logger.setLevel(self.loglevel)
+        test_handler = output.add_log_handler("avocado.test",
+                                              logging.FileHandler,
+                                              self.logfile, self.loglevel, fmt)
         root_logger = logging.getLogger()
-        root_logger.addHandler(self.__logging_file_handler)
+        root_logger.addHandler(test_handler)
         root_logger.setLevel(self.loglevel)
+        self.__logging_handlers[test_handler] = ["avocado.test", ""]
+        # Add --store-logging-streams
+        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+        for name in getattr(self.args, "store_logging_stream", []):
+            name = re.split(r'(?<!\\):', name, maxsplit=1)
+            if len(name) == 1:
+                name = name[0]
+                level = logging.INFO
+            else:
+                level = (int(name[1]) if name[1].isdigit()
+                         else logging.getLevelName(name[1].upper()))
+                name = name[0]
+            try:
+                logfile = os.path.join(self.logdir, name + "." +
+                                       logging.getLevelName(level))
+                handler = output.add_log_handler(name, logging.FileHandler,
+                                                 logfile, level, formatter)
+            except ValueError, details:
+                self.log.error("Failed to set log for --store-logging-stream "
+                               "%s:%s: %s.", name, level, details)
+            self.__logging_handlers[handler] = [name]
         # Enable console loggers
         enabled_logs = getattr(self.args, "show", [])
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
             self.stdout_stderr = sys.stdout, sys.stderr
-            sys.stdout = output.STDOUT
+            # Enable std{out,err} but redirect booth to stderr
+            sys.stdout = output.STDERR
             sys.stderr = output.STDERR
-            self.__logging_stream_handler = logging.StreamHandler()
-            test_logger.addHandler(self.__logging_stream_handler)
-            root_logger.addHandler(self.__logging_stream_handler)
+            test_handler = output.add_log_handler("avocado.test",
+                                                  logging.StreamHandler,
+                                                  output.STDERR,
+                                                  logging.DEBUG,
+                                                  fmt="%(message)s")
+            root_logger.addHandler(test_handler)
+            self.__logging_handlers[test_handler] = ["avocado.test", ""]
 
     def __stop_job_logging(self):
         if self.stdout_stderr:
             sys.stdout, sys.stderr = self.stdout_stderr
-        test_logger = logging.getLogger('avocado.test')
-        root_logger = logging.getLogger()
-        if self.__logging_file_handler:
-            test_logger.removeHandler(self.__logging_file_handler)
-            root_logger.removeHandler(self.__logging_file_handler)
-            self.__logging_file_handler.close()
-        # Console loggers
-        if self.__logging_stream_handler:
-            test_logger.removeHandler(self.__logging_stream_handler)
-            root_logger.removeHandler(self.__logging_stream_handler)
+        for handler, loggers in self.__logging_handlers.iteritems():
+            for logger in loggers:
+                logging.getLogger(logger).removeHandler(handler)
 
     def _update_latest_link(self):
         """
