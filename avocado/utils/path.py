@@ -18,6 +18,7 @@ Avocado path related functions.
 
 import os
 import stat
+import tempfile
 
 from . import aurl
 
@@ -140,3 +141,56 @@ class PathInspector(object):
                 return True
 
         return self.is_script(language='python')
+
+
+def usable_rw_dir(directory):
+    """
+    Verify wether we can use this dir (read/write).
+
+    Checks for appropriate permissions, and creates missing dirs as needed.
+
+    :param directory: Directory
+    """
+    if os.path.isdir(directory):
+        try:
+            fd, path = tempfile.mkstemp(dir=directory)
+            os.close(fd)
+            os.unlink(path)
+            return True
+        except OSError:
+            pass
+    else:
+        try:
+            init_dir(directory)
+            return True
+        except OSError:
+            pass
+
+    return False
+
+
+def usable_ro_dir(directory):
+    """
+    Verify whether dir exists and we can access its contents.
+
+    If a usable RO is there, use it no questions asked. If not, let's at
+    least try to create one.
+
+    :param directory: Directory
+    """
+    cwd = os.getcwd()
+    if os.path.isdir(directory):
+        try:
+            os.chdir(directory)
+            os.chdir(cwd)
+            return True
+        except OSError:
+            pass
+    else:
+        try:
+            init_dir(directory)
+            return True
+        except OSError:
+            pass
+
+    return False
