@@ -91,7 +91,11 @@ def reconfigure(args):
         del enabled[:]
         enabled.append("test")
     if getattr(args, "silent", False):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = sys.stdout
+        logging.disable(logging.CRITICAL)
         del enabled[:]
+        return
     if "app" in enabled:
         app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
