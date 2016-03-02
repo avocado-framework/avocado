@@ -14,25 +14,9 @@ class ParseXMLError(Exception):
     pass
 
 
-class _Stream(object):
-
-    def start_job_logging(self, param1, param2):
-        pass
-
-    def stop_job_logging(self):
-        pass
-
-    def set_tests_info(self, info):
-        pass
-
-    def notify(self, event, msg):
-        pass
-
-    def add_test(self, state):
-        pass
-
-    def set_test_status(self, status, state):
-        pass
+class FakeJob(object):
+    def __init__(self, args):
+        self.args = args
 
 
 class xUnitSucceedTest(unittest.TestCase):
@@ -48,7 +32,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         args = argparse.Namespace()
         args.xunit_output = self.tmpfile[1]
-        self.test_result = xunit.xUnitTestResult(stream=_Stream(), args=args)
+        self.test_result = xunit.xUnitTestResult(FakeJob(args))
         self.test_result.start_tests()
         self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
