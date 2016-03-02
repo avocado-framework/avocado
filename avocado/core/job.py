@@ -145,16 +145,34 @@ class Job(object):
         """
         Update the latest job result symbolic link [avocado-logs-dir]/latest.
         """
+        def soft_abort(msg):
+            """ Only log the problem """
+            logging.getLogger("avocado.test").warning("Unable to update the "
+                                                      "latest link: %s" % msg)
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
+        proc_latest = os.path.join(basedir, "latest.%s" % os.getpid())
         latest = os.path.join(basedir, "latest")
         if os.path.exists(latest) and not os.path.islink(latest):
-            raise OSError('"%s" already exists and is not a symlink' % latest)
+            soft_abort('"%s" already exists and is not a symlink' % latest)
+            return
+
+        if os.path.exists(proc_latest):
+            try:
+                os.unlink(proc_latest)
+            except OSError, details:
+                soft_abort("Unable to remove %s: %s" % (proc_latest, details))
+                return
+
         try:
-            os.unlink(latest)
-        except OSError:
-            pass
-        os.symlink(basename, latest)
+            os.symlink(basename, proc_latest)
+            os.rename(proc_latest, latest)
+        except OSError, details:
+            soft_abort("Unable to create create latest symlink: %s" % details)
+            return
+        finally:
+            if os.path.exists(proc_latest):
+                os.unlink(proc_latest)
 
     def _start_sysinfo(self):
         if hasattr(self.args, 'sysinfo'):
