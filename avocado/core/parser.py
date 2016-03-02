@@ -23,35 +23,11 @@ import sys
 from . import exit_codes
 from . import tree
 from . import settings
+from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
 from .version import VERSION
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
-
-
-def log_type(value):
-    valid_streams = ["app", "test", "debug", "remote", "early", "all", "none"]
-    value = value.split(',')
-    if any(_ not in valid_streams for _ in value):
-        missing = [_ for _ in value if _ not in valid_streams]
-        msg = ("Invalid logging stream(s): %s\n"
-               "Supported logging streams are:\n"
-               " app - application output\n"
-               " test - test output\n"
-               " debug - tracebacks and other debugging info\n"
-               " remote - fabric/paramiko debug\n"
-               " early - early logging of other streams (very verbose)\n"
-               " all - everything\n"
-               " none - disable everything\n" % ", ".join(missing))
-        sys.stderr.write(msg)
-        sys.exit(-1)
-
-    if 'all' in value:
-        return ["app", "test", "debug", "remote", "early"]
-    elif 'none' in value:
-        return []
-    else:
-        return value
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -82,12 +58,18 @@ class Parser(object):
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       help='Use custom configuration from a file')
+        streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.iteritems()] +
+                   ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.iteritems()])
+        streams = "; ".join(streams)
         self.application.add_argument('--show', action="store",
-                                      type=log_type,
-                                      metavar='STREAMS', default=['app'],
-                                      help="Comma separated list of logging "
-                                      "streams to be enabled (app,test,debug,"
-                                      "remote,early); By default 'app'")
+                                      type=lambda value: value.split(","),
+                                      metavar="STREAM[:LVL]",
+                                      default=['app'], help="List of comma "
+                                      "separated builtin logs, or logging "
+                                      "streams optionally followed by LEVEL "
+                                      "(DEBUG,INFO,...). Builtin streams "
+                                      "are: %s. By default: 'app'"
+                                      % streams)
 
     def start(self):
         """

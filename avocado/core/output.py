@@ -18,8 +18,10 @@ Manages output and logging in avocado applications.
 from StringIO import StringIO
 import logging
 import os
+import re
 import sys
 
+from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
@@ -33,6 +35,15 @@ else:
 
 STDOUT = sys.stdout
 STDERR = sys.stderr
+
+BUILTIN_STREAMS = {'app': 'application output',
+                   'test': 'test output',
+                   'debug': 'tracebacks and other debugging info',
+                   'remote': 'fabric/paramiko debug',
+                   'early':  'early logging of other streams (very verbose)'}
+
+BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
+                       'none': 'disable console logging completely'}
 
 
 def early_start():
@@ -126,6 +137,21 @@ def reconfigure(args):
             disable_log_handler("avocado.app.debug")
 
     enable_stderr()
+    # Add custom loggers
+    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS.iterkeys()]:
+        stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
+        name = stream_level[0]
+        if len(stream_level) == 1:
+            level = logging.DEBUG
+        else:
+            level = (int(name[1]) if name[1].isdigit()
+                     else logging.getLevelName(name[1].upper()))
+        try:
+            add_log_handler(name, logging.StreamHandler, STDERR, level)
+        except ValueError, details:
+            app_logger.error("Failed to set logger for --show %s:%s: %s.",
+                             name, level, details)
+            sys.exit(exit_codes.AVOCADO_FAIL)
     # Remove the in-memory handlers
     for handler in logging.root.handlers:
         if isinstance(handler, MemStreamHandler):
