@@ -11,19 +11,19 @@
 #
 # Copyright: Red Hat Inc. 2015
 # Author: Cleber Rosa <cleber@redhat.com>
-
 """
 This is the main entry point for the rest client cli application
 """
 
+import importlib
 import sys
 import types
-import importlib
 
 from . import parser
 from .. import connection
 from ... import output
 from ... import exit_codes
+
 
 __all__ = ['App']
 
