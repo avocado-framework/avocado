@@ -78,12 +78,11 @@ class RemoteTestRunner(TestRunner):
 
     def setup(self):
         """ Setup remote environment and copy test directories """
-        self.job.view.notify(event='message',
-                             msg=("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)"
-                                  % (self.job.args.remote_username,
-                                     self.job.args.remote_hostname,
-                                     self.job.args.remote_port,
-                                     self.job.args.remote_timeout)))
+        self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
+                          self.job.args.remote_username,
+                          self.job.args.remote_hostname,
+                          self.job.args.remote_port,
+                          self.job.args.remote_timeout)
         self.remote = remoter.Remote(self.job.args.remote_hostname,
                                      self.job.args.remote_username,
                                      self.job.args.remote_password,
@@ -265,8 +264,7 @@ class VMTestRunner(RemoteTestRunner):
 
     def setup(self):
         # Super called after VM is found and initialized
-        self.job.view.notify(event='message', msg="DOMAIN     : %s"
-                             % self.job.args.vm_domain)
+        self.job.log.info("DOMAIN     : %s", self.job.args.vm_domain)
         self.vm = virt.vm_connect(self.job.args.vm_domain,
                                   self.job.args.vm_hypervisor_uri)
         if self.vm is None:

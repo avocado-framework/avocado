@@ -83,6 +83,7 @@ class Job(object):
             args = argparse.Namespace()
         self.args = args
         self.urls = getattr(args, "url", [])
+        self.log = logging.getLogger("avocado.app")
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             if not self.args.unique_job_id:
@@ -95,7 +96,6 @@ class Job(object):
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
-        self.view = output.View(app_args=self.args)
         self.logdir = None
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
@@ -115,9 +115,12 @@ class Job(object):
         self.result_proxy = result.TestResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
+        self.__logging_file_handler = None
+        self.__logging_stream_handler = None
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
+        self.stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
 
     def _setup_job_results(self):
@@ -140,6 +143,47 @@ class Job(object):
         self.idfile = os.path.join(self.logdir, "id")
         with open(self.idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
+
+    def __start_job_logging(self):
+        # Enable file loggers
+        self.__logging_file_handler = logging.FileHandler(filename=self.logfile)
+        self.__logging_file_handler.setLevel(self.loglevel)
+
+        fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
+               'levelname)-5.5s| %(message)s')
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+
+        self.__logging_file_handler.setFormatter(formatter)
+        test_logger = logging.getLogger('avocado.test')
+        test_logger.addHandler(self.__logging_file_handler)
+        test_logger.setLevel(self.loglevel)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.__logging_file_handler)
+        root_logger.setLevel(self.loglevel)
+        # Enable console loggers
+        enabled_logs = getattr(self.args, "show", [])
+        if ('test' in enabled_logs and
+                'early' not in enabled_logs):
+            self.stdout_stderr = sys.stdout, sys.stderr
+            sys.stdout = output.STDOUT
+            sys.stderr = output.STDERR
+            self.__logging_stream_handler = logging.StreamHandler()
+            test_logger.addHandler(self.__logging_stream_handler)
+            root_logger.addHandler(self.__logging_stream_handler)
+
+    def __stop_job_logging(self):
+        if self.stdout_stderr:
+            sys.stdout, sys.stderr = self.stdout_stderr
+        test_logger = logging.getLogger('avocado.test')
+        root_logger = logging.getLogger()
+        if self.__logging_file_handler:
+            test_logger.removeHandler(self.__logging_file_handler)
+            root_logger.removeHandler(self.__logging_file_handler)
+            self.__logging_file_handler.close()
+        # Console loggers
+        if self.__logging_stream_handler:
+            test_logger.removeHandler(self.__logging_stream_handler)
+            root_logger.removeHandler(self.__logging_stream_handler)
 
     def _update_latest_link(self):
         """
@@ -214,12 +258,10 @@ class Job(object):
 
         op_set_stdout = self.result_proxy.output_plugins_using_stdout()
         if len(op_set_stdout) > 1:
-            msg = ('Options %s are trying to use stdout simultaneously' %
-                   " ".join(op_set_stdout))
-            self.view.notify(event='error', msg=msg)
-            msg = ('Please set at least one of them to a file to avoid '
-                   'conflicts')
-            self.view.notify(event='error', msg=msg)
+            self.log.error('Options %s are trying to use stdout '
+                           'simultaneously', " ".join(op_set_stdout))
+            self.log.error('Please set at least one of them to a file to '
+                           'avoid conflicts')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if not op_set_stdout and not self.standalone:
@@ -383,10 +425,8 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        self.view.start_job_logging(self.logfile,
-                                    self.loglevel,
-                                    self.unique_id,
-                                    self.replay_sourcejob)
+        self.__start_job_logging()
+
         try:
             test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError as details:
@@ -417,13 +457,11 @@ class Job(object):
 
         self._log_job_debug_info(mux)
         replay.record(self.args, self.logdir, mux, self.urls)
-
-        self.view.logfile = self.logfile
         replay_map = getattr(self.args, 'replay_map', None)
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout,
                                               replay_map=replay_map)
-        self.view.stop_job_logging()
+        self.__stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -464,11 +502,10 @@ class Job(object):
         except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.view.notify(event='error', msg=('\nAvocado job failed: %s: %s'
-                                                 % (fail_class, details)))
+            self.log.error('\nAvocado job failed: %s: %s', fail_class, details)
             return exit_codes.AVOCADO_JOB_FAIL
         except exceptions.OptionValidationError as details:
-            self.view.notify(event='error', msg='\n' + str(details))
+            self.log.error('\n' + str(details))
             return exit_codes.AVOCADO_JOB_FAIL
 
         except Exception as details:
@@ -477,15 +514,12 @@ class Job(object):
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             fail_class = details.__class__.__name__
-            self.view.notify(event='error', msg=('\nAvocado crashed: %s: %s' %
-                                                 (fail_class, details)))
+            self.log.error('\nAvocado crashed: %s: %s', fail_class, details)
             for line in tb_info:
-                self.view.notify(event='minor', msg=line)
-            self.view.notify(event='error', msg=('Please include the traceback '
-                                                 'info and command line used on '
-                                                 'your bug report'))
-            self.view.notify(event='error', msg=('Report bugs visiting %s' %
-                                                 _NEW_ISSUE_LINK))
+                self.log.debug(line)
+            self.log.error("Please include the traceback info and command line"
+                           " used on your bug report")
+            self.log.error('Report bugs visiting %s', _NEW_ISSUE_LINK)
             return exit_codes.AVOCADO_FAIL
         finally:
             if not settings.get_value('runner.behavior', 'keep_tmp_files',

@@ -21,6 +21,9 @@ used by the test runner.
 """
 
 import os
+import logging
+
+from . import output
 
 
 class InvalidOutputPlugin(Exception):
@@ -124,8 +127,9 @@ class TestResult(object):
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
+        self.job_unique_id = getattr(job, "unique_id", None)
+        self.logfile = getattr(job, "logfile", None)
         self.args = getattr(job, "args", None)
-        self.stream = getattr(job, "view", None)
         self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
         self.total_time = 0.0
@@ -161,7 +165,6 @@ class TestResult(object):
         Called once before any tests are executed.
         """
         self.tests_run += 1
-        self.stream.set_tests_info({'tests_run': self.tests_run})
 
     def end_tests(self):
         """
@@ -187,7 +190,6 @@ class TestResult(object):
         """
         self.tests_run += 1
         self.total_time += state['time_elapsed']
-        self.stream.set_tests_info({'tests_run': self.tests_run})
 
     def add_pass(self, state):
         """
@@ -264,107 +266,62 @@ class HumanTestResult(TestResult):
     """
     Human output Test result class.
     """
+    def __init__(self, job):
+        super(HumanTestResult, self).__init__(job)
+        self.log = logging.getLogger("avocado.app")
+        self.__throbber = output.Throbber()
 
     def start_tests(self):
         """
         Called once before any tests are executed.
         """
-        TestResult.start_tests(self)
-        self.stream.notify(event="message", msg="JOB ID     : %s" % self.stream.job_unique_id)
-        if self.stream.replay_sourcejob is not None:
-            self.stream.notify(event="message", msg="SRC JOB ID : %s" %
-                               self.stream.replay_sourcejob)
-        self.stream.notify(event="message", msg="JOB LOG    : %s" % self.stream.logfile)
-        self.stream.notify(event="message", msg="TESTS      : %s" % self.tests_total)
-        self.stream.set_tests_info({'tests_total': self.tests_total})
+        super(HumanTestResult, self).start_tests()
+        self.log.info("JOB ID     : %s", self.job_unique_id)
+        if getattr(self.args, "replay_sourcejob", None):
+            self.log.info("SRC JOB ID : %s", self.args.replay_sourcejob)
+        self.log.info("JOB LOG    : %s", self.logfile)
+        self.log.info("TESTS      : %s", self.tests_total)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
+        super(HumanTestResult, self).end_tests()
         self._reconcile()
-        self.stream.notify(event="message",
-                           msg="RESULTS    : PASS %d | ERROR %d | FAIL %d | "
-                               "SKIP %d | WARN %d | INTERRUPT %s" %
-                               (len(self.passed), len(self.errors),
-                                len(self.failed), len(self.skipped),
-                                len(self.warned), len(self.interrupted)))
+        self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
+                      "WARN %d | INTERRUPT %s", len(self.passed),
+                      len(self.errors), len(self.failed), len(self.skipped),
+                      len(self.warned), len(self.interrupted))
         if self.args is not None:
             if 'html_output' in self.args:
-                logdir = os.path.dirname(self.stream.logfile)
+                logdir = os.path.dirname(self.logfile)
                 html_file = os.path.join(logdir, 'html', 'results.html')
-                self.stream.notify(event="message", msg=("JOB HTML   : %s" %
-                                                         html_file))
-        self.stream.notify(event="message",
-                           msg="TIME       : %.2f s" % self.total_time)
+                self.log.info("JOB HTML   : %s", html_file)
+        self.log.info("TIME       : %.2f s", self.total_time)
 
     def start_test(self, state):
-        """
-        Called when the given test is about to run.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.stream.add_test(state)
+        super(HumanTestResult, self).start_test(state)
+        self.log.debug(' (%s/%s) %s:  ', self.tests_run, self.tests_total,
+                       state["tagged_name"], extra={"skip_newline": True})
 
     def end_test(self, state):
-        """
-        Called when the given test has been run.
+        super(HumanTestResult, self).end_test(state)
+        status = state["status"]
+        if status == "TEST_NA":
+            status = "SKIP"
+        mapping = {'PASS': output.term_support.PASS,
+                   'ERROR': output.term_support.ERROR,
+                   'FAIL': output.term_support.FAIL,
+                   'SKIP': output.term_support.SKIP,
+                   'WARN': output.term_support.WARN,
+                   'INTERRUPTED': output.term_support.INTERRUPT}
+        self.log.debug(output.term_support.MOVE_BACK + mapping[status] +
+                       status + output.term_support.ENDC)
 
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.end_test(self, state)
-
-    def add_pass(self, state):
-        """
-        Called when a test succeeded.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_pass(self, state)
-        self.stream.set_test_status(status='PASS', state=state)
-
-    def add_error(self, state):
-        """
-        Called when a test had a setup error.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_error(self, state)
-        self.stream.set_test_status(status='ERROR', state=state)
-
-    def add_fail(self, state):
-        """
-        Called when a test fails.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_fail(self, state)
-        self.stream.set_test_status(status='FAIL', state=state)
-
-    def add_skip(self, state):
-        """
-        Called when a test is skipped.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_skip(self, state)
-        self.stream.set_test_status(status='SKIP', state=state)
-
-    def add_warn(self, state):
-        """
-        Called when a test had a warning.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        TestResult.add_warn(self, state)
-        self.stream.set_test_status(status='WARN', state=state)
-
-    def notify_progress(self, progress_from_test=False):
-        self.stream.notify_progress(progress_from_test)
+    def notify_progress(self, progress=False):
+        if progress:
+            color = output.term_support.PASS
+        else:
+            color = output.term_support.PARTIAL
+        self.log.debug(color + self.__throbber.render() +
+                       output.term_support.ENDC, extra={"skip_newline": True})

@@ -20,7 +20,6 @@ import pickle
 import sys
 
 from . import exit_codes
-from . import output
 from .test import ReplaySkipTest
 
 from .settings import settings
@@ -101,7 +100,6 @@ def retrieve_replay_map(resultsdir, replay_filter):
 
 
 def get_resultsdir(logdir, jobid):
-    view = output.View()
     matches = 0
     short_jobid = jobid[:7]
     if len(short_jobid) < 7:
@@ -112,8 +110,9 @@ def get_resultsdir(logdir, jobid):
             match_file = id_file
             matches += 1
             if matches > 1:
-                msg = "hash '%s' is not unique enough" % jobid
-                view.notify(event='error', msg=(msg))
+                from logging import getLogger
+                getLogger("avocado.app").error("hash '%s' is not unique "
+                                               "enough", jobid)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
     if matches == 1:
