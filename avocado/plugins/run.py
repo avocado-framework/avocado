@@ -16,6 +16,7 @@
 Base Test Runner Plugins.
 """
 
+import argparse
 import logging
 import sys
 
@@ -92,7 +93,7 @@ class Run(CLICmd):
         parser.output = parser.add_argument_group('output and result format')
 
         parser.output.add_argument(
-            '-s', '--silent', action='store_true', default=False,
+            '-s', '--silent', action="store_true", default=argparse.SUPPRESS,
             help='Silence stdout')
 
         parser.output.add_argument(
