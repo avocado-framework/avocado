@@ -68,18 +68,18 @@ def reconfigure(args):
     Adjust logging handlers accordingly to app args and re-log messages.
     """
     # Reconfigure stream loggers
-    enabled = getattr(args, "log", ["app", "early", "debug"])
+    enabled = getattr(args, "show", ["app", "early", "debug"])
     if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
-        args.log.append("early")
+        args.show.append("early")
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
-        args.log.append("debug")
+        args.show.append("debug")
         enabled.append("debug")
     if getattr(args, "show_job_log", False):
-        args.log = ["test"]
+        args.show = ["test"]
         enabled = ["test"]
     if getattr(args, "silent", False):
-        del args.log[:]
+        del args.show[:]
         del enabled[:]
     if "app" in enabled:
         app_logger = logging.getLogger("avocado.app")
@@ -719,8 +719,8 @@ class View(object):
         root_logger.addHandler(self.file_handler)
         root_logger.setLevel(loglevel)
         # Console loggers
-        if ('test' in self.app_args.log and
-                'early' not in self.app_args.log):
+        if ('test' in self.app_args.show and
+                'early' not in self.app_args.show):
             self.stream_handler = ProgressStreamHandler()
             test_logger.addHandler(self.stream_handler)
             root_logger.addHandler(self.stream_handler)
