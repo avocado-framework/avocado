@@ -27,14 +27,13 @@ class RemoteTestResult(HumanTestResult):
 
     command_line_arg_name = '--remote-hostname'
 
-    def __init__(self, stream, args):
+    def __init__(self, job):
         """
         Creates an instance of RemoteTestResult.
 
-        :param stream: an instance of :class:`avocado.core.output.View`.
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        HumanTestResult.__init__(self, stream, args)
+        HumanTestResult.__init__(self, job)
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
         self.urls = self.args.url
@@ -54,6 +53,6 @@ class VMTestResult(RemoteTestResult):
 
     command_line_arg_name = '--vm-domain'
 
-    def __init__(self, stream, args):
-        super(VMTestResult, self).__init__(stream, args)
+    def __init__(self, job):
+        super(VMTestResult, self).__init__(job)
         self.vm = None
