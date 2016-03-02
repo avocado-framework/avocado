@@ -554,7 +554,7 @@ class TestProgram(object):
 
     def runTests(self):
         self.args.standalone = True
-        self.args.log = ["test"]
+        self.args.show = ["test"]
         output.reconfigure(self.args)
         self.job = Job(self.args)
         exit_status = self.job.run()
