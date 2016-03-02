@@ -2,7 +2,7 @@
 GR=0
 run_rc() {
     echo "Running '$1'"
-    $1
+    eval $1
     if [ $? != 0 ]; then
         GR=1
     fi
@@ -15,5 +15,10 @@ run_rc 'inspekt style'
 echo ""
 run_rc 'selftests/modules_boundaries'
 echo ""
-run_rc 'selftests/run'
+if [ -z "$AVOCADO_SELF_CHECK" ]; then
+    run_rc selftests/run
+else
+    run_rc 'python setup.py develop --user'
+    run_rc 'scripts/avocado run `./contrib/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/python -m unittest"'
+fi
 exit ${GR}

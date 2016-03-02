@@ -317,32 +317,5 @@ class LoaderTest(unittest.TestCase):
         avocado_multiple_imp_test.remove()
 
 
-class DocstringTagTests(unittest.TestCase):
-
-    def test_longline(self):
-        docstring = ("This is a very long docstring in a single line. "
-                     "Since we have nothing useful to put in here let's just "
-                     "mention avocado: it's awesome, but that was not a tag. "
-                     "a tag would be something line this: :avocado: enable")
-        self.assertIsNotNone(loader.get_docstring_tag(docstring))
-
-    def test_newlines(self):
-        docstring = ("\n\n\nThis is a docstring with many new\n\nlines "
-                     "followed by an avocado tag\n"
-                     "\n\n:avocado: enable\n\n")
-        self.assertIsNotNone(loader.get_docstring_tag(docstring))
-
-    def test_enabled(self):
-        self.assertTrue(loader.is_docstring_tag_enable(":avocado: enable"))
-        self.assertTrue(loader.is_docstring_tag_enable(":avocado:\tenable"))
-        self.assertFalse(loader.is_docstring_tag_enable(":AVOCADO: ENABLE"))
-        self.assertFalse(loader.is_docstring_tag_enable(":avocado: enabled"))
-
-    def test_disabled(self):
-        self.assertTrue(loader.is_docstring_tag_disable(":avocado: disable"))
-        self.assertTrue(loader.is_docstring_tag_disable(":avocado:\tdisable"))
-        self.assertFalse(loader.is_docstring_tag_disable(":AVOCADO: DISABLE"))
-        self.assertFalse(loader.is_docstring_tag_disable(":avocado: disabled"))
-
 if __name__ == '__main__':
     unittest.main()

@@ -320,7 +320,8 @@ class OutputPluginTest(unittest.TestCase):
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
-            assert output == '', 'After redirecting to file, output is not empty: %s' % output
+            self.assertEqual(output, '',
+                             'After redirecting to file, output is not empty: %s' % output)
             with open(redirected_output_path, 'r') as redirected_output_file_obj:
                 redirected_output = redirected_output_file_obj.read()
                 for code in TermSupport.ESCAPE_CODES:

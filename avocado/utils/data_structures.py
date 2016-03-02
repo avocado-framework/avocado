@@ -24,6 +24,15 @@ avocado core code or plugins.
 import sys
 
 
+def ordered_list_unique(object_list):
+    """
+    Returns an unique list of objects, with their original order preserved
+    """
+    seen = set()
+    seen_add = seen.add
+    return [x for x in object_list if not (x in seen or seen_add(x))]
+
+
 class Borg:
 
     """
