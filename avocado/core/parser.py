@@ -82,7 +82,7 @@ class Parser(object):
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       help='Use custom configuration from a file')
-        self.application.add_argument('--log', action="store",
+        self.application.add_argument('--show', action="store",
                                       type=log_type,
                                       metavar='STREAMS', default=['app'],
                                       help="Comma separated list of logging "
