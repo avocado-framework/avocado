@@ -15,10 +15,10 @@
 Plugins information plugin
 """
 
-from .base import CLICmd
-from avocado.core import output
-from avocado.core import dispatcher
+from avocado.core import dispatcher, output
 from avocado.utils import astring
+
+from .base import CLICmd
 
 
 class Plugins(CLICmd):

@@ -33,7 +33,7 @@ class JSONTestResult(TestResult):
     def __init__(self, job, force_json_file=None):
         """
         :param job: Job which defines this result
-        :param force_html_file: Override the json output file location
+        :param force_json_file: Override the json output file location
         """
         TestResult.__init__(self, job)
         if force_json_file:
@@ -41,6 +41,7 @@ class JSONTestResult(TestResult):
         else:
             self.output = getattr(self.args, 'json_output', '-')
         self.view = output.View(app_args=self.args)
+        self.json = None
 
     def start_tests(self):
         """

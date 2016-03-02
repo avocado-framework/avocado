@@ -12,17 +12,18 @@
 # Copyright: Red Hat Inc. 2015
 # Author: Cleber Rosa <cleber@redhat.com>
 
-import os
 import bz2
-import sys
 import json
+import os
+import sys
 
-from .base import CLICmd
 from avocado.core import output
 from avocado.core import exit_codes
-from avocado.utils import process
-from avocado.utils import path as utils_path
 from avocado.utils import distro as utils_distro
+from avocado.utils import path as utils_path
+from avocado.utils import process
+
+from .base import CLICmd
 
 
 class SoftwarePackage(object):

@@ -67,9 +67,9 @@ class Replay(CLI):
         status_list = string.split(',')
         for item in status_list:
             if item not in status.user_facing_status:
-                msg = 'Invalid --replay-test-status option. Valid ' \
-                      'options are (more than one allowed): %s' % \
-                      ','.join([item for item in status.user_facing_status])
+                msg = ('Invalid --replay-test-status option. Valid '
+                       'options are (more than one allowed): %s' %
+                       ','.join([item for item in status.user_facing_status]))
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list
@@ -79,9 +79,9 @@ class Replay(CLI):
         ignore_list = string.split(',')
         for item in ignore_list:
             if item not in options:
-                msg = 'Invalid --replay-ignore option. Valid ' \
-                      'options are (more than one allowed): %s' % \
-                      ','.join(options)
+                msg = ('Invalid --replay-ignore option. Valid '
+                       'options are (more than one allowed): %s'
+                       % ','.join(options))
                 raise argparse.ArgumentTypeError(msg)
 
         return ignore_list
@@ -99,11 +99,11 @@ class Replay(CLI):
 
         err = None
         if args.replay_teststatus and args.multiplex_files:
-            err = "Option --replay-test-status is incompatible with "\
-                  "--multiplex-files."
+            err = ("Option --replay-test-status is incompatible with "
+                   "--multiplex-files.")
         elif args.replay_teststatus and args.url:
-            err = "Option --replay-test-status is incompatible with "\
-                  "test URLs given on the command line."
+            err = ("Option --replay-test-status is incompatible with "
+                   "test URLs given on the command line.")
         elif args.remote_hostname:
             err = "Currently we don't replay jobs in remote hosts."
         if err is not None:
@@ -126,16 +126,16 @@ class Replay(CLI):
         sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
                                   args.replay_jobid)
         if sourcejob is None:
-            msg = "Can't find matching job id '%s' in '%s' directory." % \
-                  (args.replay_jobid, resultsdir)
+            msg = ("Can't find matching job id '%s' in '%s' directory."
+                   % (args.replay_jobid, resultsdir))
             view.notify(event='error', msg=(msg))
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         setattr(args, 'replay_sourcejob', sourcejob)
 
         if getattr(args, 'url', None):
-            msg = 'Overriding the replay urls with urls provided in '\
-                  'command line.'
+            msg = ('Overriding the replay urls with urls provided in '
+                   'command line.')
             view.notify(event='warning', msg=(msg))
         else:
             urls = replay.retrieve_urls(resultsdir)
@@ -147,8 +147,8 @@ class Replay(CLI):
                 setattr(args, 'url', urls)
 
         if args.replay_ignore and 'config' in args.replay_ignore:
-            msg = "Ignoring configuration from source job with " \
-                  "--replay-ignore."
+            msg = ("Ignoring configuration from source job with "
+                   "--replay-ignore.")
             view.notify(event='warning', msg=(msg))
         else:
             self.load_config(resultsdir)
@@ -158,8 +158,8 @@ class Replay(CLI):
             view.notify(event='warning', msg=(msg))
         else:
             if getattr(args, 'multiplex_files', None) is not None:
-                msg = 'Overriding the replay multiplex with '\
-                      '--multiplex-files.'
+                msg = ('Overriding the replay multiplex with '
+                       '--multiplex-files.')
                 view.notify(event='warning', msg=(msg))
                 # Use absolute paths to avoid problems with os.chdir
                 args.multiplex_files = [os.path.abspath(_)
