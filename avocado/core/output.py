@@ -274,6 +274,18 @@ def disable_log_handler(logger):
     logger.propagate = False
 
 
+def is_colored_term():
+    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
+                     'screen-256color']
+    term = os.environ.get("TERM")
+    colored = settings.get_value('runner.output', 'colored',
+                                 key_type='bool')
+    if ((not colored) or (not os.isatty(1)) or (term not in allowed_terms)):
+        return False
+    else:
+        return True
+
+
 class TermSupport(object):
 
     COLOR_BLUE = '\033[94m'
@@ -297,9 +309,6 @@ class TermSupport(object):
     stdout is in a tty or the terminal type is recognized.
     """
 
-    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
-                     'screen-256color']
-
     def __init__(self):
         self.HEADER = self.COLOR_BLUE
         self.PASS = self.COLOR_GREEN
@@ -312,11 +321,7 @@ class TermSupport(object):
         self.ENDC = self.CONTROL_END
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
-        term = os.environ.get("TERM")
-        colored = settings.get_value('runner.output', 'colored',
-                                     key_type='bool')
-        if ((not colored) or (not os.isatty(1)) or
-                (term not in self.allowed_terms)):
+        if not is_colored_term():
             self.disable()
 
     def disable(self):
