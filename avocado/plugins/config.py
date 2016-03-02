@@ -12,7 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-from avocado.core import output
+import logging
+
 from avocado.core import data_dir
 from avocado.core.settings import settings
 
@@ -38,41 +39,37 @@ class Config(CLICmd):
                             'Current: %(default)s')
 
     def run(self, args):
-        view = output.View(use_paginator=(args.paginator == 'on'))
-        try:
-            view.notify(event="message", msg='Config files read (in order):')
-            for cfg_path in settings.config_paths:
-                view.notify(event="message", msg='    %s' % cfg_path)
-            if settings.config_paths_failed:
-                view.notify(event="minor", msg='')
-                view.notify(event="error", msg='Config files that failed to read:')
-                for cfg_path in settings.config_paths_failed:
-                    view.notify(event="error", msg='    %s' % cfg_path)
-            view.notify(event="minor", msg='')
-            if not args.datadir:
-                blength = 0
-                for section in settings.config.sections():
-                    for value in settings.config.items(section):
-                        clength = len('%s.%s' % (section, value[0]))
-                        if clength > blength:
-                            blength = clength
+        log = logging.getLogger("avocado.app")
+        log.info('Config files read (in order):')
+        for cfg_path in settings.config_paths:
+            log.debug('    %s' % cfg_path)
+        if settings.config_paths_failed:
+            log.error('\nConfig files that failed to read:')
+            for cfg_path in settings.config_paths_failed:
+                log.error('    %s' % cfg_path)
+        log.debug("")
+        if not args.datadir:
+            blength = 0
+            for section in settings.config.sections():
+                for value in settings.config.items(section):
+                    clength = len('%s.%s' % (section, value[0]))
+                    if clength > blength:
+                        blength = clength
 
-                format_str = "    %-" + str(blength) + "s %s"
+            format_str = "    %-" + str(blength) + "s %s"
 
-                view.notify(event="minor", msg=format_str % ('Section.Key', 'Value'))
-                for section in settings.config.sections():
-                    for value in settings.config.items(section):
-                        config_key = ".".join((section, value[0]))
-                        view.notify(event="minor", msg=format_str % (config_key, value[1]))
-            else:
-                view.notify(event="minor", msg="Avocado replaces config dirs that can't be accessed")
-                view.notify(event="minor", msg="with sensible defaults. Please edit your local config")
-                view.notify(event="minor", msg="file to customize values")
-                view.notify(event="message", msg='')
-                view.notify(event="message", msg='Avocado Data Directories:')
-                view.notify(event="minor", msg='    base     ' + data_dir.get_base_dir())
-                view.notify(event="minor", msg='    tests    ' + data_dir.get_test_dir())
-                view.notify(event="minor", msg='    data     ' + data_dir.get_data_dir())
-                view.notify(event="minor", msg='    logs     ' + data_dir.get_logs_dir())
-        finally:
-            view.cleanup()
+            log.debug(format_str, 'Section.Key', 'Value')
+            for section in settings.config.sections():
+                for value in settings.config.items(section):
+                    config_key = ".".join((section, value[0]))
+                    log.debug(format_str, config_key, value[1])
+        else:
+            log.debug("Avocado replaces config dirs that can't be accessed")
+            log.debug("with sensible defaults. Please edit your local config")
+            log.debug("file to customize values")
+            log.debug('')
+            log.info('Avocado Data Directories:')
+            log.debug('    base     ' + data_dir.get_base_dir())
+            log.debug('    tests    ' + data_dir.get_test_dir())
+            log.debug('    data     ' + data_dir.get_data_dir())
+            log.debug('    logs     ' + data_dir.get_logs_dir())
