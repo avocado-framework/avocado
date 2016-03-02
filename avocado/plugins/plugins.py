@@ -15,7 +15,9 @@
 Plugins information plugin
 """
 
-from avocado.core import dispatcher, output
+import logging
+
+from avocado.core import dispatcher
 from avocado.utils import astring
 
 from .base import CLICmd
@@ -38,25 +40,23 @@ class Plugins(CLICmd):
                             'Current: %(default)s')
 
     def run(self, args):
-        view = output.View(app_args=args,
-                           use_paginator=args.paginator == 'on')
-
+        log = logging.getLogger("avocado.app")
         cli_cmds = dispatcher.CLICmdDispatcher()
         msg = 'Plugins that add new commands (avocado.plugins.cli.cmd):'
-        view.notify(event='message', msg=msg)
+        log.info(msg)
         plugin_matrix = []
         for plugin in sorted(cli_cmds):
             plugin_matrix.append((plugin.name, plugin.obj.description))
 
         for line in astring.iter_tabular_output(plugin_matrix):
-            view.notify(event='minor', msg=line)
+            log.debug(line)
 
         msg = 'Plugins that add new options to commands (avocado.plugins.cli):'
         cli = dispatcher.CLIDispatcher()
-        view.notify(event='message', msg=msg)
+        log.info(msg)
         plugin_matrix = []
         for plugin in sorted(cli):
             plugin_matrix.append((plugin.name, plugin.obj.description))
 
         for line in astring.iter_tabular_output(plugin_matrix):
-            view.notify(event='minor', msg=line)
+            log.debug(line)

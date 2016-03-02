@@ -205,7 +205,7 @@ class HTMLTestResult(TestResult):
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.json = {'debuglog': self.stream.logfile,
+        self.json = {'debuglog': self.logfile,
                      'job_id': runtime.CURRENT_JOB.unique_id,
                      'tests': []}
 

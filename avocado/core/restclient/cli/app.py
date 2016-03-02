@@ -16,12 +16,12 @@ This is the main entry point for the rest client cli application
 """
 
 import importlib
+import logging
 import sys
 import types
 
 from . import parser
 from .. import connection
-from ... import output
 from ... import exit_codes
 
 
@@ -48,7 +48,7 @@ class App(object):
         self.connection = None
         self.parser = parser.Parser()
         self.parser.add_arguments_on_all_modules()
-        self.view = output.View()
+        self.log = logging.getLogger("avocado.app")
 
     def initialize_connection(self):
         """
@@ -61,16 +61,13 @@ class App(object):
                 username=self.args.username,
                 password=self.args.password)
         except connection.InvalidConnectionError:
-            self.view.notify(event="error",
-                             msg="Error: could not connect to the server")
+            self.log.error("Error: could not connect to the server")
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         except connection.InvalidServerVersionError:
-            self.view.notify(event="error",
-                             msg=("REST server version is higher than "
-                                  "than this client can support."))
-            self.view.notify(event="error",
-                             msg=("Please use a more recent version "
-                                  "of the REST client application."))
+            self.log.error("REST server version is higher than "
+                           "than this client can support.")
+            self.log.error("Please use a more recent version "
+                           "of the REST client application.")
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
     def dispatch_action(self):
@@ -108,8 +105,7 @@ class App(object):
             self.initialize_connection()
             return kallable(self)
         else:
-            self.view.notify(event="error",
-                             msg="Action specified is not implemented")
+            self.log.error("Action specified is not implemented")
 
     def run(self):
         """

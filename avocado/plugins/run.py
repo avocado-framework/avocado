@@ -16,10 +16,10 @@
 Base Test Runner Plugins.
 """
 
+import logging
 import sys
 
 from avocado.core import exit_codes
-from avocado.core import output
 from avocado.core import job
 from avocado.core import loader
 from avocado.core import multiplexer
@@ -164,10 +164,9 @@ class Run(CLICmd):
                 if timeout < 1:
                     raise ValueError()
             except (ValueError, TypeError):
-                self.view.notify(
-                    event='error',
-                    msg=("Invalid number '%s' for job timeout. "
-                         "Use an integer number greater than 0") % raw_timeout)
+                log = logging.getLogger("avocado.app")
+                log.error("Invalid number '%s' for job timeout. Use an "
+                          "integer number greater than 0", raw_timeout)
                 sys.exit(exit_codes.AVOCADO_FAIL)
         else:
             timeout = 0
@@ -180,14 +179,14 @@ class Run(CLICmd):
         :param args: Command line args received from the run subparser.
         """
         self._activate(args)
-        self.view = output.View(app_args=args)
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
                 if len(args.unique_job_id) != 40:
                     raise ValueError
             except ValueError:
-                self.view.notify(event='error', msg='Unique Job ID needs to be a 40 digit hex number')
+                log = logging.getLogger("avocado.app")
+                log.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
         args.job_timeout = self._validate_job_timeout(args.job_timeout)
         job_instance = job.Job(args)
