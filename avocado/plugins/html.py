@@ -14,6 +14,7 @@
 """
 HTML output module.
 """
+
 import sys
 
 from avocado.core import exit_codes
