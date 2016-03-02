@@ -15,7 +15,6 @@
 """
 Manages output and logging in avocado applications.
 """
-from StringIO import StringIO
 import logging
 import os
 import re
@@ -25,6 +24,10 @@ from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = logging.NullHandler
@@ -69,7 +72,7 @@ def enable_stderr():
     Enable direct stdout/stderr (useful for handling errors)
     """
     if hasattr(sys.stdout, 'getvalue'):
-        STDERR.write(sys.stdout.getvalue())
+        STDERR.write(sys.stdout.getvalue())  # pylint: disable=E1101
     sys.stdout = STDOUT
     sys.stderr = STDERR
 
@@ -130,7 +133,8 @@ def reconfigure(args):
     else:
         disable_log_handler("avocado.fabric")
         disable_log_handler("paramiko")
-    if not os.environ.get('AVOCADO_LOG_DEBUG'):    # Not already enabled by env
+    # Not enabled by env
+    if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
             add_log_handler("avocado.app.debug", stream=STDERR)
         else:
