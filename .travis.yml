@@ -27,16 +27,23 @@ script:
     - ./selftests/run
     - ./selftests/check_tmp_dirs
     - |
+        # First cleanup the previously installed files
+        python setup.py develop --uninstall
+        BINDIR=$(dirname $(which python))
+        for FILE in scripts/*; do
+            rm $BINDIR/$(basename $FILE)
+        done
+        # Run the "make check" per each commit origin..HEAD
         ERR=""
         MASTER=$(git rev-parse origin/master)
         echo Master is $MASTER
-        for COMMIT in $(git rev-list origin..HEAD); do
+        for COMMIT in $(git rev-list origin..HEAD | tail -n+2); do
             echo
             echo "--------------------< $(git log -1 --oneline $COMMIT) >--------------------"
             echo
             echo
             git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
-            python setup.py develop && make smokecheck || ERR=$(echo -e "$ERR\n$(git log -1 --oneline)")
+            make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
         done
         if [ "$ERR" ]; then
             echo
