@@ -361,10 +361,8 @@ In the example above, ``/usr/local/src/`` is a read-only directory. In that
 case, when we need to fetch the asset from the locations, it will be copied to
 the ``~/avocado/cache`` directory.
 
-If you don't provide a ``cache_dirs``, we will use the test temporary directory
-as the cache to put the fetched files. That directory is expected to be dropped
-by the end of the test. So, to take advantage of the cache feature, you have
-to configure the ``cache_dirs`` on your system.
+If you don't provide a ``cache_dirs``, we will create a ``cache`` directory
+inside the avocado ``data_dir`` location to put the fetched files in.
 
 * Use case 1: no ``cache_dirs`` key in config files, only the asset name
   provided in the full url format::
@@ -377,8 +375,8 @@ to configure the ``cache_dirs`` on your system.
     ...
 
   In this case, ``fetch_asset()`` will download the file from the url provided,
-  copying it to the test temporary workdir. ``tarball`` variable  will
-  contains, for example, ``/var/tmp/avocado_BZXo2B/stress.py_Stress.test/cache/stress-1.0.4.tar.gz``.
+  copying it to the ``$data_dir/cache`` directory. ``tarball`` variable  will
+  contains, for example, ``/home/user/avocado/data/cache/stress-1.0.4.tar.gz``.
 
 * Use case 2: Read-only cache directory provided. ``cache_dirs = ['/mnt/files']``::
 
@@ -391,7 +389,7 @@ to configure the ``cache_dirs`` on your system.
 
   In this case, we try to find ``stress-1.0.4.tar.gz`` file in ``/mnt/files``
   directory. If it's not there, since ``/mnt/files`` is read-only,  we will try
-  to download the asset file to the test temporary workdir.
+  to download the asset file to the ``$data_dir/cache`` directory.
 
 * Use case 3: Writable cache directory provided, along with a list of
   locations. ``cache_dirs = ['~/avocado/cache']``::
@@ -408,13 +406,14 @@ to configure the ``cache_dirs`` on your system.
     ...
 
   In this case, we try to download ``stress-1.0.4.tar.gz`` from the provided
-  locations list (since it's not already in ``~/avocado/cache``). The hash was
+  locations list (if it's not already in ``~/avocado/cache``). The hash was
   also provided, so we will verify the hash. To do so, we first look for a
   hashfile named ``stress-1.0.4.tar.gz.sha1`` in the same directory. If the
   hashfile is not present we compute the hash and create the hashfile for
   further usage.
 
-  The resulting ``tarball`` variable content will be ``~/avocado/cache/stress-1.0.4.tar.gz``.
+  The resulting ``tarball`` variable content will be
+  ``~/avocado/cache/stress-1.0.4.tar.gz``.
   An exception will take place if we fail to download or to verify the file.
 
 
@@ -429,11 +428,11 @@ Detailing the ``fetch_asset()`` attributes:
   create the hashfile in the same cache directory for further usage.
 * ``algorithm:`` (optional) Provided hash algorithm format. Defaults to sha1.
 * ``locations:`` (optional) List of locations that will be used to try to fetch
-  the file from. The supported schemes are ``http://``, ``ftp://`` and
-  ``file://``. You're required to inform the full url to the file, including
-  the file name. The first success will skip the next locations. Notice that
-  for ``file://`` we just create a symbolic link in the cache directory,
-  pointing to the file original location.
+  the file from. The supported schemes are ``http://``, ``https://``,
+  ``ftp://`` and ``file://``. You're required to inform the full url to the
+  file, including the file name. The first success will skip the next
+  locations. Notice that for ``file://`` we just create a symbolic link in the
+  cache directory, pointing to the file original location.
 
 The expected ``return`` is the asset file path or an exception.
 
