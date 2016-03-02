@@ -1,4 +1,3 @@
-from flexmock import flexmock
 import unittest
 import os
 import json
@@ -11,25 +10,9 @@ from avocado.core import jsonresult
 from avocado.core import job
 
 
-class _Stream(object):
-
-    def start_job_logging(self, param1, param2):
-        pass
-
-    def stop_job_logging(self):
-        pass
-
-    def set_tests_info(self, info):
-        pass
-
-    def notify(self, event, msg):
-        pass
-
-    def add_test(self, state):
-        pass
-
-    def set_test_status(self, status, state):
-        pass
+class FakeJob(object):
+    def __init__(self, args):
+        self.args = args
 
 
 class JSONResultTest(unittest.TestCase):
@@ -44,10 +27,7 @@ class JSONResultTest(unittest.TestCase):
         self.tmpfile = tempfile.mkstemp()
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         args = argparse.Namespace(json_output=self.tmpfile[1])
-        stream = _Stream()
-        stream.logfile = 'debug.log'
-        dummyjob = flexmock(view=stream, args=args)
-        self.test_result = jsonresult.JSONTestResult(dummyjob)
+        self.test_result = jsonresult.JSONTestResult(FakeJob(args))
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()
         self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)
