@@ -195,7 +195,7 @@ class Job(object):
     def _set_output_plugins(self):
         if getattr(self.args, 'test_result_classes', None) is not None:
             for klass in self.args.test_result_classes:
-                test_result_instance = klass(self.view, self.args)
+                test_result_instance = klass(self)
                 self.result_proxy.add_output_plugin(test_result_instance)
 
     def _make_test_result(self):
@@ -216,26 +216,18 @@ class Job(object):
 
         # Setup the xunit plugin to output to the debug directory
         xunit_file = os.path.join(self.logdir, 'results.xml')
-        args = argparse.Namespace()
-        args.xunit_output = xunit_file
-        xunit_plugin = xunit.xUnitTestResult(self.view, args)
+        xunit_plugin = xunit.xUnitTestResult(self, xunit_file)
         self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')
-        args = argparse.Namespace()
-        args.json_output = json_file
-        json_plugin = jsonresult.JSONTestResult(self.view, args)
+        json_plugin = jsonresult.JSONTestResult(self, json_file)
         self.result_proxy.add_output_plugin(json_plugin)
 
         # Setup the html output to the results directory
         if HTML_REPORT_SUPPORT:
             html_file = os.path.join(self.logdir, 'html', 'results.html')
-            args = argparse.Namespace()
-            args.html_output = html_file
-            args.open_browser = getattr(self.args, 'open_browser', False)
-            args.relative_links = True
-            html_plugin = html.HTMLTestResult(self.view, args)
+            html_plugin = html.HTMLTestResult(self, html_file)
             self.result_proxy.add_output_plugin(html_plugin)
 
         op_set_stdout = self.result_proxy.output_plugins_using_stdout()
@@ -249,7 +241,7 @@ class Job(object):
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if not op_set_stdout and not self.standalone:
-            human_plugin = result.HumanTestResult(self.view, self.args)
+            human_plugin = result.HumanTestResult(self)
             self.result_proxy.add_output_plugin(human_plugin)
 
     def _make_test_suite(self, urls=None):
