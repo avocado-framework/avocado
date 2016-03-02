@@ -24,7 +24,6 @@ import urllib
 
 import pystache
 
-from . import output
 from .result import TestResult
 from ..utils import path as utils_path
 from ..utils import runtime
@@ -189,11 +188,16 @@ class HTMLTestResult(TestResult):
 
     command_line_arg_name = '--html'
 
-    def __init__(self, stream=None, args=None):
-        TestResult.__init__(self, stream, args)
-        self.output = getattr(self.args, 'html_output')
-        self.args = args
-        self.view = output.View(app_args=args)
+    def __init__(self, job, force_html_file=None):
+        """
+        :param job: Job which defines this result
+        :param force_html_file: Override the output html file location
+        """
+        TestResult.__init__(self, job)
+        if force_html_file:
+            self.output = force_html_file
+        else:
+            self.output = self.args.html_output
         self.json = None
 
     def start_tests(self):
@@ -288,7 +292,7 @@ class HTMLTestResult(TestResult):
             report_file.write(report_contents)
 
         if self.args is not None:
-            if getattr(self.args, 'open_browser'):
+            if getattr(self.args, 'open_browser', False):
                 # if possible, put browser in separate process group, so
                 # keyboard interrupts don't affect browser as well as Python
                 setsid = getattr(os, 'setsid', None)
