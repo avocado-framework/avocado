@@ -74,6 +74,10 @@ class Run(CLICmd):
                                   'Note that zero means "no timeout". '
                                   'You can also use suffixes, like: '
                                   ' s (seconds), m (minutes), h (hours). '))
+        parser.add_argument("--store-logging-stream", nargs="*", default=[],
+                            metavar="STREAM[:LEVEL]", help="Store given "
+                            "logging streams in $JOB_RESULTS_DIR/$STREAM_NAME."
+                            "$LEVEL.")
 
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
