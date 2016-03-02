@@ -12,14 +12,15 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import logging
 import sys
 
-from .base import CLICmd
+from avocado.core import exit_codes, output
 from avocado.core import multiplexer
-from avocado.core import exit_codes
-from avocado.core import output
 from avocado.core import tree
 from avocado.core.settings import settings
+
+from .base import CLICmd
 
 
 class Multiplex(CLICmd):
@@ -83,22 +84,21 @@ class Multiplex(CLICmd):
 
     def run(self, args):
         self._activate(args)
-        view = output.View(app_args=args)
+        log = logging.getLogger("avocado.app")
         err = None
         if args.tree and args.debug:
             err = "Option --tree is incompatible with --debug."
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"
         if err:
-            view.notify(event="error", msg=err)
+            log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
         try:
             mux_tree = multiplexer.yaml2tree(args.multiplex_files,
                                              args.filter_only, args.filter_out,
                                              args.debug)
         except IOError as details:
-            view.notify(event='error',
-                        msg=details.strerror)
+            log.error(details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         if args.system_wide:
             mux_tree.merge(args.default_multiplex_tree)
@@ -112,12 +112,11 @@ class Multiplex(CLICmd):
                 verbose += 2
             use_utf8 = settings.get_value("runner.output", "utf8",
                                           key_type=bool, default=None)
-            view.notify(event='minor', msg=tree.tree_view(mux_tree, verbose,
-                                                          use_utf8))
+            log.debug(tree.tree_view(mux_tree, verbose, use_utf8))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         variants = multiplexer.MuxTree(mux_tree)
-        view.notify(event='message', msg='Variants generated:')
+        log.info('Variants generated:')
         for (index, tpl) in enumerate(variants):
             if not args.debug:
                 paths = ', '.join([x.path for x in tpl])
@@ -129,8 +128,8 @@ class Multiplex(CLICmd):
                                                           "Unknown"),
                                                   cend)
                                    for _ in tpl])
-            view.notify(event='minor', msg='%sVariant %s:    %s' %
-                        (('\n' if args.contents else ''), index + 1, paths))
+            log.debug('%sVariant %s:    %s', '\n' if args.contents else '',
+                      index + 1, paths)
             if args.contents:
                 env = set()
                 for node in tpl:
@@ -141,6 +140,6 @@ class Multiplex(CLICmd):
                     continue
                 fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
                 for record in sorted(env):
-                    view.notify(event='minor', msg=fmt % record)
+                    log.debug(fmt, *record)
 
         sys.exit(exit_codes.AVOCADO_ALL_OK)

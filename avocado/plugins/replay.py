@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import argparse
+import logging
 import os
 import sys
 
@@ -20,7 +21,6 @@ from .base import CLI
 from avocado.core import replay
 from avocado.core import status
 from avocado.core import exit_codes
-from avocado.core import output
 from avocado.core.settings import settings
 
 
@@ -67,9 +67,9 @@ class Replay(CLI):
         status_list = string.split(',')
         for item in status_list:
             if item not in status.user_facing_status:
-                msg = 'Invalid --replay-test-status option. Valid ' \
-                     'options are (more than one allowed): %s' % \
-                     ','.join([item for item in status.user_facing_status])
+                msg = ('Invalid --replay-test-status option. Valid '
+                       'options are (more than one allowed): %s' %
+                       ','.join([item for item in status.user_facing_status]))
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list
@@ -79,9 +79,9 @@ class Replay(CLI):
         ignore_list = string.split(',')
         for item in ignore_list:
             if item not in options:
-                msg = 'Invalid --replay-ignore option. Valid ' \
-                       'options are (more than one allowed): %s' % \
-                       ','.join(options)
+                msg = ('Invalid --replay-ignore option. Valid '
+                       'options are (more than one allowed): %s'
+                       % ','.join(options))
                 raise argparse.ArgumentTypeError(msg)
 
         return ignore_list
@@ -95,19 +95,19 @@ class Replay(CLI):
         if getattr(args, 'replay_jobid', None) is None:
             return
 
-        view = output.View()
+        log = logging.getLogger("avocado.app")
 
         err = None
         if args.replay_teststatus and args.multiplex_files:
-            err = "Option --replay-test-status is incompatible with "\
-                  "--multiplex-files."
+            err = ("Option --replay-test-status is incompatible with "
+                   "--multiplex-files.")
         elif args.replay_teststatus and args.url:
-            err = "Option --replay-test-status is incompatible with "\
-                  "test URLs given on the command line."
+            err = ("Option --replay-test-status is incompatible with "
+                   "test URLs given on the command line.")
         elif args.remote_hostname:
             err = "Currently we don't replay jobs in remote hosts."
         if err is not None:
-            view.notify(event="error", msg=err)
+            log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         if args.replay_datadir is not None:
@@ -115,60 +115,54 @@ class Replay(CLI):
         else:
             logs_dir = settings.get_value('datadir.paths', 'logs_dir',
                                           default=None)
-            self.logdir = os.path.expanduser(logs_dir)
-            resultsdir = replay.get_resultsdir(self.logdir, args.replay_jobid)
+            logdir = os.path.expanduser(logs_dir)
+            resultsdir = replay.get_resultsdir(logdir, args.replay_jobid)
 
         if resultsdir is None:
-            msg = "Can't find job results directory in '%s'" % self.logdir
-            view.notify(event='error', msg=(msg))
+            log.error("Can't find job results directory in '%s'", logdir)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
                                   args.replay_jobid)
         if sourcejob is None:
-            msg = "Can't find matching job id '%s' in '%s' directory." % \
-                  (args.replay_jobid, resultsdir)
-            view.notify(event='error', msg=(msg))
+            msg = ("Can't find matching job id '%s' in '%s' directory."
+                   % (args.replay_jobid, resultsdir))
+            log.error(msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         setattr(args, 'replay_sourcejob', sourcejob)
 
         if getattr(args, 'url', None):
-            msg = 'Overriding the replay urls with urls provided in '\
-                  'command line.'
-            view.notify(event='warning', msg=(msg))
+            log.warn('Overriding the replay urls with urls provided in '
+                     'command line.')
         else:
             urls = replay.retrieve_urls(resultsdir)
             if urls is None:
-                msg = 'Source job urls data not found. Aborting.'
-                view.notify(event='error', msg=(msg))
+                log.error('Source job urls data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 setattr(args, 'url', urls)
 
         if args.replay_ignore and 'config' in args.replay_ignore:
-            msg = "Ignoring configuration from source job with " \
-                  "--replay-ignore."
-            view.notify(event='warning', msg=(msg))
+            log.warn("Ignoring configuration from source job with "
+                     "--replay-ignore.")
         else:
             self.load_config(resultsdir)
 
         if args.replay_ignore and 'mux' in args.replay_ignore:
-            msg = "Ignoring multiplex from source job with --replay-ignore."
-            view.notify(event='warning', msg=(msg))
+            log.warn("Ignoring multiplex from source job with "
+                     "--replay-ignore.")
         else:
             if getattr(args, 'multiplex_files', None) is not None:
-                msg = 'Overriding the replay multiplex with '\
-                      '--multiplex-files.'
-                view.notify(event='warning', msg=(msg))
+                log.warn('Overriding the replay multiplex with '
+                         '--multiplex-file.')
                 # Use absolute paths to avoid problems with os.chdir
                 args.multiplex_files = [os.path.abspath(_)
                                         for _ in args.multiplex_files]
             else:
                 mux = replay.retrieve_mux(resultsdir)
                 if mux is None:
-                    msg = 'Source job multiplex data not found. Aborting.'
-                    view.notify(event='error', msg=(msg))
+                    log.error('Source job multiplex data not found. Aborting.')
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
                     setattr(args, "multiplex_files", mux)
@@ -184,6 +178,5 @@ class Replay(CLI):
             if os.path.exists(pwd):
                 os.chdir(pwd)
             else:
-                view.notify(event="warning", msg="Directory used in the replay"
-                            " source job '%s' does not exist, using '.' "
-                            "instead" % pwd)
+                log.warn("Directory used in the replay source job '%s' does "
+                         "not exist, using '.' instead", pwd)

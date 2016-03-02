@@ -15,14 +15,19 @@
 """
 Manages output and logging in avocado applications.
 """
-from StringIO import StringIO
 import logging
 import os
+import re
 import sys
 
+from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = logging.NullHandler
@@ -31,8 +36,17 @@ else:
     NULL_HANDLER = logutils.NullHandler
 
 
-STDOUT = sys.stdout
-STDERR = sys.stderr
+STDOUT = _STDOUT = sys.stdout
+STDERR = _STDERR = sys.stderr
+
+BUILTIN_STREAMS = {'app': 'application output',
+                   'test': 'test output',
+                   'debug': 'tracebacks and other debugging info',
+                   'remote': 'fabric/paramiko debug',
+                   'early':  'early logging of other streams (very verbose)'}
+
+BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
+                       'none': 'disable console logging completely'}
 
 
 def early_start():
@@ -58,7 +72,7 @@ def enable_stderr():
     Enable direct stdout/stderr (useful for handling errors)
     """
     if hasattr(sys.stdout, 'getvalue'):
-        STDERR.write(sys.stdout.getvalue())
+        STDERR.write(sys.stdout.getvalue())  # pylint: disable=E1101
     sys.stdout = STDOUT
     sys.stderr = STDERR
 
@@ -68,31 +82,40 @@ def reconfigure(args):
     Adjust logging handlers accordingly to app args and re-log messages.
     """
     # Reconfigure stream loggers
-    enabled = getattr(args, "log", ["app", "early", "debug"])
+    global STDOUT
+    global STDERR
+    if getattr(args, "paginator", False) == "on" and is_colored_term():
+        STDOUT = Paginator()
+        STDERR = STDOUT
+    enabled = getattr(args, "show", None)
+    if not isinstance(enabled, list):
+        enabled = ["app"]
+        args.show = enabled
     if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
-        args.log.append("early")
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
-        args.log.append("debug")
         enabled.append("debug")
     if getattr(args, "show_job_log", False):
-        args.log = ["test"]
-        enabled = ["test"]
-    if getattr(args, "silent", False):
-        del args.log[:]
         del enabled[:]
+        enabled.append("test")
+    if getattr(args, "silent", False):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = sys.stdout
+        logging.disable(logging.CRITICAL)
+        del enabled[:]
+        return
     if "app" in enabled:
         app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
         app_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_handler.addFilter(FilterInfo())
+        app_handler.addFilter(FilterInfoAndLess())
         app_handler.stream = STDOUT
         app_logger.addHandler(app_handler)
         app_logger.propagate = False
-        app_logger.level = logging.INFO
-        app_err_handler = logging.StreamHandler()
+        app_logger.level = logging.DEBUG
+        app_err_handler = ProgressStreamHandler()
         app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_err_handler.addFilter(FilterError())
+        app_err_handler.addFilter(FilterWarnAndMore())
         app_err_handler.stream = STDERR
         app_logger.addHandler(app_err_handler)
         app_logger.propagate = False
@@ -119,13 +142,28 @@ def reconfigure(args):
     else:
         disable_log_handler("avocado.fabric")
         disable_log_handler("paramiko")
-    if not os.environ.get('AVOCADO_LOG_DEBUG'):    # Not already enabled by env
+    # Not enabled by env
+    if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
             add_log_handler("avocado.app.debug", stream=STDERR)
         else:
             disable_log_handler("avocado.app.debug")
 
-    enable_stderr()
+    # Add custom loggers
+    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS.iterkeys()]:
+        stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
+        name = stream_level[0]
+        if len(stream_level) == 1:
+            level = logging.DEBUG
+        else:
+            level = (int(name[1]) if name[1].isdigit()
+                     else logging.getLevelName(name[1].upper()))
+        try:
+            add_log_handler(name, logging.StreamHandler, STDERR, level)
+        except ValueError, details:
+            app_logger.error("Failed to set logger for --show %s:%s: %s.",
+                             name, level, details)
+            sys.exit(exit_codes.AVOCADO_FAIL)
     # Remove the in-memory handlers
     for handler in logging.root.handlers:
         if isinstance(handler, MemStreamHandler):
@@ -136,16 +174,23 @@ def reconfigure(args):
         logging.getLogger(record.name).handle(record)
 
 
-class FilterError(logging.Filter):
+def stop_logging():
+    if isinstance(STDOUT, Paginator):
+        sys.stdout = _STDOUT
+        sys.stderr = _STDERR
+        STDOUT.close()
+
+
+class FilterWarnAndMore(logging.Filter):
 
     def filter(self, record):
-        return record.levelno >= logging.ERROR
+        return record.levelno >= logging.WARN
 
 
-class FilterInfo(logging.Filter):
+class FilterInfoAndLess(logging.Filter):
 
     def filter(self, record):
-        return record.levelno == logging.INFO
+        return record.levelno <= logging.INFO
 
 
 class ProgressStreamHandler(logging.StreamHandler):
@@ -157,6 +202,14 @@ class ProgressStreamHandler(logging.StreamHandler):
     def emit(self, record):
         try:
             msg = self.format(record)
+            if record.levelno < logging.INFO:   # Most messages are INFO
+                pass
+            elif record.levelno < logging.WARNING:
+                msg = term_support.header_str(msg)
+            elif record.levelno < logging.ERROR:
+                msg = term_support.warn_header_str(msg)
+            else:
+                msg = term_support.fail_header_str(msg)
             stream = self.stream
             skip_newline = False
             if hasattr(record, 'skip_newline'):
@@ -230,18 +283,6 @@ class Paginator(object):
             pass
 
 
-def get_paginator():
-    """
-    Get a paginator.
-
-    The paginator is whatever the user sets as $PAGER, or 'less', or if all
-    else fails, sys.stdout. It is a useful feature inspired in programs such
-    as git, since it lets you scroll up and down large buffers of text,
-    increasing the program's usability.
-    """
-    return Paginator()
-
-
 def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
                     level=logging.INFO, fmt='%(name)s: %(message)s'):
     """
@@ -274,6 +315,18 @@ def disable_log_handler(logger):
     logger.propagate = False
 
 
+def is_colored_term():
+    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
+                     'screen-256color']
+    term = os.environ.get("TERM")
+    colored = settings.get_value('runner.output', 'colored',
+                                 key_type='bool')
+    if ((not colored) or (not os.isatty(1)) or (term not in allowed_terms)):
+        return False
+    else:
+        return True
+
+
 class TermSupport(object):
 
     COLOR_BLUE = '\033[94m'
@@ -297,9 +350,6 @@ class TermSupport(object):
     stdout is in a tty or the terminal type is recognized.
     """
 
-    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
-                     'screen-256color']
-
     def __init__(self):
         self.HEADER = self.COLOR_BLUE
         self.PASS = self.COLOR_GREEN
@@ -312,11 +362,7 @@ class TermSupport(object):
         self.ENDC = self.CONTROL_END
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
-        term = os.environ.get("TERM")
-        colored = settings.get_value('runner.output', 'colored',
-                                     key_type='bool')
-        if ((not colored) or (not os.isatty(1)) or
-                (term not in self.allowed_terms)):
+        if not is_colored_term():
             self.disable()
 
     def disable(self):
@@ -522,221 +568,3 @@ class Throbber(object):
         result = self.MOVES[self.position]
         self._update_position()
         return result
-
-
-class View(object):
-
-    """
-    Takes care of both disk logs and stdout/err logs.
-    """
-
-    def __init__(self, app_args=None, console_logger='avocado.app',
-                 use_paginator=False):
-        """
-        Set up the console logger and the paginator mode.
-
-        :param console_logger: logging.Logger identifier for the main app
-                               logger.
-        :type console_logger: str
-        :param use_paginator: Whether to use paginator mode. Set it to True if
-                              the program is supposed to output a large list of
-                              lines to the user and you want the user to be able
-                              to scroll through them at will (think git log).
-        """
-        self.app_args = app_args
-        self.use_paginator = use_paginator
-        self.console_log = logging.getLogger(console_logger)
-        if self.use_paginator:
-            self.paginator = get_paginator()
-        else:
-            self.paginator = None
-        self.throbber = Throbber()
-        self.tests_info = {}
-        self.file_handler = None
-        self.stream_handler = None
-
-    def cleanup(self):
-        if self.use_paginator:
-            self.paginator.close()
-
-    def notify(self, event='message', msg=None, skip_newline=False):
-        mapping = {'message': self._log_ui_header,
-                   'minor': self._log_ui_minor,
-                   'error': self._log_ui_error,
-                   'warning': self._log_ui_warning,
-                   'partial': self._log_ui_partial}
-        if msg is not None:
-            mapping[event](msg=msg, skip_newline=skip_newline)
-
-    def notify_progress(self, progress):
-        """
-        Give an interactive indicator of the test progress
-
-        :param progress: if indication of progress came explicitly from the
-                         test. If false, it means the test process is running,
-                         but not communicating test specific progress.
-        :type progress: bool
-        :rtype: None
-        """
-        if progress:
-            self._log_ui_healthy(self.throbber.render(), True)
-        else:
-            self._log_ui_partial(self.throbber.render(), True)
-
-    def add_test(self, state):
-        self._log(msg=self._get_test_tag(state['tagged_name']),
-                  skip_newline=True)
-
-    def set_test_status(self, status, state):
-        """
-        Log a test status message
-        :param status: the test status
-        :param state: test state (used to get 'time_elapsed')
-        """
-        mapping = {'PASS': term_support.pass_str,
-                   'ERROR': term_support.error_str,
-                   'FAIL': term_support.fail_str,
-                   'SKIP': term_support.skip_str,
-                   'WARN': term_support.warn_str,
-                   'INTERRUPTED': term_support.interrupt_str}
-        if status == 'SKIP':
-            msg = mapping[status]()
-        else:
-            msg = mapping[status]() + " (%.2f s)" % state['time_elapsed']
-        self._log_ui_info(msg)
-
-    def set_tests_info(self, info):
-        self.tests_info.update(info)
-
-    def _get_test_tag(self, test_name):
-        return (' (%s/%s) %s:  ' %
-                (self.tests_info['tests_run'],
-                 self.tests_info['tests_total'], test_name))
-
-    def _log(self, msg, level=logging.INFO, skip_newline=False):
-        """
-        Write a message to the avocado.app logger or the paginator.
-
-        :param msg: Message to write
-        :type msg: string
-        """
-        enabled = getattr(self.app_args, "log", [])
-        if "app" in enabled and self.use_paginator and level < logging.ERROR:
-            if not skip_newline:
-                msg += '\n'
-            self.paginator.write(msg)
-        else:
-            extra = {'skip_newline': skip_newline}
-            self.console_log.log(level=level, msg=msg, extra=extra)
-
-    def _log_ui_info(self, msg, skip_newline=False):
-        """
-        Log a :mod:`logging.INFO` message to the UI.
-
-        :param msg: Message to write.
-        """
-        self._log(msg, level=logging.INFO, skip_newline=skip_newline)
-
-    def _log_ui_error_base(self, msg, skip_newline=False):
-        """
-        Log a :mod:`logging.ERROR` message to the UI.
-
-        :param msg: Message to write.
-        """
-        self._log(msg, level=logging.ERROR, skip_newline=skip_newline)
-
-    def _log_ui_healthy(self, msg, skip_newline=False):
-        """
-        Log a message that indicates that things are going as expected.
-
-        :param msg: Message to write.
-        """
-        self._log_ui_info(term_support.healthy_str(msg), skip_newline)
-
-    def _log_ui_partial(self, msg, skip_newline=False):
-        """
-        Log a message that indicates something (at least) partially OK
-
-        :param msg: Message to write.
-        """
-        self._log_ui_info(term_support.partial_str(msg), skip_newline)
-
-    def _log_ui_header(self, msg, skip_newline=False):
-        """
-        Log a header message.
-
-        :param msg: Message to write.
-        """
-        self._log_ui_info(term_support.header_str(msg), skip_newline)
-
-    def _log_ui_minor(self, msg, skip_newline=False):
-        """
-        Log a minor message.
-
-        :param msg: Message to write.
-        """
-        self._log_ui_info(msg, skip_newline)
-
-    def _log_ui_error(self, msg, skip_newline=False):
-        """
-        Log an error message (useful for critical errors).
-
-        :param msg: Message to write.
-        """
-        self._log_ui_error_base(term_support.fail_header_str(msg), skip_newline)
-
-    def _log_ui_warning(self, msg, skip_newline=False):
-        """
-        Log a warning message (useful for warning messages).
-
-        :param msg: Message to write.
-        """
-        self._log_ui_info(term_support.warn_header_str(msg), skip_newline)
-
-    def start_job_logging(self, logfile, loglevel, unique_id, sourcejob=None):
-        """
-        Start the main file logging.
-
-        :param logfile: Path to file that will receive logging.
-        :param loglevel: Level of the logger. Example: :mod:`logging.DEBUG`.
-        :param unique_id: job.Job() unique id attribute.
-        """
-        self.job_unique_id = unique_id
-        self.debuglog = logfile
-        # File loggers
-        self.file_handler = logging.FileHandler(filename=logfile)
-        self.file_handler.setLevel(loglevel)
-
-        fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
-               'levelname)-5.5s| %(message)s')
-        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
-
-        self.file_handler.setFormatter(formatter)
-        test_logger = logging.getLogger('avocado.test')
-        test_logger.addHandler(self.file_handler)
-        test_logger.setLevel(loglevel)
-        root_logger = logging.getLogger()
-        root_logger.addHandler(self.file_handler)
-        root_logger.setLevel(loglevel)
-        # Console loggers
-        if ('test' in self.app_args.log and
-                'early' not in self.app_args.log):
-            self.stream_handler = ProgressStreamHandler()
-            test_logger.addHandler(self.stream_handler)
-            root_logger.addHandler(self.stream_handler)
-        self.replay_sourcejob = sourcejob
-
-    def stop_job_logging(self):
-        """
-        Simple helper for removing a handler from the current logger.
-        """
-        # File loggers
-        test_logger = logging.getLogger('avocado.test')
-        root_logger = logging.getLogger()
-        test_logger.removeHandler(self.file_handler)
-        root_logger.removeHandler(self.file_handler)
-        self.file_handler.close()
-        # Console loggers
-        if self.stream_handler:
-            test_logger.removeHandler(self.stream_handler)
-            root_logger.removeHandler(self.stream_handler)
