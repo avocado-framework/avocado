@@ -17,8 +17,8 @@ JSON output module.
 """
 
 import json
+import logging
 
-from . import output
 from .result import TestResult
 
 
@@ -30,17 +30,25 @@ class JSONTestResult(TestResult):
 
     command_line_arg_name = '--json'
 
-    def __init__(self, stream=None, args=None):
-        TestResult.__init__(self, stream, args)
-        self.output = getattr(self.args, 'json_output', '-')
-        self.view = output.View(app_args=args)
+    def __init__(self, job, force_json_file=None):
+        """
+        :param job: Job which defines this result
+        :param force_json_file: Override the json output file location
+        """
+        TestResult.__init__(self, job)
+        if force_json_file:
+            self.output = force_json_file
+        else:
+            self.output = getattr(self.args, 'json_output', '-')
+        self.json = None
+        self.log = logging.getLogger("avocado.app")
 
     def start_tests(self):
         """
         Called once before any tests are executed.
         """
         TestResult.start_tests(self)
-        self.json = {'debuglog': self.stream.logfile,
+        self.json = {'debuglog': self.logfile,
                      'tests': []}
 
     def end_test(self, state):
@@ -67,7 +75,7 @@ class JSONTestResult(TestResult):
         self.json['tests'].append(t)
 
     def _save_json(self):
-        with open(self.args.json_output, 'w') as j:
+        with open(self.output, 'w') as j:
             j.write(self.json)
 
     def end_tests(self):
@@ -84,7 +92,7 @@ class JSONTestResult(TestResult):
             'time': self.total_time
         })
         self.json = json.dumps(self.json)
-        if self.args.json_output == '-':
-            self.view.notify(event='minor', msg=self.json)
+        if self.output == '-':
+            self.log.debug(self.json)
         else:
             self._save_json()

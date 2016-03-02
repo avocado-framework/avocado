@@ -15,9 +15,9 @@
 """xUnit module."""
 
 import datetime
+import logging
 from xml.sax.saxutils import quoteattr
 
-from . import output
 from .result import TestResult
 
 
@@ -154,16 +154,19 @@ class xUnitTestResult(TestResult):
 
     command_line_arg_name = '--xunit'
 
-    def __init__(self, stream=None, args=None):
+    def __init__(self, job, force_xunit_file=None):
         """
         Creates an instance of xUnitTestResult.
 
-        :param stream: an instance of :class:`avocado.core.output.View`.
-        :param args: an instance of :class:`argparse.Namespace`.
+        :param job: an instance of :class:`avocado.core.job.Job`.
+        :param force_xunit_file: Override the output file defined in job.args
         """
-        TestResult.__init__(self, stream, args)
-        self.output = getattr(self.args, 'xunit_output', '-')
-        self.stream = output.View(app_args=args)
+        TestResult.__init__(self, job)
+        if force_xunit_file:
+            self.output = force_xunit_file
+        else:
+            self.output = getattr(self.args, 'xunit_output', '-')
+        self.log = logging.getLogger("avocado.app")
         self.xml = XmlResult()
 
     def start_tests(self):
@@ -209,7 +212,7 @@ class xUnitTestResult(TestResult):
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()
         if self.output == '-':
-            self.stream.notify(event='minor', msg=contents)
+            self.log.debug(contents)
         else:
             with open(self.output, 'w') as xunit_output:
                 xunit_output.write(contents)

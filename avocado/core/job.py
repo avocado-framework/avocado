@@ -21,6 +21,7 @@ import argparse
 import commands
 import logging
 import os
+import re
 import sys
 import traceback
 import tempfile
@@ -83,6 +84,7 @@ class Job(object):
             args = argparse.Namespace()
         self.args = args
         self.urls = getattr(args, "url", [])
+        self.log = logging.getLogger("avocado.app")
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             if not self.args.unique_job_id:
@@ -95,7 +97,6 @@ class Job(object):
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
-        self.view = output.View(app_args=self.args)
         self.logdir = None
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
@@ -115,9 +116,11 @@ class Job(object):
         self.result_proxy = result.TestResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
+        self.__logging_handlers = {}
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
+        self.stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
 
     def _setup_job_results(self):
@@ -140,6 +143,62 @@ class Job(object):
         self.idfile = os.path.join(self.logdir, "id")
         with open(self.idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
+
+    def __start_job_logging(self):
+        # Enable test logger
+        fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
+               'levelname)-5.5s| %(message)s')
+        test_handler = output.add_log_handler("avocado.test",
+                                              logging.FileHandler,
+                                              self.logfile, self.loglevel, fmt)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(test_handler)
+        root_logger.setLevel(self.loglevel)
+        self.__logging_handlers[test_handler] = ["avocado.test", ""]
+        # Add --store-logging-streams
+        fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
+        formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
+        for name in getattr(self.args, "store_logging_stream", []):
+            name = re.split(r'(?<!\\):', name, maxsplit=1)
+            if len(name) == 1:
+                name = name[0]
+                level = logging.INFO
+            else:
+                level = (int(name[1]) if name[1].isdigit()
+                         else logging.getLevelName(name[1].upper()))
+                name = name[0]
+            try:
+                logfile = os.path.join(self.logdir, name + "." +
+                                       logging.getLevelName(level))
+                handler = output.add_log_handler(name, logging.FileHandler,
+                                                 logfile, level, formatter)
+            except ValueError, details:
+                self.log.error("Failed to set log for --store-logging-stream "
+                               "%s:%s: %s.", name, level, details)
+            else:
+                self.__logging_handlers[handler] = [name]
+        # Enable console loggers
+        enabled_logs = getattr(self.args, "show", [])
+        if ('test' in enabled_logs and
+                'early' not in enabled_logs):
+            self.stdout_stderr = sys.stdout, sys.stderr
+            # Enable std{out,err} but redirect booth to stderr
+            sys.stdout = output.STDERR
+            sys.stderr = output.STDERR
+            test_handler = output.add_log_handler("avocado.test",
+                                                  logging.StreamHandler,
+                                                  output.STDERR,
+                                                  logging.DEBUG,
+                                                  fmt="%(message)s")
+            root_logger.addHandler(test_handler)
+            self.__logging_handlers[test_handler] = ["avocado.test", ""]
+
+    def __stop_job_logging(self):
+        if self.stdout_stderr:
+            sys.stdout, sys.stderr = self.stdout_stderr
+        for handler, loggers in self.__logging_handlers.iteritems():
+            for logger in loggers:
+                logging.getLogger(logger).removeHandler(handler)
 
     def _update_latest_link(self):
         """
@@ -177,7 +236,7 @@ class Job(object):
     def _set_output_plugins(self):
         if getattr(self.args, 'test_result_classes', None) is not None:
             for klass in self.args.test_result_classes:
-                test_result_instance = klass(self.view, self.args)
+                test_result_instance = klass(self)
                 self.result_proxy.add_output_plugin(test_result_instance)
 
     def _make_test_result(self):
@@ -198,40 +257,30 @@ class Job(object):
 
         # Setup the xunit plugin to output to the debug directory
         xunit_file = os.path.join(self.logdir, 'results.xml')
-        args = argparse.Namespace()
-        args.xunit_output = xunit_file
-        xunit_plugin = xunit.xUnitTestResult(self.view, args)
+        xunit_plugin = xunit.xUnitTestResult(self, xunit_file)
         self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')
-        args = argparse.Namespace()
-        args.json_output = json_file
-        json_plugin = jsonresult.JSONTestResult(self.view, args)
+        json_plugin = jsonresult.JSONTestResult(self, json_file)
         self.result_proxy.add_output_plugin(json_plugin)
 
         # Setup the html output to the results directory
         if HTML_REPORT_SUPPORT:
             html_file = os.path.join(self.logdir, 'html', 'results.html')
-            args = argparse.Namespace()
-            args.html_output = html_file
-            args.open_browser = getattr(self.args, 'open_browser', False)
-            args.relative_links = True
-            html_plugin = html.HTMLTestResult(self.view, args)
+            html_plugin = html.HTMLTestResult(self, html_file)
             self.result_proxy.add_output_plugin(html_plugin)
 
         op_set_stdout = self.result_proxy.output_plugins_using_stdout()
         if len(op_set_stdout) > 1:
-            msg = ('Options %s are trying to use stdout simultaneously' %
-                   " ".join(op_set_stdout))
-            self.view.notify(event='error', msg=msg)
-            msg = ('Please set at least one of them to a file to avoid '
-                   'conflicts')
-            self.view.notify(event='error', msg=msg)
+            self.log.error('Options %s are trying to use stdout '
+                           'simultaneously', " ".join(op_set_stdout))
+            self.log.error('Please set at least one of them to a file to '
+                           'avoid conflicts')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if not op_set_stdout and not self.standalone:
-            human_plugin = result.HumanTestResult(self.view, self.args)
+            human_plugin = result.HumanTestResult(self)
             self.result_proxy.add_output_plugin(human_plugin)
 
     def _make_test_suite(self, urls=None):
@@ -391,10 +440,8 @@ class Job(object):
                 that configure a job failure.
         """
         self._setup_job_results()
-        self.view.start_job_logging(self.logfile,
-                                    self.loglevel,
-                                    self.unique_id,
-                                    self.replay_sourcejob)
+        self.__start_job_logging()
+
         try:
             test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError as details:
@@ -425,13 +472,11 @@ class Job(object):
 
         self._log_job_debug_info(mux)
         replay.record(self.args, self.logdir, mux, self.urls)
-
-        self.view.logfile = self.logfile
         replay_map = getattr(self.args, 'replay_map', None)
         failures = self.test_runner.run_suite(test_suite, mux,
                                               timeout=self.timeout,
                                               replay_map=replay_map)
-        self.view.stop_job_logging()
+        self.__stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -472,11 +517,10 @@ class Job(object):
         except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
-            self.view.notify(event='error', msg=('\nAvocado job failed: %s: %s'
-                                                 % (fail_class, details)))
+            self.log.error('\nAvocado job failed: %s: %s', fail_class, details)
             return exit_codes.AVOCADO_JOB_FAIL
         except exceptions.OptionValidationError as details:
-            self.view.notify(event='error', msg='\n' + str(details))
+            self.log.error('\n' + str(details))
             return exit_codes.AVOCADO_JOB_FAIL
 
         except Exception as details:
@@ -485,15 +529,12 @@ class Job(object):
             tb_info = traceback.format_exception(exc_type, exc_value,
                                                  exc_traceback.tb_next)
             fail_class = details.__class__.__name__
-            self.view.notify(event='error', msg=('\nAvocado crashed: %s: %s' %
-                                                 (fail_class, details)))
+            self.log.error('\nAvocado crashed: %s: %s', fail_class, details)
             for line in tb_info:
-                self.view.notify(event='minor', msg=line)
-            self.view.notify(event='error', msg=('Please include the traceback '
-                                                 'info and command line used on '
-                                                 'your bug report'))
-            self.view.notify(event='error', msg=('Report bugs visiting %s' %
-                                                 _NEW_ISSUE_LINK))
+                self.log.debug(line)
+            self.log.error("Please include the traceback info and command line"
+                           " used on your bug report")
+            self.log.error('Report bugs visiting %s', _NEW_ISSUE_LINK)
             return exit_codes.AVOCADO_FAIL
         finally:
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
@@ -536,7 +577,7 @@ class TestProgram(object):
 
     def runTests(self):
         self.args.standalone = True
-        self.args.log = ["test"]
+        self.args.show = ["test"]
         output.reconfigure(self.args)
         self.job = Job(self.args)
         exit_status = self.job.run()
