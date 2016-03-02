@@ -65,10 +65,9 @@ class TestStatus(object):
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
         except Exception as details:
-            e_msg = ("\nError receiving message from test: %s -> %s" %
-                     (details.__class__, details))
-            self.job.view.notify(event="error",
-                                 msg=e_msg)
+            log = logging.getLogger("avocado.app")
+            log.error("\nError receiving message from test: %s -> %s",
+                      details.__class__, details)
             stacktrace.log_exc_info(sys.exc_info(),
                                     'avocado.app.tracebacks')
             return None
@@ -148,7 +147,7 @@ class TestStatus(object):
                 if msg['paused']:
                     reason = msg['paused_msg']
                     if reason:
-                        self.job.view.notify(event='partial', msg=reason)
+                        self.job.log.warning(reason)
             else:       # test_status
                 self.status = msg
 
@@ -371,17 +370,16 @@ class TestRunner(object):
                 ctrl_c_count += 1
                 if ctrl_c_count == 1:
                     if not stage_1_msg_displayed:
-                        k_msg_1 = ('\nInterrupt requested. Waiting %d seconds '
-                                   'for test to finish '
-                                   '(ignoring new Ctrl+C until then)' %
-                                   ignore_window)
-                        self.job.view.notify(event='message', msg=k_msg_1)
+                        self.job.log.debug("\nInterrupt requested. Waiting %d "
+                                           "seconds for test to finish "
+                                           "(ignoring new Ctrl+C until then)",
+                                           ignore_window)
                         stage_1_msg_displayed = True
                     ignore_time_started = time.time()
                 if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
-                        k_msg_2 = "Killing test subprocess %s" % proc.pid
-                        self.job.view.notify(event='message', msg=k_msg_2)
+                        self.job.log.debug("Killing test subprocess %s",
+                                           proc.pid)
                         stage_2_msg_displayed = True
                     os.kill(proc.pid, signal.SIGKILL)
 
@@ -394,7 +392,7 @@ class TestRunner(object):
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
-            self.job.view.notify(event='minor', msg='')
+            self.job.log.debug('')
 
         self.result.check_test(test_state)
         if not status.mapping[test_state['status']]:
