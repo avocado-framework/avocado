@@ -182,7 +182,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_silent_output(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest --silent' % self.tmpdir
+        cmd_line = './scripts/avocado --silent run --sysinfo=off --job-results-dir %s passtest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         expected_output = ''
