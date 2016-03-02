@@ -68,8 +68,8 @@ class Replay(CLI):
         for item in status_list:
             if item not in status.user_facing_status:
                 msg = 'Invalid --replay-test-status option. Valid ' \
-                     'options are (more than one allowed): %s' % \
-                     ','.join([item for item in status.user_facing_status])
+                      'options are (more than one allowed): %s' % \
+                      ','.join([item for item in status.user_facing_status])
                 raise argparse.ArgumentTypeError(msg)
 
         return status_list
@@ -80,8 +80,8 @@ class Replay(CLI):
         for item in ignore_list:
             if item not in options:
                 msg = 'Invalid --replay-ignore option. Valid ' \
-                       'options are (more than one allowed): %s' % \
-                       ','.join(options)
+                      'options are (more than one allowed): %s' % \
+                      ','.join(options)
                 raise argparse.ArgumentTypeError(msg)
 
         return ignore_list
