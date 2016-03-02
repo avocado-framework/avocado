@@ -96,14 +96,14 @@ def reconfigure(args):
         app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
         app_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_handler.addFilter(FilterInfo())
+        app_handler.addFilter(FilterInfoAndLess())
         app_handler.stream = STDOUT
         app_logger.addHandler(app_handler)
         app_logger.propagate = False
-        app_logger.level = logging.INFO
+        app_logger.level = logging.DEBUG
         app_err_handler = logging.StreamHandler()
         app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_err_handler.addFilter(FilterError())
+        app_err_handler.addFilter(FilterWarnAndMore())
         app_err_handler.stream = STDERR
         app_logger.addHandler(app_err_handler)
         app_logger.propagate = False
@@ -162,16 +162,16 @@ def reconfigure(args):
         logging.getLogger(record.name).handle(record)
 
 
-class FilterError(logging.Filter):
+class FilterWarnAndMore(logging.Filter):
 
     def filter(self, record):
-        return record.levelno >= logging.ERROR
+        return record.levelno >= logging.WARN
 
 
-class FilterInfo(logging.Filter):
+class FilterInfoAndLess(logging.Filter):
 
     def filter(self, record):
-        return record.levelno == logging.INFO
+        return record.levelno <= logging.INFO
 
 
 class ProgressStreamHandler(logging.StreamHandler):
