@@ -129,9 +129,29 @@ class Replay(CLI):
                    % (args.replay_jobid, resultsdir))
             log.error(msg)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-
         setattr(args, 'replay_sourcejob', sourcejob)
 
+        replay_args = replay.retrieve_args(resultsdir)
+        whitelist = ['loaders',
+                     'external_runner',
+                     'external_runner_testdir',
+                     'external_runner_chdir']
+        if replay_args is None:
+            log.warn('Source job args data not found. These options will not '
+                     'be loaded in this replay job: %s', ', '.join(whitelist))
+        else:
+            for option in whitelist:
+                optvalue = getattr(args, option, None)
+                if optvalue:
+                    log.warn("Overriding the replay %s with the --%s value "
+                             "given on the command line.",
+                             option.replace('_', '-'),
+                             option.replace('_', '-'))
+                else:
+                    setattr(args, option, replay_args[option])
+
+        # Keeping this for compatibility.
+        # TODO: Use replay_args['url'] at some point in the future.
         if getattr(args, 'url', None):
             log.warn('Overriding the replay urls with urls provided in '
                      'command line.')

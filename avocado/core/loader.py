@@ -378,8 +378,8 @@ def add_loader_options(parser):
                   'where those files are located, use "test" here and '
                   'specify the test directory with the option '
                   '"--external-runner-testdir". Defaults to "%(default)s"')
-    arggrp.add_argument('--external-runner-chdir', default='off',
-                        choices=('runner', 'test', 'off'),
+    arggrp.add_argument('--external-runner-chdir', default=None,
+                        choices=('runner', 'test'),
                         help=chdir_help)
 
     arggrp.add_argument('--external-runner-testdir', metavar='DIRECTORY',
@@ -725,7 +725,7 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def _process_external_runner(args, runner):
         """ Enables the external_runner when asked for """
-        chdir = getattr(args, 'external_runner_chdir', 'off')
+        chdir = getattr(args, 'external_runner_chdir', None)
         test_dir = getattr(args, 'external_runner_testdir', None)
 
         if runner:
@@ -752,7 +752,7 @@ class ExternalLoader(TestLoader):
                                                          ['runner', 'chdir',
                                                           'test_dir'])
             return cls_external_runner(runner, chdir, test_dir)
-        elif chdir != "off":
+        elif chdir:
             msg = ('Option "--external-runner-chdir" requires '
                    '"--external-runner" to be set.')
             raise LoaderError(msg)
