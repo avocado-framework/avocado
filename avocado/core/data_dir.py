@@ -34,18 +34,13 @@ import time
 import tempfile
 
 from . import job_id
-from .settings import settings
+from . import settings
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
 
 _BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
 _BASE_DIR = os.path.abspath(_BASE_DIR)
 _IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'examples', 'tests')
-
-SETTINGS_BASE_DIR = os.path.expanduser(settings.get_value('datadir.paths', 'base_dir'))
-SETTINGS_TEST_DIR = os.path.expanduser(settings.get_value('datadir.paths', 'test_dir'))
-SETTINGS_DATA_DIR = os.path.expanduser(settings.get_value('datadir.paths', 'data_dir'))
-SETTINGS_LOG_DIR = os.path.expanduser(settings.get_value('datadir.paths', 'logs_dir'))
 
 SYSTEM_BASE_DIR = '/var/lib/avocado'
 if 'VIRTUAL_ENV' in os.environ:
@@ -58,6 +53,13 @@ USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
+
+
+def _get_settings_dir(dir_name):
+    """
+    Returns a given "datadir" directory as set by the configuration system
+    """
+    return os.path.expanduser(settings.settings.get_value('datadir.paths', dir_name))
 
 
 def _get_rw_dir(settings_location, system_location, user_location):
@@ -73,7 +75,7 @@ def _get_rw_dir(settings_location, system_location, user_location):
 
 
 def _get_ro_dir(settings_location, system_location, user_location):
-    if not settings.intree:
+    if not settings.settings.intree:
         if utils_path.usable_ro_dir(settings_location):
             return settings_location
 
@@ -97,7 +99,8 @@ def get_base_dir():
         * Data directory
         * Tests directory
     """
-    return _get_rw_dir(SETTINGS_BASE_DIR, SYSTEM_BASE_DIR, USER_BASE_DIR)
+    return _get_rw_dir(_get_settings_dir('base_dir'),
+                       SYSTEM_BASE_DIR, USER_BASE_DIR)
 
 
 def get_test_dir():
@@ -106,9 +109,9 @@ def get_test_dir():
 
     The test location is where we store tests written with the avocado API.
     """
-    if settings.intree:
+    if settings.settings.intree:
         return _IN_TREE_TESTS_DIR
-    return _get_ro_dir(SETTINGS_TEST_DIR, SYSTEM_TEST_DIR, USER_TEST_DIR)
+    return _get_ro_dir(_get_settings_dir('test_dir'), SYSTEM_TEST_DIR, USER_TEST_DIR)
 
 
 def get_data_dir():
@@ -124,7 +127,8 @@ def get_data_dir():
         * VM images
         * Reference bitmaps
     """
-    return _get_rw_dir(SETTINGS_DATA_DIR, SYSTEM_DATA_DIR, USER_DATA_DIR)
+    return _get_rw_dir(_get_settings_dir('data_dir'),
+                       SYSTEM_DATA_DIR, USER_DATA_DIR)
 
 
 def get_datafile_path(*args):
@@ -143,7 +147,8 @@ def get_logs_dir():
 
     The log dir is where we store job/test logs in general.
     """
-    return _get_rw_dir(SETTINGS_LOG_DIR, SYSTEM_LOG_DIR, USER_LOG_DIR)
+    return _get_rw_dir(_get_settings_dir('logs_dir'),
+                       SYSTEM_LOG_DIR, USER_LOG_DIR)
 
 
 def create_job_logs_dir(logdir=None, unique_id=None):

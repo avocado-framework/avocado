@@ -63,6 +63,40 @@ class RunnerOperationTest(unittest.TestCase):
                         "Version string does not match 'Avocado \\d\\.\\d\\.\\"
                         "d':\n%r" % (result.stderr))
 
+    def test_alternate_config_datadir(self):
+        """
+        Uses the "--config" flag to check custom configuration is applied
+
+        Even on the more complex data_dir module, which adds extra checks
+        to what is set on the plain settings module.
+        """
+        base_dir = os.path.join(self.tmpdir, 'datadir_base')
+        os.mkdir(base_dir)
+        mapping = {'base_dir': base_dir,
+                   'test_dir': os.path.join(base_dir, 'test'),
+                   'data_dir': os.path.join(base_dir, 'data'),
+                   'logs_dir': os.path.join(base_dir, 'logs')}
+        config = '[datadir.paths]'
+        for key, value in mapping.iteritems():
+            if not os.path.isdir(value):
+                os.mkdir(value)
+            config += "%s = %s\n" % (key, value)
+        fd, config_file = tempfile.mkstemp(dir=self.tmpdir)
+        os.write(fd, config)
+        os.close(fd)
+
+        os.chdir(basedir)
+        cmd = './scripts/avocado --config %s config --datadir' % config_file
+        result = process.run(cmd)
+        output = result.stdout
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn('    base     ' + mapping['base_dir'], result.stdout)
+        self.assertIn('    data     ' + mapping['data_dir'], result.stdout)
+        self.assertIn('    logs     ' + mapping['logs_dir'], result.stdout)
+
     def test_runner_all_ok(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest passtest' % self.tmpdir

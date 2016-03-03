@@ -8,47 +8,53 @@ from flexmock import flexmock
 from avocado.core import settings
 
 
-def _get_bogus_settings(args):
-    return ('[datadir.paths]\n'
-            'base_dir = %(base_dir)s\n'
-            'test_dir = %(test_dir)s\n'
-            'data_dir = %(data_dir)s\n'
-            'logs_dir = %(logs_dir)s\n') % args
-
-
 class DataDirTest(unittest.TestCase):
 
+    @staticmethod
+    def _get_temporary_dirs_mapping_and_config():
+        """
+        Creates a temporary bogus base data dir
+
+        And returns a dictionary containing the temporary data dir paths and
+        a the path to a configuration file contain those same settings
+        """
+        base_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        mapping = {'base_dir': base_dir,
+                   'test_dir': os.path.join(base_dir, 'tests'),
+                   'data_dir': os.path.join(base_dir, 'data'),
+                   'logs_dir': os.path.join(base_dir, 'logs')}
+        temp_settings = ('[datadir.paths]\n'
+                         'base_dir = %(base_dir)s\n'
+                         'test_dir = %(test_dir)s\n'
+                         'data_dir = %(data_dir)s\n'
+                         'logs_dir = %(logs_dir)s\n') % mapping
+        config_file = tempfile.NamedTemporaryFile(delete=False)
+        config_file.write(temp_settings)
+        config_file.close()
+        return (mapping, config_file.name)
+
     def setUp(self):
-        tbase = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        tdir = os.path.join(tbase, 'tests')
-        tdata = os.path.join(tbase, 'data')
-        tlogs = os.path.join(tbase, 'logs')
-        self.mapping = {'base_dir': tbase, 'test_dir': tdir, 'data_dir': tdata,
-                        'logs_dir': tlogs}
-        self.config_file = tempfile.NamedTemporaryFile(delete=False)
-        self.config_file.write(_get_bogus_settings(self.mapping))
-        self.config_file.close()
+        (self.mapping,
+         self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
 
     def testDataDirFromConfig(self):
         """
         When avocado.conf is present, honor the values coming from it.
         """
         stg_orig = settings.settings
-        stg = settings.Settings(self.config_file.name)
+        stg = settings.Settings(self.config_file_path)
         try:
             # Trick the module to think we're on a system wide install
             stg.intree = False
             flexmock(settings, settings=stg)
             from avocado.core import data_dir
-            flexmock(data_dir, settings=stg)
-            self.assertFalse(data_dir.settings.intree)
-            reload(data_dir)
+            flexmock(data_dir.settings, settings=stg)
+            self.assertFalse(data_dir.settings.settings.intree)
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
         finally:
             flexmock(settings, settings=stg_orig)
-            reload(data_dir)
         del data_dir
 
     def testUniqueLogDir(self):
@@ -72,9 +78,37 @@ class DataDirTest(unittest.TestCase):
         self.assertEqual(path, path_prefix + uid + ".1")
         self.assertTrue(os.path.exists(path))
 
+    def testSettingsDirAlternateDynamic(self):
+        """
+        Tests that changes to the data_dir settings are applied dynamically
+
+        To guarantee that, first the data_dir module is loaded. Then a new,
+        alternate set of data directories are created and set in the
+        "canonical" settings location, that is, avocado.core.settings.settings.
+
+        No data_dir module reload should be necessary to get the new locations
+        from data_dir APIs.
+        """
+        stg_orig = settings.settings
+        from avocado.core import data_dir
+        (self.alt_mapping,
+         self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()
+        stg = settings.Settings(self.alt_config_file_path)
+        flexmock(settings, settings=stg)
+        for key in self.alt_mapping.keys():
+            data_dir_func = getattr(data_dir, 'get_%s' % key)
+            self.assertEqual(data_dir_func(), self.alt_mapping[key])
+        flexmock(settings, settings=stg_orig)
+        del data_dir
+
     def tearDown(self):
-        os.unlink(self.config_file.name)
+        os.unlink(self.config_file_path)
         shutil.rmtree(self.mapping['base_dir'])
+        # clean up alternate configuration file if set by the test
+        if hasattr(self, 'alt_config_file_path'):
+            os.unlink(self.alt_config_file_path)
+        if hasattr(self, 'alt_mapping'):
+            shutil.rmtree(self.alt_mapping['base_dir'])
 
 if __name__ == '__main__':
     unittest.main()
