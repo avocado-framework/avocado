@@ -259,8 +259,9 @@ class StdOutput(object):
     def enable_paginator(self):
         self.stdout = self.stderr = Paginator()
 
-    def disable_outputs(self):
-        sys.stdout = sys.stderr = open(os.devnull, 'w')
+    def enable_stderr(self):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = self.stderr
 
     def close(self):
         paginator = None
@@ -304,8 +305,8 @@ def reconfigure(args):
         del enabled[:]
         enabled.append("test")
     if getattr(args, "silent", False):
-        logging.disable(logging.CRITICAL)
-        STD_OUTPUT.disable_outputs()
+        STD_OUTPUT.enable_stderr()
+        logging.disable(logging.INFO)
         del enabled[:]
     # "silent" is incompatible with "paginator"
     elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
@@ -314,8 +315,8 @@ def reconfigure(args):
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
         enabled.append("debug")
+    app_logger = logging.getLogger("avocado.app")
     if "app" in enabled:
-        app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
         app_handler.setFormatter(logging.Formatter("%(message)s"))
         app_handler.addFilter(FilterInfoAndLess())
@@ -323,14 +324,14 @@ def reconfigure(args):
         app_logger.addHandler(app_handler)
         app_logger.propagate = False
         app_logger.level = logging.DEBUG
-        app_err_handler = ProgressStreamHandler()
-        app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_err_handler.addFilter(FilterWarnAndMore())
-        app_err_handler.stream = STD_OUTPUT.stderr
-        app_logger.addHandler(app_err_handler)
-        app_logger.propagate = False
     else:
         disable_log_handler("avocado.app")
+    app_err_handler = ProgressStreamHandler()
+    app_err_handler.setFormatter(logging.Formatter("%(message)s"))
+    app_err_handler.addFilter(FilterWarnAndMore())
+    app_err_handler.stream = STD_OUTPUT.stderr
+    app_logger.addHandler(app_err_handler)
+    app_logger.propagate = False
     if not os.environ.get("AVOCADO_LOG_EARLY"):
         logging.getLogger("avocado.test.stdout").propagate = False
         logging.getLogger("avocado.test.stderr").propagate = False
