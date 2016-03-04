@@ -39,28 +39,20 @@ else:
 STDOUT = _STDOUT = sys.stdout
 STDERR = _STDERR = sys.stderr
 
+#: Builtin special keywords to enable set of logging streams
 BUILTIN_STREAMS = {'app': 'application output',
                    'test': 'test output',
                    'debug': 'tracebacks and other debugging info',
                    'remote': 'fabric/paramiko debug',
                    'early':  'early logging of other streams (very verbose)'}
-
+#: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disable console logging completely'}
-
-
 #: Transparently handles colored terminal, when one is used
 TERM_SUPPORT = None
 
 
 class TermSupport(object):
-
-    """
-    Class to help applications to colorize their outputs for terminals.
-
-    This will probe the current terminal and colorize ouput only if the
-    stdout is in a tty or the terminal type is recognized.
-    """
 
     COLOR_BLUE = '\033[94m'
     COLOR_GREEN = '\033[92m'
@@ -75,6 +67,13 @@ class TermSupport(object):
 
     ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED,
                     COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
+
+    """
+    Class to help applications to colorize their outputs for terminals.
+
+    This will probe the current terminal and colorize ouput only if the
+    stdout is in a tty or the terminal type is recognized.
+    """
 
     def __init__(self):
         self.HEADER = self.COLOR_BLUE
