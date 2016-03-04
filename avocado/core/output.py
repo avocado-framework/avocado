@@ -24,20 +24,12 @@ from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = logging.NullHandler
 else:
     import logutils
     NULL_HANDLER = logutils.NullHandler
 
-
-STDOUT = _STDOUT = sys.stdout
-STDERR = _STDERR = sys.stderr
 
 #: Builtin special keywords to enable set of logging streams
 BUILTIN_STREAMS = {'app': 'application output',
@@ -50,6 +42,8 @@ BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disable console logging completely'}
 #: Transparently handles colored terminal, when one is used
 TERM_SUPPORT = None
+#: Allows modifying the sys.stdout/sys.stderr
+STD_OUTPUT = None
 
 
 class TermSupport(object):
@@ -205,32 +199,96 @@ class TermSupport(object):
 TERM_SUPPORT = TermSupport()
 
 
+class _StdOutputFile(object):
+    def __init__(self, record_id, records):
+        self.records = records
+        self.id = record_id
+
+    def write(self, msg):
+        self.records.append((self.id, msg))
+
+    def writelines(self, iterable):
+        for line in iterable:
+            self.write(line)
+
+    def close(self):
+        pass
+
+    def flush(self):
+        pass
+
+    def isatty(self):
+        return False
+
+    def seek(self):
+        pass
+
+    def tell(self):
+        pass
+
+    def getvalue(self):
+        return "\n".join((_[1] for _ in self.records if _[0] == self.id))
+
+
+class StdOutput(object):
+    records = []
+
+    def __init__(self):
+        self.stdout = self._stdout = sys.stdout
+        self.stderr = self._stderr = sys.stderr
+
+    def _paginator_in_use(self):
+        return bool(isinstance(sys.stdout, Paginator))
+
+    def print_records(self):
+        for stream, msg in self.records:
+            if stream:
+                sys.stdout.write(msg)
+            else:
+                sys.stderr.write(msg)
+        del self.records[:]
+
+    def fake_outputs(self):
+        sys.stdout = _StdOutputFile(True, self.records)
+        sys.stderr = _StdOutputFile(False, self.records)
+
+    def enable_outputs(self):
+        sys.stdout = self.stdout
+        sys.stderr = self.stderr
+
+    def enable_paginator(self):
+        self.stdout = self.stderr = Paginator()
+
+    def disable_outputs(self):
+        sys.stdout = sys.stderr = open(os.devnull, 'w')
+
+    def close(self):
+        paginator = None
+        if self._paginator_in_use():
+            paginator = sys.stdout
+        self.enable_outputs()
+        if paginator:
+            paginator.close()
+
+
+STD_OUTPUT = StdOutput()
+
+
 def early_start():
     """
     Replace all outputs with in-memory handlers
     """
     if os.environ.get('AVOCADO_LOG_DEBUG'):
-        add_log_handler("avocado.app.debug", logging.StreamHandler, STDERR,
+        add_log_handler("avocado.app.debug", logging.StreamHandler, sys.stderr,
                         logging.DEBUG)
     if os.environ.get('AVOCADO_LOG_EARLY'):
-        add_log_handler("", logging.StreamHandler, STDERR, logging.DEBUG)
-        add_log_handler("avocado.test", logging.StreamHandler, STDERR,
+        add_log_handler("", logging.StreamHandler, sys.stderr, logging.DEBUG)
+        add_log_handler("avocado.test", logging.StreamHandler, sys.stderr,
                         logging.DEBUG)
     else:
-        sys.stdout = StringIO()
-        sys.stderr = sys.stdout
+        STD_OUTPUT.fake_outputs()
         add_log_handler("", MemStreamHandler, None, logging.DEBUG)
     logging.root.level = logging.DEBUG
-
-
-def enable_stderr():
-    """
-    Enable direct stdout/stderr (useful for handling errors)
-    """
-    if hasattr(sys.stdout, 'getvalue'):
-        STDERR.write(sys.stdout.getvalue())  # pylint: disable=E1101
-    sys.stdout = STDOUT
-    sys.stderr = STDERR
 
 
 def reconfigure(args):
@@ -238,8 +296,6 @@ def reconfigure(args):
     Adjust logging handlers accordingly to app args and re-log messages.
     """
     # Reconfigure stream loggers
-    global STDOUT
-    global STDERR
     enabled = getattr(args, "show", None)
     if not isinstance(enabled, list):
         enabled = ["app"]
@@ -248,31 +304,29 @@ def reconfigure(args):
         del enabled[:]
         enabled.append("test")
     if getattr(args, "silent", False):
-        sys.stdout = open(os.devnull, 'w')
-        sys.stderr = sys.stdout
         logging.disable(logging.CRITICAL)
+        STD_OUTPUT.disable_outputs()
         del enabled[:]
+    # "silent" is incompatible with "paginator"
+    elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
+        STD_OUTPUT.enable_paginator()
     if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
         enabled.append("debug")
-    # "silent" is incompatible with "paginator"
-    elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
-        STDOUT = Paginator()
-        STDERR = STDOUT
     if "app" in enabled:
         app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
         app_handler.setFormatter(logging.Formatter("%(message)s"))
         app_handler.addFilter(FilterInfoAndLess())
-        app_handler.stream = STDOUT
+        app_handler.stream = STD_OUTPUT.stdout
         app_logger.addHandler(app_handler)
         app_logger.propagate = False
         app_logger.level = logging.DEBUG
         app_err_handler = ProgressStreamHandler()
         app_err_handler.setFormatter(logging.Formatter("%(message)s"))
         app_err_handler.addFilter(FilterWarnAndMore())
-        app_err_handler.stream = STDERR
+        app_err_handler.stream = STD_OUTPUT.stderr
         app_logger.addHandler(app_err_handler)
         app_logger.propagate = False
     else:
@@ -281,27 +335,28 @@ def reconfigure(args):
         logging.getLogger("avocado.test.stdout").propagate = False
         logging.getLogger("avocado.test.stderr").propagate = False
         if "early" in enabled:
-            enable_stderr()
-            add_log_handler("", logging.StreamHandler, STDERR, logging.DEBUG)
-            add_log_handler("avocado.test", logging.StreamHandler, STDERR,
+            STD_OUTPUT.enable_outputs()
+            STD_OUTPUT.print_records()
+            add_log_handler("", logging.StreamHandler, STD_OUTPUT.stderr,
                             logging.DEBUG)
+            add_log_handler("avocado.test", logging.StreamHandler,
+                            STD_OUTPUT.stderr, logging.DEBUG)
         else:
             # TODO: When stdout/stderr is not used by avocado we should move
             # this to output.start_job_logging
-            sys.stdout = STDOUT
-            sys.stderr = STDERR
+            STD_OUTPUT.enable_outputs()
             disable_log_handler("")
             disable_log_handler("avocado.test")
     if "remote" in enabled:
-        add_log_handler("avocado.fabric", stream=STDERR)
-        add_log_handler("paramiko", stream=STDERR)
+        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stderr)
+        add_log_handler("paramiko", stream=STD_OUTPUT.stderr)
     else:
         disable_log_handler("avocado.fabric")
         disable_log_handler("paramiko")
     # Not enabled by env
     if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
-            add_log_handler("avocado.app.debug", stream=STDERR)
+            add_log_handler("avocado.app.debug", stream=STD_OUTPUT.stderr)
         else:
             disable_log_handler("avocado.app.debug")
 
@@ -315,7 +370,8 @@ def reconfigure(args):
             level = (int(name[1]) if name[1].isdigit()
                      else logging.getLevelName(name[1].upper()))
         try:
-            add_log_handler(name, logging.StreamHandler, STDERR, level)
+            add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stderr,
+                            level)
         except ValueError, details:
             app_logger.error("Failed to set logger for --show %s:%s: %s.",
                              name, level, details)
@@ -331,10 +387,7 @@ def reconfigure(args):
 
 
 def stop_logging():
-    if isinstance(STDOUT, Paginator):
-        sys.stdout = _STDOUT
-        sys.stderr = _STDERR
-        STDOUT.close()
+    STD_OUTPUT.close()
 
 
 class FilterWarnAndMore(logging.Filter):
