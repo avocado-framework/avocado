@@ -241,17 +241,10 @@ def reconfigure(args):
     # Reconfigure stream loggers
     global STDOUT
     global STDERR
-    if getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
-        STDOUT = Paginator()
-        STDERR = STDOUT
     enabled = getattr(args, "show", None)
     if not isinstance(enabled, list):
         enabled = ["app"]
         args.show = enabled
-    if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
-        enabled.append("early")
-    if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
-        enabled.append("debug")
     if getattr(args, "show_job_log", False):
         del enabled[:]
         enabled.append("test")
@@ -260,7 +253,14 @@ def reconfigure(args):
         sys.stderr = sys.stdout
         logging.disable(logging.CRITICAL)
         del enabled[:]
-        return
+    # "silent" is incompatible with "paginator"
+    elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
+        STDOUT = Paginator()
+        STDERR = STDOUT
+    if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
+        enabled.append("early")
+    if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
+        enabled.append("debug")
     if "app" in enabled:
         app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
