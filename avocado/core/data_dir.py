@@ -55,11 +55,25 @@ USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
 
 
+def venv_based_dir(path):
+    """
+    Return venv based dir
+    """
+    venv_root = os.environ.get('VIRTUAL_ENV')
+    if not venv_root or not os.path.isdir(venv_root):
+        return path
+    venv_path = os.path.join(venv_root, path.lstrip(os.sep))
+    if not os.path.isdir(venv_path):
+        os.makedirs(venv_path)
+    return venv_path
+
+
 def _get_settings_dir(dir_name):
     """
     Returns a given "datadir" directory as set by the configuration system
     """
-    return os.path.expanduser(settings.settings.get_value('datadir.paths', dir_name))
+    paths = settings.settings.get_value('datadir.paths', dir_name)
+    return os.path.expanduser(venv_based_dir(paths))
 
 
 def _get_rw_dir(settings_location, system_location, user_location):
