@@ -200,11 +200,14 @@ TERM_SUPPORT = TermSupport()
 
 
 class _StdOutputFile(object):
-    def __init__(self, record_id, records):
+    def __init__(self, record_id, records, formatter=None):
         self.records = records
         self.id = record_id
+        self.formatter = formatter
 
     def write(self, msg):
+        if self.formatter:
+            msg = self.formatter(msg)
         self.records.append((self.id, msg))
 
     def writelines(self, iterable):
@@ -230,12 +233,30 @@ class _StdOutputFile(object):
         return "\n".join((_[1] for _ in self.records if _[0] == self.id))
 
 
+class ColorWrapper(object):
+    def __init__(self, wrapee, formatter):
+        self.wrapee = wrapee
+        self.formatter = formatter
+
+    def __getattr__(self, attr):
+        if attr == 'write':
+            return self.write
+        else:
+            return getattr(self.wrapee, attr)
+
+    def write(self, msg):
+        self.wrapee.write(self.formatter(msg))
+
+
 class StdOutput(object):
     records = []
 
     def __init__(self):
         self.stdout = self._stdout = sys.stdout
         self.stderr = self._stderr = sys.stderr
+        if TERM_SUPPORT.enabled:
+            self.stderr = ColorWrapper(self.stderr,
+                                       TERM_SUPPORT.fail_header_str)
 
     def _paginator_in_use(self):
         return bool(isinstance(sys.stdout, Paginator))
@@ -250,7 +271,10 @@ class StdOutput(object):
 
     def fake_outputs(self):
         sys.stdout = _StdOutputFile(True, self.records)
-        sys.stderr = _StdOutputFile(False, self.records)
+        color_output = None
+        if TERM_SUPPORT.enabled:
+            color_output = TERM_SUPPORT.fail_header_str
+        sys.stderr = _StdOutputFile(False, self.records, color_output)
 
     def enable_outputs(self):
         sys.stdout = self.stdout
@@ -270,6 +294,19 @@ class StdOutput(object):
         self.enable_outputs()
         if paginator:
             paginator.close()
+
+    def get_original_outputs(self):
+        return self._stdout, self._stderr
+
+    def get_colored_output(self, color, get_stdout=True):
+        if not self._paginator_in_use() and not get_stdout:
+            stream = self._stderr   # Stderr is colored, use the original
+        else:
+            stream = self.stdout
+        if not TERM_SUPPORT.enabled:    # Avoid coloring when not supported
+            return stream
+        return ColorWrapper(stream, lambda msg: color + msg +
+                            TERM_SUPPORT.ENDC)
 
 
 STD_OUTPUT = StdOutput()
