@@ -183,11 +183,11 @@ class Job(object):
                 'early' not in enabled_logs):
             self.stdout_stderr = sys.stdout, sys.stderr
             # Enable std{out,err} but redirect booth to stderr
-            sys.stdout = output.STDERR
-            sys.stderr = output.STDERR
+            sys.stdout = output.STD_OUTPUT.stderr
+            sys.stderr = output.STD_OUTPUT.stderr
             test_handler = output.add_log_handler("avocado.test",
                                                   logging.StreamHandler,
-                                                  output.STDERR,
+                                                  output.STD_OUTPUT.stderr,
                                                   logging.DEBUG,
                                                   fmt="%(message)s")
             root_logger.addHandler(test_handler)
