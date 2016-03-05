@@ -45,7 +45,11 @@ class Plugins(CLICmd):
             (dispatcher.CLICmdDispatcher(),
              'Plugins that add new commands (avocado.plugins.cli.cmd):'),
             (dispatcher.CLIDispatcher(),
-             'Plugins that add new options to commands (avocado.plugins.cli):')
+             'Plugins that add new options to commands (avocado.plugins.cli):'),
+            (dispatcher.JobPreDispatcher(),
+             'Plugins that run before the execution of jobs (avocado.plugins.job.pre):'),
+            (dispatcher.JobPostDispatcher(),
+             'Plugins that run after the execution of jobs (avocado.plugins.job.post):')
         ]
         for plugins_active, msg in plugin_types:
             log.info(msg)
