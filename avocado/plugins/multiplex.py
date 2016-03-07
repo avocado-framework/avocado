@@ -121,8 +121,8 @@ class Multiplex(CLICmd):
             if not args.debug:
                 paths = ', '.join([x.path for x in tpl])
             else:
-                color = output.term_support.LOWLIGHT
-                cend = output.term_support.ENDC
+                color = output.TERM_SUPPORT.LOWLIGHT
+                cend = output.TERM_SUPPORT.ENDC
                 paths = ', '.join(["%s%s@%s%s" % (_.name, color,
                                                   getattr(_, 'yaml',
                                                           "Unknown"),

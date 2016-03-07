@@ -24,11 +24,6 @@ from . import exit_codes
 from ..utils import path as utils_path
 from .settings import settings
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
 if hasattr(logging, 'NullHandler'):
     NULL_HANDLER = logging.NullHandler
 else:
@@ -36,295 +31,19 @@ else:
     NULL_HANDLER = logutils.NullHandler
 
 
-STDOUT = _STDOUT = sys.stdout
-STDERR = _STDERR = sys.stderr
-
+#: Builtin special keywords to enable set of logging streams
 BUILTIN_STREAMS = {'app': 'application output',
                    'test': 'test output',
                    'debug': 'tracebacks and other debugging info',
                    'remote': 'fabric/paramiko debug',
                    'early':  'early logging of other streams (very verbose)'}
-
+#: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disable console logging completely'}
-
-
-def early_start():
-    """
-    Replace all outputs with in-memory handlers
-    """
-    if os.environ.get('AVOCADO_LOG_DEBUG'):
-        add_log_handler("avocado.app.debug", logging.StreamHandler, STDERR,
-                        logging.DEBUG)
-    if os.environ.get('AVOCADO_LOG_EARLY'):
-        add_log_handler("", logging.StreamHandler, STDERR, logging.DEBUG)
-        add_log_handler("avocado.test", logging.StreamHandler, STDERR,
-                        logging.DEBUG)
-    else:
-        sys.stdout = StringIO()
-        sys.stderr = sys.stdout
-        add_log_handler("", MemStreamHandler, None, logging.DEBUG)
-    logging.root.level = logging.DEBUG
-
-
-def enable_stderr():
-    """
-    Enable direct stdout/stderr (useful for handling errors)
-    """
-    if hasattr(sys.stdout, 'getvalue'):
-        STDERR.write(sys.stdout.getvalue())  # pylint: disable=E1101
-    sys.stdout = STDOUT
-    sys.stderr = STDERR
-
-
-def reconfigure(args):
-    """
-    Adjust logging handlers accordingly to app args and re-log messages.
-    """
-    # Reconfigure stream loggers
-    global STDOUT
-    global STDERR
-    if getattr(args, "paginator", False) == "on" and is_colored_term():
-        STDOUT = Paginator()
-        STDERR = STDOUT
-    enabled = getattr(args, "show", None)
-    if not isinstance(enabled, list):
-        enabled = ["app"]
-        args.show = enabled
-    if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
-        enabled.append("early")
-    if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
-        enabled.append("debug")
-    if getattr(args, "show_job_log", False):
-        del enabled[:]
-        enabled.append("test")
-    if getattr(args, "silent", False):
-        sys.stdout = open(os.devnull, 'w')
-        sys.stderr = sys.stdout
-        logging.disable(logging.CRITICAL)
-        del enabled[:]
-        return
-    if "app" in enabled:
-        app_logger = logging.getLogger("avocado.app")
-        app_handler = ProgressStreamHandler()
-        app_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_handler.addFilter(FilterInfoAndLess())
-        app_handler.stream = STDOUT
-        app_logger.addHandler(app_handler)
-        app_logger.propagate = False
-        app_logger.level = logging.DEBUG
-        app_err_handler = ProgressStreamHandler()
-        app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_err_handler.addFilter(FilterWarnAndMore())
-        app_err_handler.stream = STDERR
-        app_logger.addHandler(app_err_handler)
-        app_logger.propagate = False
-    else:
-        disable_log_handler("avocado.app")
-    if not os.environ.get("AVOCADO_LOG_EARLY"):
-        logging.getLogger("avocado.test.stdout").propagate = False
-        logging.getLogger("avocado.test.stderr").propagate = False
-        if "early" in enabled:
-            enable_stderr()
-            add_log_handler("", logging.StreamHandler, STDERR, logging.DEBUG)
-            add_log_handler("avocado.test", logging.StreamHandler, STDERR,
-                            logging.DEBUG)
-        else:
-            # TODO: When stdout/stderr is not used by avocado we should move
-            # this to output.start_job_logging
-            sys.stdout = STDOUT
-            sys.stderr = STDERR
-            disable_log_handler("")
-            disable_log_handler("avocado.test")
-    if "remote" in enabled:
-        add_log_handler("avocado.fabric", stream=STDERR)
-        add_log_handler("paramiko", stream=STDERR)
-    else:
-        disable_log_handler("avocado.fabric")
-        disable_log_handler("paramiko")
-    # Not enabled by env
-    if not os.environ.get('AVOCADO_LOG_DEBUG'):
-        if "debug" in enabled:
-            add_log_handler("avocado.app.debug", stream=STDERR)
-        else:
-            disable_log_handler("avocado.app.debug")
-
-    # Add custom loggers
-    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS.iterkeys()]:
-        stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
-        name = stream_level[0]
-        if len(stream_level) == 1:
-            level = logging.DEBUG
-        else:
-            level = (int(name[1]) if name[1].isdigit()
-                     else logging.getLevelName(name[1].upper()))
-        try:
-            add_log_handler(name, logging.StreamHandler, STDERR, level)
-        except ValueError, details:
-            app_logger.error("Failed to set logger for --show %s:%s: %s.",
-                             name, level, details)
-            sys.exit(exit_codes.AVOCADO_FAIL)
-    # Remove the in-memory handlers
-    for handler in logging.root.handlers:
-        if isinstance(handler, MemStreamHandler):
-            logging.root.handlers.remove(handler)
-
-    # Log early_messages
-    for record in MemStreamHandler.log:
-        logging.getLogger(record.name).handle(record)
-
-
-def stop_logging():
-    if isinstance(STDOUT, Paginator):
-        sys.stdout = _STDOUT
-        sys.stderr = _STDERR
-        STDOUT.close()
-
-
-class FilterWarnAndMore(logging.Filter):
-
-    def filter(self, record):
-        return record.levelno >= logging.WARN
-
-
-class FilterInfoAndLess(logging.Filter):
-
-    def filter(self, record):
-        return record.levelno <= logging.INFO
-
-
-class ProgressStreamHandler(logging.StreamHandler):
-
-    """
-    Handler class that allows users to skip new lines on each emission.
-    """
-
-    def emit(self, record):
-        try:
-            msg = self.format(record)
-            if record.levelno < logging.INFO:   # Most messages are INFO
-                pass
-            elif record.levelno < logging.WARNING:
-                msg = term_support.header_str(msg)
-            elif record.levelno < logging.ERROR:
-                msg = term_support.warn_header_str(msg)
-            else:
-                msg = term_support.fail_header_str(msg)
-            stream = self.stream
-            skip_newline = False
-            if hasattr(record, 'skip_newline'):
-                skip_newline = record.skip_newline
-            stream.write(msg)
-            if not skip_newline:
-                stream.write('\n')
-            self.flush()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except Exception:
-            self.handleError(record)
-
-
-class MemStreamHandler(logging.StreamHandler):
-
-    """
-    Handler that stores all records in self.log (shared in all instances)
-    """
-
-    log = []
-
-    def emit(self, record):
-        self.log.append(record)
-
-    def flush(self):
-        """
-        This is in-mem object, it does not require flushing
-        """
-        pass
-
-
-class PagerNotFoundError(Exception):
-    pass
-
-
-class Paginator(object):
-
-    """
-    Paginator that uses less to display contents on the terminal.
-
-    Contains cleanup handling for when user presses 'q' (to quit less).
-    """
-
-    def __init__(self):
-        try:
-            paginator = "%s -FRSX" % utils_path.find_command('less')
-        except utils_path.CmdNotFoundError:
-            paginator = None
-
-        paginator = os.environ.get('PAGER', paginator)
-
-        if paginator is None:
-            self.pipe = sys.stdout
-        else:
-            self.pipe = os.popen(paginator, 'w')
-
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        try:
-            self.pipe.close()
-        except Exception:
-            pass
-
-    def write(self, msg):
-        try:
-            self.pipe.write(msg)
-        except Exception:
-            pass
-
-
-def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
-                    level=logging.INFO, fmt='%(name)s: %(message)s'):
-    """
-    Add handler to a logger.
-
-    :param logger_name: the name of a :class:`logging.Logger` instance, that
-                        is, the parameter to :func:`logging.getLogger`
-    :param klass: Handler class (defaults to :class:`logging.StreamHandler`)
-    :param stream: Logging stream, to be passed as an argument to ``klass``
-                   (defaults to ``sys.stdout``)
-    :param level: Log level (defaults to `INFO``)
-    :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
-    """
-    handler = klass(stream)
-    handler.setLevel(level)
-    if isinstance(fmt, str):
-        fmt = logging.Formatter(fmt=fmt)
-    handler.setFormatter(fmt)
-    logging.getLogger(logger).addHandler(handler)
-    logging.getLogger(logger).propagate = False
-    return handler
-
-
-def disable_log_handler(logger):
-    logger = logging.getLogger(logger)
-    # Handlers might be reused elsewhere, can't delete them
-    while logger.handlers:
-        logger.handlers.pop()
-    logger.handlers.append(NULL_HANDLER())
-    logger.propagate = False
-
-
-def is_colored_term():
-    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
-                     'screen-256color']
-    term = os.environ.get("TERM")
-    colored = settings.get_value('runner.output', 'colored',
-                                 key_type='bool')
-    if ((not colored) or (not os.isatty(1)) or (term not in allowed_terms)):
-        return False
-    else:
-        return True
+#: Transparently handles colored terminal, when one is used
+TERM_SUPPORT = None
+#: Allows modifying the sys.stdout/sys.stderr
+STD_OUTPUT = None
 
 
 class TermSupport(object):
@@ -362,7 +81,12 @@ class TermSupport(object):
         self.ENDC = self.CONTROL_END
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
-        if not is_colored_term():
+        allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
+                         'screen-256color']
+        term = os.environ.get("TERM")
+        colored = settings.get_value('runner.output', 'colored',
+                                     key_type='bool')
+        if not colored or not os.isatty(1) or term not in allowed_terms:
             self.disable()
 
     def disable(self):
@@ -472,7 +196,377 @@ class TermSupport(object):
         return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
 
 
-term_support = TermSupport()
+TERM_SUPPORT = TermSupport()
+
+
+class _StdOutputFile(object):
+    def __init__(self, record_id, records, formatter=None):
+        self.records = records
+        self.id = record_id
+        self.formatter = formatter
+
+    def write(self, msg):
+        if self.formatter:
+            msg = self.formatter(msg)
+        self.records.append((self.id, msg))
+
+    def writelines(self, iterable):
+        for line in iterable:
+            self.write(line)
+
+    def close(self):
+        pass
+
+    def flush(self):
+        pass
+
+    def isatty(self):
+        return False
+
+    def seek(self):
+        pass
+
+    def tell(self):
+        pass
+
+    def getvalue(self):
+        return "\n".join((_[1] for _ in self.records if _[0] == self.id))
+
+
+class ColorWrapper(object):
+    def __init__(self, wrapee, formatter):
+        self.wrapee = wrapee
+        self.formatter = formatter
+
+    def __getattr__(self, attr):
+        if attr == 'write':
+            return self.write
+        else:
+            return getattr(self.wrapee, attr)
+
+    def write(self, msg):
+        self.wrapee.write(self.formatter(msg))
+
+
+class StdOutput(object):
+    records = []
+
+    def __init__(self):
+        self.stdout = self._stdout = sys.stdout
+        self.stderr = self._stderr = sys.stderr
+        if TERM_SUPPORT.enabled:
+            self.stderr = ColorWrapper(self.stderr,
+                                       TERM_SUPPORT.fail_header_str)
+
+    def _paginator_in_use(self):
+        return bool(isinstance(sys.stdout, Paginator))
+
+    def print_records(self):
+        for stream, msg in self.records:
+            if stream:
+                sys.stdout.write(msg)
+            else:
+                sys.stderr.write(msg)
+        del self.records[:]
+
+    def fake_outputs(self):
+        sys.stdout = _StdOutputFile(True, self.records)
+        color_output = None
+        if TERM_SUPPORT.enabled:
+            color_output = TERM_SUPPORT.fail_header_str
+        sys.stderr = _StdOutputFile(False, self.records, color_output)
+
+    def enable_outputs(self):
+        sys.stdout = self.stdout
+        sys.stderr = self.stderr
+
+    def enable_paginator(self):
+        self.stdout = self.stderr = Paginator()
+
+    def enable_stderr(self):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = self.stderr
+
+    def close(self):
+        paginator = None
+        if self._paginator_in_use():
+            paginator = sys.stdout
+        self.enable_outputs()
+        if paginator:
+            paginator.close()
+
+    def get_original_outputs(self):
+        return self._stdout, self._stderr
+
+    def get_colored_output(self, color, get_stdout=True):
+        if not self._paginator_in_use() and not get_stdout:
+            stream = self._stderr   # Stderr is colored, use the original
+        else:
+            stream = self.stdout
+        if not TERM_SUPPORT.enabled:    # Avoid coloring when not supported
+            return stream
+        return ColorWrapper(stream, lambda msg: color + msg +
+                            TERM_SUPPORT.ENDC)
+
+
+STD_OUTPUT = StdOutput()
+
+
+def early_start():
+    """
+    Replace all outputs with in-memory handlers
+    """
+    if os.environ.get('AVOCADO_LOG_DEBUG'):
+        add_log_handler("avocado.app.debug", logging.StreamHandler, sys.stderr,
+                        logging.DEBUG)
+    if os.environ.get('AVOCADO_LOG_EARLY'):
+        add_log_handler("", logging.StreamHandler, sys.stderr, logging.DEBUG)
+        add_log_handler("avocado.test", logging.StreamHandler, sys.stderr,
+                        logging.DEBUG)
+    else:
+        STD_OUTPUT.fake_outputs()
+        add_log_handler("", MemStreamHandler, None, logging.DEBUG)
+    logging.root.level = logging.DEBUG
+
+
+def reconfigure(args):
+    """
+    Adjust logging handlers accordingly to app args and re-log messages.
+    """
+    # Reconfigure stream loggers
+    enabled = getattr(args, "show", None)
+    if not isinstance(enabled, list):
+        enabled = ["app"]
+        args.show = enabled
+    if getattr(args, "show_job_log", False):
+        del enabled[:]
+        enabled.append("test")
+    if getattr(args, "silent", False):
+        STD_OUTPUT.enable_stderr()
+        logging.disable(logging.INFO)
+        del enabled[:]
+    # "silent" is incompatible with "paginator"
+    elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
+        STD_OUTPUT.enable_paginator()
+    if "none" in enabled:
+        del enabled[:]
+    elif "all" in enabled:
+        enabled.extend([_ for _ in BUILTIN_STREAMS if _ not in enabled])
+    if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
+        enabled.append("early")
+    if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
+        enabled.append("debug")
+    app_logger = logging.getLogger("avocado.app")
+    if "app" in enabled:
+        app_handler = ProgressStreamHandler()
+        app_handler.setFormatter(logging.Formatter("%(message)s"))
+        app_handler.addFilter(FilterInfoAndLess())
+        app_handler.stream = STD_OUTPUT.stdout
+        app_logger.addHandler(app_handler)
+        app_logger.propagate = False
+        app_logger.level = logging.DEBUG
+    else:
+        disable_log_handler("avocado.app")
+    app_err_handler = ProgressStreamHandler()
+    app_err_handler.setFormatter(logging.Formatter("%(message)s"))
+    app_err_handler.addFilter(FilterWarnAndMore())
+    app_err_handler.stream = STD_OUTPUT.stderr
+    app_logger.addHandler(app_err_handler)
+    app_logger.propagate = False
+    gray_stderr = STD_OUTPUT.get_colored_output(TERM_SUPPORT.COLOR_DARKGREY,
+                                                False)
+
+    if not os.environ.get("AVOCADO_LOG_EARLY"):
+        logging.getLogger("avocado.test.stdout").propagate = False
+        logging.getLogger("avocado.test.stderr").propagate = False
+        if "early" in enabled:
+            STD_OUTPUT.enable_outputs()
+            STD_OUTPUT.print_records()
+            add_log_handler("", logging.StreamHandler, gray_stderr,
+                            logging.DEBUG)
+            add_log_handler("avocado.test", logging.StreamHandler,
+                            gray_stderr, logging.DEBUG)
+        else:
+            # TODO: When stdout/stderr is not used by avocado we should move
+            # this to output.start_job_logging
+            STD_OUTPUT.enable_outputs()
+            disable_log_handler("")
+            disable_log_handler("avocado.test")
+    if "remote" in enabled:
+        add_log_handler("avocado.fabric", stream=gray_stderr)
+        add_log_handler("paramiko", stream=gray_stderr)
+    else:
+        disable_log_handler("avocado.fabric")
+        disable_log_handler("paramiko")
+    # Not enabled by env
+    if not os.environ.get('AVOCADO_LOG_DEBUG'):
+        if "debug" in enabled:
+            add_log_handler("avocado.app.debug", stream=gray_stderr)
+        else:
+            disable_log_handler("avocado.app.debug")
+
+    # Add custom loggers
+    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS.iterkeys()]:
+        stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
+        name = stream_level[0]
+        if len(stream_level) == 1:
+            level = logging.DEBUG
+        else:
+            level = (int(name[1]) if name[1].isdigit()
+                     else logging.getLevelName(name[1].upper()))
+        try:
+            add_log_handler(name, logging.StreamHandler, gray_stderr,
+                            level)
+        except ValueError, details:
+            app_logger.error("Failed to set logger for --show %s:%s: %s.",
+                             name, level, details)
+            sys.exit(exit_codes.AVOCADO_FAIL)
+    # Remove the in-memory handlers
+    for handler in logging.root.handlers:
+        if isinstance(handler, MemStreamHandler):
+            logging.root.handlers.remove(handler)
+
+    # Log early_messages
+    for record in MemStreamHandler.log:
+        logging.getLogger(record.name).handle(record)
+
+
+def stop_logging():
+    STD_OUTPUT.close()
+
+
+class FilterWarnAndMore(logging.Filter):
+
+    def filter(self, record):
+        return record.levelno >= logging.WARN
+
+
+class FilterInfoAndLess(logging.Filter):
+
+    def filter(self, record):
+        return record.levelno <= logging.INFO
+
+
+class ProgressStreamHandler(logging.StreamHandler):
+
+    """
+    Handler class that allows users to skip new lines on each emission.
+    """
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            if record.levelno < logging.INFO:   # Most messages are INFO
+                pass
+            elif record.levelno < logging.WARNING:
+                msg = TERM_SUPPORT.header_str(msg)
+            elif record.levelno < logging.ERROR:
+                msg = TERM_SUPPORT.warn_header_str(msg)
+            else:
+                msg = TERM_SUPPORT.fail_header_str(msg)
+            stream = self.stream
+            skip_newline = False
+            if hasattr(record, 'skip_newline'):
+                skip_newline = record.skip_newline
+            stream.write(msg)
+            if not skip_newline:
+                stream.write('\n')
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            self.handleError(record)
+
+
+class MemStreamHandler(logging.StreamHandler):
+
+    """
+    Handler that stores all records in self.log (shared in all instances)
+    """
+
+    log = []
+
+    def emit(self, record):
+        self.log.append(record)
+
+    def flush(self):
+        """
+        This is in-mem object, it does not require flushing
+        """
+        pass
+
+
+class PagerNotFoundError(Exception):
+    pass
+
+
+class Paginator(object):
+
+    """
+    Paginator that uses less to display contents on the terminal.
+
+    Contains cleanup handling for when user presses 'q' (to quit less).
+    """
+
+    def __init__(self):
+        try:
+            paginator = "%s -FRSX" % utils_path.find_command('less')
+        except utils_path.CmdNotFoundError:
+            paginator = None
+
+        paginator = os.environ.get('PAGER', paginator)
+
+        if paginator is None:
+            self.pipe = sys.stdout
+        else:
+            self.pipe = os.popen(paginator, 'w')
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        try:
+            self.pipe.close()
+        except Exception:
+            pass
+
+    def write(self, msg):
+        try:
+            self.pipe.write(msg)
+        except Exception:
+            pass
+
+
+def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
+                    level=logging.INFO, fmt='%(name)s: %(message)s'):
+    """
+    Add handler to a logger.
+
+    :param logger_name: the name of a :class:`logging.Logger` instance, that
+                        is, the parameter to :func:`logging.getLogger`
+    :param klass: Handler class (defaults to :class:`logging.StreamHandler`)
+    :param stream: Logging stream, to be passed as an argument to ``klass``
+                   (defaults to ``sys.stdout``)
+    :param level: Log level (defaults to `INFO``)
+    :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
+    """
+    handler = klass(stream)
+    handler.setLevel(level)
+    if isinstance(fmt, str):
+        fmt = logging.Formatter(fmt=fmt)
+    handler.setFormatter(fmt)
+    logging.getLogger(logger).addHandler(handler)
+    logging.getLogger(logger).propagate = False
+    return handler
+
+
+def disable_log_handler(logger):
+    logger = logging.getLogger(logger)
+    # Handlers might be reused elsewhere, can't delete them
+    while logger.handlers:
+        logger.handlers.pop()
+    logger.handlers.append(NULL_HANDLER())
+    logger.propagate = False
 
 
 class LoggingFile(object):
@@ -547,11 +641,11 @@ class Throbber(object):
     """
     STEPS = ['-', '\\', '|', '/']
     # Only print a throbber when we're on a terminal
-    if term_support.enabled:
-        MOVES = [term_support.MOVE_BACK + STEPS[0],
-                 term_support.MOVE_BACK + STEPS[1],
-                 term_support.MOVE_BACK + STEPS[2],
-                 term_support.MOVE_BACK + STEPS[3]]
+    if TERM_SUPPORT.enabled:
+        MOVES = [TERM_SUPPORT.MOVE_BACK + STEPS[0],
+                 TERM_SUPPORT.MOVE_BACK + STEPS[1],
+                 TERM_SUPPORT.MOVE_BACK + STEPS[2],
+                 TERM_SUPPORT.MOVE_BACK + STEPS[3]]
     else:
         MOVES = ['', '', '', '']
 

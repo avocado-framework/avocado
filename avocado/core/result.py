@@ -310,19 +310,19 @@ class HumanTestResult(TestResult):
         status = state["status"]
         if status == "TEST_NA":
             status = "SKIP"
-        mapping = {'PASS': output.term_support.PASS,
-                   'ERROR': output.term_support.ERROR,
-                   'FAIL': output.term_support.FAIL,
-                   'SKIP': output.term_support.SKIP,
-                   'WARN': output.term_support.WARN,
-                   'INTERRUPTED': output.term_support.INTERRUPT}
-        self.log.debug(output.term_support.MOVE_BACK + mapping[status] +
-                       status + output.term_support.ENDC)
+        mapping = {'PASS': output.TERM_SUPPORT.PASS,
+                   'ERROR': output.TERM_SUPPORT.ERROR,
+                   'FAIL': output.TERM_SUPPORT.FAIL,
+                   'SKIP': output.TERM_SUPPORT.SKIP,
+                   'WARN': output.TERM_SUPPORT.WARN,
+                   'INTERRUPTED': output.TERM_SUPPORT.INTERRUPT}
+        self.log.debug(output.TERM_SUPPORT.MOVE_BACK + mapping[status] +
+                       status + output.TERM_SUPPORT.ENDC)
 
     def notify_progress(self, progress=False):
         if progress:
-            color = output.term_support.PASS
+            color = output.TERM_SUPPORT.PASS
         else:
-            color = output.term_support.PARTIAL
+            color = output.TERM_SUPPORT.PARTIAL
         self.log.debug(color + self.__throbber.render() +
-                       output.term_support.ENDC, extra={"skip_newline": True})
+                       output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
