@@ -362,6 +362,10 @@ def reconfigure(args):
     # "silent" is incompatible with "paginator"
     elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
         STD_OUTPUT.enable_paginator()
+    if "none" in enabled:
+        del enabled[:]
+    elif "all" in enabled:
+        enabled.extend([_ for _ in BUILTIN_STREAMS if _ not in enabled])
     if os.environ.get("AVOCADO_LOG_EARLY") and "early" not in enabled:
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
