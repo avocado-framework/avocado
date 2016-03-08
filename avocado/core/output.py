@@ -331,11 +331,11 @@ def early_start():
     Replace all outputs with in-memory handlers
     """
     if os.environ.get('AVOCADO_LOG_DEBUG'):
-        add_log_handler("avocado.app.debug", logging.StreamHandler, sys.stderr,
+        add_log_handler("avocado.app.debug", logging.StreamHandler, sys.stdout,
                         logging.DEBUG)
     if os.environ.get('AVOCADO_LOG_EARLY'):
-        add_log_handler("", logging.StreamHandler, sys.stderr, logging.DEBUG)
-        add_log_handler("avocado.test", logging.StreamHandler, sys.stderr,
+        add_log_handler("", logging.StreamHandler, sys.stdout, logging.DEBUG)
+        add_log_handler("avocado.test", logging.StreamHandler, sys.stdout,
                         logging.DEBUG)
     else:
         STD_OUTPUT.fake_outputs()
@@ -389,10 +389,10 @@ def reconfigure(args):
         if "early" in enabled:
             STD_OUTPUT.enable_outputs()
             STD_OUTPUT.print_records()
-            add_log_handler("", logging.StreamHandler, STD_OUTPUT.stderr,
+            add_log_handler("", logging.StreamHandler, STD_OUTPUT.stdout,
                             logging.DEBUG)
             add_log_handler("avocado.test", logging.StreamHandler,
-                            STD_OUTPUT.stderr, logging.DEBUG)
+                            STD_OUTPUT.stdout, logging.DEBUG)
         else:
             # TODO: When stdout/stderr is not used by avocado we should move
             # this to output.start_job_logging
@@ -400,15 +400,15 @@ def reconfigure(args):
             disable_log_handler("")
             disable_log_handler("avocado.test")
     if "remote" in enabled:
-        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stderr)
-        add_log_handler("paramiko", stream=STD_OUTPUT.stderr)
+        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout)
+        add_log_handler("paramiko", stream=STD_OUTPUT.stdout)
     else:
         disable_log_handler("avocado.fabric")
         disable_log_handler("paramiko")
     # Not enabled by env
     if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
-            add_log_handler("avocado.app.debug", stream=STD_OUTPUT.stderr)
+            add_log_handler("avocado.app.debug", stream=STD_OUTPUT.stdout)
         else:
             disable_log_handler("avocado.app.debug")
 
@@ -422,7 +422,7 @@ def reconfigure(args):
             level = (int(name[1]) if name[1].isdigit()
                      else logging.getLevelName(name[1].upper()))
         try:
-            add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stderr,
+            add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout,
                             level)
         except ValueError, details:
             app_logger.error("Failed to set logger for --show %s:%s: %s.",
