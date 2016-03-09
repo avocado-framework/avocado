@@ -539,13 +539,14 @@ class RunnerSimpleTest(unittest.TestCase):
         # We need pid of the avocado, not the shell executing it
         pid = int(process.get_children_pids(proc.get_pid())[0])
         os.kill(pid, signal.SIGTSTP)   # This freezes the process
-        deadline = time.time() + 5
+        deadline = time.time() + 9
         while time.time() < deadline:
             if not proc.is_alive():
                 break
+            time.sleep(0.1)
         else:
             proc.kill(signal.SIGKILL)
-            self.fail("Avocado process still alive 1s after job-timeout:\n%s"
+            self.fail("Avocado process still alive 5s after job-timeout:\n%s"
                       % proc.get_output())
         output = proc.get_output()
         self.assertIn("ctrl+z pressed, stopping test", output, "SIGTSTP "
