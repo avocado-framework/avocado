@@ -55,7 +55,7 @@ First make sure you have a basic set of packages installed. The
 following applies to Fedora based distributions, please adapt to
 your platform::
 
-    sudo yum install -y git gcc python-devel python-pip libvirt-devel libyaml-devel
+    sudo yum install -y git gcc python-devel python-pip libvirt-devel libyaml-devel redhat-rpm-config xz-devel
 
 Then to install Avocado from the git repository run::
 
