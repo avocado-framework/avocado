@@ -96,7 +96,8 @@ class Remote(object):
                 fabric_result = fabric.operations.run(command=command,
                                                       quiet=self.quiet,
                                                       warn_only=True,
-                                                      timeout=timeout)
+                                                      timeout=timeout,
+                                                      pty=False)
                 break
             except fabric.network.NetworkError as details:
                 fabric_exception = details
