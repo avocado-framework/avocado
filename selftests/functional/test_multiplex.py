@@ -106,15 +106,15 @@ class MultiplexTests(unittest.TestCase):
 
             msg_lines = msg.splitlines()
             msg_header = '[stdout] Custom variable: %s' % msg_lines[0]
-            self.assertIn(msg_header, result.stderr,
+            self.assertIn(msg_header, result.stdout,
                           "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
-                          % (msg_header, "\n  ".join(result.stderr.splitlines())))
+                          % (msg_header, "\n  ".join(result.stdout.splitlines())))
             for msg_remain in msg_lines[1:]:
-                self.assertIn('[stdout] %s' % msg_remain, result.stderr,
+                self.assertIn('[stdout] %s' % msg_remain, result.stdout,
                               "Multiplexed variable should produce:"
                               "\n  %s\nwhich is not present in the output:\n  %s"
-                              % (msg_remain, "\n  ".join(result.stderr.splitlines())))
+                              % (msg_remain, "\n  ".join(result.stdout.splitlines())))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
