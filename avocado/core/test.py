@@ -105,6 +105,11 @@ class Test(unittest.TestCase):
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
         safe_tagged_name = astring.string_to_safe_path(self.tagged_name)
+        test_log_dir = os.path.join(base_logdir, safe_tagged_name)
+        if os.path.isdir(test_log_dir):
+            msg = ('Test log dir "%s" exists prior to Avocado creating '
+                   'it' % test_log_dir)
+            raise exceptions.TestSetupFail(msg)
         self.logdir = utils_path.init_dir(base_logdir, safe_tagged_name)
         genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
@@ -313,11 +318,13 @@ class Test(unittest.TestCase):
             name += ".%s" % self.tag
         tag = 0
         tagged_name = name
-        while os.path.isdir(os.path.join(logdir, tagged_name)):
+        safe_tagged_name = astring.string_to_safe_path(tagged_name)
+        while os.path.isdir(os.path.join(logdir, safe_tagged_name)):
             tag += 1
             tagged_name = "%s.%s" % (name, tag)
-        self.tag = "%s.%s" % (self.tag, tag) if self.tag else str(tag)
+            safe_tagged_name = astring.string_to_safe_path(tagged_name)
 
+        self.tag = "%s.%s" % (self.tag, tag) if self.tag else str(tag)
         return tagged_name
 
     def _record_reference_stdout(self):
