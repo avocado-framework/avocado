@@ -1,8 +1,12 @@
 language: python
 
 python:
-    - "2.7_with_system_site_packages"
     - "2.6"
+    - "2.7"
+    - "3.2"
+    - "3.3"
+    - "3.4"
+    - "3.5"
 
 branches:
     only:
@@ -21,8 +25,8 @@ script:
     - inspekt lint
     - inspekt indent
     - inspekt style
-    - ./selftests/cyclical_deps avocado
-    - ./selftests/modules_boundaries
+    - if [ $TRAVIS_PYTHON_VERSION == '2.7' ]; then ./selftests/cyclical_deps avocado; fi
+    - if [ $TRAVIS_PYTHON_VERSION == '2.7' ]; then ./selftests/modules_boundaries; fi
     - python setup.py develop
     - ./selftests/run
     - ./selftests/check_tmp_dirs
