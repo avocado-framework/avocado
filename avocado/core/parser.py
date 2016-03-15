@@ -74,7 +74,7 @@ class Parser(object):
         self.application.add_argument('-s', '--silent',
                                       default=argparse.SUPPRESS,
                                       action="store_true",
-                                      help='Silence stdout')
+                                      help=BUILTIN_STREAM_SETS['none'])
 
     def start(self):
         """
