@@ -61,7 +61,8 @@ class AvocadoApp(object):
                 if self.parser.args is None:     # Early failure
                     import argparse
                     self.parser.args = argparse.Namespace()
-                output.enable_stderr()
+                output.STD_OUTPUT.enable_outputs()
+                output.STD_OUTPUT.print_records()
                 self.parser.args.show = ["app"]
             output.reconfigure(self.parser.args)
 
