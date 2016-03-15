@@ -304,11 +304,12 @@ class StdOutput(object):
         """
         self.stdout = self.stderr = Paginator()
 
-    def disable_outputs(self):
+    def enable_stderr(self):
         """
-        Disable sys.stdout/sys.stderr (including in-memory-object)
+        Enable sys.stderr and disable sys.stdout
         """
-        sys.stdout = sys.stderr = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = self.stderr
 
     def close(self):
         """
@@ -355,8 +356,6 @@ def reconfigure(args):
         del enabled[:]
         enabled.append("test")
     if getattr(args, "silent", False):
-        logging.disable(logging.CRITICAL)
-        STD_OUTPUT.disable_outputs()
         del enabled[:]
     # "silent" is incompatible with "paginator"
     elif getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
@@ -365,8 +364,15 @@ def reconfigure(args):
         enabled.append("early")
     if os.environ.get("AVOCADO_LOG_DEBUG") and "debug" not in enabled:
         enabled.append("debug")
+    # TODO: Avocado relies on stdout/stderr on some places, re-log them here
+    # for now. This should be removed once we replace them with logging.
+    if enabled:
+        STD_OUTPUT.enable_outputs()
+    else:
+        STD_OUTPUT.enable_stderr()
+    STD_OUTPUT.print_records()
+    app_logger = logging.getLogger("avocado.app")
     if "app" in enabled:
-        app_logger = logging.getLogger("avocado.app")
         app_handler = ProgressStreamHandler()
         app_handler.setFormatter(logging.Formatter("%(message)s"))
         app_handler.addFilter(FilterInfoAndLess())
@@ -374,28 +380,23 @@ def reconfigure(args):
         app_logger.addHandler(app_handler)
         app_logger.propagate = False
         app_logger.level = logging.DEBUG
-        app_err_handler = ProgressStreamHandler()
-        app_err_handler.setFormatter(logging.Formatter("%(message)s"))
-        app_err_handler.addFilter(FilterWarnAndMore())
-        app_err_handler.stream = STD_OUTPUT.stderr
-        app_logger.addHandler(app_err_handler)
-        app_logger.propagate = False
     else:
         disable_log_handler("avocado.app")
+    app_err_handler = ProgressStreamHandler()
+    app_err_handler.setFormatter(logging.Formatter("%(message)s"))
+    app_err_handler.addFilter(FilterWarnAndMore())
+    app_err_handler.stream = STD_OUTPUT.stderr
+    app_logger.addHandler(app_err_handler)
+    app_logger.propagate = False
     if not os.environ.get("AVOCADO_LOG_EARLY"):
         logging.getLogger("avocado.test.stdout").propagate = False
         logging.getLogger("avocado.test.stderr").propagate = False
         if "early" in enabled:
-            STD_OUTPUT.enable_outputs()
-            STD_OUTPUT.print_records()
             add_log_handler("", logging.StreamHandler, STD_OUTPUT.stderr,
                             logging.DEBUG)
             add_log_handler("avocado.test", logging.StreamHandler,
                             STD_OUTPUT.stderr, logging.DEBUG)
         else:
-            # TODO: When stdout/stderr is not used by avocado we should move
-            # this to output.start_job_logging
-            STD_OUTPUT.enable_outputs()
             disable_log_handler("")
             disable_log_handler("avocado.test")
     if "remote" in enabled:
