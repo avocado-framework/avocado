@@ -57,14 +57,6 @@ class AvocadoApp(object):
                 self.cli_dispatcher.map_method('run', self.parser.args)
             initialized = True
         finally:
-            if (not initialized and
-                    getattr(self.parser.args, "silent", False) is False):
-                if self.parser.args is None:     # Early failure
-                    import argparse
-                    self.parser.args = argparse.Namespace()
-                STD_OUTPUT.enable_outputs()
-                STD_OUTPUT.print_records()
-                self.parser.args.show = ["app"]
             output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
