@@ -36,7 +36,7 @@ BUILTIN_STREAMS = {'app': 'application output',
                    'test': 'test output',
                    'debug': 'tracebacks and other debugging info',
                    'remote': 'fabric/paramiko debug',
-                   'early':  'early logging of other streams (very verbose)'}
+                   'early':  'early logging of other streams, including test (very verbose)'}
 #: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disable console logging completely'}
