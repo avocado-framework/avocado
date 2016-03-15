@@ -49,6 +49,163 @@ BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
                        'none': 'disable console logging completely'}
 
 
+#: Transparently handles colored terminal, when one is used
+TERM_SUPPORT = None
+
+
+class TermSupport(object):
+
+    """
+    Class to help applications to colorize their outputs for terminals.
+
+    This will probe the current terminal and colorize ouput only if the
+    stdout is in a tty or the terminal type is recognized.
+    """
+
+    COLOR_BLUE = '\033[94m'
+    COLOR_GREEN = '\033[92m'
+    COLOR_YELLOW = '\033[93m'
+    COLOR_RED = '\033[91m'
+    COLOR_DARKGREY = '\033[90m'
+
+    CONTROL_END = '\033[0m'
+
+    MOVE_BACK = '\033[1D'
+    MOVE_FORWARD = '\033[1C'
+
+    ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED,
+                    COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
+
+    def __init__(self):
+        self.HEADER = self.COLOR_BLUE
+        self.PASS = self.COLOR_GREEN
+        self.SKIP = self.COLOR_YELLOW
+        self.FAIL = self.COLOR_RED
+        self.INTERRUPT = self.COLOR_RED
+        self.ERROR = self.COLOR_RED
+        self.WARN = self.COLOR_YELLOW
+        self.PARTIAL = self.COLOR_YELLOW
+        self.ENDC = self.CONTROL_END
+        self.LOWLIGHT = self.COLOR_DARKGREY
+        self.enabled = True
+        allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
+                         'screen-256color']
+        term = os.environ.get("TERM")
+        colored = settings.get_value('runner.output', 'colored',
+                                     key_type='bool')
+        if not colored or not os.isatty(1) or term not in allowed_terms:
+            self.disable()
+
+    def disable(self):
+        """
+        Disable colors from the strings output by this class.
+        """
+        self.enabled = False
+        self.HEADER = ''
+        self.PASS = ''
+        self.SKIP = ''
+        self.FAIL = ''
+        self.INTERRUPT = ''
+        self.ERROR = ''
+        self.WARN = ''
+        self.PARTIAL = ''
+        self.ENDC = ''
+        self.LOWLIGHT = ''
+        self.MOVE_BACK = ''
+        self.MOVE_FORWARD = ''
+
+    def header_str(self, msg):
+        """
+        Print a header string (blue colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.HEADER + msg + self.ENDC
+
+    def fail_header_str(self, msg):
+        """
+        Print a fail header string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.FAIL + msg + self.ENDC
+
+    def warn_header_str(self, msg):
+        """
+        Print a warning header string (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.WARN + msg + self.ENDC
+
+    def healthy_str(self, msg):
+        """
+        Print a healthy string (green colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.PASS + msg + self.ENDC
+
+    def partial_str(self, msg):
+        """
+        Print a string that denotes partial progress (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.PARTIAL + msg + self.ENDC
+
+    def pass_str(self):
+        """
+        Print a pass string (green colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.PASS + 'PASS' + self.ENDC
+
+    def skip_str(self):
+        """
+        Print a skip string (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.SKIP + 'SKIP' + self.ENDC
+
+    def fail_str(self):
+        """
+        Print a fail string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.FAIL + 'FAIL' + self.ENDC
+
+    def error_str(self):
+        """
+        Print a error string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
+
+    def interrupt_str(self):
+        """
+        Print an interrupt string (red colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.INTERRUPT + 'INTERRUPT' + self.ENDC
+
+    def warn_str(self):
+        """
+        Print an warning string (yellow colored).
+
+        If the output does not support colors, just return the original string.
+        """
+        return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
+
+
+TERM_SUPPORT = TermSupport()
+
+
 def early_start():
     """
     Replace all outputs with in-memory handlers
@@ -84,7 +241,7 @@ def reconfigure(args):
     # Reconfigure stream loggers
     global STDOUT
     global STDERR
-    if getattr(args, "paginator", False) == "on" and is_colored_term():
+    if getattr(args, "paginator", False) == "on" and TERM_SUPPORT.enabled:
         STDOUT = Paginator()
         STDERR = STDOUT
     enabled = getattr(args, "show", None)
@@ -205,11 +362,11 @@ class ProgressStreamHandler(logging.StreamHandler):
             if record.levelno < logging.INFO:   # Most messages are INFO
                 pass
             elif record.levelno < logging.WARNING:
-                msg = term_support.header_str(msg)
+                msg = TERM_SUPPORT.header_str(msg)
             elif record.levelno < logging.ERROR:
-                msg = term_support.warn_header_str(msg)
+                msg = TERM_SUPPORT.warn_header_str(msg)
             else:
-                msg = term_support.fail_header_str(msg)
+                msg = TERM_SUPPORT.fail_header_str(msg)
             stream = self.stream
             skip_newline = False
             if hasattr(record, 'skip_newline'):
@@ -315,166 +472,6 @@ def disable_log_handler(logger):
     logger.propagate = False
 
 
-def is_colored_term():
-    allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
-                     'screen-256color']
-    term = os.environ.get("TERM")
-    colored = settings.get_value('runner.output', 'colored',
-                                 key_type='bool')
-    if ((not colored) or (not os.isatty(1)) or (term not in allowed_terms)):
-        return False
-    else:
-        return True
-
-
-class TermSupport(object):
-
-    COLOR_BLUE = '\033[94m'
-    COLOR_GREEN = '\033[92m'
-    COLOR_YELLOW = '\033[93m'
-    COLOR_RED = '\033[91m'
-    COLOR_DARKGREY = '\033[90m'
-
-    CONTROL_END = '\033[0m'
-
-    MOVE_BACK = '\033[1D'
-    MOVE_FORWARD = '\033[1C'
-
-    ESCAPE_CODES = [COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_RED,
-                    COLOR_DARKGREY, CONTROL_END, MOVE_BACK, MOVE_FORWARD]
-
-    """
-    Class to help applications to colorize their outputs for terminals.
-
-    This will probe the current terminal and colorize ouput only if the
-    stdout is in a tty or the terminal type is recognized.
-    """
-
-    def __init__(self):
-        self.HEADER = self.COLOR_BLUE
-        self.PASS = self.COLOR_GREEN
-        self.SKIP = self.COLOR_YELLOW
-        self.FAIL = self.COLOR_RED
-        self.INTERRUPT = self.COLOR_RED
-        self.ERROR = self.COLOR_RED
-        self.WARN = self.COLOR_YELLOW
-        self.PARTIAL = self.COLOR_YELLOW
-        self.ENDC = self.CONTROL_END
-        self.LOWLIGHT = self.COLOR_DARKGREY
-        self.enabled = True
-        if not is_colored_term():
-            self.disable()
-
-    def disable(self):
-        """
-        Disable colors from the strings output by this class.
-        """
-        self.enabled = False
-        self.HEADER = ''
-        self.PASS = ''
-        self.SKIP = ''
-        self.FAIL = ''
-        self.INTERRUPT = ''
-        self.ERROR = ''
-        self.WARN = ''
-        self.PARTIAL = ''
-        self.ENDC = ''
-        self.LOWLIGHT = ''
-        self.MOVE_BACK = ''
-        self.MOVE_FORWARD = ''
-
-    def header_str(self, msg):
-        """
-        Print a header string (blue colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.HEADER + msg + self.ENDC
-
-    def fail_header_str(self, msg):
-        """
-        Print a fail header string (red colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.FAIL + msg + self.ENDC
-
-    def warn_header_str(self, msg):
-        """
-        Print a warning header string (yellow colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.WARN + msg + self.ENDC
-
-    def healthy_str(self, msg):
-        """
-        Print a healthy string (green colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.PASS + msg + self.ENDC
-
-    def partial_str(self, msg):
-        """
-        Print a string that denotes partial progress (yellow colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.PARTIAL + msg + self.ENDC
-
-    def pass_str(self):
-        """
-        Print a pass string (green colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.PASS + 'PASS' + self.ENDC
-
-    def skip_str(self):
-        """
-        Print a skip string (yellow colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.SKIP + 'SKIP' + self.ENDC
-
-    def fail_str(self):
-        """
-        Print a fail string (red colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.FAIL + 'FAIL' + self.ENDC
-
-    def error_str(self):
-        """
-        Print a error string (red colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.ERROR + 'ERROR' + self.ENDC
-
-    def interrupt_str(self):
-        """
-        Print an interrupt string (red colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.INTERRUPT + 'INTERRUPT' + self.ENDC
-
-    def warn_str(self):
-        """
-        Print an warning string (yellow colored).
-
-        If the output does not support colors, just return the original string.
-        """
-        return self.MOVE_BACK + self.WARN + 'WARN' + self.ENDC
-
-
-term_support = TermSupport()
-
-
 class LoggingFile(object):
 
     """
@@ -547,11 +544,11 @@ class Throbber(object):
     """
     STEPS = ['-', '\\', '|', '/']
     # Only print a throbber when we're on a terminal
-    if term_support.enabled:
-        MOVES = [term_support.MOVE_BACK + STEPS[0],
-                 term_support.MOVE_BACK + STEPS[1],
-                 term_support.MOVE_BACK + STEPS[2],
-                 term_support.MOVE_BACK + STEPS[3]]
+    if TERM_SUPPORT.enabled:
+        MOVES = [TERM_SUPPORT.MOVE_BACK + STEPS[0],
+                 TERM_SUPPORT.MOVE_BACK + STEPS[1],
+                 TERM_SUPPORT.MOVE_BACK + STEPS[2],
+                 TERM_SUPPORT.MOVE_BACK + STEPS[3]]
     else:
         MOVES = ['', '', '', '']
 
