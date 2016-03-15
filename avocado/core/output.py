@@ -438,10 +438,6 @@ def reconfigure(args):
         logging.getLogger(record.name).handle(record)
 
 
-def stop_logging():
-    STD_OUTPUT.close()
-
-
 class FilterWarnAndMore(logging.Filter):
 
     def filter(self, record):
