@@ -22,6 +22,7 @@ import signal
 
 from .parser import Parser
 from . import output
+from .output import STD_OUTPUT
 from .settings import settings
 from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
@@ -56,13 +57,6 @@ class AvocadoApp(object):
                 self.cli_dispatcher.map_method('run', self.parser.args)
             initialized = True
         finally:
-            if (not initialized and
-                    getattr(self.parser.args, "silent", False) is False):
-                if self.parser.args is None:     # Early failure
-                    import argparse
-                    self.parser.args = argparse.Namespace()
-                output.enable_stderr()
-                self.parser.args.show = ["app"]
             output.reconfigure(self.parser.args)
 
     def _print_plugin_failures(self):
@@ -92,4 +86,4 @@ class AvocadoApp(object):
         finally:
             # This makes sure we cleanup the console (stty echo). The only way
             # to avoid cleaning it is to kill the less (paginator) directly
-            output.stop_logging()
+            STD_OUTPUT.close()

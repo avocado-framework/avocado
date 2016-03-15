@@ -98,7 +98,7 @@ class TestLoaderProxy(object):
             name = plugin.name
             mapping = plugin.get_type_label_mapping()
             # Using __func__ to avoid problem with different term_supp instances
-            healthy_func = getattr(output.term_support.healthy_str, '__func__')
+            healthy_func = getattr(output.TERM_SUPPORT.healthy_str, '__func__')
             types = [mapping[_[0]]
                      for _ in plugin.get_decorator_mapping().iteritems()
                      if _[1].__func__ is healthy_func]
@@ -416,13 +416,13 @@ class FileLoader(TestLoader):
 
     @staticmethod
     def get_decorator_mapping():
-        return {test.SimpleTest: output.term_support.healthy_str,
-                test.NotATest: output.term_support.warn_header_str,
-                test.MissingTest: output.term_support.fail_header_str,
-                BrokenSymlink: output.term_support.fail_header_str,
-                AccessDeniedPath: output.term_support.fail_header_str,
-                test.Test: output.term_support.healthy_str,
-                FilteredOut: output.term_support.warn_header_str}
+        return {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
+                test.NotATest: output.TERM_SUPPORT.warn_header_str,
+                test.MissingTest: output.TERM_SUPPORT.fail_header_str,
+                BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
+                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
+                test.Test: output.TERM_SUPPORT.healthy_str,
+                FilteredOut: output.TERM_SUPPORT.warn_header_str}
 
     def discover(self, url, which_tests=DEFAULT):
         """
@@ -780,7 +780,7 @@ class ExternalLoader(TestLoader):
 
     @staticmethod
     def get_decorator_mapping():
-        return {test.ExternalRunnerTest: output.term_support.healthy_str}
+        return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
 
 
 loader = TestLoaderProxy()
