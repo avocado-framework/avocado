@@ -39,7 +39,7 @@ BUILTIN_STREAMS = {'app': 'application output',
                    'early':  'early logging of other streams, including test (very verbose)'}
 #: Groups of builtin streams
 BUILTIN_STREAM_SETS = {'all': 'all builtin streams',
-                       'none': 'disable console logging completely'}
+                       'none': 'disables regular output (leaving only errors enabled)'}
 #: Transparently handles colored terminal, when one is used
 TERM_SUPPORT = None
 #: Allows modifying the sys.stdout/sys.stderr
