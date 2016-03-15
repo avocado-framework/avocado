@@ -61,7 +61,10 @@
 	 "description": "On the HTML report, click on `Sysinfo (pre job, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
 
 	{"name": "Avocado HTML report links",
-	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `boot.py` (under `Test ID`) and `debug.log` point to valid locations."}
+	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `boot.py` (under `Test ID`) and `debug.log` point to valid locations."},
+
+	{"name": "Paginator",
+	"description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
 
     ]
 }
