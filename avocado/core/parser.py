@@ -50,7 +50,7 @@ class Parser(object):
     """
 
     def __init__(self):
-        self.args = None
+        self.args = argparse.Namespace()
         self.subcommands = None
         self.application = ArgumentParser(prog=PROG,
                                           add_help=False,  # see parent parsing
