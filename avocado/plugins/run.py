@@ -75,10 +75,6 @@ class Run(CLICmd):
                                   'Note that zero means "no timeout". '
                                   'You can also use suffixes, like: '
                                   ' s (seconds), m (minutes), h (hours). '))
-        parser.add_argument("--store-logging-stream", nargs="*", default=[],
-                            metavar="STREAM[:LEVEL]", help="Store given "
-                            "logging STREAMs in $JOB_RESULTS_DIR/$STREAM."
-                            "$LEVEL.")
 
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
@@ -101,6 +97,11 @@ class Run(CLICmd):
             help=('Display only the job log on stdout. Useful '
                   'for test debugging purposes. No output will '
                   'be displayed if you also specify --silent'))
+
+        parser.output.add_argument("--store-logging-stream", nargs="*",
+                                   default=[], metavar="STREAM[:LEVEL]",
+                                   help="Store given logging STREAMs in "
+                                   "$JOB_RESULTS_DIR/$STREAM.$LEVEL.")
 
         out_check = parser.add_argument_group('output check arguments')
 
