@@ -544,9 +544,9 @@ class OutputValue(object):  # only container pylint: disable=R0903
 
     def __str__(self):
         return "%s%s@%s:%s%s" % (self.value,
-                                 output.term_support.LOWLIGHT,
+                                 output.TERM_SUPPORT.LOWLIGHT,
                                  self.yaml, self.node.path,
-                                 output.term_support.ENDC)
+                                 output.TERM_SUPPORT.ENDC)
 
 
 class OutputList(list):  # only container pylint: disable=R0903
@@ -566,8 +566,8 @@ class OutputList(list):  # only container pylint: disable=R0903
                           self.yamls + other.yamls)
 
     def __str__(self):
-        color = output.term_support.LOWLIGHT
-        cend = output.term_support.ENDC
+        color = output.TERM_SUPPORT.LOWLIGHT
+        cend = output.TERM_SUPPORT.ENDC
         return ' + '.join("%s%s@%s:%s%s"
                           % (_[0], color, _[1], _[2].path, cend)
                           for _ in itertools.izip(self, self.yamls,

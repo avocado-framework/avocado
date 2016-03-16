@@ -13,6 +13,7 @@ Contents:
    ResultFormats
    Configuration
    Loaders
+   LoggingSystem
    MultiplexConfig
    Replay
    RunningTestsRemotely

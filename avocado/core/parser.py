@@ -18,7 +18,7 @@ Avocado application command line parsing.
 """
 
 import argparse
-import sys
+import logging
 
 from . import exit_codes
 from . import tree
@@ -37,9 +37,10 @@ class ArgumentParser(argparse.ArgumentParser):
     """
 
     def error(self, message):
-        msg = '%s: error: %s\n' % (self.prog, message)
-        self.print_help(sys.stderr)
-        self.exit(exit_codes.AVOCADO_FAIL, msg)
+        log = logging.getLogger("avocado.app")
+        log.debug(self.format_help())
+        log.error("%s: error: %s", self.prog, message)
+        self.exit(exit_codes.AVOCADO_FAIL)
 
 
 class Parser(object):
@@ -49,7 +50,7 @@ class Parser(object):
     """
 
     def __init__(self):
-        self.args = None
+        self.args = argparse.Namespace()
         self.subcommands = None
         self.application = ArgumentParser(prog=PROG,
                                           add_help=False,  # see parent parsing
@@ -73,7 +74,7 @@ class Parser(object):
         self.application.add_argument('-s', '--silent',
                                       default=argparse.SUPPRESS,
                                       action="store_true",
-                                      help='Silence stdout')
+                                      help=BUILTIN_STREAM_SETS['none'])
 
     def start(self):
         """

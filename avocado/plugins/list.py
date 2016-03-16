@@ -104,8 +104,8 @@ class TestLister(object):
     def _display(self, test_matrix, stats):
         header = None
         if self.args.verbose:
-            header = (output.term_support.header_str('Type'),
-                      output.term_support.header_str('Test'))
+            header = (output.TERM_SUPPORT.header_str('Type'),
+                      output.TERM_SUPPORT.header_str('Test'))
 
         for line in astring.iter_tabular_output(test_matrix, header=header):
             self.log.debug(line)
