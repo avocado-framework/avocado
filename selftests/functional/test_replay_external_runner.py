@@ -26,7 +26,7 @@ class ReplayTests(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         test = script.make_script(os.path.join(self.tmpdir, 'test'), 'exit 0')
         cmd_line = ('./scripts/avocado run %s '
-                    '--multiplex '
+                    '--multiplex-files '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--external-runner /bin/bash '
                     '--job-results-dir %s --sysinfo=off --json -' %

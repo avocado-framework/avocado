@@ -221,7 +221,7 @@ Injecting files
 
 You can run any test with any YAML file by::
 
-    avocado run sleeptest --multiplex file.yaml
+    avocado run sleeptest --multiplex-files file.yaml
 
 This puts the content of ``file.yaml`` into ``/run``
 location, which as mentioned in previous section, is the default ``mux-path``
@@ -233,7 +233,7 @@ when you have two files and you don't want the content to be merged into
 a single place becomming effectively a single blob, you can do that by
 giving a name to your yaml file::
 
-    avocado run sleeptest --multiplex duration:duration.yaml
+    avocado run sleeptest --multiplex-files duration:duration.yaml
 
 The content of ``duration.yaml`` is injected into ``/run/duration``. Still when
 keys from other files don't clash, you can use ``params.get(key)`` and retrieve
@@ -245,7 +245,7 @@ multiple files by using the same or different name, or even a complex
 Last but not least, advanced users can inject the file into whatever location
 they prefer by::
 
-    avocado run sleeptest --multiplex /my/variants/duration:duration.yaml
+    avocado run sleeptest --multiplex-files /my/variants/duration:duration.yaml
 
 Simple ``params.get(key)`` won't look in this location, which might be the
 intention of the test writer. There are several ways to access the values:

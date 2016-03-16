@@ -100,7 +100,7 @@ the following multiplex file for sleeptest::
         long:
             sleep_length: 5
 
-When running this example by ``avocado run $test --multiplex $file.yaml``
+When running this example by ``avocado run $test --multiplex-files $file.yaml``
 three variants are executed and the content is injected into ``/run`` namespace
 (see :doc:`MultiplexConfig` for details). Every variant contains variables
 "type" and "sleep_length". To obtain the current value, you need the name
@@ -153,7 +153,7 @@ Using a multiplex file
 You may use the Avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
-    $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
     TESTS     : 3
@@ -164,7 +164,7 @@ generation for sleeptest just like::
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
     TIME : 6.52 s
 
-The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
+The ``--multiplex-files`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
 As explained in :doc:`MultiplexConfig` without any path the content gets
 injected into ``/run`` in order to be in the default relative path location.
 The ``$INJECT_TO`` can be either relative path, then it's injected into
@@ -180,12 +180,12 @@ developer to get the value from this location (using path or adding the path to
 Note that, as your multiplex file specifies all parameters for sleeptest, you
 can't leave the test ID empty::
 
-    $ scripts/avocado run --multiplex examples/tests/sleeptest/sleeptest.yaml
+    $ scripts/avocado run --multiplex-files examples/tests/sleeptest/sleeptest.yaml
     Empty test ID. A test path or alias must be provided
 
 You can also execute multiple tests with the same multiplex file::
 
-    ./scripts/avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    ./scripts/avocado run sleeptest synctest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID     : 72166988c13fec26fcc9c2e504beec8edaad4761
     JOB LOG    : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/job.log
     TESTS      : 8
@@ -665,7 +665,7 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    $ avocado run sleeptest --multiplex /tmp/sleeptest-example.yaml
+    $ avocado run sleeptest --multiplex-files /tmp/sleeptest-example.yaml
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
@@ -914,7 +914,7 @@ Here are the current variables that Avocado exports to the tests:
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_SYSINFODIR | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/sysinfo         |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| *                       | All variables from --multiplex-file   | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
+| *                       | All variables from --multiplex-files  | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 

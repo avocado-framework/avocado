@@ -24,7 +24,7 @@ class ReplayTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         cmd_line = ('./scripts/avocado run passtest '
-                    '--multiplex '
+                    '--multiplex-files '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--job-results-dir %s --sysinfo=off --json -' %
                     self.tmpdir)
@@ -119,7 +119,7 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_mux(self):
-        cmd_line = ('./scripts/avocado run --replay %s --multiplex '
+        cmd_line = ('./scripts/avocado run --replay %s --multiplex-files '
                     'examples/mux-environment.yaml --replay-test-status FAIL '
                     '--job-results-dir %s --replay-data-dir %s '
                     '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
