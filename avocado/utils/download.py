@@ -30,13 +30,14 @@ from . import crypto
 log = logging.getLogger('avocado.test')
 
 
-def url_open(url, data=None, timeout=5):
+def url_open(url, data=None, timeout=5, proxies=None):
     """
     Wrapper to :func:`urllib2.urlopen` with timeout addition.
 
     :param url: URL to open.
     :param data: (optional) data to post.
     :param timeout: (optional) default timeout in seconds.
+    :param proxies: (optional) proxies server mapping info(default: None).
     :return: file-like object.
     :raises: `URLError`.
     """
@@ -44,12 +45,16 @@ def url_open(url, data=None, timeout=5):
     old_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(timeout)
     try:
+        handler = (proxies and [urllib2.ProxyHandler(proxies)]
+                   or [urllib2.ProxyHandler({})])[0]
+        opener = urllib2.build_opener(handler)
+        urllib2.install_opener(opener)
         return urllib2.urlopen(url, data=data)
     finally:
         socket.setdefaulttimeout(old_timeout)
 
 
-def url_download(url, filename, data=None, timeout=300):
+def url_download(url, filename, data=None, timeout=300, proxies=None):
     """
     Retrieve a file from given url.
 
@@ -57,11 +62,11 @@ def url_download(url, filename, data=None, timeout=300):
     :param filename: destination path.
     :param data: (optional) data to post.
     :param timeout: (optional) default timeout in seconds.
+    :param proxies: (optional) proxies server mapping info (default: None).
     :return: `None`.
     """
     log.info('Fetching %s -> %s', url, filename)
-
-    src_file = url_open(url, data=data, timeout=timeout)
+    src_file = url_open(url, data=data, timeout=timeout, proxies=proxies)
     try:
         dest_file = open(filename, 'wb')
         try:
@@ -113,12 +118,12 @@ def url_download_interactive(url, output_file, title='', chunk_size=102400):
     output_file.close()
 
 
-def _get_file(src, dst, permissions=None):
+def _get_file(src, dst, permissions=None, proxies=None):
     if src == dst:
         return
 
     if aurl.is_url(src):
-        url_download(src, dst)
+        url_download(src, dst, proxies=proxies)
     else:
         shutil.copyfile(src, dst)
 
@@ -128,7 +133,7 @@ def _get_file(src, dst, permissions=None):
 
 
 def get_file(src, dst, permissions=None, hash_expected=None,
-             hash_algorithm="md5", download_retries=1):
+             hash_algorithm="md5", download_retries=1, proxies=None):
     """
     Gets a file from a source location, optionally using caching.
 
@@ -157,13 +162,13 @@ def get_file(src, dst, permissions=None, hash_expected=None,
         return None
 
     if hash_expected is None:
-        return _get_file(src, dst, permissions)
+        return _get_file(src, dst, permissions, proxies)
 
     download_failures = 0
     hash_file = _verify_hash(dst)
 
     while not hash_file == hash_expected:
-        hash_file = _verify_hash(_get_file(src, dst, permissions))
+        hash_file = _verify_hash(_get_file(src, dst, permissions, proxies))
         if hash_file != hash_expected:
             log.error("It seems that dst %s is corrupted" % dst)
             download_failures += 1
