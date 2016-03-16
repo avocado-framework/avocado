@@ -100,7 +100,7 @@ class Replay(CLI):
         err = None
         if args.replay_teststatus and args.multiplex_files:
             err = ("Option --replay-test-status is incompatible with "
-                   "--multiplex-files.")
+                   "--multiplex.")
         elif args.replay_teststatus and args.url:
             err = ("Option --replay-test-status is incompatible with "
                    "test URLs given on the command line.")

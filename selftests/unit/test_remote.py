@@ -103,7 +103,7 @@ _=/usr/bin/env''', exit_status=0)
 
         args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
                 "--json - --archive /tests/sleeptest /tests/other/test "
-                "passtest --multiplex-files ~/avocado/tests/foo.yaml "
+                "passtest --multiplex ~/avocado/tests/foo.yaml "
                 "~/avocado/tests/bar/baz.yaml --dry-run")
         (Remote.should_receive('run')
          .with_args(args, timeout=61, ignore_status=True)
