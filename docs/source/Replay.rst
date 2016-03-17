@@ -39,7 +39,7 @@ The replay feature will retrieve the original job urls, the multiplex
 tree and the configuration. Let's see another example, now using
 multiplex file::
 
-  $ avocado run /bin/true /bin/false --multiplex-files mux-environment.yaml
+  $ avocado run /bin/true /bin/false --multiplex mux-environment.yaml
   JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
   JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/job.log
   TESTS      : 48

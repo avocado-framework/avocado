@@ -286,7 +286,7 @@ file (multiplex file) that produced the output above is::
 
 You can execute `sleeptest` in all variations exposed above with:
 
- $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml
+ $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
 
 And the output should look like::
 
@@ -313,13 +313,13 @@ the `filter-out` removes one or more paths from being processed.
 From the previous example, if we are interested to use the variants `/run/medium`
 and `/run/longest`, we do the following command line::
 
- $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml \
+ $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml \
        --filter-only /run/medium /run/longest
 
 And if you want to remove `/small` from the variants created,
 we do the following::
 
- $ avocado run sleeptest --multiplex-files examples/tests/sleeptest.py.data/sleeptest.yaml \
+ $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml \
        --filter-out /run/medium
 
 Note that both `--filter-only` and `--filter-out` filters can be arranged in

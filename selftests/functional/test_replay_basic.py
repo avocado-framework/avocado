@@ -126,7 +126,7 @@ class ReplayTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = "Option --replay-test-status is incompatible with "\
-              "--multiplex-files."
+              "--multiplex."
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_urls(self):

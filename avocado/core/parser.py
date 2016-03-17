@@ -42,6 +42,9 @@ class ArgumentParser(argparse.ArgumentParser):
         log.error("%s: error: %s", self.prog, message)
         self.exit(exit_codes.AVOCADO_FAIL)
 
+    def _get_option_tuples(self, option_string):
+        return []
+
 
 class Parser(object):
 
