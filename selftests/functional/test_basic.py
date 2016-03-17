@@ -612,6 +612,18 @@ class ExternalRunnerTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    def test_externalrunner_no_url(self):
+        os.chdir(basedir)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    '--external-runner=/bin/true' % self.tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_output = ('No tests found for given urls')
+        self.assertIn(expected_output, result.stderr)
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
     def tearDown(self):
         self.pass_script.remove()
         self.fail_script.remove()
