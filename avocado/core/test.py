@@ -180,7 +180,8 @@ class Test(unittest.TestCase):
         """
         Returns the path to the directory that contains test data files
         """
-        if self.filename is not None:
+        # Maximal allowed file name length is 255
+        if self.filename is not None and len(self.filename) < 251:
             return self.filename + '.data'
         else:
             return None
