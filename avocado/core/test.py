@@ -329,12 +329,14 @@ class Test(unittest.TestCase):
         return tagged_name
 
     def _record_reference_stdout(self):
-        utils_path.init_dir(self.datadir)
-        shutil.copyfile(self._stdout_file, self._expected_stdout_file)
+        if self.datadir is not None:
+            utils_path.init_dir(self.datadir)
+            shutil.copyfile(self._stdout_file, self._expected_stdout_file)
 
     def _record_reference_stderr(self):
-        utils_path.init_dir(self.datadir)
-        shutil.copyfile(self._stderr_file, self._expected_stderr_file)
+        if self.datadir is not None:
+            utils_path.init_dir(self.datadir)
+            shutil.copyfile(self._stderr_file, self._expected_stderr_file)
 
     def _check_reference_stdout(self):
         if (self._expected_stdout_file is not None and
