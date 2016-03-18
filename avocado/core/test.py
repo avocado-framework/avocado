@@ -101,16 +101,9 @@ class Test(unittest.TestCase):
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
-        self.tagged_name = self._get_tagged_name(base_logdir)
+        self.tagged_name, self.logdir = self._init_logdir(base_logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
-        safe_tagged_name = astring.string_to_safe_path(self.tagged_name)
-        test_log_dir = os.path.join(base_logdir, safe_tagged_name)
-        if os.path.isdir(test_log_dir):
-            msg = ('Test log dir "%s" exists prior to Avocado creating '
-                   'it' % test_log_dir)
-            raise exceptions.TestSetupFail(msg)
-        self.logdir = utils_path.init_dir(base_logdir, safe_tagged_name)
         genio.set_log_file_dir(self.logdir)
         self.logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
@@ -302,9 +295,9 @@ class Test(unittest.TestCase):
         self.log.removeHandler(self.file_handler)
         logging.getLogger('paramiko').removeHandler(self._ssh_fh)
 
-    def _get_tagged_name(self, logdir):
+    def _init_logdir(self, logdir):
         """
-        Get a test tagged name.
+        Initialize log dir
 
         Combines name + tag (if present) to obtain unique name. When associated
         directory already exists, appends ".$number" until unused name
@@ -312,21 +305,28 @@ class Test(unittest.TestCase):
 
         :param logdir: Log directory being in use for result storage.
 
-        :return: Unique test name
+        :return: Unique test name and the logdir
         """
         name = self.name
         if self.tag is not None:
             name += ".%s" % self.tag
         tag = 0
         tagged_name = name
-        safe_tagged_name = astring.string_to_safe_path(tagged_name)
-        while os.path.isdir(os.path.join(logdir, safe_tagged_name)):
+        # The maximal length on ext4+python2.7 is 255 chars.
+        safe_tagged_name = astring.string_to_safe_path(tagged_name[:240])
+        for i in xrange(9999):
+            if not os.path.isdir(os.path.join(logdir, safe_tagged_name)):
+                break
             tag += 1
             tagged_name = "%s.%s" % (name, tag)
-            safe_tagged_name = astring.string_to_safe_path(tagged_name)
-
+            safe_tagged_name = astring.string_to_safe_path("%s.%s"
+                                                           % (name[:240], tag))
+        else:
+            raise exceptions.TestSetupFail("Unable to find unique name in %s "
+                                           "iterations (%s).", i,
+                                           safe_tagged_name)
         self.tag = "%s.%s" % (self.tag, tag) if self.tag else str(tag)
-        return tagged_name
+        return tagged_name, utils_path.init_dir(logdir, safe_tagged_name)
 
     def _record_reference_stdout(self):
         if self.datadir is not None:
