@@ -139,7 +139,7 @@ class Test(unittest.TestCase):
 
         self.debugdir = None
         self.resultsdir = None
-        self.status = None
+        self.status = "ERROR"
         self.fail_reason = None
         self.fail_class = None
         self.traceback = None
