@@ -1,13 +1,13 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit 9bdb5bd7e488363346d984adcf79590e532d3cc1
+ %define commit 91bfac9f721895792f9dbb301a1e5a342b4dac36
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Summary: Avocado Test Framework
 Name: avocado
-Version: 0.33.0
-Release: 1%{?dist}
+Version: 0.34.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -110,6 +110,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Mar 21 2016 Cleber Rosa <cleber@redhat.com> - 0.34.0-1
+- New upstream release 0.34.0
+
 * Wed Feb 17 2016 Cleber Rosa <cleber@redhat.com> - 0.33.0-1
 - Updated requirement: procps for EL6, procps-ng for other distros
 
