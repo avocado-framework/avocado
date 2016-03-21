@@ -1,6 +1,6 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit 91bfac9f721895792f9dbb301a1e5a342b4dac36
+ %define commit c71e2c8ef354afa05554ad32aa08d2684b7b5440
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
@@ -110,7 +110,7 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
-* Mon Mar 21 2016 Cleber Rosa <cleber@redhat.com> - 0.34.0-1
+* Mon Mar 21 2016 Cleber Rosa <cleber@redhat.com> - 0.34.0-0
 - New upstream release 0.34.0
 
 * Wed Feb 17 2016 Cleber Rosa <cleber@redhat.com> - 0.33.0-1
