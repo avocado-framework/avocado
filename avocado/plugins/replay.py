@@ -142,7 +142,7 @@ class Replay(CLI):
         else:
             for option in whitelist:
                 optvalue = getattr(args, option, None)
-                if optvalue:
+                if optvalue is not None:
                     log.warn("Overriding the replay %s with the --%s value "
                              "given on the command line.",
                              option.replace('_', '-'),
