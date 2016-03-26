@@ -63,7 +63,11 @@ class OutputPluginTest(unittest.TestCase):
             json.load(fp)
         xunit_output = os.path.join(base_dir, 'results.xml')
         self.assertTrue(os.path.isfile(json_output))
-        minidom.parse(xunit_output)
+        try:
+            minidom.parse(xunit_output)
+        except Exception, details:
+            raise AssertionError("Unable to parse xunit output: %s\n\n%s"
+                                 % (details, open(xunit_output).read()))
 
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
@@ -197,6 +201,25 @@ class OutputPluginTest(unittest.TestCase):
                 os.remove(tmpfile2)
             except OSError:
                 pass
+
+    def test_nonprintable_chars(self):
+        cmd_line = ("./scripts/avocado run '/bin/ls "
+                    "NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
+                    "--job-results-dir %s --sysinfo=off" % self.tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        output = result.stdout + result.stderr
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        debug_log = None
+        for line in output.splitlines():
+            if "JOB LOG" in line:
+                debug_log = line.split(':', 1)[-1].strip()
+                break
+        self.assertTrue(debug_log, "Unable to get JOB LOG from output:\n%s"
+                        % output)
+        self.check_output_files(debug_log)
 
     def test_show_job_log(self):
         os.chdir(basedir)
