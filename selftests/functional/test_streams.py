@@ -114,6 +114,29 @@ class StreamsTest(unittest.TestCase):
             self.assertEqual('', result.stdout)
             self.assertNotEqual('', result.stderr)
 
+    def test_custom_stream_and_level(self):
+        """
+        Checks if "--show stream:level" works for non-built-in-streams
+        """
+        def run(show, no_lines):
+            result = process.run("./scripts/avocado --show %s config" % show)
+            out = (result.stdout + result.stderr).splitlines()
+            if no_lines == "more_than_one":
+                self.assertGreater(len(out), 1, "Output of %s should contain "
+                                   "more than 1 line, contains only %s\n%s"
+                                   % (result.command, len(out), result))
+            else:
+                self.assertEqual(len(out), no_lines, "Output of %s should "
+                                 "contain %s lines, contains %s instead\n%s"
+                                 % (result.command, no_lines, len(out),
+                                    result))
+        run("avocado.app:dEbUg", "more_than_one")
+        run("avocado.app:0", "more_than_one")
+        run("avocado.app:InFo", 1)
+        run("avocado.app:20", 1)
+        run("avocado.app:wARn", 0)
+        run("avocado.app:30", 0)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
