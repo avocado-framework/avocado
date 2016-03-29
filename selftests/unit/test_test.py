@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
+from flexmock import flexmock
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -18,6 +19,42 @@ true
 FAIL_SCRIPT_CONTENTS = """#!/bin/sh
 false
 """
+
+
+class DummyTest(test.Test):
+    def test(self):
+        pass
+
+
+class TestClassTestUnit(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def testLongName(self):
+        test = DummyTest("test", "a" * 256, base_logdir=self.tmpdir)
+        self.assertEqual(os.path.basename(test.logdir), "a" * 240)
+        test = DummyTest("test", "a" * 256, base_logdir=self.tmpdir)
+        self.assertEqual(os.path.basename(test.logdir), "a" * 240 + ".1")
+        self.assertEqual(os.path.basename(test.workdir),
+                         os.path.basename(test.logdir))
+        flexmock(test)
+        test.should_receive('filename').and_return("a"*250)
+        self.assertTrue(test.datadir)
+        self.assertRaises(IOError, test._record_reference_stdout)
+        self.assertRaises(IOError, test._record_reference_stderr)
+        test.should_receive('filename').and_return("a"*251)
+        self.assertFalse(test.datadir)
+        test._record_reference_stdout()
+        test._record_reference_stderr()
+
+    def testAllDirsExistsNoHang(self):
+        flexmock(os.path)
+        os.path.should_receive('isdir').and_return(True)
+        self.assertRaises(exceptions.TestSetupFail, DummyTest, "test", "name")
 
 
 class TestClassTest(unittest.TestCase):

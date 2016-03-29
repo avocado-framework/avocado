@@ -201,4 +201,4 @@ def string_to_safe_path(string):
     :param string: String to be converted
     :return: String which is safe to pass as a file/dir name (on recent fs)
     """
-    return string.replace(os.path.sep, '_')
+    return string.replace(os.path.sep, '_')[:255]
