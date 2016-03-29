@@ -404,8 +404,10 @@ def reconfigure(args):
             disable_log_handler("")
             disable_log_handler("avocado.test")
     if "remote" in enabled:
-        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout)
-        add_log_handler("paramiko", stream=STD_OUTPUT.stdout)
+        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout,
+                        level=logging.DEBUG)
+        add_log_handler("paramiko", stream=STD_OUTPUT.stdout,
+                        level=logging.DEBUG)
     else:
         disable_log_handler("avocado.fabric")
         disable_log_handler("paramiko")
