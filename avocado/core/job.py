@@ -46,6 +46,7 @@ from . import jsonresult
 from . import replay
 from .output import STD_OUTPUT
 from .settings import settings
+from .status import mapping
 from ..utils import archive
 from ..utils import astring
 from ..utils import path
@@ -492,9 +493,9 @@ class Job(object):
         self._log_job_debug_info(mux)
         replay.record(self.args, self.logdir, mux, self.urls)
         replay_map = getattr(self.args, 'replay_map', None)
-        failures = self.test_runner.run_suite(test_suite, mux,
-                                              timeout=self.timeout,
-                                              replay_map=replay_map)
+        summary = self.test_runner.run_suite(test_suite, mux,
+                                             timeout=self.timeout,
+                                             replay_map=replay_map)
         self.__stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
@@ -505,11 +506,16 @@ class Job(object):
             archive.create(filename, self.logdir)
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
-        tests_status = not bool(failures)
-        if tests_status:
-            return exit_codes.AVOCADO_ALL_OK
-        else:
-            return exit_codes.AVOCADO_TESTS_FAIL
+        exit_status = exit_codes.AVOCADO_ALL_OK
+        for test_status, fail_class in summary.iteritems():
+            if not mapping[test_status]:
+                exit_status |= exit_codes.AVOCADO_TESTS_FAIL
+            if fail_class == 'TestTimeoutInterrupted':
+                exit_status |= exit_codes.AVOCADO_JOB_INTERRUPTED
+            elif fail_class == 'TestTimeoutSkip':
+                exit_status |= exit_codes.AVOCADO_JOB_INTERRUPTED
+
+        return exit_status
 
     def run(self):
         """

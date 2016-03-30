@@ -197,13 +197,13 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - timeouttest' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
-        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED | exit_codes.AVOCADO_TESTS_FAIL
         unexpected_rc = exit_codes.AVOCADO_FAIL
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("TestTimeoutError: Timeout reached waiting for", output,
+        self.assertIn("TestTimeoutInterrupted: Timeout reached waiting for", output,
                       "Test did not fail with timeout exception:\n%s" % output)
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
