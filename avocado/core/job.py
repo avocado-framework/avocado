@@ -469,8 +469,13 @@ class Job(object):
             raise exceptions.OptionValidationError(details)
         if not test_suite:
             self._remove_job_results()
-            e_msg = ("No tests found for given urls, try 'avocado list -V %s' "
-                     "for details" % (" ".join(self.urls) if self.urls else "\b"))
+            if self.urls:
+                e_msg = ("No tests found for given urls, try 'avocado list -V "
+                         "%s' for details" % " ".join(self.urls))
+            else:
+                e_msg = ("No urls provided nor any arguments produced "
+                         "runable tests. Please double check the executed "
+                         "command.")
             raise exceptions.OptionValidationError(e_msg)
 
         if isinstance(getattr(self.args, 'multiplex_files', None),
