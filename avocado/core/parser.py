@@ -68,6 +68,7 @@ class Parser(object):
         self.application.add_argument('--show', action="store",
                                       type=lambda value: value.split(","),
                                       metavar="STREAM[:LVL]",
+                                      nargs='?',
                                       default=['app'], help="List of comma "
                                       "separated builtin logs, or logging "
                                       "streams optionally followed by LEVEL "
