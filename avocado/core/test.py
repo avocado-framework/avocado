@@ -369,6 +369,9 @@ class Test(unittest.TestCase):
         except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestTimeoutSkip as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestTimeoutSkip(details)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
@@ -750,6 +753,9 @@ class TimeOutSkipTest(SkipTest):
     """
 
     _skip_reason = "Test skipped due a job timeout!"
+
+    def setUp(self):
+        raise exceptions.TestTimeoutSkip(self._skip_reason)
 
 
 class DryRunTest(SkipTest):
