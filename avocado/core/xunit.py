@@ -54,10 +54,10 @@ class XmlResult(object):
 
         :param timestamp: Timestamp string in date/time format.
         """
-        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" interrupted="{interrupted}" time="{total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
-    def end_testsuite(self, tests, errors, failures, skip, total_time):
+    def end_testsuite(self, tests, errors, failures, skip, interrupted, total_time):
         """
         End of testsuite node.
 
@@ -71,6 +71,7 @@ class XmlResult(object):
                   'errors': errors,
                   'failures': failures,
                   'skip': skip,
+                  'interrupted': interrupted,
                   'total_time': total_time}
         self.xml.append(self.testsuite.format(**values))
         for tc in self.testcases:
@@ -198,6 +199,8 @@ class xUnitTestResult(TestResult):
             self.xml.add_failure(state)
         elif state['status'] == 'ERROR':
             self.xml.add_error(state)
+        elif state['status'] == 'INTERRUPTED':
+            self.xml.add_error(state)
 
     def end_tests(self):
         """
@@ -208,6 +211,7 @@ class xUnitTestResult(TestResult):
                   'errors': len(self.errors),
                   'failures': len(self.failed),
                   'skip': len(self.skipped),
+                  'interrupted': len(self.interrupted),
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()
