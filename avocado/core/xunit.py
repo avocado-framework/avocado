@@ -54,10 +54,10 @@ class XmlResult(object):
 
         :param timestamp: Timestamp string in date/time format.
         """
-        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" interrupted="{interrupted}" time="{total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
-    def end_testsuite(self, tests, errors, failures, skip, total_time):
+    def end_testsuite(self, tests, errors, failures, skip, interrupted, total_time):
         """
         End of testsuite node.
 
@@ -71,6 +71,7 @@ class XmlResult(object):
                   'errors': errors,
                   'failures': failures,
                   'skip': skip,
+                  'interrupted': interrupted,
                   'total_time': total_time}
         self.xml.append(self.testsuite.format(**values))
         for tc in self.testcases:
@@ -145,6 +146,26 @@ class XmlResult(object):
                   'reason': self._escape_attr(str(state['fail_reason']))}
         self.testcases.append(tc.format(**values))
 
+    def add_interrupted(self, state):
+        """
+        Add a testcase node of kind interrupted.
+
+        :param state: result of :class:`avocado.core.test.Test.get_state`.
+        :type state: dict
+        """
+        tc = '''\t<testcase classname={class} name={name} time="{time}">
+\t\t<error type={type} message={reason}><![CDATA[{traceback}]]></error>
+\t\t<system-out><![CDATA[{systemout}]]></system-out>
+\t</testcase>'''
+        values = {'class': self._escape_attr(state['class_name']),
+                  'name': self._escape_attr(state['tagged_name']),
+                  'time': state['time_elapsed'],
+                  'type': self._escape_attr(state['fail_class']),
+                  'traceback': self._escape_cdata(state['traceback']),
+                  'systemout': self._escape_cdata(state['text_output']),
+                  'reason': self._escape_attr(str(state['fail_reason']))}
+        self.testcases.append(tc.format(**values))
+
 
 class xUnitTestResult(TestResult):
 
@@ -198,6 +219,8 @@ class xUnitTestResult(TestResult):
             self.xml.add_failure(state)
         elif state['status'] == 'ERROR':
             self.xml.add_error(state)
+        elif state['status'] == 'INTERRUPTED':
+            self.xml.add_interrupted(state)
 
     def end_tests(self):
         """
@@ -208,6 +231,7 @@ class xUnitTestResult(TestResult):
                   'errors': len(self.errors),
                   'failures': len(self.failed),
                   'skip': len(self.skipped),
+                  'interrupted': len(self.interrupted),
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()

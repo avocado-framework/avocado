@@ -731,7 +731,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nnotfound, e_nfailures, e_nskip):
+                      e_nnotfound, e_nfailures, e_nskip, e_ninterrupted):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
                     ' --xunit - %s' % (self.tmpdir, testname))
@@ -750,8 +750,8 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
 
         testsuite_tag = testsuite_list[0]
-        self.assertEqual(len(testsuite_tag.attributes), 7,
-                         'The testsuite tag does not have 7 attributes. '
+        self.assertEqual(len(testsuite_tag.attributes), 8,
+                         'The testsuite tag does not have 8 attributes. '
                          'XML:\n%s' % xml_output)
 
         n_tests = int(testsuite_tag.attributes['tests'].value)
@@ -774,21 +774,26 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)
 
+        n_interrupted = int(testsuite_tag.attributes['interrupted'].value)
+        self.assertEqual(n_interrupted, e_ninterrupted,
+                         "Unexpected number of test interrupted, "
+                         "XML:\n%s" % xml_output)
+
     def test_xunit_plugin_passtest(self):
         self.run_and_check('passtest', exit_codes.AVOCADO_ALL_OK,
-                           1, 0, 0, 0, 0)
+                           1, 0, 0, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
         self.run_and_check('failtest', exit_codes.AVOCADO_TESTS_FAIL,
-                           1, 0, 0, 1, 0)
+                           1, 0, 0, 1, 0, 0)
 
     def test_xunit_plugin_skiponsetuptest(self):
         self.run_and_check('skiponsetup', exit_codes.AVOCADO_ALL_OK,
-                           1, 0, 0, 0, 1)
+                           1, 0, 0, 0, 1, 0)
 
     def test_xunit_plugin_errortest(self):
         self.run_and_check('errortest', exit_codes.AVOCADO_TESTS_FAIL,
-                           1, 1, 0, 0, 0)
+                           1, 1, 0, 0, 0, 0)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
