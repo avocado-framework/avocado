@@ -492,9 +492,9 @@ class Job(object):
         self._log_job_debug_info(mux)
         replay.record(self.args, self.logdir, mux, self.urls)
         replay_map = getattr(self.args, 'replay_map', None)
-        failures = self.test_runner.run_suite(test_suite, mux,
-                                              timeout=self.timeout,
-                                              replay_map=replay_map)
+        summary = self.test_runner.run_suite(test_suite, mux,
+                                             timeout=self.timeout,
+                                             replay_map=replay_map)
         self.__stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
@@ -505,11 +505,14 @@ class Job(object):
             archive.create(filename, self.logdir)
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
-        tests_status = not bool(failures)
-        if tests_status:
-            return exit_codes.AVOCADO_ALL_OK
-        else:
+        if summary is None:
+            return exit_codes.AVOCADO_JOB_FAIL
+        elif 'INTERRUPTED' in summary:
+            return exit_codes.AVOCADO_JOB_INTERRUPTED
+        elif summary:
             return exit_codes.AVOCADO_TESTS_FAIL
+        else:
+            return exit_codes.AVOCADO_ALL_OK
 
     def run(self):
         """
