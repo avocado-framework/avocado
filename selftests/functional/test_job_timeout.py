@@ -57,7 +57,7 @@ class JobTimeOutTest(unittest.TestCase):
         os.chdir(basedir)
 
     def run_and_check(self, cmd_line, e_rc, e_ntests, e_nerrors, e_nfailures,
-                      e_nskip):
+                      e_nskip, e_ninterrupted):
         os.chdir(basedir)
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
@@ -74,8 +74,8 @@ class JobTimeOutTest(unittest.TestCase):
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
 
         testsuite_tag = testsuite_list[0]
-        self.assertEqual(len(testsuite_tag.attributes), 7,
-                         'The testsuite tag does not have 7 attributes. '
+        self.assertEqual(len(testsuite_tag.attributes), 8,
+                         'The testsuite tag does not have 8 attributes. '
                          'XML:\n%s' % xml_output)
 
         n_tests = int(testsuite_tag.attributes['tests'].value)
@@ -98,23 +98,34 @@ class JobTimeOutTest(unittest.TestCase):
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)
 
+        n_interrupted = int(testsuite_tag.attributes['interrupted'].value)
+        self.assertEqual(n_interrupted, e_ninterrupted,
+                         "Unexpected number of test interrupted, "
+                         "XML:\n%s" % xml_output)
+
     def test_sleep_longer_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
                     (self.tmpdir, self.script.path))
-        self.run_and_check(cmd_line, 0, 2, 0, 0, 0)
+        self.run_and_check(cmd_line, 0, 2, 0, 0, 0, 0)
 
     def test_sleep_short_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
                     (self.tmpdir, self.script.path))
-        self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 2, 1, 0, 1)
+        self.run_and_check(cmd_line,
+                           exit_codes.AVOCADO_JOB_INTERRUPTED |
+                           exit_codes.AVOCADO_TESTS_FAIL,
+                           2, 0, 0, 1, 1)
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s' %
                     (self.tmpdir, self.py.path))
-        self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 3, 1, 0, 2)
+        self.run_and_check(cmd_line,
+                           exit_codes.AVOCADO_JOB_INTERRUPTED |
+                           exit_codes.AVOCADO_TESTS_FAIL,
+                           3, 0, 0, 2, 1)
 
     def test_invalid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
