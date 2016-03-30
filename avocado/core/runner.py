@@ -28,8 +28,8 @@ import time
 from . import test
 from . import exceptions
 from . import output
-from . import status
 from .loader import loader
+from .status import mapping
 from ..utils import wait
 from ..utils import stacktrace
 from ..utils import runtime
@@ -251,7 +251,7 @@ class TestRunner(object):
 
         def timeout_handler(signum, frame):
             e_msg = "Timeout reached waiting for %s to end" % instance
-            raise exceptions.TestTimeoutError(e_msg)
+            raise exceptions.TestTimeoutInterrupted(e_msg)
 
         def interrupt_handler(signum, frame):
             e_msg = "Test %s interrupted by user" % instance
@@ -278,7 +278,7 @@ class TestRunner(object):
         """
         pass
 
-    def run_test(self, test_factory, queue, failures, job_deadline=0):
+    def run_test(self, test_factory, queue, summary, job_deadline=0):
         """
         Run a test instance inside a subprocess.
 
@@ -286,8 +286,8 @@ class TestRunner(object):
         :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
         :type queue: :class`multiprocessing.Queue` instance.
-        :param failures: Store tests failed.
-        :type failures: list.
+        :param summary: Store tests bad results.
+        :type summary: set.
         :param job_deadline: Maximum time to execute.
         :type job_deadline: int.
         """
@@ -395,8 +395,10 @@ class TestRunner(object):
             self.job.log.debug('')
 
         self.result.check_test(test_state)
-        if not status.mapping[test_state['status']]:
-            failures.append(test_state['name'])
+        if test_state['status'] == "INTERRUPTED":
+            summary.add("INTERRUPTED")
+        elif not mapping[test_state['status']]:
+            summary.add("FAIL")
 
         if ctrl_c_count > 0:
             return False
@@ -409,9 +411,9 @@ class TestRunner(object):
         :param test_suite: a list of tests to run.
         :param mux: the multiplexer.
         :param timeout: maximum amount of time (in seconds) to execute.
-        :return: a list of test failures.
+        :return: a list of tests bad results.
         """
-        failures = []
+        summary = set()
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
         self.result.start_tests()
@@ -431,11 +433,12 @@ class TestRunner(object):
                 index += 1
                 test_parameters = test_factory[1]
                 if deadline is not None and time.time() > deadline:
+                    summary.add('INTERRUPTED')
                     if 'methodName' in test_parameters:
                         del test_parameters['methodName']
                     test_factory = (test.TimeOutSkipTest, test_parameters)
                     break_loop = not self.run_test(test_factory, queue,
-                                                   failures)
+                                                   summary)
                     if break_loop:
                         break
                 else:
@@ -445,7 +448,7 @@ class TestRunner(object):
                         test_factory = (replay_map[index], test_parameters)
 
                     break_loop = not self.run_test(test_factory, queue,
-                                                   failures, deadline)
+                                                   summary, deadline)
                     if break_loop:
                         break
             runtime.CURRENT_TEST = None
@@ -456,4 +459,4 @@ class TestRunner(object):
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
-        return failures
+        return summary
