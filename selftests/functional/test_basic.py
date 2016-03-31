@@ -245,7 +245,7 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
-        expected_output = 'No tests found for given urls'
+        expected_output = 'No urls provided nor any arguments produced'
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
 
@@ -617,7 +617,7 @@ class ExternalRunnerTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--external-runner=/bin/true' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        expected_output = ('No tests found for given urls')
+        expected_output = ('No urls provided nor any arguments produced')
         self.assertIn(expected_output, result.stderr)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
