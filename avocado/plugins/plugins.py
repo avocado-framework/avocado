@@ -53,5 +53,8 @@ class Plugins(CLICmd):
             for plugin in sorted(plugins_active):
                 plugin_matrix.append((plugin.name, plugin.obj.description))
 
-            for line in astring.iter_tabular_output(plugin_matrix):
-                log.debug(line)
+            if not plugin_matrix:
+                log.debug("(No active plugin)")
+            else:
+                for line in astring.iter_tabular_output(plugin_matrix):
+                    log.debug(line)
