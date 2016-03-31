@@ -41,22 +41,17 @@ class Plugins(CLICmd):
 
     def run(self, args):
         log = logging.getLogger("avocado.app")
-        cli_cmds = dispatcher.CLICmdDispatcher()
-        msg = 'Plugins that add new commands (avocado.plugins.cli.cmd):'
-        log.info(msg)
-        plugin_matrix = []
-        for plugin in sorted(cli_cmds):
-            plugin_matrix.append((plugin.name, plugin.obj.description))
+        plugin_types = [
+            (dispatcher.CLICmdDispatcher(),
+             'Plugins that add new commands (avocado.plugins.cli.cmd):'),
+            (dispatcher.CLIDispatcher(),
+             'Plugins that add new options to commands (avocado.plugins.cli):')
+        ]
+        for plugins_active, msg in plugin_types:
+            log.info(msg)
+            plugin_matrix = []
+            for plugin in sorted(plugins_active):
+                plugin_matrix.append((plugin.name, plugin.obj.description))
 
-        for line in astring.iter_tabular_output(plugin_matrix):
-            log.debug(line)
-
-        msg = 'Plugins that add new options to commands (avocado.plugins.cli):'
-        cli = dispatcher.CLIDispatcher()
-        log.info(msg)
-        plugin_matrix = []
-        for plugin in sorted(cli):
-            plugin_matrix.append((plugin.name, plugin.obj.description))
-
-        for line in astring.iter_tabular_output(plugin_matrix):
-            log.debug(line)
+            for line in astring.iter_tabular_output(plugin_matrix):
+                log.debug(line)
