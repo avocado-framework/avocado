@@ -16,14 +16,12 @@
 The core Avocado application.
 """
 
-import logging
 import os
 import signal
 
 from .parser import Parser
 from . import output
 from .output import STD_OUTPUT
-from .settings import settings
 from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
 
@@ -46,7 +44,8 @@ class AvocadoApp(object):
         try:
             self.cli_dispatcher = CLIDispatcher()
             self.cli_cmd_dispatcher = CLICmdDispatcher()
-            self._print_plugin_failures()
+            output.log_plugin_failures(self.cli_dispatcher.load_failures +
+                                       self.cli_cmd_dispatcher.load_failures)
             self.parser.start()
             if self.cli_cmd_dispatcher.extensions:
                 self.cli_cmd_dispatcher.map_method('configure', self.parser)
@@ -58,21 +57,6 @@ class AvocadoApp(object):
             initialized = True
         finally:
             output.reconfigure(self.parser.args)
-
-    def _print_plugin_failures(self):
-        failures = (self.cli_dispatcher.load_failures +
-                    self.cli_cmd_dispatcher.load_failures)
-        if failures:
-            log = logging.getLogger("avocado.app")
-            msg_fmt = 'Failed to load plugin from module "%s": %s'
-            silenced = settings.get_value('plugins',
-                                          'skip_broken_plugin_notification',
-                                          list, [])
-            for failure in failures:
-                if failure[0].module_name in silenced:
-                    continue
-                log.error(msg_fmt, failure[0].module_name,
-                          failure[1].__repr__())
 
     def run(self):
         try:

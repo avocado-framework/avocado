@@ -669,3 +669,23 @@ class Throbber(object):
         result = self.MOVES[self.position]
         self._update_position()
         return result
+
+
+def log_plugin_failures(failures):
+    """
+    Log in the application UI failures to load a set of plugins
+
+    :param failures: a list of load failures, usually comming from a
+                     :class:`avocado.core.dispatcher.Dispatcher`
+                     attribute `load_failures`
+    """
+    log = logging.getLogger("avocado.app")
+    msg_fmt = 'Failed to load plugin from module "%s": %s'
+    silenced = settings.get_value('plugins',
+                                  'skip_broken_plugin_notification',
+                                  list, [])
+    for failure in failures:
+        if failure[0].module_name in silenced:
+            continue
+        log.error(msg_fmt, failure[0].module_name,
+                  failure[1].__repr__())
