@@ -16,6 +16,7 @@
 
 import datetime
 import logging
+import string
 from xml.sax.saxutils import quoteattr
 
 from .result import TestResult
@@ -23,6 +24,9 @@ from .result import TestResult
 
 # We use a subset of the XML format defined in this URL:
 # https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd
+
+PRINTABLE = string.ascii_letters + string.digits + string.punctuation + '\n\r '
+
 
 class XmlResult(object):
 
@@ -34,16 +38,14 @@ class XmlResult(object):
         self.xml = ['<?xml version="1.0" encoding="UTF-8"?>']
 
     def _escape_attr(self, attrib):
+        attrib = ''.join(_ if _ in PRINTABLE else "\\x%02x" % ord(_)
+                         for _ in str(attrib))
         return quoteattr(attrib)
 
     def _escape_cdata(self, cdata):
-        try:
-            return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
-        except AttributeError:
-            try:
-                str(cdata).replace(']]>', ']]>]]&gt;<![CDATA[')
-            except TypeError:
-                return 'ERROR: UnparsableObject'
+        cdata = ''.join(_ if _ in PRINTABLE else "\\x%02x" % ord(_)
+                        for _ in str(cdata))
+        return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
 
     def get_contents(self):
         return '\n'.join(self.xml)
