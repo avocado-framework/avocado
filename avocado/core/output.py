@@ -404,8 +404,10 @@ def reconfigure(args):
             disable_log_handler("")
             disable_log_handler("avocado.test")
     if "remote" in enabled:
-        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout)
-        add_log_handler("paramiko", stream=STD_OUTPUT.stdout)
+        add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout,
+                        level=logging.DEBUG)
+        add_log_handler("paramiko", stream=STD_OUTPUT.stdout,
+                        level=logging.DEBUG)
     else:
         disable_log_handler("avocado.fabric")
         disable_log_handler("paramiko")
@@ -423,8 +425,8 @@ def reconfigure(args):
         if len(stream_level) == 1:
             level = logging.DEBUG
         else:
-            level = (int(name[1]) if name[1].isdigit()
-                     else logging.getLevelName(name[1].upper()))
+            level = (int(stream_level[1]) if stream_level[1].isdigit()
+                     else logging.getLevelName(stream_level[1].upper()))
         try:
             add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout,
                             level)
