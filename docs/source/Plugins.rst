@@ -88,6 +88,8 @@ We have briefly discussed the making of Avocado plugins. We recommend
 the `Stevedore documentation`_ and also a look at the
 :mod:`avocado.plugins.base` module for the various plugin interface definitions.
 
+Some plugins examples are available in the `Avocado source tree_`, under ``examples/plugins``.
+
 Finally, exploring the real plugins shipped with Avocado in :mod:`avocado.plugins`
 is the final "documentation" source.
 
@@ -96,3 +98,4 @@ is the final "documentation" source.
 .. _Stevedore documentation: http://docs.openstack.org/developer/stevedore/index.html
 .. _setuptools: https://pythonhosted.org/setuptools/
 .. _entry points: https://pythonhosted.org/setuptools/pkg_resources.html#entry-points
+.. _Avocado source tree: https://github.com/avocado-framework/avocado/tree/master/examples/plugins
