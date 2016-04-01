@@ -61,13 +61,14 @@ class Parser(object):
         self.application.add_argument('-v', '--version', action='version',
                                       version='Avocado %s' % VERSION)
         self.application.add_argument('--config', metavar='CONFIG_FILE',
+                                      nargs='?',
                                       help='Use custom configuration from a file')
         streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.iteritems()] +
                    ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.iteritems()])
         streams = "; ".join(streams)
         self.application.add_argument('--show', action="store",
                                       type=lambda value: value.split(","),
-                                      metavar="STREAM[:LVL]",
+                                      metavar="STREAM[:LVL]", nargs='?',
                                       default=['app'], help="List of comma "
                                       "separated builtin logs, or logging "
                                       "streams optionally followed by LEVEL "
