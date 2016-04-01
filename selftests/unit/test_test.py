@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
+from flexmock import flexmock
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -18,6 +19,67 @@ true
 FAIL_SCRIPT_CONTENTS = """#!/bin/sh
 false
 """
+
+
+class DummyTest(test.Test):
+    def test(self):
+        pass
+
+
+class TestClassTestUnit(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+    def testUglyName(self):
+        def run(name, path_name):
+            """ Initialize test and check the dirs were created """
+            test = DummyTest("test", name, base_logdir=self.tmpdir)
+            self.assertEqual(os.path.basename(test.logdir), path_name)
+            self.assertTrue(os.path.exists(test.logdir))
+            self.assertEqual(os.path.dirname(os.path.dirname(test.logdir)),
+                             self.tmpdir)
+
+        run("/absolute/path", "_absolute_path")
+        run("./relative/path", "__relative_path")
+        run("../../multi_level/relative/path",
+            "_._.._multi_level_relative_path")
+        # Greek word 'kosme'
+        run("\xce\xba\xe1\xbd\xb9\xcf\x83\xce\xbc\xce\xb5",
+            "\xce\xba\xe1\xbd\xb9\xcf\x83\xce\xbc\xce\xb5")
+        # Particularly problematic noncharacters in 16-bit applications
+        name = ("\xb7\x95\xef\xb7\x96\xef\xb7\x97\xef\xb7\x98\xef\xb7\x99"
+                "\xef\xb7\x9a\xef\xb7\x9b\xef\xb7\x9c\xef\xb7\x9d\xef\xb7"
+                "\x9e\xef\xb7\x9f\xef\xb7\xa0\xef\xb7\xa1\xef\xb7\xa2\xef"
+                "\xb7\xa3\xef\xb7\xa4\xef\xb7\xa5\xef\xb7\xa6\xef\xb7\xa7"
+                "\xef\xb7\xa8\xef\xb7\xa9\xef\xb7\xaa\xef\xb7\xab\xef\xb7"
+                "\xac\xef\xb7\xad\xef\xb7\xae\xef\xb7\xaf")
+        run(name, name)
+
+    def testLongName(self):
+        test = DummyTest("test", "a" * 256, base_logdir=self.tmpdir)
+        self.assertEqual(os.path.basename(test.logdir), "a" * 240)
+        test = DummyTest("test", "a" * 256, base_logdir=self.tmpdir)
+        self.assertEqual(os.path.basename(test.logdir), "a" * 240 + ".1")
+        self.assertEqual(os.path.basename(test.workdir),
+                         os.path.basename(test.logdir))
+        flexmock(test)
+        test.should_receive('filename').and_return("a"*250)
+        self.assertTrue(test.datadir)
+        self.assertRaises(IOError, test._record_reference_stdout)
+        self.assertRaises(IOError, test._record_reference_stderr)
+        test.should_receive('filename').and_return("a"*251)
+        self.assertFalse(test.datadir)
+        test._record_reference_stdout()
+        test._record_reference_stderr()
+
+    def testAllDirsExistsNoHang(self):
+        flexmock(os.path)
+        os.path.should_receive('isdir').and_return(True)
+        self.assertRaises(exceptions.TestSetupFail, DummyTest, "test", "name")
 
 
 class TestClassTest(unittest.TestCase):
