@@ -133,12 +133,20 @@ class TestNotFoundError(TestBaseException):
     status = "ERROR"
 
 
-class TestTimeoutError(TestBaseException):
+class TestTimeoutInterrupted(TestBaseException):
 
     """
     Indicates that the test did not finish before the timeout specified.
     """
-    status = "ERROR"
+    status = "INTERRUPTED"
+
+
+class TestTimeoutSkip(TestBaseException):
+
+    """
+    Indicates that the test is skipped due to a job timeout.
+    """
+    status = "SKIP"
 
 
 class TestInterruptedError(TestBaseException):
