@@ -91,11 +91,6 @@ class TestStatus(object):
                     for _ in queue:     # Return all unprocessed messages back
                         self.queue.put(_)
                     return msg
-                elif "load_exception" in msg:
-                    raise exceptions.TestError("Avocado crashed during test "
-                                               "load. Some reports might have "
-                                               "not been generated. "
-                                               "Aborting...")
                 else:   # Not an early_status message
                     queue.append(msg)
 
@@ -234,21 +229,13 @@ class TestRunner(object):
         sys.stdout = output.LoggingFile(logger=logger_list_stdout)
         sys.stderr = output.LoggingFile(logger=logger_list_stderr)
 
-        try:
-            instance = loader.load_test(test_factory)
-            if instance.runner_queue is None:
-                instance.runner_queue = queue
-            runtime.CURRENT_TEST = instance
-            early_state = instance.get_state()
-            early_state['early_status'] = True
-            queue.put(early_state)
-        except Exception:
-            exc_info = sys.exc_info()
-            app_logger = logging.getLogger('avocado.app')
-            app_logger.exception('Exception loading test')
-            tb_info = stacktrace.tb_info(exc_info)
-            queue.put({'load_exception': tb_info})
-            return
+        instance = loader.load_test(test_factory)
+        if instance.runner_queue is None:
+            instance.runner_queue = queue
+        runtime.CURRENT_TEST = instance
+        early_state = instance.get_state()
+        early_state['early_status'] = True
+        queue.put(early_state)
 
         def timeout_handler(signum, frame):
             e_msg = "Timeout reached waiting for %s to end" % instance
