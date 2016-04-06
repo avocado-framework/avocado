@@ -27,8 +27,8 @@ from .. import output
 from .. import remoter
 from .. import virt
 from .. import exceptions
-from .. import status
 from ..runner import TestRunner
+from ..status import mapping
 from ...utils import astring
 from ...utils import archive
 from ...utils import stacktrace
@@ -186,13 +186,13 @@ class RemoteTestRunner(TestRunner):
         :param params_list: a list of param dicts.
         :param mux: A multiplex iterator (unused here)
 
-        :return: a list of test failures.
+        :return: a set with tests bad results.
         """
         del test_suite     # using self.job.urls instead
         del mux            # we're not using multiplexation here
         if not timeout:     # avoid timeout = 0
             timeout = None
-        failures = []
+        summary = set()
 
         stdout_backup = sys.stdout
         stderr_backup = sys.stderr
@@ -239,8 +239,10 @@ class RemoteTestRunner(TestRunner):
                 state = test.get_state()
                 self.result.start_test(state)
                 self.result.check_test(state)
-                if not status.mapping[state['status']]:
-                    failures.append(state['tagged_name'])
+                if state['status'] == "INTERRUPTED":
+                    summary.add("INTERRUPTED")
+                elif not mapping[state['status']]:
+                    summary.add("FAIL")
             local_log_dir = self.job.logdir
             zip_filename = remote_log_dir + '.zip'
             zip_path_filename = os.path.join(local_log_dir,
@@ -257,7 +259,7 @@ class RemoteTestRunner(TestRunner):
         finally:
             sys.stdout = stdout_backup
             sys.stderr = stderr_backup
-        return failures
+        return summary
 
 
 class VMTestRunner(RemoteTestRunner):
