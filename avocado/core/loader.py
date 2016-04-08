@@ -700,7 +700,7 @@ class FileLoader(TestLoader):
             rel_path = '%s.py' % test_name
             test_path = os.path.join(data_dir.get_test_dir(), rel_path)
             if os.path.exists(test_path):
-                return self._make_avocado_tests(test_path, list_non_tests,
+                return self._make_avocado_tests(test_path, make_broken,
                                                 subtests_filter, rel_path)
             else:
                 return make_broken(test.MissingTest, test_name)
