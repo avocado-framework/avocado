@@ -394,6 +394,17 @@ class TestRunner(object):
         if ctrl_c_count > 0:
             self.job.log.debug('')
 
+        # Make sure the test status is correct
+        if test_state.get('status') not in status.user_facing_status:
+            test_state['fail_reason'] = ("Test reports unsupported test "
+                                         "status %s.\nOriginal fail_reason: %s"
+                                         "\nOriginal fail_class: %s"
+                                         % (test_state.get('status'),
+                                            test_state.get('fail_reason'),
+                                            test_state.get('fail_class')))
+            test_state['fail_class'] = "RUNNER"
+            test_state['status'] = 'ERROR'
+
         self.result.check_test(test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
