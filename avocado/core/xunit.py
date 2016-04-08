@@ -200,6 +200,8 @@ class xUnitTestResult(TestResult):
             self.xml.add_failure(state)
         elif state['status'] == 'ERROR':
             self.xml.add_error(state)
+        elif state['status'] == 'INTERRUPTED':
+            self.xml.add_error(state)
 
     def end_tests(self):
         """
@@ -207,7 +209,7 @@ class xUnitTestResult(TestResult):
         """
         TestResult.end_tests(self)
         values = {'tests': self.tests_total,
-                  'errors': len(self.errors),
+                  'errors': len(self.errors) + len(self.interrupted),
                   'failures': len(self.failed),
                   'skip': len(self.skipped),
                   'total_time': self.total_time}

@@ -108,13 +108,13 @@ class JobTimeOutTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s examples/tests/passtest.py' %
                     (self.tmpdir, self.script.path))
-        self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 2, 1, 0, 1)
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 2, 1, 0, 1)
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=1 %s' %
                     (self.tmpdir, self.py.path))
-        self.run_and_check(cmd_line, exit_codes.AVOCADO_TESTS_FAIL, 3, 1, 0, 2)
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED, 3, 1, 0, 2)
 
     def test_invalid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
