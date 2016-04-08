@@ -154,10 +154,13 @@ def iter_tabular_output(matrix, header=None):
     if header:
         for column in header:
             lengths.append(len(column))
+    str_matrix = []
     for row in matrix:
+        str_matrix.append([])
         for i, column in enumerate(row):
-            column = unicode(column).encode("utf-8")
-            col_len = len(column)
+            column = string_safe_encode(column)
+            str_matrix[-1].append(column)
+            col_len = len(column.decode("utf-8"))
             try:
                 max_len = lengths[i]
                 if col_len > max_len:
@@ -174,7 +177,7 @@ def iter_tabular_output(matrix, header=None):
     if header:
         out_line = format_string % header
         yield out_line
-    for row in matrix:
+    for row in str_matrix:
         out_line = format_string % tuple(row)
         yield out_line
 
@@ -193,6 +196,19 @@ def tabular_output(matrix, header=None):
     :rtype: str
     """
     return "\n".join(iter_tabular_output(matrix, header))
+
+
+def string_safe_encode(string):
+    """
+    People tend to mix unicode strems with encoded strings. This function
+    tries to replace any input with a valid utf-8 encoded ascii stream.
+    """
+    if not isinstance(string, basestring):
+        string = str(string)
+    try:
+        return string.encode("utf-8")
+    except UnicodeDecodeError:
+        return string.decode("utf-8").encode("utf-8")
 
 
 def string_to_safe_path(string):
