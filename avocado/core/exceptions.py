@@ -196,3 +196,12 @@ class TestWarn(TestBaseException):
     failure.
     """
     status = "WARN"
+
+
+class TestLoaderException(TestBaseException):
+
+    """
+    Indicates that the loader could not load the test class, probably
+    due to an error in the python code.
+    """
+    status = "ERROR"

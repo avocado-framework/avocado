@@ -244,10 +244,13 @@ class TestLoaderProxy(object):
                 sys.path.insert(0, test_module_dir)
                 f, p, d = imp.find_module(module_name, [test_module_dir])
                 test_module = imp.load_module(module_name, f, p, d)
-            except ImportError as details:
-                raise ImportError("Unable to import test's module with "
-                                  "sys.path=%s\n\n%s" % (", ".join(sys.path),
-                                                         details))
+            except:
+                # On load_module exception we fake the test class and pass
+                # the exc_info as parameter to be logged.
+                test_parameters['methodName'] = 'test'
+                exception = stacktrace.prepare_exc_info(sys.exc_info())
+                test_parameters['exception'] = exception
+                return test.TestLoaderError(**test_parameters)
             finally:
                 if test_module_dir in sys.path:
                     sys.path.remove(test_module_dir)
