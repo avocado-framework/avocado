@@ -313,14 +313,14 @@ class Test(unittest.TestCase):
         tag = 0
         tagged_name = name
         # The maximal length on ext4+python2.7 is 255 chars.
-        safe_tagged_name = astring.string_to_safe_path(tagged_name[:251])
+        safe_tagged_name = astring.string_to_safe_path(tagged_name[:250])
         for i in xrange(9999):
             if not os.path.isdir(os.path.join(logdir, safe_tagged_name)):
                 break
             tag += 1
             tagged_name = "%s.%s" % (name, tag)
             safe_tagged_name = astring.string_to_safe_path("%s.%s"
-                                                           % (name[:251], tag))
+                                                           % (name[:250], tag))
         else:
             raise exceptions.TestSetupFail("Unable to find unique name in %s "
                                            "iterations (%s).", i,
