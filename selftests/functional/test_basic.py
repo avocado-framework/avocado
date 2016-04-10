@@ -50,6 +50,18 @@ class LocalImportTest(Test):
         self.log.info(hello())
 '''
 
+UNSUPPORTED_STATUS_TEST_CONTENTS = '''
+from avocado import Test
+
+class FakeStatusTest(Test):
+    def run_avocado(self):
+        super(FakeStatusTest, self).run_avocado()
+        self.status = 'not supported'
+
+    def test(self):
+        pass
+'''
+
 
 class RunnerOperationTest(unittest.TestCase):
 
@@ -133,6 +145,22 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
                     "%s" % (self.tmpdir, mytest))
         process.run(cmd_line)
+
+    def test_unsupported_status(self):
+        os.chdir(basedir)
+        with script.TemporaryScript("fake_status.py",
+                                    UNSUPPORTED_STATUS_TEST_CONTENTS,
+                                    "avocado_unsupported_status") as tst:
+            res = process.run("./scripts/avocado run --sysinfo=off "
+                              "--job-results-dir %s %s --json -"
+                              % (self.tmpdir, tst), ignore_status=True)
+            self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
+            results = json.loads(res.stdout)
+            self.assertEqual(results["tests"][0]["status"], "ERROR",
+                             "%s != %s\n%s" % (results["tests"][0]["status"],
+                                               "ERROR", res))
+            self.assertIn("Original fail_reason: None",
+                          results["tests"][0]["fail_reason"])
 
     def test_runner_tests_fail(self):
         os.chdir(basedir)
