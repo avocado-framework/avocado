@@ -50,6 +50,17 @@ class LocalImportTest(Test):
         self.log.info(hello())
 '''
 
+INVALID_PYTHON_TEST = '''
+from avocado import Test
+
+class MyTest(Test):
+
+    asdasdasd
+
+    def test(self):
+        pass
+'''
+
 
 class RunnerOperationTest(unittest.TestCase):
 
@@ -334,6 +345,16 @@ class RunnerOperationTest(unittest.TestCase):
         for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
                      "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
             self.assertEqual(log.count(line), 3)
+
+    def test_invalid_python(self):
+        os.chdir(basedir)
+        test = script.make_script(os.path.join(self.tmpdir, 'test'), INVALID_PYTHON_TEST)
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s %s' % (self.tmpdir, test)
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
