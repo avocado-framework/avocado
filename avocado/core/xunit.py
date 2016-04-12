@@ -56,7 +56,7 @@ class XmlResult(object):
 
         :param timestamp: Timestamp string in date/time format.
         """
-        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skip="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skipped="{skip}" time="{total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
     def end_testsuite(self, tests, errors, failures, skip, total_time):

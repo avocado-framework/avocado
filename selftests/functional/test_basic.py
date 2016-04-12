@@ -797,7 +797,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                          "Unexpected number of test failures, "
                          "XML:\n%s" % xml_output)
 
-        n_skip = int(testsuite_tag.attributes['skip'].value)
+        n_skip = int(testsuite_tag.attributes['skipped'].value)
         self.assertEqual(n_skip, e_nskip,
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)

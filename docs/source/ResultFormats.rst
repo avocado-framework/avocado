@@ -76,7 +76,7 @@ output in the standard output of the runner, simply use::
 
     $ scripts/avocado --xunit - run "sleeptest failtest synctest"
     <?xml version="1.0" encoding="UTF-8"?>
-    <testsuite name="avocado" tests="3" errors="0" failures="1" skip="0" time="2.88632893562" timestamp="2014-04-24 18:25:39.545588">
+    <testsuite name="avocado" tests="3" errors="0" failures="1" skipped="0" time="2.88632893562" timestamp="2014-04-24 18:25:39.545588">
         <testcase classname="sleeptest" name="sleeptest.1" time="1.10091400146"/>
         <testcase classname="failtest" name="failtest.1" time="0.0921177864075">
             <failure><![CDATA[This test is supposed to fail]]></failure>
@@ -135,7 +135,7 @@ stdout and the JSON result to output to a file::
 
     $ scripts/avocado --xunit - --json /tmp/result.json run "sleeptest synctest"
     <?xml version="1.0" encoding="UTF-8"?>
-    <testsuite name="avocado" tests="2" errors="0" failures="0" skip="0" time="3.21392536163" timestamp="2014-06-11 01:49:35.858187">
+    <testsuite name="avocado" tests="2" errors="0" failures="0" skipped="0" time="3.21392536163" timestamp="2014-06-11 01:49:35.858187">
         <testcase classname="sleeptest" name="sleeptest.1" time="1.34533214569"/>
         <testcase classname="synctest" name="synctest.1" time="1.86859321594"/>
     </testsuite>
