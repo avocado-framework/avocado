@@ -170,7 +170,7 @@ class TestResult(object):
         """
         Called once after all tests are executed.
         """
-        pass
+        self._reconcile()
 
     def start_test(self, state):
         """
@@ -288,7 +288,6 @@ class HumanTestResult(TestResult):
         Called once after all tests are executed.
         """
         super(HumanTestResult, self).end_tests()
-        self._reconcile()
         self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
                       "WARN %d | INTERRUPT %s", len(self.passed),
                       len(self.errors), len(self.failed), len(self.skipped),
