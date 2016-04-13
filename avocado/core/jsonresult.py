@@ -85,10 +85,10 @@ class JSONTestResult(TestResult):
         TestResult.end_tests(self)
         self.json.update({
             'total': self.tests_total,
-            'pass': len(self.passed),
-            'errors': len(self.errors),
-            'failures': len(self.failed),
-            'skip': len(self.skipped),
+            'pass': self.passed,
+            'errors': self.errors,
+            'failures': self.failed,
+            'skip': self.skipped,
             'time': self.total_time
         })
         self.json = json.dumps(self.json)
