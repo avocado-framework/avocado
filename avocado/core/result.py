@@ -190,7 +190,7 @@ class TestResult(object):
         self.tests_run += 1
         self.total_time += state.get('time_elapsed', 0)
 
-    def add_pass(self, state):
+    def add_pass(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test succeeded.
 
@@ -199,7 +199,7 @@ class TestResult(object):
         """
         self.passed += 1
 
-    def add_error(self, state):
+    def add_error(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test had a setup error.
 
@@ -208,7 +208,7 @@ class TestResult(object):
         """
         self.errors += 1
 
-    def add_fail(self, state):
+    def add_fail(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test fails.
 
@@ -217,7 +217,7 @@ class TestResult(object):
         """
         self.failed += 1
 
-    def add_skip(self, state):
+    def add_skip(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test is skipped.
 
@@ -225,7 +225,7 @@ class TestResult(object):
         """
         self.skipped += 1
 
-    def add_warn(self, state):
+    def add_warn(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test had a warning.
 
@@ -234,7 +234,7 @@ class TestResult(object):
         """
         self.warned += 1
 
-    def add_interrupt(self, state):
+    def add_interrupt(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test is interrupted by the user.
 
