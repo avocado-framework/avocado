@@ -217,20 +217,16 @@ class HTMLTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
-        if state['fail_reason'] is None:
-            state['fail_reason'] = ''
-        else:
-            state['fail_reason'] = str(state['fail_reason'])
-        t = {'test': state['tagged_name'],
-             'url': state['name'],
-             'time_start': state['time_start'],
-             'time_end': state['time_end'],
-             'time': state['time_elapsed'],
-             'status': state['status'],
-             'fail_reason': state['fail_reason'],
-             'whiteboard': state['whiteboard'],
-             'logdir': urllib.quote(state['logdir']),
-             'logfile': urllib.quote(state['logfile'])
+        t = {'test': state.get('tagged_name', "<unknown>"),
+             'url': state.get('name', "<unknown>"),
+             'time_start': state.get('time_start', -1),
+             'time_end': state.get('time_end', -1),
+             'time': state.get('time_elapsed', -1),
+             'status': state.get('status', "ERROR"),
+             'fail_reason': str(state.get('fail_reason', "<unknown>")),
+             'whiteboard': state.get('whiteboard', "<unknown>"),
+             'logdir': urllib.quote(state.get('logdir', "<unknown>")),
+             'logfile': urllib.quote(state.get('logfile', "<unknown>"))
              }
         self.json['tests'].append(t)
 
