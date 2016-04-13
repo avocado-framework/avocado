@@ -157,7 +157,10 @@ class TestResult(object):
                                self.failed + self.warned +
                                self.skipped + self.interrupted)
         other_skipped_count = self.tests_total - valid_results_count
-        self.skipped += other_skipped_count
+        if other_skipped_count > 0:
+            self.skipped += other_skipped_count
+        else:
+            self.tests_total -= other_skipped_count
 
     def start_tests(self):
         """

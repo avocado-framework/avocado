@@ -85,5 +85,20 @@ class JSONResultTest(unittest.TestCase):
         check_item("[skip]", res["skip"], 4)
         check_item("[total]", res["total"], 13)
 
+    def testNegativeStatus(self):
+        def check_item(name, value, exp):
+            self.assertEqual(value, exp, "Result%s is %s and not %s\n%s"
+                             % (name, value, exp, res))
+
+        self.test_result.tests_total = 0
+        self.test_result.start_test(self.test1)
+        self.test_result.check_test(self.test1.get_state())
+        self.test_result.end_tests()
+        res = json.loads(self.test_result.json)
+        check_item("[total]", res["total"], 1)
+        check_item("[skip]", res["skip"], 0)
+        check_item("[pass]", res["pass"], 1)
+
+
 if __name__ == '__main__':
     unittest.main()
