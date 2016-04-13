@@ -786,3 +786,17 @@ class ReplaySkipTest(SkipTest):
     """
 
     _skip_reason = "Test skipped due to a job replay filter!"
+
+
+class TestError(Test):
+    """
+    Generic test error.
+    """
+
+    def __init__(self, *args, **kwargs):
+        exception = kwargs.pop('exception')
+        Test.__init__(self, *args, **kwargs)
+        self.exception = exception
+
+    def test(self):
+        self.error(self.exception)
