@@ -1,9 +1,11 @@
 import argparse
-import unittest
 import os
-from xml.dom import minidom
-import tempfile
 import shutil
+import tempfile
+import unittest
+from lxml import etree
+from StringIO import StringIO
+from xml.dom import minidom
 
 from avocado import Test
 from avocado.core import xunit
@@ -38,6 +40,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
         self.test1.time_elapsed = 1.23
+        unittests_path = os.path.dirname(os.path.abspath(__file__))
+        self.junit_schema_path = os.path.join(unittests_path, 'junit-4.xsd')
 
     def tearDown(self):
         os.close(self.tmpfile[0])
@@ -58,6 +62,12 @@ class xUnitSucceedTest(unittest.TestCase):
         self.assertTrue(dom)
         els = dom.getElementsByTagName('testcase')
         self.assertEqual(len(els), 1)
+
+        with open(self.junit_schema_path, 'r') as f:
+            xmlschema = etree.XMLSchema(etree.parse(f))
+        self.assertTrue(xmlschema.validate(etree.parse(StringIO(xml))),
+                        "Failed to validate against %s, content:\n%s" %
+                        (self.junit_schema_path, xml))
 
 
 if __name__ == '__main__':
