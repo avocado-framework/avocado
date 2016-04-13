@@ -199,9 +199,7 @@ class xUnitTestResult(TestResult):
             self.xml.add_skip(state)
         elif status == 'FAIL':
             self.xml.add_failure(state)
-        elif status == 'ERROR':
-            self.xml.add_error(state)
-        elif status == 'INTERRUPTED':
+        else:   # ERROR, INTERRUPTED, ...
             self.xml.add_error(state)
 
     def end_tests(self):
