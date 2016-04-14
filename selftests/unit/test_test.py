@@ -67,12 +67,14 @@ class TestClassTestUnit(unittest.TestCase):
         self.assertEqual(os.path.basename(test.workdir),
                          os.path.basename(test.logdir))
         flexmock(test)
-        test.should_receive('filename').and_return("a"*250)
-        self.assertEqual("a"*250 + ".data", test.datadir)
-        self.assertRaises(IOError, test._record_reference_stdout)
-        self.assertRaises(IOError, test._record_reference_stderr)
+        test.should_receive('filename').and_return(os.path.join(self.tmpdir,
+                                                                "a"*250))
+        self.assertEqual(os.path.join(self.tmpdir, "a"*250 + ".data"),
+                         test.datadir)
         test.should_receive('filename').and_return("a"*251)
         self.assertFalse(test.datadir)
+        test._record_reference_stdout       # Should does nothing
+        test._record_reference_stderr       # Should does nothing
         test._record_reference_stdout()
         test._record_reference_stderr()
 
