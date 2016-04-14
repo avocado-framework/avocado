@@ -22,6 +22,7 @@ false
 
 
 class DummyTest(test.Test):
+
     def test(self):
         pass
 
