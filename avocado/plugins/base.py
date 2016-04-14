@@ -18,6 +18,8 @@ import abc
 
 class Plugin(object):
 
+    __metaclass__ = abc.ABCMeta
+
     """
     Base for all plugins
     """
@@ -31,10 +33,6 @@ class CLI(Plugin):
     Plugins that want to add extra options to the core command line application
     or to sub commands should use the 'avocado.plugins.cli' namespace.
     """
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self):
-        super(CLI, self).__init__()
 
     @abc.abstractmethod
     def configure(self, parser):
@@ -63,12 +61,8 @@ class CLICmd(Plugin):
     Plugins that want to add extensions to the run command should use the
     'avocado.plugins.cli.cmd' namespace.
     """
-    __metaclass__ = abc.ABCMeta
     name = None
     description = None
-
-    def __init__(self):
-        super(CLICmd, self).__init__()
 
     def configure(self, parser):
         """
