@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
-from flexmock import flexmock
+from flexmock import flexmock, flexmock_teardown
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -22,6 +22,7 @@ false
 
 
 class DummyTest(test.Test):
+
     def test(self):
         pass
 
@@ -32,6 +33,7 @@ class TestClassTestUnit(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
     def tearDown(self):
+        flexmock_teardown()
         shutil.rmtree(self.tmpdir)
 
     def testUglyName(self):
@@ -67,12 +69,14 @@ class TestClassTestUnit(unittest.TestCase):
         self.assertEqual(os.path.basename(test.workdir),
                          os.path.basename(test.logdir))
         flexmock(test)
-        test.should_receive('filename').and_return("a"*250)
-        self.assertEqual("a"*250 + ".data", test.datadir)
-        self.assertRaises(IOError, test._record_reference_stdout)
-        self.assertRaises(IOError, test._record_reference_stderr)
+        test.should_receive('filename').and_return(os.path.join(self.tmpdir,
+                                                                "a"*250))
+        self.assertEqual(os.path.join(self.tmpdir, "a"*250 + ".data"),
+                         test.datadir)
         test.should_receive('filename').and_return("a"*251)
         self.assertFalse(test.datadir)
+        test._record_reference_stdout       # Should does nothing
+        test._record_reference_stderr       # Should does nothing
         test._record_reference_stdout()
         test._record_reference_stderr()
 
