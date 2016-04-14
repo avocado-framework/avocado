@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
-from flexmock import flexmock
+from flexmock import flexmock, flexmock_teardown
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -32,6 +32,7 @@ class TestClassTestUnit(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
     def tearDown(self):
+        flexmock_teardown()
         shutil.rmtree(self.tmpdir)
 
     def testUglyName(self):
