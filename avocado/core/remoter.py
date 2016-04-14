@@ -20,6 +20,7 @@ import getpass
 import logging
 import time
 
+from .settings import settings
 from ..utils import process
 
 LOG = logging.getLogger('avocado.test')
@@ -62,13 +63,20 @@ class Remote(object):
         self.password = password
         self.port = port
         self.quiet = quiet
+        reject_unknown_hosts = settings.get_value('runner.behavior',
+                                                  'reject_unknown_hosts',
+                                                  key_type=bool,
+                                                  default=True)
         self._setup_environment(host_string=hostname,
                                 user=username,
                                 password=password,
                                 port=port,
                                 timeout=timeout / attempts,
                                 connection_attempts=attempts,
-                                linewise=True)
+                                linewise=True,
+                                reject_unknown_hosts=reject_unknown_hosts,
+                                abort_on_prompts=True,
+                                abort_exception=UnknownHostException)
 
     @staticmethod
     def _setup_environment(**kwargs):
@@ -173,3 +181,12 @@ class Remote(object):
         except ValueError:
             return False
         return True
+
+
+class UnknownHostException(Exception):
+
+    def __init__(self, msg):
+        self.fabric_msg = msg
+
+    def __str__(self):
+        return "The authenticity of remote can't be established."
