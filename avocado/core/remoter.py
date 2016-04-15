@@ -68,7 +68,9 @@ class Remote(object):
                                 port=port,
                                 timeout=timeout / attempts,
                                 connection_attempts=attempts,
-                                linewise=True)
+                                linewise=True,
+                                abort_on_prompts=True,
+                                abort_exception=FabricException)
 
     @staticmethod
     def _setup_environment(**kwargs):
@@ -173,3 +175,12 @@ class Remote(object):
         except ValueError:
             return False
         return True
+
+
+class FabricException(Exception):
+
+    def __init__(self, msg):
+        self.fabric_msg = msg
+
+    def __str__(self):
+        return self.fabric_msg
