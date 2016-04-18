@@ -36,6 +36,10 @@ else:
     REMOTE_CAPABLE = True
 
 
+class FabricException(Exception):
+    pass
+
+
 class Remote(object):
 
     """
@@ -68,7 +72,9 @@ class Remote(object):
                                 port=port,
                                 timeout=timeout / attempts,
                                 connection_attempts=attempts,
-                                linewise=True)
+                                linewise=True,
+                                abort_on_prompts=True,
+                                abort_exception=FabricException)
 
     @staticmethod
     def _setup_environment(**kwargs):
