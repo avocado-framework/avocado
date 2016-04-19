@@ -140,9 +140,6 @@ The output might look like this::
 These Python files are considered by Avocado to contain ``INSTRUMENTED``
 tests.
 
-.. These should refer to proper simple tests example but they are currently
-   lacking in our tree. See GitHub issue #628.
-
 Let's now list a directory with a bunch of executable shell
 scripts::
 
