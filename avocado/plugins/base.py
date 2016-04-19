@@ -84,3 +84,35 @@ class CLICmd(Plugin):
         """
         Entry point for actually running the command
         """
+
+
+class JobPre(Plugin):
+
+    """
+    Base plugin interface for adding actions before a job runs
+
+    Plugins that want to add actions to be run before a job runs,
+    should use the 'avocado.plugins.job.pre' namespace.
+    """
+
+    @abc.abstractmethod
+    def pre(self, job):
+        """
+        Entry point for actually running the pre job action
+        """
+
+
+class JobPost(Plugin):
+
+    """
+    Base plugin interface for adding actions after a job runs
+
+    Plugins that want to add actions to be run after a job runs,
+    should use the 'avocado.plugins.job.post' namespace.
+    """
+
+    @abc.abstractmethod
+    def post(self, job):
+        """
+        Entry point for actually running the post job action
+        """
