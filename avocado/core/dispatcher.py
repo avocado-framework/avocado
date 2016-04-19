@@ -59,3 +59,16 @@ class CLICmdDispatcher(Dispatcher):
 
     def __init__(self):
         super(CLICmdDispatcher, self).__init__('avocado.plugins.cli.cmd')
+
+
+class JobPrePostDispatcher(Dispatcher):
+
+    """
+    Calls extensions before Job execution
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.job.prepost'
+    """
+
+    def __init__(self):
+        super(JobPrePostDispatcher, self).__init__('avocado.plugins.job.prepost')

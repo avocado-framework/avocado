@@ -7,7 +7,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 0.34.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -61,12 +61,15 @@ selftests/run
 %dir /etc/avocado
 %dir /etc/avocado/conf.d
 %dir /etc/avocado/sysinfo
+%dir /etc/avocado/scripts/job/pre.d
+%dir /etc/avocado/scripts/job/post.d
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %config(noreplace)/etc/avocado/conf.d/gdb.conf
 %config(noreplace)/etc/avocado/sysinfo/commands
 %config(noreplace)/etc/avocado/sysinfo/files
-%config(noreplace)/etc/avocado/sysinfo/profilers
+%config(noreplace)/etc/avocado/scripts/job/pre.d/README
+%config(noreplace)/etc/avocado/scripts/job/post.d/README
 %{python_sitelib}/avocado*
 %{_bindir}/avocado
 %{_bindir}/avocado-rest-client
@@ -110,6 +113,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Thu Apr 14 2016 Cleber Rosa <cleber@redhat.com> - 0.34.0-1
+- Added job pre/post scripts directories
+
 * Mon Mar 21 2016 Cleber Rosa <cleber@redhat.com> - 0.34.0-0
 - New upstream release 0.34.0
 
