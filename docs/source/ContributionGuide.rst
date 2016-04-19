@@ -45,3 +45,41 @@ be submitted as a github Pull Request. This process tries to ensure that every
 contributed patch goes through the CI jobs before it is considered good for
 inclusion.
 
+Signing commits
+---------------
+
+Optionally we encourage people to sign the commits using GPG signatures. Doing
+it is simple and it helps from unauthorized code being merged without notice.
+
+All you need is a valid GPG signature, git configuration, slightly modified
+workflow to use the signature and eventually even setup in github so one
+benefits from the "nice" UI.
+
+Get a GPG signature::
+
+    # Google for howto, but generally it works like this
+    $ gpg --gen-key  # defaults are usually fine (using expiration is recommended)
+    $ gpg --send-keys $YOUR_KEY    # to propagate the key to outer world
+
+Enable it in git::
+
+    $ git config --global user.signingkey $YOUR_KEY
+
+(optional) Link the key with your GH account::
+
+    1. Login to github
+    2. Go to settings->SSH and GPG keys
+    3. Add New GPG key
+    4. run $(gpg -a --export $YOUR_EMAIL) in shell to see your key
+    5. paste the key there
+
+Use it::
+
+    # You can sign commits by using '-S'
+    $ git commit -S
+    # You can sign merges by using '-S'
+    $ git merge -S
+
+.. warning::
+   You can not use the merge button on github to do signed merges as github
+   does not have your private key.
