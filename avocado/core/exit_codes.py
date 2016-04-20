@@ -21,21 +21,22 @@ statuses.
 """
 
 #: Both job and tests PASSed
-AVOCADO_ALL_OK = 0
+AVOCADO_ALL_OK = 0x0000
 
 #: Job went fine, but some tests FAILed or ERRORed
-AVOCADO_TESTS_FAIL = 1
+AVOCADO_TESTS_FAIL = 0x0001
 
 #: Something went wrong with the Job itself, by explicit
 #: :class:`avocado.core.exceptions.JobError` exception.
-AVOCADO_JOB_FAIL = 2
+AVOCADO_JOB_FAIL = 0x0002
 
 #: Something else went wrong and avocado failed (or crashed). Commonly
 #: used on command line validation errors.
-AVOCADO_FAIL = 3
+AVOCADO_FAIL = 0x0004
 
 #: The job was explicitly interrupted. Usually this means that a user
 #: hit CTRL+C while the job was still running.
-AVOCADO_JOB_INTERRUPTED = 4
+AVOCADO_JOB_INTERRUPTED = 0x0008
+
 #: Avocado generic crash
 AVOCADO_GENERIC_CRASH = -1

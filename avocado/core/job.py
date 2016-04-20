@@ -123,6 +123,7 @@ class Job(object):
                                                            _TEST_LOGGER)
         self.stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
+        self.exitcode = exit_codes.AVOCADO_ALL_OK
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -296,7 +297,8 @@ class Job(object):
                            'simultaneously', " ".join(op_set_stdout))
             self.log.error('Please set at least one of them to a file to '
                            'avoid conflicts')
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            sys.exit(self.exitcode)
 
         if not op_set_stdout and not self.standalone:
             human_plugin = result.HumanTestResult(self)
@@ -511,13 +513,15 @@ class Job(object):
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
         if summary is None:
-            return exit_codes.AVOCADO_JOB_FAIL
-        elif 'INTERRUPTED' in summary:
-            return exit_codes.AVOCADO_JOB_INTERRUPTED
-        elif summary:
-            return exit_codes.AVOCADO_TESTS_FAIL
-        else:
-            return exit_codes.AVOCADO_ALL_OK
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            return self.exitcode
+
+        if 'INTERRUPTED' in summary:
+            self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
+        if 'FAIL' in summary:
+            self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
+
+        return self.exitcode
 
     def run(self):
         """
@@ -545,10 +549,12 @@ class Job(object):
             self.status = details.status
             fail_class = details.__class__.__name__
             self.log.error('\nAvocado job failed: %s: %s', fail_class, details)
-            return exit_codes.AVOCADO_JOB_FAIL
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            return self.exitcode
         except exceptions.OptionValidationError as details:
             self.log.error('\n' + str(details))
-            return exit_codes.AVOCADO_JOB_FAIL
+            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
+            return self.exitcode
 
         except Exception as details:
             self.status = "ERROR"
@@ -562,7 +568,8 @@ class Job(object):
             self.log.error("Please include the traceback info and command line"
                            " used on your bug report")
             self.log.error('Report bugs visiting %s', _NEW_ISSUE_LINK)
-            return exit_codes.AVOCADO_FAIL
+            self.exitcode |= exit_codes.AVOCADO_FAIL
+            return self.exitcode
         finally:
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
