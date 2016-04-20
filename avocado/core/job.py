@@ -30,6 +30,7 @@ import fnmatch
 
 from . import version
 from . import data_dir
+from . import dispatcher
 from . import runner
 from . import loader
 from . import sysinfo
@@ -123,6 +124,8 @@ class Job(object):
                                                            _TEST_LOGGER)
         self.stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
+        self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+        output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -539,6 +542,9 @@ class Job(object):
                  :mod:`avocado.core.exit_codes` for more information.
         """
         runtime.CURRENT_JOB = self
+        for ext in self.job_pre_post_dispatcher.extensions:
+            if hasattr(ext.obj, 'pre'):
+                ext.obj.pre(self)
         try:
             return self._run()
         except exceptions.JobBaseException as details:
@@ -564,6 +570,9 @@ class Job(object):
             self.log.error('Report bugs visiting %s', _NEW_ISSUE_LINK)
             return exit_codes.AVOCADO_FAIL
         finally:
+            for ext in self.job_pre_post_dispatcher.extensions:
+                if hasattr(ext.obj, 'post'):
+                    ext.obj.post(self)
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()

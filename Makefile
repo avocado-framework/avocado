@@ -109,11 +109,13 @@ clean:
 	rm -f man/avocado.1
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
+	rm -rf avocado.egg-info
 	find docs/source/api/ -name '*.rst' -delete
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
+	rm -rf avocado.egg-info
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
@@ -128,7 +130,7 @@ requirements-selftests: requirements
 smokecheck:
 	./scripts/avocado run passtest
 
-check: clean check_cyclical modules_boundaries
+check: clean develop check_cyclical modules_boundaries
 	selftests/checkall
 	selftests/check_tmp_dirs
 
@@ -142,8 +144,10 @@ check_cyclical:
 modules_boundaries:
 	selftests/modules_boundaries
 
-link:
+develop:
 	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
+
+link: develop
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
