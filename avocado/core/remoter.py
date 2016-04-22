@@ -122,6 +122,8 @@ class Remote(object):
                 break
             except fabric.network.NetworkError as details:
                 fabric_exception = details
+                if 'not found in known_hosts' in details.message:
+                    break
                 timeout = end_time - time.time()
             if time.time() > end_time:
                 break
