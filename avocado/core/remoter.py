@@ -20,6 +20,7 @@ import getpass
 import logging
 import time
 
+from .settings import settings
 from ..utils import process
 
 LOG = logging.getLogger('avocado.test')
@@ -70,6 +71,14 @@ class Remote(object):
         self.password = password
         self.port = port
         self.quiet = quiet
+        reject_unknown_hosts = settings.get_value('remoter.behavior',
+                                                  'reject_unknown_hosts',
+                                                  key_type=bool,
+                                                  default=True)
+        disable_known_hosts = settings.get_value('remoter.behavior',
+                                                 'disable_known_hosts',
+                                                 key_type=bool,
+                                                 default=False)
         self._setup_environment(host_string=hostname,
                                 user=username,
                                 password=password,
@@ -78,7 +87,9 @@ class Remote(object):
                                 connection_attempts=attempts,
                                 linewise=True,
                                 abort_on_prompts=True,
-                                abort_exception=ConnectionError)
+                                abort_exception=ConnectionError,
+                                reject_unknown_hosts=reject_unknown_hosts,
+                                disable_known_hosts=disable_known_hosts)
 
     @staticmethod
     def _setup_environment(**kwargs):
