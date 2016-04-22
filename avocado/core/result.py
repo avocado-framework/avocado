@@ -85,26 +85,6 @@ class TestResultProxy(object):
         for output_plugin in self.output_plugins:
             output_plugin.end_test(state)
 
-    def add_pass(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.add_pass(state)
-
-    def add_error(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.add_error(state)
-
-    def add_fail(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.add_fail(state)
-
-    def add_skip(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.add_skip(state)
-
-    def add_warn(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.add_warn(state)
-
     def check_test(self, state):
         for output_plugin in self.output_plugins:
             output_plugin.check_test(state)
@@ -190,73 +170,25 @@ class TestResult(object):
         self.tests_run += 1
         self.total_time += state.get('time_elapsed', -1)
 
-    def add_pass(self, state):  # Unused variable pylint: disable=W0613
-        """
-        Called when a test succeeded.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.passed += 1
-
-    def add_error(self, state):  # Unused variable pylint: disable=W0613
-        """
-        Called when a test had a setup error.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.errors += 1
-
-    def add_fail(self, state):  # Unused variable pylint: disable=W0613
-        """
-        Called when a test fails.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.failed += 1
-
-    def add_skip(self, state):  # Unused variable pylint: disable=W0613
-        """
-        Called when a test is skipped.
-
-        :param test: an instance of :class:`avocado.core.test.Test`.
-        """
-        self.skipped += 1
-
-    def add_warn(self, state):  # Unused variable pylint: disable=W0613
-        """
-        Called when a test had a warning.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.warned += 1
-
-    def add_interrupt(self, state):  # Unused variable pylint: disable=W0613
-        """
-        Called when a test is interrupted by the user.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.interrupted += 1
-
     def check_test(self, state):
         """
         Called once for a test to check status and report.
 
         :param test: A dict with test internal state
         """
-        status_map = {'PASS': self.add_pass,
-                      'ERROR': self.add_error,
-                      'FAIL': self.add_fail,
-                      'SKIP': self.add_skip,
-                      'WARN': self.add_warn,
-                      'INTERRUPTED': self.add_interrupt}
-        add = status_map[state.get('status', 'ERROR')]
-        add(state)
+        status = state.get('status')
+        if status == "PASS":
+            self.passed += 1
+        elif status == "SKIP":
+            self.skipped += 1
+        elif status == "FAIL":
+            self.failed += 1
+        elif status == "WARN":
+            self.warned += 1
+        elif status == "INTERRUPTED":
+            self.interrupted += 1
+        else:
+            self.errors += 1
         self.end_test(state)
 
 
