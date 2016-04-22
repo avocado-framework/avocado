@@ -188,7 +188,7 @@ class TestResult(object):
         :type state: dict
         """
         self.tests_run += 1
-        self.total_time += state['time_elapsed']
+        self.total_time += state.get('time_elapsed', -1)
 
     def add_pass(self, state):  # Unused variable pylint: disable=W0613
         """
@@ -255,7 +255,7 @@ class TestResult(object):
                       'SKIP': self.add_skip,
                       'WARN': self.add_warn,
                       'INTERRUPTED': self.add_interrupt}
-        add = status_map[state['status']]
+        add = status_map[state.get('status', 'ERROR')]
         add(state)
         self.end_test(state)
 
@@ -301,11 +301,12 @@ class HumanTestResult(TestResult):
     def start_test(self, state):
         super(HumanTestResult, self).start_test(state)
         self.log.debug(' (%s/%s) %s:  ', self.tests_run, self.tests_total,
-                       state["tagged_name"], extra={"skip_newline": True})
+                       state.get("tagged_name", "<missing>"),
+                       extra={"skip_newline": True})
 
     def end_test(self, state):
         super(HumanTestResult, self).end_test(state)
-        status = state["status"]
+        status = state.get("status", "ERROR")
         if status == "TEST_NA":
             status = "SKIP"
         mapping = {'PASS': output.TERM_SUPPORT.PASS,
