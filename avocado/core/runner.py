@@ -217,7 +217,7 @@ class TestRunner(object):
         :param test_factory: Test factory (test class and parameters).
         :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
-        :type queue: :class`multiprocessing.Queue` instance.
+        :type queue: :class:`multiprocessing.Queue` instance.
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         logger_list_stdout = [logging.getLogger('avocado.test.stdout'),

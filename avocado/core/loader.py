@@ -228,7 +228,7 @@ class TestLoaderProxy(object):
         Load test from the test factory.
 
         :param test_factory: a pair of test class and parameters.
-        :type params: tuple
+        :type test_factory: tuple
         :return: an instance of :class:`avocado.core.test.Test`.
         """
         test_class, test_parameters = test_factory
