@@ -51,6 +51,54 @@ class JSONResultTest(unittest.TestCase):
         self.assertTrue(obj)
         self.assertEqual(len(obj['tests']), 1)
 
+    def testAddSeveralStatuses(self):
+        def run_fake_status(status):
+            self.test_result.start_test(self.test1)
+            self.test_result.check_test(status)
+
+        def check_item(name, value, exp):
+            self.assertEqual(value, exp, "Result%s is %s and not %s\n%s"
+                             % (name, value, exp, res))
+
+        # Set the number of tests to all tests + 3
+        self.test_result.tests_total = 13
+        # Full PASS status
+        self.test_result.start_test(self.test1)
+        self.test_result.check_test(self.test1.get_state())
+        # Only status - valid statuses
+        run_fake_status({"status": "PASS"})
+        run_fake_status({"status": "SKIP"})
+        run_fake_status({"status": "FAIL"})
+        run_fake_status({"status": "ERROR"})
+        run_fake_status({"status": "WARN"})
+        run_fake_status({"status": "INTERRUPTED"})
+        # Only status - invalid statuses
+        run_fake_status({"status": "INVALID"})
+        run_fake_status({"status": None})
+        run_fake_status({"status": ""})
+        # Postprocess
+        self.test_result.end_tests()
+        res = json.loads(self.test_result.json)
+        check_item("[pass]", res["pass"], 2)
+        check_item("[errors]", res["errors"], 4)
+        check_item("[failures]", res["failures"], 1)
+        check_item("[skip]", res["skip"], 4)
+        check_item("[total]", res["total"], 13)
+
+    def testNegativeStatus(self):
+        def check_item(name, value, exp):
+            self.assertEqual(value, exp, "Result%s is %s and not %s\n%s"
+                             % (name, value, exp, res))
+
+        self.test_result.tests_total = 0
+        self.test_result.start_test(self.test1)
+        self.test_result.check_test(self.test1.get_state())
+        self.test_result.end_tests()
+        res = json.loads(self.test_result.json)
+        check_item("[total]", res["total"], 1)
+        check_item("[skip]", res["skip"], 0)
+        check_item("[pass]", res["pass"], 1)
+
 
 if __name__ == '__main__':
     unittest.main()
