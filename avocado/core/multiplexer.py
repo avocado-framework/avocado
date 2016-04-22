@@ -389,8 +389,8 @@ class Mux(object):
             mux_tree = yaml2tree(mux_files, filter_only, filter_out)
         else:   # no variants
             mux_tree = tree.TreeNode()
-        if getattr(args, 'default_multiplex_tree', None):
-            mux_tree.merge(args.default_multiplex_tree)
+        if getattr(args, 'default_avocado_params', None):
+            mux_tree.merge(args.default_avocado_params)
         self.variants = MuxTree(mux_tree)
         self._mux_path = getattr(args, 'mux_path', None)
         if self._mux_path is None:

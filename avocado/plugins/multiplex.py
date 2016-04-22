@@ -101,7 +101,7 @@ class Multiplex(CLICmd):
             log.error(details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         if args.system_wide:
-            mux_tree.merge(args.default_multiplex_tree)
+            mux_tree.merge(args.default_avocado_params)
         mux_tree.merge(self._from_args_tree)
         if args.tree:
             if args.contents:
