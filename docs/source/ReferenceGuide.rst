@@ -258,6 +258,72 @@ The instances should have:
 
 .. [#f1] Avocado plugins can introduce additional test types.
 
+Job Pre and Post Scripts
+========================
+
+Avocado ships by default with a plugin that allows running scripts
+before and after the actual execution of Jobs.  A user can be sure
+that, when a given "pre" script is run, no test in that job has been
+run, and when the "post" scripts are run, all the tests in a given job
+have already finished running.
+
+Configuration
+-------------
+
+By default, the script directory location is::
+
+  /etc/avocado/scripts/job
+
+Inside that directory, that is a directory for pre-job scripts::
+
+  /etc/avocado/scripts/job/pre.d
+
+And for post-job scripts::
+
+  /etc/avocado/scripts/job/post.d
+
+All the configuration about the Pre/Post Job Scripts are placed under
+the ``avocado.plugins.jobscripts`` config section.  To change the
+location for the pre-job scripts, your configuration should look
+something like this::
+
+  [avocado.plugins.jobscripts]
+  pre = /my/custom/directory/for/pre/job/scripts/
+
+Accordingly, to change the location for the post-job scripts, your
+configuration should look something like this::
+
+  [avocado.plugins.jobscripts]
+  post = /my/custom/directory/for/post/scripts/
+
+A couple of other configuration options are available under the same
+section:
+
+* ``warn_non_existing_dir``: gives warnings if the configured (or
+  default) directory set for either pre or post scripts do not exist
+* ``warn_non_zero_status``: gives warnings if a given script (either
+  pre or post) exits with non-zero status
+
+Script Execution Environment
+----------------------------
+
+All scripts are run in separate process with some environment
+variables set.  These can be used in your scripts in any way you wish:
+
+* ``AVOCADO_JOB_UNIQUE_ID``: the unique `job-id`_.
+* ``AVOCADO_JOB_STATUS``: the current status of the job.
+* ``AVOCADO_JOB_LOGDIR``: the filesystem location that holds the logs
+  and various other files for a given job run.
+
+Note: Even though these variables should all be set, it's a good
+practice for scripts to check if they're set before using their
+values.  This may prevent unintended actions such as writing to the
+current working directory instead of to the ``AVOCADO_JOB_LOGDIR`` if
+this is not set.
+
+Finally, any failures in the Pre/Post scripts will not alter the
+status of the corresponding jobs.
+
 Job Cleanup
 ===========
 
