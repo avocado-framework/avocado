@@ -221,7 +221,7 @@ class HTMLTestResult(TestResult):
             state['fail_reason'] = ''
         else:
             state['fail_reason'] = str(state['fail_reason'])
-        t = {'test': state['tagged_name'],
+        t = {'test': state['name'],
              'url': state['name'],
              'time_start': state['time_start'],
              'time_end': state['time_end'],

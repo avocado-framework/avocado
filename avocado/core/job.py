@@ -499,9 +499,9 @@ class Job(object):
         self._log_job_debug_info(mux)
         replay.record(self.args, self.logdir, mux, self.urls)
         replay_map = getattr(self.args, 'replay_map', None)
-        summary = self.test_runner.run_suite(test_suite, mux,
-                                             timeout=self.timeout,
-                                             replay_map=replay_map)
+        summary = self.test_runner.run_suite(test_suite, mux, self.timeout,
+                                             replay_map,
+                                             self.args.test_result_total)
         self.__stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':

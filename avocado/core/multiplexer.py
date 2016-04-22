@@ -425,8 +425,8 @@ class Mux(object):
                            % (test_factory[0], test_factory[1]))
                     raise ValueError(msg)
                 test_factory[1]['params'] = (variant, self._mux_path)
-                yield test_factory
+                yield test_factory, i
             if i is None:   # No variants, use template
-                yield template
+                yield template, None
         else:   # No variants, use template
-            yield template
+            yield template, None

@@ -83,9 +83,9 @@ class StreamsTest(unittest.TestCase):
             self.assertIn("Command line: %s" % cmd,
                           result.stdout)
             testdir = data_dir.get_test_dir()
-            self.assertIn("\nSTART %s/passtest.py:PassTest.test" % testdir,
-                          result.stdout)
-            self.assertIn("PASS %s/passtest.py:PassTest.test" % testdir,
+            self.assertIn("\nSTART 1-%s/passtest.py:PassTest.test;0"
+                          % testdir, result.stdout)
+            self.assertIn("PASS 1-%s/passtest.py:PassTest.test;0" % testdir,
                           result.stdout)
             self.assertEqual('', result.stderr)
 

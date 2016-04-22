@@ -88,7 +88,7 @@ class XmlResult(object):
         """
         tc = '\t<testcase classname={class} name={name} time="{time}"/>'
         values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
+                  'name': self._escape_attr(state['name']),
                   'time': state['time_elapsed']}
         self.testcases.append(tc.format(**values))
 
@@ -103,7 +103,7 @@ class XmlResult(object):
 \t\t<skipped />
 \t</testcase>'''
         values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
+                  'name': self._escape_attr(state['name']),
                   'time': state['time_elapsed']}
         self.testcases.append(tc.format(**values))
 
@@ -119,7 +119,7 @@ class XmlResult(object):
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
         values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
+                  'name': self._escape_attr(state['name']),
                   'time': state['time_elapsed'],
                   'type': self._escape_attr(state['fail_class']),
                   'traceback': self._escape_cdata(state['traceback']),
@@ -139,7 +139,7 @@ class XmlResult(object):
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
         values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
+                  'name': self._escape_attr(state['name']),
                   'time': state['time_elapsed'],
                   'type': self._escape_attr(state['fail_class']),
                   'traceback': self._escape_cdata(state['traceback']),

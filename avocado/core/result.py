@@ -301,8 +301,10 @@ class HumanTestResult(TestResult):
 
     def start_test(self, state):
         super(HumanTestResult, self).start_test(state)
-        self.log.debug(' (%s/%s) %s:  ', self.tests_run, self.tests_total,
-                       state["tagged_name"], extra={"skip_newline": True})
+        name = state["name"]
+        self.log.debug(' (%s/%s) %s:  ', name.str_uid, self.tests_total,
+                       name.name + name.str_variant,
+                       extra={"skip_newline": True})
 
     def end_test(self, state):
         super(HumanTestResult, self).end_test(state)

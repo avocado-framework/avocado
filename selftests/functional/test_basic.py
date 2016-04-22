@@ -385,7 +385,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('MyTest.test_my_name -> TestError', result.stdout)
+        self.assertIn('1-%s:MyTest.test_my_name;0 -> TestError' % test,
+                      result.stdout)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -404,7 +405,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('passtest.py:PassTest.test:  PASS', result.stdout)
+        self.assertIn('passtest.py:PassTest.test;0:  PASS', result.stdout)
 
     def test_output_fail(self):
         os.chdir(basedir)
@@ -414,7 +415,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('failtest.py:FailTest.test:  FAIL', result.stdout)
+        self.assertIn('failtest.py:FailTest.test;0:  FAIL', result.stdout)
 
     def test_output_error(self):
         os.chdir(basedir)
@@ -424,7 +425,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('errortest.py:ErrorTest.test:  ERROR', result.stdout)
+        self.assertIn('errortest.py:ErrorTest.test;0:  ERROR', result.stdout)
 
     def test_output_skip(self):
         os.chdir(basedir)
@@ -434,7 +435,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
+        self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed;0:'
                       '  SKIP', result.stdout)
 
     def test_ugly_echo_cmd(self):
@@ -452,7 +453,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('[stdout] foo', result.stdout, result)
         self.assertIn('[stdout] \'"', result.stdout, result)
         self.assertIn('[stdout] bar/baz', result.stdout, result)
-        self.assertIn('PASS /bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz',
+        self.assertIn('PASS 1-/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz;0',
                       result.stdout, result)
         # logdir name should escape special chars (/)
         test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
@@ -461,7 +462,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          " test-results dir, but only one test was executed: "
                          "%s" % (test_dirs))
         self.assertEqual(os.path.basename(test_dirs[0]),
-                         '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
+                         '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz;0')
 
     def test_replay_skip_skipped(self):
         result = process.run("./scripts/avocado run skiponsetup --json -")
@@ -916,7 +917,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                          '/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz')
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
-                         '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
+                         '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz;0')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
