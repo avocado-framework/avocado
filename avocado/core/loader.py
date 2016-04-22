@@ -609,12 +609,9 @@ class FileLoader(TestLoader):
 
         return result
 
-    def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
-                            test_name=None):
-        if test_name is None:
-            test_name = test_path
+    def _make_avocado_tests(self, test_name, make_broken, subtests_filter):
         try:
-            tests = self._find_avocado_tests(test_path)
+            tests = self._find_avocado_tests(test_name)
             if tests:
                 test_factories = []
                 for test_class, test_methods in tests.items():
@@ -626,19 +623,19 @@ class FileLoader(TestLoader):
                                     not subtests_filter.search(name)):
                                 continue
                             tst = (test_class, {'name': name,
-                                                'modulePath': test_path,
+                                                'modulePath': test_name,
                                                 'methodName': test_method})
                             test_factories.append(tst)
                 return test_factories
             else:
-                if os.access(test_path, os.X_OK):
+                if os.access(test_name, os.X_OK):
                     # Module does not have an avocado test class inside but
                     # it's executable, let's execute it.
-                    return self._make_test(test.SimpleTest, test_path)
+                    return self._make_test(test.SimpleTest, test_name)
                 else:
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
-                    return make_broken(test.NotATest, test_path)
+                    return make_broken(test.NotATest, test_name)
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -646,12 +643,12 @@ class FileLoader(TestLoader):
         except BaseException as details:  # Ugly python files can raise any exc
             if isinstance(details, KeyboardInterrupt):
                 raise  # Don't ignore ctrl+c
-            if os.access(test_path, os.X_OK):
+            if os.access(test_name, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
-                return self._make_test(test.SimpleTest, test_path)
+                return self._make_test(test.SimpleTest, test_name)
             else:
-                return make_broken(test.NotATest, test_path)
+                return make_broken(test.NotATest, test_name)
 
     @staticmethod
     def _make_test(klass, uid):
@@ -704,7 +701,7 @@ class FileLoader(TestLoader):
             test_path = os.path.join(data_dir.get_test_dir(), rel_path)
             if os.path.exists(test_path):
                 return self._make_avocado_tests(test_path, make_broken,
-                                                subtests_filter, rel_path)
+                                                subtests_filter)
             else:
                 return make_broken(test.MissingTest, test_name)
 

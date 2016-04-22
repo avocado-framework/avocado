@@ -105,9 +105,7 @@ class Parser(object):
             help='subcommand help',
             dest='subcommand')
 
-        if tree.MULTIPLEX_CAPABLE:
-            # Allow overriding multiplex variants by plugins args
-            self.args.default_multiplex_tree = tree.TreeNode()
+        self.args.default_multiplex_tree = tree.TreeNode()
 
     def finish(self):
         """
