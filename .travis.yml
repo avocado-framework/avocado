@@ -44,6 +44,7 @@ script:
             echo
             git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
             make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
+            make clean
         done
         if [ "$ERR" ]; then
             echo
