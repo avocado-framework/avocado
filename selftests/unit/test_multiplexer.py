@@ -88,11 +88,11 @@ class TestAvocadoParams(unittest.TestCase):
         yamls = multiplexer.yaml2tree(["/:" + PATH_PREFIX +
                                        'examples/mux-selftest-params.yaml'])
         self.yamls = iter(multiplexer.MuxTree(yamls))
-        self.params1 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest1', 1,
+        self.params1 = multiplexer.AvocadoParams(self.yamls.next(),
                                                  ['/ch0/*', '/ch1/*'], {})
         self.yamls.next()    # Skip 2nd
         self.yamls.next()    # and 3rd
-        self.params2 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest2', 1,
+        self.params2 = multiplexer.AvocadoParams(self.yamls.next(),
                                                  ['/ch1/*', '/ch0/*'], {})
 
     @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
@@ -107,7 +107,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertNotEqual(self.params1, self.params2)
         repr(self.params1)
         str(self.params1)
-        str(multiplexer.AvocadoParams([], 'Unittest', None, [], {}))
+        str(multiplexer.AvocadoParams([], [], {}))
         self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
     @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")

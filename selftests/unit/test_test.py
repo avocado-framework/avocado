@@ -127,9 +127,6 @@ class TestClassTest(unittest.TestCase):
     def testClassAttributesTimeElapsed(self):
         self.assertIsInstance(self.tst_instance_pass.time_elapsed, float)
 
-    def testClassAttributesTag(self):
-        self.assertEqual(self.tst_instance_pass.tag, None)
-
     def testWhiteboardSave(self):
         whiteboard_file = os.path.join(
             self.tst_instance_pass.logdir, 'whiteboard')
@@ -209,7 +206,7 @@ class SkipTest(unittest.TestCase):
         self.tests.append(test.SkipTest(methodName="test",
                                         name=test.TestName(1, "my_name2"),
                                         params={}, base_logdir=None,
-                                        tag="a", job=None, runner_queue=None,
+                                        job=None, runner_queue=None,
                                         extra1="extra_param1",
                                         extra2="extra_param2"))
         self.assertEqual(self.tests[-1].name, "1-my_name2")
@@ -221,13 +218,12 @@ class SkipTest(unittest.TestCase):
                                         methodName="test",
                                         name=test.TestName(1, "my_name3"),
                                         params={}, base_logdir=None,
-                                        tag="3", job=None, runner_queue=None,
+                                        job=None, runner_queue=None,
                                         extra1="extra_param3",
                                         extra2="extra_param4"))
         self.assertEqual(self.tests[-1].name, "1-my_name3")
         # combination
         self.tests.append(test.SkipTest("test", test.TestName(1, "my_name4"),
-                                        tag="321",
                                         other_param="Whatever"))
         self.assertEqual(self.tests[-1].name, "1-my_name4")
         # ugly combination (positional argument overrides kwargs, this only
@@ -235,11 +231,13 @@ class SkipTest(unittest.TestCase):
         # We try to first match keyword args and then fall-back to positional
         # ones.
         name = "positional_method_name_becomes_test_name"
-        tag = "positional_base_logdir_becomes_tag"
-        self.tests.append(test.SkipTest(test.TestName(1, name), None, None, tag,
+        params = "positional_base_logdir_becomes_params"
+        self.tests.append(test.SkipTest(test.TestName(1, name), None, params,
                                         methodName="test",
                                         other_param="Whatever"))
         self.assertEqual(self.tests[-1].name, "1-" + name)
+        base_logdir = os.path.dirname(os.path.dirname(self.tests[-1].logdir))
+        self.assertEqual(base_logdir, "positional_base_logdir_becomes_params")
 
     def tearDown(self):
         for tst in self.tests:
