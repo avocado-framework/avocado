@@ -11,7 +11,6 @@ class MultipleTests(Test):
     so that 'test_foo' and 'testFoo' are test methods,
     but 'division_by_zero' and 'action' are not.
     """
-
     def setUp(self):
         self.hello = "Hi there!"
 

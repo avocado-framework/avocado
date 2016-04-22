@@ -148,14 +148,14 @@ class Test(unittest.TestCase):
         self.whiteboard = ''
 
         self.running = False
-        self.time_start = None
-        self.time_end = None
+        self.time_start = 0
+        self.time_end = 0
         self.paused = False
         self.paused_msg = ''
 
         self.runner_queue = runner_queue
 
-        self.time_elapsed = None
+        self.time_elapsed = 0
         unittest.TestCase.__init__(self, methodName=methodName)
 
     @property

@@ -133,12 +133,12 @@ class TestResult(object):
         self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
         self.total_time = 0.0
-        self.passed = []
-        self.errors = []
-        self.failed = []
-        self.skipped = []
-        self.warned = []
-        self.interrupted = []
+        self.passed = 0
+        self.errors = 0
+        self.failed = 0
+        self.skipped = 0
+        self.warned = 0
+        self.interrupted = 0
 
         # Where this results intends to write to. Convention is that a dash (-)
         # means stdout, and stdout is a special output that can be exclusively
@@ -153,12 +153,14 @@ class TestResult(object):
         missing, but this is no excuse for giving wrong summaries of test
         results.
         """
-        valid_results_count = (len(self.passed) + len(self.errors) +
-                               len(self.failed) + len(self.warned) +
-                               len(self.skipped) + len(self.interrupted))
+        valid_results_count = (self.passed + self.errors +
+                               self.failed + self.warned +
+                               self.skipped + self.interrupted)
         other_skipped_count = self.tests_total - valid_results_count
-        for i in xrange(other_skipped_count):
-            self.skipped.append({})
+        if other_skipped_count > 0:
+            self.skipped += other_skipped_count
+        else:
+            self.tests_total -= other_skipped_count
 
     def start_tests(self):
         """
@@ -189,60 +191,7 @@ class TestResult(object):
         :type state: dict
         """
         self.tests_run += 1
-        self.total_time += state['time_elapsed']
-
-    def add_pass(self, state):
-        """
-        Called when a test succeeded.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.passed.append(state)
-
-    def add_error(self, state):
-        """
-        Called when a test had a setup error.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.errors.append(state)
-
-    def add_fail(self, state):
-        """
-        Called when a test fails.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.failed.append(state)
-
-    def add_skip(self, state):
-        """
-        Called when a test is skipped.
-
-        :param test: an instance of :class:`avocado.core.test.Test`.
-        """
-        self.skipped.append(state)
-
-    def add_warn(self, state):
-        """
-        Called when a test had a warning.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.warned.append(state)
-
-    def add_interrupt(self, state):
-        """
-        Called when a test is interrupted by the user.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        self.interrupted.append(state)
+        self.total_time += state.get('time_elapsed', 0)
 
     def check_test(self, state):
         """
@@ -250,14 +199,19 @@ class TestResult(object):
 
         :param test: A dict with test internal state
         """
-        status_map = {'PASS': self.add_pass,
-                      'ERROR': self.add_error,
-                      'FAIL': self.add_fail,
-                      'SKIP': self.add_skip,
-                      'WARN': self.add_warn,
-                      'INTERRUPTED': self.add_interrupt}
-        add = status_map[state['status']]
-        add(state)
+        status = state.get('status')
+        if status == "PASS":
+            self.passed += 1
+        elif status == "SKIP":
+            self.skipped += 1
+        elif status == "FAIL":
+            self.failed += 1
+        elif status == "WARN":
+            self.warned += 1
+        elif status == "INTERRUPTED":
+            self.interrupted += 1
+        else:
+            self.errors += 1
         self.end_test(state)
 
 
@@ -289,9 +243,9 @@ class HumanTestResult(TestResult):
         """
         super(HumanTestResult, self).end_tests()
         self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                      "WARN %d | INTERRUPT %s", len(self.passed),
-                      len(self.errors), len(self.failed), len(self.skipped),
-                      len(self.warned), len(self.interrupted))
+                      "WARN %d | INTERRUPT %s", self.passed,
+                      self.errors, self.failed, self.skipped,
+                      self.warned, self.interrupted)
         if self.args is not None:
             if 'html_output' in self.args:
                 logdir = os.path.dirname(self.logfile)
@@ -302,11 +256,12 @@ class HumanTestResult(TestResult):
     def start_test(self, state):
         super(HumanTestResult, self).start_test(state)
         self.log.debug(' (%s/%s) %s:  ', self.tests_run, self.tests_total,
-                       state["tagged_name"], extra={"skip_newline": True})
+                       state.get("tagged_name", "<missing>"),
+                       extra={"skip_newline": True})
 
     def end_test(self, state):
         super(HumanTestResult, self).end_test(state)
-        status = state["status"]
+        status = state.get("status", "ERROR")
         if status == "TEST_NA":
             status = "SKIP"
         mapping = {'PASS': output.TERM_SUPPORT.PASS,
