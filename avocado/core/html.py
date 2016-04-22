@@ -241,10 +241,10 @@ class HTMLTestResult(TestResult):
         TestResult.end_tests(self)
         self.json.update({
             'total': len(self.json['tests']),
-            'pass': len(self.passed),
-            'errors': len(self.errors),
-            'failures': len(self.failed),
-            'skip': len(self.skipped),
+            'pass': self.passed,
+            'errors': self.errors,
+            'failures': self.failed,
+            'skip': self.skipped,
             'time': self.total_time
         })
         self._render_report()

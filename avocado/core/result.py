@@ -133,12 +133,12 @@ class TestResult(object):
         self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
         self.total_time = 0.0
-        self.passed = []
-        self.errors = []
-        self.failed = []
-        self.skipped = []
-        self.warned = []
-        self.interrupted = []
+        self.passed = 0
+        self.errors = 0
+        self.failed = 0
+        self.skipped = 0
+        self.warned = 0
+        self.interrupted = 0
 
         # Where this results intends to write to. Convention is that a dash (-)
         # means stdout, and stdout is a special output that can be exclusively
@@ -153,12 +153,11 @@ class TestResult(object):
         missing, but this is no excuse for giving wrong summaries of test
         results.
         """
-        valid_results_count = (len(self.passed) + len(self.errors) +
-                               len(self.failed) + len(self.warned) +
-                               len(self.skipped) + len(self.interrupted))
+        valid_results_count = (self.passed + self.errors +
+                               self.failed + self.warned +
+                               self.skipped + self.interrupted)
         other_skipped_count = self.tests_total - valid_results_count
-        for i in xrange(other_skipped_count):
-            self.skipped.append({})
+        self.skipped += other_skipped_count
 
     def start_tests(self):
         """
@@ -191,58 +190,58 @@ class TestResult(object):
         self.tests_run += 1
         self.total_time += state['time_elapsed']
 
-    def add_pass(self, state):
+    def add_pass(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test succeeded.
 
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        self.passed.append(state)
+        self.passed += 1
 
-    def add_error(self, state):
+    def add_error(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test had a setup error.
 
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        self.errors.append(state)
+        self.errors += 1
 
-    def add_fail(self, state):
+    def add_fail(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test fails.
 
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        self.failed.append(state)
+        self.failed += 1
 
-    def add_skip(self, state):
+    def add_skip(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test is skipped.
 
         :param test: an instance of :class:`avocado.core.test.Test`.
         """
-        self.skipped.append(state)
+        self.skipped += 1
 
-    def add_warn(self, state):
+    def add_warn(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test had a warning.
 
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        self.warned.append(state)
+        self.warned += 1
 
-    def add_interrupt(self, state):
+    def add_interrupt(self, state):  # Unused variable pylint: disable=W0613
         """
         Called when a test is interrupted by the user.
 
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        self.interrupted.append(state)
+        self.interrupted += 1
 
     def check_test(self, state):
         """
@@ -289,9 +288,9 @@ class HumanTestResult(TestResult):
         """
         super(HumanTestResult, self).end_tests()
         self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                      "WARN %d | INTERRUPT %s", len(self.passed),
-                      len(self.errors), len(self.failed), len(self.skipped),
-                      len(self.warned), len(self.interrupted))
+                      "WARN %d | INTERRUPT %s", self.passed,
+                      self.errors, self.failed, self.skipped,
+                      self.warned, self.interrupted)
         if self.args is not None:
             if 'html_output' in self.args:
                 logdir = os.path.dirname(self.logfile)

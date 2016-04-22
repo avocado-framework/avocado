@@ -209,9 +209,9 @@ class xUnitTestResult(TestResult):
         """
         TestResult.end_tests(self)
         values = {'tests': self.tests_total,
-                  'errors': len(self.errors) + len(self.interrupted),
-                  'failures': len(self.failed),
-                  'skip': len(self.skipped),
+                  'errors': self.errors + self.interrupted,
+                  'failures': self.failed,
+                  'skip': self.skipped,
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()
