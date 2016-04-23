@@ -415,7 +415,7 @@ class Mux(object):
         """
         if self.variants:  # Copy template and modify it's params
             i = None
-            for i, variant in enumerate(self.variants):
+            for i, variant in enumerate(self.variants, 1):
                 test_factory = [template[0], template[1].copy()]
                 if self._has_multiple_variants:
                     test_factory[1]['tag'] = "variant%s" % (i + 1)
@@ -425,8 +425,8 @@ class Mux(object):
                            % (test_factory[0], test_factory[1]))
                     raise ValueError(msg)
                 test_factory[1]['params'] = (variant, self._mux_path)
-                yield test_factory
+                yield test_factory, i if self._has_multiple_variants else None
             if i is None:   # No variants, use template
-                yield template
+                yield template, None
         else:   # No variants, use template
-            yield template
+            yield template, None

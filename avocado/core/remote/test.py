@@ -25,7 +25,6 @@ class RemoteTest(object):
                  logfile):
         note = "Not supported yet"
         self.name = name
-        self.tagged_name = name
         self.status = status
         self.time_elapsed = time
         self.time_start = start

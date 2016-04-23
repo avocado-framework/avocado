@@ -13,7 +13,7 @@ import logging
 cwd = os.getcwd()
 
 JSON_RESULTS = ('Something other than json\n'
-                '{"tests": [{"test": "sleeptest.1", "url": "sleeptest", '
+                '{"tests": [{"test": "1-sleeptest;0", "url": "sleeptest", '
                 '"fail_reason": "None", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
                 '"debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.'
@@ -43,7 +43,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         log.should_receive("info")
         job = flexmock(args=Args, log=log,
                        urls=['/tests/sleeptest', '/tests/other/test',
-                             'passtest'], unique_id='sleeptest.1',
+                             'passtest'], unique_id='1-sleeptest;0',
                        logdir="/local/path")
 
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
@@ -55,7 +55,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         flexmock(logging).should_receive("FileHandler").and_return(filehandler)
 
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
-        stream = flexmock(job_unique_id='sleeptest.1',
+        stream = flexmock(job_unique_id='1-sleeptest;0',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
         Remoter = flexmock(remoter.Remote)
@@ -101,7 +101,7 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args, ignore_status=True, timeout=60)
          .once().and_return(urls_result))
 
-        args = ("cd ~/avocado/tests; avocado run --force-job-id sleeptest.1 "
+        args = ("cd ~/avocado/tests; avocado run --force-job-id 1-sleeptest;0 "
                 "--json - --archive /tests/sleeptest /tests/other/test "
                 "passtest --multiplex ~/avocado/tests/foo.yaml "
                 "~/avocado/tests/bar/baz.yaml --dry-run")
@@ -115,14 +115,14 @@ _=/usr/bin/env''', exit_status=0)
                                          dry_run=True))
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
-                'name': u'sleeptest.1', 'class_name': 'RemoteTest',
+                'name': '1-sleeptest;0', 'class_name': 'RemoteTest',
                 'traceback': 'Not supported yet',
                 'text_output': 'Not supported yet', 'time_end': 1.23,
-                'tagged_name': u'sleeptest.1', 'time_elapsed': 1.23,
+                'time_elapsed': 1.23,
                 'fail_class': 'Not supported yet', 'job_unique_id': '',
-                'fail_reason': 'None',
-                'logdir': '/local/path/test-results/sleeptest.1',
-                'logfile': '/local/path/test-results/sleeptest.1/debug.log'}
+                'fail_reason': u'None',
+                'logdir': u'/local/path/test-results/1-sleeptest;0',
+                'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log'}
         Results.should_receive('start_test').once().with_args(args).ordered()
         Results.should_receive('check_test').once().with_args(args).ordered()
         (Remote.should_receive('receive_files')
