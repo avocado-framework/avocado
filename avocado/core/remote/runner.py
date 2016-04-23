@@ -29,6 +29,7 @@ from .. import virt
 from .. import exceptions
 from .. import status
 from ..runner import TestRunner
+from ..test import TestName
 from ...utils import astring
 from ...utils import archive
 from ...utils import stacktrace
@@ -179,7 +180,7 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout, replay_map=None):
+    def run_suite(self, test_suite, mux, timeout, replay_map=None, test_result_total=0):
         """
         Run one or more tests and report with test result.
 
@@ -190,6 +191,7 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.job.urls instead
         del mux            # we're not using multiplexation here
+        del test_result_total  # evaluated by the remote avocado
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()
@@ -228,7 +230,10 @@ class RemoteTestRunner(TestRunner):
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result.start_tests()
             for tst in results['tests']:
-                test = RemoteTest(name=tst['test'],
+                name = tst['test'].split('-', 1)
+                name = [name[0]] + name[1].split(';')
+                name = TestName(*name, no_digits=-1)
+                test = RemoteTest(name=name,
                                   time=tst['time'],
                                   start=tst['start'],
                                   end=tst['end'],

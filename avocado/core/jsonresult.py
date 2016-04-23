@@ -61,8 +61,8 @@ class JSONTestResult(TestResult):
         TestResult.end_test(self, state)
         if 'job_id' not in self.json:
             self.json['job_id'] = state.get('job_unique_id', "<unknown>")
-        t = {'test': state.get('tagged_name', "<unknown>"),
-             'url': state.get('name', "<unknown>"),
+        t = {'test': str(state.get('name', "<unknown>")),
+             'url': str(state.get('name', "<unknown>")),
              'start': state.get('time_start', -1),
              'end': state.get('time_end', -1),
              'time': state.get('time_elapsed', -1),

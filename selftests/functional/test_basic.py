@@ -385,7 +385,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('MyTest.test_my_name -> TestError', result.stdout)
+        self.assertIn('1-%s:MyTest.test_my_name -> TestError' % test,
+                      result.stdout)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -452,7 +453,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('[stdout] foo', result.stdout, result)
         self.assertIn('[stdout] \'"', result.stdout, result)
         self.assertIn('[stdout] bar/baz', result.stdout, result)
-        self.assertIn('PASS /bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz',
+        self.assertIn('PASS 1-/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz',
                       result.stdout, result)
         # logdir name should escape special chars (/)
         test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
@@ -461,7 +462,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          " test-results dir, but only one test was executed: "
                          "%s" % (test_dirs))
         self.assertEqual(os.path.basename(test_dirs[0]),
-                         '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
+                         '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
     def test_replay_skip_skipped(self):
         result = process.run("./scripts/avocado run skiponsetup --json -")
@@ -913,10 +914,10 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                                   0, 0)
         # The executed test should be this
         self.assertEqual(data['tests'][0]['url'],
-                         '/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz')
+                         '1-/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz')
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
-                         '_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
+                         '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
