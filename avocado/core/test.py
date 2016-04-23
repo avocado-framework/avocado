@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
     default_params = {}
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, tag=None, job=None, runner_queue=None):
+                 base_logdir=None, job=None, runner_queue=None):
         """
         Initializes the test.
 
@@ -129,9 +129,6 @@ class Test(unittest.TestCase):
         :param base_logdir: Directory where test logs should go. If None
                             provided, it'll use
                             :func:`avocado.data_dir.create_job_logs_dir`.
-        :param tag: Tag that differentiates 2 executions of the same test name.
-                    Example: 'long', 'short', so we can differentiate
-                    'sleeptest.long' and 'sleeptest.short'.
         :param job: The job that this test is part of.
         """
         def record_and_warn(*args, **kwargs):
@@ -145,7 +142,6 @@ class Test(unittest.TestCase):
         else:
             self.name = TestName(0, self.__class__.__name__)
 
-        self.tag = tag
         self.job = job
 
         if self.datadir is None:
@@ -193,8 +189,7 @@ class Test(unittest.TestCase):
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.params = multiplexer.AvocadoParams(params, self.name, self.tag,
-                                                mux_path,
+        self.params = multiplexer.AvocadoParams(params, mux_path,
                                                 self.default_params)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
@@ -309,7 +304,7 @@ class Test(unittest.TestCase):
         preserve_attr = ['basedir', 'debugdir', 'depsdir',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
-                         'tag', 'text_output', 'time_elapsed',
+                         'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
@@ -629,9 +624,9 @@ class SimpleTest(Test):
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
-    def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
+    def __init__(self, name, params=None, base_logdir=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
-                                         base_logdir=base_logdir, tag=tag, job=job)
+                                         base_logdir=base_logdir, job=job)
         self._command = self.filename
 
     @property
@@ -678,13 +673,13 @@ class SimpleTest(Test):
 
 class ExternalRunnerTest(SimpleTest):
 
-    def __init__(self, name, params=None, base_logdir=None, tag=None, job=None,
+    def __init__(self, name, params=None, base_logdir=None, job=None,
                  external_runner=None):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
-                                                 tag, job)
+                                                 job)
         self._command = external_runner.runner + " " + self.name.name
 
     @property
@@ -762,7 +757,7 @@ class SkipTest(Test):
         """
         super_kwargs = dict()
         args = list(reversed(args))
-        for arg in ["methodName", "name", "params", "base_logdir", "tag",
+        for arg in ["methodName", "name", "params", "base_logdir",
                     "job", "runner_queue"]:
             if arg in kwargs:
                 super_kwargs[arg] = kwargs[arg]
