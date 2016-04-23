@@ -8,7 +8,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado.core import exit_codes
+from avocado.core import data_dir, exit_codes
 from avocado.utils import process
 
 
@@ -82,8 +82,11 @@ class StreamsTest(unittest.TestCase):
                              result.stderr)
             self.assertIn("Command line: %s" % cmd,
                           result.stdout)
-            self.assertIn("START passtest", result.stdout)
-            self.assertIn("PASS passtest", result.stdout)
+            testdir = data_dir.get_test_dir()
+            self.assertIn("\nSTART %s/passtest.py:PassTest.test" % testdir,
+                          result.stdout)
+            self.assertIn("PASS %s/passtest.py:PassTest.test" % testdir,
+                          result.stdout)
             self.assertEqual('', result.stderr)
 
     def test_none_success(self):
