@@ -30,8 +30,5 @@ providing an assortment of system and logging facilities, with no effort,
 and if you want more features, then you can start using the API features
 progressively.
 
-An `extensive set of slides about Avocado
-<https://docs.google.com/presentation/d/1PLyOcmoYooWGAe-rS2gtjmrZ0B9J22FbfpNlQY8fIUE>`__,
-including details about its architecture, main features and status is available
-in google-drive. Mindmap from workshop (2015) demonstrating features on
-examples available `here <https://www.mindmeister.com/504616310>`__.
+Mindmap from workshop (2015) demonstrating features on examples
+available `here <https://www.mindmeister.com/504616310>`__.
