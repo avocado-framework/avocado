@@ -117,11 +117,11 @@ def sys_v_init_result_parser(command):
             """
             # If service is stopped, exit_status is also not zero.
             # So, we can't use exit_status to check result.
-            output = cmd_result.stdout.lower()
             # Returns None if XXX is unrecognized.
-            if re.search(r"unrecognized", output):
+            if re.search(r"unrecognized", cmd_result.stderr.lower()):
                 return None
             # Returns False if XXX is stopped.
+            output = cmd_result.stdout.lower()
             dead_flags = [r"stopped", r"not running", r"dead"]
             for flag in dead_flags:
                 if re.search(flag, output):
