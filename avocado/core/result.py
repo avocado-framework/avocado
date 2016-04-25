@@ -235,8 +235,14 @@ class HumanTestResult(TestResult):
 
     def start_test(self, state):
         super(HumanTestResult, self).start_test(state)
-        self.log.debug(' (%s/%s) %s:  ', self.tests_run, self.tests_total,
-                       state.get("tagged_name", "<missing>"),
+        if "name" in state:
+            name = state["name"]
+            uid = name.str_uid
+            name = name.name + name.str_variant
+        else:
+            name = "<unknown>"
+            uid = '?'
+        self.log.debug(' (%s/%s) %s:  ', uid, self.tests_total, name,
                        extra={"skip_newline": True})
 
     def end_test(self, state):
