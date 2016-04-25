@@ -117,11 +117,9 @@ class AvocadoParams(object):
 
     # TODO: Use "test" to log params.get()
 
-    def __init__(self, leaves, test_id, tag, mux_path, default_params):
+    def __init__(self, leaves, mux_path, default_params):
         """
         :param leaves: List of TreeNode leaves defining current variant
-        :param test_id: test id
-        :param tag: test tag
         :param mux_path: list of entry points
         :param default_params: dict of params used when no matches found
         """
@@ -134,8 +132,6 @@ class AvocadoParams(object):
         # Don't use non-mux-path params for relative paths
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
-        self.id = test_id
-        self.tag = tag
         self._log = logging.getLogger("avocado.test").debug
         self._cache = {}     # TODO: Implement something more efficient
         # TODO: Get rid of this and prepare something better
@@ -415,18 +411,16 @@ class Mux(object):
         """
         if self.variants:  # Copy template and modify it's params
             i = None
-            for i, variant in enumerate(self.variants):
+            for i, variant in enumerate(self.variants, 1):
                 test_factory = [template[0], template[1].copy()]
-                if self._has_multiple_variants:
-                    test_factory[1]['tag'] = "variant%s" % (i + 1)
                 if "params" in test_factory[1]:
                     msg = ("Unable to multiplex test %s, params are already "
                            "present in test factory: %s"
                            % (test_factory[0], test_factory[1]))
                     raise ValueError(msg)
                 test_factory[1]['params'] = (variant, self._mux_path)
-                yield test_factory
+                yield test_factory, i if self._has_multiple_variants else None
             if i is None:   # No variants, use template
-                yield template
+                yield template, None
         else:   # No variants, use template
-            yield template
+            yield template, None

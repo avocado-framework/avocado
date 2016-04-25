@@ -39,19 +39,20 @@ class TestClassTestUnit(unittest.TestCase):
     def testUglyName(self):
         def run(name, path_name):
             """ Initialize test and check the dirs were created """
-            test = DummyTest("test", name, base_logdir=self.tmpdir)
-            self.assertEqual(os.path.basename(test.logdir), path_name)
-            self.assertTrue(os.path.exists(test.logdir))
-            self.assertEqual(os.path.dirname(os.path.dirname(test.logdir)),
+            tst = DummyTest("test", test.TestName(1, name),
+                            base_logdir=self.tmpdir)
+            self.assertEqual(os.path.basename(tst.logdir), path_name)
+            self.assertTrue(os.path.exists(tst.logdir))
+            self.assertEqual(os.path.dirname(os.path.dirname(tst.logdir)),
                              self.tmpdir)
 
-        run("/absolute/path", "_absolute_path")
-        run("./relative/path", "__relative_path")
+        run("/absolute/path", "1-_absolute_path")
+        run("./relative/path", "1-._relative_path")
         run("../../multi_level/relative/path",
-            "_._.._multi_level_relative_path")
+            "1-.._.._multi_level_relative_path")
         # Greek word 'kosme'
         run("\xce\xba\xe1\xbd\xb9\xcf\x83\xce\xbc\xce\xb5",
-            "\xce\xba\xe1\xbd\xb9\xcf\x83\xce\xbc\xce\xb5")
+            "1-\xce\xba\xe1\xbd\xb9\xcf\x83\xce\xbc\xce\xb5")
         # Particularly problematic noncharacters in 16-bit applications
         name = ("\xb7\x95\xef\xb7\x96\xef\xb7\x97\xef\xb7\x98\xef\xb7\x99"
                 "\xef\xb7\x9a\xef\xb7\x9b\xef\xb7\x9c\xef\xb7\x9d\xef\xb7"
@@ -59,31 +60,48 @@ class TestClassTestUnit(unittest.TestCase):
                 "\xb7\xa3\xef\xb7\xa4\xef\xb7\xa5\xef\xb7\xa6\xef\xb7\xa7"
                 "\xef\xb7\xa8\xef\xb7\xa9\xef\xb7\xaa\xef\xb7\xab\xef\xb7"
                 "\xac\xef\xb7\xad\xef\xb7\xae\xef\xb7\xaf")
-        run(name, name)
+        run(name, "1-" + name)
 
     def testLongName(self):
-        test = DummyTest("test", "a" * 256, base_logdir=self.tmpdir)
-        self.assertEqual(os.path.basename(test.logdir), "a" * 250)
-        test = DummyTest("test", "a" * 256, base_logdir=self.tmpdir)
-        self.assertEqual(os.path.basename(test.logdir), "a" * 250 + ".1")
-        self.assertEqual(os.path.basename(test.workdir),
-                         os.path.basename(test.logdir))
-        flexmock(test)
-        test.should_receive('filename').and_return(os.path.join(self.tmpdir,
-                                                                "a"*250))
+        def check(uid, name, variant, exp_logdir):
+            tst = DummyTest("test", test.TestName(uid, name, variant))
+            self.assertEqual(os.path.basename(tst.logdir), exp_logdir)
+            return tst
+
+        # Everything fits
+        check(1, "a" * 253, None, "1-" + ("a" * 253))
+        check(2, "a" * 251, 1, "2-" + ("a" * 251) + ";1")
+        check(99, "a" * 249, 88, "99-" + ("a" * 249) + ";88")
+        # Shrink name
+        check(3, "a" * 252, 1, "3-" + ('a' * 251) + ";1")
+        # Shrink variant
+        check("a" * 253, "whatever", 99, "a" * 253 + ";9")
+        check("a" * 254, "whatever", 99, "a" * 254 + ";")
+        # No variant
+        tst = check("a" * 255, "whatever", "whatever-else", "a" * 255)
+        # Impossible to store (uid does not fit
+        self.assertRaises(AssertionError, check, "a" * 256, "whatever", "else",
+                          None)
+
+        self.assertEqual(os.path.basename(tst.workdir),
+                         os.path.basename(tst.logdir))
+        flexmock(tst)
+        tst.should_receive('filename').and_return(os.path.join(self.tmpdir,
+                                                               "a"*250))
         self.assertEqual(os.path.join(self.tmpdir, "a"*250 + ".data"),
-                         test.datadir)
-        test.should_receive('filename').and_return("a"*251)
-        self.assertFalse(test.datadir)
-        test._record_reference_stdout       # Should does nothing
-        test._record_reference_stderr       # Should does nothing
-        test._record_reference_stdout()
-        test._record_reference_stderr()
+                         tst.datadir)
+        tst.should_receive('filename').and_return("a"*251)
+        self.assertFalse(tst.datadir)
+        tst._record_reference_stdout       # Should does nothing
+        tst._record_reference_stderr       # Should does nothing
+        tst._record_reference_stdout()
+        tst._record_reference_stderr()
 
     def testAllDirsExistsNoHang(self):
         flexmock(os.path)
-        os.path.should_receive('isdir').and_return(True)
-        self.assertRaises(exceptions.TestSetupFail, DummyTest, "test", "name")
+        os.path.should_receive('exists').and_return(True)
+        self.assertRaises(exceptions.TestSetupFail, DummyTest, "test",
+                          test.TestName(1, "name"))
 
 
 class TestClassTest(unittest.TestCase):
@@ -99,23 +117,15 @@ class TestClassTest(unittest.TestCase):
         self.base_logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass.run_avocado()
-        self.tst_instance_pass_new = AvocadoPass(base_logdir=self.base_logdir)
-        self.tst_instance_pass_new.run_avocado()
 
     def testClassAttributesName(self):
-        self.assertEqual(self.tst_instance_pass.name, 'AvocadoPass')
+        self.assertEqual(self.tst_instance_pass.name, '0-AvocadoPass')
 
     def testClassAttributesStatus(self):
         self.assertEqual(self.tst_instance_pass.status, 'PASS')
 
     def testClassAttributesTimeElapsed(self):
         self.assertIsInstance(self.tst_instance_pass.time_elapsed, float)
-
-    def testClassAttributesTag(self):
-        self.assertEqual(self.tst_instance_pass.tag, "0")
-
-    def testClassAttributesTaggedName(self):
-        self.assertEqual(self.tst_instance_pass.tagged_name, "AvocadoPass")
 
     def testWhiteboardSave(self):
         whiteboard_file = os.path.join(
@@ -125,13 +135,14 @@ class TestClassTest(unittest.TestCase):
             whiteboard_contents = whiteboard_file_obj.read().strip()
             self.assertTrue(whiteboard_contents, 'foo')
 
-    def testTaggedNameNewTests(self):
-        """
-        New test instances should have crescent tag instances.
-        """
-        self.assertEqual(
-            self.tst_instance_pass_new.tagged_name, "AvocadoPass.1")
-        self.assertEqual(self.tst_instance_pass_new.tag, "1")
+    def testRunningTestTwiceWithTheSameUidFailure(self):
+        class AvocadoPass(test.Test):
+
+            def test(self):
+                pass
+
+        self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
+                          base_logdir=self.base_logdir)
 
     def tearDown(self):
         shutil.rmtree(self.base_logdir)
@@ -154,12 +165,12 @@ class SimpleTestClassTest(unittest.TestCase):
         self.fail_script.save()
 
         self.tst_instance_pass = test.SimpleTest(
-            name=self.pass_script.path,
+            name=test.TestName(1, self.pass_script.path),
             base_logdir=self.tmpdir)
         self.tst_instance_pass.run_avocado()
 
         self.tst_instance_fail = test.SimpleTest(
-            name=self.fail_script.path,
+            name=test.TestName(1, self.fail_script.path),
             base_logdir=self.tmpdir)
         self.tst_instance_fail.run_avocado()
 
@@ -186,47 +197,47 @@ class SkipTest(unittest.TestCase):
         self.assertRaises(exceptions.TestSkipError, self.tests[-1].setUp)
         self.assertRaises(RuntimeError, self.tests[-1].test)
         # Positional
-        self.tests.append(test.SkipTest("test", "my_name", {}, None, "1",
+        self.tests.append(test.SkipTest("test", test.TestName(1, "my_name"),
+                                        {}, None, "1",
                                         None, None, "extra_param1",
                                         "extra_param2"))
-        self.assertEqual(self.tests[-1].name, "my_name")
-        self.assertEqual(self.tests[-1].tagged_name, "my_name.1")
+        self.assertEqual(self.tests[-1].name, "1-my_name")
         # Kwargs
-        self.tests.append(test.SkipTest(methodName="test", name="my_name2",
+        self.tests.append(test.SkipTest(methodName="test",
+                                        name=test.TestName(1, "my_name2"),
                                         params={}, base_logdir=None,
-                                        tag="a", job=None, runner_queue=None,
+                                        job=None, runner_queue=None,
                                         extra1="extra_param1",
                                         extra2="extra_param2"))
-        self.assertEqual(self.tests[-1].name, "my_name2")
-        self.assertEqual(self.tests[-1].tagged_name, "my_name2.a")
+        self.assertEqual(self.tests[-1].name, "1-my_name2")
         # both (theoretically impossible in python, but valid for nasty tests)
         # keyword args are used as they explicitly represent what they mean
         self.tests.append(test.SkipTest("not used", "who cares", {}, None, "0",
                                         None, None, "extra_param1",
                                         "extra_param2",
-                                        methodName="test", name="my_name3",
+                                        methodName="test",
+                                        name=test.TestName(1, "my_name3"),
                                         params={}, base_logdir=None,
-                                        tag="3", job=None, runner_queue=None,
+                                        job=None, runner_queue=None,
                                         extra1="extra_param3",
                                         extra2="extra_param4"))
-        self.assertEqual(self.tests[-1].name, "my_name3")
-        self.assertEqual(self.tests[-1].tagged_name, "my_name3.3")
+        self.assertEqual(self.tests[-1].name, "1-my_name3")
         # combination
-        self.tests.append(test.SkipTest("test", "my_name4", tag="321",
+        self.tests.append(test.SkipTest("test", test.TestName(1, "my_name4"),
                                         other_param="Whatever"))
-        self.assertEqual(self.tests[-1].name, "my_name4")
-        self.assertEqual(self.tests[-1].tagged_name, "my_name4.321")
+        self.assertEqual(self.tests[-1].name, "1-my_name4")
         # ugly combination (positional argument overrides kwargs, this only
         # happens when the substituted class reorders the positional arguments.
         # We try to first match keyword args and then fall-back to positional
         # ones.
         name = "positional_method_name_becomes_test_name"
-        tag = "positional_base_logdir_becomes_tag"
-        self.tests.append(test.SkipTest(name, None, None, tag,
+        params = "positional_base_logdir_becomes_params"
+        self.tests.append(test.SkipTest(test.TestName(1, name), None, params,
                                         methodName="test",
                                         other_param="Whatever"))
-        self.assertEqual(self.tests[-1].name, name)
-        self.assertEqual(self.tests[-1].tagged_name, "%s.%s" % (name, tag))
+        self.assertEqual(self.tests[-1].name, "1-" + name)
+        base_logdir = os.path.dirname(os.path.dirname(self.tests[-1].logdir))
+        self.assertEqual(base_logdir, "positional_base_logdir_becomes_params")
 
     def tearDown(self):
         for tst in self.tests:

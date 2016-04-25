@@ -217,7 +217,7 @@ class HTMLTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
-        t = {'test': state.get('tagged_name', "<unknown>"),
+        t = {'test': str(state.get('name', "<unknown>")),
              'url': state.get('name', "<unknown>"),
              'time_start': state.get('time_start', -1),
              'time_end': state.get('time_end', -1),
