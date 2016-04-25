@@ -34,7 +34,7 @@
 	 "description": "On the same machine used during 'Avocado Server Run', on another console, run `$ curl http://localhost:9405`. Expected result: json response"},
 
 	{"name": "Avocado Virt and VT Source Checkout",
-	 "description": "On a virtualization capable machine, checkout a copy of the avocado-vt, avocado-virt, avocado-virt-tests repositories with `$ git clone git://github.com/avocado-framework/avocado-vt.git`, `$ git clone git://github.com/avocado-framework/avocado-virt.git` and `$ git clone git://github.com/avocado-framework/avocado-virt-tests.git`. On the Avocado (non-virt) repo, run `make link`. Now run `$ avocado plugins`. Expected result: `virt`, `virt_bootstrap`, `vt`, `vt_bootstrap` and `vt_lister` plugins enabled."},
+	 "description": "On a virtualization capable machine, checkout a copy of the avocado-vt, avocado-virt, avocado-virt-tests repositories with `$ git clone git://github.com/avocado-framework/avocado-vt.git`, `$ git clone git://github.com/avocado-framework/avocado-virt.git` and `$ git clone git://github.com/avocado-framework/avocado-virt-tests.git`. On the Avocado (non-virt) repo, run `make link`. Now run `$ avocado plugins`. Expected result: `virt`, `virt_bootstrap`, `vt`, `vt_bootstrap` and `vt_list` plugins enabled."},
 
 	{"name": "Avocado Virt Bootstrap",
 	 "description": "Now that the `virt_bootstrap` plugin and action `virt-bootstrap` is available run `$ avocado virt-bootstrap`. Expected result: `Your system appears to be all set to execute tests`"},
