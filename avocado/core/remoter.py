@@ -74,7 +74,7 @@ class Remote(object):
         reject_unknown_hosts = settings.get_value('remoter.behavior',
                                                   'reject_unknown_hosts',
                                                   key_type=bool,
-                                                  default=True)
+                                                  default=False)
         disable_known_hosts = settings.get_value('remoter.behavior',
                                                  'disable_known_hosts',
                                                  key_type=bool,
