@@ -64,6 +64,11 @@ class Remote(CLI):
                                         dest='remote_password', default=None,
                                         help='Specify the password to login on'
                                         ' remote machine')
+        self.remote_parser.add_argument('--remote-key-file',
+                                        dest='remote_key_file', default=None,
+                                        help='Specify an identity file with '
+                                        'a private key instead of a password '
+                                        '(Example: .pem files from Amazon EC2)')
         self.remote_parser.add_argument('--remote-no-copy',
                                         dest='remote_no_copy',
                                         action='store_true',
