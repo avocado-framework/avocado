@@ -88,7 +88,7 @@ class XmlResult(object):
         """
         tc = '\t<testcase classname={class} name={name} time="{time}"/>'
         values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
-                  'name': self._escape_attr(state.get('tagged_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
                   'time': state.get('time_elapsed', -1)}
         self.testcases.append(tc.format(**values))
 
@@ -103,7 +103,7 @@ class XmlResult(object):
 \t\t<skipped />
 \t</testcase>'''
         values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
-                  'name': self._escape_attr(state.get('tagged_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
                   'time': state.get('time_elapsed', -1)}
         self.testcases.append(tc.format(**values))
 
@@ -119,7 +119,7 @@ class XmlResult(object):
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
         values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
-                  'name': self._escape_attr(state.get('tagged_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
                   'time': state.get('time_elapsed', -1),
                   'type': self._escape_attr(state.get('fail_class', "<unknown>")),
                   'traceback': self._escape_cdata(state.get('traceback', "<unknown>")),
@@ -139,7 +139,7 @@ class XmlResult(object):
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
         values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
-                  'name': self._escape_attr(state.get('tagged_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
                   'time': state.get('time_elapsed', -1),
                   'type': self._escape_attr(state.get('fail_class', "<unknown>")),
                   'traceback': self._escape_cdata(state.get('traceback', "<unknown>")),
