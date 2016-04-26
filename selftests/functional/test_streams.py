@@ -82,8 +82,9 @@ class StreamsTest(unittest.TestCase):
                              result.stderr)
             self.assertIn("Command line: %s" % cmd,
                           result.stdout)
-            self.assertIn("START passtest", result.stdout)
-            self.assertIn("PASS passtest", result.stdout)
+            self.assertIn("\nSTART 1-passtest.py:PassTest.test",
+                          result.stdout)
+            self.assertIn("PASS 1-passtest.py:PassTest.test", result.stdout)
             self.assertEqual('', result.stderr)
 
     def test_none_success(self):

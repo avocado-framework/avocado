@@ -46,6 +46,65 @@ else:
     import unittest
 
 
+class TestName(object):
+
+    """
+    Test name representation
+    """
+
+    def __init__(self, uid, name, variant=None, no_digits=None):
+        """
+        Test name according to avocado specification
+
+        :param uid: unique test id (within the job)
+        :param name: test name (identifies the executed test)
+        :param variant: variant id
+        :param no_digits: number of digits of the test uid
+        """
+        self.uid = uid
+        if no_digits >= 0:
+            self.str_uid = str(uid).zfill(no_digits if no_digits else 3)
+        else:
+            self.str_uid = str(uid)
+        self.name = name or "<unknown>"
+        self.variant = variant
+        self.str_variant = "" if variant is None else ";" + str(variant)
+
+    def __str__(self):
+        return "%s-%s%s" % (self.str_uid, self.name, self.str_variant)
+
+    def __repr__(self):
+        return repr(str(self))
+
+    def __eq__(self, other):
+        if isinstance(other, basestring):
+            return str(self) == other
+        else:
+            return self.__dict__ == other.__dict__
+
+    def str_filesystem(self):
+        """
+        File-system friendly representation of the test name
+        """
+        name = str(self)
+        fsname = astring.string_to_safe_path(name)
+        if len(name) == len(fsname):    # everything fits in
+            return fsname
+        # 001-mytest;aaa
+        # 001-mytest;a
+        # 001-myte;aaa
+        idx_fit_variant = len(fsname) - len(self.str_variant)
+        if idx_fit_variant > len(self.str_uid):     # full uid+variant
+            return (fsname[:idx_fit_variant] +
+                    astring.string_to_safe_path(self.str_variant))
+        elif len(self.str_uid) <= len(fsname):   # full uid
+            return astring.string_to_safe_path(self.str_uid + self.str_variant)
+        else:       # not even uid could be stored in fs
+            raise AssertionError("Test uid is too long to be stored on the "
+                                 "filesystem: %s\nFull test name is %s"
+                                 % (self.str_uid, str(self)))
+
+
 class Test(unittest.TestCase):
 
     """
@@ -81,10 +140,14 @@ class Test(unittest.TestCase):
                 self.__log_warn_used = True
             return original_log_warn(*args, **kwargs)
 
-        if name is not None:
+        _incorrect_name = None
+        if isinstance(name, basestring):    # TODO: Remove in release 0.37
+            _incorrect_name = True
+            self.name = TestName(0, name)
+        elif name is not None:
             self.name = name
         else:
-            self.name = self.__class__.__name__
+            self.name = TestName(0, self.__class__.__name__)
 
         self.tag = tag
         self.job = job
@@ -101,7 +164,12 @@ class Test(unittest.TestCase):
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
-        self.tagged_name, self.logdir = self._init_logdir(base_logdir)
+        logdir = os.path.join(base_logdir, self.name.str_filesystem())
+        if os.path.exists(logdir):
+            raise exceptions.TestSetupFail("Log dir already exists, this "
+                                           "should never happen: %s"
+                                           % logdir)
+        self.logdir = utils_path.init_dir(logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
         genio.set_log_file_dir(self.logdir)
@@ -119,6 +187,13 @@ class Test(unittest.TestCase):
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
+        if _incorrect_name is not None:
+            self.log.warn("The 'name' argument has to be TestName instance, "
+                          "not string. In the upcomming releases this will "
+                          "become an exception. (%s)", self.name.name)
+        if tag is not None:    # TODO: Remove in release 0.37
+            self.log.warn("The 'tag' argument is not supported and will be "
+                          "removed in the upcoming releases. (%s)", tag)
 
         mux_path = ['/test/*']
         if isinstance(params, dict):
@@ -135,7 +210,7 @@ class Test(unittest.TestCase):
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 
-        self.log.info('START %s', self.tagged_name)
+        self.log.info('START %s', self.name)
 
         self.debugdir = None
         self.resultsdir = None
@@ -209,7 +284,7 @@ class Test(unittest.TestCase):
         return str(self.name)
 
     def __repr__(self):
-        return "Test(%r)" % self.tagged_name
+        return "Test(%r)" % self.name
 
     def _tag_start(self):
         self.running = True
@@ -245,7 +320,7 @@ class Test(unittest.TestCase):
         preserve_attr = ['basedir', 'debugdir', 'depsdir',
                          'fail_reason', 'logdir', 'logfile', 'name',
                          'resultsdir', 'srcdir', 'status', 'sysinfodir',
-                         'tag', 'tagged_name', 'text_output', 'time_elapsed',
+                         'tag', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
@@ -295,39 +370,6 @@ class Test(unittest.TestCase):
         """
         self.log.removeHandler(self.file_handler)
         logging.getLogger('paramiko').removeHandler(self._ssh_fh)
-
-    def _init_logdir(self, logdir):
-        """
-        Initialize log dir
-
-        Combines name + tag (if present) to obtain unique name. When associated
-        directory already exists, appends ".$number" until unused name
-        is generated to avoid clashes.
-
-        :param logdir: Log directory being in use for result storage.
-
-        :return: Unique test name and the logdir
-        """
-        name = self.name
-        if self.tag is not None:
-            name += ".%s" % self.tag
-        tag = 0
-        tagged_name = name
-        # The maximal length on ext4+python2.7 is 255 chars.
-        safe_tagged_name = astring.string_to_safe_path(tagged_name[:250])
-        for i in xrange(9999):
-            if not os.path.isdir(os.path.join(logdir, safe_tagged_name)):
-                break
-            tag += 1
-            tagged_name = "%s.%s" % (name, tag)
-            safe_tagged_name = astring.string_to_safe_path("%s.%s"
-                                                           % (name[:250], tag))
-        else:
-            raise exceptions.TestSetupFail("Unable to find unique name in %s "
-                                           "iterations (%s).", i,
-                                           safe_tagged_name)
-        self.tag = "%s.%s" % (self.tag, tag) if self.tag else str(tag)
-        return tagged_name, utils_path.init_dir(logdir, safe_tagged_name)
 
     def _record_reference_stdout(self):
         if self.datadir is not None:
@@ -520,7 +562,7 @@ class Test(unittest.TestCase):
         """
         if self.fail_reason is not None:
             self.log.error("%s %s -> %s: %s", self.status,
-                           self.tagged_name,
+                           self.name,
                            self.fail_class,
                            self.fail_reason)
 
@@ -528,7 +570,7 @@ class Test(unittest.TestCase):
             if self.status is None:
                 self.status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
-                          self.tagged_name)
+                          self.name)
 
     def fail(self, message=None):
         """
@@ -608,7 +650,7 @@ class SimpleTest(Test):
         """
         Returns the name of the file (path) that holds the current test
         """
-        return os.path.abspath(self.name)
+        return os.path.abspath(self.name.name)
 
     def _log_detailed_cmd_info(self, result):
         """
@@ -654,7 +696,7 @@ class ExternalRunnerTest(SimpleTest):
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
-        self._command = external_runner.runner + " " + name
+        self._command = external_runner.runner + " " + self.name.name
 
     @property
     def filename(self):
