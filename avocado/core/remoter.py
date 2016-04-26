@@ -153,6 +153,7 @@ def _update_fabric_env(method):
         fabric.api.env.update(host_string=args[0].hostname,
                               user=args[0].username,
                               key_filename=args[0].key_filename,
+                              password=args[0].password,
                               port=args[0].port)
         return method(*args, **kwargs)
     return wrapper
