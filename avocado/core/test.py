@@ -142,12 +142,16 @@ class Test(unittest.TestCase):
 
         _incorrect_name = None
         if isinstance(name, basestring):    # TODO: Remove in release 0.37
+            import random
             _incorrect_name = True
-            self.name = TestName(0, name)
+            self.name = TestName(random.randrange(9999), name)
         elif name is not None:
             self.name = name
         else:
-            self.name = TestName(0, self.__class__.__name__)
+            import random
+            _incorrect_name = True
+            self.name = TestName(random.randrange(9999),
+                                 self.__class__.__name__)
 
         self.tag = tag
         self.job = job
