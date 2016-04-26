@@ -30,6 +30,7 @@ import fnmatch
 
 from . import version
 from . import data_dir
+from . import dispatcher
 from . import runner
 from . import loader
 from . import sysinfo
@@ -124,6 +125,8 @@ class Job(object):
         self.stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
         self.exitcode = exit_codes.AVOCADO_ALL_OK
+        self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+        output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -462,6 +465,7 @@ class Job(object):
         """
         self._setup_job_results()
         self.__start_job_logging()
+        self.job_pre_post_dispatcher.map_methods('pre', self)
 
         try:
             test_suite = self._make_test_suite(self.urls)
@@ -571,6 +575,7 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
+            self.job_pre_post_dispatcher.map_methods('post', self)
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
