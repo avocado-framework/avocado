@@ -9,14 +9,15 @@ The first step towards using Avocado is, quite obviously, installing it.
 Installing Avocado
 ==================
 
-Avocado is available in RPM packages for Fedora, and `DEB packages for Ubuntu`_.
-
-.. _DEB packages for Ubuntu: https://launchpad.net/~lmr/+archive/avocado
+Avocado is officially available in RPM packages for Fedora and
+Enterprise Linux.  Other RPM based distributions may package and ship
+Avocado themselves.  DEB package support is available in the source
+tree (look at the ``contrib/packages/debian`` directory).
 
 .. Note: the following text should instead reference the distro tiers levels
 
 Avocado is primarily being developed on Fedora, but reasonable efforts
-are being made to support other platforms such as Ubuntu.
+are being made to support other GNU/Linux based platforms.
 
 Fedora
 ------
@@ -37,16 +38,6 @@ such as CentOS, just adapt to the following URL and commands::
     # Add avocado repository and install avocado
     sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     sudo yum install avocado
-
-
-Ubuntu
-------
-
-You can install Avocado by running the following commands::
-
-    sudo echo "deb http://ppa.launchpad.net/lmr/avocado/ubuntu utopic main" >> /etc/apt/sources.list
-    sudo apt-get update
-    sudo apt-get install avocado
 
 Generic installation from a GIT repository
 ------------------------------------------
