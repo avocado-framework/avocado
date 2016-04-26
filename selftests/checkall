@@ -19,6 +19,6 @@ if [ -z "$AVOCADO_SELF_CHECK" ]; then
     run_rc selftests/run
 else
     run_rc 'python setup.py develop --user'
-    run_rc 'scripts/avocado run `./contrib/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/python -m unittest"'
+    run_rc 'scripts/avocado run `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/python -m unittest"'
 fi
 exit ${GR}
