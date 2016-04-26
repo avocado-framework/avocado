@@ -4,8 +4,9 @@
 Releasing avocado
 =================
 
-So you have all PRs approved, and Sprint meeting is done and now avocado is ready to be released.
-Great, let's go over (most of) the details you need to pay attention to.
+So you have all PRs approved, the Sprint meeting is done and now
+Avocado is ready to be released.  Great, let's go over (most of) the
+details you need to pay attention to.
 
 Bump the version number
 =======================
@@ -23,7 +24,7 @@ of this writing, the diff looked like this::
     -Version: 0.28.0
     -Release: 2%{?dist}
     +Version: 0.29.0
-    +Release: 1%{?dist}
+    +Release: 0%{?dist}
      License: GPLv2
      Group: Development/Tools
      URL: http://avocado-framework.github.io/
@@ -31,7 +32,7 @@ of this writing, the diff looked like this::
      %{_datadir}/avocado/wrappers
 
      %changelog
-    +* Wed Oct 7 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.29.0-1
+    +* Wed Oct 7 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.29.0-0
     +- New upstream release 0.29.0
     +
      * Wed Sep 16 2015 Lucas Meneghel Rodrigues <lmr@redhat.com> - 0.28.0-2
@@ -80,71 +81,75 @@ content in the following repositories:
 In this order of importance. Some times ``avocado-virt`` and ``avocado-virt-tests``
 might not get updates, so it's OK to skip them.
 
-Build source rpms
-=================
-
-Go to the source directory and do::
-
-    $ make build-rpm-all
-    ...
-    + exit 0
-
-
-Upload source to a public location
-==================================
-
-Upload the source RPMs to a public URL, for building with COPR::
-
-    $ scp SRPMS/avocado-0.29.0-1.fc22.src.rpm user@remote.box:/path/to/srcrpms
-
-Send the packages to build on COPR
-==================================
-
-Then go to COPR, and give the public URL of the srcrpm package to the new build
-tab (you must be logged into FAS - Fedora Accounts System). For the COPR
-lmr/Autotest, the new build tab will be located in:
-
-https://copr.fedoraproject.org/coprs/lmr/Autotest/add_build/
-
-Give the RPM URL to that dialog, select all the chroots where the package will be
-built, then watch for build problems.
-
-If everything went well, great! Some times though, you'll have to go through the
-COPR build errors to figure out what is wrong. Hint - It's frequently something
-related to build or runtime dependencies that we forgot to add at the build
-time. Remember that unittests now run by default in many of the chroots there,
-so keep that in mind and search through the COPR logs. Keep working on the issues
-until you get them all fixed.
-
-Sometimes, particularly for not-released-yet
-distros, the problem might be that one of our dependent packages was still
-not built for that distro, or it's a package dependency issue that is being
-worked out, and it's not avocado's fault. The best you can do in that case is to
-disable the build on that particular distro.
-
-Keep working until all the builds are passing.
-
 Tag all repositories
 ====================
 
-When everything is in good shape, commit the version changes and tag that commit
-in master with::
+When everything is in good shape, commit the version changes and tag
+that commit in master with::
 
-    $ git tag -u $(GPG_ID) -s $(RELEASE) -m 'Avocado Release $(RELEASE)'
+  $ git tag -u $(GPG_ID) -s $(RELEASE) -m 'Avocado Release $(RELEASE)'
+
+Then the tag should be pushed to the GIT repository with::
+
+  $ git push --tags
+
+Build RPMs
+==========
+
+Go to the source directory and do::
+
+    $ make rpm
+    ...
+    + exit 0
+
+This should be all.  It will build packages using ``mock``, targeting
+your default configuration.  That usually means the same platform
+you're currently on.
+
+Sign Packages
+=============
+
+All the packages should be signed for safer public consumption.  The
+process is, of course, dependent on the private keys, put is based on
+running::
+
+  $ rpm --resign
+
+For more information look at the ``rpmsign(8)`` man page.
+
+Upload packages to repository
+=============================
+
+The current distribution method is based on serving content over HTTP.
+That means that repository metadata is created locally and
+synchronized to the well know public Web server.  A process similar
+to::
+
+  $ cd $REPO_ROOT && for DIR in epel-?-noarch fedora-??-noarch; \
+  do cd $DIR && createrepo -v . && cd ..; done;
+
+Creates the repo metadata locally.  Then a command similar to::
+
+  $ rsync -va $REPO_ROOT user@repo_web_server:/path
+
+Is used to copy the content over.
+
 
 Write release notes
 ===================
 
-Release notes give an idea of what has changed on a given development cycle.
-Good places to go for release notes are:
+Release notes give an idea of what has changed on a given development
+cycle.  Good places to go for release notes are:
 
 1) Git logs
 2) Trello Cards (Look for the Done lists)
 3) Github compare views: https://github.com/avocado-framework/avocado/compare/0.28.0...0.29.0
 
-Go there and try to write a text that represents the changes that the release encompasses
+Go there and try to write a text that represents the changes that the
+release encompasses.
 
 Send e-mails to avocado-devel and other places
 ==============================================
 
-Send the e-mail with the release notes to avocado-devel and virt-test-devel.
+Send the e-mail with the release notes to avocado-devel and
+virt-test-devel.
