@@ -23,7 +23,8 @@ class SysInfoTest(unittest.TestCase):
 
     def test_sysinfo_enabled(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=on passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=on '
+                    'passtest.py' % self.tmpdir)
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -48,7 +49,8 @@ class SysInfoTest(unittest.TestCase):
 
     def test_sysinfo_disabled(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    'passtest.py' % self.tmpdir)
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

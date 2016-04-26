@@ -700,13 +700,22 @@ class FileLoader(TestLoader):
                     return make_broken(AccessDeniedPath, test_path)
 
             # Try to resolve test ID (keep compatibility)
-            rel_path = '%s.py' % test_name
-            test_path = os.path.join(data_dir.get_test_dir(), rel_path)
+            test_path = os.path.join(data_dir.get_test_dir(), test_name)
             if os.path.exists(test_path):
                 return self._make_avocado_tests(test_path, make_broken,
-                                                subtests_filter, rel_path)
+                                                subtests_filter, test_name)
             else:
-                return make_broken(test.MissingTest, test_name)
+                if not subtests_filter and ':' in test_name:
+                    test_name, subtests_filter = test_name.split(':', 1)
+                    test_path = os.path.join(data_dir.get_test_dir(),
+                                             test_name)
+                    if os.path.exists(test_path):
+                        subtests_filter = re.compile(subtests_filter)
+                        return self._make_avocado_tests(test_path, make_broken,
+                                                        subtests_filter,
+                                                        test_name)
+                    else:
+                        return make_broken(test.MissingTest, test_name)
 
 
 class ExternalLoader(TestLoader):

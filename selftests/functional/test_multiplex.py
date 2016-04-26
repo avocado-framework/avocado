@@ -70,26 +70,34 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_passtest(self):
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest '
-                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    'passtest.py --multiplex '
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
+                    % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_mplex_doublepass(self):
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest passtest '
-                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    'passtest.py passtest.py --multiplex '
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
+                    % self.tmpdir)
         self.run_and_check(cmd_line, expected_rc=0)
 
     def test_run_mplex_failtest(self):
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest failtest '
-                    '--multiplex examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    'passtest.py failtest.py --multiplex '
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
+                    % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_double_mplex(self):
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off passtest --multiplex '
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    'passtest.py --multiplex '
                     'examples/tests/sleeptest.py.data/sleeptest.yaml '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml' % self.tmpdir)
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
+                    % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 

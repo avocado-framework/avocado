@@ -123,12 +123,21 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_all_ok(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'passtest.py passtest.py' % self.tmpdir)
         process.run(cmd_line)
 
     def test_datadir_alias(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s datadir' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'datadir.py' % self.tmpdir)
+        process.run(cmd_line)
+
+    def test_shell_alias(self):
+        """ Tests that .sh files are also executable via alias """
+        os.chdir(basedir)
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'env_variables.sh' % self.tmpdir)
         process.run(cmd_line)
 
     def test_datadir_noalias(self):
@@ -176,7 +185,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_tests_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest failtest passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'passtest.py failtest.py passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -184,7 +194,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_nonexistent_test(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s bogustest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir '
+                    '%s bogustest' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         unexpected_rc = exit_codes.AVOCADO_FAIL
@@ -195,7 +206,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_doublefail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - doublefail' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    '--xunit - doublefail.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -213,7 +225,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_uncaught_exception(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
-                    "--json - uncaught_exception" % self.tmpdir)
+                    "--json - uncaught_exception.py" % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -224,7 +236,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_fail_on_exception(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
-                    "--json - fail_on_exception" % self.tmpdir)
+                    "--json - fail_on_exception.py" % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -234,7 +246,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_timeout(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - timeouttest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    '--xunit - timeouttest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         expected_rc = exit_codes.AVOCADO_JOB_INTERRUPTED
@@ -250,7 +263,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_runner_abort(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s --xunit - abort' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    '--xunit - abort.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
         excerpt = 'Test process aborted'
@@ -264,7 +278,8 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_silent_output(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado --silent run --sysinfo=off --job-results-dir %s passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado --silent run --sysinfo=off '
+                    '--job-results-dir %s passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         expected_output = ''
@@ -299,7 +314,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn('Unable to discover url', result.stdout)
 
     def test_invalid_unique_id(self):
-        cmd_line = './scripts/avocado run --sysinfo=off --force-job-id foobar passtest'
+        cmd_line = ('./scripts/avocado run --sysinfo=off --force-job-id foobar'
+                    ' passtest.py')
         result = process.run(cmd_line, ignore_status=True)
         self.assertNotEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertIn('needs to be a 40 digit hex', result.stderr)
@@ -307,14 +323,16 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_valid_unique_id(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 passtest' % self.tmpdir)
+                    '--force-job-id 975de258ac05ce5e490648dec4753657b7ccc7d1 '
+                    'passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertNotIn('needs to be a 40 digit hex', result.stderr)
         self.assertIn('PASS', result.stdout)
 
     def test_automatic_unique_id(self):
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off passtest --json -' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    'passtest.py --json -' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         r = json.loads(result.stdout)
@@ -324,7 +342,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_skip_outside_setup(self):
         os.chdir(basedir)
         cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
-                    "--json - skip_outside_setup" % self.tmpdir)
+                    "--json - skip_outside_setup.py" % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -352,9 +370,9 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_dry_run(self):
         os.chdir(basedir)
-        cmd = ("./scripts/avocado run --sysinfo=off passtest failtest "
-               "errortest --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a "
-               "foo:bar:b foo:baz:c bar:bar:bar --dry-run")
+        cmd = ("./scripts/avocado run --sysinfo=off passtest.py failtest.py "
+               "errortest.py --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a"
+               " foo:bar:b foo:baz:c bar:bar:bar --dry-run")
         result = json.loads(process.run(cmd).stdout)
         debuglog = result['debuglog']
         log = open(debuglog, 'r').read()
@@ -400,7 +418,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
 
     def test_output_pass(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s passtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -410,7 +429,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
 
     def test_output_fail(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s failtest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'failtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -420,7 +440,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
 
     def test_output_error(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s errortest' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'errortest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -430,7 +451,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
 
     def test_output_skip(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s skiponsetup' % self.tmpdir
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'skiponsetup.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -466,7 +488,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
     def test_replay_skip_skipped(self):
-        result = process.run("./scripts/avocado run skiponsetup --json -")
+        result = process.run("./scripts/avocado run skiponsetup.py --json -")
         result = json.loads(result.stdout)
         jobid = result["job_id"]
         process.run(str("./scripts/avocado run --replay %s "
@@ -520,7 +542,7 @@ class RunnerSimpleTest(unittest.TestCase):
         considered to be pretty safe here.
         """
         os.chdir(basedir)
-        one_hundred = 'failtest ' * 100
+        one_hundred = 'failtest.py ' * 100
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
                     ' %s' % (self.tmpdir, one_hundred))
         initial_time = time.time()
@@ -537,7 +559,8 @@ class RunnerSimpleTest(unittest.TestCase):
         100 failtests and check the test runner timing.
         """
         os.chdir(basedir)
-        sleep_fail_sleep = 'sleeptest ' + 'failtest ' * 100 + 'sleeptest'
+        sleep_fail_sleep = ('sleeptest.py ' + 'failtest.py ' * 100 +
+                            'sleeptest.py')
         cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (
             self.tmpdir, sleep_fail_sleep)
         initial_time = time.time()
@@ -839,19 +862,19 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                          "XML:\n%s" % xml_output)
 
     def test_xunit_plugin_passtest(self):
-        self.run_and_check('passtest', exit_codes.AVOCADO_ALL_OK,
+        self.run_and_check('passtest.py', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0, 0)
 
     def test_xunit_plugin_failtest(self):
-        self.run_and_check('failtest', exit_codes.AVOCADO_TESTS_FAIL,
+        self.run_and_check('failtest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 0, 0, 1, 0)
 
     def test_xunit_plugin_skiponsetuptest(self):
-        self.run_and_check('skiponsetup', exit_codes.AVOCADO_ALL_OK,
+        self.run_and_check('skiponsetup.py', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0, 1)
 
     def test_xunit_plugin_errortest(self):
-        self.run_and_check('errortest', exit_codes.AVOCADO_TESTS_FAIL,
+        self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0, 0)
 
     def tearDown(self):
@@ -902,19 +925,19 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         return json_data
 
     def test_json_plugin_passtest(self):
-        self.run_and_check('passtest', exit_codes.AVOCADO_ALL_OK,
+        self.run_and_check('passtest.py', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0)
 
     def test_json_plugin_failtest(self):
-        self.run_and_check('failtest', exit_codes.AVOCADO_TESTS_FAIL,
+        self.run_and_check('failtest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 0, 1, 0)
 
     def test_json_plugin_skiponsetuptest(self):
-        self.run_and_check('skiponsetup', exit_codes.AVOCADO_ALL_OK,
+        self.run_and_check('skiponsetup.py', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
-        self.run_and_check('errortest', exit_codes.AVOCADO_TESTS_FAIL,
+        self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
     def test_ugly_echo_cmd(self):
