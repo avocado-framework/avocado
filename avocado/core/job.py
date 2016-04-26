@@ -124,6 +124,11 @@ class Job(object):
         self.stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
         self.exitcode = exit_codes.AVOCADO_ALL_OK
+        #: The list of discovered/resolved tests that will be attempted to
+        #: be run by this job.  If set to None, it means that test resolution
+        #: has not been attempted.  If set to an empty list, it means that no
+        #: test was found during resolution.
+        self.test_suite = None
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -464,12 +469,12 @@ class Job(object):
         self.__start_job_logging()
 
         try:
-            test_suite = self._make_test_suite(self.urls)
+            self.test_suite = self._make_test_suite(self.urls)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
-        if not test_suite:
+        if not self.test_suite:
             self._remove_job_results()
             if self.urls:
                 e_msg = ("No tests found for given urls, try 'avocado list -V "
@@ -488,7 +493,7 @@ class Job(object):
                 mux = multiplexer.Mux(self.args)
             except (IOError, ValueError) as details:
                 raise exceptions.OptionValidationError(details)
-        self.args.test_result_total = mux.get_number_of_tests(test_suite)
+        self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
 
         self._make_test_result()
         if not (self.standalone or getattr(self.args, "dry_run", False)):
@@ -499,7 +504,7 @@ class Job(object):
         self._log_job_debug_info(mux)
         replay.record(self.args, self.logdir, mux, self.urls)
         replay_map = getattr(self.args, 'replay_map', None)
-        summary = self.test_runner.run_suite(test_suite, mux, self.timeout,
+        summary = self.test_runner.run_suite(self.test_suite, mux, self.timeout,
                                              replay_map,
                                              self.args.test_result_total)
         self.__stop_job_logging()
