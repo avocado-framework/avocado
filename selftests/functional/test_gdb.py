@@ -22,13 +22,15 @@ class GDBPluginTest(unittest.TestCase):
     def test_gdb_prerun_commands(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--gdb-prerun-commands=/dev/null passtest' % self.tmpdir)
+                    '--gdb-prerun-commands=/dev/null passtest.py' % self.tmpdir)
         process.run(cmd_line)
 
     def test_gdb_multiple_prerun_commands(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --gdb-prerun-commands=/dev/null '
-                    '--gdb-prerun-commands=foo:/dev/null passtest' % self.tmpdir)
+        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+                    '--gdb-prerun-commands=/dev/null '
+                    '--gdb-prerun-commands=foo:/dev/null passtest.py'
+                    % self.tmpdir)
         process.run(cmd_line)
 
     def tearDown(self):
