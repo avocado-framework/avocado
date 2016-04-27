@@ -98,7 +98,7 @@ project = u'Avocado'
 copyright = u'2014-2015, Red Hat'
 
 version = VERSION
-release = VERSION
+release = 0
 
 if not ON_RTD:  # only import and set the theme if we're building docs locally
     try:
