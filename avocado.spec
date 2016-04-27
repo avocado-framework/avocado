@@ -88,7 +88,7 @@ selftests/run
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
-Requires: avocado, pystache
+Requires: avocado == %{version}, pystache
 
 %description plugins-output-html
 Adds to avocado the ability to generate an HTML report at every job results
@@ -101,7 +101,7 @@ arbitrary filesystem location.
 
 %package examples
 Summary: Avocado Test Framework Example Tests
-Requires: avocado
+Requires: avocado == %{version}
 
 %description examples
 The set of example tests present in the upstream tree of the Avocado framework.
