@@ -1,0 +1,4 @@
+Put your pre-job scripts here. They need to be readable and executable by
+the Avocado user running the jobs. The order of execution is based on their
+file names. If order is important, use a prefix, such as 001-myscript,
+002-otherscript, etc.

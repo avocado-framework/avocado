@@ -14,11 +14,6 @@ automated testing and continuous integration. Among them, we can highlight:
 - A database for results, with a web interface;
 - A scheduler for setting up a test grid.
 
-An `extensive set of slides about avocado
-<https://docs.google.com/presentation/d/1PLyOcmoYooWGAe-rS2gtjmrZ0B9J22FbfpNlQY8fIUE>`__,
-including details about its architecture, main features and status is available
-in google-drive.
-
 Using avocado
 -------------
 

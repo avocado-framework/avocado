@@ -14,6 +14,8 @@
 
 """Extensions/plugins dispatchers."""
 
+import sys
+
 from stevedore import ExtensionManager
 
 
@@ -59,3 +61,30 @@ class CLICmdDispatcher(Dispatcher):
 
     def __init__(self):
         super(CLICmdDispatcher, self).__init__('avocado.plugins.cli.cmd')
+
+
+class JobPrePostDispatcher(Dispatcher):
+
+    """
+    Calls extensions before Job execution
+
+    Automatically adds all the extension with entry points registered under
+    'avocado.plugins.job.prepost'
+    """
+
+    def __init__(self):
+        super(JobPrePostDispatcher, self).__init__('avocado.plugins.job.prepost')
+
+    def map_methods(self, method_name, job):
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    method(job)
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:
+                job.log.error('Error running method "%s" of plugin "%s": %s',
+                              method_name, ext.name, sys.exc_info()[1])

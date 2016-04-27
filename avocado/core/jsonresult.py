@@ -60,17 +60,17 @@ class JSONTestResult(TestResult):
         """
         TestResult.end_test(self, state)
         if 'job_id' not in self.json:
-            self.json['job_id'] = state['job_unique_id']
-        t = {'test': state['tagged_name'],
-             'url': state['name'],
-             'start': state['time_start'],
-             'end': state['time_end'],
-             'time': state['time_elapsed'],
-             'status': state['status'],
-             'whiteboard': state['whiteboard'],
-             'logdir': state['logdir'],
-             'logfile': state['logfile'],
-             'fail_reason': str(state['fail_reason'])
+            self.json['job_id'] = state.get('job_unique_id', "<unknown>")
+        t = {'test': str(state.get('name', "<unknown>")),
+             'url': str(state.get('name', "<unknown>")),
+             'start': state.get('time_start', -1),
+             'end': state.get('time_end', -1),
+             'time': state.get('time_elapsed', -1),
+             'status': state.get('status', {}),
+             'whiteboard': state.get('whiteboard', "<unknown>"),
+             'logdir': state.get('logdir', "<unknown>"),
+             'logfile': state.get('logfile', "<unknown>"),
+             'fail_reason': str(state.get('fail_reason', "<unknown>"))
              }
         self.json['tests'].append(t)
 
@@ -85,10 +85,10 @@ class JSONTestResult(TestResult):
         TestResult.end_tests(self)
         self.json.update({
             'total': self.tests_total,
-            'pass': len(self.passed),
-            'errors': len(self.errors),
-            'failures': len(self.failed),
-            'skip': len(self.skipped),
+            'pass': self.passed,
+            'errors': self.errors,
+            'failures': self.failed,
+            'skip': self.skipped,
             'time': self.total_time
         })
         self.json = json.dumps(self.json)

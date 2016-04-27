@@ -217,7 +217,7 @@ class TestRunner(object):
         :param test_factory: Test factory (test class and parameters).
         :type test_factory: tuple of :class:`avocado.core.test.Test` and dict.
         :param queue: Multiprocess queue.
-        :type queue: :class`multiprocessing.Queue` instance.
+        :type queue: :class:`multiprocessing.Queue` instance.
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
@@ -403,7 +403,8 @@ class TestRunner(object):
             return False
         return True
 
-    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
+                  test_result_total=0):
         """
         Run one or more tests and report with test result.
 
@@ -423,14 +424,20 @@ class TestRunner(object):
         else:
             deadline = None
 
+        no_digits = len(str(test_result_total))
+
         index = -1
         for test_template in test_suite:
             test_template[1]['base_logdir'] = self.job.logdir
             test_template[1]['job'] = self.job
             break_loop = False
-            for test_factory in mux.itertests(test_template):
+            for test_factory, variant in mux.itertests(test_template):
                 index += 1
                 test_parameters = test_factory[1]
+                name = test_parameters.get("name")
+                test_parameters["name"] = test.TestName(index + 1, name,
+                                                        variant,
+                                                        no_digits)
                 if deadline is not None and time.time() > deadline:
                     summary.add('INTERRUPTED')
                     if 'methodName' in test_parameters:

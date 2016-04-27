@@ -154,9 +154,9 @@ class Run(CLICmd):
                 raise ValueError("key:value pairs required, found only %s"
                                  % (value))
             elif len(value) == 2:
-                args.default_multiplex_tree.value[value[0]] = value[1]
+                args.default_avocado_params.value[value[0]] = value[1]
             else:
-                node = args.default_multiplex_tree.get_node(value[0], True)
+                node = args.default_avocado_params.get_node(value[0], True)
                 node.value[value[1]] = value[2]
 
     def _validate_job_timeout(self, raw_timeout):

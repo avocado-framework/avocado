@@ -29,6 +29,7 @@ from .. import virt
 from .. import exceptions
 from .. import status
 from ..runner import TestRunner
+from ..test import TestName
 from ...utils import astring
 from ...utils import archive
 from ...utils import stacktrace
@@ -83,11 +84,12 @@ class RemoteTestRunner(TestRunner):
                           self.job.args.remote_hostname,
                           self.job.args.remote_port,
                           self.job.args.remote_timeout)
-        self.remote = remoter.Remote(self.job.args.remote_hostname,
-                                     self.job.args.remote_username,
-                                     self.job.args.remote_password,
-                                     self.job.args.remote_port,
-                                     self.job.args.remote_timeout)
+        self.remote = remoter.Remote(hostname=self.job.args.remote_hostname,
+                                     username=self.job.args.remote_username,
+                                     password=self.job.args.remote_password,
+                                     key_filename=self.job.args.remote_key_file,
+                                     port=self.job.args.remote_port,
+                                     timeout=self.job.args.remote_timeout)
 
     def check_remote_avocado(self):
         """
@@ -179,7 +181,7 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout, replay_map=None):
+    def run_suite(self, test_suite, mux, timeout, replay_map=None, test_result_total=0):
         """
         Run one or more tests and report with test result.
 
@@ -190,6 +192,7 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.job.urls instead
         del mux            # we're not using multiplexation here
+        del test_result_total  # evaluated by the remote avocado
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()
@@ -228,7 +231,10 @@ class RemoteTestRunner(TestRunner):
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result.start_tests()
             for tst in results['tests']:
-                test = RemoteTest(name=tst['test'],
+                name = tst['test'].split('-', 1)
+                name = [name[0]] + name[1].split(';')
+                name = TestName(*name, no_digits=-1)
+                test = RemoteTest(name=name,
                                   time=tst['time'],
                                   start=tst['start'],
                                   end=tst['end'],
@@ -296,6 +302,7 @@ class VMTestRunner(RemoteTestRunner):
             self.job.args.remote_port = self.job.args.vm_port
             self.job.args.remote_username = self.job.args.vm_username
             self.job.args.remote_password = self.job.args.vm_password
+            self.job.args.remote_key_file = self.job.args.vm_key_file
             self.job.args.remote_no_copy = self.job.args.vm_no_copy
             self.job.args.remote_timeout = self.job.args.vm_timeout
             super(VMTestRunner, self).setup()

@@ -87,9 +87,9 @@ class XmlResult(object):
         :type state: dict
         """
         tc = '\t<testcase classname={class} name={name} time="{time}"/>'
-        values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
-                  'time': state['time_elapsed']}
+        values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
+                  'time': state.get('time_elapsed', -1)}
         self.testcases.append(tc.format(**values))
 
     def add_skip(self, state):
@@ -102,9 +102,9 @@ class XmlResult(object):
         tc = '''\t<testcase classname={class} name={name} time="{time}">
 \t\t<skipped />
 \t</testcase>'''
-        values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
-                  'time': state['time_elapsed']}
+        values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
+                  'time': state.get('time_elapsed', -1)}
         self.testcases.append(tc.format(**values))
 
     def add_failure(self, state):
@@ -118,13 +118,13 @@ class XmlResult(object):
 \t\t<failure type={type} message={reason}><![CDATA[{traceback}]]></failure>
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
-        values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
-                  'time': state['time_elapsed'],
-                  'type': self._escape_attr(state['fail_class']),
-                  'traceback': self._escape_cdata(state['traceback']),
-                  'systemout': self._escape_cdata(state['text_output']),
-                  'reason': self._escape_attr(str(state['fail_reason']))}
+        values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
+                  'time': state.get('time_elapsed', -1),
+                  'type': self._escape_attr(state.get('fail_class', "<unknown>")),
+                  'traceback': self._escape_cdata(state.get('traceback', "<unknown>")),
+                  'systemout': self._escape_cdata(state.get('text_output', "<unknown>")),
+                  'reason': self._escape_attr(str(state.get('fail_reason', "<unknown>")))}
         self.testcases.append(tc.format(**values))
 
     def add_error(self, state):
@@ -138,13 +138,13 @@ class XmlResult(object):
 \t\t<error type={type} message={reason}><![CDATA[{traceback}]]></error>
 \t\t<system-out><![CDATA[{systemout}]]></system-out>
 \t</testcase>'''
-        values = {'class': self._escape_attr(state['class_name']),
-                  'name': self._escape_attr(state['tagged_name']),
-                  'time': state['time_elapsed'],
-                  'type': self._escape_attr(state['fail_class']),
-                  'traceback': self._escape_cdata(state['traceback']),
-                  'systemout': self._escape_cdata(state['text_output']),
-                  'reason': self._escape_attr(str(state['fail_reason']))}
+        values = {'class': self._escape_attr(state.get('class_name', "<unknown>")),
+                  'name': self._escape_attr(state.get('name', "<unknown>")),
+                  'time': state.get('time_elapsed', -1),
+                  'type': self._escape_attr(state.get('fail_class', "<unknown>")),
+                  'traceback': self._escape_cdata(state.get('traceback', "<unknown>")),
+                  'systemout': self._escape_cdata(state.get('text_output', "<unknown>")),
+                  'reason': self._escape_attr(str(state.get('fail_reason', "<unknown>")))}
         self.testcases.append(tc.format(**values))
 
 
@@ -192,15 +192,14 @@ class xUnitTestResult(TestResult):
         :type state: dict
         """
         TestResult.end_test(self, state)
-        if state['status'] in ('PASS', 'WARN'):
+        status = state.get('status', "ERROR")
+        if status in ('PASS', 'WARN'):
             self.xml.add_success(state)
-        elif state['status'] == 'SKIP':
+        elif status == 'SKIP':
             self.xml.add_skip(state)
-        elif state['status'] == 'FAIL':
+        elif status == 'FAIL':
             self.xml.add_failure(state)
-        elif state['status'] == 'ERROR':
-            self.xml.add_error(state)
-        elif state['status'] == 'INTERRUPTED':
+        else:   # ERROR, INTERRUPTED, ...
             self.xml.add_error(state)
 
     def end_tests(self):
@@ -209,9 +208,9 @@ class xUnitTestResult(TestResult):
         """
         TestResult.end_tests(self)
         values = {'tests': self.tests_total,
-                  'errors': len(self.errors) + len(self.interrupted),
-                  'failures': len(self.failed),
-                  'skip': len(self.skipped),
+                  'errors': self.errors + self.interrupted,
+                  'failures': self.failed,
+                  'skip': self.skipped,
                   'total_time': self.total_time}
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()

@@ -64,6 +64,10 @@ def get_data_files():
     data_files += [(get_dir(['etc', 'avocado', 'sysinfo']),
                     ['etc/avocado/sysinfo/commands', 'etc/avocado/sysinfo/files',
                      'etc/avocado/sysinfo/profilers'])]
+    data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'pre.d']),
+                    ['etc/avocado/scripts/job/pre.d/README'])]
+    data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'post.d']),
+                    ['etc/avocado/scripts/job/post.d/README'])]
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
     for data_dir in glob.glob('examples/tests/*.data'):
         fmt_str = '%s/*' % data_dir
@@ -146,7 +150,10 @@ if __name__ == '__main__':
                   'run = avocado.plugins.run:Run',
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   'plugins = avocado.plugins.plugins:Plugins',
-                  ]
+                  ],
+              'avocado.plugins.job.prepost': [
+                  'jobscripts = avocado.plugins.jobscripts:JobScripts',
+                  ],
               },
           zip_safe=False,
           test_suite='selftests')
