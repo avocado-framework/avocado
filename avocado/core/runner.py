@@ -279,129 +279,133 @@ class TestRunner(object):
         :param job_deadline: Maximum time to execute.
         :type job_deadline: int.
         """
-        proc = None
-        sigtstp = multiprocessing.Lock()
+        try:
+            proc = None
+            sigtstp = multiprocessing.Lock()
 
-        def sigtstp_handler(signum, frame):     # pylint: disable=W0613
-            """ SIGSTOP all test processes on SIGTSTP """
-            if not proc:    # Ignore ctrl+z when proc not yet started
-                return
-            with sigtstp:
-                msg = "ctrl+z pressed, %%s test (%s)" % proc.pid
-                if self.sigstopped:
-                    logging.getLogger("avocado.app").info("\n" + msg,
-                                                          "resumming")
-                    logging.getLogger("avocado.test").info(msg, "resumming")
-                    process.kill_process_tree(proc.pid, signal.SIGCONT, False)
-                    self.sigstopped = False
-                else:
-                    logging.getLogger("avocado.app").info("\n" + msg,
-                                                          "stopping")
-                    logging.getLogger("avocado.test").info(msg, "stopping")
-                    process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
-                    self.sigstopped = True
+            def sigtstp_handler(signum, frame):     # pylint: disable=W0613
+                """ SIGSTOP all test processes on SIGTSTP """
+                if not proc:    # Ignore ctrl+z when proc not yet started
+                    return
+                with sigtstp:
+                    msg = "ctrl+z pressed, %%s test (%s)" % proc.pid
+                    if self.sigstopped:
+                        logging.getLogger("avocado.app").info("\n" + msg,
+                                                              "resumming")
+                        logging.getLogger("avocado.test").info(msg, "resumming")
+                        process.kill_process_tree(proc.pid, signal.SIGCONT, False)
+                        self.sigstopped = False
+                    else:
+                        logging.getLogger("avocado.app").info("\n" + msg,
+                                                              "stopping")
+                        logging.getLogger("avocado.test").info(msg, "stopping")
+                        process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
+                        self.sigstopped = True
 
-        signal.signal(signal.SIGTSTP, sigtstp_handler)
+            signal.signal(signal.SIGTSTP, sigtstp_handler)
 
-        proc = multiprocessing.Process(target=self._run_test,
-                                       args=(test_factory, queue,))
-        test_status = TestStatus(self.job, queue)
+            proc = multiprocessing.Process(target=self._run_test,
+                                           args=(test_factory, queue,))
+            test_status = TestStatus(self.job, queue)
 
-        cycle_timeout = 1
-        time_started = time.time()
-        proc.start()
+            cycle_timeout = 1
+            time_started = time.time()
+            proc.start()
 
-        test_status.wait_for_early_status(proc, 10)
+            test_status.wait_for_early_status(proc, 10)
 
-        # At this point, the test is already initialized and we know
-        # for sure if there's a timeout set.
-        timeout = test_status.early_status.get('timeout')
-        timeout = float(timeout or self.DEFAULT_TIMEOUT)
+            # At this point, the test is already initialized and we know
+            # for sure if there's a timeout set.
+            timeout = test_status.early_status.get('timeout')
+            timeout = float(timeout or self.DEFAULT_TIMEOUT)
 
-        test_deadline = time_started + timeout
-        if job_deadline > 0:
-            deadline = min(test_deadline, job_deadline)
-        else:
-            deadline = test_deadline
+            test_deadline = time_started + timeout
+            if job_deadline > 0:
+                deadline = min(test_deadline, job_deadline)
+            else:
+                deadline = test_deadline
 
-        ctrl_c_count = 0
-        ignore_window = 2.0
-        ignore_time_started = time.time()
-        stage_1_msg_displayed = False
-        stage_2_msg_displayed = False
-        first = 0.01
-        step = 0.1
+            ctrl_c_count = 0
+            ignore_window = 2.0
+            ignore_time_started = time.time()
+            stage_1_msg_displayed = False
+            stage_2_msg_displayed = False
+            first = 0.01
+            step = 0.1
 
-        while True:
-            try:
-                if time.time() >= deadline:
-                    try:
-                        os.kill(proc.pid, signal.SIGUSR1)
-                    except OSError:
-                        pass
-                    break
-                wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
-                              cycle_timeout, first, step)
-                if test_status.interrupt:
-                    break
-                if proc.is_alive():
-                    if ctrl_c_count == 0:
-                        if (test_status.status.get('running') or
-                                self.sigstopped):
-                            self.job.result_proxy.notify_progress(False)
-                        else:
-                            self.job.result_proxy.notify_progress(True)
-                else:
-                    break
-            except KeyboardInterrupt:
-                time_elapsed = time.time() - ignore_time_started
-                ctrl_c_count += 1
-                if ctrl_c_count == 1:
-                    if not stage_1_msg_displayed:
-                        self.job.log.debug("\nInterrupt requested. Waiting %d "
-                                           "seconds for test to finish "
-                                           "(ignoring new Ctrl+C until then)",
-                                           ignore_window)
-                        stage_1_msg_displayed = True
-                    ignore_time_started = time.time()
-                if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
-                    if not stage_2_msg_displayed:
-                        self.job.log.debug("Killing test subprocess %s",
-                                           proc.pid)
-                        stage_2_msg_displayed = True
-                    os.kill(proc.pid, signal.SIGKILL)
+            while True:
+                try:
+                    if time.time() >= deadline:
+                        try:
+                            os.kill(proc.pid, signal.SIGUSR1)
+                        except OSError:
+                            pass
+                        break
+                    wait.wait_for(lambda: not queue.empty() or not proc.is_alive(),
+                                  cycle_timeout, first, step)
+                    if test_status.interrupt:
+                        break
+                    if proc.is_alive():
+                        if ctrl_c_count == 0:
+                            if (test_status.status.get('running') or
+                                    self.sigstopped):
+                                self.job.result_proxy.notify_progress(False)
+                            else:
+                                self.job.result_proxy.notify_progress(True)
+                    else:
+                        break
+                except KeyboardInterrupt:
+                    time_elapsed = time.time() - ignore_time_started
+                    ctrl_c_count += 1
+                    if ctrl_c_count == 1:
+                        if not stage_1_msg_displayed:
+                            self.job.log.debug("\nInterrupt requested. Waiting %d "
+                                               "seconds for test to finish "
+                                               "(ignoring new Ctrl+C until then)",
+                                               ignore_window)
+                            stage_1_msg_displayed = True
+                        ignore_time_started = time.time()
+                    if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
+                        if not stage_2_msg_displayed:
+                            self.job.log.debug("Killing test subprocess %s",
+                                               proc.pid)
+                            stage_2_msg_displayed = True
+                        os.kill(proc.pid, signal.SIGKILL)
 
-        # Get/update the test status
-        if test_status.status:
-            test_state = test_status.status
-        else:
-            test_state = test_status.abort(proc, time_started, cycle_timeout,
-                                           first, step)
+            # Get/update the test status
+            if test_status.status:
+                test_state = test_status.status
+            else:
+                test_state = test_status.abort(proc, time_started, cycle_timeout,
+                                               first, step)
 
-        # don't process other tests from the list
-        if ctrl_c_count > 0:
-            self.job.log.debug('')
+            # don't process other tests from the list
+            if ctrl_c_count > 0:
+                self.job.log.debug('')
 
-        # Make sure the test status is correct
-        if test_state.get('status') not in status.user_facing_status:
-            test_state['fail_reason'] = ("Test reports unsupported test "
-                                         "status %s.\nOriginal fail_reason: %s"
-                                         "\nOriginal fail_class: %s"
-                                         % (test_state.get('status'),
-                                            test_state.get('fail_reason'),
-                                            test_state.get('fail_class')))
-            test_state['fail_class'] = "RUNNER"
-            test_state['status'] = 'ERROR'
+            # Make sure the test status is correct
+            if test_state.get('status') not in status.user_facing_status:
+                test_state['fail_reason'] = ("Test reports unsupported test "
+                                             "status %s.\nOriginal fail_reason: %s"
+                                             "\nOriginal fail_class: %s"
+                                             % (test_state.get('status'),
+                                                test_state.get('fail_reason'),
+                                                test_state.get('fail_class')))
+                test_state['fail_class'] = "RUNNER"
+                test_state['status'] = 'ERROR'
 
-        self.result.check_test(test_state)
-        if test_state['status'] == "INTERRUPTED":
-            summary.add("INTERRUPTED")
-        elif not mapping[test_state['status']]:
-            summary.add("FAIL")
+            self.result.check_test(test_state)
+            if test_state['status'] == "INTERRUPTED":
+                summary.add("INTERRUPTED")
+            elif not mapping[test_state['status']]:
+                summary.add("FAIL")
 
-        if ctrl_c_count > 0:
+            if ctrl_c_count > 0:
+                return False
+            return True
+
+        except KeyboardInterrupt:
             return False
-        return True
 
     def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
                   test_result_total=0):
