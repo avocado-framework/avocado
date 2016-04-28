@@ -36,6 +36,8 @@ from ..utils import stacktrace
 from ..utils import runtime
 from ..utils import process
 
+TEST_LOG = logging.getLogger("avocado.test")
+
 
 class TestStatus(object):
 
@@ -169,8 +171,7 @@ class TestStatus(object):
             test_state['traceback'] = 'Traceback not available'
             with open(test_state['logfile'], 'r') as log_file_obj:
                 test_state['text_output'] = log_file_obj.read()
-            test_log = logging.getLogger('avocado.test')
-            test_log.error('ERROR %s -> TestAbortedError: '
+            TEST_LOG.error('ERROR %s -> TestAbortedError: '
                            'Test aborted unexpectedly',
                            test_state['name'])
             status = test_state
@@ -427,39 +428,44 @@ class TestRunner(object):
         no_digits = len(str(test_result_total))
 
         index = -1
-        for test_template in test_suite:
-            test_template[1]['base_logdir'] = self.job.logdir
-            test_template[1]['job'] = self.job
-            break_loop = False
-            for test_factory, variant in mux.itertests(test_template):
-                index += 1
-                test_parameters = test_factory[1]
-                name = test_parameters.get("name")
-                test_parameters["name"] = test.TestName(index + 1, name,
-                                                        variant,
-                                                        no_digits)
-                if deadline is not None and time.time() > deadline:
-                    summary.add('INTERRUPTED')
-                    if 'methodName' in test_parameters:
-                        del test_parameters['methodName']
-                    test_factory = (test.TimeOutSkipTest, test_parameters)
-                    break_loop = not self.run_test(test_factory, queue,
-                                                   summary)
-                    if break_loop:
-                        break
-                else:
-                    if (replay_map is not None and
-                            replay_map[index] is not None):
-                        test_parameters["methodName"] = "test"
-                        test_factory = (replay_map[index], test_parameters)
+        try:
+            for test_template in test_suite:
+                test_template[1]['base_logdir'] = self.job.logdir
+                test_template[1]['job'] = self.job
+                break_loop = False
+                for test_factory, variant in mux.itertests(test_template):
+                    index += 1
+                    test_parameters = test_factory[1]
+                    name = test_parameters.get("name")
+                    test_parameters["name"] = test.TestName(index + 1, name,
+                                                            variant,
+                                                            no_digits)
+                    if deadline is not None and time.time() > deadline:
+                        summary.add('INTERRUPTED')
+                        if 'methodName' in test_parameters:
+                            del test_parameters['methodName']
+                        test_factory = (test.TimeOutSkipTest, test_parameters)
+                        break_loop = not self.run_test(test_factory, queue,
+                                                       summary)
+                        if break_loop:
+                            break
+                    else:
+                        if (replay_map is not None and
+                                replay_map[index] is not None):
+                            test_parameters["methodName"] = "test"
+                            test_factory = (replay_map[index], test_parameters)
 
-                    break_loop = not self.run_test(test_factory, queue,
-                                                   summary, deadline)
-                    if break_loop:
-                        break
-            runtime.CURRENT_TEST = None
-            if break_loop:
-                break
+                        break_loop = not self.run_test(test_factory, queue,
+                                                       summary, deadline)
+                        if break_loop:
+                            break
+                runtime.CURRENT_TEST = None
+                if break_loop:
+                    break
+        except KeyboardInterrupt:
+            TEST_LOG.error('Job interrupted by ctrl+c.')
+            summary.add('INTERRUPTED')
+
         self.result.end_tests()
         self.job.funcatexit.run()
         if self.job.sysinfo is not None:
