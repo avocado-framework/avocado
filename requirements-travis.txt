@@ -1,5 +1,5 @@
 # All pip installable requirements pinned for Travis CI
-fabric==1.10.0
+fabric==1.11.1
 pystache==0.4.1; python_version < '2.7'
 pystache==0.5.4; python_version >= '2.7'
 Sphinx==1.3b1
