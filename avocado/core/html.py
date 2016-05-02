@@ -153,10 +153,14 @@ class ReportModel(object):
                                      t['fail_reason'][:exhibition_limit]))
         return test_info
 
-    def sysinfo(self):
+    def _sysinfo_phase(self, phase):
+        """
+        Returns a list of system information for a given sysinfo phase
+
+        :param section: a valid sysinfo phase, such as pre, post or profile
+        """
         sysinfo_list = []
-        base_path = os.path.join(self.results_dir(False),
-                                 'sysinfo', 'pre')
+        base_path = os.path.join(self.results_dir(False), 'sysinfo', phase)
         try:
             sysinfo_files = os.listdir(base_path)
         except OSError:
@@ -170,14 +174,23 @@ class ReportModel(object):
                 with codecs.open(sysinfo_path, 'r', encoding="utf-8") as sysinfo_file:
                     sysinfo_dict['file'] = " ".join(s_f.split("_"))
                     sysinfo_dict['contents'] = sysinfo_file.read()
-                    sysinfo_dict['element_id'] = 'heading_%s' % s_id
-                    sysinfo_dict['collapse_id'] = 'collapse_%s' % s_id
+                    sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
+                    sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
             except OSError:
                 sysinfo_dict[s_f] = ('Error reading sysinfo file %s' %
                                      sysinfo_path)
             sysinfo_list.append(sysinfo_dict)
             s_id += 1
         return sysinfo_list
+
+    def sysinfo_pre(self):
+        return self._sysinfo_phase('pre')
+
+    def sysinfo_profile(self):
+        return self._sysinfo_phase('profile')
+
+    def sysinfo_post(self):
+        return self._sysinfo_phase('post')
 
 
 class HTMLTestResult(TestResult):
