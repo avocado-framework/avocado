@@ -37,6 +37,7 @@ from ..utils import runtime
 from ..utils import process
 
 TEST_LOG = logging.getLogger("avocado.test")
+APP_LOG = logging.getLogger("avocado.app")
 
 
 class TestStatus(object):
@@ -68,9 +69,8 @@ class TestStatus(object):
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
         except Exception as details:
-            log = logging.getLogger("avocado.app")
-            log.error("\nError receiving message from test: %s -> %s",
-                      details.__class__, details)
+            APP_LOG.error("\nError receiving message from test: %s -> %s",
+                          details.__class__, details)
             stacktrace.log_exc_info(sys.exc_info(),
                                     'avocado.app.tracebacks')
             return None
@@ -222,10 +222,10 @@ class TestRunner(object):
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
-                              logging.getLogger('avocado.test'),
+                              TEST_LOG,
                               logging.getLogger('paramiko')]
         logger_list_stderr = [logging.getLogger('avocado.test.stderr'),
-                              logging.getLogger('avocado.test'),
+                              TEST_LOG,
                               logging.getLogger('paramiko')]
         sys.stdout = output.LoggingFile(logger=logger_list_stdout)
         sys.stderr = output.LoggingFile(logger=logger_list_stderr)
@@ -290,15 +290,13 @@ class TestRunner(object):
             with sigtstp:
                 msg = "ctrl+z pressed, %%s test (%s)" % proc.pid
                 if self.sigstopped:
-                    logging.getLogger("avocado.app").info("\n" + msg,
-                                                          "resumming")
-                    logging.getLogger("avocado.test").info(msg, "resumming")
+                    APP_LOG.info("\n" + msg, "resumming")
+                    TEST_LOG.info(msg, "resumming")
                     process.kill_process_tree(proc.pid, signal.SIGCONT, False)
                     self.sigstopped = False
                 else:
-                    logging.getLogger("avocado.app").info("\n" + msg,
-                                                          "stopping")
-                    logging.getLogger("avocado.test").info(msg, "stopping")
+                    APP_LOG.info("\n" + msg, "stopping")
+                    TEST_LOG.info(msg, "stopping")
                     process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
                     self.sigstopped = True
 
