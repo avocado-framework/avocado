@@ -7,6 +7,7 @@ python:
 branches:
     only:
         - master
+        - 36lts
 
 cache:
     directories:
@@ -35,9 +36,8 @@ script:
         done
         # Run the "make check" per each commit origin..HEAD
         ERR=""
-        MASTER=$(git rev-parse origin/master)
-        echo Master is $MASTER
-        for COMMIT in $(git rev-list origin..HEAD | tail -n+2); do
+        echo Branch is $TRAVIS_BRANCH
+        for COMMIT in $TRAVIS_COMMIT_RANGE; do
             echo
             echo "--------------------< $(git log -1 --oneline $COMMIT) >--------------------"
             echo
