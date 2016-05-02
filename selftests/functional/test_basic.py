@@ -242,8 +242,8 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("TestTimeoutInterrupted: Timeout reached waiting for", output,
-                      "Test did not fail with timeout exception:\n%s" % output)
+        self.assertIn("RUNNER: Timeout reached", output,
+                      "Timeout reached message not found in the output:\n%s" % output)
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
 
@@ -607,7 +607,7 @@ class RunnerSimpleTest(unittest.TestCase):
                       "stopped.")
         self.assertIn("TIME", output, "TIME not in the output, avocado "
                       "probably died unexpectadly")
-        self.assertEqual(proc.get_status(), 1, "Avocado did not finish with "
+        self.assertEqual(proc.get_status(), 8, "Avocado did not finish with "
                          "1.")
 
     def tearDown(self):

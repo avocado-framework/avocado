@@ -238,17 +238,6 @@ class TestRunner(object):
         early_state['early_status'] = True
         queue.put(early_state)
 
-        def timeout_handler(signum, frame):
-            e_msg = "Timeout reached waiting for %s to end" % instance
-            raise exceptions.TestTimeoutInterrupted(e_msg)
-
-        def interrupt_handler(signum, frame):
-            e_msg = "Test %s interrupted by user" % instance
-            raise exceptions.TestInterruptedError(e_msg)
-
-        signal.signal(signal.SIGUSR1, timeout_handler)
-        signal.signal(signal.SIGINT, interrupt_handler)
-
         self.result.start_test(early_state)
         try:
             instance.run_avocado()
@@ -300,7 +289,12 @@ class TestRunner(object):
                     process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
                     self.sigstopped = True
 
+        def sigterm_handler(signum, frame):     # pylint: disable=W0613
+            """ Produce traceback on SIGTERM """
+            raise SystemExit("Test interrupted by SIGTERM")
+
         signal.signal(signal.SIGTSTP, sigtstp_handler)
+        signal.signal(signal.SIGTERM, sigterm_handler)
 
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
@@ -330,12 +324,14 @@ class TestRunner(object):
         stage_2_msg_displayed = False
         first = 0.01
         step = 0.1
+        abort_reason = None
 
         while True:
             try:
                 if time.time() >= deadline:
+                    abort_reason = "Timeout reached"
                     try:
-                        os.kill(proc.pid, signal.SIGUSR1)
+                        os.kill(proc.pid, signal.SIGTERM)
                     except OSError:
                         pass
                     break
@@ -357,6 +353,7 @@ class TestRunner(object):
                 ctrl_c_count += 1
                 if ctrl_c_count == 1:
                     if not stage_1_msg_displayed:
+                        abort_reason = "Interrupted by ctrl+c"
                         self.job.log.debug("\nInterrupt requested. Waiting %d "
                                            "seconds for test to finish "
                                            "(ignoring new Ctrl+C until then)",
@@ -365,6 +362,7 @@ class TestRunner(object):
                     ignore_time_started = time.time()
                 if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
+                        abort_reason = "Interrupted by ctrl+c (multiple-times)"
                         self.job.log.debug("Killing test subprocess %s",
                                            proc.pid)
                         stage_2_msg_displayed = True
@@ -376,6 +374,20 @@ class TestRunner(object):
         else:
             test_state = test_status.abort(proc, time_started, cycle_timeout,
                                            first, step)
+
+        # Try to log the timeout reason to test's results and update test_state
+        if abort_reason:
+            TEST_LOG.error(abort_reason)
+            test_log = test_state.get("logfile")
+            if test_log:
+                open(test_log, "a").write("\nRUNNER: " + abort_reason + "\n")
+            if test_state.get("text_output"):
+                test_state["text_output"] += "\nRUNNER: " + abort_reason + "\n"
+            else:
+                test_state["text_output"] = abort_reason
+            test_state["status"] = "INTERRUPTED"
+            test_state["fail_reason"] = abort_reason
+            test_state["fail_class"] = "RUNNER"
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
