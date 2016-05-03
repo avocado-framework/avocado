@@ -115,7 +115,7 @@ class ReportModel(object):
         return sysinfo_contents
 
     def hostname(self):
-        return self._get_sysinfo('hostname')
+        return self._get_sysinfo('hostname').strip()
 
     @property
     def tests(self):
