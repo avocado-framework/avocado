@@ -9,6 +9,9 @@ class PassTest(Test):
     """
     Example test that passes.
     """
+    def __init__(self, *args, **kwargs):
+        kwargs["name"] = "ugly test name"
+        super(PassTest, self).__init__(*args, **kwargs)
 
     def test(self):
         """
