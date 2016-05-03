@@ -466,9 +466,9 @@ class TestRunner(object):
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')
 
-        self.result.end_tests()
-        self.job.funcatexit.run()
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
+        self.result.end_tests()
+        self.job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary
