@@ -52,9 +52,9 @@ class StreamsTest(unittest.TestCase):
         variable `AVOCADO_LOG_EARLY` being set.
         """
         cmds = (('./scripts/avocado --show early run --sysinfo=off '
-                 '--job-results-dir %s passtest' % self.tmpdir, {}),
+                 '--job-results-dir %s passtest.py' % self.tmpdir, {}),
                 ('./scripts/avocado run --sysinfo=off --job-results-dir'
-                 ' %s passtest' % self.tmpdir, {'AVOCADO_LOG_EARLY': 'y'}))
+                 ' %s passtest.py' % self.tmpdir, {'AVOCADO_LOG_EARLY': 'y'}))
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -71,9 +71,9 @@ class StreamsTest(unittest.TestCase):
         Also checks the symmetry between `--show test` and `--show-job-log`
         """
         for cmd in (('./scripts/avocado --show test run --sysinfo=off '
-                     '--job-results-dir %s passtest' % self.tmpdir),
+                     '--job-results-dir %s passtest.py' % self.tmpdir),
                     ('./scripts/avocado run --show-job-log --sysinfo=off '
-                     '--job-results-dir %s passtest' % self.tmpdir)):
+                     '--job-results-dir %s passtest.py' % self.tmpdir)):
             result = process.run(cmd)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertNotIn("stevedore.extension: found extension EntryPoint.parse",
@@ -94,9 +94,9 @@ class StreamsTest(unittest.TestCase):
         Also checks the symmetry between `--show none` and `--silent`
         """
         for cmd in (('./scripts/avocado --show none run --sysinfo=off '
-                     '--job-results-dir %s passtest' % self.tmpdir),
+                     '--job-results-dir %s passtest.py' % self.tmpdir),
                     ('./scripts/avocado --silent run --sysinfo=off '
-                     '--job-results-dir %s passtest' % self.tmpdir)):
+                     '--job-results-dir %s passtest.py' % self.tmpdir)):
             result = process.run(cmd)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
             self.assertEqual('', result.stdout)
