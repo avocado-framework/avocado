@@ -110,7 +110,6 @@ examples of how to write tests on your own.
 
 %files examples
 %{_datadir}/avocado/tests
-%{_datadir}/avocado/simpletests
 %{_datadir}/avocado/wrappers
 
 %changelog
