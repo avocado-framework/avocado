@@ -154,16 +154,16 @@ Using a multiplex file
 You may use the Avocado runner with a multiplex file to provide params and matrix
 generation for sleeptest just like::
 
-    $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID    : d565e8dec576d6040f894841f32a836c751f968f
-    JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
-    TESTS     : 3
-     (1/3) sleeptest: PASS (0.50 s)
-     (2/3) sleeptest.1: PASS (1.01 s)
-     (3/3) sleeptest.2: PASS (5.01 s)
+    $ avocado run sleeptest.py --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    JOB ID     : d565e8dec576d6040f894841f32a836c751f968f
+    JOB LOG    : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
+    TESTS      : 3
+     (1/3) sleeptest.py:SleepTest.test;1: PASS (0.50 s)
+     (2/3) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
+     (3/3) sleeptest.py:SleepTest.test;3: PASS (5.00 s)
     RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
-    TIME : 6.52 s
+    JOB HTML   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
+    TIME       : 6.50 s
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
 As explained in :doc:`MultiplexConfig` without any path the content gets
@@ -186,21 +186,22 @@ can't leave the test ID empty::
 
 You can also execute multiple tests with the same multiplex file::
 
-    ./scripts/avocado run sleeptest synctest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID     : 72166988c13fec26fcc9c2e504beec8edaad4761
-    JOB LOG    : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/job.log
+    $ avocado run sleeptest.py synctest.py --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+    JOB ID     : cd20fc8d1714da6d4791c19322374686da68c45c
+    JOB LOG    : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/job.log
     TESTS      : 8
-     (1/8) sleeptest.py: PASS (1.00 s)
-     (2/8) sleeptest.py.1: PASS (1.00 s)
-     (3/8) sleeptest.py.2: PASS (1.00 s)
-     (4/8) sleeptest.py.3: PASS (1.00 s)
-     (5/8) synctest.py: PASS (1.31 s)
-     (6/8) synctest.py.1: PASS (1.48 s)
-     (7/8) synctest.py.2: PASS (3.36 s)
-     (8/8) synctest.py.3: PASS (3.59 s)
+     (1/8) sleeptest.py:SleepTest.test;1: PASS (0.50 s)
+     (2/8) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
+     (3/8) sleeptest.py:SleepTest.test;3: PASS (5.01 s)
+     (4/8) sleeptest.py:SleepTest.test;4: PASS (10.00 s)
+     (5/8) synctest.py:SyncTest.test;1: PASS (2.38 s)
+     (6/8) synctest.py:SyncTest.test;2: PASS (2.47 s)
+     (7/8) synctest.py:SyncTest.test;3: PASS (2.46 s)
+     (8/8) synctest.py:SyncTest.test;4: PASS (2.45 s)
     RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML   : /home/medic/avocado/job-results/job-2015-05-15T11.02-7216698/html/results.html
-    TIME       : 13.76 s
+    JOB HTML   : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/html/results.html
+    TIME       : 26.26 s
+
 
 Advanced logging capabilities
 =============================
@@ -450,7 +451,8 @@ parameters, using :func:`avocado.utils.process.system`.
 
 Fetching asset files
 ====================
-To run third party test suites as mentioned above, or for any other pourpose,
+
+To run third party test suites as mentioned above, or for any other purpose,
 we offer an asset fetcher as a method of Avocado Test class.
 The asset method looks for a list of directories in the ``cache_dirs`` key,
 inside the ``[datadir.paths]`` section from the configuration files. Read-only
@@ -572,11 +574,11 @@ From those 2 files, only stdout.expected is non empty::
 The output files were originally obtained using the test runner and passing the
 option --output-check-record all to the test runner::
 
-    $ scripts/avocado run --output-check-record all synctest
+    $ scripts/avocado run --output-check-record all synctest.py
     JOB ID    : bcd05e4fd33e068b159045652da9eb7448802be5
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
     TESTS     : 1
-     (1/1) synctest.py: PASS (2.20 s)
+     (1/1) synctest.py:SyncTest.test: PASS (2.20 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.20 s
 
@@ -605,7 +607,7 @@ Let's record the output for this one::
     JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
     TESTS     : 1
-     (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
+     (1/1) output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.01 s
 
@@ -630,14 +632,14 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
     TESTS     : 1
-     (1/1) home/$USER/Code/avocado/output_record.sh: FAIL (0.02 s)
+     (1/1) output_record.sh: FAIL (0.02 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 0.02 s
 
 Verifying the failure reason::
 
     $ cat $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
-    20:52:38 test       L0163 INFO | START home/$USER/Code/avocado/output_record.sh
+    20:52:38 test       L0163 INFO | START 1-output_record.sh
     20:52:38 test       L0164 DEBUG|
     20:52:38 test       L0165 DEBUG| Test instance parameters:
     20:52:38 test       L0173 DEBUG|
@@ -671,7 +673,7 @@ Verifying the failure reason::
     20:52:38 test       L0063 ERROR| Hello, Avocado!
     20:52:38 test       L0063 ERROR|
     20:52:38 test       L0064 ERROR|
-    20:52:38 test       L0529 ERROR| FAIL home/$USER/Code/avocado/output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
+    20:52:38 test       L0529 ERROR| FAIL 1-output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
     Actual:
     Hello, world!
 
@@ -768,19 +770,19 @@ impact your test grid. You can account for that possibility and set up a
 
 ::
 
-    $ avocado run sleeptest --multiplex /tmp/sleeptest-example.yaml
+    $ avocado run sleeptest.py --multiplex /tmp/sleeptest-example.yaml
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
     TESTS     : 1
-     (1/1) sleeptest.1: ERROR (2.97 s)
+     (1/1) sleeptest.py:SleepTest.test: ERROR (2.97 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 2.97 s
 
 ::
 
     $ cat $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
-    15:52:51 test       L0143 INFO | START sleeptest.1
+    15:52:51 test       L0143 INFO | START 1-sleeptest.py
     15:52:51 test       L0144 DEBUG|
     15:52:51 test       L0145 DEBUG| Test log: $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/sleeptest.1/test.log
     15:52:51 test       L0146 DEBUG| Test instance parameters:
@@ -811,7 +813,7 @@ impact your test grid. You can account for that possibility and set up a
     15:52:54 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:52:54 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for sleeptest to end
     15:52:54 test       L0061 ERROR|
-    15:52:54 test       L0400 ERROR| ERROR sleeptest.1 -> TestTimeoutError: Timeout reached waiting for sleeptest to end
+    15:52:54 test       L0400 ERROR| ERROR 1-sleeptest.py -> TestTimeoutError: Timeout reached waiting for sleeptest to end
     15:52:54 test       L0387 INFO |
 
 
@@ -854,20 +856,20 @@ This accomplishes a similar effect to the multiplex setup defined in there.
 
 ::
 
-    $ avocado run timeouttest
+    $ avocado run timeouttest.py
     JOB ID    : d78498a54504b481192f2f9bca5ebb9bbb820b8a
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/html/results.html
     TESTS     : 1
-     (1/1) timeouttest.1: ERROR (2.97 s)
+     (1/1) timeouttest.py:TimeoutTest.test: INTERRUPTED (3.04 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 2.97 s
+    TIME      : 3.04 s
 
 
 ::
 
     $ cat $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
-    15:54:28 test       L0143 INFO | START timeouttest.1
+    15:54:28 test       L0143 INFO | START 1-timeouttest.py:TimeoutTest.test
     15:54:28 test       L0144 DEBUG|
     15:54:28 test       L0145 DEBUG| Test log: $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/timeouttest.1/test.log
     15:54:28 test       L0146 DEBUG| Test instance parameters:
@@ -890,7 +892,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     15:54:31 test       L0060 ERROR|     raise exceptions.TestTimeoutError(e_msg)
     15:54:31 test       L0060 ERROR| TestTimeoutError: Timeout reached waiting for timeouttest to end
     15:54:31 test       L0061 ERROR|
-    15:54:31 test       L0400 ERROR| ERROR timeouttest.1 -> TestTimeoutError: Timeout reached waiting for timeouttest to end
+    15:54:31 test       L0400 ERROR| ERROR 1-timeouttest.py:TimeoutTest.test -> TestTimeoutError: Timeout reached waiting for timeouttest to end
     15:54:31 test       L0387 INFO |
 
 

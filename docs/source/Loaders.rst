@@ -36,17 +36,17 @@ To get help about ``--loaders``::
 Example of how ``--loaders`` affects the produced tests (manually gathered
 as some of them result in error)::
 
-    $ avocado run passtest boot this_does_not_exist /bin/echo
+    $ avocado run passtest.py boot this_does_not_exist /bin/echo
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > MISSING      this_does_not_exist
         > SIMPLE       /bin/echo
-    $ avocado run passtest boot this_does_not_exist /bin/echo --loaders @DEFAULT "external:/bin/echo -e"
+    $ avocado run passtest.py boot this_does_not_exist /bin/echo --loaders @DEFAULT "external:/bin/echo -e"
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > EXTERNAL     this_does_not_exist
         > SIMPLE       /bin/echo
-    $ avocado run passtest boot this_does_not_exist /bin/echo --loaders file.SIMPLE file.INSTRUMENTED @DEFAULT external.EXTERNAL:/bin/echo
+    $ avocado run passtest.py boot this_does_not_exist /bin/echo --loaders file.SIMPLE file.INSTRUMENTED @DEFAULT external.EXTERNAL:/bin/echo
         > INSTRUMENTED passtest.py:PassTest.test
         > VT           io-github-autotest-qemu.boot
         > EXTERNAL     this_does_not_exist

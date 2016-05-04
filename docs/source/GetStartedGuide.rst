@@ -70,7 +70,9 @@ line tool that will conveniently run your tests and collect their results.
 Running Tests
 -------------
 
-To do so, please run ``avocado`` with the ``run`` sub-command and the chosen test::
+To do so, please run ``avocado`` with the ``run`` sub-command followed by
+a test reference, which could be either a path to the file, or a
+recognizable name::
 
     $ avocado run /bin/true
     JOB ID    : 381b849a62784228d2fd208d929cc49f310412dc
@@ -173,19 +175,20 @@ Running A More Complex Test Job
 You can run any number of test in an arbitrary order, as well as mix and match
 instrumented and simple tests::
 
-    $ avocado run failtest sleeptest synctest failtest synctest /tmp/simple_test.sh
+    $ avocado run failtest.py sleeptest.py synctest.py failtest.py synctest.py /tmp/simple_test.sh
     JOB ID    : 86911e49b5f2c36caeea41307cee4fecdcdfa121
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
     TESTS     : 6
-     (1/6) failtest.1: FAIL (0.00 s)
-     (2/6) sleeptest.1: PASS (1.00 s)
-     (3/6) synctest.1: ERROR (0.01 s)
-     (4/6) failtest.2: FAIL (0.00 s)
-     (5/6) synctest.2: ERROR (0.01 s)
+     (1/6) failtest.py:FailTest.test: FAIL (0.00 s)
+     (2/6) sleeptest.py:SleepTest.test: PASS (1.00 s)
+     (3/6) synctest.py:SyncTest.test: PASS (2.43 s)
+     (4/6) failtest.py:FailTest.test: FAIL (0.00 s)
+     (5/6) synctest.py:SyncTest.test: PASS (2.44 s)
+     (6/6) /bin/true: PASS (0.00 s)
      (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
     RESULTS    : PASS 2 | ERROR 2 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
-    TIME      : 1.04 s
+    TIME      : 5.88 s
 
 .. _running-external-runner:
 
@@ -223,11 +226,11 @@ files with shell code could be considered tests::
     $ avocado run --external-runner=/bin/sh /tmp/pass /tmp/fail
     JOB ID     : 4a2a1d259690cc7b226e33facdde4f628ab30741
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TESTS      : 2
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TIME       : 0.01 s
 
 This example is pretty obvious, and could be achieved by giving
@@ -241,11 +244,11 @@ But now consider the following example::
                                            http://remote-avocado-server:9405/jobs/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TESTS      : 2
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TIME       : 3.04 s
 
 This effectively makes `/bin/curl` an "external test runner", responsible for
@@ -264,12 +267,12 @@ In order to do that, you can use ``avocado --show test run ...`` or
     ...
     Job ID: f9ea1742134e5352dec82335af584d1f151d4b85
 
-    START examples/tests/sleeptest.py
+    START 1-sleeptest.py:SleepTest.test
 
     PARAMS (key=timeout, path=*, default=None) => None
     PARAMS (key=sleep_length, path=*, default=1) => 1
     Sleeping for 1.00 seconds
-    PASS examples/tests/sleeptest.py
+    PASS 1-sleeptest.py:SleepTest.test
 
     Test results available in $HOME/avocado/job-results/job-2015-06-02T10.45-f9ea174
 
