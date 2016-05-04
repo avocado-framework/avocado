@@ -13,11 +13,13 @@
 #
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
+# Author: Santhosh G <santhog4@linux.vnet.ibm.com>
 
 import os
 import shutil
 import logging
 import tempfile
+from distutils.version import LooseVersion
 
 from . import download, archive, build
 
@@ -100,3 +102,15 @@ class KernelBuild(object):
 
     def __del__(self):
         shutil.rmtree(self.work_dir)
+
+
+def check_version(version):
+    """
+    This utility function compares the current kernel version with
+    the version parameter and gives assertion error if the version
+    parameter is greater.
+
+    :type version: string
+    :param version: version to be compared with current kernel version
+    """
+    assert LooseVersion(os.uname()[2]) > LooseVersion(version), "Old kernel"
