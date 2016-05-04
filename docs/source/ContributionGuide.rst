@@ -13,7 +13,7 @@ Since version 0.31.0, our plugin system requires Setuptools entry points to be
 registered. If you're hacking on Avocado and want to use the same, possibly modified,
 source for running your tests and experiments, you may do so with one additional step::
 
-  $ python setup develop --user
+  $ make develop
 
 On POSIX systems this will create an "egg link" to your original source tree under
 "$HOME/.local/lib/pythonX.Y/site-packages". Then, on your original source tree, an
