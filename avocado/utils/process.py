@@ -545,7 +545,9 @@ class SubProcess(object):
 
         :param timeout: Time (seconds) we'll wait until the process is
                         finished. If it's not, we'll try to terminate it
-                        and get a status.
+                        and get a status. If time is negative, we'll directly
+                        return the result attr, instead of waiting for the
+                        process to end.
         :type timeout: float
         :param sig: Signal to send to the process in case it did not end after
                     the specified timeout.
@@ -558,6 +560,9 @@ class SubProcess(object):
 
         if timeout is None:
             self.wait()
+
+        if timeout < 0.0:
+            return self.result
 
         if timeout > 0.0:
             while time.time() - start_time < timeout:
