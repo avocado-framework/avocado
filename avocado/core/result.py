@@ -256,8 +256,11 @@ class HumanTestResult(TestResult):
                    'SKIP': output.TERM_SUPPORT.SKIP,
                    'WARN': output.TERM_SUPPORT.WARN,
                    'INTERRUPTED': output.TERM_SUPPORT.INTERRUPT}
+        duration = (" (%.2f s)" % state.get('time_elapsed', -1)
+                    if status != "SKIP"
+                    else "")
         self.log.debug(output.TERM_SUPPORT.MOVE_BACK + mapping[status] +
-                       status + output.TERM_SUPPORT.ENDC)
+                       status + output.TERM_SUPPORT.ENDC + duration)
 
     def notify_progress(self, progress=False):
         if progress:
