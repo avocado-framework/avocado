@@ -61,7 +61,9 @@ Another type of results are those intended to be parsed by other
 applications. Several standards exist in the test community, and Avocado can
 in theory support pretty much every result standard out there.
 
-Out of the box, Avocado supports a couple of machine readable results.
+Out of the box, Avocado supports a couple of machine readable results. They
+are always generated and stored in the results directory in `results.$type`
+files, but you can ask for a different location too.
 
 xunit
 ~~~~~
@@ -83,8 +85,9 @@ output in the standard output of the runner, simply use::
         </testcase>
         <testcase classname="synctest" name="synctest.1" time="1.69329714775"/>
 
-Note the dash `-` in the option `--xunit`, it means that the xunit result
-should go to the standard output.
+
+.. note:: The dash `-` in the option `--xunit`, it means that the xunit result
+          should go to the standard output.
 
 json
 ~~~~
@@ -96,11 +99,11 @@ plugin::
     $ scripts/avocado --json - run "sleeptest failtest synctest"
     {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.4282619953155518}, {"test": "failtest.1", "url": "failtest", "status": "FAIL", "time": 0.34017300605773926}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 2.109131097793579}], "errors": 0, "skip": 0, "time": 3.87756609916687, "debuglog": "$HOME/avocado/logs/run-2014-06-11-01.35.15/debug.log", "pass": 2, "failures": 1, "total": 3}
 
-Note the dash `-` in the option `--json`, it means that the xunit result
-should go to the standard output.
+.. note:: The dash `-` in the option `--json`, it means that the xunit result
+          should go to the standard output.
 
 Bear in mind that there's no documented standard for the Avocado JSON result
-format. This means that it will probably grow organically to acommodate
+format. This means that it will probably grow organically to accommodate
 newer Avocado features. A reasonable effort will be made to not break
 backwards compatibility with applications that parse the current form of its
 JSON result.
@@ -125,6 +128,8 @@ Avocado and check its results::
        echo "great success!"
     elif
        ...
+
+more details regarding exit codes in `Exit Codes`_ section.
 
 Multiple results at once
 ------------------------
