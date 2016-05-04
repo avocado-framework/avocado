@@ -127,16 +127,19 @@ The output might look like this::
     INSTRUMENTED /usr/share/avocado/tests/trinity.py
     INSTRUMENTED /usr/share/avocado/tests/warntest.py
     INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
+    ...
 
 These Python files are considered by Avocado to contain ``INSTRUMENTED``
 tests.
 
-Let's now list a directory with a bunch of executable shell
-scripts::
+Let's now list only the executable shell scripts::
 
-   $ avocado list /usr/share/avocado/simpletests/
-   SIMPLE /usr/share/avocado/simpletests/failtest.sh
-   SIMPLE /usr/share/avocado/simpletests/passtest.sh
+    $ avocado list | grep ^SIMPLE
+    SIMPLE       /usr/share/avocado/tests/env_variables.sh
+    SIMPLE       /usr/share/avocado/tests/output_check.sh
+    SIMPLE       /usr/share/avocado/tests/simplewarning.sh
+    SIMPLE       /usr/share/avocado/tests/failtest.sh
+    SIMPLE       /usr/share/avocado/tests/passtest.sh
 
 Here, as mentioned before, ``SIMPLE`` means that those files are executables
 treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to
