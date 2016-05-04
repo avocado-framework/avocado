@@ -13,12 +13,32 @@ Since version 0.31.0, our plugin system requires Setuptools entry points to be
 registered. If you're hacking on Avocado and want to use the same, possibly modified,
 source for running your tests and experiments, you may do so with one additional step::
 
-  $ python setup develop --user
+  $ make develop
 
 On POSIX systems this will create an "egg link" to your original source tree under
 "$HOME/.local/lib/pythonX.Y/site-packages". Then, on your original source tree, an
 "egg info" directory will be created, containing, among other things, the Setuptools
-entry points mentioned before.
+entry points mentioned before. This works like a symlink, so you only need to run
+this once (unless you add a new entry-point, then you need to re-run it to make it
+available).
+
+Avocado supports various plugins, which are distributed as separate projects,
+for example "avocado-vt" and "avocado-virt". These also need to be
+deployed and linked in order to work properly with the avocado from
+sources (installed version works out of the box). To simplify this
+one can use `make link` Makefile target. The prerequisite is that you need
+to put all the projects in the same parent directory. Then by running
+`make link` inside the main avocado project you link and develop the
+separated projects as well as avocado itself. The workflow could be::
+
+    $ cd $AVOCADO_PROJECTS_DIR
+    $ git clone $AVOCADO_GIT
+    $ git clone $AVOCADO_PROJECT2
+    $ # Add more projects
+    $ cd avocado    # go into the main avocado project dir
+    $ make link
+
+You should see the process and status for each directory.
 
 Contact information
 ===================
