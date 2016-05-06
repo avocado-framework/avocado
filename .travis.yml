@@ -37,6 +37,7 @@ script:
         # Run the "make check" per each commit in PR (TRAVIS_COMMIT_RANGE)
         ERR=""
         echo Branch is $TRAVIS_BRANCH
+        echo TRAVIS_COMMIT_RANGE $TRAVIS_COMMIT_RANGE
         for COMMIT in $(git rev-list $TRAVIS_COMMIT_RANGE~1); do
             echo
             echo "--------------------< $(git log -1 --oneline $COMMIT) >--------------------"
