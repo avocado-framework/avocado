@@ -1,3 +1,4 @@
+import glob
 import os
 import sys
 import tempfile
@@ -98,6 +99,17 @@ class JobTimeOutTest(unittest.TestCase):
                          "Unexpected number of test skips, "
                          "XML:\n%s" % xml_output)
 
+    def _check_timeout_msg(self, idx):
+        res_dir = os.path.join(self.tmpdir, "latest", "test-results")
+        debug_log = glob.glob(os.path.join(res_dir, "%s-*" % idx, "debug.log"))
+        debug_log = open(debug_log[0]).read()
+        self.assertIn("RUNNER: Timeout reached", debug_log, "RUNNER: Timeout "
+                      "reached message not in the %sst test's debug.log:\n%s"
+                      % (idx, debug_log))
+        self.assertIn("Traceback (most recent call last)", debug_log,
+                      "Traceback not present in the %sst test's debug.log:\n%s"
+                      % (idx, debug_log))
+
     def test_sleep_longer_timeout(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --job-timeout=5 %s examples/tests/passtest.py' %
@@ -110,6 +122,7 @@ class JobTimeOutTest(unittest.TestCase):
                     (self.tmpdir, self.script.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,
                            2, 1, 0, 1)
+        self._check_timeout_msg(1)
 
     def test_sleep_short_timeout_with_test_methods(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
@@ -117,6 +130,7 @@ class JobTimeOutTest(unittest.TestCase):
                     (self.tmpdir, self.py.path))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_JOB_INTERRUPTED,
                            3, 1, 0, 2)
+        self._check_timeout_msg(1)
 
     def test_invalid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
