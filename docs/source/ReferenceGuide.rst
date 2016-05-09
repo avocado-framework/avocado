@@ -182,55 +182,56 @@ results directory structure can be seen below ::
     │   │   ├── uname_-a
     │   │   ├── uptime
     │   │   └── version
-    │   └── pre
-    │       ├── brctl_show
-    │       ├── cmdline
-    │       ├── cpuinfo
-    │       ├── current_clocksource
-    │       ├── df_-mP
-    │       ├── dmesg_-c
-    │       ├── dmidecode
-    │       ├── fdisk_-l
-    │       ├── gcc_--version
-    │       ├── hostname
-    │       ├── ifconfig_-a
-    │       ├── interrupts
-    │       ├── ip_link
-    │       ├── ld_--version
-    │       ├── lscpu
-    │       ├── lspci_-vvnn
-    │       ├── meminfo
-    │       ├── modules
-    │       ├── mount
-    │       ├── mounts
-    │       ├── numactl_--hardware_show
-    │       ├── partitions
-    │       ├── scaling_governor
-    │       ├── uname_-a
-    │       ├── uptime
-    │       └── version
+    │   ├── pre
+    │   │   ├── brctl_show
+    │   │   ├── cmdline
+    │   │   ├── cpuinfo
+    │   │   ├── current_clocksource
+    │   │   ├── df_-mP
+    │   │   ├── dmesg_-c
+    │   │   ├── dmidecode
+    │   │   ├── fdisk_-l
+    │   │   ├── gcc_--version
+    │   │   ├── hostname
+    │   │   ├── ifconfig_-a
+    │   │   ├── interrupts
+    │   │   ├── ip_link
+    │   │   ├── ld_--version
+    │   │   ├── lscpu
+    │   │   ├── lspci_-vvnn
+    │   │   ├── meminfo
+    │   │   ├── modules
+    │   │   ├── mount
+    │   │   ├── mounts
+    │   │   ├── numactl_--hardware_show
+    │   │   ├── partitions
+    │   │   ├── scaling_governor
+    │   │   ├── uname_-a
+    │   │   ├── uptime
+    │   │   └── version
+    │   └── profile
     └── test-results
         └── tests
-            ├── sleeptest.py.long
+            ├── sleeptest.py.1
             │   ├── data
             │   ├── debug.log
             │   └── sysinfo
             │       ├── post
             │       └── pre
-            ├── sleeptest.py.medium
+            ├── sleeptest.py.2
             │   ├── data
             │   ├── debug.log
             │   └── sysinfo
             │       ├── post
             │       └── pre
-            └── sleeptest.py.short
+            └── sleeptest.py.3
                 ├── data
                 ├── debug.log
                 └── sysinfo
                     ├── post
                     └── pre
     
-    20 directories, 59 files
+    21 directories, 59 files
 
 
 From what you can see, the results dir has:
@@ -238,12 +239,12 @@ From what you can see, the results dir has:
 1) A human readable ``id`` in the top level, with the job SHA1.
 2) A human readable ``job.log`` in the top level, with human readable logs of
    the task
-3) A machine readable ``results.xml`` in the top level, with a summary of the
-   job information in xUnit format.
-4) A top level ``sysinfo`` dir, with sub directories ``pre`` and ``post``, that store
-   sysinfo files pre job and post job, respectively.
+3) A machine readable ``results.xml`` and ``results.json`` in the top level,
+   with a summary of the job information in xUnit/json format.
+4) A top level ``sysinfo`` dir, with sub directories ``pre``, ``post`` and
+   ``profile``, that store sysinfo files pre/post/during job, respectively.
 5) Subdirectory ``test-results``, that contains a number of subdirectories
-   (tagged testnames). Those tagged testnames represent instances of test
+   (filesystem-friendly test ids). Those test ids represent instances of test
    execution results.
 
 Test execution instances specification
@@ -251,7 +252,7 @@ Test execution instances specification
 
 The instances should have:
 
-1) A top level human readable ``test.log``, with test debug information
+1) A top level human readable ``job.log``, with job debug information
 2) A ``sysinfo`` subdir, with sub directories ``pre`` and ``post``, that store
    sysinfo files pre test and post test, respectively.
 3) A ``data`` subdir, where the test can output a number of files if necessary.
