@@ -12,28 +12,28 @@ job id and it is also unique enough.
 
 Let's see an example. First, running a simple job with two urls::
 
-  $ avocado run /bin/true /bin/false
-  JOB ID     : 825b860b0c2f6ec48953c638432e3e323f8d7cad
-  JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/job.log
-  TESTS      : 2
-   (1/2) /bin/true: PASS (0.01 s)
-   (2/2) /bin/false: FAIL (0.01 s)
-  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-  JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/html/results.html
-  TIME       : 0.02 s
+     $ avocado run /bin/true /bin/false
+     JOB ID     : 825b860b0c2f6ec48953c638432e3e323f8d7cad
+     JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/job.log
+     TESTS      : 2
+      (1/2) /bin/true: PASS (0.01 s)
+      (2/2) /bin/false: FAIL (0.01 s)
+     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+     JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/html/results.html
+     TIME       : 0.02 s
 
 Now we can replay the job by running::
 
-  $ avocado run --replay 825b86
-  JOB ID     : 55a0d10132c02b8cc87deb2b480bfd8abbd956c3
-  SRC JOB ID : 825b860b0c2f6ec48953c638432e3e323f8d7cad
-  JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/job.log
-  TESTS      : 2
-   (1/2) /bin/true: PASS (0.01 s)
-   (2/2) /bin/false: FAIL (0.01 s)
-  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-  JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
-  TIME       : 0.01 s
+     $ avocado run --replay 825b86
+     JOB ID     : 55a0d10132c02b8cc87deb2b480bfd8abbd956c3
+     SRC JOB ID : 825b860b0c2f6ec48953c638432e3e323f8d7cad
+     JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/job.log
+     TESTS      : 2
+      (1/2) /bin/true: PASS (0.01 s)
+      (2/2) /bin/false: FAIL (0.01 s)
+     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+     JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
+     TIME       : 0.01 s
 
 The replay feature will retrieve the original job urls, the multiplex
 tree and the configuration. Let's see another example, now using
@@ -98,17 +98,17 @@ multiplex file::
 We can replay the job as is, using ``$ avocado run --replay bd6aa3b``,
 or replay the job ignoring the multiplex file, as below::
 
-  $ avocado run --replay bd6aa3b --replay-ignore mux
-  Ignoring multiplex from source job with --replay-ignore.
-  JOB ID     : d5a46186ee0fb4645e3f7758814003d76c980bf9
-  SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
-  JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/job.log
-  TESTS      : 2
-   (1/2) /bin/true: PASS (0.01 s)
-   (2/2) /bin/false: FAIL (0.01 s)
-  RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-  JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/html/results.html
-  TIME       : 0.02 s
+     $ avocado run --replay bd6aa3b --replay-ignore mux
+     Ignoring multiplex from source job with --replay-ignore.
+     JOB ID     : d5a46186ee0fb4645e3f7758814003d76c980bf9
+     SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
+     JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/job.log
+     TESTS      : 2
+      (1/2) /bin/true: PASS (0.01 s)
+      (2/2) /bin/false: FAIL (0.01 s)
+     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+     JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/html/results.html
+     TIME       : 0.02 s
 
 Also, it is possible to replay only the variants that faced a given
 result, using the option ``--replay-test-status``. Using the same job
@@ -177,28 +177,28 @@ given job has a non-default path to record the logs, when the replay
 time comes, we need to inform where the logs are. See the example
 below::
 
-  $ avocado run /bin/true --job-results-dir /tmp/avocado_results/
-  JOB ID     : f1b1c870ad892eac6064a5332f1bbe38cda0aaf3
-  JOB LOG    : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/job.log
-  TESTS      : 1
-   (1/1) /bin/true: PASS (0.01 s)
-  RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-  JOB HTML   : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/html/results.html
-  TIME       : 0.01 s
+     $ avocado run /bin/true --job-results-dir /tmp/avocado_results/
+     JOB ID     : f1b1c870ad892eac6064a5332f1bbe38cda0aaf3
+     JOB LOG    : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/job.log
+     TESTS      : 1
+      (1/1) /bin/true: PASS (0.01 s)
+     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+     JOB HTML   : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/html/results.html
+     TIME       : 0.01 s
 
 Trying to replay the job, it fails::
 
-  $ avocado run --replay f1b1
-  can't find job results directory in '$HOME/avocado/job-results'
+     $ avocado run --replay f1b1
+     can't find job results directory in '$HOME/avocado/job-results'
 
 In this case, we have to inform where the job results dir is located::
 
-  $ avocado run --replay f1b1 --replay-data-dir /tmp/avocado_results
-  JOB ID     : 19c76abb29f29fe410a9a3f4f4b66387570edffa
-  SRC JOB ID : f1b1c870ad892eac6064a5332f1bbe38cda0aaf3
-  JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/job.log
-  TESTS      : 1
-   (1/1) /bin/true: PASS (0.01 s)
-  RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-  JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/html/results.html
-  TIME       : 0.01 s
+     $ avocado run --replay f1b1 --replay-data-dir /tmp/avocado_results
+     JOB ID     : 19c76abb29f29fe410a9a3f4f4b66387570edffa
+     SRC JOB ID : f1b1c870ad892eac6064a5332f1bbe38cda0aaf3
+     JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/job.log
+     TESTS      : 1
+      (1/1) /bin/true: PASS (0.01 s)
+     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+     JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/html/results.html
+     TIME       : 0.01 s

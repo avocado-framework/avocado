@@ -41,7 +41,7 @@ Make sure you have:
  1) Avocado packages installed. You can see more info on how to do that in
     the :ref:`get-started` section.
  2) The remote machine IP address or fully qualified hostname and the SSH port number.
- 3) All pre-requesites for your test to run installed inside the remote machine
+ 3) All pre-requisites for your test to run installed inside the remote machine
     (gcc, make and others if you want to compile a 3rd party test suite written
     in C, for example).
 

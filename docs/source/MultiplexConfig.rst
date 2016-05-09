@@ -300,7 +300,8 @@ file. This is done by the `!include : $path` directive::
         gentoo:
             !include : gentoo.yaml
 
-Due to YAML nature, it's __mandatory__ to put space between `!include` and `:`!
+.. warning:: Due to YAML nature, it's __mandatory__ to put space between
+             `!include` and `:`!
 
 The file location can be either absolute path or relative path to the YAML
 file where the `!include` is called (even when it's nested).

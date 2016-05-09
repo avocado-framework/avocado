@@ -60,7 +60,7 @@ Note that the test class provides you with a number of convenience attributes:
 Saving test generated (custom) data
 ===================================
 
-Each test instance provides a so called ``whiteboard``. It that can be accessed
+Each test instance provides a so called ``whiteboard``. It can be accessed
 through ``self.whiteboard``. This whiteboard is simply a string that will be
 automatically saved to test results (as long as the output format supports it).
 If you choose to save binary data to the whiteboard, it's your responsibility to
