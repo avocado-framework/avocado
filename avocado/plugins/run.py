@@ -46,8 +46,9 @@ class Run(CLICmd):
         """
         parser = super(Run, self).configure(parser)
 
-        parser.add_argument('url', type=str, default=[], nargs='*',
-                            help='List of test IDs (aliases or paths)')
+        parser.add_argument("url", type=str, default=[], nargs='*',
+                            metavar="TEST_REFERENCE",
+                            help='List of test references (aliases or paths)')
 
         parser.add_argument("-d", "--dry-run", action="store_true",
                             help="Instead of running the test only "

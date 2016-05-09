@@ -41,7 +41,7 @@ Make sure you have:
  1) Avocado packages installed. You can see more info on how to do that in
     the :ref:`get-started` section.
  2) The remote machine IP address or fully qualified hostname and the SSH port number.
- 3) All pre-requesites for your test to run installed inside the remote machine
+ 3) All pre-requisites for your test to run installed inside the remote machine
     (gcc, make and others if you want to compile a 3rd party test suite written
     in C, for example).
 
@@ -137,8 +137,8 @@ Once the virtual machine is properly setup, you may run your test. Example::
     JOB ID    : 60ddd718e7d7bb679f258920ce3c39ce73cb9779
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-16T18.41-60ddd71/job.log
     TESTS     : 2
-     (1/2) examples/tests/sleeptest.py: PASS (1.00 s)
-     (2/2) examples/tests/failtest.py: FAIL (0.00 s)
+     (1/2) examples/tests/sleeptest.py:SleepTest.test: PASS (1.00 s)
+     (2/2) examples/tests/failtest.py:FailTest.test: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TIME      : 1.01 s
 
