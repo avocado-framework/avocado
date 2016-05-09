@@ -39,61 +39,61 @@ The replay feature will retrieve the original job urls, the multiplex
 tree and the configuration. Let's see another example, now using
 multiplex file::
 
-  $ avocado run /bin/true /bin/false --multiplex mux-environment.yaml
-  JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
-  JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/job.log
-  TESTS      : 48
-   (1/48) /bin/true.variant1: PASS (0.01 s)
-   (2/48) /bin/true.variant2: PASS (0.01 s)
-   (3/48) /bin/true.variant3: PASS (0.01 s)
-   (4/48) /bin/true.variant4: PASS (0.01 s)
-   (5/48) /bin/true.variant5: PASS (0.01 s)
-   (6/48) /bin/true.variant6: PASS (0.01 s)
-   (7/48) /bin/true.variant7: PASS (0.01 s)
-   (8/48) /bin/true.variant8: PASS (0.01 s)
-   (9/48) /bin/true.variant9: PASS (0.01 s)
-   (10/48) /bin/true.variant10: PASS (0.01 s)
-   (11/48) /bin/true.variant11: PASS (0.01 s)
-   (12/48) /bin/true.variant12: PASS (0.01 s)
-   (13/48) /bin/true.variant13: PASS (0.01 s)
-   (14/48) /bin/true.variant14: PASS (0.01 s)
-   (15/48) /bin/true.variant15: PASS (0.01 s)
-   (16/48) /bin/true.variant16: PASS (0.01 s)
-   (17/48) /bin/true.variant17: PASS (0.01 s)
-   (18/48) /bin/true.variant18: PASS (0.01 s)
-   (19/48) /bin/true.variant19: PASS (0.01 s)
-   (20/48) /bin/true.variant20: PASS (0.01 s)
-   (21/48) /bin/true.variant21: PASS (0.01 s)
-   (22/48) /bin/true.variant22: PASS (0.01 s)
-   (23/48) /bin/true.variant23: PASS (0.01 s)
-   (24/48) /bin/true.variant24: PASS (0.01 s)
-   (25/48) /bin/false.variant1: FAIL (0.01 s)
-   (26/48) /bin/false.variant2: FAIL (0.01 s)
-   (27/48) /bin/false.variant3: FAIL (0.01 s)
-   (28/48) /bin/false.variant4: FAIL (0.01 s)
-   (29/48) /bin/false.variant5: FAIL (0.01 s)
-   (30/48) /bin/false.variant6: FAIL (0.01 s)
-   (31/48) /bin/false.variant7: FAIL (0.01 s)
-   (32/48) /bin/false.variant8: FAIL (0.01 s)
-   (33/48) /bin/false.variant9: FAIL (0.01 s)
-   (34/48) /bin/false.variant10: FAIL (0.01 s)
-   (35/48) /bin/false.variant11: FAIL (0.01 s)
-   (36/48) /bin/false.variant12: FAIL (0.01 s)
-   (37/48) /bin/false.variant13: FAIL (0.01 s)
-   (38/48) /bin/false.variant14: FAIL (0.01 s)
-   (39/48) /bin/false.variant15: FAIL (0.01 s)
-   (40/48) /bin/false.variant16: FAIL (0.01 s)
-   (41/48) /bin/false.variant17: FAIL (0.01 s)
-   (42/48) /bin/false.variant18: FAIL (0.01 s)
-   (43/48) /bin/false.variant19: FAIL (0.01 s)
-   (44/48) /bin/false.variant20: FAIL (0.01 s)
-   (45/48) /bin/false.variant21: FAIL (0.01 s)
-   (46/48) /bin/false.variant22: FAIL (0.01 s)
-   (47/48) /bin/false.variant23: FAIL (0.01 s)
-   (48/48) /bin/false.variant24: FAIL (0.01 s)
-  RESULTS    : PASS 24 | ERROR 0 | FAIL 24 | SKIP 0 | WARN 0 | INTERRUPT 0
-  JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
-  TIME       : 0.29 s
+     $ avocado run /bin/true /bin/false --multiplex mux-environment.yaml
+     JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
+     JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/job.log
+     TESTS      : 48
+      (1/48) /bin/true;1: PASS (0.01 s)
+      (2/48) /bin/true;2: PASS (0.01 s)
+      (3/48) /bin/true;3: PASS (0.01 s)
+      (4/48) /bin/true;4: PASS (0.01 s)
+      (5/48) /bin/true;5: PASS (0.01 s)
+      (6/48) /bin/true;6: PASS (0.01 s)
+      (7/48) /bin/true;7: PASS (0.01 s)
+      (8/48) /bin/true;8: PASS (0.01 s)
+      (9/48) /bin/true;9: PASS (0.01 s)
+      (10/48) /bin/true;10: PASS (0.01 s)
+      (11/48) /bin/true;11: PASS (0.01 s)
+      (12/48) /bin/true;12: PASS (0.01 s)
+      (13/48) /bin/true;13: PASS (0.01 s)
+      (14/48) /bin/true;14: PASS (0.01 s)
+      (15/48) /bin/true;15: PASS (0.01 s)
+      (16/48) /bin/true;16: PASS (0.01 s)
+      (17/48) /bin/true;17: PASS (0.01 s)
+      (18/48) /bin/true;18: PASS (0.01 s)
+      (19/48) /bin/true;19: PASS (0.01 s)
+      (20/48) /bin/true;20: PASS (0.01 s)
+      (21/48) /bin/true;21: PASS (0.01 s)
+      (22/48) /bin/true;22: PASS (0.01 s)
+      (23/48) /bin/true;23: PASS (0.01 s)
+      (24/48) /bin/true;24: PASS (0.01 s)
+      (25/48) /bin/false;1: FAIL (0.01 s)
+      (26/48) /bin/false;2: FAIL (0.01 s)
+      (27/48) /bin/false;3: FAIL (0.01 s)
+      (28/48) /bin/false;4: FAIL (0.01 s)
+      (29/48) /bin/false;5: FAIL (0.01 s)
+      (30/48) /bin/false;6: FAIL (0.01 s)
+      (31/48) /bin/false;7: FAIL (0.01 s)
+      (32/48) /bin/false;8: FAIL (0.01 s)
+      (33/48) /bin/false;9: FAIL (0.01 s)
+      (34/48) /bin/false;10: FAIL (0.01 s)
+      (35/48) /bin/false;11: FAIL (0.01 s)
+      (36/48) /bin/false;12: FAIL (0.01 s)
+      (37/48) /bin/false;13: FAIL (0.01 s)
+      (38/48) /bin/false;14: FAIL (0.01 s)
+      (39/48) /bin/false;15: FAIL (0.01 s)
+      (40/48) /bin/false;16: FAIL (0.01 s)
+      (41/48) /bin/false;17: FAIL (0.01 s)
+      (42/48) /bin/false;18: FAIL (0.01 s)
+      (43/48) /bin/false;19: FAIL (0.01 s)
+      (44/48) /bin/false;20: FAIL (0.01 s)
+      (45/48) /bin/false;21: FAIL (0.01 s)
+      (46/48) /bin/false;22: FAIL (0.01 s)
+      (47/48) /bin/false;23: FAIL (0.01 s)
+      (48/48) /bin/false;24: FAIL (0.01 s)
+     RESULTS    : PASS 24 | ERROR 0 | FAIL 24 | SKIP 0 | WARN 0 | INTERRUPT 0
+     JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
+     TIME       : 0.29 s
 
 We can replay the job as is, using ``$ avocado run --replay bd6aa3b``,
 or replay the job ignoring the multiplex file, as below::
@@ -119,54 +119,54 @@ result, using the option ``--replay-test-status``. Using the same job
     SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
     JOB LOG    : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/job.log
     TESTS      : 48
-     (1/48) /bin/true.variant1: SKIP
-     (2/48) /bin/true.variant2: SKIP
-     (3/48) /bin/true.variant3: SKIP
-     (4/48) /bin/true.variant4: SKIP
-     (5/48) /bin/true.variant5: SKIP
-     (6/48) /bin/true.variant6: SKIP
-     (7/48) /bin/true.variant7: SKIP
-     (8/48) /bin/true.variant8: SKIP
-     (9/48) /bin/true.variant9: SKIP
-     (10/48) /bin/true.variant10: SKIP
-     (11/48) /bin/true.variant11: SKIP
-     (12/48) /bin/true.variant12: SKIP
-     (13/48) /bin/true.variant13: SKIP
-     (14/48) /bin/true.variant14: SKIP
-     (15/48) /bin/true.variant15: SKIP
-     (16/48) /bin/true.variant16: SKIP
-     (17/48) /bin/true.variant17: SKIP
-     (18/48) /bin/true.variant18: SKIP
-     (19/48) /bin/true.variant19: SKIP
-     (20/48) /bin/true.variant20: SKIP
-     (21/48) /bin/true.variant21: SKIP
-     (22/48) /bin/true.variant22: SKIP
-     (23/48) /bin/true.variant23: SKIP
-     (24/48) /bin/true.variant24: SKIP
-     (25/48) /bin/false.variant1: FAIL (0.01 s)
-     (26/48) /bin/false.variant2: FAIL (0.01 s)
-     (27/48) /bin/false.variant3: FAIL (0.01 s)
-     (28/48) /bin/false.variant4: FAIL (0.01 s)
-     (29/48) /bin/false.variant5: FAIL (0.01 s)
-     (30/48) /bin/false.variant6: FAIL (0.01 s)
-     (31/48) /bin/false.variant7: FAIL (0.01 s)
-     (32/48) /bin/false.variant8: FAIL (0.01 s)
-     (33/48) /bin/false.variant9: FAIL (0.01 s)
-     (34/48) /bin/false.variant10: FAIL (0.01 s)
-     (35/48) /bin/false.variant11: FAIL (0.01 s)
-     (36/48) /bin/false.variant12: FAIL (0.01 s)
-     (37/48) /bin/false.variant13: FAIL (0.01 s)
-     (38/48) /bin/false.variant14: FAIL (0.01 s)
-     (39/48) /bin/false.variant15: FAIL (0.01 s)
-     (40/48) /bin/false.variant16: FAIL (0.01 s)
-     (41/48) /bin/false.variant17: FAIL (0.01 s)
-     (42/48) /bin/false.variant18: FAIL (0.01 s)
-     (43/48) /bin/false.variant19: FAIL (0.01 s)
-     (44/48) /bin/false.variant20: FAIL (0.01 s)
-     (45/48) /bin/false.variant21: FAIL (0.01 s)
-     (46/48) /bin/false.variant22: FAIL (0.01 s)
-     (47/48) /bin/false.variant23: FAIL (0.01 s)
-     (48/48) /bin/false.variant24: FAIL (0.01 s)
+     (1/48) /bin/true;1: SKIP
+     (2/48) /bin/true;2: SKIP
+     (3/48) /bin/true;3: SKIP
+     (4/48) /bin/true;4: SKIP
+     (5/48) /bin/true;5: SKIP
+     (6/48) /bin/true;6: SKIP
+     (7/48) /bin/true;7: SKIP
+     (8/48) /bin/true;8: SKIP
+     (9/48) /bin/true;9: SKIP
+     (10/48) /bin/true;10: SKIP
+     (11/48) /bin/true;11: SKIP
+     (12/48) /bin/true;12: SKIP
+     (13/48) /bin/true;13: SKIP
+     (14/48) /bin/true;14: SKIP
+     (15/48) /bin/true;15: SKIP
+     (16/48) /bin/true;16: SKIP
+     (17/48) /bin/true;17: SKIP
+     (18/48) /bin/true;18: SKIP
+     (19/48) /bin/true;19: SKIP
+     (20/48) /bin/true;20: SKIP
+     (21/48) /bin/true;21: SKIP
+     (22/48) /bin/true;22: SKIP
+     (23/48) /bin/true;23: SKIP
+     (24/48) /bin/true;24: SKIP
+     (25/48) /bin/false;1: FAIL (0.01 s)
+     (26/48) /bin/false;2: FAIL (0.01 s)
+     (27/48) /bin/false;3: FAIL (0.01 s)
+     (28/48) /bin/false;4: FAIL (0.01 s)
+     (29/48) /bin/false;5: FAIL (0.01 s)
+     (30/48) /bin/false;6: FAIL (0.01 s)
+     (31/48) /bin/false;7: FAIL (0.01 s)
+     (32/48) /bin/false;8: FAIL (0.01 s)
+     (33/48) /bin/false;9: FAIL (0.01 s)
+     (34/48) /bin/false;10: FAIL (0.01 s)
+     (35/48) /bin/false;11: FAIL (0.01 s)
+     (36/48) /bin/false;12: FAIL (0.01 s)
+     (37/48) /bin/false;13: FAIL (0.01 s)
+     (38/48) /bin/false;14: FAIL (0.01 s)
+     (39/48) /bin/false;15: FAIL (0.01 s)
+     (40/48) /bin/false;16: FAIL (0.01 s)
+     (41/48) /bin/false;17: FAIL (0.01 s)
+     (42/48) /bin/false;18: FAIL (0.01 s)
+     (43/48) /bin/false;19: FAIL (0.01 s)
+     (44/48) /bin/false;20: FAIL (0.01 s)
+     (45/48) /bin/false;21: FAIL (0.01 s)
+     (46/48) /bin/false;22: FAIL (0.01 s)
+     (47/48) /bin/false;23: FAIL (0.01 s)
+     (48/48) /bin/false;24: FAIL (0.01 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 24 | SKIP 24 | WARN 0 | INTERRUPT 0
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html
     TIME       : 0.19 s
