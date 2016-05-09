@@ -91,14 +91,15 @@ Avocado finds and populates ``self.params`` with all parameters you define on
 a Multiplex Config file (see :doc:`MultiplexConfig`). As an example, consider
 the following multiplex file for sleeptest::
 
-    sleeptest: !mux
+    sleeptest:
         type: "builtin"
-        short:
-            sleep_length: 0.5
-        medium:
-            sleep_length: 1
-        long:
-            sleep_length: 5
+        length: !mux
+            short:
+                sleep_length: 0.5
+            medium:
+                sleep_length: 1
+            long:
+                sleep_length: 5
 
 When running this example by ``avocado run $test --multiplex $file.yaml``
 three variants are executed and the content is injected into ``/run`` namespace
@@ -106,8 +107,8 @@ three variants are executed and the content is injected into ``/run`` namespace
 "type" and "sleep_length". To obtain the current value, you need the name
 ("sleep_length") and its path. The path differs for each variant so it's
 needed to use the most suitable portion of the path, in this example:
-"/run/sleeptest/*" or perhaps "sleeptest/*" might be enough. It depends on how
-your setup looks like.
+`/run/sleeptest/length/*` or perhaps `sleeptest/*` might be enough. It depends
+on how your setup looks like.
 
 The default value is optional, but always keep in mind to handle them nicely.
 Someone might be executing your test with different params or without any
