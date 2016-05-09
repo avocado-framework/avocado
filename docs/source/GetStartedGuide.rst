@@ -260,9 +260,11 @@ Debugging tests
 When developing new tests, you frequently want to look straight at the
 job log, without switching screens or having to "tail" the job log.
 
-In order to do that, you can use ``--show-job-log`` option::
+In order to do that, you can use ``avocado --show test run ...`` or
+``avocado run --show-job-log ...`` options::
 
-    $ avocado run examples/tests/sleeptest --show-job-log
+    $ avocado --show test run examples/tests/sleeptest
+    ...
     Job ID: f9ea1742134e5352dec82335af584d1f151d4b85
 
     START examples/tests/sleeptest.py
