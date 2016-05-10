@@ -6,16 +6,19 @@ Reference Guide
 
 This guide presents information on the Avocado basic design and its internals.
 
+Job, test and identifiers
+=========================
+
 .. _job-id:
 
 Job ID
-======
+------
 
 The Job ID is a random SHA1 string that uniquely identifies a given job.
 
 The full form of the SHA1 string is used is most references to a job::
 
-  $ avocado run sleeptest
+  $ avocado run sleeptest.py
   JOB ID     : 49ec339a6cca73397be21866453985f88713ac34
   ...
 
@@ -23,6 +26,99 @@ But a shorter version is also used at some places, such as in the job
 results location::
 
   JOB LOG    : $HOME/avocado/job-results/job-2015-06-10T10.44-49ec339/job.log
+
+
+Test References
+---------------
+
+A Test Reference is a string that can be resolved into
+(interpreted as) one or more tests by the Avocado Test Resolver.
+A given resolver plugin is free to interpret a test reference,
+it is completely abstract to the other components of Avocado.
+
+.. note:: Mapping the Test References to tests can be affected
+   by command-line switches like `--external-runner`, which
+   completelly changes the meaning of the given strings.
+
+
+Test Name
+---------
+
+A test name is an arbitrarily long string that unambiguously
+points to the source of a single test. In other words the Avocado
+Test Resolver, as configured for a particular job, should return
+one and only one test as the interpretation of this name.
+
+This name can be as specific as necessary to make it unique.
+Therefore it can contain an arbitrary number of variables,
+prefixes, suffixes, tags, etc.  It all depends on user
+preferences, what is supported by Avocado via its Test Resolvers and
+the context of the job.
+
+The output of the Test Resolver when resolving Test References
+should always be a list of unambiguous Test Names (for that
+particular job).
+
+Notice that although the Test Name has to be unique, one test can
+be run more than once inside a job.
+
+By definition, a Test Name is a Test Reference, but the
+reciprocal is not necessarily true, as the latter can represent
+more than one test.
+
+
+Variant IDs
+-----------
+
+The multiplexer component creates different sets of variables
+(known as "variants"), to allow tests to be run individually in
+each of them.
+
+A Variant ID is an arbitrary and abstract string created by the
+multiplexer to identify each variant. It should be unique per
+variant inside a set. In other words, the multiplexer generates a
+set of variants, identified by unique IDs.
+
+A simpler implementation of the multiplexer uses serial integers
+as Variant IDs. A more sophisticated implementation could
+generate Variant IDs with more semantic, potentially representing
+their contents.
+
+.. note:: The multiplexer supports serialized variant IDs only
+
+
+Test ID
+--------
+
+A test ID is a string that uniquely identifies a test in the
+context of a job. When considering a single job, there are no two
+tests with the same ID.
+
+A test ID should encapsulate the Test Name and the Variant ID, to
+allow direct identification of a test. In other words, by looking
+at the test ID it should be possible to identify:
+
+  - What's the test name
+  - What's the variant used to run this test (if any)
+
+Test IDs don't necessarily keep their uniqueness properties when
+considered outside of a particular job, but two identical jobs
+run in the exact same environment should generate a identical
+sets of Test IDs.
+
+Syntax::
+
+   <unique-id>-<test-name>[;<variant-id>]
+
+Examples of test-names::
+
+   '/bin/true'
+   '/bin/grep foobar /etc/passwd'
+   'passtest.py:Passtest.test'
+   'file:///tmp/passtest.py:Passtest.test'
+   'multiple_tests.py:MultipleTests.test_hello'
+   'type_specific.io-github-autotest-qemu.systemtap_tracing.qemu.qemu_free'
+
 
 .. _test-types:
 
@@ -182,55 +278,56 @@ results directory structure can be seen below ::
     │   │   ├── uname_-a
     │   │   ├── uptime
     │   │   └── version
-    │   └── pre
-    │       ├── brctl_show
-    │       ├── cmdline
-    │       ├── cpuinfo
-    │       ├── current_clocksource
-    │       ├── df_-mP
-    │       ├── dmesg_-c
-    │       ├── dmidecode
-    │       ├── fdisk_-l
-    │       ├── gcc_--version
-    │       ├── hostname
-    │       ├── ifconfig_-a
-    │       ├── interrupts
-    │       ├── ip_link
-    │       ├── ld_--version
-    │       ├── lscpu
-    │       ├── lspci_-vvnn
-    │       ├── meminfo
-    │       ├── modules
-    │       ├── mount
-    │       ├── mounts
-    │       ├── numactl_--hardware_show
-    │       ├── partitions
-    │       ├── scaling_governor
-    │       ├── uname_-a
-    │       ├── uptime
-    │       └── version
+    │   ├── pre
+    │   │   ├── brctl_show
+    │   │   ├── cmdline
+    │   │   ├── cpuinfo
+    │   │   ├── current_clocksource
+    │   │   ├── df_-mP
+    │   │   ├── dmesg_-c
+    │   │   ├── dmidecode
+    │   │   ├── fdisk_-l
+    │   │   ├── gcc_--version
+    │   │   ├── hostname
+    │   │   ├── ifconfig_-a
+    │   │   ├── interrupts
+    │   │   ├── ip_link
+    │   │   ├── ld_--version
+    │   │   ├── lscpu
+    │   │   ├── lspci_-vvnn
+    │   │   ├── meminfo
+    │   │   ├── modules
+    │   │   ├── mount
+    │   │   ├── mounts
+    │   │   ├── numactl_--hardware_show
+    │   │   ├── partitions
+    │   │   ├── scaling_governor
+    │   │   ├── uname_-a
+    │   │   ├── uptime
+    │   │   └── version
+    │   └── profile
     └── test-results
         └── tests
-            ├── sleeptest.py.long
+            ├── sleeptest.py.1
             │   ├── data
             │   ├── debug.log
             │   └── sysinfo
             │       ├── post
             │       └── pre
-            ├── sleeptest.py.medium
+            ├── sleeptest.py.2
             │   ├── data
             │   ├── debug.log
             │   └── sysinfo
             │       ├── post
             │       └── pre
-            └── sleeptest.py.short
+            └── sleeptest.py.3
                 ├── data
                 ├── debug.log
                 └── sysinfo
                     ├── post
                     └── pre
     
-    20 directories, 59 files
+    21 directories, 59 files
 
 
 From what you can see, the results dir has:
@@ -238,12 +335,12 @@ From what you can see, the results dir has:
 1) A human readable ``id`` in the top level, with the job SHA1.
 2) A human readable ``job.log`` in the top level, with human readable logs of
    the task
-3) A machine readable ``results.xml`` in the top level, with a summary of the
-   job information in xUnit format.
-4) A top level ``sysinfo`` dir, with sub directories ``pre`` and ``post``, that store
-   sysinfo files pre job and post job, respectively.
+3) A machine readable ``results.xml`` and ``results.json`` in the top level,
+   with a summary of the job information in xUnit/json format.
+4) A top level ``sysinfo`` dir, with sub directories ``pre``, ``post`` and
+   ``profile``, that store sysinfo files pre/post/during job, respectively.
 5) Subdirectory ``test-results``, that contains a number of subdirectories
-   (tagged testnames). Those tagged testnames represent instances of test
+   (filesystem-friendly test ids). Those test ids represent instances of test
    execution results.
 
 Test execution instances specification
@@ -251,7 +348,7 @@ Test execution instances specification
 
 The instances should have:
 
-1) A top level human readable ``test.log``, with test debug information
+1) A top level human readable ``job.log``, with job debug information
 2) A ``sysinfo`` subdir, with sub directories ``pre`` and ``post``, that store
    sysinfo files pre test and post test, respectively.
 3) A ``data`` subdir, where the test can output a number of files if necessary.

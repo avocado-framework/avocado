@@ -21,13 +21,13 @@ Avocado command line UI
 A regular run of Avocado will present the test results in a live fashion,
 that is, the job and its test(s) results are constantly updated::
 
-    $ avocado run sleeptest failtest synctest
+    $ avocado run sleeptest.py failtest.py synctest.py
     JOB ID    : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
     TESTS     : 3
-     (1/3) sleeptest.1: PASS (1.01 s)
-     (2/3) failtest.1: FAIL (0.00 s)
-     (3/3) synctest.1: PASS (1.98 s)
+     (1/3) sleeptest.py:SleepTest.test: PASS (1.01 s)
+     (2/3) failtest.py:FailTest.test: FAIL (0.00 s)
+     (3/3) synctest.py:SyncTest.test: PASS (1.98 s)
     RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
     TIME      : 3.17 s
@@ -41,7 +41,7 @@ HTML report
 As can be seen in the previous example, Avocado shows the path to an HTML
 report that will be generated as soon as the job finishes running::
 
-    $ avocado run sleeptest failtest synctest
+    $ avocado run sleeptest.py failtest.py synctest.py
     ...
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
     ...
@@ -61,7 +61,9 @@ Another type of results are those intended to be parsed by other
 applications. Several standards exist in the test community, and Avocado can
 in theory support pretty much every result standard out there.
 
-Out of the box, Avocado supports a couple of machine readable results.
+Out of the box, Avocado supports a couple of machine readable results. They
+are always generated and stored in the results directory in `results.$type`
+files, but you can ask for a different location too.
 
 xunit
 ~~~~~
@@ -74,17 +76,35 @@ are used by other test automation projects, such as `jenkins
 <http://jenkins-ci.org/>`__. If you want to make Avocado to generate xunit
 output in the standard output of the runner, simply use::
 
-    $ scripts/avocado --xunit - run "sleeptest failtest synctest"
-    <?xml version="1.0" encoding="UTF-8"?>
-    <testsuite name="avocado" tests="3" errors="0" failures="1" skipped="0" time="2.88632893562" timestamp="2014-04-24 18:25:39.545588">
-        <testcase classname="sleeptest" name="sleeptest.1" time="1.10091400146"/>
-        <testcase classname="failtest" name="failtest.1" time="0.0921177864075">
-            <failure><![CDATA[This test is supposed to fail]]></failure>
-        </testcase>
-        <testcase classname="synctest" name="synctest.1" time="1.69329714775"/>
+   $ avocado run sleeptest.py failtest.py synctest.py --xunit -
+   <?xml version="1.0" encoding="UTF-8"?>
+   <testsuite name="avocado" tests="3" errors="0" failures="1" skipped="0" time="3.5769162178" timestamp="2016-05-04 14:46:52.803365">
+           <testcase classname="SleepTest" name="1-sleeptest.py:SleepTest.test" time="1.00204920769"/>
+           <testcase classname="FailTest" name="2-failtest.py:FailTest.test" time="0.00120401382446">
+                   <failure type="TestFail" message="This test is supposed to fail"><![CDATA[Traceback (most recent call last):
+     File "/home/medic/Work/Projekty/avocado/avocado/avocado/core/test.py", line 490, in _run_avocado
+       raise test_exception
+   TestFail: This test is supposed to fail
+   ]]></failure>
+                   <system-out><![CDATA[14:46:53 ERROR| 
+   14:46:53 ERROR| Reproduced traceback from: /home/medic/Work/Projekty/avocado/avocado/avocado/core/test.py:435
+   14:46:53 ERROR| Traceback (most recent call last):
+   14:46:53 ERROR|   File "/home/medic/Work/Projekty/avocado/avocado/examples/tests/failtest.py", line 17, in test
+   14:46:53 ERROR|     self.fail('This test is supposed to fail')
+   14:46:53 ERROR|   File "/home/medic/Work/Projekty/avocado/avocado/avocado/core/test.py", line 585, in fail
+   14:46:53 ERROR|     raise exceptions.TestFail(message)
+   14:46:53 ERROR| TestFail: This test is supposed to fail
+   14:46:53 ERROR| 
+   14:46:53 ERROR| FAIL 2-failtest.py:FailTest.test -> TestFail: This test is supposed to fail
+   14:46:53 INFO | 
+   ]]></system-out>
+           </testcase>
+           <testcase classname="SyncTest" name="3-synctest.py:SyncTest.test" time="2.57366299629"/>
+   </testsuite>
 
-Note the dash `-` in the option `--xunit`, it means that the xunit result
-should go to the standard output.
+
+.. note:: The dash `-` in the option `--xunit`, it means that the xunit result
+          should go to the standard output.
 
 json
 ~~~~
@@ -93,14 +113,66 @@ json
 json Avocado plugin outputs job information, similarly to the xunit output
 plugin::
 
-    $ scripts/avocado --json - run "sleeptest failtest synctest"
-    {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.4282619953155518}, {"test": "failtest.1", "url": "failtest", "status": "FAIL", "time": 0.34017300605773926}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 2.109131097793579}], "errors": 0, "skip": 0, "time": 3.87756609916687, "debuglog": "$HOME/avocado/logs/run-2014-06-11-01.35.15/debug.log", "pass": 2, "failures": 1, "total": 3}
+    $ avocado run sleeptest.py failtest.py synctest.py --json -
+    {"tests": [{"status": "PASS", "url": "1-sleeptest.py:SleepTest.test", "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test/debug.log", "whiteboard": "", "end": 1462366291.95844, "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test", "start": 1462366290.957374, "test": "1-sleeptest.py:SleepTest.test", "fail_reason": "None", "time": 1.001065969467163}, {"status": "FAIL", "url": "2-failtest.py:FailTest.test", "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test/debug.log", "whiteboard": "", "end": 1462366291.980557, "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test", "start": 1462366291.977591, "test": "2-failtest.py:FailTest.test", "fail_reason": "This test is supposed to fail", "time": 0.0029659271240234375}, {"status": "PASS", "url": "3-synctest.py:SyncTest.test", "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test/debug.log", "whiteboard": "", "end": 1462366294.713253, "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test", "start": 1462366291.995889, "test": "3-synctest.py:SyncTest.test", "fail_reason": "None", "time": 2.7173640727996826}], "errors": 0, "job_id": "74e01c82c95009e7d126b4fd60d5e3c615aa7539", "skip": 0, "time": 3.721395969390869, "debuglog": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/job.log", "pass": 2, "failures": 1, "total": 3}
 
-Note the dash `-` in the option `--json`, it means that the xunit result
-should go to the standard output.
+Alternatively human-readable version using `json.tool`::
+
+    $ avocado run sleeptest.py failtest.py synctest.py --json - | python -m json.tool
+    {
+        "debuglog": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/job.log",
+        "errors": 0,
+        "failures": 1,
+        "job_id": "74e01c82c95009e7d126b4fd60d5e3c615aa7539",
+        "pass": 2,
+        "skip": 0,
+        "tests": [
+            {
+                "end": 1462366291.95844,
+                "fail_reason": "None",
+                "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test",
+                "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test/debug.log",
+                "start": 1462366290.957374,
+                "status": "PASS",
+                "test": "1-sleeptest.py:SleepTest.test",
+                "time": 1.001065969467163,
+                "url": "1-sleeptest.py:SleepTest.test",
+                "whiteboard": ""
+            },
+            {
+                "end": 1462366291.980557,
+                "fail_reason": "This test is supposed to fail",
+                "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test",
+                "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test/debug.log",
+                "start": 1462366291.977591,
+                "status": "FAIL",
+                "test": "2-failtest.py:FailTest.test",
+                "time": 0.0029659271240234375,
+                "url": "2-failtest.py:FailTest.test",
+                "whiteboard": ""
+            },
+            {
+                "end": 1462366294.713253,
+                "fail_reason": "None",
+                "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test",
+                "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test/debug.log",
+                "start": 1462366291.995889,
+                "status": "PASS",
+                "test": "3-synctest.py:SyncTest.test",
+                "time": 2.7173640727996826,
+                "url": "3-synctest.py:SyncTest.test",
+                "whiteboard": ""
+            }
+        ],
+        "time": 3.721395969390869,
+        "total": 3
+    }
+
+.. note:: The dash `-` in the option `--json`, it means that the xunit result
+          should go to the standard output.
 
 Bear in mind that there's no documented standard for the Avocado JSON result
-format. This means that it will probably grow organically to acommodate
+format. This means that it will probably grow organically to accommodate
 newer Avocado features. A reasonable effort will be made to not break
 backwards compatibility with applications that parse the current form of its
 JSON result.
@@ -111,7 +183,7 @@ Silent result
 While not a very fancy result format, an application may want nothing but
 the exit status code from an Avocado test job run. Example::
 
-    $ avocado --silent run failtest
+    $ avocado --silent run failtest.py
     $ echo $?
     1
 
@@ -120,11 +192,13 @@ Avocado and check its results::
 
     #!/bin/bash
     ...
-    avocado run /path/to/my/test.py --silent
+    $ avocado --silent run /path/to/my/test.py
     if [ $? == 0 ]; then
        echo "great success!"
     elif
        ...
+
+more details regarding exit codes in `Exit Codes`_ section.
 
 Multiple results at once
 ------------------------
@@ -133,22 +207,22 @@ You can have multiple results formats at once, as long as only one of them
 uses the standard output. For example, it is fine to use the xunit result on
 stdout and the JSON result to output to a file::
 
-    $ scripts/avocado --xunit - --json /tmp/result.json run "sleeptest synctest"
-    <?xml version="1.0" encoding="UTF-8"?>
-    <testsuite name="avocado" tests="2" errors="0" failures="0" skipped="0" time="3.21392536163" timestamp="2014-06-11 01:49:35.858187">
-        <testcase classname="sleeptest" name="sleeptest.1" time="1.34533214569"/>
-        <testcase classname="synctest" name="synctest.1" time="1.86859321594"/>
-    </testsuite>
+   $ avocado run sleeptest.py synctest.py --xunit - --json /tmp/result.json
+   <?xml version="1.0" encoding="UTF-8"?>
+   <testsuite name="avocado" tests="2" errors="0" failures="0" skipped="0" time="3.64848303795" timestamp="2016-05-04 17:26:05.645665">
+           <testcase classname="SleepTest" name="1-sleeptest.py:SleepTest.test" time="1.00270605087"/>
+           <testcase classname="SyncTest" name="2-synctest.py:SyncTest.test" time="2.64577698708"/>
+   </testsuite>
 
-    $ cat /tmp/result.json
-    {"tests": [{"test": "sleeptest.1", "url": "sleeptest", "status": "PASS", "time": 1.345332145690918}, {"test": "synctest.1", "url": "synctest", "status": "PASS", "time": 1.8685932159423828}], "errors": 0, "skip": 0, "time": 3.213925361633301, "debuglog": "$HOME/avocado/logs/run-2014-06-11-01.49.35/debug.log", "pass": 2, "failures": 0, "total": 2}
+   $ cat /tmp/result.json
+   {"tests": [{"status": "PASS", "url": "1-sleeptest.py:SleepTest.test",...
 
 But you won't be able to do the same without the --json flag passed to
 the program::
 
-    $ scripts/avocado --xunit - --json - run "sleeptest synctest"
-    Avocado could not set --json and --xunit both to output to stdout.
-    Please set the output flag of one of them to a file to avoid conflicts.
+   $ avocado run sleeptest.py synctest.py --xunit - --json -
+   Options --json --xunit are trying to use stdout simultaneously
+   Please set at least one of them to a file to avoid conflicts
 
 That's basically the only rule, and a sane one, that you need to follow.
 
