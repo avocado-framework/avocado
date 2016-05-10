@@ -16,6 +16,7 @@ else:
     import unittest
 
 from avocado.core import exit_codes
+from avocado.utils import astring
 from avocado.utils import process
 from avocado.utils import script
 
@@ -242,8 +243,8 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("TestTimeoutInterrupted: Timeout reached waiting for", output,
-                      "Test did not fail with timeout exception:\n%s" % output)
+        self.assertIn("RUNNER: Timeout reached", output,
+                      "Timeout reached message not found in the output:\n%s" % output)
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
 
@@ -607,8 +608,18 @@ class RunnerSimpleTest(unittest.TestCase):
                       "stopped.")
         self.assertIn("TIME", output, "TIME not in the output, avocado "
                       "probably died unexpectadly")
-        self.assertEqual(proc.get_status(), 1, "Avocado did not finish with "
+        self.assertEqual(proc.get_status(), 8, "Avocado did not finish with "
                          "1.")
+        sleep_dir = astring.string_to_safe_path("1-" + sleep[1:-1])
+        debug_log = os.path.join(self.tmpdir, "latest", "test-results",
+                                 sleep_dir, "debug.log")
+        debug_log = open(debug_log).read()
+        self.assertIn("RUNNER: Timeout reached", debug_log, "RUNNER: Timeout "
+                      "reached message not in the test's debug.log:\n%s"
+                      % debug_log)
+        self.assertNotIn("Traceback", debug_log, "Traceback present in the "
+                         "test's debug.log file, but it was suppose to be "
+                         "stopped and unable to produce it.\n%s" % debug_log)
 
     def tearDown(self):
         self.pass_script.remove()
