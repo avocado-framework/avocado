@@ -16,6 +16,7 @@ else:
     import unittest
 
 from avocado.core import exit_codes
+from avocado.utils import astring
 from avocado.utils import process
 from avocado.utils import script
 
@@ -609,8 +610,9 @@ class RunnerSimpleTest(unittest.TestCase):
                       "probably died unexpectadly")
         self.assertEqual(proc.get_status(), 8, "Avocado did not finish with "
                          "1.")
+        sleep_dir = astring.string_to_safe_path("1-" + sleep[1:-1])
         debug_log = os.path.join(self.tmpdir, "latest", "test-results",
-                                 "1-_bin_sleep 60", "debug.log")
+                                 sleep_dir, "debug.log")
         debug_log = open(debug_log).read()
         self.assertIn("RUNNER: Timeout reached", debug_log, "RUNNER: Timeout "
                       "reached message not in the test's debug.log:\n%s"
