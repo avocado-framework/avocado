@@ -69,6 +69,7 @@ def get_data_files():
     data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'post.d']),
                     ['etc/avocado/scripts/job/post.d/README'])]
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
+    data_files += [(get_tests_dir(), glob.glob('examples/tests/*.sh'))]
     for data_dir in glob.glob('examples/tests/*.data'):
         fmt_str = '%s/*' % data_dir
         for f in glob.glob(fmt_str):
@@ -79,10 +80,6 @@ def get_data_files():
     data_files += [(get_dir(['usr', 'share', 'avocado', 'wrappers'],
                             ['wrappers']),
                     glob.glob('examples/wrappers/*.sh'))]
-
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'simpletests'],
-                            ['simpletests']),
-                    glob.glob('examples/simpletests/*.sh'))]
 
     data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
     return data_files
