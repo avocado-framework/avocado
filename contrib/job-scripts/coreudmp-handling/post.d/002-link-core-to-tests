@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2016
+#
+# This script links the core files (if any) on the job level
+# "coredumps" subdir into the test result specific "coredumps" dir
+# based on the time stamps of the test directories and the timestamps
+# of coredump files.
+#
+
+import glob
+import os
+import sys
+
+if 'AVOCADO_JOB_LOGDIR' not in os.environ:
+    sys.exit(1)
+
+AVOCADO_JOB_LOGDIR = os.environ['AVOCADO_JOB_LOGDIR']
+if not os.path.isdir(AVOCADO_JOB_LOGDIR):
+    sys.exit(2)
+
+COREDUMPS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, 'coredumps')
+COREDUMPS = glob.glob(os.path.join(COREDUMPS_DIR, 'core.*'))
+if not COREDUMPS:
+    sys.exit(0)
+
+# If we reached this far, there are core dumps, so let's attempt to
+# link them to the test results directories.
+#
+# This pattern list can be expanded, and if a match occurs, it should
+# return as the first group member the PID (an unsigned integer) of
+# the process which may have an associated coredump file.
+
+TESTS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, 'test-results')
+
+
+def symlink_coredumps():
+    for test_dir in (os.path.join(TESTS_DIR, _) for _ in os.listdir(TESTS_DIR)):
+        try:
+            debug_log = os.path.join(test_dir, "debug.log")
+            start = os.path.getctime(os.path.join(test_dir, "sysinfo"))
+            stop = os.path.getmtime(debug_log)
+            dst_dir = None
+            for coredump in COREDUMPS:
+                ctime = os.path.getctime(coredump)
+                if ctime <= stop and ctime >= start:
+                    if not dst_dir:
+                        dst_dir = os.path.join(test_dir, "coredumps")
+                        os.makedirs(dst_dir)
+                    try:
+                        dst = os.path.join(dst_dir, os.path.basename(coredump))
+                        os.symlink(os.path.relpath(coredump, dst_dir), dst)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+if __name__ == "__main__":
+    symlink_coredumps()
