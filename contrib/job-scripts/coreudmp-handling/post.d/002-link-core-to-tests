@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import errno
+import glob
+import os
+import re
+import sys
+
+if 'AVOCADO_JOB_LOGDIR' not in os.environ:
+    sys.exit(1)
+
+AVOCADO_JOB_LOGDIR = os.environ['AVOCADO_JOB_LOGDIR']
+if not os.path.isdir(AVOCADO_JOB_LOGDIR):
+    sys.exit(2)
+
+COREDUMPS_DIR = os.path.join(AVOCADO_JOB_LOGDIR, 'coredumps')
+if not os.path.isdir(COREDUMPS_DIR):
+    sys.exit(0)
+
+COREDUMPS = glob.glob(os.path.join(COREDUMPS_DIR, 'core.*'))
+if not COREDUMPS:
+    sys.exit(0)
+
+# If we reached this far, there are core dumps, so let's attempt to
+# link them to the test results directories.
+#
+# This pattern list can be expanded, and if a match occurs, it should
+# return as the first group member the PID (an unsigned integer) of
+# the process which may have an associated coredump file.
+PATTERNS = [r'.*\sPID\s(\d+)']
+
+regexes = map(re.compile, PATTERNS)
+test_id_regex = re.compile(r'^\d+-.*')
+tests_dir = os.path.join(AVOCADO_JOB_LOGDIR, 'test-results')
+test_dirs = os.listdir(tests_dir)
+test_dirs = [os.path.join(tests_dir, t) for t in test_dirs
+             if test_id_regex.match(t)]
+
+for test_dir in test_dirs:
+    log = os.path.join(test_dir, 'debug.log')
+    for line in open(log).readlines():
+        for regex in regexes:
+            match = regex.match(line)
+            if match is not None:
+                pid = match.groups()[0]
+                src = os.path.join(COREDUMPS_DIR, 'core.%s' % pid)
+                if os.path.isfile(src):
+                    dst_dir = os.path.join(test_dir, 'coredumps')
+                    try:
+                        os.makedirs(dst_dir)
+                    except OSError as e:
+                        if e.errno != errno.EEXIST:
+                            sys.exit(3)
+                    dst = os.path.join(dst_dir, os.path.basename(src))
+                    os.symlink(os.path.relpath(src, dst_dir),
+                               os.path.join(test_dir, dst))
