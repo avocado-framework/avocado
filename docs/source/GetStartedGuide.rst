@@ -81,7 +81,7 @@ recognizable name::
      (1/1) /bin/true: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
-    TIME : 0.01 s
+    TESTS TIME : 0.01 s
 
 You probably noticed that we used ``/bin/true`` as a test, and in accordance with our
 expectations, it passed! These are known as `simple tests`, but there is also another
@@ -101,7 +101,7 @@ using the ``--dry-run`` argument::
      (1/1) /bin/true: SKIP
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
     JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
-    TIME       : 0.00 s
+    TESTS TIME : 0.00 s
 
 which supports all ``run`` arguments, simulates the run and even lists the test params.
 
@@ -191,7 +191,7 @@ instrumented and simple tests::
      (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
     RESULTS    : PASS 2 | ERROR 2 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
-    TIME      : 5.88 s
+    TESTS TIME : 5.88 s
 
 .. _running-external-runner:
 
@@ -234,7 +234,7 @@ files with shell code could be considered tests::
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
-    TIME       : 0.01 s
+    TESTS TIME : 0.01 s
 
 This example is pretty obvious, and could be achieved by giving
 `/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
@@ -252,7 +252,7 @@ But now consider the following example::
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
-    TIME       : 3.04 s
+    TESTS TIME : 3.04 s
 
 This effectively makes `/bin/curl` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.

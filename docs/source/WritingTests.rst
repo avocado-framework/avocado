@@ -163,7 +163,7 @@ generation for sleeptest just like::
      (3/3) sleeptest.py:SleepTest.test;3: PASS (5.00 s)
     RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
-    TIME       : 6.50 s
+    TESTS TIME : 6.50 s
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
 As explained in :doc:`MultiplexConfig` without any path the content gets
@@ -200,7 +200,7 @@ You can also execute multiple tests with the same multiplex file::
      (8/8) synctest.py:SyncTest.test;4: PASS (2.45 s)
     RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML   : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/html/results.html
-    TIME       : 26.26 s
+    TESTS TIME : 26.26 s
 
 
 Advanced logging capabilities
@@ -275,7 +275,7 @@ The outcome should be similar to::
     PASS
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     JOB HTML   : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
-    TIME       : 7.01 s
+    TESTS TIME : 7.01 s
 
 The custom ``progress`` stream is combined with the application output, which
 may or may not suit your needs or preferences. If you want the ``progress``
@@ -580,7 +580,7 @@ option --output-check-record all to the test runner::
     TESTS     : 1
      (1/1) synctest.py:SyncTest.test: PASS (2.20 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 2.20 s
+    TESTS TIME : 2.20 s
 
 
 After the reference files are added, the check process is transparent, in the sense
@@ -609,7 +609,7 @@ Let's record the output for this one::
     TESTS     : 1
      (1/1) output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 0.01 s
+    TESTS TIME : 0.01 s
 
 After this is done, you'll notice that a the test data directory
 appeared in the same level of our shell script, containing 2 files::
@@ -634,7 +634,7 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
     TESTS     : 1
      (1/1) output_record.sh: FAIL (0.02 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 0.02 s
+    TESTS TIME : 0.02 s
 
 Verifying the failure reason::
 
@@ -777,7 +777,7 @@ impact your test grid. You can account for that possibility and set up a
     TESTS     : 1
      (1/1) sleeptest.py:SleepTest.test: ERROR (2.97 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 2.97 s
+    TESTS TIME : 2.97 s
 
 ::
 
@@ -863,7 +863,7 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     TESTS     : 1
      (1/1) timeouttest.py:TimeoutTest.test: INTERRUPTED (3.04 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 3.04 s
+    TESTS TIME : 3.04 s
 
 
 ::

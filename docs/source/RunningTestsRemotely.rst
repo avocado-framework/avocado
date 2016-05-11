@@ -60,7 +60,7 @@ Once the remote machine is properly setup, you may run your test. Example::
      (1/2) examples/tests/sleeptest.py: PASS (1.00 s)
      (2/2) examples/tests/failtest.py: FAIL (0.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 1.01 s
+    TESTS TIME : 1.01 s
 
 As you can see, Avocado will copy the tests you have to your remote machine and
 execute them. A bit of extra logging information is added to your job summary,
@@ -140,7 +140,7 @@ Once the virtual machine is properly setup, you may run your test. Example::
      (1/2) examples/tests/sleeptest.py:SleepTest.test: PASS (1.00 s)
      (2/2) examples/tests/failtest.py:FailTest.test: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TIME      : 1.01 s
+    TESTS TIME : 1.01 s
 
 As you can see, Avocado will copy the tests you have to your libvirt domain and
 execute them. A bit of extra logging information is added to your job summary,
