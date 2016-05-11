@@ -231,7 +231,7 @@ class HumanTestResult(TestResult):
                 logdir = os.path.dirname(self.logfile)
                 html_file = os.path.join(logdir, 'html', 'results.html')
                 self.log.info("JOB HTML   : %s", html_file)
-        self.log.info("TIME       : %.2f s", self.total_time)
+        self.log.info("TESTS TIME : %.2f s", self.total_time)
 
     def start_test(self, state):
         super(HumanTestResult, self).start_test(state)
