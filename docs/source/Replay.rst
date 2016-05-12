@@ -20,7 +20,7 @@ Let's see an example. First, running a simple job with two urls::
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/html/results.html
-     TIME       : 0.02 s
+     TESTS TIME : 0.02 s
 
 Now we can replay the job by running::
 
@@ -33,7 +33,7 @@ Now we can replay the job by running::
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
-     TIME       : 0.01 s
+     TESTS TIME : 0.01 s
 
 The replay feature will retrieve the original job urls, the multiplex
 tree and the configuration. Let's see another example, now using
@@ -93,7 +93,7 @@ multiplex file::
       (48/48) /bin/false;24: FAIL (0.01 s)
      RESULTS    : PASS 24 | ERROR 0 | FAIL 24 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
-     TIME       : 0.29 s
+     TESTS TIME : 0.29 s
 
 We can replay the job as is, using ``$ avocado run --replay bd6aa3b``,
 or replay the job ignoring the multiplex file, as below::
@@ -108,7 +108,7 @@ or replay the job ignoring the multiplex file, as below::
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/html/results.html
-     TIME       : 0.02 s
+     TESTS TIME : 0.02 s
 
 Also, it is possible to replay only the variants that faced a given
 result, using the option ``--replay-test-status``. Using the same job
@@ -169,7 +169,7 @@ result, using the option ``--replay-test-status``. Using the same job
      (48/48) /bin/false;24: FAIL (0.01 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 24 | SKIP 24 | WARN 0 | INTERRUPT 0
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html
-    TIME       : 0.19 s
+    TESTS TIME : 0.19 s
 
 To be able to replay a job, avocado records the job data in the same
 job results directory, inside a subdirectory named ``replay``. If a
@@ -184,7 +184,7 @@ below::
       (1/1) /bin/true: PASS (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB HTML   : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/html/results.html
-     TIME       : 0.01 s
+     TESTS TIME : 0.01 s
 
 Trying to replay the job, it fails::
 
@@ -201,4 +201,4 @@ In this case, we have to inform where the job results dir is located::
       (1/1) /bin/true: PASS (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/html/results.html
-     TIME       : 0.01 s
+     TESTS TIME : 0.01 s
