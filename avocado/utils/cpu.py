@@ -21,6 +21,7 @@ Get information from the current's machine CPU.
 """
 
 import re
+import multiprocessing
 
 
 def _list_matches(lst, pattern):
@@ -114,3 +115,11 @@ def get_cpu_arch():
         return 'x86_64'
     else:
         return 'i386'
+
+
+def get_count():
+    """
+    This utility function returns the number of cpu's in the system
+    """
+    cpu_count = multiprocessing.cpu_count()
+    return cpu_count
