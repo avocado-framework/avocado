@@ -93,7 +93,7 @@ class JobScriptsTest(unittest.TestCase):
         config = script.TemporaryScript("non_zero.conf",
                                         SCRIPT_NON_ZERO_CFG % self.pre_dir)
         with config:
-            cmd = './scripts/avocado --config %s run passtest' % config
+            cmd = './scripts/avocado --config %s run passtest.py' % config
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
@@ -114,7 +114,7 @@ class JobScriptsTest(unittest.TestCase):
         config = script.TemporaryScript("non_existing_dir.conf",
                                         SCRIPT_NON_EXISTING_DIR_CFG % self.pre_dir)
         with config:
-            cmd = './scripts/avocado --config %s run passtest' % config
+            cmd = './scripts/avocado --config %s run passtest.py' % config
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status

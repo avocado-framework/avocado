@@ -88,7 +88,7 @@ We have briefly discussed the making of Avocado plugins. We recommend
 the `Stevedore documentation`_ and also a look at the
 :mod:`avocado.plugins.base` module for the various plugin interface definitions.
 
-Some plugins examples are available in the `Avocado source tree_`, under ``examples/plugins``.
+Some plugins examples are available in the `Avocado source tree`_, under ``examples/plugins``.
 
 Finally, exploring the real plugins shipped with Avocado in :mod:`avocado.plugins`
 is the final "documentation" source.
