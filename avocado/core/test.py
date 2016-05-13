@@ -149,6 +149,18 @@ class Test(unittest.TestCase):
         else:
             self.name = TestName(0, self.__class__.__name__)
 
+        # Initialize filename
+        if not hasattr(self, 'filename'):
+            possibly_compiled = inspect.getfile(self.__class__)
+            if possibly_compiled.endswith('.pyc') or possibly_compiled.endswith('.pyo'):
+                source = possibly_compiled[:-1]
+            else:
+                source = possibly_compiled
+            if os.path.exists(source):
+                self.filename = source
+            else:
+                self.filename = None
+
         self.tag = tag
         self.job = job
 
@@ -255,16 +267,6 @@ class Test(unittest.TestCase):
         else:
             return None
 
-    @property
-    def filename(self):
-        """
-        Returns the name of the file (path) that holds the current test
-        """
-        possibly_compiled = inspect.getfile(self.__class__)
-        if possibly_compiled.endswith('.pyc') or possibly_compiled.endswith('.pyo'):
-            source = possibly_compiled[:-1]
-        else:
-            source = possibly_compiled
 
         if os.path.exists(source):
             return source
@@ -641,16 +643,11 @@ class SimpleTest(Test):
                                 r' \d\d:\d\d:\d\d WARN \|')
 
     def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
+        if not hasattr(self, 'filename'):
+            self.filename = os.path.abspath(self.name)
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, tag=tag, job=job)
         self._command = self.filename
-
-    @property
-    def filename(self):
-        """
-        Returns the name of the file (path) that holds the current test
-        """
-        return os.path.abspath(self.name.name)
 
     def _log_detailed_cmd_info(self, result):
         """
@@ -694,13 +691,12 @@ class ExternalRunnerTest(SimpleTest):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
+        if not hasattr(self, 'filename'):
+            self.filename = None
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  tag, job)
         self._command = external_runner.runner + " " + self.name.name
 
-    @property
-    def filename(self):
-        return None
 
     def test(self):
         pre_cwd = os.getcwd()
