@@ -74,19 +74,6 @@ def _get_rw_dir(settings_location, system_location, user_location):
         return user_location
 
 
-def _get_ro_dir(settings_location, system_location, user_location):
-    if not settings.settings.intree:
-        if utils_path.usable_ro_dir(settings_location):
-            return settings_location
-
-    if utils_path.usable_ro_dir(system_location):
-        return system_location
-
-    user_location = os.path.expanduser(user_location)
-    if utils_path.usable_ro_dir(user_location):
-        return user_location
-
-
 def get_base_dir():
     """
     Get the most appropriate base dir.
@@ -108,10 +95,27 @@ def get_test_dir():
     Get the most appropriate test location.
 
     The test location is where we store tests written with the avocado API.
+
+    The heuristics used to determine the test dir are:
+    1) If an explicit test dir is set in the configuration system, it
+    is used.
+    2) If user is running Avocado out of the source tree, the example
+    test dir is used
+    3) System wide test dir is used
+    4) User default test dir (~/avocado/tests) is used
     """
+    configured = _get_settings_dir('test_dir')
+    if utils_path.usable_ro_dir(configured):
+        return configured
+
     if settings.settings.intree:
         return _IN_TREE_TESTS_DIR
-    return _get_ro_dir(_get_settings_dir('test_dir'), SYSTEM_TEST_DIR, USER_TEST_DIR)
+
+    if utils_path.usable_ro_dir(SYSTEM_TEST_DIR):
+        return SYSTEM_TEST_DIR
+
+    if utils_path.usable_ro_dir(USER_TEST_DIR):
+        return USER_TEST_DIR
 
 
 def get_data_dir():
