@@ -1,0 +1,33 @@
+These are a set of scripts that will:
+
+* Setup the core pattern to the "coredumps" sub directory of the
+  current job and sets the core file size limit to "unlimited"
+* Restore the original settings once the job finishes running tests
+* Links the core files (if any) on the job level "coredumps" subdir
+  into the test result specific "coredumps" dir based on the time
+  stamps of the test directories and the coredump files.
+
+If your system lacks the prlimit utility, then you have to set core
+file size limits yourself.  Options to do so include runnning:
+
+ $ ulimit -c unlimited
+
+Or setting it permanently with an entry in /etc/security/limits.conf,
+or adding a file to /etc/security/limits.d.
+
+To enable these scripts permanently, copy them to the Avocado
+systemwide job scripts directories, located by default at
+/etc/avocado/scripts/job, respecting the pre and post directories.
+
+To enable these scripts during a development session, set the
+following configuration content:
+
+[plugins.jobscripts]
+pre = <THIS_FOLDER_PATH>/pre.d/
+post = <THIS_FOLDER_PATH>/post.d/
+warn_non_existing_dir = True
+warn_non_zero_status = True
+
+WARNING: Since the core pattern is a system wide setting, if you run
+multiple parallel jobs with these scripts, the result is pretty much
+unpredictable and prone to errors.
