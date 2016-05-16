@@ -83,9 +83,10 @@ class RunnerOperationTest(unittest.TestCase):
     def test_show_version(self):
         result = process.run('./scripts/avocado -v', ignore_status=True)
         self.assertEqual(result.exit_status, 0)
-        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", result.stderr),
-                        "Version string does not match 'Avocado \\d\\.\\d:'\n"
-                        "%r" % (result.stderr))
+        version_re = r"^Avocado \d+\.\d+(lts)?$"
+        self.assertTrue(re.match(version_re, result.stderr),
+                        "Version string does not match '%r\n"
+                        "%s" % (version_re, result.stderr))
 
     def test_alternate_config_datadir(self):
         """

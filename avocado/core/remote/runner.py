@@ -42,7 +42,7 @@ class RemoteTestRunner(TestRunner):
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
-    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)$',
+    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+lts|\d+)$',
                                    re.MULTILINE)
 
     def _copy_files(self):
@@ -100,7 +100,7 @@ class RemoteTestRunner(TestRunner):
         and checks if the output looks like what avocado would print out.
 
         :rtype: tuple with (bool, tuple)
-        :returns: (True, (x, y, z)) if avocado appears to be installed and
+        :returns: (True, (x, y)) if avocado appears to be installed and
                   (False, None) otherwise.
         """
         # This will be useful as extra debugging info in case avocado
@@ -118,7 +118,7 @@ class RemoteTestRunner(TestRunner):
             return (False, None)
 
         try:
-            return (True, tuple(map(int, match[0])))
+            return (True, (match[0][0], match[0][1]))
         except IndexError:
             return (False, None)
 
