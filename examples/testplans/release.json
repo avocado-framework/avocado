@@ -13,16 +13,16 @@
 	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build'."},
 
 	{"name": "Avocado Test Run on RPM based installation",
-	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
+	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
 
 	{"name": "Avocado Test Run on Virtual Machine",
-	 "description": "On your development machine, execute Avocado with the Virtual Machine plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest --vm-domain <domain> --vm-username <user> --vm-password <pass>`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
+	 "description": "On your development machine, execute Avocado with the Virtual Machine plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest.py --vm-domain <domain> --vm-username <user> --vm-password <pass>`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
 
 	{"name": "Avocado Test Run on Remote Machine",
-	 "description": "On your development machine, execute Avocado with the Remote plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest --remote-username <user> --remote-password <pass> --remote-hostname <host> --html /tmp/report.html`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
+	 "description": "On your development machine, execute Avocado with the Remote plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest.py --remote-username <user> --remote-password <pass> --remote-hostname <host> --html /tmp/report.html`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
 
 	{"name": "Avocado Remote Machine HTML report",
-	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `passtest.py` (under `Test ID`) and `debug.log` point to valid locations."},
+	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
 
 	{"name": "Avocado Server Source Checkout and Unittests",
 	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt`. Then finally run the unittests with `$ make check`. Expected result: `OK`"},
@@ -48,20 +48,15 @@
 	{"name": "Avocado Virt - Migration test",
 	 "description": "Run the boot test with `$ avocado run avocado-virt-tests/qemu/migration/migration.py --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
 
-	{"name": "Avocado VT - Bootstrap",
-	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html. Expected result: No errors."},
+	{"name": "Avocado VT",
+	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html including the `avocado list` and running the migration test. Expected result: No errors."},
 
-	{"name": "Avocado VT - List tests",
-	 "description": "Run `$ avocado list`. Expected result: The output should list avocado VT tests, such as `io-github-autotest-qemu.unattended_install.cdrom.extra_cdrom_ks.default_install.aio_native`"},
-
-	{"name": "Avocado VT - Run test",
-	 "description": "Run `$ avocado run type_specific.io-github-autotest-qemu.migrate.default.tcp --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
 
 	{"name": "Avocado HTML report sysinfo",
-	 "description": "On the HTML report, click on `Sysinfo (pre job, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
+	 "description": "On the HTML report, click on `Sysinfo (pre/post/profile, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
 
 	{"name": "Avocado HTML report links",
-	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `boot.py` (under `Test ID`) and `debug.log` point to valid locations."},
+	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-type_specific.io-github-autotest-qemu.migrate.default.tcp` (under `Test ID`) and `debug.log` point to valid locations."},
 
 	{"name": "Paginator",
 	"description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
