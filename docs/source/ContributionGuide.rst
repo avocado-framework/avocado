@@ -25,17 +25,17 @@ available).
 Avocado supports various plugins, which are distributed as separate projects,
 for example "avocado-vt" and "avocado-virt". These also need to be
 deployed and linked in order to work properly with the avocado from
-sources (installed version works out of the box). To simplify this
-one can use `make link` Makefile target. The prerequisite is that you need
-to put all the projects in the same parent directory. Then by running
-`make link` inside the main avocado project you link and develop the
-separated projects as well as avocado itself. The workflow could be::
+sources (installed version works out of the box). To simplify this you can
+use `make requirements-plugins` from the main avocado project to install
+requirements of the plugins and `make link` to link and develop the
+plugins. The workflow could be::
 
     $ cd $AVOCADO_PROJECTS_DIR
     $ git clone $AVOCADO_GIT
     $ git clone $AVOCADO_PROJECT2
     $ # Add more projects
     $ cd avocado    # go into the main avocado project dir
+    $ make requirements-plugins
     $ make link
 
 You should see the process and status for each directory.
