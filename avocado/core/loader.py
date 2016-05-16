@@ -238,7 +238,7 @@ class TestLoaderProxy(object):
             test_path = None
         if isinstance(test_class, str):
             module_name = os.path.basename(test_path).split('.')[0]
-            test_module_dir = os.path.dirname(test_path)
+            test_module_dir = os.path.abspath(os.path.dirname(test_path))
             # Tests with local dir imports need this
             try:
                 sys.path.insert(0, test_module_dir)
