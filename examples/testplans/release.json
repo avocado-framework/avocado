@@ -22,7 +22,7 @@
 	 "description": "On your development machine, execute Avocado with the Remote plugin, so that a test will be run on the machine you just installed Avocado using RPM packages. Run: `$ avocado run passtest.py --remote-username <user> --remote-password <pass> --remote-hostname <host> --html /tmp/report.html`. Expected results: `(1/1) /home/<user>/(...)/passtest.py: PASS (0.00 s)`"},
 
 	{"name": "Avocado Remote Machine HTML report",
-	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `passtest.py` (under `Test ID`) and `debug.log` point to valid locations."},
+	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
 
 	{"name": "Avocado Server Source Checkout and Unittests",
 	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt`. Then finally run the unittests with `$ make check`. Expected result: `OK`"},
@@ -53,10 +53,10 @@
 
 
 	{"name": "Avocado HTML report sysinfo",
-	 "description": "On the HTML report, click on `Sysinfo (pre job, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
+	 "description": "On the HTML report, click on `Sysinfo (pre/post/profile, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
 
 	{"name": "Avocado HTML report links",
-	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `boot.py` (under `Test ID`) and `debug.log` point to valid locations."},
+	 "description": "On the HTML report, verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-type_specific.io-github-autotest-qemu.migrate.default.tcp` (under `Test ID`) and `debug.log` point to valid locations."},
 
 	{"name": "Paginator",
 	"description": "Start new terminal and store the stty setting by running `stty -a > /tmp/tty_state_pre`. Then run `AVOCADO_LOG_EARLY=y avocado config` and verify paginator is enabled, colored output is produced and quit. Then run `stty -a > /tmp/tty_state_post` followed by `diff /tmp/tty_state_{pre,post}` and verify the setting was not changed (no output)."}
