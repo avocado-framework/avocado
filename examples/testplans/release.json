@@ -48,14 +48,9 @@
 	{"name": "Avocado Virt - Migration test",
 	 "description": "Run the boot test with `$ avocado run avocado-virt-tests/qemu/migration/migration.py --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
 
-	{"name": "Avocado VT - Bootstrap",
-	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html. Expected result: No errors."},
+	{"name": "Avocado VT",
+	 "description": "Configure avocado vt as described in http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html including the `avocado list` and running the migration test. Expected result: No errors."},
 
-	{"name": "Avocado VT - List tests",
-	 "description": "Run `$ avocado list`. Expected result: The output should list avocado VT tests, such as `io-github-autotest-qemu.unattended_install.cdrom.extra_cdrom_ks.default_install.aio_native`"},
-
-	{"name": "Avocado VT - Run test",
-	 "description": "Run `$ avocado run type_specific.io-github-autotest-qemu.migrate.default.tcp --sysinfo on --open-browser`. Expected result: `PASS`, followed by a web browser showing an HTML report"},
 
 	{"name": "Avocado HTML report sysinfo",
 	 "description": "On the HTML report, click on `Sysinfo (pre job, click to expand)` and verify that system information such as `hostname` and `cpuinfo` are present and accurate"},
