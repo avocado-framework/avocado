@@ -36,6 +36,7 @@ all:
 	@echo "Package requirements related targets"
 	@echo "requirements:            Install runtime requirements"
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
+	@echo "requirements-plugins:    Install plugins requirements"
 	@echo
 	@echo "Platform independent distribution/installtion related targets:"
 	@echo "source:   Create source package"
@@ -126,6 +127,11 @@ requirements:
 
 requirements-selftests: requirements
 	- pip install -r requirements-selftests.txt
+
+requirements-plugins:
+	for MAKEFILE in $(AVOCADO_PLUGINS);\
+		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirements &>/dev/null && echo ">> DONE $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+	done
 
 smokecheck:
 	./scripts/avocado run passtest
