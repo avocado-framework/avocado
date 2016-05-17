@@ -37,7 +37,7 @@ Now check if you have the ``avocado`` and ``avocado-lts`` repositories configure
 Regular users of Avocado will want to use the standard ``avocado``
 repository, which tracks the latest Avocado releases.  For more
 information about the LTS releases, please refer to the `Avocado Long
-Term Supportability`_ thread and to your package management docs on
+Term Stability`_ thread and to your package management docs on
 how to switch to the ``avocado-lts`` repo.
 
 Finally, after deciding between regular Avocado releases or LTS, you
@@ -57,9 +57,9 @@ such as CentOS, just adapt to the following URL and commands::
     sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     sudo yum install avocado
 
-The LTS (Long Term Supportability) repositories are also available for
+The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  Please refer to the `Avocado Long Term
-Supportability`_ thread and to your package management docs on how to
+Stability`_ thread and to your package management docs on how to
 switch to the ``avocado-lts`` repo.
 
 Generic installation from a GIT repository
@@ -305,4 +305,4 @@ In order to do that, you can use ``avocado --show test run ...`` or
 As you can see, the UI output is suppressed and only the job log is shown,
 making this a useful feature for test development and debugging.
 
-.. _Avocado Long Term Supportability: https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
+.. _Avocado Long Term Stability: https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
