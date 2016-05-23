@@ -22,6 +22,7 @@ avocado core code or plugins.
 
 
 import sys
+import math
 
 
 def ordered_list_unique(object_list):
@@ -31,6 +32,24 @@ def ordered_list_unique(object_list):
     seen = set()
     seen_add = seen.add
     return [x for x in object_list if not (x in seen or seen_add(x))]
+
+
+def geometric_mean(values):
+    """
+    Evaluates the geometric mean for a list of numeric values.
+    This implementation is slower but allows unlimited number of values.
+    :param values: List with values.
+    :return: Single value representing the geometric mean for the list values.
+    :see: http://en.wikipedia.org/wiki/Geometric_mean
+    """
+    try:
+        values = [int(value) for value in values]
+    except ValueError:
+        raise ValueError('Invalid inputs %s. Provide valid inputs' % values)
+    no_values = len(values)
+    if no_values == 0:
+        return None
+    return math.exp(sum([math.log(number) for number in values]) / no_values)
 
 
 class Borg:
