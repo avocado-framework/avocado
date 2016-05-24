@@ -513,7 +513,6 @@ class Job(object):
         summary = self.test_runner.run_suite(self.test_suite, mux, self.timeout,
                                              replay_map,
                                              self.args.test_result_total)
-        self.__stop_job_logging()
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
@@ -586,6 +585,7 @@ class Job(object):
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
+            self.__stop_job_logging()
 
 
 class TestProgram(object):
