@@ -121,7 +121,10 @@ clean:
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
 
-requirements:
+pip:
+	$(PYTHON) -m pip --version || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
+
+requirements: pip
 	- pip install "pip>=6.0.1"
 	- pip install -r requirements.txt
 
