@@ -23,6 +23,7 @@ avocado core code or plugins.
 
 import sys
 import math
+from itertools import izip
 
 
 def ordered_list_unique(object_list):
@@ -50,6 +51,73 @@ def geometric_mean(values):
     if no_values == 0:
         return None
     return math.exp(sum([math.log(number) for number in values]) / no_values)
+
+
+def compare_matrices(matrix1, matrix2, threshold=0.05):
+    """
+    Compare 2 matrices nxm and return a matrix nxm with comparison data and
+    stats. When the first columns match, they are considered as header and
+    included in the results intact.
+
+    :param matrix1: Reference Matrix of floats; first column could be header.
+    :param matrix2: Matrix that will be compared; first column could be header
+    :param threshold: Any difference greater than this percent threshold will
+                      be reported.
+    :retrun: Matrix with the difference in comparison, number of improvements,
+             number of regressions, total number of comparisons.
+    """
+    improvements = 0
+    regressions = 0
+    same = 0
+    new_matrix = []
+
+    for line1, line2 in zip(matrix1, matrix2):
+        new_line = []
+        elements = izip(line1, line2)
+        try:
+            element1, element2 = elements.next()
+        except StopIteration:             # no data in this row
+            new_matrix.append(new_line)
+            continue
+        if element1 == element2:          # this column contains header
+            new_line.append(element1)
+            try:
+                element1, element2 = elements.next()
+            except StopIteration:
+                new_matrix.append(new_line)
+                continue
+        while True:
+            try:
+                ratio = float(element2) / float(element1)
+            except ZeroDivisionError:  # For 0s, allow exact match or error
+                if float(element2) == 0:
+                    new_line.append(".")
+                    same += 1
+                else:
+                    new_line.append("Error %s/%s" % (element2, element1))
+                    improvements += 1
+                try:
+                    element1, element2 = elements.next()
+                except StopIteration:
+                    break
+                continue
+            if ratio < (1 - threshold):     # handling regression
+                regressions += 1
+                new_line.append(100 * ratio - 100)
+            elif ratio > (1 + threshold):   # handling improvements
+                improvements += 1
+                new_line.append("+" + str(100 * ratio - 100))
+            else:
+                same += 1
+                new_line.append(".")
+            try:
+                element1, element2 = elements.next()
+            except StopIteration:
+                break
+        new_matrix.append(new_line)
+
+    total = improvements + regressions + same
+    return (new_matrix, improvements, regressions, total)
 
 
 class Borg:
