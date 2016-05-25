@@ -503,6 +503,12 @@ class Test(unittest.TestCase):
         self.sysinfo_logger.end_test_hook()
 
     def _setup_environment_variables(self):
+        if self.job is not None:
+            test_env_vars = getattr(self.job.args, 'test_env', None)
+            if test_env_vars is not None:
+                for key, value in test_env_vars.items():
+                    os.environ[key] = value
+
         os.environ['AVOCADO_VERSION'] = VERSION
         if self.basedir is not None:
             os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
