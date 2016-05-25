@@ -29,6 +29,18 @@ class TestDataStructures(unittest.TestCase):
         self.assertEqual(data_structures.geometric_mean(xrange(1, 180)),
                          67.1555819421869)
 
+    def test_compare_matrices(self):
+        """
+        Verify the correct value is produced when comparing matrices.
+        """
+        # Note that first row contains header in first column, while the
+        # second contains only values (for testing purposes)
+        matrix1 = [["header", 51.7, 60], [1, 0, 0]]
+        matrix2 = [["header", 57.2, 54], [2, 51, 0]]
+        self.assertEqual(data_structures.compare_matrices(matrix1, matrix2),
+                         ([["header", '+10.6382978723', -10.0], ['+100.0',
+                          'Error 51/0', '.']], 3, 1, 5))
+
     def test_lazy_property(self):
         """
         Verify the value is initialized lazily with the correct value
