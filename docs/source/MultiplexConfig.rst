@@ -115,7 +115,7 @@ And the rules defined as:
 The environment created for the nodes ``fedora`` and ``osx`` are:
 
 - Node ``//devtools/fedora`` environment ``compiler: 'gcc'``, ``flags: ['-O2', '-Wall']``
-- None ``//devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
+- Node ``//devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
 
 
 Variants
