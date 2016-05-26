@@ -128,6 +128,7 @@ if __name__ == '__main__':
                    'scripts/avocado-rest-client'],
           entry_points={
               'avocado.plugins.cli': [
+                  'envvars = avocado.plugins.envvars:EnvVars',
                   'gdb = avocado.plugins.gdb:GDB',
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnit',
