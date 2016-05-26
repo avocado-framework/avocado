@@ -17,8 +17,8 @@ TAP output module.
 
 import logging
 
-from ..core.result import register_test_result_class, TestResult
-from .base import CLI
+from avocado.core.result import register_test_result_class, TestResult
+from avocado.plugins.base import CLI
 
 
 class TAPResult(TestResult):

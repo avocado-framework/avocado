@@ -14,22 +14,9 @@ else:
 from avocado.core import exit_codes
 from avocado.core.output import TermSupport
 from avocado.utils import process
-from avocado.utils import script
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
-
-
-PERL_TAP_PARSER_SNIPPET = """
-use TAP::Parser;
-
-my $parser = TAP::Parser->new( { exec => ['./scripts/avocado', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-'] } );
-
-$parser->run;
-$parser->parse_errors == 0 || die "Parser errors!\n";
-$parser->is_good_plan || die "Plan is not a good plan!\n";
-$parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
-"""
 
 
 def image_output_uncapable():
@@ -391,11 +378,16 @@ class OutputPluginTest(unittest.TestCase):
     @unittest.skipIf(perl_tap_parser_uncapable(),
                      "Uncapable of using Perl TAP::Parser library")
     def test_tap_parser(self):
-        perl_script = script.TemporaryScript("tap_parser.pl",
-                                             PERL_TAP_PARSER_SNIPPET)
-        perl_script.save()
         os.chdir(basedir)
-        process.run("perl %s" % perl_script)
+        print os.getcwd()
+        print os.listdir(".")
+        print os.listdir("./selftests")
+        print os.listdir("./selftests/.scripts")
+        result = process.run("perl ./selftests/.scripts/check_tap.py", ignore_status=True, shell=True)
+        #result = process.run(os.path.join("selftests", ".scripts",
+        #                                  "check_tap.pl"))
+        self.assertEqual(result.exit_status, 0, "Fail to analyze TAP output "
+                         "using perl script:\n%s" % result)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
