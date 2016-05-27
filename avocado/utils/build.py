@@ -12,6 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import multiprocessing
 import os
 
 from . import process
@@ -41,6 +42,15 @@ def make(path, make='make', env=None, extra_args='', ignore_status=False, allow_
     cwd = os.getcwd()
     os.chdir(path)
     cmd = make
+
+    # Set default number of jobs as ncpus + 1
+    if "-j" not in os.environ.get("MAKEFLAGS", ""):
+        jobs = multiprocessing.cpu_count() + 1
+        if not env:
+            env = {"MAKEFLAGS": "-j%s" % jobs}
+        elif "-j" not in env:
+            env["MAKEFLAGS"] = "-j%s" % jobs
+
     makeopts = os.environ.get('MAKEOPTS', '')
     if makeopts:
         cmd += ' %s' % makeopts
