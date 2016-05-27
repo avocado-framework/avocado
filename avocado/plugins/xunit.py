@@ -14,9 +14,9 @@
 
 """xUnit module."""
 
+from avocado.core.plugin_interfaces import CLI
 from avocado.core.result import register_test_result_class
 from avocado.core.xunit import xUnitTestResult
-from .base import CLI
 
 
 class XUnit(CLI):

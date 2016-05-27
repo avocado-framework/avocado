@@ -1,9 +1,9 @@
 import os
 import logging
 
-from avocado.utils import process
+from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core.settings import settings
-from avocado.plugins.base import JobPre, JobPost
+from avocado.utils import process
 
 
 CONFIG_SECTION = 'plugins.jobscripts'

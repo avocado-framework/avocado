@@ -17,9 +17,8 @@ import os
 import sys
 
 from avocado.core import exit_codes
+from avocado.core.plugin_interfaces import CLI
 from avocado.utils import process
-
-from .base import CLI
 
 
 class Wrapper(CLI):

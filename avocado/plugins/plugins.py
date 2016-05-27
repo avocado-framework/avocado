@@ -18,9 +18,8 @@ Plugins information plugin
 import logging
 
 from avocado.core import dispatcher
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
-
-from .base import CLICmd
 
 
 class Plugins(CLICmd):

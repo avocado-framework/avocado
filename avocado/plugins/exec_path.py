@@ -19,8 +19,7 @@ import os
 import sys
 
 from avocado.core import exit_codes
-
-from .base import CLICmd
+from avocado.core.plugin_interfaces import CLICmd
 
 
 class ExecPath(CLICmd):

@@ -15,9 +15,8 @@
 import logging
 
 from avocado.core import data_dir
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
-
-from .base import CLICmd
 
 
 class Config(CLICmd):
