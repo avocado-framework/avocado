@@ -12,6 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+import multiprocessing
 import os
 
 from . import process
@@ -46,6 +47,8 @@ def make(path, make='make', env=None, extra_args='', ignore_status=False, allow_
         cmd += ' %s' % makeopts
     if extra_args:
         cmd += ' %s' % extra_args
+    if '-j' not in cmd:
+        cmd += ' -j%s' % str(multiprocessing.cpu_count() + 1)
     make_process = process.system(cmd,
                                   env=env,
                                   ignore_status=ignore_status,
