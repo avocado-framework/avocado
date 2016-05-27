@@ -19,14 +19,15 @@ Job module - describes a sequence of automated test operations.
 
 import argparse
 import commands
+import fnmatch
 import logging
 import os
 import re
-import sys
-import traceback
-import tempfile
 import shutil
-import fnmatch
+import sys
+import tempfile
+import time
+import traceback
 
 from . import version
 from . import data_dir
@@ -100,6 +101,8 @@ class Job(object):
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
         self.logdir = None
+        self.time_start = -1
+        self.time_end = -1
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
         mapping = {'info': logging.INFO,
@@ -552,6 +555,7 @@ class Job(object):
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
+        self.time_start = time.time()
         runtime.CURRENT_JOB = self
         try:
             return self._run()
@@ -565,7 +569,6 @@ class Job(object):
             self.log.error('\n' + str(details))
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
             return self.exitcode
-
         except Exception as details:
             self.status = "ERROR"
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -586,6 +589,11 @@ class Job(object):
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
             self.__stop_job_logging()
+            self.time_end = time.time()
+            total_time = self.time_end - self.time_start
+            if not self.exitcode & (exit_codes.AVOCADO_FAIL |
+                                    exit_codes.AVOCADO_JOB_FAIL):
+                self.log.info("JOB TIME   : %.2f s", total_time)
 
 
 class TestProgram(object):
