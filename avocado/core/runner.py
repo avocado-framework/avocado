@@ -149,33 +149,48 @@ class TestStatus(object):
             else:       # test_status
                 self.status = msg
 
-    def abort(self, proc, started, timeout, first, step):
+    def finish(self, proc, started, timeout, step):
         """
-        Handle job abortion
+        Wait for the test process to finish and report status or error status
+        if unable to obtain the status till deadline.
+
         :param proc: The test's process
         :param started: Time when the test started
         :param timeout: Timeout for waiting on status
         :param first: Delay before first check
         :param step: Step between checks for the status
         """
-        if proc.is_alive() and wait.wait_for(lambda: self.status, timeout,
-                                             first, step):
-            status = self.status
-        else:
-            test_state = self.early_status
-            test_state['time_elapsed'] = time.time() - started
-            test_state['fail_reason'] = 'Test process aborted'
-            test_state['status'] = exceptions.TestAbortError.status
-            test_state['fail_class'] = (exceptions.TestAbortError.__class__.
-                                        __name__)
-            test_state['traceback'] = 'Traceback not available'
-            with open(test_state['logfile'], 'r') as log_file_obj:
-                test_state['text_output'] = log_file_obj.read()
-            TEST_LOG.error('ERROR %s -> TestAbortedError: '
-                           'Test aborted unexpectedly',
-                           test_state['name'])
-            status = test_state
+        # Wait for either process termination or test status
+        wait.wait_for(lambda: not proc.is_alive() or self.status, timeout, 0,
+                      step)
+        if self.status:     # status exists, wait for process to finish
+            if not wait.wait_for(lambda: not proc.is_alive(), timeout, 0,
+                                 step):
+                err = "Test reported status but did not finish"
+            else:   # Test finished and reported status, pass
+                return self.status
+        else:   # proc finished, wait for late status delivery
+            if not wait.wait_for(lambda: self.status, timeout, 0, step):
+                err = "Test died without reporting the status."
+            else:
+                # Status delivered after the test process finished, pass
+                return self.status
+        # At this point there were failures, fill the new test status
+        TEST_LOG.debug("Original status: %s", str(self.status))
+        test_state = self.early_status
+        test_state['time_elapsed'] = time.time() - started
+        test_state['fail_reason'] = err
+        test_state['status'] = exceptions.TestAbortError.status
+        test_state['fail_class'] = (exceptions.TestAbortError.__class__.
+                                    __name__)
+        test_state['traceback'] = 'Traceback not available'
+        with open(test_state['logfile'], 'r') as log_file_obj:
+            test_state['text_output'] = log_file_obj.read()
+        TEST_LOG.error('ERROR %s -> TestAbortedError: '
+                       'Test process died without reporting the status.',
+                       test_state['name'])
         if proc.is_alive():
+            TEST_LOG.warning("Killing hanged test process %s" % proc.pid)
             for _ in xrange(5):     # I really want to destroy it
                 os.kill(proc.pid, signal.SIGKILL)
                 if not proc.is_alive():
@@ -184,7 +199,7 @@ class TestStatus(object):
             else:
                 raise exceptions.TestError("Unable to destroy test's process "
                                            "(%s)" % proc.pid)
-        return status
+        return test_state
 
 
 class TestRunner(object):
@@ -370,11 +385,8 @@ class TestRunner(object):
                     os.kill(proc.pid, signal.SIGKILL)
 
         # Get/update the test status
-        if test_status.status:
-            test_state = test_status.status
-        else:
-            test_state = test_status.abort(proc, time_started, cycle_timeout,
-                                           first, step)
+        test_state = test_status.finish(proc, time_started, cycle_timeout,
+                                        step)
 
         # Try to log the timeout reason to test's results and update test_state
         if abort_reason:
