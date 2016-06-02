@@ -661,7 +661,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def test(self):
+    def execute_cmd(self):
         """
         Run the executable, and log its detailed execution.
         """
@@ -678,8 +678,11 @@ class SimpleTest(Test):
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
 
-    def run(self, result=None):
-        super(SimpleTest, self).run(result)
+    def test(self):
+        """
+        Run the test and postprocess the results
+        """
+        self.execute_cmd()
         for line in open(self.logfile):
             if self.re_avocado_log.match(line):
                 raise exceptions.TestWarn("Test passed but there were warnings"
@@ -722,7 +725,7 @@ class ExternalRunnerTest(SimpleTest):
                                new_cwd)
                 os.chdir(new_cwd)
 
-            super(ExternalRunnerTest, self).test()
+            self.execute_cmd()
 
         finally:
             if new_cwd is not None:
