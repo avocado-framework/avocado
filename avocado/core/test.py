@@ -640,9 +640,11 @@ class SimpleTest(Test):
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
-    def __init__(self, name, params=None, base_logdir=None, tag=None, job=None):
+    def __init__(self, name, params=None, base_logdir=None, tag=None,
+                 job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
-                                         base_logdir=base_logdir, tag=tag, job=job)
+                                         base_logdir=base_logdir, tag=tag,
+                                         job=job)
         self._command = self.filename
 
     @property
@@ -666,7 +668,7 @@ class SimpleTest(Test):
         Run the executable, and log its detailed execution.
         """
         try:
-            test_params = dict([(str(key), str(val)) for path, key, val in
+            test_params = dict([(str(key), str(val)) for _, key, val in
                                 self.params.iteritems()])
 
             # process.run uses shlex.split(), the self.path needs to be escaped
