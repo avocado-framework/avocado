@@ -75,6 +75,27 @@ class MyTest(Test):
 '''
 
 
+REPORTS_STATUS_AND_HANG = '''
+from avocado import Test
+import time
+
+class MyTest(Test):
+    def test(self):
+         self.runner_queue.put({"running": False})
+         time.sleep(60)
+'''
+
+DIE_WITHOUT_REPORTING_STATUS = '''
+from avocado import Test
+import os
+import signal
+
+class MyTest(Test):
+    def test(self):
+         os.kill(os.getpid(), signal.SIGKILL)
+'''
+
+
 class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
@@ -183,6 +204,42 @@ class RunnerOperationTest(unittest.TestCase):
             self.assertIn("Original fail_reason: None",
                           results["tests"][0]["fail_reason"])
 
+    def test_hanged_test_with_status(self):
+        """ Check that avocado handles hanged tests properly """
+        os.chdir(basedir)
+        with script.TemporaryScript("report_status_and_hang.py",
+                                    REPORTS_STATUS_AND_HANG,
+                                    "hanged_test_with_status") as tst:
+            res = process.run("./scripts/avocado run --sysinfo=off "
+                              "--job-results-dir %s %s --json -"
+                              % (self.tmpdir, tst), ignore_status=True)
+            self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
+            results = json.loads(res.stdout)
+            self.assertEqual(results["tests"][0]["status"], "ERROR",
+                             "%s != %s\n%s" % (results["tests"][0]["status"],
+                                               "ERROR", res))
+            self.assertIn("Test reported status but did not finish",
+                          results["tests"][0]["fail_reason"])
+            self.assertLess(res.duration, 40, "Test execution took too long, "
+                            "which is likely because the hanged test was not "
+                            "interrupted. Results:\n%s" % res)
+
+    def test_no_status_reported(self):
+        os.chdir(basedir)
+        with script.TemporaryScript("die_without_reporting_status.py",
+                                    DIE_WITHOUT_REPORTING_STATUS,
+                                    "no_status_reported") as tst:
+            res = process.run("./scripts/avocado run --sysinfo=off "
+                              "--job-results-dir %s %s --json -"
+                              % (self.tmpdir, tst), ignore_status=True)
+            self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
+            results = json.loads(res.stdout)
+            self.assertEqual(results["tests"][0]["status"], "ERROR",
+                             "%s != %s\n%s" % (results["tests"][0]["status"],
+                                               "ERROR", res))
+            self.assertIn("Test died without reporting the status",
+                          results["tests"][0]["fail_reason"])
+
     def test_runner_tests_fail(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
@@ -267,7 +324,7 @@ class RunnerOperationTest(unittest.TestCase):
                     '--xunit - abort.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout
-        excerpt = 'Test process aborted'
+        excerpt = 'Test died without reporting the status.'
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         unexpected_rc = exit_codes.AVOCADO_FAIL
         self.assertNotEqual(result.exit_status, unexpected_rc,
