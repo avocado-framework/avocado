@@ -201,7 +201,7 @@ class RunnerOperationTest(unittest.TestCase):
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              "%s != %s\n%s" % (results["tests"][0]["status"],
                                                "ERROR", res))
-            self.assertIn("Original fail_reason: None",
+            self.assertIn("Runner error occurred: Test reports unsupported",
                           results["tests"][0]["fail_reason"])
 
     def test_hanged_test_with_status(self):
@@ -313,7 +313,7 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("RUNNER: Timeout reached", output,
+        self.assertIn("Runner error occurred: Timeout reached", output,
                       "Timeout reached message not found in the output:\n%s" % output)
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
@@ -694,12 +694,13 @@ class RunnerSimpleTest(unittest.TestCase):
         debug_log = os.path.join(self.tmpdir, "latest", "test-results",
                                  sleep_dir, "debug.log")
         debug_log = open(debug_log).read()
-        self.assertIn("RUNNER: Timeout reached", debug_log, "RUNNER: Timeout "
-                      "reached message not in the test's debug.log:\n%s"
-                      % debug_log)
-        self.assertNotIn("Traceback", debug_log, "Traceback present in the "
-                         "test's debug.log file, but it was suppose to be "
-                         "stopped and unable to produce it.\n%s" % debug_log)
+        self.assertIn("Runner error occurred: Timeout reached", debug_log,
+                      "Runner error occurred: Timeout reached message not "
+                      "in the test's debug.log:\n%s" % debug_log)
+        self.assertNotIn("Traceback (most recent", debug_log, "Traceback "
+                         "present in the test's debug.log file, but it was "
+                         "suppose to be stopped and unable to produce it.\n"
+                         "%s" % debug_log)
 
     def tearDown(self):
         self.pass_script.remove()

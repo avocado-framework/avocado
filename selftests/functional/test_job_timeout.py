@@ -103,8 +103,9 @@ class JobTimeOutTest(unittest.TestCase):
         res_dir = os.path.join(self.tmpdir, "latest", "test-results")
         debug_log = glob.glob(os.path.join(res_dir, "%s-*" % idx, "debug.log"))
         debug_log = open(debug_log[0]).read()
-        self.assertIn("RUNNER: Timeout reached", debug_log, "RUNNER: Timeout "
-                      "reached message not in the %sst test's debug.log:\n%s"
+        self.assertIn("Runner error occurred: Timeout reached", debug_log,
+                      "Runner error occurred: Timeout reached message not "
+                      "in the %sst test's debug.log:\n%s"
                       % (idx, debug_log))
         self.assertIn("Traceback (most recent call last)", debug_log,
                       "Traceback not present in the %sst test's debug.log:\n%s"

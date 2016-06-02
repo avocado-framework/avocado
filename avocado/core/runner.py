@@ -40,6 +40,40 @@ TEST_LOG = logging.getLogger("avocado.test")
 APP_LOG = logging.getLogger("avocado.app")
 
 
+def add_runner_failure(test_state, new_status, message):
+    """
+    Append runner failure to the overall test status.
+
+    :param test_state: Original test state (dict)
+    :param new_status: New test status (PASS/FAIL/ERROR/INTERRUPTED/...)
+    :param message: The error message
+    """
+    # Try to propagate the message everywhere
+    message = ("Runner error occurred: %s\nOriginal status: %s\n%s"
+               % (message, test_state.get("status"), test_state))
+    TEST_LOG.error(message)
+    test_log = test_state.get("logfile")
+    if test_state.get("text_output"):
+        test_state["text_output"] = "%s\n%s\n" % (test_state["text_output"],
+                                                  message)
+    else:
+        test_state["text_output"] = message + "\n"
+    if test_log:
+        open(test_log, "a").write('\n' + message + '\n')
+    # Update the results
+    if test_state.get("fail_reason"):
+        test_state["fail_reason"] = "%s\n%s" % (test_state["fail_reason"],
+                                                message)
+    else:
+        test_state["fail_reason"] = message
+    if test_state.get("fail_class"):
+        test_state["fail_class"] = "%s\nRUNNER" % test_state["fail_class"]
+    else:
+        test_state["fail_class"] = "RUNNER"
+    test_state["status"] = new_status
+    return test_state
+
+
 class TestStatus(object):
 
     """
@@ -390,17 +424,8 @@ class TestRunner(object):
 
         # Try to log the timeout reason to test's results and update test_state
         if abort_reason:
-            TEST_LOG.error(abort_reason)
-            test_log = test_state.get("logfile")
-            if test_log:
-                open(test_log, "a").write("\nRUNNER: " + abort_reason + "\n")
-            if test_state.get("text_output"):
-                test_state["text_output"] += "\nRUNNER: " + abort_reason + "\n"
-            else:
-                test_state["text_output"] = abort_reason
-            test_state["status"] = "INTERRUPTED"
-            test_state["fail_reason"] = abort_reason
-            test_state["fail_class"] = "RUNNER"
+            test_state = add_runner_failure(test_state, "INTERRUPTED",
+                                            abort_reason)
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
@@ -408,14 +433,8 @@ class TestRunner(object):
 
         # Make sure the test status is correct
         if test_state.get('status') not in status.user_facing_status:
-            test_state['fail_reason'] = ("Test reports unsupported test "
-                                         "status %s.\nOriginal fail_reason: %s"
-                                         "\nOriginal fail_class: %s"
-                                         % (test_state.get('status'),
-                                            test_state.get('fail_reason'),
-                                            test_state.get('fail_class')))
-            test_state['fail_class'] = "RUNNER"
-            test_state['status'] = 'ERROR'
+            test_state = add_runner_failure(test_state, "ERROR", "Test reports"
+                                            " unsupported test status.")
 
         self.result.check_test(test_state)
         if test_state['status'] == "INTERRUPTED":
