@@ -39,7 +39,7 @@ class TestDataStructures(unittest.TestCase):
         matrix2 = [["header", 57.2, 54], [2, 51, 0]]
         self.assertEqual(data_structures.compare_matrices(matrix1, matrix2),
                          ([["header", '+10.6382978723', -10.0], ['+100.0',
-                          'Error 51/0', '.']], 3, 1, 5))
+                          'error_51/0', '.']], 3, 1, 5))
 
     def test_lazy_property(self):
         """
