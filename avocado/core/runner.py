@@ -32,7 +32,6 @@ from . import status
 from .loader import loader
 from .status import mapping
 from ..utils import wait
-from ..utils import stacktrace
 from ..utils import runtime
 from ..utils import process
 
@@ -90,6 +89,7 @@ class TestStatus(object):
         self._early_status = None
         self.status = {}
         self.interrupt = None
+        self._failed = False
 
     def _get_msg_from_queue(self):
         """
@@ -103,10 +103,8 @@ class TestStatus(object):
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
         except Exception as details:
-            APP_LOG.error("\nError receiving message from test: %s -> %s",
-                          details.__class__, details)
-            stacktrace.log_exc_info(sys.exc_info(),
-                                    'avocado.app.tracebacks')
+            self._failed = True
+            TEST_LOG.error("RUNNER: Failed to read queue: %s", details)
             return None
 
     @property
@@ -183,6 +181,15 @@ class TestStatus(object):
             else:       # test_status
                 self.status = msg
 
+    def _add_status_failures(self, test_state):
+        """
+        Append TestStatus error to test_state in case there were any.
+        """
+        if self._failed:
+            return add_runner_failure(test_state, "ERROR", "TestStatus failed,"
+                                      " see overall job.log for details.")
+        return test_state
+
     def finish(self, proc, started, timeout, step):
         """
         Wait for the test process to finish and report status or error status
@@ -202,13 +209,13 @@ class TestStatus(object):
                                  step):
                 err = "Test reported status but did not finish"
             else:   # Test finished and reported status, pass
-                return self.status
+                return self._add_status_failures(self.status)
         else:   # proc finished, wait for late status delivery
             if not wait.wait_for(lambda: self.status, timeout, 0, step):
                 err = "Test died without reporting the status."
             else:
                 # Status delivered after the test process finished, pass
-                return self.status
+                return self._add_status_failures(self.status)
         # At this point there were failures, fill the new test status
         TEST_LOG.debug("Original status: %s", str(self.status))
         test_state = self.early_status
@@ -233,7 +240,7 @@ class TestStatus(object):
             else:
                 raise exceptions.TestError("Unable to destroy test's process "
                                            "(%s)" % proc.pid)
-        return test_state
+        return self._add_status_failures(test_state)
 
 
 class TestRunner(object):
