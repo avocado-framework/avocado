@@ -273,8 +273,9 @@ class Test(unittest.TestCase):
 
     @data_structures.LazyProperty
     def workdir(self):
-        basename = os.path.basename(self.logdir)
-        return utils_path.init_dir(data_dir.get_tmp_dir(), basename.replace(':', '_'))
+        basename = (os.path.basename(self.logdir).replace(':', '_')
+                    .replace(';', '_'))
+        return utils_path.init_dir(data_dir.get_tmp_dir(), basename)
 
     @data_structures.LazyProperty
     def srcdir(self):
