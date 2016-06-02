@@ -154,7 +154,7 @@ class LoaderTest(unittest.TestCase):
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
-        tc.test()
+        tc.run_avocado()
         # Load with params
         simple_with_params = simple_test.path + " 'foo bar' --baz"
         suite = self.loader.discover(simple_with_params, True)
@@ -227,7 +227,7 @@ class LoaderTest(unittest.TestCase):
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
-        tc.test()
+        tc.run_avocado()
         avocado_simple_test.remove()
 
     def test_py_simple_test_notexec(self):
