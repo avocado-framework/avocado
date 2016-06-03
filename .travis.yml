@@ -15,6 +15,11 @@ cache:
 
 sudo: false
 
+addons:
+    apt:
+        packages:
+            - perl
+
 install:
     - pip install -r requirements-travis.txt
 

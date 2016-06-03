@@ -27,6 +27,10 @@ def image_output_uncapable():
         return True
 
 
+def perl_tap_parser_uncapable():
+    return os.system("perl -e 'use TAP::Parser;'") != 0
+
+
 class OutputTest(unittest.TestCase):
 
     def setUp(self):
@@ -370,6 +374,20 @@ class OutputPluginTest(unittest.TestCase):
                 os.remove(redirected_output_path)
             except OSError:
                 pass
+
+    @unittest.skipIf(perl_tap_parser_uncapable(),
+                     "Uncapable of using Perl TAP::Parser library")
+    def test_tap_parser(self):
+        os.chdir(basedir)
+        print os.getcwd()
+        print os.listdir(".")
+        print os.listdir("./selftests")
+        print os.listdir("./selftests/.scripts")
+        result = process.run("perl ./selftests/.scripts/check_tap.py", ignore_status=True, shell=True)
+        #result = process.run(os.path.join("selftests", ".scripts",
+        #                                  "check_tap.pl"))
+        self.assertEqual(result.exit_status, 0, "Fail to analyze TAP output "
+                         "using perl script:\n%s" % result)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
