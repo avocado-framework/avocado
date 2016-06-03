@@ -24,7 +24,8 @@ class LinuxBuildTest(Test):
 
         self.linux_build = kernel.KernelBuild(kernel_version,
                                               linux_config,
-                                              self.srcdir)
+                                              self.srcdir,
+                                              ['/var/tmp'])
         self.linux_build.download()
         self.linux_build.uncompress()
         self.linux_build.configure()
