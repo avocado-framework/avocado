@@ -41,7 +41,6 @@ class AvocadoApp(object):
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
         self.parser = Parser()
         output.early_start()
-        initialized = False
         try:
             self.cli_dispatcher = CLIDispatcher()
             self.cli_cmd_dispatcher = CLICmdDispatcher()
@@ -55,7 +54,6 @@ class AvocadoApp(object):
             self.parser.finish()
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('run', self.parser.args)
-            initialized = True
         finally:
             output.reconfigure(self.parser.args)
 
