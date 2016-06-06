@@ -281,6 +281,18 @@ class Test(unittest.TestCase):
     def srcdir(self):
         return utils_path.init_dir(self.workdir, 'src')
 
+    @data_structures.LazyProperty
+    def cache_dirs(self):
+        """
+        Returns a list of cache directories as set in config file.
+        """
+        cache_dirs = settings.get_value('datadir.paths', 'cache_dirs',
+                                        key_type=list, default=[])
+        datadir_cache = os.path.join(data_dir.get_data_dir(), 'cache')
+        if datadir_cache not in cache_dirs:
+            cache_dirs.append(datadir_cache)
+        return cache_dirs
+
     def __str__(self):
         return str(self.name)
 
@@ -625,11 +637,8 @@ class Test(unittest.TestCase):
                           fetched (optional)
         :returns: asset file local path
         """
-        cache_dirs = settings.get_value('datadir.paths', 'cache_dirs',
-                                        key_type=list, default=[])
-        cache_dirs.append(os.path.join(data_dir.get_data_dir(), 'cache'))
         return asset.Asset(name, asset_hash, algorithm, locations,
-                           cache_dirs).fetch()
+                           self.cache_dirs).fetch()
 
 
 class SimpleTest(Test):

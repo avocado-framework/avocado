@@ -21,7 +21,7 @@ import logging
 import tempfile
 from distutils.version import LooseVersion
 
-from . import download, archive, build
+from . import asset, archive, build
 
 log = logging.getLogger('avocado.test')
 
@@ -35,13 +35,15 @@ class KernelBuild(object):
     URL = 'https://www.kernel.org/pub/linux/kernel/v3.x/'
     SOURCE = 'linux-{version}.tar.gz'
 
-    def __init__(self, version, config_path=None, work_dir=None):
+    def __init__(self, version, config_path=None, work_dir=None,
+                 data_dirs=None):
         """
         Creates an instance of :class:`KernelBuild`.
 
         :param version: kernel version ("3.19.8").
         :param config_path: path to config file.
         :param work_dir: work directory.
+        :param data_dirs: list of directories to keep the downloaded kernel
         :return: None.
         """
         self.version = version
@@ -49,6 +51,10 @@ class KernelBuild(object):
         if work_dir is None:
             work_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.work_dir = work_dir
+        if data_dirs is not None:
+            self.data_dirs = data_dirs
+        else:
+            self.data_dirs = [self.work_dir]
         self.build_dir = os.path.join(self.work_dir, 'build')
         if not os.path.isdir(self.build_dir):
             os.makedirs(self.build_dir)
@@ -64,20 +70,16 @@ class KernelBuild(object):
         """
         self.kernel_file = self.SOURCE.format(version=self.version)
         full_url = self.URL + self.SOURCE.format(version=self.version)
-        path = os.path.join(self.work_dir, self.kernel_file)
-        if os.path.isfile(path):
-            log.info("File '%s' exists, will not download!", path)
-        else:
-            log.info("Downloading '%s'...", full_url)
-            download.url_download(full_url, path)
+        self.asset_path = asset.Asset(full_url, asset_hash=None,
+                                      algorithm=None, locations=None,
+                                      cache_dirs=self.data_dirs).fetch()
 
     def uncompress(self):
         """
         Uncompress kernel source.
         """
         log.info("Uncompressing tarball")
-        path = os.path.join(self.work_dir, self.kernel_file)
-        archive.extract(path, self.work_dir)
+        archive.extract(self.asset_path, self.work_dir)
 
     def configure(self):
         """
