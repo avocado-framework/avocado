@@ -1,6 +1,8 @@
+import shutil
 import stat
 import sys
 import multiprocessing
+import tempfile
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -140,6 +142,7 @@ class LoaderTest(unittest.TestCase):
     def setUp(self):
         self.loader = loader.FileLoader(None, {})
         self.queue = multiprocessing.Queue()
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def test_load_simple(self):
         simple_test = script.TemporaryScript('simpletest.sh', SIMPLE_TEST,
@@ -149,6 +152,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(simple_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         tc.test()
         # Load with params
@@ -167,6 +171,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(simple_test.path, True)[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.test)
         simple_test.remove()
@@ -191,6 +196,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_not_a_test.path, True)[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.test)
         avocado_not_a_test.remove()
@@ -203,6 +209,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_not_a_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
         # (OSError: [Errno 8] Exec format error)
@@ -218,6 +225,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_simple_test.path, True)[0])
         self.assertTrue(test_class == test.SimpleTest)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         tc.test()
         avocado_simple_test.remove()
@@ -232,6 +240,7 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_simple_test.path, True)[0])
         self.assertTrue(test_class == test.NotATest)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         self.assertRaises(exceptions.NotATestError, tc.test)
         avocado_simple_test.remove()
@@ -321,6 +330,9 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_multiple_imp_test.path, True)[0])
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
