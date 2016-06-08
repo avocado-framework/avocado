@@ -32,12 +32,45 @@ from . import status
 from .loader import loader
 from .status import mapping
 from ..utils import wait
-from ..utils import stacktrace
 from ..utils import runtime
 from ..utils import process
 
 TEST_LOG = logging.getLogger("avocado.test")
 APP_LOG = logging.getLogger("avocado.app")
+
+
+def add_runner_failure(test_state, new_status, message):
+    """
+    Append runner failure to the overall test status.
+
+    :param test_state: Original test state (dict)
+    :param new_status: New test status (PASS/FAIL/ERROR/INTERRUPTED/...)
+    :param message: The error message
+    """
+    # Try to propagate the message everywhere
+    message = ("Runner error occurred: %s\nOriginal status: %s\n%s"
+               % (message, test_state.get("status"), test_state))
+    TEST_LOG.error(message)
+    test_log = test_state.get("logfile")
+    if test_state.get("text_output"):
+        test_state["text_output"] = "%s\n%s\n" % (test_state["text_output"],
+                                                  message)
+    else:
+        test_state["text_output"] = message + "\n"
+    if test_log:
+        open(test_log, "a").write('\n' + message + '\n')
+    # Update the results
+    if test_state.get("fail_reason"):
+        test_state["fail_reason"] = "%s\n%s" % (test_state["fail_reason"],
+                                                message)
+    else:
+        test_state["fail_reason"] = message
+    if test_state.get("fail_class"):
+        test_state["fail_class"] = "%s\nRUNNER" % test_state["fail_class"]
+    else:
+        test_state["fail_class"] = "RUNNER"
+    test_state["status"] = new_status
+    return test_state
 
 
 class TestStatus(object):
@@ -56,6 +89,7 @@ class TestStatus(object):
         self._early_status = None
         self.status = {}
         self.interrupt = None
+        self._failed = False
 
     def _get_msg_from_queue(self):
         """
@@ -69,10 +103,8 @@ class TestStatus(object):
         # Let's catch all exceptions, since errors here mean a
         # crash in avocado.
         except Exception as details:
-            APP_LOG.error("\nError receiving message from test: %s -> %s",
-                          details.__class__, details)
-            stacktrace.log_exc_info(sys.exc_info(),
-                                    'avocado.app.tracebacks')
+            self._failed = True
+            TEST_LOG.error("RUNNER: Failed to read queue: %s", details)
             return None
 
     @property
@@ -149,33 +181,57 @@ class TestStatus(object):
             else:       # test_status
                 self.status = msg
 
-    def abort(self, proc, started, timeout, first, step):
+    def _add_status_failures(self, test_state):
         """
-        Handle job abortion
+        Append TestStatus error to test_state in case there were any.
+        """
+        if self._failed:
+            return add_runner_failure(test_state, "ERROR", "TestStatus failed,"
+                                      " see overall job.log for details.")
+        return test_state
+
+    def finish(self, proc, started, timeout, step):
+        """
+        Wait for the test process to finish and report status or error status
+        if unable to obtain the status till deadline.
+
         :param proc: The test's process
         :param started: Time when the test started
         :param timeout: Timeout for waiting on status
         :param first: Delay before first check
         :param step: Step between checks for the status
         """
-        if proc.is_alive() and wait.wait_for(lambda: self.status, timeout,
-                                             first, step):
-            status = self.status
-        else:
-            test_state = self.early_status
-            test_state['time_elapsed'] = time.time() - started
-            test_state['fail_reason'] = 'Test process aborted'
-            test_state['status'] = exceptions.TestAbortError.status
-            test_state['fail_class'] = (exceptions.TestAbortError.__class__.
-                                        __name__)
-            test_state['traceback'] = 'Traceback not available'
-            with open(test_state['logfile'], 'r') as log_file_obj:
-                test_state['text_output'] = log_file_obj.read()
-            TEST_LOG.error('ERROR %s -> TestAbortedError: '
-                           'Test aborted unexpectedly',
-                           test_state['name'])
-            status = test_state
+        # Wait for either process termination or test status
+        wait.wait_for(lambda: not proc.is_alive() or self.status, timeout, 0,
+                      step)
+        if self.status:     # status exists, wait for process to finish
+            if not wait.wait_for(lambda: not proc.is_alive(), timeout, 0,
+                                 step):
+                err = "Test reported status but did not finish"
+            else:   # Test finished and reported status, pass
+                return self._add_status_failures(self.status)
+        else:   # proc finished, wait for late status delivery
+            if not wait.wait_for(lambda: self.status, timeout, 0, step):
+                err = "Test died without reporting the status."
+            else:
+                # Status delivered after the test process finished, pass
+                return self._add_status_failures(self.status)
+        # At this point there were failures, fill the new test status
+        TEST_LOG.debug("Original status: %s", str(self.status))
+        test_state = self.early_status
+        test_state['time_elapsed'] = time.time() - started
+        test_state['fail_reason'] = err
+        test_state['status'] = exceptions.TestAbortError.status
+        test_state['fail_class'] = (exceptions.TestAbortError.__class__.
+                                    __name__)
+        test_state['traceback'] = 'Traceback not available'
+        with open(test_state['logfile'], 'r') as log_file_obj:
+            test_state['text_output'] = log_file_obj.read()
+        TEST_LOG.error('ERROR %s -> TestAbortedError: '
+                       'Test process died without reporting the status.',
+                       test_state['name'])
         if proc.is_alive():
+            TEST_LOG.warning("Killing hanged test process %s" % proc.pid)
             for _ in xrange(5):     # I really want to destroy it
                 os.kill(proc.pid, signal.SIGKILL)
                 if not proc.is_alive():
@@ -184,7 +240,7 @@ class TestStatus(object):
             else:
                 raise exceptions.TestError("Unable to destroy test's process "
                                            "(%s)" % proc.pid)
-        return status
+        return self._add_status_failures(test_state)
 
 
 class TestRunner(object):
@@ -370,25 +426,13 @@ class TestRunner(object):
                     os.kill(proc.pid, signal.SIGKILL)
 
         # Get/update the test status
-        if test_status.status:
-            test_state = test_status.status
-        else:
-            test_state = test_status.abort(proc, time_started, cycle_timeout,
-                                           first, step)
+        test_state = test_status.finish(proc, time_started, cycle_timeout,
+                                        step)
 
         # Try to log the timeout reason to test's results and update test_state
         if abort_reason:
-            TEST_LOG.error(abort_reason)
-            test_log = test_state.get("logfile")
-            if test_log:
-                open(test_log, "a").write("\nRUNNER: " + abort_reason + "\n")
-            if test_state.get("text_output"):
-                test_state["text_output"] += "\nRUNNER: " + abort_reason + "\n"
-            else:
-                test_state["text_output"] = abort_reason
-            test_state["status"] = "INTERRUPTED"
-            test_state["fail_reason"] = abort_reason
-            test_state["fail_class"] = "RUNNER"
+            test_state = add_runner_failure(test_state, "INTERRUPTED",
+                                            abort_reason)
 
         # don't process other tests from the list
         if ctrl_c_count > 0:
@@ -396,14 +440,8 @@ class TestRunner(object):
 
         # Make sure the test status is correct
         if test_state.get('status') not in status.user_facing_status:
-            test_state['fail_reason'] = ("Test reports unsupported test "
-                                         "status %s.\nOriginal fail_reason: %s"
-                                         "\nOriginal fail_class: %s"
-                                         % (test_state.get('status'),
-                                            test_state.get('fail_reason'),
-                                            test_state.get('fail_class')))
-            test_state['fail_class'] = "RUNNER"
-            test_state['status'] = 'ERROR'
+            test_state = add_runner_failure(test_state, "ERROR", "Test reports"
+                                            " unsupported test status.")
 
         self.result.check_test(test_state)
         if test_state['status'] == "INTERRUPTED":
