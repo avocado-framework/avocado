@@ -71,7 +71,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
     same = 0
     new_matrix = []
 
-    for line1, line2 in zip(matrix1, matrix2):
+    for line1, line2 in izip(matrix1, matrix2):
         new_line = []
         elements = izip(line1, line2)
         try:
@@ -94,7 +94,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                     new_line.append(".")
                     same += 1
                 else:
-                    new_line.append("Error %s/%s" % (element2, element1))
+                    new_line.append("error_%s/%s" % (element2, element1))
                     improvements += 1
                 try:
                     element1, element2 = elements.next()
