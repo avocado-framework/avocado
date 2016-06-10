@@ -1,4 +1,5 @@
 # Copyright (C) IBM 2016 - Harish <harisrir@linux.vnet.ibm.com>
+# Copyright (C) Red Hat 2016 - Lukas Doktor <ldoktor@redhat.com>
 #
 # Based on code by
 # Copyright (C) Intra2net AG 2012 - Plamen Dimitrov
@@ -62,9 +63,11 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
 
     :param disk: Name of the disk in which volume groups are created.
     :param vg_name: Name of the volume group.
-    :param ramdisk_vg_size: Size of the ramdisk virtual group.
+    :param ramdisk_vg_size: Size of the ramdisk virtual group (MB).
     :param ramdisk_basedir: Base directory for the ramdisk sparse file.
     :param ramdisk_sparse_filename: Name of the ramdisk sparse file.
+    :return: ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
+    :raise LVException: On failure
 
     Sample ramdisk params:
     - ramdisk_vg_size = "40000"
@@ -84,7 +87,11 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
     vg_ramdisk_dir = os.path.join(ramdisk_basedir, vg_name)
     ramdisk_filename = os.path.join(vg_ramdisk_dir,
                                     ramdisk_sparse_filename)
-    vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name)
+    # Try to cleanup the ramdisk before defining it
+    try:
+        vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name)
+    except LVException:
+        pass
     if not os.path.exists(vg_ramdisk_dir):
         os.makedirs(vg_ramdisk_dir)
     try:
@@ -102,11 +109,11 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
         process.run(cmd)
         if not disk:
             LOGGER.debug("Finding free loop device")
-            result = process.run("losetup --find")
+            result = process.run("losetup --find", sudo=True)
     except process.CmdError, ex:
         LOGGER.error(ex)
         vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name)
-        raise ex
+        raise LVException("Fail to create vg_ramdisk: %s" % ex)
 
     if not disk:
         loop_device = result.stdout.rstrip()
@@ -126,7 +133,8 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
         LOGGER.error(ex)
         vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
                            vg_name, loop_device)
-        raise ex
+        raise LVException("Fail to create vg_ramdisk: %s" % ex)
+    return ramdisk_filename, vg_ramdisk_dir, vg_name, loop_device
 
 
 def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
@@ -134,13 +142,18 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
     """
     Inline cleanup function in case of test error.
 
+    It detects whether the components were initialized and if so it tries
+    to remove them. In case of failure it raises summary exception.
+
     :param ramdisk_filename: Name of the ramdisk sparse file.
     :param vg_ramdisk_dir: Location of the ramdisk file
     :vg_name: Name of the volume group
     :loop_device: Name of the disk or loop device
+    :raise LVException: In case it fail to clean things detected in system
     """
+    errs = []
     if vg_name is not None:
-        loop_device = re.search(r"([/w]+) %s lvm2" % vg_name,
+        loop_device = re.search(r"([/\w]+) %s lvm2" % vg_name,
                                 process.run("pvs", sudo=True).stdout)
         if loop_device is not None:
             loop_device = loop_device.group(1)
@@ -151,24 +164,26 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
         result = process.run("pvremove %s" % loop_device,
                              ignore_status=True, sudo=True)
         if result.exit_status != 0:
-            LOGGER.error("Failed to wipe pv from %s", loop_device)
+            errs.append("wipe pv")
+            LOGGER.error("Failed to wipe pv from %s: %s", loop_device, result)
 
         if loop_device in process.run("losetup --all").stdout:
-            ramdisk_filename = re.search(r"%s: [d+]:d+ (([/w]+))" %
+            ramdisk_filename = re.search(r"%s: \[\d+\]:\d+ \(([/\w]+)\)" %
                                          loop_device,
                                          process.run("losetup --all").stdout)
             if ramdisk_filename is not None:
                 ramdisk_filename = ramdisk_filename.group(1)
 
             for _ in xrange(10):
-                time.sleep(0.1)
                 result = process.run("losetup -d %s" % loop_device,
                                      ignore_status=True, sudo=True)
                 if "resource busy" not in result.stderr:
                     if result.exit_status != 0:
+                        errs.append("remove loop device")
                         LOGGER.error("Unexpected failure when removing loop"
                                      "device %s, check the log", loop_device)
                     break
+                time.sleep(0.1)
 
     if ramdisk_filename is not None:
         if os.path.exists(ramdisk_filename):
@@ -177,18 +192,28 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
             vg_ramdisk_dir = os.path.dirname(ramdisk_filename)
 
     if vg_ramdisk_dir is not None:
-        result = process.run("umount %s" % vg_ramdisk_dir,
-                             ignore_status=True, sudo=True)
-        if result.exit_status != 0:
-            LOGGER.error("Unexpected failure unmounting %s, check the log",
-                         vg_ramdisk_dir)
+        if not process.system("mountpoint %s" % vg_ramdisk_dir,
+                              ignore_status=True):
+            for _ in xrange(10):
+                result = process.run("umount %s" % vg_ramdisk_dir,
+                                     ignore_status=True, sudo=True)
+                time.sleep(0.1)
+                if result.exit_status == 0:
+                    break
+            else:
+                errs.append("umount")
+                LOGGER.error("Unexpected failure unmounting %s, check the "
+                             "log", vg_ramdisk_dir)
 
         if os.path.exists(vg_ramdisk_dir):
             try:
                 shutil.rmtree(vg_ramdisk_dir)
                 LOGGER.debug("Ramdisk directory %s deleted", vg_ramdisk_dir)
-            except OSError:
-                pass
+            except OSError as details:
+                errs.append("rm-ramdisk-dir")
+                LOGGER.error("Failed to remove ramdisk_dir: %s", details)
+    if errs:
+        raise LVException("vg_ramdisk_cleanup failed: %s" % ", ".join(errs))
 
 
 def vg_check(vg_name):
