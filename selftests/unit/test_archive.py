@@ -93,8 +93,36 @@ class ArchiveTest(unittest.TestCase):
     def test_tbz2_2_file(self):
         self.compress_and_check_file('.tbz2')
 
+    def test_zip_symlinks(self):
+        """
+        Check that utils.archive can extract symlinks from zip file,
+        which is not supported on today's python's zipfile
+        """
+        def get_path(*args):
+            """ Get path with decompressdir prefix """
+            return os.path.join(self.decompressdir, *args)
+        archive.uncompress(os.path.join("..", ".data", "test_archive.zip"),
+                           self.decompressdir)
+        self.assertTrue(os.path.islink(get_path("link_to_dir")))
+        self.assertTrue(os.path.islink(get_path("link_to_file")))
+        self.assertTrue(os.path.islink(get_path("link_to_file2")))
+        self.assertTrue(os.path.islink(get_path("dir", "2nd_link_to_file")))
+        self.assertTrue(os.path.islink(get_path("dir",
+                                                "link_to_link_to_file2")))
+        self.assertTrue(os.path.islink(get_path("dir", "2nd_link_to_file")))
+        self.assertTrue(os.path.islink(get_path("link_to_dir",
+                                                "2nd_link_to_file")))
+        self.assertTrue(os.path.isfile(get_path("file")))
+        self.assertTrue(os.path.isfile(get_path("dir", "file2")))
+        self.assertTrue(os.path.isfile(get_path("link_to_dir", "file2")))
+        act = os.path.realpath(get_path("link_to_dir",
+                                        "link_to_link_to_file2"))
+        exp = get_path("dir", "file2")
+        self.assertEqual(act, exp)
+        self.assertEqual(os.path.realpath(get_path("link_to_dir")),
+                         get_path("dir"))
+
     def tearDown(self):
-        pass
         try:
             shutil.rmtree(self.basedir)
         except OSError:
