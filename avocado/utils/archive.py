@@ -164,26 +164,30 @@ class ArchiveFile(object):
         """
         self._engine.extractall(path)
         if self.is_zip:
-            self._update_symlinks(path)
+            self._update_zip_extra_attrs(path)
 
-    def _update_symlinks(self, dst_dir='.'):
+    def _update_zip_extra_attrs(self, dst_dir):
         if platform.system() != "Linux":
-            LOG.warn("Symlink handling in zip files not supported on Windows.")
+            LOG.warn("Attr handling in zip files not supported on Windows.")
             return
         # Walk all files and re-create files as symlinks
         for path, info in self._engine.NameToInfo.iteritems():
+            dst = os.path.join(dst_dir, path)
+            if not os.path.exists(dst):
+                msg = ("Paths in this zip file are stored in unsupported "
+                       "format, not updating the attributes. (%s)"
+                       % path)
+                LOG.warn(msg)
+                return
             if info.external_attr & 2684354560 == 2684354560:
                 dst = os.path.join(dst_dir, path)
-                try:
-                    src = open(dst, 'r').read()
-                except IOError as details:
-                    msg = ("Zip file symlink path '%s' is stored in "
-                           "unsupported format, symlinks were not updated: %s"
-                           % (path, details))
-                    LOG.warn(msg)
-                    return
+                src = open(dst, 'r').read()
                 os.remove(dst)
                 os.symlink(src, dst)
+                continue    # Don't override any other attributes on links
+            mode = info.external_attr >> 16 & 511
+            if mode and mode != 436:
+                os.chmod(dst, mode)
 
     def close(self):
         """
