@@ -177,6 +177,22 @@ newer Avocado features. A reasonable effort will be made to not break
 backwards compatibility with applications that parse the current form of its
 JSON result.
 
+
+TAP
+~~~
+
+Provides the basic `TAP <http://testanything.org/>`__ (Test Anything Protocol) results, currently in v12. Unlike most existing avocado machine readable outputs this one is streamlined (per test results).
+
+    $ avocado run sleeptest.py --tap -
+    1..1
+    # debug.log of sleeptest.py:SleepTest.test:
+    #   12:04:38 DEBUG| PARAMS (key=sleep_length, path=*, default=1) => 1
+    #   12:04:38 DEBUG| Sleeping for 1.00 seconds
+    #   12:04:39 INFO | PASS 1-sleeptest.py:SleepTest.test
+    #   12:04:39 INFO |
+    ok 1 sleeptest.py:SleepTest.test
+
+
 Silent result
 ~~~~~~~~~~~~~
 
