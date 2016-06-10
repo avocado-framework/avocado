@@ -11,8 +11,6 @@
 #
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
-
-
 """
 Module to help extract and create compressed archives.
 """
