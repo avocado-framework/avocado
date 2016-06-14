@@ -250,10 +250,15 @@ class AvocadoParams(object):
             path = '*'
         try:
             return self._cache[(key, path, default)]
-        except KeyError:
+        except (KeyError, TypeError):
+            # KeyError - first query
+            # TypeError - unable to hash
             value = self._get(key, path, default)
             self.log(key, path, default, value)
-            self._cache[(key, path, default)] = value
+            try:
+                self._cache[(key, path, default)] = value
+            except TypeError:
+                pass
             return value
 
     def _get(self, key, path, default):
