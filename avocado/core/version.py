@@ -17,7 +17,7 @@
 __all__ = ['MAJOR', 'MINOR', 'VERSION']
 
 
-MAJOR = 36
+MAJOR = 37
 MINOR = 0
 
 VERSION = "%s.%s" % (MAJOR, MINOR)

@@ -6,7 +6,7 @@
 
 Summary: Avocado Test Framework
 Name: avocado
-Version: 36.0
+Version: 37.0
 Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -113,8 +113,8 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
-* Tue Jun 14 2016 Cleber Rosa <cleber@redhat.com> - 36.0-0
-- New upstream release 36.0
+* Tue Jun 14 2016 Cleber Rosa <cleber@redhat.com> - 37.0-0
+- New upstream release
 
 * Thu May 05 2016 Amador Pahim <apahim@redhat.com> - 35.0-1
 - Removed simpletests directory
