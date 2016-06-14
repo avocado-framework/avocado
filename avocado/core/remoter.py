@@ -18,6 +18,7 @@ Module to provide remote operations.
 
 import getpass
 import logging
+import os
 import time
 
 from .settings import settings
@@ -30,6 +31,7 @@ try:
     import fabric.network
     import fabric.operations
     import fabric.tasks
+    from fabric.context_managers import shell_env
 except ImportError:
     REMOTE_CAPABLE = False
     LOG.info('Remote module is disabled: could not import fabric')
@@ -44,6 +46,25 @@ class RemoterError(Exception):
 
 class ConnectionError(RemoterError):
     pass
+
+
+def _get_env_vars(env_vars):
+    """
+    Gets environment variables.
+
+    :param variables: A list of variables to get.
+    :return: A dictionary with variables names and values.
+    """
+    LOG.info(env_vars)
+    if env_vars is None:
+        return {}
+
+    env_vars_map = {}
+    for var in env_vars:
+        value = os.environ.get(var)
+        if value is not None:
+            env_vars_map[var] = value
+    return env_vars_map
 
 
 def run(command, ignore_status=False, quiet=True, timeout=60):
@@ -166,7 +187,8 @@ class Remote(object):
     """
 
     def __init__(self, hostname, username=None, password=None,
-                 key_filename=None, port=22, timeout=60, attempts=10):
+                 key_filename=None, port=22, timeout=60, attempts=10,
+                 env_keep=None):
         """
         Creates an instance of :class:`Remote`.
 
@@ -194,6 +216,7 @@ class Remote(object):
                                                  'disable_known_hosts',
                                                  key_type=bool,
                                                  default=False)
+        self.env_vars = _get_env_vars(env_keep)
         fabric.api.env.update(host_string=hostname,
                               user=username,
                               password=password,
@@ -222,10 +245,12 @@ class Remote(object):
         :rtype: :class:`avocado.utils.process.CmdResult`.
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
-        return_dict = fabric.tasks.execute(run, command, ignore_status,
-                                           quiet, timeout,
-                                           hosts=[self.hostname])
-        return return_dict[self.hostname]
+
+        with shell_env(**self.env_vars):
+            return_dict = fabric.tasks.execute(run, command, ignore_status,
+                                               quiet, timeout,
+                                               hosts=[self.hostname])
+            return return_dict[self.hostname]
 
     @staticmethod
     def _run(command, ignore_status=False, quiet=True, timeout=60):
