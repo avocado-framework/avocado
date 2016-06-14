@@ -146,3 +146,17 @@ As you can see, Avocado will copy the tests you have to your libvirt domain and
 execute them. A bit of extra logging information is added to your job summary,
 mainly to distinguish the regular execution from the remote one. Note here that
 we did not need `--vm-password` because the SSH key is already setup.
+
+Environment Variables
+=====================
+
+Running remote instances os Avocado, for example using `remote` or `vm`
+plugins, the remote environment has a diferent set of environment variables. If
+you want to make available remotely variables that are available in the local
+environment, you can use the `run` option `--env-keep`. See the example below::
+
+    $ export MYVAR1=foobar
+    $ env MYVAR2=foobar2 avocado run passtest.py --env-keep MYVAR1,MYVAR2 --remote-hostname 192.168.122.30 --remote-username fedora
+
+By doing that, both `MYVAR1` and `MYVAR2` will be available in remote
+environment.

@@ -39,7 +39,8 @@ class VMTestRunnerSetup(unittest.TestCase):
                         vm_cleanup=True,
                         vm_no_copy=False,
                         vm_timeout=120,
-                        vm_hypervisor_uri='my_hypervisor_uri')
+                        vm_hypervisor_uri='my_hypervisor_uri',
+                        env_keep=None)
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log)
