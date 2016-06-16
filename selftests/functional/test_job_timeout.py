@@ -138,12 +138,12 @@ class JobTimeOutTest(unittest.TestCase):
                     '--job-timeout=0 examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        self.assertIn('Invalid number', result.stderr)
+        self.assertIn('Invalid value', result.stderr)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--job-timeout=123x examples/tests/passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        self.assertIn('Invalid number', result.stderr)
+        self.assertIn('Invalid value', result.stderr)
 
     def test_valid_values(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
