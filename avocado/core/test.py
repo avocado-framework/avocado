@@ -37,6 +37,7 @@ from ..utils import genio
 from ..utils import path as utils_path
 from ..utils import process
 from ..utils import stacktrace
+from ..utils import unit_converter
 from .settings import settings
 from .version import VERSION
 
@@ -625,7 +626,7 @@ class Test(unittest.TestCase):
         raise exceptions.TestSkipError(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
-                    locations=None):
+                    locations=None, expire=None):
         """
         Method o call the utils.asset in order to fetch and asset file
         supporting hash check, caching and multiple locations.
@@ -635,10 +636,13 @@ class Test(unittest.TestCase):
         :param algorithm: hash algorithm (optional, defaults to sha1)
         :param locations: list of URLs from where the asset can be
                           fetched (optional)
+        :param expire: time for the asset to expire
         :returns: asset file local path
         """
+        if expire is not None:
+            expire = unit_converter.time_to_seconds(str(expire))
         return asset.Asset(name, asset_hash, algorithm, locations,
-                           self.cache_dirs).fetch()
+                           self.cache_dirs, expire).fetch()
 
 
 class SimpleTest(Test):

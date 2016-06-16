@@ -18,13 +18,15 @@ class TestAsset(unittest.TestCase):
             f.write('Test!')
         self.url = 'file://%s' % self.localpath
         self.cache_dir = tempfile.mkdtemp(dir=self.basedir)
+        self.expire = 0
 
     def testFetch_urlname(self):
         foo_tarball = asset.Asset(self.url,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=None,
-                                  cache_dirs=[self.cache_dir]).fetch()
+                                  cache_dirs=[self.cache_dir],
+                                  expire=self.expire).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
         hashfile = '.'.join([expected_tarball, 'sha1'])
@@ -39,7 +41,8 @@ class TestAsset(unittest.TestCase):
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=[self.url],
-                                  cache_dirs=[self.cache_dir]).fetch()
+                                  cache_dirs=[self.cache_dir],
+                                  expire=self.expire).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
         hashfile = '.'.join([expected_tarball, 'sha1'])
@@ -51,7 +54,8 @@ class TestAsset(unittest.TestCase):
 
     def testException(self):
         a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir])
+                        locations=None, cache_dirs=[self.cache_dir],
+                        expire=self.expire)
         self.assertRaises(EnvironmentError, a.fetch)
 
     def tearDown(self):
