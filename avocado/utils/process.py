@@ -16,16 +16,17 @@
 Functions dedicated to find and run external commands.
 """
 
+import errno
+import fnmatch
 import logging
 import os
 import re
-import signal
-import time
-import stat
 import shlex
 import shutil
+import signal
+import stat
 import threading
-import fnmatch
+import time
 
 try:
     import subprocess32 as subprocess
@@ -104,9 +105,10 @@ def pid_exists(pid):
     """
     try:
         os.kill(pid, 0)
-        return True
-    except Exception:
-        return False
+    except OSError as detail:
+        if detail.errno == errno.ESRCH:
+            return False
+    return True
 
 
 def safe_kill(pid, signal):
