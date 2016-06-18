@@ -66,6 +66,18 @@ source-release: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
 	git archive --prefix="avocado-$(RELEASE_COMMIT)/" -o "SOURCES/avocado-$(VERSION)-$(RELEASE_SHORT_COMMIT).tar.gz" $(VERSION)
 
+source-pypi: clean
+	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
+	git archive --prefix="avocado-framework/" -o "PYPI_UPLOAD/avocado-framework-$(VERSION).tar.gz" $(VERSION)
+
+pypi: source-pypi develop
+	sed -e 's/Name: avocado/Name: avocado-framework/' avocado.egg-info/PKG-INFO > PYPI_UPLOAD/PKG-INFO
+	@echo
+	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
+	@echo "The URL to do that may be a bit tricky to find, so here it is:"
+	@echo " https://pypi.python.org/pypi?%3Aaction=submit_form"
+	@echo
+
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
@@ -107,7 +119,7 @@ rpm-release: srpm-release
 clean:
 	$(PYTHON) setup.py clean
 	$(MAKE) -f $(CURDIR)/debian/rules clean || true
-	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES
+	rm -rf build/ MANIFEST BUILD BUILDROOT SPECS RPMS SRPMS SOURCES PYPI_UPLOAD
 	rm -f man/avocado.1
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build

@@ -148,6 +148,16 @@ cycle.  Good places to go for release notes are:
 Go there and try to write a text that represents the changes that the
 release encompasses.
 
+Upload package to PyPI
+======================
+
+Users may also want to get Avocado from the PyPI repository, so please upload
+there as well.  To help with the process, please run::
+
+ $ make pypi
+
+And follow the URL and brief instructions given.
+
 Send e-mails to avocado-devel and other places
 ==============================================
 
