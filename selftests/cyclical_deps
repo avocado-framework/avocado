@@ -42,7 +42,7 @@ def has_snakefood():
             res = subprocess.call(cmd, stdout=null)
         except Exception as e:
             print("Could not find sfood utility: %s: %s" % (cmd, e), file=sys.stderr)
-            print("Did you forget to 'pip install python-snakefood'?", file=sys.stderr)
+            print("Did you forget to 'pip install snakefood'?", file=sys.stderr)
             return False
     return True
 
