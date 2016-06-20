@@ -93,8 +93,50 @@ class ArchiveTest(unittest.TestCase):
     def test_tbz2_2_file(self):
         self.compress_and_check_file('.tbz2')
 
+    def test_zip_extra_attrs(self):
+        """
+        Check that utils.archive reflects extra attrs of file like symlinks
+        and file permissions.
+        """
+        def get_path(*args):
+            """ Get path with decompressdir prefix """
+            return os.path.join(self.decompressdir, *args)
+        # File types
+        zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                "..", ".data",
+                                                "test_archive__symlinks.zip"))
+        archive.uncompress(zip_path, self.decompressdir)
+        self.assertTrue(os.path.islink(get_path("link_to_dir")))
+        self.assertTrue(os.path.islink(get_path("link_to_file")))
+        self.assertTrue(os.path.islink(get_path("link_to_file2")))
+        self.assertTrue(os.path.islink(get_path("dir", "2nd_link_to_file")))
+        self.assertTrue(os.path.islink(get_path("dir",
+                                                "link_to_link_to_file2")))
+        self.assertTrue(os.path.islink(get_path("dir", "2nd_link_to_file")))
+        self.assertTrue(os.path.islink(get_path("link_to_dir",
+                                                "2nd_link_to_file")))
+        self.assertTrue(os.path.isfile(get_path("file")))
+        self.assertTrue(os.path.isfile(get_path("dir", "file2")))
+        self.assertTrue(os.path.isfile(get_path("link_to_dir", "file2")))
+        act = os.path.realpath(get_path("link_to_dir",
+                                        "link_to_link_to_file2"))
+        exp = get_path("dir", "file2")
+        self.assertEqual(act, exp)
+        self.assertEqual(os.path.realpath(get_path("link_to_dir")),
+                         get_path("dir"))
+        # File permissions
+        self.assertEqual(os.stat(get_path("dir", "file2")).st_mode & 0o777,
+                         0o664)
+        self.assertEqual(os.stat(get_path("file")).st_mode & 0o777, 0o753)
+        self.assertEqual(os.stat(get_path("dir")).st_mode & 0o777, 0o775)
+        self.assertEqual(os.stat(get_path("link_to_file2")).st_mode & 0o777,
+                         0o664)
+        self.assertEqual(os.stat(get_path("link_to_dir")).st_mode & 0o777,
+                         0o775)
+        self.assertEqual(os.stat(get_path("link_to_file")).st_mode & 0o777,
+                         0o753)
+
     def tearDown(self):
-        pass
         try:
             shutil.rmtree(self.basedir)
         except OSError:
