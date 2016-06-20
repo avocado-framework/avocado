@@ -111,6 +111,14 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
     @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    def test_unhashable(self):
+        """ Verifies that unhashable arguments can be passed to params.get """
+        self.assertEqual(self.params1.get("root", "/ch0/", ["foo"]), ["foo"])
+        self.assertEqual(self.params1.get('unique1',
+                                          '/ch0/ch0.1/ch0.1.1/ch0.1.1.1/',
+                                          ['bar']), 'unique1')
+
+    @unittest.skipIf(not tree.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_get_abs_path(self):
         # /ch0/ is not leaf thus it's not queryable
         self.assertEqual(self.params1.get('root', '/ch0/', 'bbb'), 'bbb')
