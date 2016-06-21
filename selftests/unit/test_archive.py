@@ -93,16 +93,17 @@ class ArchiveTest(unittest.TestCase):
     def test_tbz2_2_file(self):
         self.compress_and_check_file('.tbz2')
 
-    def test_zip_symlinks(self):
+    def test_zip_extra_attrs(self):
         """
-        Check that utils.archive can extract symlinks from zip file,
-        which is not supported on today's python's zipfile
+        Check that utils.archive reflects extra attrs of file like symlinks
+        and file permissions.
         """
         def get_path(*args):
             """ Get path with decompressdir prefix """
             return os.path.join(self.decompressdir, *args)
+        # File types
         zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                "..", ".data",
+                                                os.path.pardir, ".data",
                                                 "test_archive__symlinks.zip"))
         archive.uncompress(zip_path, self.decompressdir)
         self.assertTrue(os.path.islink(get_path("link_to_dir")))
@@ -123,6 +124,17 @@ class ArchiveTest(unittest.TestCase):
         self.assertEqual(act, exp)
         self.assertEqual(os.path.realpath(get_path("link_to_dir")),
                          get_path("dir"))
+        # File permissions
+        self.assertEqual(os.stat(get_path("dir", "file2")).st_mode & 0o777,
+                         0o664)
+        self.assertEqual(os.stat(get_path("file")).st_mode & 0o777, 0o753)
+        self.assertEqual(os.stat(get_path("dir")).st_mode & 0o777, 0o775)
+        self.assertEqual(os.stat(get_path("link_to_file2")).st_mode & 0o777,
+                         0o664)
+        self.assertEqual(os.stat(get_path("link_to_dir")).st_mode & 0o777,
+                         0o775)
+        self.assertEqual(os.stat(get_path("link_to_file")).st_mode & 0o777,
+                         0o753)
 
     def tearDown(self):
         try:
