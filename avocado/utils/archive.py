@@ -15,9 +15,16 @@
 Module to help extract and create compressed archives.
 """
 
+import logging
 import os
+import platform
+import stat
 import tarfile
 import zipfile
+
+
+LOG = logging.getLogger(__name__)
+
 
 try:
     import lzma
@@ -157,6 +164,27 @@ class ArchiveFile(object):
         :param path: destination path.
         """
         self._engine.extractall(path)
+        if self.is_zip:
+            self._update_symlinks(path)
+
+    def _update_symlinks(self, dst_dir='.'):
+        if platform.system() != "Linux":
+            LOG.warn("Symlink handling in zip files not supported on Windows.")
+            return
+        # Walk all files and re-create files as symlinks
+        for path, info in self._engine.NameToInfo.iteritems():
+            if info.external_attr >> 16 & stat.S_IFLNK == stat.S_IFLNK:
+                dst = os.path.join(dst_dir, path)
+                try:
+                    src = open(dst, 'r').read()
+                except IOError as details:
+                    msg = ("Zip file symlink path '%s' is stored in "
+                           "unsupported format, symlinks were not updated: %s"
+                           % (path, details))
+                    LOG.warn(msg)
+                    return
+                os.remove(dst)
+                os.symlink(src, dst)
 
     def close(self):
         """
