@@ -34,6 +34,7 @@ from .status import mapping
 from ..utils import wait
 from ..utils import runtime
 from ..utils import process
+from ..utils import stacktrace
 
 TEST_LOG = logging.getLogger("avocado.test")
 APP_LOG = logging.getLogger("avocado.app")
@@ -298,13 +299,20 @@ class TestRunner(object):
         runtime.CURRENT_TEST = instance
         early_state = instance.get_state()
         early_state['early_status'] = True
-        queue.put(early_state)
+        try:
+            queue.put(early_state)
+        except Exception:
+            instance.error(stacktrace.str_unpickable_object(early_state))
 
         self.result.start_test(early_state)
         try:
             instance.run_avocado()
         finally:
-            queue.put(instance.get_state())
+            try:
+                state = instance.get_state()
+                queue.put(state)
+            except Exception:
+                instance.error(stacktrace.str_unpickable_object(state))
 
     def setup(self):
         """
