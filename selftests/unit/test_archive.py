@@ -94,7 +94,6 @@ class ArchiveTest(unittest.TestCase):
         self.compress_and_check_file('.tbz2')
 
     def tearDown(self):
-        pass
         try:
             shutil.rmtree(self.basedir)
         except OSError:
