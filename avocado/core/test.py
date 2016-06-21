@@ -314,13 +314,6 @@ class Test(unittest.TestCase):
             current_time = time.time()
         self.time_elapsed = current_time - self.time_start
 
-    def report_state(self):
-        """
-        Send the current test state to the test runner process
-        """
-        if self.runner_queue is not None:
-            self.runner_queue.put(self.get_state())
-
     def get_state(self):
         """
         Serialize selected attributes representing the test state
