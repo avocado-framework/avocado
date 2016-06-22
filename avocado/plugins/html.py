@@ -21,8 +21,7 @@ import sys
 from avocado.core import exit_codes
 from avocado.core.html import HTMLTestResult
 from avocado.core.result import register_test_result_class
-
-from .base import CLI
+from avocado.core.plugin_interfaces import CLI
 
 
 class HTML(CLI):

@@ -15,12 +15,12 @@
 import logging
 import sys
 
+
 from avocado.core import exit_codes, output
 from avocado.core import loader
 from avocado.core import test
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
-
-from .base import CLICmd
 
 
 class TestLister(object):

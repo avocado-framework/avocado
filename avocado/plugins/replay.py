@@ -17,10 +17,10 @@ import logging
 import os
 import sys
 
-from .base import CLI
+from avocado.core import exit_codes
 from avocado.core import replay
 from avocado.core import status
-from avocado.core import exit_codes
+from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
 
 

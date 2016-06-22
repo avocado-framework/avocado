@@ -20,11 +20,10 @@ import sys
 
 from avocado.core import exit_codes
 from avocado.core import virt
+from avocado.core.plugin_interfaces import CLI
 from avocado.core.remote import VMTestResult
 from avocado.core.remote import VMTestRunner
 from avocado.core.result import register_test_result_class
-
-from .base import CLI
 
 
 class VM(CLI):

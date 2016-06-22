@@ -15,7 +15,7 @@
 System information plugin
 """
 
-from .base import CLICmd
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.core import sysinfo
 
 

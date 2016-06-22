@@ -18,7 +18,7 @@ import os
 import sqlite3
 import datetime
 
-from .base import CLI
+from avocado.core.plugin_interfaces import CLI
 from avocado.core.result import TestResult
 from avocado.core.result import register_test_result_class
 

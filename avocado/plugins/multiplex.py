@@ -18,9 +18,8 @@ import sys
 from avocado.core import exit_codes, output
 from avocado.core import multiplexer
 from avocado.core import tree
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
-
-from .base import CLICmd
 
 
 class Multiplex(CLICmd):

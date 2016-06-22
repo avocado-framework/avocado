@@ -24,9 +24,8 @@ from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
 from avocado.core import multiplexer
+from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
-
-from .base import CLICmd
 
 
 class Run(CLICmd):
