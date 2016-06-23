@@ -26,6 +26,7 @@ from avocado.core import loader
 from avocado.core import multiplexer
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
+from avocado.utils.data_structures import time_to_seconds
 
 
 class Run(CLICmd):
@@ -159,34 +160,13 @@ class Run(CLICmd):
                 node = args.default_avocado_params.get_node(value[0], True)
                 node.value[value[1]] = value[2]
 
-    def _validate_job_timeout(self, raw_timeout):
-        units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
-        mult = 1
-        if raw_timeout is not None:
-            try:
-                unit = raw_timeout[-1].lower()
-                if unit in units:
-                    mult = units[unit]
-                    timeout = int(raw_timeout[:-1]) * mult
-                else:
-                    timeout = int(raw_timeout)
-                if timeout < 1:
-                    raise ValueError()
-            except (ValueError, TypeError):
-                log = logging.getLogger("avocado.app")
-                log.error("Invalid number '%s' for job timeout. Use an "
-                          "integer number greater than 0", raw_timeout)
-                sys.exit(exit_codes.AVOCADO_FAIL)
-        else:
-            timeout = 0
-        return timeout
-
     def run(self, args):
         """
         Run test modules or simple tests.
 
         :param args: Command line args received from the run subparser.
         """
+        log = logging.getLogger("avocado.app")
         self._activate(args)
         if args.unique_job_id is not None:
             try:
@@ -194,9 +174,12 @@ class Run(CLICmd):
                 if len(args.unique_job_id) != 40:
                     raise ValueError
             except ValueError:
-                log = logging.getLogger("avocado.app")
                 log.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
-        args.job_timeout = self._validate_job_timeout(args.job_timeout)
+        try:
+            args.job_timeout = time_to_seconds(args.job_timeout)
+        except ValueError as e:
+            log.error(e.message)
+            sys.exit(exit_codes.AVOCADO_FAIL)
         job_instance = job.Job(args)
         return job_instance.run()
