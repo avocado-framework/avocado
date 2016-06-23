@@ -538,6 +538,11 @@ Detailing the ``fetch_asset()`` attributes:
   file, including the file name. The first success will skip the next
   locations. Notice that for ``file://`` we just create a symbolic link in the
   cache directory, pointing to the file original location.
+* ``expire:`` (optional) time period that the cached file will be considered
+  valid. After that period, the file will be dowloaded again. The value can
+  be an integer greater than 0 or a string containig the time and the unit.
+  Example: 10d (ten days). Valid units are s (second), m (minute), h (hour)
+  and d (day).
 
 The expected ``return`` is the asset file path or an exception.
 

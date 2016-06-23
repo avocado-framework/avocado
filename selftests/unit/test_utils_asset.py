@@ -1,6 +1,8 @@
 import os
 import shutil
+import stat
 import tempfile
+import time
 import unittest
 
 from avocado.utils import asset
@@ -24,7 +26,8 @@ class TestAsset(unittest.TestCase):
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=None,
-                                  cache_dirs=[self.cache_dir]).fetch()
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
         hashfile = '.'.join([expected_tarball, 'sha1'])
@@ -39,7 +42,8 @@ class TestAsset(unittest.TestCase):
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=[self.url],
-                                  cache_dirs=[self.cache_dir]).fetch()
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
         hashfile = '.'.join([expected_tarball, 'sha1'])
@@ -49,9 +53,45 @@ class TestAsset(unittest.TestCase):
             content = f.read()
         self.assertEqual(content, expected_content)
 
+    def testFecth_expire(self):
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=[self.url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        ctime = os.lstat(foo_tarball)[stat.ST_CTIME]
+        time.sleep(1)
+        asset.Asset(self.assetname,
+                    asset_hash=self.assethash,
+                    algorithm='sha1',
+                    locations=[self.url],
+                    cache_dirs=[self.cache_dir],
+                    expire=0).fetch()
+        new_ctime = os.lstat(foo_tarball)[stat.ST_CTIME]
+        self.assertNotEqual(ctime, new_ctime)
+
+    def testFecth_not_expire(self):
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=[self.url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        ctime = os.lstat(foo_tarball)[stat.ST_CTIME]
+        asset.Asset(self.assetname,
+                    asset_hash=self.assethash,
+                    algorithm='sha1',
+                    locations=[self.url],
+                    cache_dirs=[self.cache_dir],
+                    expire=-1).fetch()
+        new_ctime = os.lstat(foo_tarball)[stat.ST_CTIME]
+        self.assertEqual(ctime, new_ctime)
+
     def testException(self):
         a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir])
+                        locations=None, cache_dirs=[self.cache_dir],
+                        expire=None)
         self.assertRaises(EnvironmentError, a.fetch)
 
     def tearDown(self):
