@@ -24,7 +24,8 @@ class TestAsset(unittest.TestCase):
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=None,
-                                  cache_dirs=[self.cache_dir]).fetch()
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
         hashfile = '.'.join([expected_tarball, 'sha1'])
@@ -39,7 +40,8 @@ class TestAsset(unittest.TestCase):
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
                                   locations=[self.url],
-                                  cache_dirs=[self.cache_dir]).fetch()
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
         hashfile = '.'.join([expected_tarball, 'sha1'])
@@ -49,9 +51,49 @@ class TestAsset(unittest.TestCase):
             content = f.read()
         self.assertEqual(content, expected_content)
 
+    def testFecth_expire(self):
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=[self.url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        with open(foo_tarball, 'r') as f:
+            content1 = f.read()
+
+        # Create the file in a diferent location with a diferent content
+        new_assetdir = tempfile.mkdtemp(dir=self.basedir)
+        new_localpath = os.path.join(new_assetdir, self.assetname)
+        new_url = 'file://%s' % new_localpath
+        with open(new_localpath, 'w') as f:
+            f.write('Changed!')
+
+        # Dont expire cached file
+        asset.Asset(self.assetname,
+                    asset_hash=self.assethash,
+                    algorithm='sha1',
+                    locations=[new_url],
+                    cache_dirs=[self.cache_dir],
+                    expire=None).fetch()
+        with open(foo_tarball, 'r') as f:
+            content2 = f.read()
+        self.assertEqual(content1, content2)
+
+        # Expire cached file
+        asset.Asset(self.assetname,
+                    asset_hash=self.assethash,
+                    algorithm='sha1',
+                    locations=[new_url],
+                    cache_dirs=[self.cache_dir],
+                    expire=-1).fetch()
+        with open(foo_tarball, 'r') as f:
+            content2 = f.read()
+        self.assertNotEqual(content1, content2)
+
     def testException(self):
         a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir])
+                        locations=None, cache_dirs=[self.cache_dir],
+                        expire=None)
         self.assertRaises(EnvironmentError, a.fetch)
 
     def tearDown(self):

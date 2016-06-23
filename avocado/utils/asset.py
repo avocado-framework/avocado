@@ -16,9 +16,12 @@
 Asset fetcher from multiple locationss
 """
 
+import errno
 import logging
 import os
 import re
+import stat
+import time
 import urlparse
 
 from . import crypto
@@ -34,7 +37,8 @@ class Asset(object):
     Try to fetch/verify an asset file from multiple locations.
     """
 
-    def __init__(self, name, asset_hash, algorithm, locations, cache_dirs):
+    def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
+                 expire):
         """
         Initialize the Asset() and fetches the asset file. The path for
         the fetched file can be reached using the self.path attribute.
@@ -44,6 +48,7 @@ class Asset(object):
         :param algorithm: hash algorithm
         :param locations: list of locations fetch asset from
         :params cache_dirs: list of cache directories
+        :params expire: time in seconds for the asset to expire
         """
         self.name = name
         self.asset_hash = asset_hash
@@ -52,6 +57,7 @@ class Asset(object):
         self.cache_dirs = cache_dirs
         self.nameobj = urlparse.urlparse(self.name)
         self.basename = os.path.basename(self.nameobj.path)
+        self.expire = expire
 
     def fetch(self):
         urls = []
@@ -64,7 +70,9 @@ class Asset(object):
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             self.asset_file = os.path.join(cache_dir, self.basename)
-            if self._check_file(self.asset_file, self.asset_hash, self.algorithm):
+            if (self._check_file(self.asset_file,
+               self.asset_hash, self.algorithm) and not
+               self._is_expired(self.asset_file, self.expire)):
                 return self.asset_file
 
         # If we get to this point, file is not in any cache directory
@@ -117,9 +125,15 @@ class Asset(object):
                         path = urlobj.path
                     log.debug('Looking for file on %s.' % path)
                     if self._check_file(path):
-                        os.symlink(path, self.asset_file)
+                        try:
+                            os.symlink(path, self.asset_file)
+                        except OSError as e:
+                            if e.errno == errno.EEXIST:
+                                os.remove(self.asset_file)
+                                os.symlink(path, self.asset_file)
                         log.debug('Symlink created %s -> %s.' %
                                   (self.asset_file, path))
+
                     else:
                         continue
                     if self._check_file(self.asset_file, self.asset_hash,
@@ -178,3 +192,13 @@ class Asset(object):
             log.error('Asset %s corrupted (hash expected:%s, hash found:%s).' %
                       (path, filehash, discovered_hash))
             return False
+
+    @staticmethod
+    def _is_expired(path, expire):
+        if expire is None:
+            return False
+        creation_time = os.lstat(path)[stat.ST_CTIME]
+        expire_time = creation_time + expire
+        if time.time() > expire_time:
+            return True
+        return False
