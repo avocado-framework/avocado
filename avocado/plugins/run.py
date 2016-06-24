@@ -73,7 +73,7 @@ class Run(CLICmd):
                             default=None, metavar='SECONDS',
                             help=('Set the maximum amount of time (in SECONDS) that '
                                   'tests are allowed to execute. '
-                                  'Note that zero means "no timeout". '
+                                  'Values <= zero means "no timeout". '
                                   'You can also use suffixes, like: '
                                   ' s (seconds), m (minutes), h (hours). '))
 
