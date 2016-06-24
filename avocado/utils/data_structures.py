@@ -218,3 +218,26 @@ class CallbackRegister(object):
                   to be executed!
         """
         self.run()
+
+
+def time_to_seconds(time):
+    """
+    Convert time in minutes, hours and days to seconds.
+    :param time: Time, optionally including the unit (i.e. '10d')
+    """
+    units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+    if time is not None:
+        try:
+            unit = time[-1].lower()
+            if unit in units:
+                mult = units[unit]
+                seconds = int(time[:-1]) * mult
+            else:
+                seconds = int(time)
+        except (ValueError, TypeError) as e:
+            raise ValueError("Invalid value '%s' for time. Use a string with "
+                             "the number and optionally the time unit (s, m, "
+                             "h or d)." % time)
+    else:
+        seconds = 0
+    return seconds
