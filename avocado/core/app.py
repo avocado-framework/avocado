@@ -18,6 +18,7 @@ The core Avocado application.
 
 import os
 import signal
+import sys
 
 from .parser import Parser
 from . import output
@@ -54,7 +55,19 @@ class AvocadoApp(object):
             self.parser.finish()
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('run', self.parser.args)
-        finally:
+        except SystemExit as e:
+            # If someonte tries to exit Avocado, we should first close the
+            # STD_OUTPUT and only then exit.
+            output.reconfigure(self.parser.args)
+            STD_OUTPUT.close()
+            sys.exit(e.code)
+        except:
+            # For any other exception we also need to close the STD_OUTPUT.
+            output.reconfigure(self.parser.args)
+            STD_OUTPUT.close()
+            raise
+        else:
+            # In case of no exceptions, we just reconfigure the output.
             output.reconfigure(self.parser.args)
 
     def run(self):
