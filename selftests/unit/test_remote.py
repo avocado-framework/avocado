@@ -39,7 +39,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
                         remote_timeout=60,
                         show_job_log=False,
                         multiplex_files=['foo.yaml', 'bar/baz.yaml'],
-                        dry_run=True)
+                        dry_run=True,
+                        env_keep=None)
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log,
@@ -156,7 +157,8 @@ class RemoteTestRunnerSetup(unittest.TestCase):
         remote_remote = flexmock(remoter)
         (remote_remote.should_receive('Remote')
          .with_args(hostname='hostname', username='username',
-                    password='password', key_filename=None, port=22, timeout=60)
+                    password='password', key_filename=None, port=22,
+                    timeout=60, env_keep=None)
          .once().ordered()
          .and_return(Remote))
         Args = flexmock(test_result_total=1,
@@ -169,7 +171,8 @@ class RemoteTestRunnerSetup(unittest.TestCase):
                         remote_key_file=None,
                         remote_no_copy=False,
                         remote_timeout=60,
-                        show_job_log=False)
+                        show_job_log=False,
+                        env_keep=None)
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log)
