@@ -11,15 +11,20 @@
 #
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
-
-
 """
 Module to help extract and create compressed archives.
 """
 
+import logging
 import os
+import platform
+import stat
 import tarfile
 import zipfile
+
+
+LOG = logging.getLogger(__name__)
+
 
 try:
     import lzma
@@ -159,6 +164,30 @@ class ArchiveFile(object):
         :param path: destination path.
         """
         self._engine.extractall(path)
+        if self.is_zip:
+            self._update_zip_extra_attrs(path)
+
+    def _update_zip_extra_attrs(self, dst_dir):
+        if platform.system() != "Linux":
+            LOG.warn("Attr handling in zip files only supported on Linux.")
+            return
+        # Walk all files and re-create files as symlinks
+        for path, info in self._engine.NameToInfo.iteritems():
+            dst = os.path.join(dst_dir, path)
+            if not os.path.exists(dst):
+                LOG.warn("Paths in this zip file are stored in unsupported "
+                         "format, not updating the attributes. (%s)", msg)
+                return
+            attr = info.external_attr >> 16
+            if attr & stat.S_IFLNK == stat.S_IFLNK:
+                dst = os.path.join(dst_dir, path)
+                src = open(dst, 'r').read()
+                os.remove(dst)
+                os.symlink(src, dst)
+                continue    # Don't override any other attributes on links
+            mode = attr & 511   # Mask only permissions
+            if mode and mode != 436:  # If mode is stored and is not default
+                os.chmod(dst, mode)
 
     def close(self):
         """
