@@ -89,7 +89,8 @@ class RemoteTestRunner(TestRunner):
                                      password=self.job.args.remote_password,
                                      key_filename=self.job.args.remote_key_file,
                                      port=self.job.args.remote_port,
-                                     timeout=self.job.args.remote_timeout)
+                                     timeout=self.job.args.remote_timeout,
+                                     env_keep=self.job.args.env_keep)
 
     def check_remote_avocado(self):
         """
