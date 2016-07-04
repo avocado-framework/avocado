@@ -16,6 +16,8 @@ import os
 import logging
 import hashlib
 
+def  algorithms_supported():
+    return ['md5', 'sha1', 'sha256', 'sha384', 'sha512']
 
 def hash_wrapper(algorithm='md5', data=None):
     """
@@ -24,7 +26,7 @@ def hash_wrapper(algorithm='md5', data=None):
     :param input: Optional input string that will be used to update the hash.
     :returns: Hash object.
     """
-    if algorithm not in ['md5', 'sha1']:
+    if algorithm not in algorithms_supported():
         raise ValueError("Unsupported hash algorithm: %s" % algorithm)
 
     hash_obj = hashlib.new(algorithm)
