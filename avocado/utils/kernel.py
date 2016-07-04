@@ -48,6 +48,7 @@ class KernelBuild(object):
         """
         self.version = version
         self.config_path = config_path
+        
         if work_dir is None:
             work_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.work_dir = work_dir
@@ -64,14 +65,20 @@ class KernelBuild(object):
                                               self.config_path,
                                               self.work_dir)
 
-    def download(self):
+    def download(self, source_url=None, source_hash=None, hash_algo=None):
         """
         Download kernel source.
+
+        :param source_url: Source url
+        :param source_hash: Source archive hash
+        :param hash_algo: Hash algorithm
         """
-        self.kernel_file = self.SOURCE.format(version=self.version)
-        full_url = self.URL + self.SOURCE.format(version=self.version)
-        self.asset_path = asset.Asset(full_url, asset_hash=None,
-                                      algorithm=None, locations=None,
+        if source_url is None:
+            self.kernel_file = self.SOURCE.format(version=self.version)
+            source_url = self.URL + self.SOURCE.format(version=self.version)
+        
+        self.asset_path = asset.Asset(source_url, asset_hash=source_hash,
+                                      algorithm=hash_algo, locations=None,
                                       cache_dirs=self.data_dirs,
                                       expire=None).fetch()
 
