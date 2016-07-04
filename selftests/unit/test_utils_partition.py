@@ -26,6 +26,8 @@ class TestPartition(unittest.TestCase):
     Unit tests for avocado.utils.partition
     """
 
+    @unittest.skipIf(process.system("which mkfs", ignore_status=True),
+                     "mkfs is required for these tests to run.")
     def setUp(self):
         try:
             process.system("/bin/true", sudo=True)
