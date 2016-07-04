@@ -125,9 +125,11 @@ class ArchiveTest(unittest.TestCase):
         self.assertEqual(os.path.realpath(get_path("link_to_dir")),
                          get_path("dir"))
         # File permissions
-        # TODO: Handle permission correctly for all users
-        # Default perm by user is 0o664 and by root 0o644
-        default_perm = 0o664 if os.getuid() else 0o644
+        # Different user and/or systems have different default permissions.
+        # Trying to probe it:
+        umask = os.popen('umask').read()[:-1]
+        default_perm = 0o664 if umask == '0002' else 0o644
+
         self.assertEqual(os.stat(get_path("dir", "file2")).st_mode & 0o777,
                          default_perm)
         self.assertEqual(os.stat(get_path("file")).st_mode & 0o777, 0o753)
