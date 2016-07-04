@@ -105,6 +105,9 @@ class ArchiveTest(unittest.TestCase):
         zip_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 os.path.pardir, ".data",
                                                 "test_archive__symlinks.zip"))
+        # TODO: Handle permission correctly for all users
+        # The umask is not yet handled by utils.archive, hardcode it for now
+        os.umask(2)
         archive.uncompress(zip_path, self.decompressdir)
         self.assertTrue(os.path.islink(get_path("link_to_dir")))
         self.assertTrue(os.path.islink(get_path("link_to_file")))
@@ -125,15 +128,12 @@ class ArchiveTest(unittest.TestCase):
         self.assertEqual(os.path.realpath(get_path("link_to_dir")),
                          get_path("dir"))
         # File permissions
-        # TODO: Handle permission correctly for all users
-        # Default perm by user is 0o664 and by root 0o644
-        default_perm = 0o664 if os.getuid() else 0o644
         self.assertEqual(os.stat(get_path("dir", "file2")).st_mode & 0o777,
-                         default_perm)
+                         0o664)
         self.assertEqual(os.stat(get_path("file")).st_mode & 0o777, 0o753)
         self.assertEqual(os.stat(get_path("dir")).st_mode & 0o777, 0o775)
         self.assertEqual(os.stat(get_path("link_to_file2")).st_mode & 0o777,
-                         default_perm)
+                         0o664)
         self.assertEqual(os.stat(get_path("link_to_dir")).st_mode & 0o777,
                          0o775)
         self.assertEqual(os.stat(get_path("link_to_file")).st_mode & 0o777,
