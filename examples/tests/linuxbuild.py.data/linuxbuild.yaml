@@ -10,3 +10,11 @@ version: !mux
     source_hash: 766b4d8a70acbbd7285624f2e2366f3deca444f512f6baf5c1c3650c8346c4e1
     hash_algo: sha256
 
+# Run make check bzImage, requires sparse(http://www.kernel.org/pub/software/devel/sparse/)
+  4.0:
+    source_url: https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.0.tar.gz
+    linux_version: 4.0
+    source_hash: bdc0ad7c46fc64e4f501be9efd2cd5c6
+    hash_algo: md5
+    build_target: bzImage
+    build_args: C=2 CF="-D__CHECK_ENDIAN__"

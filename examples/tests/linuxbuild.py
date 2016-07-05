@@ -20,6 +20,9 @@ class LinuxBuildTest(Test):
     :param source_url: source tarball full url
     :param source_hash: source tarball hash
     :param hash_algo: hash algorithm
+    :param build_target: built target (bzImage,modules,etc..)
+    :param build_args: extra arguments for make
+
     """
 
     def setUp(self):
@@ -28,6 +31,10 @@ class LinuxBuildTest(Test):
         source_url = self.params.get('source_url', default=None)
         source_hash = self.params.get('source_hash', default=None)
         hash_algo= self.params.get('hash_algo', default=None)
+
+        self.build_target= self.params.get('build_target', default='')
+        self.extra_args= self.params.get('build_args', default='')
+
         if linux_config is not None:
             linux_config = os.path.join(self.datadir, linux_config)
         
@@ -40,7 +47,7 @@ class LinuxBuildTest(Test):
         self.linux_build.configure()
 
     def test(self):
-        self.linux_build.build()
+        self.linux_build.build(self.build_target, self.extra_args)
 
 
 if __name__ == "__main__":
