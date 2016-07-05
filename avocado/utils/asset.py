@@ -88,6 +88,7 @@ class Asset(object):
                           cache_dir)
                 continue
             log.debug("Using %s as cache dir." % cache_dir)
+            self._cleanup_cache(self.asset_file)
 
             # Adding the user defined locations to the urls list
             if self.locations is not None:
@@ -192,6 +193,14 @@ class Asset(object):
             log.error('Asset %s corrupted (hash expected:%s, hash found:%s).' %
                       (path, filehash, discovered_hash))
             return False
+
+    @staticmethod
+    def _cleanup_cache(path):
+        for algo in crypto.algorithms_supported():
+            hashfile = '%s.%s' % (path, algo)
+            if os.path.isfile(hashfile):
+                log.debug('remove obsoleted hashfile %s' % hashfile)
+                os.unlink(hashfile)
 
     @staticmethod
     def _is_expired(path, expire):
