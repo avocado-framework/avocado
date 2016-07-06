@@ -192,6 +192,10 @@ class TestTree(unittest.TestCase):
         self.assertEqual(tree2.children[0].children[1].children[0].multiplex,
                          None)
 
+    def test_get_node(self):
+        self.assertRaises(ValueError,
+                          self.tree.get_node, '/non-existing-node')
+
 
 class TestPathParent(unittest.TestCase):
 
