@@ -916,9 +916,9 @@ putting it in ``mylibrary.py``::
 
     class MyOwnDerivedTest(Test):
         def __init__(self, methodName='test', name=None, params=None,
-                     base_logdir=None, tag=None, job=None, runner_queue=None):
+                     base_logdir=None, job=None, runner_queue=None):
             super(MyOwnDerivedTest, self).__init__(methodName, name, params,
-                                                   base_logdir, tag, job,
+                                                   base_logdir, job,
                                                    runner_queue)
             self.log('Derived class example')
 

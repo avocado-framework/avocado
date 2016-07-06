@@ -127,9 +127,6 @@ class TestClassTest(unittest.TestCase):
     def testClassAttributesTimeElapsed(self):
         self.assertIsInstance(self.tst_instance_pass.time_elapsed, float)
 
-    def testClassAttributesTag(self):
-        self.assertEqual(self.tst_instance_pass.tag, None)
-
     def testWhiteboardSave(self):
         whiteboard_file = os.path.join(
             self.tst_instance_pass.logdir, 'whiteboard')
@@ -146,6 +143,10 @@ class TestClassTest(unittest.TestCase):
 
         self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
                           base_logdir=self.base_logdir)
+
+    def testNotTestName(self):
+        self.assertRaises(test.NameNotTestNameError,
+                          test.Test, name='mytest')
 
     def tearDown(self):
         shutil.rmtree(self.base_logdir)

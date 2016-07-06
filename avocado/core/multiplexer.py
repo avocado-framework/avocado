@@ -117,11 +117,10 @@ class AvocadoParams(object):
 
     # TODO: Use "test" to log params.get()
 
-    def __init__(self, leaves, test_id, tag, mux_path, default_params):
+    def __init__(self, leaves, test_id, mux_path, default_params):
         """
         :param leaves: List of TreeNode leaves defining current variant
         :param test_id: test id
-        :param tag: test tag
         :param mux_path: list of entry points
         :param default_params: dict of params used when no matches found
         """
@@ -135,7 +134,6 @@ class AvocadoParams(object):
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
         self.id = test_id
-        self.tag = tag
         self._log = logging.getLogger("avocado.test").debug
         self._cache = {}     # TODO: Implement something more efficient
         # TODO: Get rid of this and prepare something better
