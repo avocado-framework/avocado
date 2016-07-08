@@ -271,7 +271,7 @@ class TreeNode(object):
                     node = child
                 else:
                     raise ValueError("Path %s does not exists in this tree\n%s"
-                                     % (path, self.get_ascii()))
+                                     % (path, tree_view(self.root)))
         return node
 
     def iter_children_preorder(self):
