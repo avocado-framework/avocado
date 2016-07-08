@@ -119,6 +119,7 @@ class TestLister(object):
         self._extra_listing()
         test_suite = self._get_test_suite(self.args.keywords)
         test_matrix, stats = self._get_test_matrix(test_suite)
+        self.log.info("Avaliable tests:")
         self._display(test_matrix, stats)
 
     def list(self):
