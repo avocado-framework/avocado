@@ -97,7 +97,7 @@ def strip_console_codes(output, custom_codes=None):
     :param custom_codes: The codes added to the console codes which is not
                          covered in the default codes
     :type output: string
-    :return: the string wihout any special codes
+    :return: the string without any special codes
     :rtype: string
     """
     if "\x1b" not in output:

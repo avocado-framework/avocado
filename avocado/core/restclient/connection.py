@@ -130,7 +130,7 @@ class Connection(object):
         :type path: str
         :param method: the method you want to call on the remote server,
                        defaults to a HTTP GET
-        :param check_status: wether to check the HTTP status code that comes
+        :param check_status: whether to check the HTTP status code that comes
                              with the response. If set to `True`, it will
                              depend on the method chosen. If set to `False`,
                              no check will be performed. If an integer is given
@@ -194,7 +194,7 @@ class Connection(object):
 
     def get_api_list(self):
         """
-        Gets the list of APIs the server makes availble to the current user
+        Gets the list of APIs the server makes available to the current user
         """
         return self.request('')
 

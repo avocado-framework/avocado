@@ -592,7 +592,7 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_runner_onehundred_fail_timing(self):
         """
-        We can be pretty sure that a failtest should return immediattely. Let's
+        We can be pretty sure that a failtest should return immediately. Let's
         run 100 of them and assure they not take more than 30 seconds to run.
 
         Notice: on a current machine this takes about 0.12s, so 30 seconds is

@@ -13,7 +13,7 @@
 # Author: Amador Pahim <apahim@redhat.com>
 
 """
-Asset fetcher from multiple locationss
+Asset fetcher from multiple locations
 """
 
 import errno

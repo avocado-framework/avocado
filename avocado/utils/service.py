@@ -98,7 +98,7 @@ def sys_v_init_result_parser(command):
     Parse results from sys_v style commands.
 
     command status: return true if service is running.
-    command is_enabled: return true if service is enalbled.
+    command is_enabled: return true if service is enabled.
     command list: return a dict from service name to status.
     command others: return true if operate success.
 
@@ -188,7 +188,7 @@ def systemd_result_parser(command):
     Parse results from systemd style commands.
 
     command status: return true if service is running.
-    command is_enabled: return true if service is enalbled.
+    command is_enabled: return true if service is enabled.
     command list: return a dict from service name to status.
     command others: return true if operate success.
 

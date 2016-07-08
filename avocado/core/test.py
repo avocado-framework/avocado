@@ -189,7 +189,7 @@ class Test(unittest.TestCase):
         self.log.warn = self.log.warning = record_and_warn
         if _incorrect_name is not None:
             self.log.warn("The 'name' argument has to be TestName instance, "
-                          "not string. In the upcomming releases this will "
+                          "not string. In the upcoming releases this will "
                           "become an exception. (%s)", self.name.name)
         if tag is not None:    # TODO: Remove in release 0.37
             self.log.warn("The 'tag' argument is not supported and will be "

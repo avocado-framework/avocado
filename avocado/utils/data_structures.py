@@ -63,7 +63,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
     :param matrix2: Matrix that will be compared; first column could be header
     :param threshold: Any difference greater than this percent threshold will
                       be reported.
-    :retrun: Matrix with the difference in comparison, number of improvements,
+    :return: Matrix with the difference in comparison, number of improvements,
              number of regressions, total number of comparisons.
     """
     improvements = 0

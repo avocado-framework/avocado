@@ -53,7 +53,7 @@ class LinuxDistro(object):
         :param release: the release or minor version of the distribution.
                         Usually this is also a single number, that is often
                         omitted or starts with a 0 when the major version
-                        is initially release. It's ofter associated with a
+                        is initially release. It's often associated with a
                         shorter development cycle that contains incremental
                         a collection of improvements and fixes.
         :type release: str
@@ -107,7 +107,7 @@ class Probe(object):
     #: by :attr:`CHECK_FILE_EXISTS` exist.
     CHECK_FILE_DISTRO_NAME = None
 
-    #: A regular expresion that will be run on the file pointed to by
+    #: A regular expression that will be run on the file pointed to by
     #: :attr:`CHECK_FILE_EXISTS`
     CHECK_VERSION_REGEX = None
 
@@ -265,7 +265,7 @@ class StdLibProbe(Probe):
     """
     Probe that uses the Python standard library builtin detection
 
-    This Probe has a lower score on purporse, serving as a fallback
+    This Probe has a lower score on purpose, serving as a fallback
     if no explicit (and hopefully more accurate) probe exists.
     """
 

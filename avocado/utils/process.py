@@ -195,7 +195,7 @@ def binary_from_shell_cmd(cmd):
     Tries to find the first binary path from a simple shell-like command.
 
     :note: It's a naive implementation, but for commands like:
-           `VAR=VAL binary -args || true` gives the right resutl (binary)
+           `VAR=VAL binary -args || true` gives the right result (binary)
     :param cmd: simple shell-like binary
     :return: first found binary from the cmd
     """

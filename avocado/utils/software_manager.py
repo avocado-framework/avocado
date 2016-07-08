@@ -858,7 +858,7 @@ def install_distro_packages(distro_pkg_map, interactive=False):
 
     If these conditions match, the packages will be installed using the
     software manager interface, thus the native packaging system if the
-    currenlty running distro.
+    currently running distro.
 
     :type distro_pkg_map: dict
     :param distro_pkg_map: mapping of distro name, as returned by

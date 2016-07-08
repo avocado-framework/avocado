@@ -61,7 +61,7 @@ class TestAsset(unittest.TestCase):
         with open(foo_tarball, 'r') as f:
             content1 = f.read()
 
-        # Create the file in a diferent location with a diferent content
+        # Create the file in a different location with a different content
         new_assetdir = tempfile.mkdtemp(dir=self.basedir)
         new_localpath = os.path.join(new_assetdir, self.assetname)
         new_url = 'file://%s' % new_localpath

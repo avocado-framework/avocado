@@ -186,7 +186,7 @@ class TestTree(unittest.TestCase):
         self.assertEqual(tree2.children[0].children[1].multiplex, True)
         # multiplex /virt/env
         self.assertEqual(tree2.children[0].children[2].multiplex, True)
-        # multiplex /virt/absolutly
+        # multiplex /virt/absolutely
         self.assertEqual(tree2.children[0].children[3].multiplex, None)
         # multiplex /virt/distro/fedora
         self.assertEqual(tree2.children[0].children[1].children[0].multiplex,

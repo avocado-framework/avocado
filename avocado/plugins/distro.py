@@ -262,7 +262,7 @@ def load_from_tree(name, version, release, arch, package_type, path):
     :param release: the release or minor version of the distribution.
                     Usually this is also a single number, that is often
                     omitted or starts with a 0 when the major version
-                    is initially release. It's ofter associated with a
+                    is initially release. It's often associated with a
                     shorter development cycle that contains incremental
                     a collection of improvements and fixes.
     :type release: str

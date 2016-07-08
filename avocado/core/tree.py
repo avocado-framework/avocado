@@ -18,7 +18,7 @@
 #
 
 """
-Tree data strucure with nodes.
+Tree data structure with nodes.
 
 This tree structure (Tree drawing code) was inspired in the base tree data
 structure of the ETE 2 project:

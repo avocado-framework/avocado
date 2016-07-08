@@ -151,9 +151,10 @@ Environment Variables
 =====================
 
 Running remote instances os Avocado, for example using `remote` or `vm`
-plugins, the remote environment has a diferent set of environment variables. If
-you want to make available remotely variables that are available in the local
-environment, you can use the `run` option `--env-keep`. See the example below::
+plugins, the remote environment has a different set of environment variables.
+If you want to make available remotely variables that are available in the
+local environment, you can use the `run` option `--env-keep`. See the example
+below::
 
     $ export MYVAR1=foobar
     $ env MYVAR2=foobar2 avocado run passtest.py --env-keep MYVAR1,MYVAR2 --remote-hostname 192.168.122.30 --remote-username fedora
