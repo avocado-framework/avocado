@@ -76,7 +76,7 @@ def has_isoread():
 
 def can_mount():
     """
-    Test wether the current user can perform a loop mount
+    Test whether the current user can perform a loop mount
 
     AFAIK, this means being root, having mount and iso9660 kernel support
 
@@ -302,9 +302,9 @@ class Iso9660Mount(BaseIso9660):
 
 def iso9660(path):
     """
-    Checks the avaiable tools on a system and chooses class accordingly
+    Checks the available tools on a system and chooses class accordingly
 
-    This is a convinience function, that will pick the first avaialable
+    This is a convenience function, that will pick the first available
     iso9660 capable tool.
 
     :param path: path to an iso9660 image file

@@ -374,7 +374,7 @@ class GDB(object):
         """
         Read raw responses from GDB
 
-        :param timeout: the amount of time to way between read attemps
+        :param timeout: the amount of time to way between read attempts
         :type timeout: float
         :param max_tries: the maximum number of cycles to try to read until
                           a response is obtained
@@ -637,7 +637,7 @@ class GDBServer(object):
         :param wait_until_running: wait until the gdbserver is running and
                                    accepting connections. It may take a little
                                    after the process is started and it is
-                                   actually bound to the aloccated port
+                                   actually bound to the allocated port
         :type wait_until_running: bool
         :param extra_args: optional extra arguments to be passed to gdbserver
         """

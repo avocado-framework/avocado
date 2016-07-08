@@ -274,7 +274,7 @@ class StdOutput(object):
 
     def print_records(self):
         """
-        Prints all stored messages as they occured into streams they were
+        Prints all stored messages as they occurred into streams they were
         produced for.
         """
         for stream, msg in self.records:
@@ -677,7 +677,7 @@ def log_plugin_failures(failures):
     """
     Log in the application UI failures to load a set of plugins
 
-    :param failures: a list of load failures, usually comming from a
+    :param failures: a list of load failures, usually coming from a
                      :class:`avocado.core.dispatcher.Dispatcher`
                      attribute `load_failures`
     """

@@ -44,7 +44,7 @@ class Parser(argparse.ArgumentParser):
 
     def _add_global_arguments(self):
         '''
-        Add global arguments, that is, do not depend on a specifc command
+        Add global arguments, that is, do not depend on a specific command
         '''
         connection_group = self.add_argument_group(
             'CONNECTION',

@@ -15,7 +15,7 @@
 """
 URL related functions.
 
-The strange name is to avoid accidental naming colisions in code.
+The strange name is to avoid accidental naming collisions in code.
 """
 
 try:

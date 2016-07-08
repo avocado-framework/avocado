@@ -145,7 +145,7 @@ class PathInspector(object):
 
 def usable_rw_dir(directory):
     """
-    Verify wether we can use this dir (read/write).
+    Verify whether we can use this dir (read/write).
 
     Checks for appropriate permissions, and creates missing dirs as needed.
 

@@ -24,10 +24,10 @@ from ..utils import data_structures
 
 def modules_imported_as(module):
     """
-    Returns a mapping of imported module names wether using aliases or not
+    Returns a mapping of imported module names whether using aliases or not
 
     The goal of this utility function is to return the name of the import
-    as used in the rest of the module, wether an aliased import was used
+    as used in the rest of the module, whether an aliased import was used
     or not.
 
     For code such as:

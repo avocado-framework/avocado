@@ -75,7 +75,7 @@ class MuxTree(object):
                 pools.append(pool)
         pools = itertools.product(*pools)
         while True:
-            # TODO: Implement 2nd level filteres here
+            # TODO: Implement 2nd level filters here
             # TODO: This part takes most of the time, optimize it
             yield list(itertools.chain(*pools.next()))
 
@@ -372,7 +372,7 @@ class AvocadoParam(object):
     def iteritems(self):
         """
         Very basic implementation which iterates through __ALL__ params,
-        which generates lots of duplicite entries due to inherited values.
+        which generates lots of duplicate entries due to inherited values.
         """
         for leaf in self._leaves:
             for key, value in leaf.environment.iteritems():
@@ -405,7 +405,7 @@ class Mux(object):
         """
         :return: overall number of tests * multiplex variants
         """
-        # Currently number of tests is symetrical
+        # Currently number of tests is symmetrical
         if self.variants:
             no_variants = sum(1 for _ in self.variants)
             if no_variants > 1:

@@ -12,7 +12,7 @@
 """
 Maps the different status strings in avocado to booleans.
 
-This is used by methods and functions to return a cut and dry answer to wether
+This is used by methods and functions to return a cut and dry answer to whether
 a test or a job in avocado PASSed or FAILed.
 """
 
