@@ -117,7 +117,7 @@ class TestTree(unittest.TestCase):
         leaves = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', 'mint',
                   'prod']
         self.assertEqual(leaves, self.tree.get_leaves())
-        # asci contain all leaves and doesn't raise any exceptions
+        # ascii contain all leaves and doesn't raise any exceptions
         ascii = tree.tree_view(self.tree, 0, False)
         for leaf in leaves:
             self.assertIn(leaf, ascii, "Leaf %s not in asci:\n%s"
