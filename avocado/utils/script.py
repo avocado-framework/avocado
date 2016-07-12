@@ -136,7 +136,7 @@ def make_script(path, content, mode=DEFAULT_MODE):
     Creates a new script stored in the file system.
 
     :param path: the script file name.
-    :param contet: the script content.
+    :param content: the script content.
     :param mode: set file mode, default to 0775.
     :return: the script path.
     """
@@ -150,7 +150,7 @@ def make_temp_script(name, content, prefix='avocado_script', mode=DEFAULT_MODE):
     Creates a new temporary script stored in the file system.
 
     :param path: the script file name.
-    :param contet: the script content.
+    :param content: the script content.
     :param prefix: the directory prefix Default to 'avocado_script'.
     :param mode: set file mode, default to 0775.
     :return: the script path.
