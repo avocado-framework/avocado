@@ -25,15 +25,10 @@ class TestAsset(unittest.TestCase):
                                   algorithm='sha1',
                                   locations=None,
                                   cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
+                                  expire=None,
+                                  lock_timeout=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
-        hashfile = '.'.join([expected_tarball, 'sha1'])
-        self.assertTrue(os.path.isfile(hashfile))
-        expected_content = '%s %s\n' % (self.assethash, self.assetname)
-        with open(hashfile, 'r') as f:
-            content = f.read()
-        self.assertEqual(content, expected_content)
 
     def testFetch_location(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -41,15 +36,10 @@ class TestAsset(unittest.TestCase):
                                   algorithm='sha1',
                                   locations=[self.url],
                                   cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
+                                  expire=None,
+                                  lock_timeout=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
-        hashfile = '.'.join([expected_tarball, 'sha1'])
-        self.assertTrue(os.path.isfile(hashfile))
-        expected_content = '%s %s\n' % (self.assethash, self.assetname)
-        with open(hashfile, 'r') as f:
-            content = f.read()
-        self.assertEqual(content, expected_content)
 
     def testFecth_expire(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -57,7 +47,8 @@ class TestAsset(unittest.TestCase):
                                   algorithm='sha1',
                                   locations=[self.url],
                                   cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
+                                  expire=None,
+                                  lock_timeout=None).fetch()
         with open(foo_tarball, 'r') as f:
             content1 = f.read()
 
@@ -74,7 +65,8 @@ class TestAsset(unittest.TestCase):
                     algorithm='sha1',
                     locations=[new_url],
                     cache_dirs=[self.cache_dir],
-                    expire=None).fetch()
+                    expire=None,
+                    lock_timeout=None).fetch()
         with open(foo_tarball, 'r') as f:
             content2 = f.read()
         self.assertEqual(content1, content2)
@@ -85,16 +77,31 @@ class TestAsset(unittest.TestCase):
                     algorithm='sha1',
                     locations=[new_url],
                     cache_dirs=[self.cache_dir],
-                    expire=-1).fetch()
+                    expire=-1,
+                    lock_timeout=None).fetch()
         with open(foo_tarball, 'r') as f:
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def testException(self):
-        a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir],
-                        expire=None)
-        self.assertRaises(EnvironmentError, a.fetch)
+    def testFetch_error(self):
+        foo_tarball = asset.Asset('bar.tgz',
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None,
+                                  lock_timeout=None).fetch()
+        self.assertEqual(foo_tarball, None)
+
+    def testFetch_lockerror(self):
+        foo_tarball = asset.Asset(self.url,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None,
+                                  lock_timeout=-1).fetch()
+        self.assertEqual(foo_tarball, None)
 
     def tearDown(self):
         shutil.rmtree(self.basedir)
