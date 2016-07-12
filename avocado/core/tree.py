@@ -287,7 +287,7 @@ class TreeNode(object):
                 node = None
 
     def iter_leaves(self):
-        """ Iterate throuh leaf nodes """
+        """ Iterate through leaf nodes """
         for node in self.iter_children_preorder():
             if node.is_leaf:
                 yield node
