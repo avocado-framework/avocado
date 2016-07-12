@@ -199,11 +199,11 @@ class AvocadoParams(object):
         converts user-friendly asterisk path to python regexp and compiles it:
         path = ""             => ^$
         path = "/"            => /
-        path = "/asdf/fdsa"   => /asdf/fdsa
-        path = "asdf/fdsa"    => $MUX_ENTRY/?.*/asdf/fdsa
-        path = "/*/asdf"      => /[^/]*/asdf
-        path = "asdf/*"       => $MUX_ENTRY/?.*/asdf/.*
-        path = "/asdf/*"      => /asdf/.*
+        path = "/foo/bar"     => /foo/bar
+        path = "foo/bar"      => $MUX_ENTRY/?.*/foo/bar
+        path = "/*/foo"       => /[^/]*/foo
+        path = "foo/*"        => $MUX_ENTRY/?.*/foo/.*
+        path = "/foo/*"       => /foo/.*
         """
         if not path:
             return re.compile('^$')

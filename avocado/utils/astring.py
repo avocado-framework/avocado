@@ -200,7 +200,7 @@ def tabular_output(matrix, header=None):
 
 def string_safe_encode(string):
     """
-    People tend to mix unicode strems with encoded strings. This function
+    People tend to mix unicode streams with encoded strings. This function
     tries to replace any input with a valid utf-8 encoded ascii stream.
     """
     if not isinstance(string, basestring):
