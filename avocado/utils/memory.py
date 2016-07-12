@@ -220,7 +220,7 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
         2^chunk_size * page_size
 
     The chunk_sizes can be string make up by all orders that you want to check
-    splited with blank or a mathematical expression with ``>``, ``<`` or ``=``.
+    split with blank or a mathematical expression with ``>``, ``<`` or ``=``.
 
     For example:
         * The input of chunk_size could be: ``0 2 4``, and the return  will be
