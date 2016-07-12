@@ -14,7 +14,7 @@
 #          Ruda Moura <rmoura@redhat.com>
 
 """
-Test runner module. asdfsfawfef
+Test runner module. asdfsfawfef fdsfasfs
 """
 
 import logging
