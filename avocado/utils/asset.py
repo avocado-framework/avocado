@@ -19,8 +19,8 @@ Asset fetcher from multiple locations
 import errno
 import logging
 import os
-import re
 import stat
+import sys
 import time
 import urlparse
 
@@ -32,13 +32,43 @@ from .download import url_download
 log = logging.getLogger('avocado.test')
 
 
+class LockException(Exception):
+    pass
+
+
+class LockFile(object):
+    def __init__(self, lockfile, timeout):
+        # Timeout defaults to 1 second
+        if timeout is None:
+            timeout = 1
+
+        self.lockfile = '%s.lock' % lockfile
+        self.timeout = time.time() + timeout
+
+    def acquire(self):
+        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+        while time.time() < self.timeout:
+            try:
+                os.open(self.lockfile, flags)
+                return
+            except:
+                time.sleep(0.1)
+        raise LockException('Cannot acquire lock (%s exists)' % self.lockfile)
+
+    def release(self):
+        try:
+            os.remove(self.lockfile)
+        except:
+            pass
+
+
 class Asset(object):
     """
     Try to fetch/verify an asset file from multiple locations.
     """
 
     def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire):
+                 expire, lock_timeout):
         """
         Initialize the Asset() and fetches the asset file. The path for
         the fetched file can be reached using the self.path attribute.
@@ -58,6 +88,7 @@ class Asset(object):
         self.nameobj = urlparse.urlparse(self.name)
         self.basename = os.path.basename(self.nameobj.path)
         self.expire = expire
+        self.lock_timeout = lock_timeout
 
     def fetch(self):
         urls = []
@@ -70,128 +101,67 @@ class Asset(object):
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             self.asset_file = os.path.join(cache_dir, self.basename)
-            if (self._check_file(self.asset_file,
-               self.asset_hash, self.algorithm) and not
-               self._is_expired(self.asset_file, self.expire)):
+
+            # To use a cached file, it must:
+            # - Exists.
+            # - Be valid (not expired).
+            # - Be verified (hash check).
+            if (os.path.isfile(self.asset_file) and
+               not self._is_expired(self.asset_file, self.expire) and
+               self._verify(self.asset_file, self.asset_hash, self.algorithm)):
                 return self.asset_file
 
-        # If we get to this point, file is not in any cache directory
-        # and we have to download it from a location. A rw cache
-        # directory is then needed. The first rw cache directory will be
-        # used.
-        log.debug("Looking for a writable cache dir.")
+        # If we get to this point, we have to download it from a location.
+        # A writable cache directory is then needed. The first available
+        # writable cache directory will be used.
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             self.asset_file = os.path.join(cache_dir, self.basename)
             if not utils_path.usable_rw_dir(cache_dir):
-                log.debug("Read-only cache dir '%s'. Skiping." %
-                          cache_dir)
                 continue
-            log.debug("Using %s as cache dir." % cache_dir)
 
-            # Adding the user defined locations to the urls list
+            # Now we have a writable cache_dir. Let's get the asset.
+            # Adding the user defined locations to the urls list:
             if self.locations is not None:
                 for item in self.locations:
                     urls.append(item)
 
             for url in urls:
                 urlobj = urlparse.urlparse(url)
-                if urlobj.scheme == 'http' or urlobj.scheme == 'https':
-                    log.debug('Downloading from %s.' % url)
+                if urlobj.scheme in ['http', 'https', 'ftp']:
                     try:
-                        url_download(url, self.asset_file)
-                    except Exception as e:
-                        log.error(e)
-                        continue
-                    if self._check_file(self.asset_file, self.asset_hash,
+                        self._download(url, self.asset_file, self.lock_timeout)
+                        if self._verify(self.asset_file, self.asset_hash,
                                         self.algorithm):
-                        return self.asset_file
-
-                elif urlobj.scheme == 'ftp':
-                    log.debug('Downloading from %s.' % url)
-                    try:
-                        url_download(url, self.asset_file)
-                    except Exception as e:
-                        log.error(e)
-                        continue
-                    if self._check_file(self.asset_file, self.asset_hash,
-                                        self.algorithm):
-                        return self.asset_file
+                            return self.asset_file
+                    except:
+                        exc_type, exc_value = sys.exc_info()[:2]
+                        log.error('%s: %s' % (exc_type.__name__, exc_value))
 
                 elif urlobj.scheme == 'file':
+                    # Being flexible with the urlparse result
                     if os.path.isdir(urlobj.path):
                         path = os.path.join(urlobj.path, self.name)
                     else:
                         path = urlobj.path
-                    log.debug('Looking for file on %s.' % path)
-                    if self._check_file(path):
-                        try:
-                            os.symlink(path, self.asset_file)
-                        except OSError as e:
-                            if e.errno == errno.EEXIST:
-                                os.remove(self.asset_file)
-                                os.symlink(path, self.asset_file)
-                        log.debug('Symlink created %s -> %s.' %
-                                  (self.asset_file, path))
 
-                    else:
-                        continue
-                    if self._check_file(self.asset_file, self.asset_hash,
+                    try:
+                        self._get_local_file(path, self.asset_file,
+                                             self.lock_timeout)
+                        if self._verify(self.asset_file, self.asset_hash,
                                         self.algorithm):
-                        return self.asset_file
+                            return self.asset_file
+                    except:
+                        exc_type, exc_value = sys.exc_info()[:2]
+                        log.error('%s: %s' % (exc_type.__name__, exc_value))
 
-            raise EnvironmentError("Failed to fetch %s." % self.basename)
-        raise EnvironmentError("Can't find a writable cache dir.")
+            # Despite our effort, we could not provide a healthy file. Sorry.
+            log.error("Failed to fetch %s." % self.basename)
+            return None
 
-    @staticmethod
-    def _check_file(path, filehash=None, algorithm=None):
-        """
-        Checks if file exists and verifies the hash, when the hash is
-        provided. We try first to find a hash file to verify the hash
-        against and only if the hash file is not present we compute the
-        hash.
-        """
-        if not os.path.isfile(path):
-            log.debug('Asset %s not found.' % path)
-            return False
-
-        if filehash is None:
-            return True
-
-        basename = os.path.basename(path)
-        discovered_hash = None
-        # Try to find a hashfile for the asset file
-        hashfile = '%s.%s' % (path, algorithm)
-        if os.path.isfile(hashfile):
-            with open(hashfile, 'r') as f:
-                for line in f.readlines():
-                    # md5 is 32 chars big and sha512 is 128 chars big.
-                    # others supported algorithms are between those.
-                    pattern = '[a-f0-9]{32,128} %s' % basename
-                    if re.match(pattern, line):
-                        log.debug('Hashfile found for %s.' % path)
-                        discovered_hash = line.split()[0]
-                        break
-
-        # If no hashfile, lets calculate the hash by ourselves
-        if discovered_hash is None:
-            log.debug('No hashfile found for %s. Computing hash.' %
-                      path)
-            discovered_hash = crypto.hash_file(path, algorithm=algorithm)
-
-            # Creating the hashfile for further usage.
-            log.debug('Creating hashfile %s.' % hashfile)
-            with open(hashfile, 'w') as f:
-                content = '%s %s\n' % (discovered_hash, basename)
-                f.write(content)
-
-        if filehash == discovered_hash:
-            log.debug('Asset %s verified.' % path)
-            return True
-        else:
-            log.error('Asset %s corrupted (hash expected:%s, hash found:%s).' %
-                      (path, filehash, discovered_hash))
-            return False
+        # Cannot find a writable cache_dir. Bye.
+        log.error("Can't find a writable cache dir.")
+        return None
 
     @staticmethod
     def _is_expired(path, expire):
@@ -202,3 +172,42 @@ class Asset(object):
         if time.time() > expire_time:
             return True
         return False
+
+    @staticmethod
+    def _download(url, dst, lock_timeout):
+        lock = LockFile(dst, timeout=lock_timeout)
+        lock.acquire()
+        try:
+            url_download(url, dst)
+        finally:
+            lock.release()
+
+    @staticmethod
+    def _get_local_file(path, dst, lock_timeout):
+        lock = LockFile(dst, timeout=lock_timeout)
+        lock.acquire()
+        try:
+            os.symlink(path, dst)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                os.remove(dst)
+                os.symlink(path, dst)
+        finally:
+            lock.release()
+
+    @staticmethod
+    def _verify(path, expected_hash, algorithm):
+        if not os.path.isfile(path):
+            return False
+
+        if not expected_hash:
+            return True
+
+        hashresult = crypto.hash_file(path, algorithm=algorithm)
+        if hashresult == expected_hash:
+            return True
+        else:
+            log.error('Asset file seems corrupted. '
+                      'Expected hash: %s, actual hash: %s.'
+                      % (expected_hash, hashresult))
+            return False

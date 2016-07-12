@@ -543,6 +543,10 @@ Detailing the ``fetch_asset()`` attributes:
   be an integer or a string containig the time and the unit. Example: '10d'
   (ten days). Valid units are ``s`` (second), ``m`` (minute), ``h`` (hour) and
   ``d`` (day).
+* ``lock_timeout:`` (optional) To avoid race conditions, files not present in
+  cache or expired files will be locked when we have to (re)download them. The
+  first user will have the lock and additional users will wait up to the 
+  ``lock_timeout`` number of seconds for the lock to be released.
 
 The expected ``return`` is the asset file path or an exception.
 

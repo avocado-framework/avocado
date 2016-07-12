@@ -625,7 +625,7 @@ class Test(unittest.TestCase):
         raise exceptions.TestSkipError(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
-                    locations=None, expire=None):
+                    locations=None, expire=None, lock_timeout=None):
         """
         Method o call the utils.asset in order to fetch and asset file
         supporting hash check, caching and multiple locations.
@@ -641,7 +641,7 @@ class Test(unittest.TestCase):
         if expire is not None:
             expire = data_structures.time_to_seconds(str(expire))
         return asset.Asset(name, asset_hash, algorithm, locations,
-                           self.cache_dirs, expire).fetch()
+                           self.cache_dirs, expire, lock_timeout).fetch()
 
 
 class SimpleTest(Test):
