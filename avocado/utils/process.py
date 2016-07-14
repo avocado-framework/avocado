@@ -158,29 +158,6 @@ def kill_process_by_pattern(pattern):
         logging.info("Succeed to run '%s'.", cmd)
 
 
-def process_in_ptree_is_defunct(ppid):
-    """
-    Verify if any processes deriving from PPID are in the defunct state.
-
-    Attempt to verify if parent process and any children from PPID is defunct
-    (zombie) or not.
-
-    :param ppid: The parent PID of the process to verify.
-    """
-    defunct = False
-    try:
-        pids = get_children_pids(ppid)
-    except CmdError:  # Process doesn't exist
-        return True
-    for pid in pids:
-        cmd = "ps --no-headers -o cmd %d" % int(pid)
-        proc_name = system_output(cmd, ignore_status=True, verbose=False)
-        if '<defunct>' in proc_name:
-            defunct = True
-            break
-    return defunct
-
-
 def get_children_pids(ppid):
     """
     Get all PIDs of children/threads of parent ppid
