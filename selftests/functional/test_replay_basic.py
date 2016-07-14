@@ -44,10 +44,17 @@ class ReplayTests(unittest.TestCase):
         return result
 
     def test_run_replay_noid(self):
-        cmd_line = ('./scripts/avocado run --replay %s'
+        cmd_line = ('./scripts/avocado run --replay %s '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off' %
                     ('foo', self.tmpdir, self.jobdir))
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        self.run_and_check(cmd_line, expected_rc)
+
+    def test_run_replay_latest(self):
+        cmd_line = ('./scripts/avocado run --replay latest '
+                    '--job-results-dir %s --replay-data-dir %s --sysinfo=off' %
+                    (self.tmpdir, self.jobdir))
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_data(self):
