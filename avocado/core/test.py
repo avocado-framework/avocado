@@ -90,9 +90,9 @@ class TestName(object):
         fsname = astring.string_to_safe_path(name)
         if len(name) == len(fsname):    # everything fits in
             return fsname
-        # 001-mytest;aaa
-        # 001-mytest;a
-        # 001-myte;aaa
+        # 001-mytest;foo
+        # 001-mytest;f
+        # 001-myte;foo
         idx_fit_variant = len(fsname) - len(self.str_variant)
         if idx_fit_variant > len(self.str_uid):     # full uid+variant
             return (fsname[:idx_fit_variant] +

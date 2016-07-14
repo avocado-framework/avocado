@@ -32,6 +32,7 @@ all:
 	@echo "link:       Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:      Get rid of scratch, byte files and removes the links to other subprojects"
 	@echo "selfcheck:  Runs tree static check, unittests and functional tests using Avocado itself"
+	@echo "spell:      Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements:            Install runtime requirements"
@@ -172,6 +173,9 @@ link: develop
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
+
+spell:
+	pylint --errors-only --disable=all --enable=spelling --spelling-dict=en_US --spelling-private-dict-file=spell.ignore * && echo OK
 
 man: man/avocado.1 man/avocado-rest-client.1
 
