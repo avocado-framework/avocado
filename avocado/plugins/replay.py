@@ -43,7 +43,8 @@ class Replay(CLI):
         replay_parser.add_argument('--replay', dest='replay_jobid',
                                    default=None,
                                    help='Replay a job identified by its '
-                                   '(partial) hash id')
+                                   '(partial) hash id. Use "--replay latest" '
+                                   'to replay the latest job.')
         replay_parser.add_argument('--replay-test-status',
                                    dest='replay_teststatus',
                                    type=self._valid_status,
