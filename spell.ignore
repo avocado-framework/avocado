@@ -395,3 +395,4 @@ isinstance
 dkrcmd
 flexmock
 lockfile
+urlparse

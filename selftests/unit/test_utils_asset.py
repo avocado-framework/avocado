@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from avocado.utils import asset
+from avocado.utils.filelock import FileLock
 
 
 class TestAsset(unittest.TestCase):
@@ -28,12 +29,6 @@ class TestAsset(unittest.TestCase):
                                   expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
-        hashfile = '.'.join([expected_tarball, 'sha1'])
-        self.assertTrue(os.path.isfile(hashfile))
-        expected_content = '%s %s\n' % (self.assethash, self.assetname)
-        with open(hashfile, 'r') as f:
-            content = f.read()
-        self.assertEqual(content, expected_content)
 
     def testFetch_location(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -44,12 +39,6 @@ class TestAsset(unittest.TestCase):
                                   expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
-        hashfile = '.'.join([expected_tarball, 'sha1'])
-        self.assertTrue(os.path.isfile(hashfile))
-        expected_content = '%s %s\n' % (self.assethash, self.assetname)
-        with open(hashfile, 'r') as f:
-            content = f.read()
-        self.assertEqual(content, expected_content)
 
     def testFecth_expire(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -64,37 +53,60 @@ class TestAsset(unittest.TestCase):
         # Create the file in a different location with a different content
         new_assetdir = tempfile.mkdtemp(dir=self.basedir)
         new_localpath = os.path.join(new_assetdir, self.assetname)
+        new_hash = '9f1ad57044be4799f288222dc91d5eab152921e9'
         new_url = 'file://%s' % new_localpath
         with open(new_localpath, 'w') as f:
             f.write('Changed!')
 
         # Dont expire cached file
-        asset.Asset(self.assetname,
-                    asset_hash=self.assethash,
-                    algorithm='sha1',
-                    locations=[new_url],
-                    cache_dirs=[self.cache_dir],
-                    expire=None).fetch()
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=[new_url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
         with open(foo_tarball, 'r') as f:
             content2 = f.read()
         self.assertEqual(content1, content2)
 
         # Expire cached file
-        asset.Asset(self.assetname,
-                    asset_hash=self.assethash,
-                    algorithm='sha1',
-                    locations=[new_url],
-                    cache_dirs=[self.cache_dir],
-                    expire=-1).fetch()
+        foo_tarball = asset.Asset(self.assetname,
+                                  asset_hash=new_hash,
+                                  algorithm='sha1',
+                                  locations=[new_url],
+                                  cache_dirs=[self.cache_dir],
+                                  expire=-1).fetch()
+
         with open(foo_tarball, 'r') as f:
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def testException(self):
-        a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir],
-                        expire=None)
-        self.assertRaises(EnvironmentError, a.fetch)
+    def testFetch_error(self):
+        foo_tarball = asset.Asset('bar.tgz',
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        self.assertEqual(foo_tarball, None)
+
+    def testFetch_lockerror(self):
+        with FileLock(os.path.join(self.cache_dir, self.assetname)):
+            foo_tarball = asset.Asset(self.url,
+                                      asset_hash=self.assethash,
+                                      algorithm='sha1',
+                                      locations=None,
+                                      cache_dirs=[self.cache_dir],
+                                      expire=None).fetch()
+            self.assertEqual(foo_tarball, None)
+
+        foo_tarball = asset.Asset(self.url,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        self.assertNotEqual(foo_tarball, None)
 
     def tearDown(self):
         shutil.rmtree(self.basedir)
