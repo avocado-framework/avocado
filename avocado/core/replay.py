@@ -113,6 +113,13 @@ def retrieve_args(resultsdir):
 
 
 def get_resultsdir(logdir, jobid):
+    if jobid == 'latest':
+        try:
+            actual_dir = os.readlink(os.path.join(logdir, 'latest'))
+            return os.path.join(logdir, actual_dir)
+        except:
+            return None
+
     matches = 0
     short_jobid = jobid[:7]
     if len(short_jobid) < 7:
@@ -135,6 +142,9 @@ def get_resultsdir(logdir, jobid):
 
 
 def get_id(path, jobid):
+    if jobid == 'latest':
+        jobid = os.path.basename(os.path.dirname(path))[-7:]
+
     if not os.path.exists(path):
         return None
 
