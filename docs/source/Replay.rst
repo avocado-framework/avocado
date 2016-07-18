@@ -7,8 +7,9 @@ Job Replay
 In order to reproduce a given job using the same data, one can use the
 ``--replay`` option for the ``run`` command, informing the hash id from
 the original job to be replayed. The hash id can be partial, as long as
-the provided part corresponds to the inital characters of the original
-job id and it is also unique enough.
+the provided part corresponds to the initial characters of the original
+job id and it is also unique enough. Or, instead of the job id, you can
+use the string ``latest`` and avocado will replay the latest job executed.
 
 Let's see an example. First, running a simple job with two urls::
 
@@ -95,7 +96,7 @@ multiplex file::
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
      TESTS TIME : 0.29 s
 
-We can replay the job as is, using ``$ avocado run --replay bd6aa3b``,
+We can replay the job as is, using ``$ avocado run --replay latest``,
 or replay the job ignoring the multiplex file, as below::
 
      $ avocado run --replay bd6aa3b --replay-ignore mux
@@ -111,8 +112,7 @@ or replay the job ignoring the multiplex file, as below::
      TESTS TIME : 0.02 s
 
 Also, it is possible to replay only the variants that faced a given
-result, using the option ``--replay-test-status``. Using the same job
-``bd6aa3b``, see the example below::
+result, using the option ``--replay-test-status``. See the example below::
 
     $ avocado run --replay bd6aa3b --replay-test-status FAIL
     JOB ID     : 2e1dc41af6ed64895f3bb45e3820c5cc62a9b6eb
@@ -191,7 +191,7 @@ Trying to replay the job, it fails::
      $ avocado run --replay f1b1
      can't find job results directory in '$HOME/avocado/job-results'
 
-In this case, we have to inform where the job results dir is located::
+In this case, we have to inform where the job results directory is located::
 
      $ avocado run --replay f1b1 --replay-data-dir /tmp/avocado_results
      JOB ID     : 19c76abb29f29fe410a9a3f4f4b66387570edffa
