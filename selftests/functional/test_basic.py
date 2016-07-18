@@ -148,6 +148,17 @@ class RunnerOperationTest(unittest.TestCase):
                     'passtest.py passtest.py' % self.tmpdir)
         process.run(cmd_line)
 
+    def test_runner_failfast(self):
+        os.chdir(basedir)
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
+                    'passtest.py failtest.py passtest.py --failfast' % self.tmpdir)
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertIn('Interrupting job (failfast).', result.stdout)
+        self.assertIn('PASS 1 | ERROR 0 | FAIL 1 | SKIP 1', result.stdout)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
     def test_datadir_alias(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
