@@ -77,6 +77,9 @@ class Run(CLICmd):
                                   'You can also use suffixes, like: '
                                   ' s (seconds), m (minutes), h (hours). '))
 
+        parser.add_argument('--failfast', action='store_true',
+                            help='Exit job on first failed test.')
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
