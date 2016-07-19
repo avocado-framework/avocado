@@ -20,6 +20,7 @@ Avocado application command line parsing.
 import argparse
 import logging
 
+from . import exceptions
 from . import exit_codes
 from . import tree
 from . import settings
@@ -28,6 +29,10 @@ from .version import VERSION
 
 PROG = 'avocado'
 DESCRIPTION = 'Avocado Test Runner'
+#: Who owns the standard output.  This is used to prevent multiple
+#: players, say multiple plugins, from writing to the standard output.
+#: Should be set by using :class:`FileOrStdoutAction` as the argument action
+PARSERS_STDOUT_OWNER = {}
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -44,6 +49,32 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def _get_option_tuples(self, option_string):
         return []
+
+
+class StdoutAlreadyClaimedError(Exception):
+
+    """
+    Signals that other player already claimed exclusive rights on STDOUT
+    """
+
+
+class FileOrStdoutAction(argparse.Action):
+
+    """
+    Controls claiming the right to write to the application standard output
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        global PARSERS_STDOUT_OWNER
+        if values == '-':
+            owner = PARSERS_STDOUT_OWNER.get(parser, None)
+            if owner is not None:
+                msg = ('Options %s %s are trying to use stdout '
+                       'simultaneously' % (owner, option_string))
+                raise exceptions.OptionValidationError(msg)
+            else:
+                PARSERS_STDOUT_OWNER[parser] = option_string
+        setattr(namespace, self.dest, values)
 
 
 class Parser(object):
@@ -115,6 +146,8 @@ class Parser(object):
         Side effect: set the final value for attribute `args`.
         """
         self.args, extra = self.application.parse_known_args(namespace=self.args)
+        if PARSERS_STDOUT_OWNER:
+            setattr(self.args, 'stdout_claimed', True)
         if extra:
             msg = 'unrecognized arguments: %s' % ' '.join(extra)
             for sub in self.application._subparsers._actions:
