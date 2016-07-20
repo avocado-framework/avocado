@@ -19,6 +19,7 @@ JSON output module.
 from avocado.core.jsonresult import JSONTestResult
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.result import register_test_result_class
+from avocado.core.parser import FileOrStdoutAction
 
 
 class JSON(CLI):
@@ -36,7 +37,7 @@ class JSON(CLI):
             return
 
         run_subcommand_parser.output.add_argument(
-            '--json', type=str,
+            '--json', type=str, action=FileOrStdoutAction,
             dest='json_output', metavar='FILE',
             help='Enable JSON result format and write it to FILE. '
                  "Use '-' to redirect to the standard output.")
