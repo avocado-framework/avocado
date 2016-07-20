@@ -16,15 +16,18 @@
 The core Avocado application.
 """
 
+import logging
 import os
 import signal
 import sys
 
-from .parser import Parser
 from . import output
-from .output import STD_OUTPUT
-from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
+from .dispatcher import CLIDispatcher
+from .exceptions import OptionValidationError
+from .exit_codes import AVOCADO_JOB_FAIL
+from .output import STD_OUTPUT
+from .parser import Parser
 
 
 class AvocadoApp(object):
@@ -52,7 +55,13 @@ class AvocadoApp(object):
                 self.cli_cmd_dispatcher.map_method('configure', self.parser)
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('configure', self.parser)
-            self.parser.finish()
+            try:
+                self.parser.finish()
+            except OptionValidationError as e:
+                log = logging.getLogger("avocado.app")
+                log.error(e)
+                STD_OUTPUT.close()
+                sys.exit(AVOCADO_JOB_FAIL)
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('run', self.parser.args)
         except SystemExit as e:

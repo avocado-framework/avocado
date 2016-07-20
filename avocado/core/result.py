@@ -62,13 +62,6 @@ class TestResultProxy(object):
                                       "TestResult" % plugin)
         self.output_plugins.append(plugin)
 
-    def output_plugins_using_stdout(self):
-        using_stdout = []
-        for op in self.output_plugins:
-            if op.output == '-':
-                using_stdout.append(op.command_line_arg_name)
-        return using_stdout
-
     def start_tests(self):
         for output_plugin in self.output_plugins:
             output_plugin.start_tests()
