@@ -1,0 +1,129 @@
+===============
+38.0: Love, Ken
+===============
+
+You guessed it right: this is another Avocado release announcement:
+release 38.0, aka "Love, Ken", is now out!
+
+Release Notes
+=============
+
+Another development cycle has just finished, and our community will
+receive this new release containing a nice assortment of bug fixes and
+new features.
+
+* The download of assets in tests now allow for an expiration time.
+  This means that tests that need to download any kind of external
+  asset, say a tarball, can now automatically benefit from the
+  download cache, but can also keep receiving new versions
+  automatically.
+
+  Suppose your asset uses an asset named `myproject-daily.tar.bz2`,
+  and that your test runs 50 times a day.  By setting the expire time
+  to `1d` (1 day), your test will benefit from cache on most runs, but
+  will still fetch the new version when the 24 hours from the
+  first download have passed.
+
+  For more information, please check out the
+  `documentation <http://avocado-framework.readthedocs.io/en/38.0/WritingTests.html>`_
+  on the `expire` parameter to the `fetch_asset()` method.
+
+* Environment variables can be propagated into tests running on remote
+  systems. It's a known fact that one way to influence application behavior,
+  including test, is to set environment variables. A command line such as::
+
+    $ MYAPP_DEBUG=1 avocado run myapp_test.py
+
+  Will work as expected on a local system.  But Avocado also allows
+  running tests on remote machines, and up until now, it has been
+  lacking a way to propagate environment variables to the remote
+  system.
+
+  Now, you can use::
+
+    $ MYAPP_DEBUG=1 avocado run --env-keep MYAPP_DEBUG \
+      --remote-host test-machine myapp_test.py
+
+* The plugin interfaces have been moved into the
+  `avocado.core.plugin_interfaces` module.  This means that plugin
+  writers now have to import the interface definitions this namespace,
+  example::
+
+    ...
+    from avocado.core.plugin_interfaces import CLICmd
+
+    class MyCommand(CLICmd):
+    ...
+
+  This is a way to keep ourselves honest, and say that there's no
+  difference from plugin interfaces to Avocado's core implementation,
+  that is, they may change at will.  For greater stability, one should
+  be tracking the LTS releases.
+
+  Also, it effectively makes all plugins the same, whether they're
+  implemented and shipped as part of Avocado, or as part of external
+  projects.
+
+* A contrib script for running kvm-unit-tests.  As some people are
+  aware, Avocado has indeed a close relation to virtualization
+  testing.  Avocado-VT is one obvious example, but there are other
+  virtualization related test suites can Avocado can run.
+
+  This release adds a contrib script that will fetch, download,
+  compile and run kvm-unit-tests using Avocado's external runner
+  feature.  This gives results in a better granularity than the
+  support that exists in Avocado-VT, which gives only a single
+  PASS/FAIL for the entire test suite execution.
+
+For more information, please check out the `Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/37.0...38.0>`_.
+
+Avocado-VT
+----------
+
+Also, while we focused on Avocado, let's also not forget that
+Avocado-VT maintains it's own fast pace of incoming niceties.
+
+* s390 support: Avocado-VT is breaking into new grounds, and now has
+  support for the s390 architecture.  Fedora 23 for s390 has been added
+  as a valid guest OS, and s390-virtio has been added as a new machine
+  type.
+
+* Avocado-VT is now more resilient against failures to persist its
+  environment file, and will only give warnings instead of errors when
+  it fails to save it.
+
+* An improved implementation of the "job lock" plugin, which prevents
+  multiple Avocado jobs with VT tests to run simultaneously.  Since
+  there's no finer grained resource locking in Avocado-VT, this is a
+  global lock that will prevent issues such as image corruption when
+  two jobs are run at the same time.
+
+  This new implementation will now check if existing lock files are
+  stale, that is, they are leftovers from previous run.  If the
+  processes associated with these files are not present, the stale
+  lock files are deleted, removing the need to clean them up manually.
+  It also outputs better debugging information when failures to
+  acquire lock.
+
+The complete list of changes to Avocado-VT are available on
+`Avocado-VT changelog <https://github.com/avocado-framework/avocado-vt/compare/37.0...38.0>`_.
+
+Miscellaneous
+-------------
+
+While not officially part of this release, this development cycle saw
+the introduction of new tests on our
+`avocado-misc-tests <https://github.com/avocado-framework/avocado-misc-tests>`_.
+Go check it out!
+
+Finally, since Avocado and Avocado-VT are not newly born anymore, we
+decided to update information mentioning KVM-Autotest, virt-test on so
+on around the web. This will hopefully redirect new users to the Avocado
+community and avoid confusion.
+
+Happy hacking and testing!
+
+---
+
+Sprint Theme: https://trello.com/c/Y6IIFXBS/732-sprint-theme

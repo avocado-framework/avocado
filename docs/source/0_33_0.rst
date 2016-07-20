@@ -1,0 +1,97 @@
+===================================
+0.33.0: Lemonade Joe or Horse Opera
+===================================
+
+Hello big farmers, backyard gardeners and supermarket reapers! Here is
+a new announcement to all the appreciators of the most delicious green
+fruit out here. Avocado release 0.33.0, aka, Lemonade Joe or Horse
+Opera, is now out!
+
+Release Notes
+=============
+
+The main changes in Avocado are:
+
+* Minor refinements to the Job Replay feature introduced in the last
+  release.
+* More consistency naming for the status of tests that were not
+  executed. Namely, the TEST_NA has been renamed to SKIP all across
+  the internal code and user visible places.
+* The avocado Test class has received some cleanups and
+  improvements. Some attributes that back the class implementation but
+  are not intended for users to rely upon are now hidden or removed.
+  Additionally some the internal attributes have been turned into
+  proper documented properties that users should feel confident to
+  rely upon.  Expect more work on this area, resulting in a cleaner
+  and leaner base Test class on the upcoming releases.
+* The avocado command line application used to show the main app help
+  message even when help for a specific command was asked for. This
+  has now been fixed.
+* It's now possible to use the avocado process utility API to run
+  privileged commands transparently via SUDO. Just add the "sudo=True"
+  parameter to the API calls and have your system configured to allow
+  that command without asking interactively for a password.
+* The software manager and service utility API now knows about
+  commands that require elevated privileges to be run, such as
+  installing new packages and starting and stopping services (as
+  opposed to querying packages and services status).  Those utility
+  APIs have been integrated with the new SUDO features allowing
+  unprivileged users to install packages, start and stop services more
+  easily, given that the system is properly configured to allow that.
+* A nasty "fork bomb" situation was fixed. It was caused when a SIMPLE
+  test written in Python used the Avocado's "main()" function to run
+  itself.
+* A bug that prevented SIMPLE tests from being run if Avocado was not
+  given the absolute path of the executable has been fixed.
+* A cleaner internal API for registering test result classes has been
+  put into place. If you have written your own test result class,
+  please take a look at avocado.core.result.register_test_result_class.
+* Our CI jobs now also do quick "smoke" checks on every new commit
+  (not only the PR's branch HEAD) that are proposed on github.
+* A new utility function, binary_from_shell_cmd, has been added to
+  process API allows to extract the executable to be run from complex
+  command lines, including ones that set shell variable names.
+* There have been internal changes to how parameters, including the
+  internally used timeout parameter, are handled by the test loader.
+* Test execution can now be PAUSED and RESUMED interactively! By
+  hitting CTRL+Z on the Avocado command line application, all processes
+  of the currently running test are PAUSED. By hitting CTRL+Z again,
+  they are RESUMED.
+* The Remote/VM runners have received some refactors, and most of the
+  code that used to live on the result test classes have been moved
+  to the test runner classes. The original goal was to fix a bug, but
+  turns out test runners were more suitable to house some parts of the
+  needed functionality.
+
+For a complete list of changes please check the Avocado changelog[1].
+
+For Avocado-VT, there were also many changes, including:
+
+* A new utility function, get_guest_service_status, to get service
+  status in a VM.
+* A fix for ssh login timeout error on remote servers.
+* Fixes for usb ehci on PowerPC.
+* Fixes for the screenshot path, when on a remote host
+* Added libvirt function to create volumes with by XML files
+* Added utility function to get QEMU threads (get_qemu_threads)
+
+And many other changes. Again, for a complete list of changes please
+check the Avocado-VT changelog[2].
+
+Install avocado
+---------------
+
+Instructions are available in our documentation on how to install
+either with packages or from source[3].
+
+Updated RPM packages are be available in the project repos for
+Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
+
+Happy hacking and testing!
+
+---
+
+| [1] https://github.com/avocado-framework/avocado/compare/0.32.0...0.33.0
+| [2] https://github.com/avocado-framework/avocado-vt/compare/0.32.0...0.33.0
+| [3] http://avocado-framework.readthedocs.org/en/latest/GetStartedGuide.html#installing-avocado
+| Sprint Theme: https://www.youtube.com/watch?v=H5Lg_14m-sM
