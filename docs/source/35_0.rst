@@ -1,0 +1,120 @@
+===============
+35.0: Mr. Robot
+===============
+
+This is another proud announcement: Avocado release 35.0, aka "Mr. Robot",
+is now out!
+
+Release Notes
+=============
+
+This release, while a "regular" release, will also serve as a beta for
+our first "long term stability" (aka "lts") release.  That means that
+the next release, will be version "36.0lts" and will receive only bug
+fixes and minor improvements.  So, expect release 35.0 to be pretty
+much like "36.0lts" feature-wise.  New features will make into the
+"37.0" release, to be released after "36.0lts".  Read more about the
+details on the specific RFC[9].
+
+The main changes in Avocado for this release are:
+
+* A big round of fixes and on machine readable output formats, such
+  as xunit (aka JUnit) and JSON.  The xunit output, for instance,
+  now includes tests with schema checking.  This should make sure
+  interoperability is even better on this release.
+
+* Much more robust handling of test references, aka test URLs.
+  Avocado now properly handles very long test references, and also
+  test references with non-ascii characters.
+
+* The avocado command line application now provides richer exit
+  status[1].  If your application or custom script depends on the
+  avocado exit status code, you should be fine as avocado still
+  returns zero for success and non-zero for errors.  On error
+  conditions, though, the exit status code are richer and made of
+  combinable (ORable) codes.  This way it's possible to detect that,
+  say, both a test failure and a job timeout occurred in a single
+  execution.
+
+* [SECURITY RELATED] The remote execution of tests (including in
+  Virtual Machines) now allows for proper checks of host keys[2].
+  Without these checks, avocado is susceptible to a man-in-the-middle
+  attack, by connecting and sending credentials to the wrong machine.
+  This check is *disabled* by default, because users depend on this
+  behavior when using machines without any prior knowledge such as
+  cloud based virtual machines.  Also, a bug in the underlying SSH
+  library may prevent existing keys to be used if these are in ECDSA
+  format[3].  There's an automated check in place to check for the
+  resolution of the third party library bug.  Expect this feature to
+  be *enabled* by default in the upcoming releases.
+
+* Pre/Post Job hooks.  Avocado now defines a proper interface for
+  extension/plugin writers to execute actions while a Job is runnning.
+  Both Pre and Post hooks have access to the Job state (actually, the
+  complete Job instance).  Pre job hooks are called before tests are
+  run, and post job hooks are called at the very end of the job (after
+  tests would have usually finished executing).
+
+* Pre/Post job scripts[4].  As a feature built on top of the Pre/Post job
+  hooks described earlier, it's now possible to put executable scripts
+  in a configurable location, such as `/etc/avocado/scripts/job/pre.d`
+  and have them called by Avocado before the execution of tests.  The
+  executed scripts will receive some information about the job via
+  environment variables[5].
+
+* The implementation of proper Test-IDs[6] in the test result
+  directory.
+
+Also, while not everything is (yet) translated into code, this release
+saw various and major RFCs, which are definitely shaping the future of
+Avocado.  Among those:
+
+* Introduce proper test IDs[6]
+* Pre/Post *test* hooks[7]
+* Multi-stream tests[8]
+* Avocado maintainability and integration with avocado-vt[9]
+* Improvements to job status (completely implemented)[10]
+
+For a complete list of changes please check the Avocado changelog[11].
+For Avocado-VT, please check the full Avocado-VT changelog[12].
+
+Install avocado
+---------------
+
+Instructions are available in our documentation on how to install
+either with packages or from source[13].
+
+Updated RPM packages are be available in the project repos for
+Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
+
+Packages
+--------
+
+As a heads up, we still package the latest version of the various
+Avocado sub projects, such as the very popular Avocado-VT and the
+pretty much experimental Avocado-Virt and Avocado-Server projects.
+
+For the upcoming releases, there will be changes in our package
+offers, with a greater focus on long term stability packages for
+Avocado.  Other packages may still be offered as a convenience, or
+may see a change of ownership.  All in the best interest of our users.
+If you have any concerns or questions, please let us know.
+
+Happy hacking and testing!
+
+---
+
+| [1] http://avocado-framework.readthedocs.org/en/35.0/ResultFormats.html#exit-codes
+| [2] https://github.com/avocado-framework/avocado/blob/35.0/etc/avocado/avocado.conf#L41
+| [3] https://github.com/avocado-framework/avocado/blob/35.0/selftests/functional/test_thirdparty_bugs.py#L17
+| [4] http://avocado-framework.readthedocs.org/en/35.0/ReferenceGuide.html#job-pre-and-post-scripts
+| [5] http://avocado-framework.readthedocs.org/en/35.0/ReferenceGuide.html#script-execution-environment
+| [6] https://www.redhat.com/archives/avocado-devel/2016-March/msg00024.html
+| [7] https://www.redhat.com/archives/avocado-devel/2016-April/msg00000.html
+| [8] https://www.redhat.com/archives/avocado-devel/2016-April/msg00042.html
+| [9] https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
+| [10] https://www.redhat.com/archives/avocado-devel/2016-April/msg00010.html
+| [11] https://github.com/avocado-framework/avocado/compare/0.34.0...35.0
+| [13] https://github.com/avocado-framework/avocado-vt/compare/0.34.0...35.0
+| [12] http://avocado-framework.readthedocs.org/en/35.0/GetStartedGuide.html#installing-avocado 
+| Sprint Theme: https://trello.com/c/7dWknPDJ/637-sprint-theme

@@ -1,0 +1,57 @@
+=======
+36.0lts
+=======
+
+This is a very proud announcement: Avocado release 36.0lts, our very
+first "Long Term Stability" release, is now out!
+
+LTS in a nutshell
+=================
+
+This release marks the beginning of a special cycle that will last for
+18 months. Avocado usage in production environments should favor the
+use of this LTS release, instead of non-LTS releases.
+
+Bug fixes will be provided on the "36lts"[1] branch until, at least,
+September 2017.  Minor releases, such as "36.1lts", "36.2lts" an so
+on, will be announced from time to time, incorporating those stability
+related improvements.
+
+Keep in mind that no new feature will be added.  For more information,
+please read the "Avocado Long Term Stability" RFC[2].
+
+Changes from 35.0
+=================
+
+As mentioned in the release notes for the previous release (35.0),
+only bug fixes and other stability related changes would be added to
+what is now 36.0lts.  For the complete list of changes, please check
+the GIT repo change log[3].
+
+Install avocado
+===============
+
+The Avocado LTS packages are available on a separate repository, named
+"avocado-lts".  These repositories are available for Fedora 22, Fedora
+23, EPEL 6 and EPEL 7.
+
+Updated ".repo" files are available on the usual locations:
+
+* https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo
+* https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo
+
+Those repo files now contain definitions for both the "LTS" and
+regular repositories.  Users interested in the LTS packages, should
+disable the regular repositories and enable the "avocado-lts" repo.
+
+Instructions are available in our documentation on how to install
+either with packages or from source[4].
+
+Happy hacking and testing!
+
+---
+
+| [1] https://github.com/avocado-framework/avocado/tree/36lts
+| [2] https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
+| [3] https://github.com/avocado-framework/avocado/compare/35.0...36.0lts
+| [4] http://avocado-framework.readthedocs.io/en/36lts/GetStartedGuide.html#installing-avocado

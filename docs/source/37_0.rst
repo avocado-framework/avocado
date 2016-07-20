@@ -1,0 +1,45 @@
+===============================
+37.0: Trabant vs. South America
+===============================
+
+This is another proud announcement: Avocado release 37.0, aka "Trabant
+vs. South America", is now out!
+
+Release Notes
+=============
+
+This release is yet another collection of bug fixes and some new
+features.  Along with the same changes that made the 36.0lts
+release[1], this brings the following additional changes:
+
+* TAP[2] version 12 support, bringing better integration with other
+  test tools that accept this streaming format as input.
+
+* Added niceties on Avocado's utility libraries "build" and "kernel",
+  such as automatic parallelism and resource caching.  It makes tests
+  such as "linuxbuild.py" (and your similar tests) run up to 10 times
+  faster.
+
+* Fixed an issue where Avocado could leave processes behind after the
+  test was finished.
+
+* Fixed a bug where the configuration for tests data directory would
+  be ignored.
+
+* Fixed a bug where SIMPLE tests would not properly exit with WARN
+  status.
+
+For a complete list of changes please check the Avocado changelog[3].
+
+For Avocado-VT, please check the full Avocado-VT changelog[4].
+
+Happy hacking and testing!
+
+---
+
+| [1] https://www.redhat.com/archives/avocado-devel/2016-May/msg00025.html
+| [2] https://en.wikipedia.org/wiki/Test_Anything_Protocol
+| [3] https://github.com/avocado-framework/avocado/compare/35.0...37.0
+| [4] https://github.com/avocado-framework/avocado-vt/compare/35.0...37.0
+| [5] http://avocado-framework.readthedocs.io/en/37.0/GetStartedGuide.html#installing-avocado 
+| Sprint Theme: https://trello.com/c/XbIUqU1Y/673-sprint-theme

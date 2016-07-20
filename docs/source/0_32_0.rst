@@ -1,0 +1,63 @@
+===================
+0.32.0: Road Runner
+===================
+
+Hi everyone! A new year brings a new Avocado release as the result of
+Sprint #32: Avocado 0.32.0, aka, "Road Runner".
+
+Release Notes
+=============
+
+The major changes introduced in the previous releases were put to
+trial on this release cycle, and as a result, we have responded with
+documentation updates and also many fixes. This release also marks the
+introduction of a great feature by a new member of our team: Amador
+Pahim brought us the Job Replay feature! Kudos!!!
+
+So, for Avocado the main changes are:
+
+* Job Replay: users can now easily re-run previous jobs by using the
+  --replay command line option. This will re-run the job with the same
+  tests, configuration and multiplexer variants that were used on the
+  origin one. By using --replay-test-status, users can, for example,
+  only rerun the failed tests of the previous job. For more check
+  our docs[1].
+* Documentation changes in response to our users feedback, specially
+  regarding the setup.py install/develop requirement.
+* Fixed the static detection of test methods when using repeated
+  names.
+* Ported some Autotest tests to Avocado, now available on their own
+  repository[2]. More contributions here are very welcome!
+
+For a complete list of changes please check the Avocado changelog[3].
+
+For Avocado-VT, there were also many changes, including:
+
+* Major documentation updates, making them simpler and more in sync
+  with the Avocado documentation style.
+* Refactor of the code under the avocado_vt namespace. Previously
+  most of the code lived under the plugin file itself, now it
+  better resembles the structure in Avocado and the plugin files
+  are hopefully easier to grasp.
+
+Again, for a complete list of changes please check the Avocado-VT
+changelog[4].
+
+Install avocado
+---------------
+
+Instructions are available in our documentation on how to install
+either with packages or from source[5].
+
+Updated RPM packages are be available in the project repos for
+Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
+
+Happy hacking and testing!
+
+---
+
+| [1] http://avocado-framework.readthedocs.org/en/0.32.0/Replay.html
+| [2] http://github.com/avocado-framework/avocado-misc-tests
+| [3] https://github.com/avocado-framework/avocado/compare/0.31.0...0.32.0
+| [4] https://github.com/avocado-framework/avocado-vt/compare/0.31.0...0.32.0
+| [5] http://avocado-framework.readthedocs.org/en/0.32.0/GetStartedGuide.html

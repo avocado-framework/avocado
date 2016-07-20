@@ -1,0 +1,127 @@
+============================
+0.34.0: The Hour of the Star
+============================
+
+Hello to all test enthusiasts out there, specially to those that
+cherish, care or are just keeping an eye on the greenest test
+framework there is: Avocado release 0.34.0, aka The Hour of the Star,
+is now out!
+
+Release Notes
+=============
+
+The main changes in Avocado for this release are:
+
+* A complete overhaul of the logging and output implementation. This
+  means that all Avocado output uses the standard Python logging library
+  making it very consistent and easy to understand [1].
+
+* Based on the logging and output overhaul, the command line test
+  runner is now very flexible with its output. A user can choose
+  exactly what should be output. Examples include application output
+  only, test output only, both application and test output or any
+  other combination of the builtin streams. The user visible command
+  line option that controls this behavior is `--show`, which is an
+  application level option, that is, it's available to all avocado
+  commands. [2]
+
+* Besides the builtin streams, test writers can use the standard
+  Python logging API to create new streams. These streams can be shown
+  on the command line as mentioned before, or persisted automatically
+  in the job results by means of the `--store-logging-stream` command
+  line option. [3][4]
+
+* The new `avocado.core.safeloader` module, intends to make it easier
+  to to write new test loaders for various types of Python
+  code. [5][6]
+
+* Based on the new `avocado.core.safeloader` module, a contrib script
+  called `avocado-find-unittests`, returns the name of
+  unittest.TestCase based tests found on a given number of Python
+  source code files. [7]
+
+* Avocado is now able to run its own selftest suite. By leveraging the
+  `avocado-find-unittests` contrib script and the External Runner [8]
+  feature. A Makefile target is available, allowing developers to run
+  `make selfcheck` to have the selftest suite run by Avocado. [9]
+
+* Partial Python 3 support. A number of changes were introduced that
+  allow concurrent Python 2 and 3 support on the same code base.  Even
+  though the support for Python 3 is still *incomplete*, the `avocado`
+  command line application can already run some limited commands at
+  this point.
+
+* Asset fetcher utility library. This new utility library, and
+  INSTRUMENTED test feature, allows users to transparently request
+  external assets to be used in tests, having them cached for later
+  use. [10]
+
+* Further cleanups in the public namespace of the avocado Test class.
+  
+* [BUG FIX] Input from the local system was being passed to remote
+  systems when running tests with either in remote systems or VMs.
+
+* [BUG FIX] HTML report stability improvements, including better
+  Unicode handling and support for other versions of the Pystache
+  library.
+
+* [BUG FIX] Atomic updates of the "latest" job symlink, allows for
+  more reliable user experiences when running multiple parallel jobs.
+
+* [BUG FIX] The avocado.core.data_dir module now dynamically checks
+  the configuration system when deciding where the data directory
+  should be located. This allows for later updates, such as when
+  giving one extra `--config` parameter in the command line, to be
+  applied consistently throughout the framework and test code.
+
+* [MAINTENANCE] The CI jobs now run full checks on each commit on
+  any proposed PR, not only on its topmost commit. This gives higher
+  confidence that a commit in a series is not causing breakage that
+  a later commit then inadvertently fixes.
+
+For a complete list of changes please check the Avocado changelog[11].
+
+For Avocado-VT, please check the full Avocado-VT changelog[12].
+
+Avocado Videos
+--------------
+
+As yet another way to let users know about what's available in
+Avocado, we're introducing short videos with very targeted content on
+our very own YouTube channel:
+
+ https://www.youtube.com/channel/UCP4xob52XwRad0bU_8V28rQ
+
+The first video available demonstrates a couple of new features
+related to the advanced logging mechanisms, introduced on this
+release:
+
+ https://www.youtube.com/watch?v=8Ur_p5p6YiQ
+
+Install avocado
+---------------
+
+Instructions are available in our documentation on how to install
+either with packages or from source[13].
+
+Updated RPM packages are be available in the project repos for
+Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
+
+Happy hacking and testing!
+
+---
+
+| [1] http://avocado-framework.readthedocs.org/en/0.34.0/LoggingSystem.html
+| [2] http://avocado-framework.readthedocs.org/en/0.34.0/LoggingSystem.html#tweaking-the-ui
+| [3] http://avocado-framework.readthedocs.org/en/0.34.0/LoggingSystem.html#storing-custom-logs
+| [4] http://avocado-framework.readthedocs.org/en/0.34.0/WritingTests.html#advanced-logging-capabilities
+| [5] https://github.com/avocado-framework/avocado/blob/0.34.0/avocado/core/safeloader.py
+| [6] http://avocado-framework.readthedocs.org/en/0.34.0/api/core/avocado.core.html#module-avocado.core.safeloader
+| [7] https://github.com/avocado-framework/avocado/blob/0.34.0/contrib/avocado-find-unittests
+| [8] http://avocado-framework.readthedocs.org/en/0.34.0/GetStartedGuide.html#running-tests-with-an-external-runner
+| [9] https://github.com/avocado-framework/avocado/blob/0.34.0/Makefile#L33
+| [10] http://avocado-framework.readthedocs.org/en/0.34.0/WritingTests.html#fetching-asset-files
+| [11] https://github.com/avocado-framework/avocado/compare/0.33.0...0.34.0
+| [12] https://github.com/avocado-framework/avocado-vt/compare/0.33.0...0.34.0
+| [13] http://avocado-framework.readthedocs.org/en/latest/GetStartedGuide.html#installing-avocado
+| Sprint Theme: https://trello.com/c/QIbM3NvY/590-sprint-theme
