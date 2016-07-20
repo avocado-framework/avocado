@@ -17,8 +17,9 @@ TAP output module.
 
 import logging
 
-from ..core.result import register_test_result_class, TestResult
+from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.result import register_test_result_class, TestResult
 
 
 class TAPResult(TestResult):
@@ -95,6 +96,7 @@ class TAP(CLI):
             return
 
         cmd_parser.output.add_argument('--tap', type=str, metavar='FILE',
+                                       action=FileOrStdoutAction,
                                        help="Enable TAP result output and "
                                        "write it to FILE. Use '-' to redirect "
                                        "to the standard output.")
