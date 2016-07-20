@@ -216,6 +216,23 @@ instrumented and simple tests::
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
     TESTS TIME : 5.88 s
 
+Interrupting The Job On First Failed Test (failfast)
+====================================================
+
+The Avocado ``run`` command has the option ``--failfast`` to exit the job on
+first failed test::
+
+    $ avocado run --failfast /bin/true /bin/false /bin/true /bin/true
+    JOB ID     : eaf51b8c7d6be966bdf5562c9611b1ec2db3f68a
+    JOB LOG    : $HOME/avocado/job-results/job-2016-07-19T09.43-eaf51b8/job.log
+    TESTS      : 4
+     (1/4) /bin/true: PASS (0.01 s)
+     (2/4) /bin/false: FAIL (0.01 s)
+    Interrupting job (failfast).
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0
+    JOB HTML   : /home/apahim/avocado/job-results/job-2016-07-19T09.43-eaf51b8/html/results.html
+    TESTS TIME : 0.02 s
+
 .. _running-external-runner:
 
 Running Tests With An External Runner
