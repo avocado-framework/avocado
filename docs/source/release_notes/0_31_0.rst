@@ -1,0 +1,64 @@
+=================
+0.31.0 Lucky Luke
+=================
+
+Hi everyone! Right on time for the holidays, Avocado reaches the end
+of Sprint 31, and together with it, we're very happy to announce a brand
+new release! This version brings stability fixes and improvements to
+both Avocado and Avocado-VT, some new features and a major redesign of
+our plugin architecture.
+
+For Avocado the main changes are:
+
+* It's now possible to register callback functions to be executed when
+  all tests finish, that is, at the end of a particular job[1].
+* The software manager utility library received a lot of love on the
+  Debian side of things. If you're writing tests that install software
+  packages on Debian systems, you may be in for some nice treats and
+  much more reliable results.
+* Passing malformed commands (such as ones that can not be properly
+  split by the standard shlex library) to the process utility library
+  is now better dealt with.
+* The test runner code received some refactors and it's a lot easier
+  to follow. If you want to understand how the Avocado test runner
+  communicates with the processes that run the test themselves, you
+  may have a much better code reading experience now.
+* Updated inspektor to the latest and greatest, so that our code is
+  kept is shiny and good looking (and performing) as possible.
+* Fixes to the utility GIT library when using a specific local branch
+  name.
+* Changes that allow our selftest suite to run properly on virtualenvs.
+* Proper installation requirements definition for Python 2.6 systems.
+* A completely new plugin architecture[2]. Now we offload all plugin
+  discovery and loading to the Stevedore library. Avocado now defines
+  precise (and simpler) interfaces for plugin writers. Please be aware
+  that the public and documented interfaces for plugins, at the
+  moment, allows adding new commands to the avocado command line app,
+  or adding new options to existing commands. Other functionality can
+  be achived by "abusing" the core avocado API from within
+  plugins. Our goal is to expand the interfaces so that other areas of
+  the framework can be extended just as easily.
+
+For a complete list of changes please check the Avocado changelog[3].
+
+Avocado-VT received just too many fixes and improvements to
+list. Please refer to the changelog[4] for more information.
+
+Install avocado
+---------------
+
+Instructions are available in our documentation on how to install
+either with packages or from source[5].
+
+Within a couple of hours, updated RPM packages will be available in
+the project repos for Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
+
+Happy hacking and testing!
+
+---
+
+| [1] http://avocado-framework.readthedocs.org/en/0.31.0/ReferenceGuide.html#job-cleanup
+| [2] http://avocado-framework.readthedocs.org/en/0.31.0/Plugins.html
+| [3] https://github.com/avocado-framework/avocado/compare/0.30.0...0.31.0
+| [4] https://github.com/avocado-framework/avocado-vt/compare/0.30.0...0.31.0
+| [5] http://avocado-framework.readthedocs.org/en/0.31.0/GetStartedGuide.html

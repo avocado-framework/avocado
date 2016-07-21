@@ -1,0 +1,38 @@
+=================
+0.26.0 The Office
+=================
+
+Hi guys, I'm here to announce avocado 0.26.0. This release was dedicated to
+polish aspects of the avocado user experience, such as documentation and
+behavior.
+
+Changes
+
+* Now avocado tests that raise exceptions that don't inherit from
+  `avocado.core.exceptions.TestBaseException` now will be marked as ERRORs.
+  This change was made to make avocado to have clearly defined test
+  statuses. A new decorator, `avocado.fail_on_error` was added to let
+  arbitrary exceptions to raise errors, if users need a more relaxed behavior.
+
+* The avocado.Test() utility method skip() now can only be called from inside
+  the setUp() method. This was made because by definition, if we get to the test
+  execution step, by definition it can't be skipped anymore. It's important to
+  keep the concepts clear and well separated if we want to give users a good
+  experience.
+
+* More documentation polish and updates. Make sure you check out our
+  documentation website http://avocado-framework.readthedocs.org/en/latest/.
+
+* A number of avocado command line options and help text was reviewed and
+  updated.
+
+* A new, leaner and mobile friendly version of the avocado website is live.
+  Please check http://avocado-framework.github.io/ for more information.
+
+* We have the first version of the avocado dashboard! avocado dashboard is
+  the initial version of an avocado web interface, and will serve as the
+  frontend to our testing database. You can check out a screenshot here:
+  https://cloud.githubusercontent.com/assets/296807/8536678/dc5da720-242a-11e5-921c-6abd46e0f51e.png
+
+* And the usual bugfixes. You can take a look at the full list of 68
+  commits here: https://github.com/avocado-framework/avocado/compare/0.25.0...0.26.0
