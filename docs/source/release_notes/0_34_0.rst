@@ -1,14 +1,11 @@
-============================
-0.34.0: The Hour of the Star
-============================
+===========================
+0.34.0 The Hour of the Star
+===========================
 
 Hello to all test enthusiasts out there, specially to those that
 cherish, care or are just keeping an eye on the greenest test
 framework there is: Avocado release 0.34.0, aka The Hour of the Star,
 is now out!
-
-Release Notes
-=============
 
 The main changes in Avocado for this release are:
 
@@ -57,7 +54,7 @@ The main changes in Avocado for this release are:
   use. [10]
 
 * Further cleanups in the public namespace of the avocado Test class.
-  
+
 * [BUG FIX] Input from the local system was being passed to remote
   systems when running tests with either in remote systems or VMs.
 
@@ -89,14 +86,11 @@ Avocado Videos
 As yet another way to let users know about what's available in
 Avocado, we're introducing short videos with very targeted content on
 our very own YouTube channel:
-
- https://www.youtube.com/channel/UCP4xob52XwRad0bU_8V28rQ
+https://www.youtube.com/channel/UCP4xob52XwRad0bU_8V28rQ
 
 The first video available demonstrates a couple of new features
 related to the advanced logging mechanisms, introduced on this
-release:
-
- https://www.youtube.com/watch?v=8Ur_p5p6YiQ
+release: https://www.youtube.com/watch?v=8Ur_p5p6YiQ
 
 Install avocado
 ---------------

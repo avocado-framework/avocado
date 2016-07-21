@@ -1,12 +1,9 @@
-===================
-0.32.0: Road Runner
-===================
+==================
+0.32.0 Road Runner
+==================
 
 Hi everyone! A new year brings a new Avocado release as the result of
 Sprint #32: Avocado 0.32.0, aka, "Road Runner".
-
-Release Notes
-=============
 
 The major changes introduced in the previous releases were put to
 trial on this release cycle, and as a result, we have responded with

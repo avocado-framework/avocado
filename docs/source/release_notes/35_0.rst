@@ -1,12 +1,9 @@
-===============
-35.0: Mr. Robot
-===============
+==============
+35.0 Mr. Robot
+==============
 
 This is another proud announcement: Avocado release 35.0, aka "Mr. Robot",
 is now out!
-
-Release Notes
-=============
 
 This release, while a "regular" release, will also serve as a beta for
 our first "long term stability" (aka "lts") release.  That means that
@@ -116,5 +113,5 @@ Happy hacking and testing!
 | [10] https://www.redhat.com/archives/avocado-devel/2016-April/msg00010.html
 | [11] https://github.com/avocado-framework/avocado/compare/0.34.0...35.0
 | [13] https://github.com/avocado-framework/avocado-vt/compare/0.34.0...35.0
-| [12] http://avocado-framework.readthedocs.org/en/35.0/GetStartedGuide.html#installing-avocado 
+| [12] http://avocado-framework.readthedocs.org/en/35.0/GetStartedGuide.html#installing-avocado
 | Sprint Theme: https://trello.com/c/7dWknPDJ/637-sprint-theme
