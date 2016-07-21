@@ -1,12 +1,9 @@
-===============
-35.0: Mr. Robot
-===============
+================
+35.0 (Mr. Robot)
+================
 
 This is another proud announcement: Avocado release 35.0, aka "Mr. Robot",
 is now out!
-
-Release Notes
-=============
 
 This release, while a "regular" release, will also serve as a beta for
 our first "long term stability" (aka "lts") release.  That means that

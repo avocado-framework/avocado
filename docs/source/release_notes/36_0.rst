@@ -1,12 +1,12 @@
 =======
-36.0lts
+36.0LTS
 =======
 
 This is a very proud announcement: Avocado release 36.0lts, our very
 first "Long Term Stability" release, is now out!
 
 LTS in a nutshell
-=================
+-----------------
 
 This release marks the beginning of a special cycle that will last for
 18 months. Avocado usage in production environments should favor the
@@ -21,7 +21,7 @@ Keep in mind that no new feature will be added.  For more information,
 please read the "Avocado Long Term Stability" RFC[2].
 
 Changes from 35.0
-=================
+-----------------
 
 As mentioned in the release notes for the previous release (35.0),
 only bug fixes and other stability related changes would be added to
@@ -29,7 +29,7 @@ what is now 36.0lts.  For the complete list of changes, please check
 the GIT repo change log[3].
 
 Install avocado
-===============
+---------------
 
 The Avocado LTS packages are available on a separate repository, named
 "avocado-lts".  These repositories are available for Fedora 22, Fedora

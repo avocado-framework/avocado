@@ -1,12 +1,9 @@
-===============================
-37.0: Trabant vs. South America
-===============================
+================================
+37.0 (Trabant vs. South America)
+================================
 
 This is another proud announcement: Avocado release 37.0, aka "Trabant
 vs. South America", is now out!
-
-Release Notes
-=============
 
 This release is yet another collection of bug fixes and some new
 features.  Along with the same changes that made the 36.0lts

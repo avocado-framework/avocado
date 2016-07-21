@@ -1,14 +1,11 @@
-============================
-0.34.0: The Hour of the Star
-============================
+=============================
+0.34.0 (The Hour of the Star)
+=============================
 
 Hello to all test enthusiasts out there, specially to those that
 cherish, care or are just keeping an eye on the greenest test
 framework there is: Avocado release 0.34.0, aka The Hour of the Star,
 is now out!
-
-Release Notes
-=============
 
 The main changes in Avocado for this release are:
 
