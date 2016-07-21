@@ -6,6 +6,7 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :caption: Avocado User's Guide
 
    Introduction
    GetStartedGuide
@@ -27,6 +28,7 @@ Advanced Topics and Maintenance
 
 .. toctree::
    :maxdepth: 2
+   :caption: Advanced Topics and Maintenance
 
    ReferenceGuide
    ContributionGuide
@@ -41,6 +43,7 @@ API Reference
 
 .. toctree::
    :maxdepth: 1
+   :caption: API Reference
 
    api/test/avocado.rst
    api/utils/avocado.utils.rst
@@ -53,6 +56,7 @@ Avocado Release Notes
 
 .. toctree::
    :maxdepth: 1
+   :caption: Avocado Release Notes
 
    release_notes/index
 
