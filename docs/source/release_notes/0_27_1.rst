@@ -1,0 +1,37 @@
+======
+0.27.1
+======
+
+Hi guys, we're up to a new avocado release! It's basically a bugfix release,
+with a few usability tweaks.
+
+* The avocado human output received some extra tweaks. Here's how it looks
+  now::
+
+    $ avocado run passtest
+    JOB ID     : f186c729dd234c8fdf4a46f297ff0863684e2955
+    JOB LOG : /home/lmr/avocado/job-results/job-2015-08-15T08.09-f186c72/job.log
+    TESTS      : 1
+    (1/1) passtest.py:PassTest.test: PASS (0.00 s)
+    RESULTS : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML : /home/lmr/avocado/job-results/job-2015-08-15T08.09-f186c72/html/results.html
+    TIME       : 0.00 s
+
+* Bugfixes. You may refer to [1] for the full list of 58 commits.
+
+Changes in avocado-vt:
+
+* Bugfixes. In particular, a lot of issues related to --vt-type libvirt
+  were fixed and now that backend is fully functional.
+
+News:
+
+We, the people that bring you avocado will be at LinuxCon North America
+2015 (Aug 17-19). If you are attending, please don't forget to drop by
+and say hello to yours truly (lmr). And of course, consider attending
+my presentation on avocado [2].
+
+---
+
+| [1] https://github.com/avocado-framework/avocado/compare/0.27.0...0.27.1
+| [2] http://sched.co/3Xh9
