@@ -17,6 +17,7 @@
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.result import register_test_result_class
 from avocado.core.xunit import xUnitTestResult
+from avocado.core.parser import FileOrStdoutAction
 
 
 class XUnit(CLI):
@@ -35,7 +36,8 @@ class XUnit(CLI):
 
         self.parser = parser
         run_subcommand_parser.output.add_argument(
-            '--xunit', type=str, dest='xunit_output', metavar='FILE',
+            '--xunit', type=str, action=FileOrStdoutAction,
+            dest='xunit_output', metavar='FILE',
             help=('Enable xUnit result format and write it to FILE. '
                   "Use '-' to redirect to the standard output."))
 
