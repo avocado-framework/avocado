@@ -466,6 +466,29 @@ class TestRunner(object):
             return False
         return True
 
+    @staticmethod
+    def _iter_variants(template, mux):
+        """
+        Iterate through variants and set the params/variants accordingly.
+
+        :param template: test template
+        :param mux: the Mux object containing the variants
+        :return: Yields tuple(test_factory including params, variant id)
+        :raises ValueError: When variant and template declare params.
+        """
+        for variant, params in mux.itertests():
+            if params:
+                if "params" in template[1]:
+                    msg = ("Unable to multiplex test %s, params are already "
+                           "present in test factory: %s"
+                           % (template[0], template[1]))
+                    raise ValueError(msg)
+                factory = [template[0], template[1].copy()]
+                factory[1]["params"] = params
+            else:
+                factory = template
+            yield factory, variant
+
     def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
                   test_result_total=0):
         """
@@ -495,7 +518,8 @@ class TestRunner(object):
                 test_template[1]['base_logdir'] = self.job.logdir
                 test_template[1]['job'] = self.job
                 break_loop = False
-                for test_factory, variant in mux.itertests(test_template):
+                for test_factory, variant in self._iter_variants(test_template,
+                                                                 mux):
                     index += 1
                     test_parameters = test_factory[1]
                     name = test_parameters.get("name")
