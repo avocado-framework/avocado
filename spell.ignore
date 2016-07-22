@@ -388,3 +388,5 @@ hudson
 jhcepas
 raphtee
 executables
+lockfile
+urlparse

@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from avocado.utils import asset
+from avocado.utils import filelock
 
 
 class TestAsset(unittest.TestCase):
@@ -28,12 +29,6 @@ class TestAsset(unittest.TestCase):
                                   expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
-        hashfile = '.'.join([expected_tarball, 'sha1'])
-        self.assertTrue(os.path.isfile(hashfile))
-        expected_content = '%s %s\n' % (self.assethash, self.assetname)
-        with open(hashfile, 'r') as f:
-            content = f.read()
-        self.assertEqual(content, expected_content)
 
     def testFetch_location(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -44,12 +39,6 @@ class TestAsset(unittest.TestCase):
                                   expire=None).fetch()
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
-        hashfile = '.'.join([expected_tarball, 'sha1'])
-        self.assertTrue(os.path.isfile(hashfile))
-        expected_content = '%s %s\n' % (self.assethash, self.assetname)
-        with open(hashfile, 'r') as f:
-            content = f.read()
-        self.assertEqual(content, expected_content)
 
     def testFecth_expire(self):
         foo_tarball = asset.Asset(self.assetname,
@@ -90,11 +79,33 @@ class TestAsset(unittest.TestCase):
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def testException(self):
-        a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
-                        locations=None, cache_dirs=[self.cache_dir],
-                        expire=None)
-        self.assertRaises(EnvironmentError, a.fetch)
+    def testFetch_error(self):
+        foo_tarball = asset.Asset('bar.tgz',
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        self.assertEqual(foo_tarball, None)
+
+    def testFetch_lockerror(self):
+        lock = filelock.LockFile(os.path.join(self.cache_dir, self.assetname))
+        lock.acquire()
+        foo_tarball = asset.Asset(self.url,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        self.assertEqual(foo_tarball, None)
+        lock.release()
+        foo_tarball = asset.Asset(self.url,
+                                  asset_hash=self.assethash,
+                                  algorithm='sha1',
+                                  locations=None,
+                                  cache_dirs=[self.cache_dir],
+                                  expire=None).fetch()
+        self.assertNotEqual(foo_tarball, None)
 
     def tearDown(self):
         shutil.rmtree(self.basedir)
