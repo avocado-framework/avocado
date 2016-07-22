@@ -38,7 +38,6 @@ class AvocadoApp(object):
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
-        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
         self.parser = Parser()
         output.early_start()
         initialized = False
