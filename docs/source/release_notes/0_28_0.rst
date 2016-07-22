@@ -1,0 +1,46 @@
+====================================================================
+0.28.0 Jára Cimrman, The Investigation of the Missing Class Register
+====================================================================
+
+This release basically polishes avocado, fixing a number of small usability
+issues and bugs, and debuts avocado-vt as the official virt-test replacement!
+
+Let's go with the changes from our last release, 0.27.0:
+
+Changes in avocado:
+
+* The avocado human output received another stream of tweaks and it's more
+  compact, while still being informative. Here's an example::
+
+    JOB ID     : f2f5060440bd57cba646c1f223ec8c40d03f539b
+    JOB LOG : /home/user/avocado/job-results/job-2015-07-27T17.13-f2f5060/job.log
+    TESTS      : 1
+     (1/1) passtest.py:PassTest.test: PASS (0.00 s)
+    RESULTS : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML : /home/user/avocado/job-results/job-2015-07-27T17.13-f2f5060/html/results.html
+    TIME       : 0.00 s
+
+* The unittest system was completely revamped, paving the way for making
+  avocado self-testable! Stay tuned for what we have on store.
+
+
+* Many bugfixes. Check [1] for more details.
+
+Changes in avocado-vt:
+
+* The Spice Test provider has been separated from tp-qemu, and changes 
+  reflected in avocado-vt [2].
+
+* A number of bugfixes found by our contributors in the process of moving
+  avocado-vt into the official virt-testing project. Check [3] for more
+  details.
+
+See you in a few weeks for our next release! Happy testing!
+
+The avocado development team
+
+---
+
+| [1] https://github.com/avocado-framework/avocado/compare/0.27.0...0.28.0
+| [2] https://github.com/avocado-framework/avocado-vt/commit/fd9b29bbf77d7f0f3041e66a66517f9ba6b8bf48
+| [3] https://github.com/avocado-framework/avocado-vt/compare/0.27.0...0.28.0 

@@ -1,0 +1,65 @@
+==========================
+0.27.0 Terminator: Genisys
+==========================
+
+
+Hi guys, here I am, announcing yet another avocado release! The most
+exciting news for this release is that our avocado-vt plugin was merged
+with the virt-test project. The avocado-vt plugin will be very important
+for QEMU/KVM/Libvirt developers, so the main avocado received updates
+to better support the goal of having a good quality avocado-vt.
+
+
+Changes in avocado:
+
+* The avocado human output received some tweaks and it's more compact,
+  while still being informative. Here's an example::
+
+    JOB ID     : f2f5060440bd57cba646c1f223ec8c40d03f539b
+    JOB LOG : /home/user/avocado/job-results/job-2015-07-27T17.13-f2f5060/job.log
+    JOB HTML : /home/user/avocado/job-results/job-2015-07-27T17.13-f2f5060/html/results.html
+    TESTS      : 1
+     (1/1) passtest.py:PassTest.test: PASS (0.00 s)
+    RESULTS : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    TIME       : 0.00 s
+
+* The avocado test loader was refactored and behaves more consistently in
+  different test loading scenarios.
+
+* The `utils` API received new modules and functions:
+
+ - NEW avocado.utils.cpu: APIs related to CPU information on linux boxes [1]
+ - NEW avocado.utils.git: APIs to clone/update git repos [2]
+ - NEW avocado.utils.iso9660: Get information about ISO files [3]
+ - NEW avocado.utils.service: APIs to control services on linux boxes
+   (systemv and systemd) [4]
+ - NEW avocado.utils.output: APIs that help avocado based CLI programs to
+   display results to users [5]
+ - UPDATE avocado.utils.download: Add url_download_interactive
+ - UPDATE avocado.utils.download: Add new params to get_file
+
+* Bugfixes. You may refer to [6] for the full list of 64 commits.
+
+Changes in avocado-vt:
+
+* Merged virt-test into avocado-vt. Basically, the virt-test core library
+  (virttest) replaced most uses of autotest by equivalent avocado API calls,
+  and its code was brought up to the virt-test repository [7]. This means,
+  among other things, that you can simply install avocado-vt through RPM and
+  enjoy all the virt tests without having to clone another repository manually
+  to bootstrap your tests. More details about the process will be sent on an
+  e-mail to the avocado and virt-test mailing lists. Please go to [7] for
+  instructions on how to get started with all our new tools.
+
+See you in a couple of weeks for our next release! Happy testing!
+
+---
+
+| [1] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.cpu
+| [2] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.git
+| [3] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.iso9660
+| [4] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.service
+| [5] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.output
+| [6] https://github.com/avocado-framework/avocado/compare/0.26.0...0.27.0
+| [7] https://github.com/avocado-framework/avocado-vt/commit/20dd39ef00db712f78419f07b10b8f8edbd19942
+| [8] http://avocado-vt.readthedocs.org/en/latest/GetStartedGuide.html

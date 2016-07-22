@@ -1,0 +1,148 @@
+============
+0.25.0 Blade
+============
+
+Hi guys, I'm here to announce the newest avocado release, 0.25.0. This is an
+important milestone in avocado development, and we would like to invite
+you to be a part of the development process, by contributing PRs, testing and
+giving feedback on the test runner's usability and new plugins we came up
+with.
+
+What to expect
+--------------
+
+This is the first release aimed for general use. We did our best to deliver
+a coherent and enjoyable experience, but keep in mind that it's a young
+project, so please set your expectations accordingly. What is expected to work
+well:
+
+* Running avocado 'instrumented' tests
+* Running arbitrary executables as tests
+* Automatic test discovery and run of tests on directories
+* xUnit/JSON report
+
+Known Issues
+------------
+
+* HTML report of test jobs with multiplexed tests has a minor naming display
+  issue that is scheduled to be fixed by next release.
+
+* avocado-vt might fail to load if virt-test was not properly bootstrapped.
+  Make sure you always run bootstrap in the virt-test directory on any
+  virt-test git updates to prevent the issue. Next release will have more
+  mechanisms to give the user better error messages on tough to judge
+  situations (virt-test repo with stale or invalid config files that need
+  update).
+
+Changes
+-------
+
+* The Avocado API has been greatly streamlined. After a long discussion and
+  several rounds of reviews and planning, now we have a clear separation of
+  what is intended as functions useful for test developers and plugin/core
+  developers:
+
+* avocado.core is intended for plugin/core developers. Things are more fluid
+  on this space, so that we can move fast with development
+
+* avocado.utils is a generic library, with functions we found out to be
+  useful for a variety of tests and core code alike.
+
+* avocado has some symbols exposed at its top level, with the test API:
+
+ - our Test() class, derived from the unittest.TestCase() class
+ - a main() entry point, similar to unittest.main()
+ - VERSION, that gives the user the avocado version (eg 0.25.0).
+
+Those symbols and classes/APIs will be changed more carefully, and release
+notes will certainly contain API update notices. In other words, we'll be a
+lot more mindful of changes in this area, to reduce the maintenance cost of
+writing avocado tests.
+
+We believe this more strict separation between the available APIs will help
+test developers to quickly identify what they need for test development,
+and reduce following a fast moving target, what usually happens when we have
+a new project that does not have clear policies behind its API design.
+
+* There's a new plugin added to the avocado project: avocado-vt. This plugin
+  acts as a wrapper for the virt-test test suite
+  (https://github.com/autotest/virt-test), allowing people to use avocado to
+  list and run the tests available for that test suite. This allows people to
+  leverage a number of the new cool avocado features for the virt tests
+  themselves:
+
+ - HTML reports, a commonly asked feature for the virt-test suite. You can
+   see a screenshot of what the report looks like here:
+   https://cloud.githubusercontent.com/assets/296807/7406339/7699689e-eed7-11e4-9214-38a678c105ec.png
+ - You can run virt-tests on arbitrary order, and multiple instances of a
+   given test, something that is also currently not possible with the virt
+   test runner (also a commonly asked feature for the suite.
+ - System info collection. It's a flexible feature, you get to configureeasily
+   what gets logged/recorded between tests.
+ - The avocado multiplexer (test matrix representation/generation system)
+   also received a lot of work and fixes during this release. One of the most
+   visible (and cool) features of 0.25.0 is the new, improved --tree
+   representation of the multiplexer file::
+
+      $ avocado multiplex examples/mux-environment.yaml -tc
+        ┗━━ run
+             ┣━━ hw
+             ┃    ┣━━ cpu
+             ┃    ┃    ╠══ intel
+             ┃    ┃    ║ → cpu_CFLAGS: -march=core2
+             ┃    ┃    ╠══ amd
+             ┃    ┃    ║ → cpu_CFLAGS: -march=athlon64
+             ┃    ┃    ╚══ arm
+             ┃    ┃      → cpu_CFLAGS: -mabi=apcs-gnu -march=armv8-a -mtune=arm8
+             ┃    ┗━━ disk
+             ┃         ╠══ scsi
+             ┃         ║ → disk_type: scsi
+             ┃         ╚══ virtio
+             ┃           → disk_type: virtio
+             ┣━━ distro
+             ┃    ╠══ fedora
+             ┃    ║ → init: systemd
+             ┃    ╚══ mint
+             ┃      → init: systemv
+             ┗━━ env
+                  ╠══ debug
+                  ║ → opt_CFLAGS: -O0 -g
+                  ╚══ prod
+                    → opt_CFLAGS: -O2
+
+
+We hope you find the multiplexer useful and enjoyable.
+
+* If an avocado plugin fails to load, due to factors such as missing
+  dependencies, environment problems and misconfiguration, in order to
+  notify users and make them mindful of what it takes to fix the root
+  causes for the loading errors, those errors are displayed in the
+  avocado stderr stream.
+
+However, often we can't fix the problem right now and don't need
+the constant stderr nagging. If that's the case, you can set in your local
+config file::
+
+    [plugins]
+    # Suppress notification about broken plugins in the app standard error. 
+    # Add the name of each broken plugin you want to suppress the notification
+    # in the list. The names can be easily seen from the stderr messages. Example:
+    # avocado.core.plugins.htmlresult ImportError No module named pystache
+    # add 'avocado.core.plugins.htmlresult' as an element of the list below.
+    skip_broken_plugin_notification = []
+
+* Our documentation has received a big review, that led to a number of
+  improvements. Those can be seen online
+  (http://avocado-framework.readthedocs.org/en/latest/), but if you feel
+  so inclined, you can build the documentation for local viewing, provided
+  that you have the sphinx python package installed by executing::
+
+    $ make -C docs html
+
+Of course, if you find places where our documentation needs
+fixes/improvements, please send us a PR and we'll gladly review it.
+
+* As one would expect, many bugs were fixed. You can take a look at the full
+  list of 156 commits here:
+  https://github.com/avocado-framework/avocado/compare/0.24.0...0.25.0
+

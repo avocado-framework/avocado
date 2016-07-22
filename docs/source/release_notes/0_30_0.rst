@@ -1,0 +1,54 @@
+===================
+0.30.0 Jimmy's Hall
+===================
+
+Hello! Avocado reaches the end of Sprint 30, and with it, we have a new
+release available! This version brings stability fixes and improvements
+to both Avocado and Avocado-vt.
+
+As software doesn't spring out of life itself, we'd like to acknowledge
+the major contributions by Lucas (AKA lmr) since the dawn of time for
+Avocado (and earlier projects like Autotest and virt-test). Although
+the Avocado team at Red Hat was hit by some changes, we're already
+extremely happy to see that this major contributor (and good friend)
+has not gone too far.
+
+Now back to the more informational part of the release notes. For Avocado
+the main changes are:
+
+* New RPM repository location, check the docs[1] for instructions on how
+  to install the latest releases
+
+* Makefile rules for building RPMs are now based on mock, to ensure sound
+  dependencies
+
+* Packaged versions are now available for Fedora 22, newly released Fedora
+  23, EL6 and EL7
+
+* The software manager utility library now supports DNF
+
+* The avocado test runner now supports a dry run mode, which allows users to
+  check how a job would be executed, including tests that would be found and
+  parameters that would be passed to it. This is currently complementary to
+  the avocado list command.
+
+* The avocado test runner now supports running simple tests with parameters.
+  This may come in handy for simple use cases when Avocado will wrap a test
+  suite, but the test suite needs some command line arguments.
+
+Avocado-vt also received many bugfixes[3]. Please refer to the changelog for
+more information.
+
+Install avocado
+---------------
+
+Instructions are available in our documentation on how to install either with
+packages or from source[1].
+
+Happy hacking and testing!
+
+---
+
+| [1] http://avocado-framework.readthedocs.org/en/0.30.0/GetStartedGuide.html
+| [2] https://github.com/avocado-framework/avocado/compare/0.29.0...0.30.0
+| [3] https://github.com/avocado-framework/avocado-vt/compare/0.29.0...0.30.0

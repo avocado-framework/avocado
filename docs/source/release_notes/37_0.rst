@@ -1,12 +1,9 @@
-===============================
-37.0: Trabant vs. South America
-===============================
+==============================
+37.0 Trabant vs. South America
+==============================
 
 This is another proud announcement: Avocado release 37.0, aka "Trabant
 vs. South America", is now out!
-
-Release Notes
-=============
 
 This release is yet another collection of bug fixes and some new
 features.  Along with the same changes that made the 36.0lts
@@ -41,5 +38,5 @@ Happy hacking and testing!
 | [2] https://en.wikipedia.org/wiki/Test_Anything_Protocol
 | [3] https://github.com/avocado-framework/avocado/compare/35.0...37.0
 | [4] https://github.com/avocado-framework/avocado-vt/compare/35.0...37.0
-| [5] http://avocado-framework.readthedocs.io/en/37.0/GetStartedGuide.html#installing-avocado 
+| [5] http://avocado-framework.readthedocs.io/en/37.0/GetStartedGuide.html#installing-avocado
 | Sprint Theme: https://trello.com/c/XbIUqU1Y/673-sprint-theme

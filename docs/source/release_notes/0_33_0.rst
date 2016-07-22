@@ -1,14 +1,12 @@
-===================================
-0.33.0: Lemonade Joe or Horse Opera
-===================================
+==================================
+0.33.0 Lemonade Joe or Horse Opera
+==================================
 
 Hello big farmers, backyard gardeners and supermarket reapers! Here is
 a new announcement to all the appreciators of the most delicious green
 fruit out here. Avocado release 0.33.0, aka, Lemonade Joe or Horse
 Opera, is now out!
 
-Release Notes
-=============
 
 The main changes in Avocado are:
 
