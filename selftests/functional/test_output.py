@@ -399,6 +399,19 @@ class OutputPluginTest(unittest.TestCase):
         os.chdir(basedir)
         process.run("perl %s" % perl_script)
 
+    def test_broken_pipe(self):
+        os.chdir(basedir)
+        cmd_line = "(./scripts/avocado run --help | whacky-unknown-command)"
+        result = process.run(cmd_line, shell=True, ignore_status=True)
+        expected_rc = 127
+        self.assertEqual(result.exit_status, expected_rc,
+                         ("avocado run to broken pipe did not return "
+                          "rc %d:\n%s" % (expected_rc, result)))
+        self.assertEqual(len(result.stderr.splitlines()), 1)
+        self.assertIn("whacky-unknown-command", result.stderr)
+        self.assertIn("not found", result.stderr)
+        self.assertNotIn("Avocado crashed", result.stderr)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 

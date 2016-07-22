@@ -15,6 +15,7 @@
 """
 Manages output and logging in avocado applications.
 """
+import errno
 import logging
 import os
 import re
@@ -277,12 +278,21 @@ class StdOutput(object):
         Prints all stored messages as they occurred into streams they were
         produced for.
         """
-        for stream, msg in self.records:
-            if stream:
-                sys.stdout.write(msg)
-            else:
-                sys.stderr.write(msg)
-        del self.records[:]
+        try:
+            for stream, msg in self.records:
+                if stream:
+                    sys.stdout.write(msg)
+                else:
+                    sys.stderr.write(msg)
+            del self.records[:]
+        # IOError due to EPIPE is ignored.  That is to avoid having to
+        # handle all IOErrors at the main application loop
+        # indiscriminately.  By handling them here, we can be sure
+        # that the failure was due to stdout or stderr not being
+        # connected to an open PIPE.
+        except IOError as e:
+            if not e.errno == errno.EPIPE:
+                raise
 
     def fake_outputs(self):
         """
