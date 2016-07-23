@@ -263,12 +263,12 @@ class RemoteTestRunner(TestRunner):
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
             self.result.end_tests()
+        finally:
             try:
                 self.tear_down()
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
-        finally:
             sys.stdout = stdout_backup
             sys.stderr = stderr_backup
         return summary
@@ -302,19 +302,15 @@ class VMTestRunner(RemoteTestRunner):
                 e_msg = ("Could not create snapshot on VM '%s'" %
                          self.job.args.vm_domain)
                 raise exceptions.JobError(e_msg)
-        try:
-            # Finish remote setup and copy the tests
-            self.job.args.remote_hostname = self.job.args.vm_hostname
-            self.job.args.remote_port = self.job.args.vm_port
-            self.job.args.remote_username = self.job.args.vm_username
-            self.job.args.remote_password = self.job.args.vm_password
-            self.job.args.remote_key_file = self.job.args.vm_key_file
-            self.job.args.remote_no_copy = self.job.args.vm_no_copy
-            self.job.args.remote_timeout = self.job.args.vm_timeout
-            super(VMTestRunner, self).setup()
-        except Exception:
-            self.tear_down()
-            raise
+        # Finish remote setup and copy the tests
+        self.job.args.remote_hostname = self.job.args.vm_hostname
+        self.job.args.remote_port = self.job.args.vm_port
+        self.job.args.remote_username = self.job.args.vm_username
+        self.job.args.remote_password = self.job.args.vm_password
+        self.job.args.remote_key_file = self.job.args.vm_key_file
+        self.job.args.remote_no_copy = self.job.args.vm_no_copy
+        self.job.args.remote_timeout = self.job.args.vm_timeout
+        super(VMTestRunner, self).setup()
 
     def tear_down(self):
         super(VMTestRunner, self).tear_down()
