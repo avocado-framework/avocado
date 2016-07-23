@@ -61,6 +61,9 @@ class RemoteTestRunner(TestRunner):
             url = self.job.urls[i]
             if not os.path.exists(url):     # use test_dir path + py
                 url = os.path.join(data_dir.get_test_dir(), url)
+            if not os.path.exists(url):
+                raise exceptions.JobError("Unable to map test id '%s' to file"
+                                          % self.job.urls[i])
             url = os.path.abspath(url)  # always use abspath; avoid clashes
             # modify url to remote_path + abspath
             paths.add(url)
@@ -203,6 +206,7 @@ class RemoteTestRunner(TestRunner):
         fabric_debugfile = os.path.join(self.job.logdir, 'remote.log')
         paramiko_logger = logging.getLogger('paramiko')
         fabric_logger = logging.getLogger('avocado.fabric')
+        remote_logger = logging.getLogger('avocado.remote')
         app_logger = logging.getLogger('avocado.debug')
         fmt = ('%(asctime)s %(module)-10.10s L%(lineno)-.4d %('
                'levelname)-5.5s| %(message)s')
@@ -211,6 +215,7 @@ class RemoteTestRunner(TestRunner):
         file_handler.setFormatter(formatter)
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
+        remote_logger.addHandler(file_handler)
         logger_list = [fabric_logger]
         if self.job.args.show_job_log:
             logger_list.append(app_logger)
