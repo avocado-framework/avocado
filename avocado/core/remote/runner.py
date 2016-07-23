@@ -318,7 +318,9 @@ class VMTestRunner(RemoteTestRunner):
 
     def tear_down(self):
         super(VMTestRunner, self).tear_down()
-        if self.job.args.vm_cleanup is True:
+        if (self.job.args.vm_cleanup is True and
+                isinstance(getattr(self, 'vm', None), virt.VM)):
             self.vm.stop()
             if self.vm.snapshot is not None:
                 self.vm.restore_snapshot()
+            self.vm = None
