@@ -280,6 +280,16 @@ class RemoteTestRunner(TestRunner):
             sys.stderr = stderr_backup
         return summary
 
+    def tear_down(self):
+        """
+        This method is only called when `run_suite` gets to the point of to be
+        executing `setup` method and is called at the end of the execution.
+
+        :warning: It might be called on `setup` exceptions, so things
+                  initialized during `setup` might not yet be initialized.
+        """
+        pass
+
 
 class VMTestRunner(RemoteTestRunner):
 
