@@ -61,6 +61,9 @@ class RemoteTestRunner(TestRunner):
             url = self.job.urls[i]
             if not os.path.exists(url):     # use test_dir path + py
                 url = os.path.join(data_dir.get_test_dir(), url)
+            if not os.path.exists(url):
+                raise exceptions.JobError("Unable to map test id '%s' to file"
+                                          % self.job.urls[i])
             url = os.path.abspath(url)  # always use abspath; avoid clashes
             # modify url to remote_path + abspath
             paths.add(url)
