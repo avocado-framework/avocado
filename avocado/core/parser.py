@@ -20,6 +20,7 @@ Avocado application command line parsing.
 import argparse
 import logging
 
+from . import exceptions
 from . import exit_codes
 from . import tree
 from . import settings
@@ -44,6 +45,25 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def _get_option_tuples(self, option_string):
         return []
+
+
+class FileOrStdoutAction(argparse.Action):
+
+    """
+    Controls claiming the right to write to the application standard output
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values == '-':
+            stdout_claimed_by = getattr(namespace, 'stdout_claimed_by', None)
+            if stdout_claimed_by is not None:
+                msg = ('Options %s %s are trying to use stdout '
+                       'simultaneously' % (stdout_claimed_by,
+                                           option_string))
+                raise exceptions.OptionValidationError(msg)
+            else:
+                setattr(namespace, 'stdout_claimed_by', option_string)
+        setattr(namespace, self.dest, values)
 
 
 class Parser(object):
