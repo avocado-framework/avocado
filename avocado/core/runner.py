@@ -314,18 +314,6 @@ class TestRunner(object):
             except Exception:
                 instance.error(stacktrace.str_unpickable_object(state))
 
-    def setup(self):
-        """
-        (Optional) initialization method for the test runner
-        """
-        pass
-
-    def tear_down(self):
-        """
-        (Optional) cleanup method for the test runner
-        """
-        pass
-
     def run_test(self, test_factory, queue, summary, job_deadline=0):
         """
         Run a test instance inside a subprocess.
