@@ -45,6 +45,9 @@ class RemoteTestRunner(TestRunner):
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)$',
                                    re.MULTILINE)
 
+    #: remoter connection to the remote machine
+    remote = None
+
     def _copy_files(self):
         """
         Gather test directories and copy them recursively to
@@ -87,13 +90,14 @@ class RemoteTestRunner(TestRunner):
                           self.job.args.remote_hostname,
                           self.job.args.remote_port,
                           self.job.args.remote_timeout)
-        self.remote = remoter.Remote(hostname=self.job.args.remote_hostname,
-                                     username=self.job.args.remote_username,
-                                     password=self.job.args.remote_password,
-                                     key_filename=self.job.args.remote_key_file,
-                                     port=self.job.args.remote_port,
-                                     timeout=self.job.args.remote_timeout,
-                                     env_keep=self.job.args.env_keep)
+        self.remote = remoter.Remote(
+            hostname=self.job.args.remote_hostname,
+            username=self.job.args.remote_username,
+            password=self.job.args.remote_password,
+            key_filename=self.job.args.remote_key_file,
+            port=self.job.args.remote_port,
+            timeout=self.job.args.remote_timeout,
+            env_keep=self.job.args.env_keep)
 
     def check_remote_avocado(self):
         """
@@ -122,7 +126,7 @@ class RemoteTestRunner(TestRunner):
             return (False, None)
 
         try:
-            return (True, tuple(map(int, match[0])))
+            return (True, tuple(int(_) for _ in match[0]))
         except IndexError:
             return (False, None)
 
@@ -185,7 +189,8 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout, replay_map=None, test_result_total=0):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
+                  test_result_total=0):
         """
         Run one or more tests and report with test result.
 
@@ -227,8 +232,8 @@ class RemoteTestRunner(TestRunner):
                 self.setup()
                 avocado_installed, _ = self.check_remote_avocado()
                 if not avocado_installed:
-                    raise exceptions.JobError('Remote machine does not seem to have '
-                                              'avocado installed')
+                    raise exceptions.JobError('Remote machine does not seem to'
+                                              ' have avocado installed')
                 self._copy_files()
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
@@ -276,7 +281,17 @@ class RemoteTestRunner(TestRunner):
 
 class VMTestRunner(RemoteTestRunner):
 
+    """
+    Test runner to run tests using libvirt domain
+    """
+
+    #: VM used during testing
+    vm = None
+
     def setup(self):
+        """
+        Initialize VM and establish connection
+        """
         # Super called after VM is found and initialized
         self.job.log.info("DOMAIN     : %s", self.job.args.vm_domain)
         self.vm = virt.vm_connect(self.job.args.vm_domain,
@@ -313,6 +328,9 @@ class VMTestRunner(RemoteTestRunner):
         super(VMTestRunner, self).setup()
 
     def tear_down(self):
+        """
+        Stop VM and restore snapshot (if asked for it)
+        """
         super(VMTestRunner, self).tear_down()
         if (self.job.args.vm_cleanup is True and
                 isinstance(getattr(self, 'vm', None), virt.VM)):
