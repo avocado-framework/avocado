@@ -46,6 +46,17 @@ else:
     import unittest
 
 
+class NameNotTestNameError(Exception):
+
+    """
+    The given test name is not a TestName instance
+
+    With the introduction of :class:`avocado.core.test.TestName`, it's
+    not allowed to use other types as the ``name`` parameter to a test
+    instance.  This exception is raised when this is attempted.
+    """
+
+
 class TestName(object):
 
     """
@@ -116,23 +127,23 @@ class Test(unittest.TestCase):
     default_params = {}
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, tag=None, job=None, runner_queue=None):
+                 base_logdir=None, job=None, runner_queue=None):
         """
         Initializes the test.
 
         :param methodName: Name of the main method to run. For the sake of
                            compatibility with the original unittest class,
                            you should not set this.
-        :param name: Pretty name of the test name. For normal tests, written
-                     with the avocado API, this should not be set, this is
-                     reserved for running random executables as tests.
+        :param name: Pretty name of the test name. For normal tests,
+                     written with the avocado API, this should not be
+                     set.  This is reserved for internal Avocado use,
+                     such as when running random executables as tests.
+        :type name: :class:`avocado.core.test.TestName`
         :param base_logdir: Directory where test logs should go. If None
                             provided, it'll use
                             :func:`avocado.data_dir.create_job_logs_dir`.
-        :param tag: Tag that differentiates 2 executions of the same test name.
-                    Example: 'long', 'short', so we can differentiate
-                    'sleeptest.long' and 'sleeptest.short'.
         :param job: The job that this test is part of.
+        :raises: :class:`avocado.core.test.NameNotTestNameError`
         """
         def record_and_warn(*args, **kwargs):
             """ Record call to this function and log warning """
@@ -140,16 +151,13 @@ class Test(unittest.TestCase):
                 self.__log_warn_used = True
             return original_log_warn(*args, **kwargs)
 
-        _incorrect_name = None
-        if isinstance(name, basestring):    # TODO: Remove in release 0.37
-            _incorrect_name = True
-            self.name = TestName(0, name)
-        elif name is not None:
+        if name is not None:
+            if not isinstance(name, TestName):
+                raise NameNotTestNameError(name)
             self.name = name
         else:
             self.name = TestName(0, self.__class__.__name__)
 
-        self.tag = tag
         self.job = job
 
         if self.datadir is None:
@@ -187,13 +195,6 @@ class Test(unittest.TestCase):
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
-        if _incorrect_name is not None:
-            self.log.warn("The 'name' argument has to be TestName instance, "
-                          "not string. In the upcoming releases this will "
-                          "become an exception. (%s)", self.name.name)
-        if tag is not None:    # TODO: Remove in release 0.37
-            self.log.warn("The 'tag' argument is not supported and will be "
-                          "removed in the upcoming releases. (%s)", tag)
 
         mux_path = ['/test/*']
         if isinstance(params, dict):
@@ -204,7 +205,7 @@ class Test(unittest.TestCase):
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.params = multiplexer.AvocadoParams(params, self.name, self.tag,
+        self.params = multiplexer.AvocadoParams(params, self.name,
                                                 mux_path,
                                                 self.default_params)
         default_timeout = getattr(self, "timeout", None)
@@ -330,10 +331,9 @@ class Test(unittest.TestCase):
         """
         if self.running and self.time_start:
             self._update_time_elapsed()
-        preserve_attr = ['basedir', 'debugdir', 'depsdir',
-                         'fail_reason', 'logdir', 'logfile', 'name',
-                         'resultsdir', 'srcdir', 'status', 'sysinfodir',
-                         'tag', 'text_output', 'time_elapsed',
+        preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_reason',
+                         'logdir', 'logfile', 'name', 'resultsdir', 'srcdir',
+                         'status', 'sysinfodir', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
@@ -653,11 +653,9 @@ class SimpleTest(Test):
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
-    def __init__(self, name, params=None, base_logdir=None, tag=None,
-                 job=None):
+    def __init__(self, name, params=None, base_logdir=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
-                                         base_logdir=base_logdir, tag=tag,
-                                         job=job)
+                                         base_logdir=base_logdir, job=job)
         self._command = self.filename
 
     @property
@@ -707,13 +705,13 @@ class SimpleTest(Test):
 
 class ExternalRunnerTest(SimpleTest):
 
-    def __init__(self, name, params=None, base_logdir=None, tag=None, job=None,
+    def __init__(self, name, params=None, base_logdir=None, job=None,
                  external_runner=None):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
-                                                 tag, job)
+                                                 job)
         self._command = external_runner.runner + " " + self.name.name
 
     @property
@@ -791,8 +789,8 @@ class SkipTest(Test):
         """
         super_kwargs = dict()
         args = list(reversed(args))
-        for arg in ["methodName", "name", "params", "base_logdir", "tag",
-                    "job", "runner_queue"]:
+        for arg in ["methodName", "name", "params", "base_logdir", "job",
+                    "runner_queue"]:
             if arg in kwargs:
                 super_kwargs[arg] = kwargs[arg]
             elif args:
