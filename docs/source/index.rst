@@ -1,11 +1,11 @@
-Avocado Testing Framework
-=========================
+====================
+Avocado User's Guide
+====================
 
-.. _users-guide:
+Contents:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Avocado User's Guide
 
    Introduction
    GetStartedGuide
@@ -21,36 +21,38 @@ Avocado Testing Framework
    WrapProcess
    Plugins
 
-
-.. _adv-topics:
+===============================
+Advanced Topics and Maintenance
+===============================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Advanced Topics and Maintenance
 
    ReferenceGuide
    ContributionGuide
    DevelopmentTips
    MaintenanceGuide
 
+.. _api-reference:
 
-.. _api-ref:
+=============
+API Reference
+=============
 
 .. toctree::
    :maxdepth: 1
-   :caption: API Reference
 
    api/test/avocado.rst
    api/utils/avocado.utils.rst
    api/core/avocado.core.rst
    api/plugins/avocado.plugins.rst
 
-
-.. _rel-notes:
+=====================
+Avocado Release Notes
+=====================
 
 .. toctree::
    :maxdepth: 1
-   :caption: Avocado Release Notes
 
    release_notes/index
 
