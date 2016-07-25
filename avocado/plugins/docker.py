@@ -43,7 +43,7 @@ class DockerRemoter(object):
         self._dkrcmd = dkrcmd
         self._docker = None
         run_cmd = "%s run -t -i -d '%s' bash" % (self._dkrcmd, image)
-        self._docker_id = (process.system_output(run_cmd, 10).splitlines()[-1]
+        self._docker_id = (process.system_output(run_cmd, None).splitlines()[-1]
                            .strip())
         self._docker = aexpect.ShellSession("%s attach %s"
                                             % (self._dkrcmd, self._docker_id))
