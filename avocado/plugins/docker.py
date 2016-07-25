@@ -141,10 +141,13 @@ class DockerTestRunner(RemoteTestRunner):
         self.job.args.remote_no_copy = self.job.args.docker_no_copy
 
     def tear_down(self):
-        if self.remote:
-            self.remote.close()
-            if not self.job.args.docker_no_cleanup:
-                self.remote.cleanup()
+        try:
+            if self.remote:
+                self.remote.close()
+                if not self.job.args.docker_no_cleanup:
+                    self.remote.cleanup()
+        except Exception as details:
+            self.job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
 
 
 class Docker(CLI):
