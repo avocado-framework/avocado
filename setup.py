@@ -139,6 +139,7 @@ if __name__ == '__main__':
                   'replay = avocado.plugins.replay:Replay',
                   'tap = avocado.plugins.tap:TAP',
                   'vm = avocado.plugins.vm:VM',
+                  'docker = avocado.plugins.docker:Docker',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',

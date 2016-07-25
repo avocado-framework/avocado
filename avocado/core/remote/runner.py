@@ -45,6 +45,9 @@ class RemoteTestRunner(TestRunner):
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)$',
                                    re.MULTILINE)
 
+    #: remoter connection to the remote machine
+    remote = None
+
     def _copy_files(self):
         """
         Gather test directories and copy them recursively to
@@ -61,6 +64,9 @@ class RemoteTestRunner(TestRunner):
             url = self.job.urls[i]
             if not os.path.exists(url):     # use test_dir path + py
                 url = os.path.join(data_dir.get_test_dir(), url)
+            if not os.path.exists(url):
+                raise exceptions.JobError("Unable to map test id '%s' to file"
+                                          % self.job.urls[i])
             url = os.path.abspath(url)  # always use abspath; avoid clashes
             # modify url to remote_path + abspath
             paths.add(url)
@@ -84,13 +90,14 @@ class RemoteTestRunner(TestRunner):
                           self.job.args.remote_hostname,
                           self.job.args.remote_port,
                           self.job.args.remote_timeout)
-        self.remote = remoter.Remote(hostname=self.job.args.remote_hostname,
-                                     username=self.job.args.remote_username,
-                                     password=self.job.args.remote_password,
-                                     key_filename=self.job.args.remote_key_file,
-                                     port=self.job.args.remote_port,
-                                     timeout=self.job.args.remote_timeout,
-                                     env_keep=self.job.args.env_keep)
+        self.remote = remoter.Remote(
+            hostname=self.job.args.remote_hostname,
+            username=self.job.args.remote_username,
+            password=self.job.args.remote_password,
+            key_filename=self.job.args.remote_key_file,
+            port=self.job.args.remote_port,
+            timeout=self.job.args.remote_timeout,
+            env_keep=self.job.args.env_keep)
 
     def check_remote_avocado(self):
         """
@@ -119,7 +126,7 @@ class RemoteTestRunner(TestRunner):
             return (False, None)
 
         try:
-            return (True, tuple(map(int, match[0])))
+            return (True, tuple(int(_) for _ in match[0]))
         except IndexError:
             return (False, None)
 
@@ -182,7 +189,8 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout, replay_map=None, test_result_total=0):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
+                  test_result_total=0):
         """
         Run one or more tests and report with test result.
 
@@ -203,6 +211,7 @@ class RemoteTestRunner(TestRunner):
         fabric_debugfile = os.path.join(self.job.logdir, 'remote.log')
         paramiko_logger = logging.getLogger('paramiko')
         fabric_logger = logging.getLogger('avocado.fabric')
+        remote_logger = logging.getLogger('avocado.remote')
         app_logger = logging.getLogger('avocado.debug')
         fmt = ('%(asctime)s %(module)-10.10s L%(lineno)-.4d %('
                'levelname)-5.5s| %(message)s')
@@ -211,6 +220,7 @@ class RemoteTestRunner(TestRunner):
         file_handler.setFormatter(formatter)
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
+        remote_logger.addHandler(file_handler)
         logger_list = [fabric_logger]
         if self.job.args.show_job_log:
             logger_list.append(app_logger)
@@ -222,8 +232,8 @@ class RemoteTestRunner(TestRunner):
                 self.setup()
                 avocado_installed, _ = self.check_remote_avocado()
                 if not avocado_installed:
-                    raise exceptions.JobError('Remote machine does not seem to have '
-                                              'avocado installed')
+                    raise exceptions.JobError('Remote machine does not seem to'
+                                              ' have avocado installed')
                 self._copy_files()
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
@@ -258,20 +268,40 @@ class RemoteTestRunner(TestRunner):
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
             self.result.end_tests()
+        finally:
             try:
                 self.tear_down()
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
-        finally:
             sys.stdout = stdout_backup
             sys.stderr = stderr_backup
         return summary
 
+    def tear_down(self):
+        """
+        This method is only called when `run_suite` gets to the point of to be
+        executing `setup` method and is called at the end of the execution.
+
+        :warning: It might be called on `setup` exceptions, so things
+                  initialized during `setup` might not yet be initialized.
+        """
+        pass
+
 
 class VMTestRunner(RemoteTestRunner):
 
+    """
+    Test runner to run tests using libvirt domain
+    """
+
+    #: VM used during testing
+    vm = None
+
     def setup(self):
+        """
+        Initialize VM and establish connection
+        """
         # Super called after VM is found and initialized
         self.job.log.info("DOMAIN     : %s", self.job.args.vm_domain)
         self.vm = virt.vm_connect(self.job.args.vm_domain,
@@ -297,23 +327,24 @@ class VMTestRunner(RemoteTestRunner):
                 e_msg = ("Could not create snapshot on VM '%s'" %
                          self.job.args.vm_domain)
                 raise exceptions.JobError(e_msg)
-        try:
-            # Finish remote setup and copy the tests
-            self.job.args.remote_hostname = self.job.args.vm_hostname
-            self.job.args.remote_port = self.job.args.vm_port
-            self.job.args.remote_username = self.job.args.vm_username
-            self.job.args.remote_password = self.job.args.vm_password
-            self.job.args.remote_key_file = self.job.args.vm_key_file
-            self.job.args.remote_no_copy = self.job.args.vm_no_copy
-            self.job.args.remote_timeout = self.job.args.vm_timeout
-            super(VMTestRunner, self).setup()
-        except Exception:
-            self.tear_down()
-            raise
+        # Finish remote setup and copy the tests
+        self.job.args.remote_hostname = self.job.args.vm_hostname
+        self.job.args.remote_port = self.job.args.vm_port
+        self.job.args.remote_username = self.job.args.vm_username
+        self.job.args.remote_password = self.job.args.vm_password
+        self.job.args.remote_key_file = self.job.args.vm_key_file
+        self.job.args.remote_no_copy = self.job.args.vm_no_copy
+        self.job.args.remote_timeout = self.job.args.vm_timeout
+        super(VMTestRunner, self).setup()
 
     def tear_down(self):
+        """
+        Stop VM and restore snapshot (if asked for it)
+        """
         super(VMTestRunner, self).tear_down()
-        if self.job.args.vm_cleanup is True:
+        if (self.job.args.vm_cleanup is True and
+                isinstance(getattr(self, 'vm', None), virt.VM)):
             self.vm.stop()
             if self.vm.snapshot is not None:
                 self.vm.restore_snapshot()
+            self.vm = None
