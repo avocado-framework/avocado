@@ -108,3 +108,4 @@ class Remote(CLI):
                                      ('remote_hostname',)):
             register_test_result_class(args, RemoteTestResult)
             args.test_runner = RemoteTestRunner
+            setattr(args, 'stdout_claimed_by', '--remote-hostname')

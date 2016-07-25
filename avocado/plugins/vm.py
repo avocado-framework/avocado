@@ -111,3 +111,4 @@ class VM(CLI):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
             register_test_result_class(args, VMTestResult)
             args.test_runner = VMTestRunner
+            setattr(args, 'stdout_claimed_by', '--vm-domain')
