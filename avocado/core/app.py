@@ -20,11 +20,11 @@ import os
 import signal
 import sys
 
-from .parser import Parser
 from . import output
-from .output import STD_OUTPUT
-from .dispatcher import CLIDispatcher
 from .dispatcher import CLICmdDispatcher
+from .dispatcher import CLIDispatcher
+from .output import STD_OUTPUT
+from .parser import Parser
 
 
 class AvocadoApp(object):

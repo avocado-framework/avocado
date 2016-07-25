@@ -94,15 +94,17 @@ class OutputPluginTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--xunit - --json - passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
-        output = result.stdout + result.stderr
+        expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_regex = re.compile(r'Options ((--json --xunit)|(--xunit --json)) '
-                                 'are trying to use stdout simultaneously')
-        self.assertIsNotNone(error_regex.match(output),
-                             "Missing error message from output:\n%s" % output)
+        error_regex = re.compile(r'avocado run: error: argument ((--json)|'
+                                 '(--xunit)): Options ((--xunit --json)|'
+                                 '(--json --xunit)) are trying to use stdout '
+                                 'simultaneously\n')
+        self.assertIsNotNone(error_regex.match(result.stderr),
+                             "Missing error message from output:\n%s" %
+                             result.stderr)
 
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)

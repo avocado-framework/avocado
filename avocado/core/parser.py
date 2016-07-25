@@ -46,6 +46,25 @@ class ArgumentParser(argparse.ArgumentParser):
         return []
 
 
+class FileOrStdoutAction(argparse.Action):
+
+    """
+    Controls claiming the right to write to the application standard output
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values == '-':
+            stdout_claimed_by = getattr(namespace, 'stdout_claimed_by', None)
+            if stdout_claimed_by is not None:
+                msg = ('Options %s %s are trying to use stdout '
+                       'simultaneously' % (stdout_claimed_by,
+                                           option_string))
+                raise argparse.ArgumentError(self, msg)
+            else:
+                setattr(namespace, 'stdout_claimed_by', option_string)
+        setattr(namespace, self.dest, values)
+
+
 class Parser(object):
 
     """

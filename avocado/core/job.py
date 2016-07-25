@@ -19,14 +19,14 @@ Job module - describes a sequence of automated test operations.
 
 import argparse
 import commands
+import fnmatch
 import logging
 import os
 import re
-import sys
-import traceback
-import tempfile
 import shutil
-import fnmatch
+import sys
+import tempfile
+import traceback
 
 from . import version
 from . import data_dir
@@ -299,16 +299,7 @@ class Job(object):
             html_plugin = html.HTMLTestResult(self, html_file)
             self.result_proxy.add_output_plugin(html_plugin)
 
-        op_set_stdout = self.result_proxy.output_plugins_using_stdout()
-        if len(op_set_stdout) > 1:
-            self.log.error('Options %s are trying to use stdout '
-                           'simultaneously', " ".join(op_set_stdout))
-            self.log.error('Please set at least one of them to a file to '
-                           'avoid conflicts')
-            self.exitcode |= exit_codes.AVOCADO_JOB_FAIL
-            sys.exit(self.exitcode)
-
-        if not op_set_stdout and not self.standalone:
+        if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
             human_plugin = result.HumanTestResult(self)
             self.result_proxy.add_output_plugin(human_plugin)
 
