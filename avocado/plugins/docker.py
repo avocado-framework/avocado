@@ -41,6 +41,7 @@ class DockerRemoter(object):
         :param image: docker image to be used in this instance
         """
         self._dkrcmd = dkrcmd
+        self._docker = None
         run_cmd = "%s run -t -i -d '%s' bash" % (self._dkrcmd, image)
         self._docker_id = process.system_output(run_cmd, 10).strip()
         self._docker = aexpect.ShellSession("%s attach %s"
@@ -110,10 +111,11 @@ class DockerRemoter(object):
 
         :note: It won't remove the container, you need to do it manually
         """
-        self._docker.sendline("exit")
-        # Leave the process up to 10s to finish, then nuke it
-        wait_for(lambda: not self._docker.is_alive(), 10)
-        self._docker.close()
+        if self._docker:
+            self._docker.sendline("exit")
+            # Leave the process up to 10s to finish, then nuke it
+            wait_for(lambda: not self._docker.is_alive(), 10)
+            self._docker.close()
 
 
 class DockerTestRunner(RemoteTestRunner):
@@ -138,9 +140,10 @@ class DockerTestRunner(RemoteTestRunner):
         self.job.args.remote_no_copy = self.job.args.docker_no_copy
 
     def tear_down(self):
-        self.remote.close()
-        if not self.job.args.docker_no_cleanup:
-            self.remote.cleanup()
+        if self.remote:
+            self.remote.close()
+            if not self.job.args.docker_no_cleanup:
+                self.remote.cleanup()
 
 
 class Docker(CLI):
