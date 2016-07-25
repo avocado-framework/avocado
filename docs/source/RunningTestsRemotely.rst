@@ -147,6 +147,53 @@ execute them. A bit of extra logging information is added to your job summary,
 mainly to distinguish the regular execution from the remote one. Note here that
 we did not need `--vm-password` because the SSH key is already setup.
 
+Running Tests on a Docker container
+===================================
+
+Avocado also lets you run tests on a Docker container, starting and
+cleaning it up automatically with every execution.
+
+You can check if this feature (a plugin) is enabled by running::
+
+    $ avocado plugins
+    ...
+    docker  Run tests inside docker container
+    ...
+
+Docker container images
+-----------------------
+
+Avocado needs to be present inside the container image in order for
+the test execution to be properly performed.  There's one ready to use
+image (``ldoktor/fedora-avocado``) in the default image repository
+(``docker.io``)::
+
+    $ docker pull ldoktor/fedora-avocado
+    Using default tag: latest
+    Trying to pull repository docker.io/ldoktor/fedora-avocado ...
+    latest: Pulling from docker.io/ldoktor/fedora-avocado
+    ...
+    Status: Downloaded newer image for docker.io/ldoktor/fedora-avocado:latest
+
+Running your test
+-----------------
+
+Assuming your system is properly setup to run Docker, including having
+an image with Avocado, you can run a test inside the container with a
+command similar to::
+
+    $ avocado run passtest.py warntest.py failtest.py --docker ldoktor/fedora-avocado
+    DOCKER     : Container id '4bcbcd69801211501a0dde5926c0282a9630adbe29ecb17a21ef04f024366943'
+    JOB ID     : db309f5daba562235834f97cad5f4458e3fe6e32
+    JOB LOG    : $HOME/avocado/job-results/job-2016-07-25T08.01-db309f5/job.log
+    TESTS      : 3
+     (1/3) /avocado_remote_test_dir/$HOME/passtest.py:PassTest.test: PASS (0.00 s)
+     (2/3) /avocado_remote_test_dir/$HOME/warntest.py:WarnTest.test: WARN (0.00 s)
+     (3/3) /avocado_remote_test_dir/$HOME/failtest.py:FailTest.test: FAIL (0.00 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 1 | INTERRUPT 0
+    JOB HTML   : $HOME/avocado/job-results/job-2016-07-25T08.01-db309f5/html/results.html
+    TESTS TIME : 0.00 s
+
 Environment Variables
 =====================
 

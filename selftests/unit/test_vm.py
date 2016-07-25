@@ -16,13 +16,23 @@ JSON_RESULTS = ('Something other than json\n'
                 '1}\nAdditional stuff other than json')
 
 
+class _FakeVM(virt.VM):
+
+    """
+    Fake VM-inherited object (it's better to inherit it, than to flexmock the
+    isinstance)
+    """
+    def __init__(self):     # don't call virt.VM.__init__ pylint: disable=W0231
+        self.snapshot = True
+        self.domain = flexmock(isActive=lambda: True)
+
+
 class VMTestRunnerSetup(unittest.TestCase):
 
     """ Tests the VMTestRunner setup() method """
 
     def setUp(self):
-        mock_vm = flexmock(snapshot=True,
-                           domain=flexmock(isActive=lambda: True))
+        mock_vm = flexmock(_FakeVM())
         flexmock(virt).should_receive('vm_connect').and_return(mock_vm).once().ordered()
         mock_vm.should_receive('start').and_return(True).once().ordered()
         mock_vm.should_receive('create_snapshot').once().ordered()
