@@ -76,3 +76,10 @@ def hash_file(filename, size=None, algorithm="md5"):
         size -= len(data)
     f.close()
     return hash_obj.hexdigest()
+
+def cmp_hash(h1, h2):
+    # Catch errors comparison between different algorithms (md5 and sha256)
+    if (len(h1) != len(h2)):
+        raise ValueError("Incompatible hash comparison %s %s" % (h1, h2))
+
+    return h1 == h2

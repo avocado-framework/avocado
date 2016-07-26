@@ -185,7 +185,7 @@ class Asset(object):
                 content = '%s %s\n' % (discovered_hash, basename)
                 f.write(content)
 
-        if filehash == discovered_hash:
+        if crypto.cmp_hash(filehash, discovered_hash):
             log.debug('Asset %s verified.' % path)
             return True
         else:
