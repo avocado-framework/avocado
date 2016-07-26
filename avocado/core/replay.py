@@ -24,13 +24,14 @@ from .test import ReplaySkipTest
 
 from .settings import settings
 from ..utils import path
+from ..utils import archive
 
 """
 Record/retrieve job information for job replay
 """
 
 
-def record(args, logdir, mux, urls=None):
+def record(args, logdir, mux, urls=None, url_archive=False, archive_cache=False):
     replay_dir = path.init_dir(logdir, 'replay')
     path_cfg = os.path.join(replay_dir, 'config')
     path_urls = os.path.join(replay_dir, 'urls')
@@ -41,6 +42,9 @@ def record(args, logdir, mux, urls=None):
     if urls:
         with open(path_urls, 'w') as f:
             f.write('%s' % urls)
+        if url_archive:
+            path_archive = os.path.join(replay_dir, 'urls_archive.tar.gz')
+            archive.create(path_archive, urls, absolute_path = True)
 
     with open(path_cfg, 'w') as f:
         settings.config.write(f)
