@@ -146,6 +146,14 @@ class RemoteTestRunner(TestRunner):
         if mux_files:
             extra_params.append("--multiplex %s" % " ".join(mux_files))
 
+        filter_out = getattr(self.job.args, 'filter_out')
+        if filter_out:
+            extra_params.append("--filter-out %s" % " ".join(filter_out))
+
+        filter_only = getattr(self.job.args, 'filter_only')
+        if filter_only:
+            extra_params.append("--filter-only %s" % " ".join(filter_only))
+
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")
         urls_str = " ".join(urls)
