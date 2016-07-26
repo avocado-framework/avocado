@@ -22,6 +22,9 @@ class LinuxBuildTest(Test):
     :param algorithm: hash algorithm (optional, defaults to sha1)
     :param locations: list of URLs from where the asset can be
                           fetched (optional)
+    :param build_target: built target (bzImage,modules,etc..)
+    :param build_args: extra arguments for make
+
     """
 
     def setUp(self):
@@ -32,6 +35,11 @@ class LinuxBuildTest(Test):
         algorithm= self.params.get('hash_algo', default='sha1')
         mirrors= self.params.get('mirrors', default=None)
         locations= self.params.get('locations', default=None)
+
+        self.build_target= self.params.get('build_target', default='')
+        self.extra_args= self.params.get('build_args', default='')
+
+
         if linux_config is not None:
             linux_config = os.path.join(self.datadir, linux_config)
         
@@ -47,7 +55,7 @@ class LinuxBuildTest(Test):
         self.linux_build.configure()
 
     def test(self):
-        self.linux_build.build()
+        self.linux_build.build(self.build_target, self.extra_args)
 
 
 if __name__ == "__main__":

@@ -15,3 +15,20 @@ version: !mux
     asset_hash: bdc0ad7c46fc64e4f501be9efd2cd5c6
     hash_algo: md5
 
+
+# Run make check bzImage, requires sparse(http://www.kernel.org/pub/software/devel/sparse/)
+  4.7-rc6:
+    mirrors: ['https://cdn.kernel.org/pub/linux/kernel/v4.x/testing/']
+    linux_version: 4.7-rc6
+    asset_hash: af7071848c20f6c35984f2910ec69e71bea03a9f
+    build_target: bzImage
+    build_args: C=2 CF="-D__CHECK_ENDIAN__"
+
+# Run make check for modules, requires smatch(http://repo.or.cz/w/smatch.git)
+  4.7-rc5:
+    mirrors: ['https://cdn.kernel.org/pub/linux/kernel/v4.x/testing/']
+    linux_version: 4.7-rc5
+    asset_hash: eb6ea959bc3ca2a413c22b1620bedbed3d0336ca
+    build_target: all
+    build_args: C=2 CHECK="smatch -p=kernel"
+
