@@ -1,0 +1,80 @@
+======================
+39.0 The Hateful Eight
+======================
+
+The Avocado team is proud to present another incremental release:
+version 39.0, aka, "The Hateful Eight", is now available!
+
+The major changes introduced on this version are listed below.
+
+* Support for running tests in Docker container.  Now, in addition to
+  running tests on a (libvirt based) Virtual Machine or on a remote host,
+  you can now run tests in transient Docker containers.  The usage is as
+  simple as::
+
+    $ avocado run mytests.py --docker ldoktor/fedora-avocado
+
+  The container will be started, using ``ldoktor/fedora-avocado`` as
+  the image.  This image contains a Fedora based system with Avocado
+  already installed, and it's provided at the official Docker hub.
+
+* Introduction of the "Fail Fast" feature.
+
+  By running a job with the ``--failfast`` flag, the job will be
+  interrupted after the very first test failure.  If your job only
+  makes sense if it's a complete PASS, this feature can save you a lot
+  of time.
+
+* Avocado supports replaying previous jobs, selected by using their
+  Job IDs.  Now, it's also possible to use the special keyword
+  ``latest``, which will cause Avocado to rerun the very last job.
+
+* Python's standard signal handling is restored for SIGPIPE, and thus
+  for all tests running on Avocado.
+
+  In previous releases, Avocado introduced a change that set the
+  default handler to SIGPIPE, which caused the application to be
+  terminated.  This seemed to be the right approach when testing how
+  the Avocado app would behave on broken pipes on the command line,
+  but it introduced side effects to a lot of Python code.  Instead of
+  exceptions, the affected Python code would receive the signal themselves.
+
+  This is now reverted to the Python standard, and the signal behavior
+  of Python based tests running on Avocado should not surprise anyone.
+
+* The project release notes are now part of the official
+  documentation.  That means that users can quickly find when a given
+  change was introduced.
+
+Together with those changes listed, a total of 38 changes made into
+this release.  For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/38.0...39.0>`_.
+
+Sprint Theme
+============
+
+After so much love that we had on the previous version, let's twist
+things a bit with an antagonist title.  Info on this pretty good movie
+by Tarantino can be found at:
+
+ http://www.imdb.com/title/tt3460252/?ref_=nm_flmg_wr_2
+
+ https://www.youtube.com/watch?v=6_UI1GzaWv0
+
+The story line:
+
+In the dead of a Wyoming winter, a bounty hunter and his prisoner
+find shelter in a cabin currently inhabited by a collection of
+nefarious characters.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=GotEH7SmHSw>`_.
