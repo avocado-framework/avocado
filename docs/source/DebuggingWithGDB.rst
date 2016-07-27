@@ -15,6 +15,13 @@ other:
   other types of commands. This requires a test written with that
   approach and API in mind.
 
+.. tip:: Even though this section describes the use of the Avocado GDB
+   features, which allow live debugging of binaries inside Avocado
+   tests, it's also possible to debug some application offline by
+   using tools such as `rr <http://rr-project.org>`_.  Avocado ships
+   with an example wrapper script (to be used with ``--wrapper``) for
+   that purpose.
+
 
 Transparent Execution of Executables
 ------------------------------------
