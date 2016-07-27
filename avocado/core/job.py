@@ -42,7 +42,6 @@ from . import output
 from . import multiplexer
 from . import tree
 from . import test
-from . import jsonresult
 from . import replay
 from .output import STD_OUTPUT
 from .settings import settings
@@ -279,11 +278,6 @@ class Job(object):
         if self.args:
             # If there are any active output plugins, let's use them
             self._set_output_plugins()
-
-        # Setup the json plugin to output to the debug directory
-        json_file = os.path.join(self.logdir, 'results.json')
-        json_plugin = jsonresult.JSONResult(self, json_file)
-        self.result_proxy.add_output_plugin(json_plugin)
 
         # Setup the html output to the results directory
         if HTML_REPORT_SUPPORT:

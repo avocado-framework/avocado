@@ -132,7 +132,7 @@ if __name__ == '__main__':
                   'gdb = avocado.plugins.gdb:GDB',
                   'wrapper = avocado.plugins.wrapper:Wrapper',
                   'xunit = avocado.plugins.xunit:XUnitCLI',
-                  'json = avocado.plugins.json:JSON',
+                  'json = avocado.plugins.jsonresult:JSONCLI',
                   'journal = avocado.plugins.journal:Journal',
                   'html = avocado.plugins.html:HTML',
                   'remote = avocado.plugins.remote:Remote',
@@ -156,6 +156,7 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
+                  'json = avocado.plugins.jsonresult:JSONResult',
                   ],
               },
           zip_safe=False,
