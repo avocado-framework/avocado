@@ -105,7 +105,7 @@ class Result(object):
         self.args = getattr(job, "args", None)
         self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
-        self.total_time = 0.0
+        self.tests_total_time = 0.0
         self.passed = 0
         self.errors = 0
         self.failed = 0
@@ -164,7 +164,7 @@ class Result(object):
         :type state: dict
         """
         self.tests_run += 1
-        self.total_time += state.get('time_elapsed', -1)
+        self.tests_total_time += state.get('time_elapsed', -1)
 
     def check_test(self, state):
         """
@@ -224,7 +224,7 @@ class HumanResult(Result):
                 logdir = os.path.dirname(self.logfile)
                 html_file = os.path.join(logdir, 'html', 'results.html')
                 self.log.info("JOB HTML   : %s", html_file)
-        self.log.info("TESTS TIME : %.2f s", self.total_time)
+        self.log.info("TESTS TIME : %.2f s", self.tests_total_time)
 
     def start_test(self, state):
         super(HumanResult, self).start_test(state)
