@@ -83,7 +83,7 @@ class TermSupport(object):
         self.LOWLIGHT = self.COLOR_DARKGREY
         self.enabled = True
         allowed_terms = ['linux', 'xterm', 'xterm-256color', 'vt100', 'screen',
-                         'screen-256color']
+                         'screen-256color', 'screen.xterm-256color']
         term = os.environ.get("TERM")
         colored = settings.get_value('runner.output', 'colored',
                                      key_type='bool')
