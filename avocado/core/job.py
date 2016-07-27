@@ -503,7 +503,9 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
-        replay.record(self.args, self.logdir, mux, self.urls)
+        url_archive = settings.get_value('replay.record', 'url_archive',
+                                         key_type=bool, default=False)
+        replay.record(self.args, self.logdir, mux, self.urls, url_archive)
         replay_map = getattr(self.args, 'replay_map', None)
         summary = self.test_runner.run_suite(self.test_suite, mux, self.timeout,
                                              replay_map,

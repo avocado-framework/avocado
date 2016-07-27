@@ -162,7 +162,7 @@ def get_file(src, dst, permissions=None, hash_expected=None,
     download_failures = 0
     hash_file = _verify_hash(dst)
 
-    while not hash_file == hash_expected:
+    while not crypto.cmp_hash(hash_file, hash_expected):
         hash_file = _verify_hash(_get_file(src, dst, permissions))
         if hash_file != hash_expected:
             log.error("It seems that dst %s is corrupted" % dst)

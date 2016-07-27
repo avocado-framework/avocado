@@ -95,6 +95,8 @@ class Asset(object):
                     urls.append(item)
 
             for url in urls:
+                # Clear old signatures before adding new asset-file
+                self._clear_file_signatures(self.asset_file)
                 urlobj = urlparse.urlparse(url)
                 if urlobj.scheme == 'http' or urlobj.scheme == 'https':
                     log.debug('Downloading from %s.' % url)
@@ -185,13 +187,21 @@ class Asset(object):
                 content = '%s %s\n' % (discovered_hash, basename)
                 f.write(content)
 
-        if filehash == discovered_hash:
+        if crypto.cmp_hash(filehash, discovered_hash):
             log.debug('Asset %s verified.' % path)
             return True
         else:
             log.error('Asset %s corrupted (hash expected:%s, hash found:%s).' %
                       (path, filehash, discovered_hash))
             return False
+
+    @staticmethod
+    def _clear_file_signatures(path):
+        for algo in crypto.algorithms_supported():
+            hashfile = '%s.%s' % (path, algo)
+            if os.path.isfile(hashfile):
+                log.debug('remove obsoleted hashfile %s' % hashfile)
+                os.unlink(hashfile)
 
     @staticmethod
     def _is_expired(path, expire):

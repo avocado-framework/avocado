@@ -206,23 +206,35 @@ def is_archive(filename):
     return zipfile.is_zipfile(filename) or tarfile.is_tarfile(filename)
 
 
-def compress(filename, path):
+def compress(filename, path, absolute_path=False):
     """
     Compress files in an archive.
 
     :param filename: archive file name.
-    :param path: origin directory path to files to compress. No
-                 individual files allowed.
+    :param path: origin directory path to files to compress.
+    		 path or list of paths is allowed
+    :param absolute_path: archive absolute path  
     """
     with ArchiveFile.open(filename, 'w') as x:
-        if os.path.isdir(path):
-            for root, _, files in os.walk(path):
-                for name in files:
-                    newroot = root.replace(path, '')
-                    x.add(os.path.join(root, name),
-                          os.path.join(newroot, name))
-        elif os.path.isfile(path):
-            x.add(path, os.path.basename(path))
+        if isinstance(path, basestring):
+            path_list = [path]
+        else:
+            path_list = path
+        for path in path_list:
+            if os.path.isdir(path):
+                for root, _, files in os.walk(path):
+                    for name in files:
+                        if absolute_path:
+                            x.add(os.path.join(root, name),
+                                  os.path.join(root, name))
+                        else:
+                            x.add(os.path.join(root, name),
+                                  os.path.join(root.replace(path, ''), name))
+            elif os.path.isfile(path):
+                if absolute_path:
+                    x.add(path, path)
+                else:
+                    x.add(path, os.path.basename(path))
 
 
 def uncompress(filename, path):

@@ -22,6 +22,7 @@ import tempfile
 from distutils.version import LooseVersion
 
 from . import asset, archive, build
+from . import data_structures
 
 log = logging.getLogger('avocado.test')
 
@@ -32,16 +33,19 @@ class KernelBuild(object):
     Build the Linux Kernel from official tarballs.
     """
 
-    URL = 'https://www.kernel.org/pub/linux/kernel/v3.x/'
+    URLS = ['https://www.kernel.org/pub/linux/kernel/v3.x/',
+            'https://www.kernel.org/pub/linux/kernel/v4.x/']
+
     SOURCE = 'linux-{version}.tar.gz'
 
-    def __init__(self, version, config_path=None, work_dir=None,
+    def __init__(self, version, config_path=None, mirrors=None, work_dir=None,
                  data_dirs=None):
         """
         Creates an instance of :class:`KernelBuild`.
 
         :param version: kernel version ("3.19.8").
         :param config_path: path to config file.
+        :param mirrors: list of mirrors to try
         :param work_dir: work directory.
         :param data_dirs: list of directories to keep the downloaded kernel
         :return: None.
@@ -59,21 +63,56 @@ class KernelBuild(object):
         if not os.path.isdir(self.build_dir):
             os.makedirs(self.build_dir)
 
+        self.mirrors = []
+        if mirrors is not None:
+            for item in mirrors:
+                if item.endswith('/'):
+                    self.mirrors.append(item)
+                else:
+                    self.mirrors.append(item + '/')
+
     def __repr__(self):
         return "KernelBuild('%s, %s, %s')" % (self.version,
                                               self.config_path,
                                               self.work_dir)
 
-    def download(self):
+    def download(self, name=None, asset_hash=None, algorithm='sha1',
+                    locations=None, expire=None):
         """
         Download kernel source.
-        """
-        self.kernel_file = self.SOURCE.format(version=self.version)
-        full_url = self.URL + self.SOURCE.format(version=self.version)
-        self.asset_path = asset.Asset(full_url, asset_hash=None,
-                                      algorithm=None, locations=None,
-                                      cache_dirs=self.data_dirs).fetch()
+        Method call the utils.asset in order to fetch and asset file
+        supporting hash check, caching and multiple locations.
 
+        :param name: the asset filename or URL
+        :param asset_hash: asset hash (optional)
+        :param algorithm: hash algorithm (optional, defaults to sha1)
+        :param locations: list of URLs from where the asset can be
+                          fetched (optional)
+        :param expire: time for the asset to expire
+        """
+
+        if name is None:
+            self.kernel_file = self.SOURCE.format(version=self.version)
+        else:
+            self.kernel_file = name
+
+        if locations is None:
+            locations = []
+            for item in self.mirrors:
+                locations.append(item + self.kernel_file)
+            for item in self.URLS:
+                locations.append(item + self.kernel_file)
+
+        if expire is not None:
+            expire = data_structures.time_to_seconds(str(expire))
+
+        self.asset_path = asset.Asset(self.kernel_file,
+                                      asset_hash,
+                                      algorithm, locations,
+                                      self.data_dirs,
+                                      expire).fetch()
+
+        
     def uncompress(self):
         """
         Uncompress kernel source.
@@ -87,20 +126,22 @@ class KernelBuild(object):
         """
         self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
         build.make(self.linux_dir, extra_args='O=%s mrproper' % self.build_dir)
+        log.info("Apply kernel config")
         if self.config_path is not None:
             dotconfig = os.path.join(self.linux_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
+            build.make(self.linux_dir, extra_args='O=%s olddefconfig' % self.build_dir)
+        else:
+            build.make(self.linux_dir, extra_args='O=%s defconfig' % self.build_dir)
 
-    def build(self):
+    def build(self, build_target='', extra_args=''):
         """
         Build kernel from source.
         """
         log.info("Starting build the kernel")
-        if self.config_path is None:
-            build.make(self.linux_dir, extra_args='O=%s defconfig' % self.build_dir)
-        else:
-            build.make(self.linux_dir, extra_args='O=%s olddefconfig' % self.build_dir)
-        build.make(self.linux_dir, extra_args='O=%s' % self.build_dir)
+        build.make(self.linux_dir, extra_args='O=%s %s %s' % \
+                   (self.build_dir, extra_args, build_target), \
+                   allow_output_check = 'all')
 
     def __del__(self):
         shutil.rmtree(self.work_dir)

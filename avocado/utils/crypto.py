@@ -16,6 +16,8 @@ import os
 import logging
 import hashlib
 
+def  algorithms_supported():
+    return ['md5', 'sha1', 'sha256', 'sha384', 'sha512']
 
 def hash_wrapper(algorithm='md5', data=None):
     """
@@ -24,7 +26,7 @@ def hash_wrapper(algorithm='md5', data=None):
     :param input: Optional input string that will be used to update the hash.
     :returns: Hash object.
     """
-    if algorithm not in ['md5', 'sha1']:
+    if algorithm not in algorithms_supported():
         raise ValueError("Unsupported hash algorithm: %s" % algorithm)
 
     hash_obj = hashlib.new(algorithm)
@@ -74,3 +76,10 @@ def hash_file(filename, size=None, algorithm="md5"):
         size -= len(data)
     f.close()
     return hash_obj.hexdigest()
+
+def cmp_hash(h1, h2):
+    # Catch errors comparison between different algorithms (md5 and sha256)
+    if (len(h1) != len(h2)):
+        raise ValueError("Incompatible hash comparison %s %s" % (h1, h2))
+
+    return h1 == h2

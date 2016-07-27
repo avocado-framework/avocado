@@ -39,6 +39,7 @@ class RemoteTestRunner(TestRunner):
 
     """ Tooled TestRunner to run on remote machine using ssh """
     remote_test_dir = '~/avocado/tests'
+    remote_wrapper_dir = '~/avocado/wrappers'
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
@@ -84,6 +85,11 @@ class RemoteTestRunner(TestRunner):
             rpath = os.path.join(self.remote_test_dir, mux_file)
             self.remote.makedir(os.path.dirname(rpath))
             self.remote.send_files(mux_file, rpath)
+
+        for wrap_file in getattr(self.job.args, 'wrapper') or []:
+            rpath = os.path.join(self.remote_wrapper_dir, wrap_file)
+            self.remote.makedir(os.path.dirname(rpath))
+            self.remote.send_files(wrap_file, rpath)
 
     def setup(self):
         """ Setup remote environment and copy test directories """
@@ -145,6 +151,20 @@ class RemoteTestRunner(TestRunner):
                                              'multiplex_files') or []]
         if mux_files:
             extra_params.append("--multiplex %s" % " ".join(mux_files))
+
+        wrap_files = [os.path.join(self.remote_wrapper_dir, wrap_file)
+                     for wrap_file in getattr(self.job.args,
+                                             'wrapper') or []]
+        if wrap_files:
+            extra_params.append("--wrapper %s" % " ".join(wrap_files))
+
+        filter_out = getattr(self.job.args, 'filter_out')
+        if filter_out:
+            extra_params.append("--filter-out %s" % " ".join(filter_out))
+
+        filter_only = getattr(self.job.args, 'filter_only')
+        if filter_only:
+            extra_params.append("--filter-only %s" % " ".join(filter_only))
 
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")

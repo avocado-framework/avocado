@@ -1,0 +1,34 @@
+version: !mux
+  3.19.7:
+    linux_version: 3.19.7
+    asset_hash: 7cbf866af2497778b8c82f37e7643dd3401049d3
+
+  4.6.3:
+    locations: ['https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.6.3.tar.gz']
+    linux_version: 4.6.3
+    asset_hash: 766b4d8a70acbbd7285624f2e2366f3deca444f512f6baf5c1c3650c8346c4e1
+    hash_algo: sha256
+
+  4.0:
+    mirrors: ['ftp://bad-url.org', 'https://mirror.yandex.ru/pub/linux/kernel/v4.x']
+    linux_version: 4.0
+    asset_hash: bdc0ad7c46fc64e4f501be9efd2cd5c6
+    hash_algo: md5
+
+
+# Run make check bzImage, requires sparse(http://www.kernel.org/pub/software/devel/sparse/)
+  4.7-rc6:
+    mirrors: ['https://cdn.kernel.org/pub/linux/kernel/v4.x/testing/']
+    linux_version: 4.7-rc6
+    asset_hash: af7071848c20f6c35984f2910ec69e71bea03a9f
+    build_target: bzImage
+    build_args: C=2 CF="-D__CHECK_ENDIAN__"
+
+# Run make check for modules, requires smatch(http://repo.or.cz/w/smatch.git)
+  4.7-rc5:
+    mirrors: ['https://cdn.kernel.org/pub/linux/kernel/v4.x/testing/']
+    linux_version: 4.7-rc5
+    asset_hash: eb6ea959bc3ca2a413c22b1620bedbed3d0336ca
+    build_target: all
+    build_args: C=2 CHECK="smatch -p=kernel"
+
