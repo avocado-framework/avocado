@@ -19,7 +19,7 @@ import logging
 import sys
 
 from avocado.core import exit_codes
-from avocado.core.html import HTMLTestResult
+from avocado.core.html import HTMLResult
 from avocado.core.result import register_test_result_class
 from avocado.core.plugin_interfaces import CLI
 
@@ -64,4 +64,4 @@ class HTML(CLI):
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if 'html_output' in args and args.html_output is not None:
-            register_test_result_class(args, HTMLTestResult)
+            register_test_result_class(args, HTMLResult)

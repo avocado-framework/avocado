@@ -28,7 +28,7 @@ class JSONResultTest(unittest.TestCase):
         self.tmpfile = tempfile.mkstemp()
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         args = argparse.Namespace(json_output=self.tmpfile[1])
-        self.test_result = jsonresult.JSONTestResult(FakeJob(args))
+        self.test_result = jsonresult.JSONResult(FakeJob(args))
         self.test_result.filename = self.tmpfile[1]
         self.test_result.start_tests()
         self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)

@@ -16,8 +16,9 @@
 JSON output module.
 """
 
-from avocado.core.jsonresult import JSONTestResult
+
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.jsonresult import JSONResult
 from avocado.core.result import register_test_result_class
 from avocado.core.parser import FileOrStdoutAction
 
@@ -44,4 +45,4 @@ class JSON(CLI):
 
     def run(self, args):
         if 'json_output' in args and args.json_output is not None:
-            register_test_result_class(args, JSONTestResult)
+            register_test_result_class(args, JSONResult)

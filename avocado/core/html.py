@@ -24,7 +24,7 @@ import urllib
 
 import pystache
 
-from .result import TestResult
+from .result import Result
 from ..utils import path as utils_path
 from ..utils import runtime
 
@@ -193,7 +193,7 @@ class ReportModel(object):
         return self._sysinfo_phase('post')
 
 
-class HTMLTestResult(TestResult):
+class HTMLResult(Result):
 
     """
     HTML Test Result class.
@@ -206,7 +206,7 @@ class HTMLTestResult(TestResult):
         :param job: Job which defines this result
         :param force_html_file: Override the output html file location
         """
-        TestResult.__init__(self, job)
+        Result.__init__(self, job)
         if force_html_file:
             self.output = force_html_file
         else:
@@ -217,7 +217,7 @@ class HTMLTestResult(TestResult):
         """
         Called once before any tests are executed.
         """
-        TestResult.start_tests(self)
+        Result.start_tests(self)
         self.json = {'debuglog': self.logfile,
                      'job_id': runtime.CURRENT_JOB.unique_id,
                      'tests': []}
@@ -229,7 +229,7 @@ class HTMLTestResult(TestResult):
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        TestResult.end_test(self, state)
+        Result.end_test(self, state)
         t = {'test': str(state.get('name', "<unknown>")),
              'url': state.get('name', "<unknown>"),
              'time_start': state.get('time_start', -1),
@@ -247,7 +247,7 @@ class HTMLTestResult(TestResult):
         """
         Called once after all tests are executed.
         """
-        TestResult.end_tests(self)
+        Result.end_tests(self)
         self.json.update({
             'total': len(self.json['tests']),
             'pass': self.passed,

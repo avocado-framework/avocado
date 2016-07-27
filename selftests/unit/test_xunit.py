@@ -35,7 +35,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         args = argparse.Namespace()
         args.xunit_output = self.tmpfile[1]
-        self.test_result = xunit.xUnitTestResult(FakeJob(args))
+        self.test_result = xunit.xUnitResult(FakeJob(args))
         self.test_result.start_tests()
         self.test1 = SimpleTest(job=job.Job(), base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
