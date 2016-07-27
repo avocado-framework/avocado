@@ -42,7 +42,6 @@ from . import output
 from . import multiplexer
 from . import tree
 from . import test
-from . import xunit
 from . import jsonresult
 from . import replay
 from .output import STD_OUTPUT
@@ -274,19 +273,12 @@ class Job(object):
         The basic idea behind the output plugins is:
 
         * If there are any active output plugins, use them
-        * Always add Xunit and JSON plugins outputting to files inside the
-          results dir
         * If at the end we only have 2 output plugins (Xunit and JSON), we can
           add the human output plugin.
         """
         if self.args:
             # If there are any active output plugins, let's use them
             self._set_output_plugins()
-
-        # Setup the xunit plugin to output to the debug directory
-        xunit_file = os.path.join(self.logdir, 'results.xml')
-        xunit_plugin = xunit.xUnitResult(self, xunit_file)
-        self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')

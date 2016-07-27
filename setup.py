@@ -131,7 +131,7 @@ if __name__ == '__main__':
                   'envkeep = avocado.plugins.envkeep:EnvKeep',
                   'gdb = avocado.plugins.gdb:GDB',
                   'wrapper = avocado.plugins.wrapper:Wrapper',
-                  'xunit = avocado.plugins.xunit:XUnit',
+                  'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.json:JSON',
                   'journal = avocado.plugins.journal:Journal',
                   'html = avocado.plugins.html:HTML',
@@ -153,6 +153,9 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
+                  ],
+              'avocado.plugins.result': [
+                  'xunit = avocado.plugins.xunit:XUnitResult',
                   ],
               },
           zip_safe=False,
