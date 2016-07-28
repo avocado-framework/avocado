@@ -126,8 +126,11 @@ class Journal(CLI):
             return
 
         self.parser = parser
-        run_subcommand_parser.output.add_argument('--journal', action='store_true',
-                                                  help='Records test status changes')
+        help_msg = ('Records test status changes (for use with '
+                    'avocado-journal-replay and avocado-server)')
+        run_subcommand_parser.output.add_argument('--journal',
+                                                  action='store_true',
+                                                  help=help_msg)
 
     def run(self, args):
         if 'journal' in args and args.journal is True:
