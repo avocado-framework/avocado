@@ -72,8 +72,7 @@ class KernelBuild(object):
         full_url = self.URL + self.SOURCE.format(version=self.version)
         self.asset_path = asset.Asset(full_url, asset_hash=None,
                                       algorithm=None, locations=None,
-                                      cache_dirs=[self.work_dir],
-                                      expire=None).fetch()
+                                      cache_dirs=self.data_dirs).fetch()
 
     def uncompress(self):
         """
