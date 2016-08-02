@@ -538,6 +538,13 @@ class SubProcess(object):
             self.terminate()
         return self.wait()
 
+    def get_pid(self):
+        """
+        Reports this proces' PID
+        """
+        self._init_subprocess()
+        return self._popen.pid
+
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
         Start a process and wait for it to end, returning the result attr.
