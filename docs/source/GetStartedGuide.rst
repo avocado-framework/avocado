@@ -219,10 +219,10 @@ instrumented and simple tests::
 Interrupting The Job On First Failed Test (failfast)
 ====================================================
 
-The Avocado ``run`` command has the option ``--failfast`` to exit the job on
-first failed test::
+The Avocado ``run`` command has the option ``--failfast on`` to exit the job
+on first failed test::
 
-    $ avocado run --failfast /bin/true /bin/false /bin/true /bin/true
+    $ avocado run --failfast on /bin/true /bin/false /bin/true /bin/true
     JOB ID     : eaf51b8c7d6be966bdf5562c9611b1ec2db3f68a
     JOB LOG    : $HOME/avocado/job-results/job-2016-07-19T09.43-eaf51b8/job.log
     TESTS      : 4
@@ -232,6 +232,10 @@ first failed test::
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0
     JOB HTML   : /home/apahim/avocado/job-results/job-2016-07-19T09.43-eaf51b8/html/results.html
     TESTS TIME : 0.02 s
+
+The ``--failfast`` option accepts the argument ``off``. Since it's disabled
+by default, the ``off`` argument only makes sense in replay jobs, when the
+original job was executed with ``--failfast on``.
 
 .. _running-external-runner:
 

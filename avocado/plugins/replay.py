@@ -136,14 +136,15 @@ class Replay(CLI):
         whitelist = ['loaders',
                      'external_runner',
                      'external_runner_testdir',
-                     'external_runner_chdir']
+                     'external_runner_chdir',
+                     'failfast']
         if replay_args is None:
             log.warn('Source job args data not found. These options will not '
                      'be loaded in this replay job: %s', ', '.join(whitelist))
         else:
             for option in whitelist:
                 optvalue = getattr(args, option, None)
-                if optvalue:
+                if optvalue is not None:
                     log.warn("Overriding the replay %s with the --%s value "
                              "given on the command line.",
                              option.replace('_', '-'),

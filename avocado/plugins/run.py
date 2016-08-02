@@ -77,8 +77,9 @@ class Run(CLICmd):
                                   'You can also use suffixes, like: '
                                   ' s (seconds), m (minutes), h (hours). '))
 
-        parser.add_argument('--failfast', action='store_true',
-                            help='Interrupt job on first failed test.')
+        parser.add_argument('--failfast', choices=('on', 'off'),
+                            help='Enable or disable the job interruption on '
+                                 'first failed test.')
 
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
