@@ -42,7 +42,7 @@ class Asset(object):
     """
 
     def __init__(self, name, asset_hash, algorithm, locations, cache_dirs,
-                 expire):
+                 expire=None):
         """
         Initialize the Asset() class.
 
