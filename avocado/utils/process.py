@@ -430,6 +430,9 @@ class SubProcess(object):
         self.result.exit_status = rc
         if self.result.duration == 0:
             self.result.duration = time.time() - self.start_time
+        if self.verbose:
+            log.info("Command '%s' finished with %s after %ss", self.cmd, rc,
+                     self.result.duration)
         self._fill_streams()
 
     def _fill_streams(self):
