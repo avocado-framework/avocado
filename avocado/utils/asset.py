@@ -138,13 +138,8 @@ class Asset(object):
                         exc_type, exc_value = sys.exc_info()[:2]
                         log.error('%s: %s' % (exc_type.__name__, exc_value))
 
-            # Despite our effort, we could not provide a healthy file. Sorry.
-            log.error("Failed to fetch %s." % self.basename)
-            return None
-
-        # Cannot find a writable cache_dir. Bye.
-        log.error("Can't find a writable cache dir.")
-        return None
+            raise EnvironmentError("Failed to fetch %s." % self.basename)
+        raise EnvironmentError("Can't find a writable cache directory.")
 
     def _download(self, url):
         try:
