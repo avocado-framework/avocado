@@ -77,7 +77,10 @@ class Run(CLICmd):
                                   'You can also use suffixes, like: '
                                   ' s (seconds), m (minutes), h (hours). '))
 
-        parser.add_argument('--failfast', action='store_true',
+        parser.add_argument('--failfast',
+                            nargs='?',
+                            const=True,
+                            type=self._failfast,
                             help='Interrupt job on first failed test.')
 
         sysinfo_default = settings.get_value('sysinfo.collect',
@@ -149,6 +152,15 @@ class Run(CLICmd):
             mux.add_argument('--mux-inject', default=[], nargs='*',
                              help="Inject [path:]key:node values into the "
                              "final multiplex tree.")
+
+    def _failfast(self, string):
+        if string == 'off':
+            return False
+        elif string == 'on':
+            return True
+        msg = ('Invalid --failfast option. Valid '
+               'options are: on, off (Defaults to on)')
+        raise argparse.ArgumentTypeError(msg)
 
     def _activate(self, args):
         # Extend default multiplex tree of --mux_inject values
