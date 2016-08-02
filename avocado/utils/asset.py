@@ -50,8 +50,8 @@ class Asset(object):
         :param asset_hash: asset hash
         :param algorithm: hash algorithm
         :param locations: list of locations fetch asset from
-        :params cache_dirs: list of cache directories
-        :params expire: time in seconds for the asset to expire
+        :param cache_dirs: list of cache directories
+        :param expire: time in seconds for the asset to expire
         """
         self.name = name
         self.asset_hash = asset_hash
