@@ -81,32 +81,21 @@ class TestAsset(unittest.TestCase):
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def testFetch_error(self):
-        foo_tarball = asset.Asset('bar.tgz',
-                                  asset_hash=self.assethash,
-                                  algorithm='sha1',
-                                  locations=None,
-                                  cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
-        self.assertEqual(foo_tarball, None)
+    def testException(self):
+        a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
+                        locations=None, cache_dirs=[self.cache_dir],
+                        expire=None)
+        self.assertRaises(EnvironmentError, a.fetch)
 
     def testFetch_lockerror(self):
         with FileLock(os.path.join(self.cache_dir, self.assetname)):
-            foo_tarball = asset.Asset(self.url,
-                                      asset_hash=self.assethash,
-                                      algorithm='sha1',
-                                      locations=None,
-                                      cache_dirs=[self.cache_dir],
-                                      expire=None).fetch()
-            self.assertEqual(foo_tarball, None)
-
-        foo_tarball = asset.Asset(self.url,
-                                  asset_hash=self.assethash,
-                                  algorithm='sha1',
-                                  locations=None,
-                                  cache_dirs=[self.cache_dir],
-                                  expire=None).fetch()
-        self.assertNotEqual(foo_tarball, None)
+            a = asset.Asset(self.url,
+                            asset_hash=self.assethash,
+                            algorithm='sha1',
+                            locations=None,
+                            cache_dirs=[self.cache_dir],
+                            expire=None)
+            self.assertRaises(EnvironmentError, a.fetch)
 
     def tearDown(self):
         shutil.rmtree(self.basedir)

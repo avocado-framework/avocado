@@ -636,6 +636,7 @@ class Test(unittest.TestCase):
         :param locations: list of URLs from where the asset can be
                           fetched (optional)
         :param expire: time for the asset to expire
+        :raise EnvironmentError: When it fails to fetch the asset
         :returns: asset file local path
         """
         if expire is not None:
