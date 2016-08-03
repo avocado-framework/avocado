@@ -563,12 +563,16 @@ class SubProcess(object):
         :returns: The command result object.
         :rtype: A :class:`CmdResult` instance.
         """
+        def timeout_handler():
+            self.send_signal(sig)
+            self.result.interrupted = "timeout after %ss" % timeout
+
         self._init_subprocess()
 
         if timeout is None:
             self.wait()
         elif timeout > 0.0:
-            timer = threading.Timer(timeout, self.send_signal, [sig])
+            timer = threading.Timer(timeout, timeout_handler)
             try:
                 timer.start()
                 self.wait()
