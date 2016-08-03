@@ -118,3 +118,19 @@ class JobPost(Plugin):
         """
         Entry point for actually running the post job action
         """
+
+
+class Result(Plugin):
+
+    @abc.abstractmethod
+    def render(self, result, job):
+        """
+        Entry point with method that renders the result
+
+        This will usually be used to write the result to a file or directory.
+
+        :param result: XXX
+        :type result: :class:`avocado.core.result.Result`
+        :param job:
+        :type job:
+        """

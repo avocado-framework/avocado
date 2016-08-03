@@ -19,10 +19,10 @@ import logging
 
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.result import register_test_result_class, TestResult
+from avocado.core.result import register_test_result_class, Result
 
 
-class TAPResult(TestResult):
+class TAPResult(Result):
     """
     TAP output class
     """

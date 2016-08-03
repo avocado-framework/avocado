@@ -10,17 +10,109 @@
 # See LICENSE for more details.
 #
 # Copyright: Red Hat Inc. 2014
-# Author: Ruda Moura <rmoura@redhat.com>
+# Authors: Ruda Moura <rmoura@redhat.com>
+#          Cleber Rosa <crosa@redhat.com>
 
 """xUnit module."""
 
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.result import register_test_result_class
-from avocado.core.xunit import xUnitTestResult
+import datetime
+import logging
+import os
+import string
+from xml.dom.minidom import Document, Element
+
 from avocado.core.parser import FileOrStdoutAction
+from avocado.core.plugin_interfaces import CLI, Result
 
 
-class XUnit(CLI):
+class XUnitResult(Result):
+
+    UNKNOWN = '<unknown>'
+    PRINTABLE = string.ascii_letters + string.digits + string.punctuation + '\n\r '
+
+    def _escape_attr(self, attrib):
+        attrib = ''.join(_ if _ in self.PRINTABLE else "\\x%02x" % ord(_)
+                         for _ in str(attrib))
+        return attrib
+
+    def _escape_cdata(self, cdata):
+        cdata = ''.join(_ if _ in self.PRINTABLE else "\\x%02x" % ord(_)
+                        for _ in str(cdata))
+        return cdata.replace(']]>', ']]>]]&gt;<![CDATA[')
+
+    def _get_attr(self, container, attrib):
+        return self._escape_attr(container.get(attrib, self.UNKNOWN))
+
+    def _create_testcase_element(self, document, state):
+        testcase = document.createElement('testcase')
+        testcase.setAttribute('classname', self._get_attr(state, 'class_name'))
+        testcase.setAttribute('name', self._get_attr(state, 'name'))
+        testcase.setAttribute('time', self._get_attr(state, 'time_elapsed'))
+        return testcase
+
+    def _create_failure_or_error(self, document, test, element_type):
+        element = Element(element_type)
+        element.setAttribute('type', self._get_attr(test, 'fail_class'))
+        element.setAttribute('message', self._get_attr(test, 'fail_reason'))
+        traceback_content = self._escape_cdata(test.get('traceback', self.UNKNOWN))
+        traceback = document.createCDATASection(traceback_content)
+        element.appendChild(traceback)
+        system_out = Element('system-out')
+        system_out_cdata_content = self._escape_cdata(test.get('text_output', self.UNKNOWN))
+        system_out_cdata = document.createCDATASection(system_out_cdata_content)
+        system_out.appendChild(system_out_cdata)
+        element.appendChild(system_out)
+        return element
+
+    def _render(self, result):
+        document = Document()
+        testsuite = document.createElement('testsuite')
+        testsuite.setAttribute('name', 'avocado')
+        testsuite.setAttribute('tests', self._escape_attr(result.tests_total))
+        testsuite.setAttribute('errors', self._escape_attr(result.errors + result.interrupted))
+        testsuite.setAttribute('failures', self._escape_attr(result.failed))
+        testsuite.setAttribute('skipped', self._escape_attr(result.skipped))
+        testsuite.setAttribute('time', self._escape_attr(result.tests_total_time))
+        testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now()))
+        document.appendChild(testsuite)
+        for test in result.tests:
+            testcase = self._create_testcase_element(document, test)
+            status = test.get('status', 'ERROR')
+            if status in ('PASS', 'WARN'):
+                pass
+            elif status == 'SKIP':
+                testcase.appendChild(Element('skipped'))
+            elif status == 'FAIL':
+                element = self._create_failure_or_error(document, test, 'failure')
+                testcase.appendChild(element)
+            else:
+                element = self._create_failure_or_error(document, test, 'error')
+                testcase.appendChild(element)
+            testsuite.appendChild(testcase)
+        return document.toxml(encoding='UTF-8')
+
+    def render(self, result, job):
+        if not (hasattr(job.args, 'xunit_job_result') or
+                hasattr(job.args, 'xunit_output')):
+            return
+
+        content = self._render(result)
+        if getattr(job.args, 'xunit_job_result', 'off') == 'on':
+            xunit_path = os.path.join(job.logdir, 'results.xml')
+            with open(xunit_path, 'w') as xunit_file:
+                xunit_file.write(content)
+
+        xunit_path = getattr(job.args, 'xunit_output', 'None')
+        if xunit_path is not None:
+            if xunit_path == '-':
+                log = logging.getLogger("avocado.app")
+                log.debug(content)
+            else:
+                with open(xunit_path, 'w') as xunit_file:
+                    xunit_file.write(content)
+
+
+class XUnitCLI(CLI):
 
     """
     xUnit output
@@ -41,6 +133,11 @@ class XUnit(CLI):
             help=('Enable xUnit result format and write it to FILE. '
                   "Use '-' to redirect to the standard output."))
 
+        run_subcommand_parser.output.add_argument(
+            '--xunit-job-result', dest='xunit_job_result',
+            choices=('on', 'off'), default='on',
+            help=('Enables default xUnit result in the job results directory. '
+                  'File will be named "results.xml".'))
+
     def run(self, args):
-        if 'xunit_output' in args and args.xunit_output is not None:
-            register_test_result_class(args, xUnitTestResult)
+        pass

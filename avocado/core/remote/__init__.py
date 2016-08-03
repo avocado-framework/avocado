@@ -13,7 +13,7 @@
 # Author: Ruda Moura <rmoura@redhat.com>
 
 from .test import RemoteTest
-from .result import RemoteTestResult, VMTestResult
+from .result import RemoteResult, VMResult
 from .runner import RemoteTestRunner, VMTestRunner
 
-__all__ = ['RemoteTestResult', 'VMTestResult', 'RemoteTestRunner', 'VMTestRunner', 'RemoteTest']
+__all__ = ['RemoteResult', 'VMResult', 'RemoteTestRunner', 'VMTestRunner', 'RemoteTest']

@@ -182,7 +182,7 @@ class RemoteTestRunnerSetup(unittest.TestCase):
         flexmock_teardown()
 
     def test_setup(self):
-        """ Tests RemoteTestResult.test_setup() """
+        """ Tests RemoteResult.test_setup() """
         self.runner.setup()
         flexmock_teardown()
 
