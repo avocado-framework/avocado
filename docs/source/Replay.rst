@@ -171,6 +171,9 @@ result, using the option ``--replay-test-status``. See the example below::
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html
     TESTS TIME : 0.19 s
 
+When replaying jobs that were executed with the ``--failfast`` option, you can
+disable the ``failfast`` option using ``--failfast off`` in the replay job.
+
 To be able to replay a job, avocado records the job data in the same
 job results directory, inside a subdirectory named ``replay``. If a
 given job has a non-default path to record the logs, when the replay
