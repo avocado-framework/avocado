@@ -83,8 +83,9 @@ class CmdError(Exception):
     def __str__(self):
         if self.result is not None:
             if self.result.interrupted:
-                return "Command %s interrupted by user (Ctrl+C)" % self.command
-            if self.result.exit_status is None:
+                msg = "Command '%s' interrupted by %s"
+                msg %= (self.command, self.result.interrupted)
+            elif self.result.exit_status is None:
                 msg = "Command '%s' failed and is not responding to signals"
                 msg %= self.command
             else:
@@ -240,7 +241,7 @@ class CmdResult(object):
                    "Stderr:\n%s\n" % (self.command, self.exit_status,
                                       self.duration, self.stdout, self.stderr))
         if self.interrupted:
-            cmd_rep += "Command interrupted by user (Ctrl+C)\n"
+            cmd_rep += "Command interrupted by %s\n" % self.interrupted
         return cmd_rep
 
 
@@ -366,7 +367,7 @@ class SubProcess(object):
             self.stderr_thread.start()
 
             def signal_handler(signum, frame):
-                self.result.interrupted = True
+                self.result.interrupted = "signal/ctrl+c"
                 self.wait()
             try:
                 signal.signal(signal.SIGINT, signal_handler)
@@ -429,6 +430,9 @@ class SubProcess(object):
         self.result.exit_status = rc
         if self.result.duration == 0:
             self.result.duration = time.time() - self.start_time
+        if self.verbose:
+            log.info("Command '%s' finished with %s after %ss", self.cmd, rc,
+                     self.result.duration)
         self._fill_streams()
 
     def _fill_streams(self):
@@ -538,6 +542,13 @@ class SubProcess(object):
             self.terminate()
         return self.wait()
 
+    def get_pid(self):
+        """
+        Reports this proces' PID
+        """
+        self._init_subprocess()
+        return self._popen.pid
+
     def run(self, timeout=None, sig=signal.SIGTERM):
         """
         Start a process and wait for it to end, returning the result attr.
@@ -555,22 +566,24 @@ class SubProcess(object):
         :returns: The command result object.
         :rtype: A :class:`CmdResult` instance.
         """
+        def timeout_handler():
+            self.send_signal(sig)
+            self.result.interrupted = "timeout after %ss" % timeout
+
         self._init_subprocess()
-        start_time = time.time()
 
         if timeout is None:
             self.wait()
-
-        if timeout > 0.0:
-            while time.time() - start_time < timeout:
-                self.poll()
-                if self.result.exit_status is not None:
-                    break
+        elif timeout > 0.0:
+            timer = threading.Timer(timeout, timeout_handler)
+            try:
+                timer.start()
+                self.wait()
+            finally:
+                timer.cancel()
 
         if self.result.exit_status is None:
-            internal_timeout = 1.0
-            self.send_signal(sig)
-            stop_time = time.time() + internal_timeout
+            stop_time = time.time() + 1
             while time.time() < stop_time:
                 self.poll()
                 if self.result.exit_status is not None:
