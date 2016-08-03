@@ -25,6 +25,7 @@ from avocado.core import job
 from avocado.core import loader
 from avocado.core import multiplexer
 from avocado.core.plugin_interfaces import CLICmd
+from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.settings import settings
 from avocado.utils.data_structures import time_to_seconds
 
@@ -185,4 +186,13 @@ class Run(CLICmd):
             log.error(e.message)
             sys.exit(exit_codes.AVOCADO_FAIL)
         job_instance = job.Job(args)
-        return job_instance.run()
+        job_run = job_instance.run()
+        result_dispatcher = ResultDispatcher()
+        if result_dispatcher.extensions:
+            # At this point job_instance doesn't have a single results attribute
+            # which is the end goal.  For now, we pick any of the plugin classes
+            # added to the result proxy.
+            if len(job_instance.result_proxy.output_plugins) > 0:
+                result = job_instance.result_proxy.output_plugins[0]
+                result_dispatcher.map_method('render', result, job_instance)
+        return job_run
