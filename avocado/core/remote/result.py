@@ -25,8 +25,6 @@ class RemoteResult(HumanResult):
     Remote Machine Test Result class.
     """
 
-    command_line_arg_name = '--remote-hostname'
-
     def __init__(self, job):
         """
         Creates an instance of RemoteResult.
@@ -50,8 +48,6 @@ class VMResult(RemoteResult):
     """
     Virtual Machine Test Result class.
     """
-
-    command_line_arg_name = '--vm-domain'
 
     def __init__(self, job):
         super(VMResult, self).__init__(job)

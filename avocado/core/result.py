@@ -89,11 +89,6 @@ class Result(object):
     Result class, holder for job (and its tests) result information.
     """
 
-    #: Should be set by result plugins to inform users about output options
-    #: inconsistencies given on the command line, and where these
-    #: inconsistencies come from.
-    command_line_arg_name = None
-
     def __init__(self, job):
         """
         Creates an instance of Result.

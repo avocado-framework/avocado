@@ -199,8 +199,6 @@ class HTMLResult(Result):
     HTML Test Result class.
     """
 
-    command_line_arg_name = '--html'
-
     def __init__(self, job, force_html_file=None):
         """
         :param job: Job which defines this result

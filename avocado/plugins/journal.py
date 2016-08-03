@@ -43,8 +43,6 @@ class ResultJournal(Result):
     feedback to users from a central place.
     """
 
-    command_line_arg_name = '--journal'
-
     def __init__(self, job=None):
         """
         Creates an instance of ResultJournal.
