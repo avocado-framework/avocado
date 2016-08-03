@@ -83,8 +83,8 @@ class CmdError(Exception):
     def __str__(self):
         if self.result is not None:
             if self.result.interrupted:
-                msg = "Command '%s' interrupted by user (Ctrl+C)"
-                msg %= self.command
+                msg = "Command '%s' interrupted by %s"
+                msg %= (self.command, self.result.interrupted)
             elif self.result.exit_status is None:
                 msg = "Command '%s' failed and is not responding to signals"
                 msg %= self.command
@@ -241,7 +241,7 @@ class CmdResult(object):
                    "Stderr:\n%s\n" % (self.command, self.exit_status,
                                       self.duration, self.stdout, self.stderr))
         if self.interrupted:
-            cmd_rep += "Command interrupted by user (Ctrl+C)\n"
+            cmd_rep += "Command interrupted by %s\n" % self.interrupted
         return cmd_rep
 
 
@@ -367,7 +367,7 @@ class SubProcess(object):
             self.stderr_thread.start()
 
             def signal_handler(signum, frame):
-                self.result.interrupted = True
+                self.result.interrupted = "signal/ctrl+c"
                 self.wait()
             try:
                 signal.signal(signal.SIGINT, signal_handler)
