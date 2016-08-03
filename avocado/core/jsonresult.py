@@ -19,10 +19,10 @@ JSON output module.
 import json
 import logging
 
-from .result import TestResult
+from .result import Result
 
 
-class JSONTestResult(TestResult):
+class JSONResult(Result):
 
     """
     JSON Test Result class.
@@ -35,7 +35,7 @@ class JSONTestResult(TestResult):
         :param job: Job which defines this result
         :param force_json_file: Override the json output file location
         """
-        TestResult.__init__(self, job)
+        Result.__init__(self, job)
         if force_json_file:
             self.output = force_json_file
         else:
@@ -47,7 +47,7 @@ class JSONTestResult(TestResult):
         """
         Called once before any tests are executed.
         """
-        TestResult.start_tests(self)
+        Result.start_tests(self)
         self.json = {'debuglog': self.logfile,
                      'tests': []}
 
@@ -58,7 +58,7 @@ class JSONTestResult(TestResult):
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        TestResult.end_test(self, state)
+        Result.end_test(self, state)
         if 'job_id' not in self.json:
             self.json['job_id'] = state.get('job_unique_id', "<unknown>")
         t = {'test': str(state.get('name', "<unknown>")),
@@ -82,7 +82,7 @@ class JSONTestResult(TestResult):
         """
         Called once after all tests are executed.
         """
-        TestResult.end_tests(self)
+        Result.end_tests(self)
         self.json.update({
             'total': self.tests_total,
             'pass': self.passed,

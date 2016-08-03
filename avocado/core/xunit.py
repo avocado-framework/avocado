@@ -19,7 +19,7 @@ import logging
 import string
 from xml.sax.saxutils import quoteattr
 
-from .result import TestResult
+from .result import Result
 
 
 # We use a subset of the XML format defined in this URL:
@@ -148,7 +148,7 @@ class XmlResult(object):
         self.testcases.append(tc.format(**values))
 
 
-class xUnitTestResult(TestResult):
+class xUnitResult(Result):
 
     """
     xUnit Test Result class.
@@ -158,12 +158,12 @@ class xUnitTestResult(TestResult):
 
     def __init__(self, job, force_xunit_file=None):
         """
-        Creates an instance of xUnitTestResult.
+        Creates an instance of xUnitResult.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         :param force_xunit_file: Override the output file defined in job.args
         """
-        TestResult.__init__(self, job)
+        Result.__init__(self, job)
         if force_xunit_file:
             self.output = force_xunit_file
         else:
@@ -175,14 +175,14 @@ class xUnitTestResult(TestResult):
         """
         Record a start tests event.
         """
-        TestResult.start_tests(self)
+        Result.start_tests(self)
         self.xml.start_testsuite(datetime.datetime.now())
 
     def start_test(self, test):
         """
         Record a start test event.
         """
-        TestResult.start_test(self, test)
+        Result.start_test(self, test)
 
     def end_test(self, state):
         """
@@ -191,7 +191,7 @@ class xUnitTestResult(TestResult):
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        TestResult.end_test(self, state)
+        Result.end_test(self, state)
         status = state.get('status', "ERROR")
         if status in ('PASS', 'WARN'):
             self.xml.add_success(state)
@@ -206,7 +206,7 @@ class xUnitTestResult(TestResult):
         """
         Record an end tests event.
         """
-        TestResult.end_tests(self)
+        Result.end_tests(self)
         values = {'tests': self.tests_total,
                   'errors': self.errors + self.interrupted,
                   'failures': self.failed,

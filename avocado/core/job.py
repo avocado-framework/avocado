@@ -115,7 +115,7 @@ class Job(object):
         self.test_dir = data_dir.get_test_dir()
         self.test_index = 1
         self.status = "RUNNING"
-        self.result_proxy = result.TestResultProxy()
+        self.result_proxy = result.ResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
@@ -285,22 +285,22 @@ class Job(object):
 
         # Setup the xunit plugin to output to the debug directory
         xunit_file = os.path.join(self.logdir, 'results.xml')
-        xunit_plugin = xunit.xUnitTestResult(self, xunit_file)
+        xunit_plugin = xunit.xUnitResult(self, xunit_file)
         self.result_proxy.add_output_plugin(xunit_plugin)
 
         # Setup the json plugin to output to the debug directory
         json_file = os.path.join(self.logdir, 'results.json')
-        json_plugin = jsonresult.JSONTestResult(self, json_file)
+        json_plugin = jsonresult.JSONResult(self, json_file)
         self.result_proxy.add_output_plugin(json_plugin)
 
         # Setup the html output to the results directory
         if HTML_REPORT_SUPPORT:
             html_file = os.path.join(self.logdir, 'html', 'results.html')
-            html_plugin = html.HTMLTestResult(self, html_file)
+            html_plugin = html.HTMLResult(self, html_file)
             self.result_proxy.add_output_plugin(html_plugin)
 
         if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
-            human_plugin = result.HumanTestResult(self)
+            human_plugin = result.HumanResult(self)
             self.result_proxy.add_output_plugin(human_plugin)
 
     def _make_test_suite(self, urls=None):
