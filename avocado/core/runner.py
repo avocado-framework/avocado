@@ -445,7 +445,7 @@ class TestRunner(object):
         elif not mapping[test_state['status']]:
             summary.add("FAIL")
 
-            if getattr(self.job.args, 'failfast', False):
+            if getattr(self.job.args, 'failfast', 'off') == 'on':
                 summary.add("INTERRUPTED")
                 self.job.log.debug("Interrupting job (failfast).")
                 return False

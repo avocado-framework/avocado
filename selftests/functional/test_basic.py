@@ -151,7 +151,8 @@ class RunnerOperationTest(unittest.TestCase):
     def test_runner_failfast(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
-                    'passtest.py failtest.py passtest.py --failfast' % self.tmpdir)
+                    'passtest.py failtest.py passtest.py --failfast on' %
+                    self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertIn('Interrupting job (failfast).', result.stdout)
         self.assertIn('PASS 1 | ERROR 0 | FAIL 1 | SKIP 1', result.stdout)
