@@ -56,10 +56,10 @@ class XmlResult(object):
 
         :param timestamp: Timestamp string in date/time format.
         """
-        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skipped="{skip}" time="{total_time}" timestamp="%s">' % timestamp
+        self.testsuite = '<testsuite name="avocado" tests="{tests}" errors="{errors}" failures="{failures}" skipped="{skip}" time="{tests_total_time}" timestamp="%s">' % timestamp
         self.testcases = []
 
-    def end_testsuite(self, tests, errors, failures, skip, total_time):
+    def end_testsuite(self, tests, errors, failures, skip, tests_total_time):
         """
         End of testsuite node.
 
@@ -73,7 +73,7 @@ class XmlResult(object):
                   'errors': errors,
                   'failures': failures,
                   'skip': skip,
-                  'total_time': total_time}
+                  'tests_total_time': tests_total_time}
         self.xml.append(self.testsuite.format(**values))
         for tc in self.testcases:
             self.xml.append(tc)
@@ -211,7 +211,7 @@ class xUnitResult(Result):
                   'errors': self.errors + self.interrupted,
                   'failures': self.failed,
                   'skip': self.skipped,
-                  'total_time': self.total_time}
+                  'tests_total_time': self.tests_total_time}
         self.xml.end_testsuite(**values)
         contents = self.xml.get_contents()
         if self.output == '-':

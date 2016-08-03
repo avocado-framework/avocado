@@ -254,7 +254,7 @@ class HTMLResult(Result):
             'errors': self.errors,
             'failures': self.failed,
             'skip': self.skipped,
-            'time': self.total_time
+            'time': self.tests_total_time
         })
         self._render_report()
 
