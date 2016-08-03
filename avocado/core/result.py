@@ -112,6 +112,7 @@ class Result(object):
         self.skipped = 0
         self.warned = 0
         self.interrupted = 0
+        self.tests = []
 
         # Where this results intends to write to. Convention is that a dash (-)
         # means stdout, and stdout is a special output that can be exclusively
@@ -165,6 +166,7 @@ class Result(object):
         """
         self.tests_run += 1
         self.tests_total_time += state.get('time_elapsed', -1)
+        self.tests.append(state)
 
     def check_test(self, state):
         """
