@@ -556,21 +556,19 @@ class SubProcess(object):
         :rtype: A :class:`CmdResult` instance.
         """
         self._init_subprocess()
-        start_time = time.time()
 
         if timeout is None:
             self.wait()
-
-        if timeout > 0.0:
-            while time.time() - start_time < timeout:
-                self.poll()
-                if self.result.exit_status is not None:
-                    break
+        elif timeout > 0.0:
+            timer = threading.Timer(timeout, self.send_signal, [sig])
+            try:
+                timer.start()
+                self.wait()
+            finally:
+                timer.cancel()
 
         if self.result.exit_status is None:
-            internal_timeout = 1.0
-            self.send_signal(sig)
-            stop_time = time.time() + internal_timeout
+            stop_time = time.time() + 1
             while time.time() < stop_time:
                 self.poll()
                 if self.result.exit_status is not None:
