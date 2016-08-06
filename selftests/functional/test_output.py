@@ -17,6 +17,7 @@ from avocado.core import exit_codes
 from avocado.core.output import TermSupport
 from avocado.utils import process
 from avocado.utils import script
+from avocado.utils import path as utils_path
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
@@ -56,11 +57,21 @@ def perl_tap_parser_uncapable():
     return os.system("perl -e 'use TAP::Parser;'") != 0
 
 
+def missing_binary(binary):
+    try:
+        utils_path.find_command(binary)
+        return False
+    except utils_path.CmdNotFoundError:
+        return True
+
+
 class OutputTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
+    @unittest.skipIf(missing_binary('cc'),
+                     "C compiler is required by the underlying doublefree.py test")
     def test_output_doublefree(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
