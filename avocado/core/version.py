@@ -16,11 +16,14 @@
 
 __all__ = ['MAJOR', 'MINOR', 'VERSION']
 
+import pkg_resources
 
-MAJOR = 39
-MINOR = 0
+try:
+    VERSION = pkg_resources.get_distribution("avocado").version
+except pkg_resources.DistributionNotFound:
+    VERSION = "0.0"
 
-VERSION = "%s.%s" % (MAJOR, MINOR)
+MAJOR, MINOR = VERSION.split('.')
 
 if __name__ == '__main__':
     print(VERSION)

@@ -19,8 +19,6 @@ import os
 
 from setuptools import setup
 
-from avocado import VERSION
-
 
 VIRTUAL_ENV = 'VIRTUAL_ENV' in os.environ
 
@@ -104,7 +102,7 @@ def get_long_description():
 
 if __name__ == '__main__':
     setup(name='avocado',
-          version=VERSION,
+          version='39.0',
           description='Avocado Test Framework',
           long_description=get_long_description(),
           author='Avocado Developers',
