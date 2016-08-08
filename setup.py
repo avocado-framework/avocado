@@ -17,7 +17,7 @@ import glob
 import os
 # pylint: disable=E0611
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 VIRTUAL_ENV = 'VIRTUAL_ENV' in os.environ
@@ -109,16 +109,7 @@ if __name__ == '__main__':
           author_email='avocado-devel@redhat.com',
           url='http://avocado-framework.github.io/',
           use_2to3=True,
-          packages=['avocado',
-                    'avocado.core',
-                    'avocado.utils',
-                    'avocado.utils.external',
-                    'avocado.core.remote',
-                    'avocado.core.restclient',
-                    'avocado.core.restclient.cli',
-                    'avocado.core.restclient.cli.args',
-                    'avocado.core.restclient.cli.actions',
-                    'avocado.plugins'],
+          packages=find_packages(exclude=('selftests*',)),
           package_data={'avocado.core': _get_resource_files(
               'avocado/core/resources')},
           data_files=get_data_files(),
