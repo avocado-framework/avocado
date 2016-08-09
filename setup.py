@@ -17,9 +17,7 @@ import glob
 import os
 # pylint: disable=E0611
 
-from setuptools import setup
-
-from avocado import VERSION
+from setuptools import setup, find_packages
 
 
 VIRTUAL_ENV = 'VIRTUAL_ENV' in os.environ
@@ -104,23 +102,14 @@ def get_long_description():
 
 if __name__ == '__main__':
     setup(name='avocado',
-          version=VERSION,
+          version='39.0',
           description='Avocado Test Framework',
           long_description=get_long_description(),
           author='Avocado Developers',
           author_email='avocado-devel@redhat.com',
           url='http://avocado-framework.github.io/',
           use_2to3=True,
-          packages=['avocado',
-                    'avocado.core',
-                    'avocado.utils',
-                    'avocado.utils.external',
-                    'avocado.core.remote',
-                    'avocado.core.restclient',
-                    'avocado.core.restclient.cli',
-                    'avocado.core.restclient.cli.args',
-                    'avocado.core.restclient.cli.actions',
-                    'avocado.plugins'],
+          packages=find_packages(exclude=('selftests*',)),
           package_data={'avocado.core': _get_resource_files(
               'avocado/core/resources')},
           data_files=get_data_files(),
@@ -156,4 +145,5 @@ if __name__ == '__main__':
                   ],
               },
           zip_safe=False,
-          test_suite='selftests')
+          test_suite='selftests',
+          python_requires='>=2.6')
