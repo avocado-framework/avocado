@@ -52,7 +52,10 @@ class JSONResult(Result):
                    'failures': result.failed,
                    'skip': result.skipped,
                    'time': result.tests_total_time}
-        return json.dumps(content)
+        return json.dumps(content,
+                          sort_keys=True,
+                          indent=4,
+                          separators=(',', ': '))
 
     def render(self, result, job):
         if not (hasattr(job.args, 'json_job_result') or

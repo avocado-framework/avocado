@@ -114,57 +114,52 @@ json Avocado plugin outputs job information, similarly to the xunit output
 plugin::
 
     $ avocado run sleeptest.py failtest.py synctest.py --json -
-    {"tests": [{"status": "PASS", "url": "1-sleeptest.py:SleepTest.test", "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test/debug.log", "whiteboard": "", "end": 1462366291.95844, "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test", "start": 1462366290.957374, "test": "1-sleeptest.py:SleepTest.test", "fail_reason": "None", "time": 1.001065969467163}, {"status": "FAIL", "url": "2-failtest.py:FailTest.test", "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test/debug.log", "whiteboard": "", "end": 1462366291.980557, "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test", "start": 1462366291.977591, "test": "2-failtest.py:FailTest.test", "fail_reason": "This test is supposed to fail", "time": 0.0029659271240234375}, {"status": "PASS", "url": "3-synctest.py:SyncTest.test", "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test/debug.log", "whiteboard": "", "end": 1462366294.713253, "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test", "start": 1462366291.995889, "test": "3-synctest.py:SyncTest.test", "fail_reason": "None", "time": 2.7173640727996826}], "errors": 0, "job_id": "74e01c82c95009e7d126b4fd60d5e3c615aa7539", "skip": 0, "time": 3.721395969390869, "debuglog": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/job.log", "pass": 2, "failures": 1, "total": 3}
-
-Alternatively human-readable version using `json.tool`::
-
-    $ avocado run sleeptest.py failtest.py synctest.py --json - | python -m json.tool
     {
-        "debuglog": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/job.log",
+        "debuglog": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/job.log",
         "errors": 0,
         "failures": 1,
-        "job_id": "74e01c82c95009e7d126b4fd60d5e3c615aa7539",
+        "job_id": "10715c4645d2d2b57889d7a4317fcd01451b600e",
         "pass": 2,
         "skip": 0,
         "tests": [
             {
-                "end": 1462366291.95844,
+                "end": 1470761623.176954,
                 "fail_reason": "None",
-                "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test",
-                "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/1-sleeptest.py:SleepTest.test/debug.log",
-                "start": 1462366290.957374,
+                "logdir": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test",
+                "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test/debug.log",
+                "start": 1470761622.174918,
                 "status": "PASS",
                 "test": "1-sleeptest.py:SleepTest.test",
-                "time": 1.001065969467163,
+                "time": 1.0020360946655273,
                 "url": "1-sleeptest.py:SleepTest.test",
                 "whiteboard": ""
             },
             {
-                "end": 1462366291.980557,
+                "end": 1470761623.193472,
                 "fail_reason": "This test is supposed to fail",
-                "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test",
-                "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/2-failtest.py:FailTest.test/debug.log",
-                "start": 1462366291.977591,
+                "logdir": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test",
+                "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test/debug.log",
+                "start": 1470761623.192334,
                 "status": "FAIL",
                 "test": "2-failtest.py:FailTest.test",
-                "time": 0.0029659271240234375,
+                "time": 0.0011379718780517578,
                 "url": "2-failtest.py:FailTest.test",
                 "whiteboard": ""
             },
             {
-                "end": 1462366294.713253,
+                "end": 1470761625.656061,
                 "fail_reason": "None",
-                "logdir": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test",
-                "logfile": "/home/medic/avocado/job-results/job-2016-05-04T14.51-74e01c8/test-results/3-synctest.py:SyncTest.test/debug.log",
-                "start": 1462366291.995889,
+                "logdir": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test",
+                "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test/debug.log",
+                "start": 1470761623.208165,
                 "status": "PASS",
                 "test": "3-synctest.py:SyncTest.test",
-                "time": 2.7173640727996826,
+                "time": 2.4478960037231445,
                 "url": "3-synctest.py:SyncTest.test",
                 "whiteboard": ""
             }
         ],
-        "time": 3.721395969390869,
+        "time": 3.4510700702667236,
         "total": 3
     }
 
@@ -231,7 +226,11 @@ stdout and the JSON result to output to a file::
    </testsuite>
 
    $ cat /tmp/result.json
-   {"tests": [{"status": "PASS", "url": "1-sleeptest.py:SleepTest.test",...
+   {
+        "debuglog": "/home/cleber/avocado/job-results/job-2016-08-09T13.55-1a94ad6/job.log",
+        "errors": 0,
+        ...
+   }
 
 But you won't be able to do the same without the --json flag passed to
 the program::
