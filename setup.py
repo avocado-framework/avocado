@@ -150,6 +150,7 @@ if __name__ == '__main__':
                   'run = avocado.plugins.run:Run',
                   'sysinfo = avocado.plugins.sysinfo:SysInfo',
                   'plugins = avocado.plugins.plugins:Plugins',
+                  'diff = avocado.plugins.diff:Diff',
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
