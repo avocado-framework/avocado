@@ -88,3 +88,9 @@ class JobPrePostDispatcher(Dispatcher):
             except:
                 job.log.error('Error running method "%s" of plugin "%s": %s',
                               method_name, ext.name, sys.exc_info()[1])
+
+
+class ResultDispatcher(Dispatcher):
+
+    def __init__(self):
+        super(ResultDispatcher, self).__init__('avocado.plugins.result')

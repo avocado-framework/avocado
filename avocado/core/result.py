@@ -14,10 +14,10 @@
 #          Ruda Moura <rmoura@redhat.com>
 
 """
-Contains the definition of the TestResult class, used for output in avocado.
+Contains the definition of the Result class, used for output in avocado.
 
-It also contains the most basic test result class, HumanTestResult,
-used by the test runner.
+It also contains the most basic result class, HumanResult, used by the
+test runner.
 """
 
 import os
@@ -39,14 +39,14 @@ def register_test_result_class(application_args, klass):
                              settings and feature choices, such as the runner.
     :type application_args: :class:`argparse.Namespace`
     :param klass: the test result class to enable
-    :type klass: a subclass of :class:`TestResult`
+    :type klass: a subclass of :class:`Result`
     """
     if not hasattr(application_args, 'test_result_classes'):
         application_args.test_result_classes = set()
     application_args.test_result_classes.add(klass)
 
 
-class TestResultProxy(object):
+class ResultProxy(object):
 
     def __init__(self):
         self.output_plugins = []
@@ -57,9 +57,9 @@ class TestResultProxy(object):
                 output_plugin.notify_progress(progress_from_test)
 
     def add_output_plugin(self, plugin):
-        if not isinstance(plugin, TestResult):
+        if not isinstance(plugin, Result):
             raise InvalidOutputPlugin("Object %s is not an instance of "
-                                      "TestResult" % plugin)
+                                      "Result" % plugin)
         self.output_plugins.append(plugin)
 
     def start_tests(self):
@@ -83,20 +83,15 @@ class TestResultProxy(object):
             output_plugin.check_test(state)
 
 
-class TestResult(object):
+class Result(object):
 
     """
-    Test result class, holder for test result information.
+    Result class, holder for job (and its tests) result information.
     """
-
-    #: Should be set by result plugins to inform users about output options
-    #: inconsistencies given on the command line, and where these
-    #: inconsistencies come from.
-    command_line_arg_name = None
 
     def __init__(self, job):
         """
-        Creates an instance of TestResult.
+        Creates an instance of Result.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
@@ -105,13 +100,14 @@ class TestResult(object):
         self.args = getattr(job, "args", None)
         self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
-        self.total_time = 0.0
+        self.tests_total_time = 0.0
         self.passed = 0
         self.errors = 0
         self.failed = 0
         self.skipped = 0
         self.warned = 0
         self.interrupted = 0
+        self.tests = []
 
         # Where this results intends to write to. Convention is that a dash (-)
         # means stdout, and stdout is a special output that can be exclusively
@@ -164,7 +160,8 @@ class TestResult(object):
         :type state: dict
         """
         self.tests_run += 1
-        self.total_time += state.get('time_elapsed', -1)
+        self.tests_total_time += state.get('time_elapsed', -1)
+        self.tests.append(state)
 
     def check_test(self, state):
         """
@@ -188,14 +185,14 @@ class TestResult(object):
         self.end_test(state)
 
 
-class HumanTestResult(TestResult):
+class HumanResult(Result):
 
     """
     Human output Test result class.
     """
 
     def __init__(self, job):
-        super(HumanTestResult, self).__init__(job)
+        super(HumanResult, self).__init__(job)
         self.log = logging.getLogger("avocado.app")
         self.__throbber = output.Throbber()
 
@@ -203,7 +200,7 @@ class HumanTestResult(TestResult):
         """
         Called once before any tests are executed.
         """
-        super(HumanTestResult, self).start_tests()
+        super(HumanResult, self).start_tests()
         self.log.info("JOB ID     : %s", self.job_unique_id)
         if getattr(self.args, "replay_sourcejob", None):
             self.log.info("SRC JOB ID : %s", self.args.replay_sourcejob)
@@ -214,7 +211,7 @@ class HumanTestResult(TestResult):
         """
         Called once after all tests are executed.
         """
-        super(HumanTestResult, self).end_tests()
+        super(HumanResult, self).end_tests()
         self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
                       "WARN %d | INTERRUPT %s", self.passed,
                       self.errors, self.failed, self.skipped,
@@ -224,10 +221,10 @@ class HumanTestResult(TestResult):
                 logdir = os.path.dirname(self.logfile)
                 html_file = os.path.join(logdir, 'html', 'results.html')
                 self.log.info("JOB HTML   : %s", html_file)
-        self.log.info("TESTS TIME : %.2f s", self.total_time)
+        self.log.info("TESTS TIME : %.2f s", self.tests_total_time)
 
     def start_test(self, state):
-        super(HumanTestResult, self).start_test(state)
+        super(HumanResult, self).start_test(state)
         if "name" in state:
             name = state["name"]
             uid = name.str_uid
@@ -239,7 +236,7 @@ class HumanTestResult(TestResult):
                        extra={"skip_newline": True})
 
     def end_test(self, state):
-        super(HumanTestResult, self).end_test(state)
+        super(HumanResult, self).end_test(state)
         status = state.get("status", "ERROR")
         if status == "TEST_NA":
             status = "SKIP"

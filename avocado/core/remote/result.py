@@ -16,24 +16,22 @@
 
 import os
 
-from ..result import HumanTestResult
+from ..result import HumanResult
 
 
-class RemoteTestResult(HumanTestResult):
+class RemoteResult(HumanResult):
 
     """
     Remote Machine Test Result class.
     """
 
-    command_line_arg_name = '--remote-hostname'
-
     def __init__(self, job):
         """
-        Creates an instance of RemoteTestResult.
+        Creates an instance of RemoteResult.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        HumanTestResult.__init__(self, job)
+        HumanResult.__init__(self, job)
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
         self.urls = self.args.url
@@ -45,14 +43,12 @@ class RemoteTestResult(HumanTestResult):
         pass
 
 
-class VMTestResult(RemoteTestResult):
+class VMResult(RemoteResult):
 
     """
     Virtual Machine Test Result class.
     """
 
-    command_line_arg_name = '--vm-domain'
-
     def __init__(self, job):
-        super(VMTestResult, self).__init__(job)
+        super(VMResult, self).__init__(job)
         self.vm = None

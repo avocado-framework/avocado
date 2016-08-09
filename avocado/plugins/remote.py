@@ -21,7 +21,7 @@ import sys
 from avocado.core import exit_codes
 from avocado.core import remoter
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.remote import RemoteTestResult
+from avocado.core.remote import RemoteResult
 from avocado.core.remote import RemoteTestRunner
 from avocado.core.result import register_test_result_class
 
@@ -106,6 +106,6 @@ class Remote(CLI):
     def run(self, args):
         if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
-            register_test_result_class(args, RemoteTestResult)
+            register_test_result_class(args, RemoteResult)
             args.test_runner = RemoteTestRunner
             setattr(args, 'stdout_claimed_by', '--remote-hostname')
