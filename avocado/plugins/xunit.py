@@ -89,7 +89,7 @@ class XUnitResult(Result):
                 element = self._create_failure_or_error(document, test, 'error')
                 testcase.appendChild(element)
             testsuite.appendChild(testcase)
-        return document.toxml(encoding='UTF-8')
+        return document.toprettyxml(encoding='UTF-8')
 
     def render(self, result, job):
         if not (hasattr(job.args, 'xunit_job_result') or
