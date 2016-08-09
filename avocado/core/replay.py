@@ -30,13 +30,14 @@ Record/retrieve job information for job replay
 """
 
 
-def record(args, logdir, mux, urls=None):
+def record(args, logdir, mux, urls=None, cmdline=None):
     replay_dir = path.init_dir(logdir, 'replay')
     path_cfg = os.path.join(replay_dir, 'config')
     path_urls = os.path.join(replay_dir, 'urls')
     path_mux = os.path.join(replay_dir, 'multiplex')
     path_pwd = os.path.join(replay_dir, 'pwd')
     path_args = os.path.join(replay_dir, 'args')
+    path_cmdline = os.path.join(replay_dir, 'cmdline')
 
     if urls:
         with open(path_urls, 'w') as f:
@@ -53,6 +54,20 @@ def record(args, logdir, mux, urls=None):
 
     with open(path_args, 'w') as f:
         pickle.dump(args.__dict__, f, pickle.HIGHEST_PROTOCOL)
+
+    with open(path_cmdline, 'w') as f:
+        f.write('%s' % cmdline)
+
+
+def retrieve_cmdline(resultsdir):
+    recorded_cmdline = os.path.join(resultsdir, "replay", "cmdline")
+    if not os.path.exists(recorded_cmdline):
+        return None
+
+    with open(recorded_cmdline, 'r') as f:
+        cmdline = f.read()
+
+    return ast.literal_eval(cmdline)
 
 
 def retrieve_pwd(resultsdir):
