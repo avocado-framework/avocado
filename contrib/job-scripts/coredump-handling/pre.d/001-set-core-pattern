@@ -20,6 +20,12 @@ if [ -z $AVOCADO_JOB_LOGDIR ]; then
    exit 1
 fi
 
+# Skip this when not running as root
+if [ $UID -ne 0 ]; then
+    (>&2 echo "Skipping coredump support because not running as root")
+    exit 0
+fi
+
 # Set the core ulimit for Avocado main process
 ppid=$$
 prlimit --core=unlimited --pid=$(cat /proc/$ppid/status | grep PPid | cut -f2)
