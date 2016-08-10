@@ -146,6 +146,7 @@ if __name__ == '__main__':
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
                   'json = avocado.plugins.jsonresult:JSONResult',
+                  'html = avocado.plugins.html:HTMLResult',
                   ],
               },
           zip_safe=False,
