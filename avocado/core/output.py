@@ -529,7 +529,7 @@ class Paginator(object):
 
     def __init__(self):
         try:
-            paginator = "%s -FRSX" % utils_path.find_command('less')
+            paginator = "%s -FRX" % utils_path.find_command('less')
         except utils_path.CmdNotFoundError:
             paginator = None
 
