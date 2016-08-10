@@ -16,6 +16,7 @@ Contents:
    LoggingSystem
    MultiplexConfig
    Replay
+   Diff
    RunningTestsRemotely
    DebuggingWithGDB
    WrapProcess
