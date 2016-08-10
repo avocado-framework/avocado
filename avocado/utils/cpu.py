@@ -114,3 +114,13 @@ def get_cpu_arch():
         return 'x86_64'
     else:
         return 'i386'
+
+def cpu_online_map():
+    """
+    Check out the available cpu online map
+    """
+    cpus = []
+    for line in open('/proc/cpuinfo', 'r').readlines():
+        if line.startswith('processor'):
+            cpus.append(line.split()[2])  # grab cpu number
+    return cpus
