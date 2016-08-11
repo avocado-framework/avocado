@@ -130,6 +130,8 @@ clean:
 	done
 	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
 	rm -rf avocado.egg-info
+	rm -rf html/avocado_result_html.egg-info
+	rm -rf avocado_result_html.egg-info
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
