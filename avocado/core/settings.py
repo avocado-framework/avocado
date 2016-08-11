@@ -107,6 +107,8 @@ def convert_value_type(value, value_type):
             value_type = float
         elif value_type == 'list':
             value_type = list
+        elif value_type == 'path':
+            value_type = os.path.expanduser
 
     if value_type is None:
         value_type = str
@@ -114,6 +116,8 @@ def convert_value_type(value, value_type):
     # if length of string is zero then return None
     if len(sval) == 0:
         if value_type == str:
+            return ""
+        elif value_type == os.path.expanduser:
             return ""
         elif value_type == bool:
             return False
@@ -225,16 +229,24 @@ class Settings(object):
         Get value from key in a given config file section.
 
         :param section: Config file section.
+        :type section: str
         :param key: Config file key, relative to section.
+        :type key: str
         :param key_type: Type of key.
-                It can be either of: str, int, float, bool, list
+        :type key_type: either string based names representing types,
+                        including `str`, `int`, `float`, `bool`,
+                        `list` and `path`, or the types themselves
+                        limited to :class:`str`, :class:`int`,
+                        :class:`float`, :class:`bool` and
+                        :class:`list`.
         :param default: Default value for the key, if none found.
         :param allow_blank: Whether an empty value for the key is allowed.
 
         :returns: value, if one available in the config.
                 default value, if one provided.
 
-        :raises: SettingsError, in case no default was provided.
+        :raises: SettingsError, in case key is not set and no default
+                 was provided.
         """
         try:
             val = self.config.get(section, key)
