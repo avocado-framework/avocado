@@ -17,15 +17,14 @@ HTML output module.
 import codecs
 import os
 import shutil
-import sys
 import time
 import subprocess
 import urllib
 
 import pystache
+import pkg_resources
 
 from .result import Result
-from ..utils import path as utils_path
 from ..utils import runtime
 
 
@@ -35,10 +34,9 @@ def check_resource_requirements():
 
     Currently, only the template file is looked for
     """
-    base_path = os.path.dirname(sys.modules[__name__].__file__)
-    html_resources_path = os.path.join(base_path, 'resources', 'htmlresult')
-    template = os.path.join(html_resources_path, 'templates', 'report.mustache')
-    return os.path.exists(template)
+    return pkg_resources.resource_exists(
+        'avocado.core',
+        'resources/htmlresult/templates/report.mustache')
 
 
 class ReportModel(object):
@@ -256,20 +254,39 @@ class HTMLResult(Result):
         })
         self._render_report()
 
+    def _copy_static_resources(self):
+        module = 'avocado.core'
+        base_path = 'resources/htmlresult/static'
+
+        for top_dir in pkg_resources.resource_listdir(module, base_path):
+            rsrc_dir = base_path + '/%s' % top_dir
+            if pkg_resources.resource_isdir(module, rsrc_dir):
+                rsrc_files = pkg_resources.resource_listdir(module, rsrc_dir)
+                for rsrc_file in rsrc_files:
+                    source = pkg_resources.resource_filename(
+                        module,
+                        rsrc_dir + '/%s' % rsrc_file)
+                    dest = os.path.join(
+                        os.path.dirname(os.path.abspath(self.output)),
+                        top_dir,
+                        os.path.basename(source))
+                    pkg_resources.ensure_directory(dest)
+                    shutil.copy(source, dest)
+
     def _render_report(self):
         context = ReportModel(json_input=self.json, html_output=self.output)
-        base_path = os.path.dirname(sys.modules[__name__].__file__)
-        html_resources_path = os.path.join(base_path, 'resources', 'htmlresult')
-        template = os.path.join(html_resources_path, 'templates', 'report.mustache')
+        template = pkg_resources.resource_string(
+            'avocado.core',
+            'resources/htmlresult/templates/report.mustache')
 
         # pylint: disable=E0611
         try:
             if hasattr(pystache, 'Renderer'):
                 renderer = pystache.Renderer('utf-8', 'utf-8')
-                report_contents = renderer.render(open(template, 'r').read(), context)
+                report_contents = renderer.render(template, context)
             else:
                 from pystache import view
-                v = view.View(open(template, 'r').read(), context)
+                v = view.View(template, context)
                 report_contents = v.render('utf8')  # encodes into ascii
                 report_contents = codecs.decode("utf8")  # decode to unicode
         except UnicodeDecodeError as details:
@@ -278,7 +295,7 @@ class HTMLResult(Result):
             ui = logging.getLogger("avocado.app")
             ui.critical("\n" + ("-" * 80))
             ui.critical("HTML failed to render the template: %s\n\n",
-                        open(template, 'r').read())
+                        template)
             ui.critical("-" * 80)
             ui.critical("%s:\n\n", details)
             ui.critical("%r\n\n", self.json)
@@ -286,15 +303,7 @@ class HTMLResult(Result):
             ui.critical("-" * 80)
             raise
 
-        static_basedir = os.path.join(html_resources_path, 'static')
-        output_dir = os.path.dirname(os.path.abspath(self.output))
-        utils_path.init_dir(output_dir)
-        for resource_dir in os.listdir(static_basedir):
-            res_dir = os.path.join(static_basedir, resource_dir)
-            out_dir = os.path.join(output_dir, resource_dir)
-            if os.path.exists(out_dir):
-                shutil.rmtree(out_dir)
-            shutil.copytree(res_dir, out_dir)
+        self._copy_static_resources()
         with codecs.open(self.output, 'w', 'utf-8') as report_file:
             report_file.write(report_contents)
 
