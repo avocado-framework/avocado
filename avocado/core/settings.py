@@ -244,6 +244,11 @@ class Settings(object):
         if not val.strip() and not allow_blank:
             return self._handle_no_value(section, key, default)
 
+        # if the value looks like a user directory, let's expand it
+        if key_type == str:
+            if isinstance(val, str):
+                val = os.path.expanduser(val)
+
         try:
             return convert_value_type(val, key_type)
         except Exception as details:
