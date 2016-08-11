@@ -162,8 +162,8 @@ generation for sleeptest just like::
      (2/3) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
      (3/3) sleeptest.py:SleepTest.test;3: PASS (5.00 s)
     RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
     TESTS TIME : 6.50 s
+    JOB HTML   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
 As explained in :doc:`MultiplexConfig` without any path the content gets
@@ -199,8 +199,8 @@ You can also execute multiple tests with the same multiplex file::
      (7/8) synctest.py:SyncTest.test;3: PASS (2.46 s)
      (8/8) synctest.py:SyncTest.test;4: PASS (2.45 s)
     RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML   : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/html/results.html
     TESTS TIME : 26.26 s
+    JOB HTML   : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/html/results.html
 
 
 Advanced logging capabilities
@@ -274,8 +274,8 @@ The outcome should be similar to::
     progress: 1-plant.py:Plant.test_plant_organic: harvesting organic avocados on row 2
     PASS (7.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML   : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
     TESTS TIME : 7.01 s
+    JOB HTML   : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
 
 The custom ``progress`` stream is combined with the application output, which
 may or may not suit your needs or preferences. If you want the ``progress``
@@ -778,11 +778,11 @@ impact your test grid. You can account for that possibility and set up a
     $ avocado run sleeptest.py --multiplex /tmp/sleeptest-example.yaml
     JOB ID    : 6d5a2ff16bb92395100fbc3945b8d253308728c9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
     TESTS     : 1
      (1/1) sleeptest.py:SleepTest.test: ERROR (2.97 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 2.97 s
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.52-6d5a2ff1/html/results.html
 
 ::
 
@@ -864,12 +864,11 @@ This accomplishes a similar effect to the multiplex setup defined in there.
     $ avocado run timeouttest.py
     JOB ID    : d78498a54504b481192f2f9bca5ebb9bbb820b8a
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/job.log
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/html/results.html
     TESTS     : 1
      (1/1) timeouttest.py:TimeoutTest.test: INTERRUPTED (3.04 s)
     RESULTS    : PASS 0 | ERROR 1 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 3.04 s
-
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.54-d78498a5/html/results.html
 
 ::
 
