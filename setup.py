@@ -83,7 +83,7 @@ def get_data_files():
     return data_files
 
 
-def _get_resource_files(path):
+def _get_resource_files(path, base):
     """
     Given a path, return all the files in there to package
     """
@@ -91,7 +91,7 @@ def _get_resource_files(path):
     for root, _, files in sorted(os.walk(path)):
         for name in files:
             fullname = os.path.join(root, name)
-            flist.append(fullname[len('avocado/core/'):])
+            flist.append(fullname[len(base):])
     return flist
 
 
@@ -110,8 +110,10 @@ if __name__ == '__main__':
           url='http://avocado-framework.github.io/',
           use_2to3=True,
           packages=find_packages(exclude=('selftests*',)),
-          package_data={'avocado.core': _get_resource_files(
-              'avocado/core/resources')},
+          package_data={
+              'avocado.plugins.html.avocado_result_html':
+              _get_resource_files('avocado/plugins/html/avocado_result_html/resources',
+                                  'avocado/plugins/html/avocado_result_html/')},
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
@@ -123,7 +125,7 @@ if __name__ == '__main__':
                   'xunit = avocado.plugins.xunit:XUnitCLI',
                   'json = avocado.plugins.jsonresult:JSONCLI',
                   'journal = avocado.plugins.journal:Journal',
-                  'html = avocado.plugins.html:HTML',
+                  'html = avocado.plugins.html.avocado_result_html:HTML',
                   'remote = avocado.plugins.remote:Remote',
                   'replay = avocado.plugins.replay:Replay',
                   'tap = avocado.plugins.tap:TAP',
@@ -146,7 +148,7 @@ if __name__ == '__main__':
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
                   'json = avocado.plugins.jsonresult:JSONResult',
-                  'html = avocado.plugins.html:HTMLResult',
+                  'html = avocado.plugins.html.avocado_result_html:HTMLResult',
                   ],
               },
           zip_safe=False,
