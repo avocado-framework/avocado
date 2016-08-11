@@ -198,8 +198,8 @@ class HTMLResult(Result):
 
     @staticmethod
     def _copy_static_resources(html_path):
-        module = 'avocado.core'
-        base_path = 'resources/htmlresult/static'
+        module = 'avocado.plugins.html.avocado_result_html'
+        base_path = 'resources/static'
 
         for top_dir in pkg_resources.resource_listdir(module, base_path):
             rsrc_dir = base_path + '/%s' % top_dir
@@ -233,8 +233,8 @@ class HTMLResult(Result):
     def _render(self, result, output_path):
         context = ReportModel(result=result, html_output=output_path)
         template = pkg_resources.resource_string(
-            'avocado.core',
-            'resources/htmlresult/templates/report.mustache')
+            'avocado.plugins.html.avocado_result_html',
+            'resources/templates/report.mustache')
 
         # pylint: disable=E0611
         try:
