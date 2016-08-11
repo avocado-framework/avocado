@@ -71,7 +71,8 @@ def get_cpu_vendor_name():
     """
     Get the current cpu vendor name
 
-    :returns: string 'intel' or 'amd' or 'power7' depending on the current CPU architecture.
+    :returns: string 'intel' or 'amd' or 'power7' depending on the
+        current CPU architecture.
     :rtype: `string`
     """
     vendors_map = {
@@ -114,3 +115,14 @@ def get_cpu_arch():
         return 'x86_64'
     else:
         return 'i386'
+
+
+def cpu_online_list():
+    """
+    Check out the available cpu online list
+    """
+    cpus = []
+    for line in open('/proc/cpuinfo', 'r'):
+        if line.startswith('processor'):
+            cpus.append(line.split()[2])  # grab cpu number
+    return cpus
