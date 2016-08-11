@@ -6,6 +6,8 @@ import sys
 import shutil
 from xml.dom import minidom
 
+import pkg_resources
+
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
@@ -39,6 +41,14 @@ def image_output_uncapable():
         import PIL
         return False
     except ImportError:
+        return True
+
+
+def html_uncapable():
+    try:
+        pkg_resources.require('avocado_result_html')
+        return False
+    except pkg_resources.DistributionNotFound:
         return True
 
 
@@ -106,6 +116,8 @@ class OutputPluginTest(unittest.TestCase):
                              "Missing error message from output:\n%s" %
                              result.stderr)
 
+    @unittest.skipIf(html_uncapable(),
+                     "Uncapable of Avocado Result HTML plugin")
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
@@ -167,6 +179,8 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
+    @unittest.skipIf(html_uncapable(),
+                     "Uncapable of Avocado Result HTML plugin")
     def test_output_compatible_setup_3(self):
         tmpfile = tempfile.mktemp(prefix='avocado_' + __name__)
         tmpfile2 = tempfile.mktemp(prefix='avocado_' + __name__)
