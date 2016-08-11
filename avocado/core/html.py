@@ -25,7 +25,6 @@ import pystache
 import pkg_resources
 
 from .result import Result
-from ..utils import runtime
 
 
 def check_resource_requirements():
@@ -45,8 +44,8 @@ class ReportModel(object):
     Prepares an object that can be passed up to mustache for rendering.
     """
 
-    def __init__(self, result_dict, html_output):
-        self.result_dict = result_dict
+    def __init__(self, result, html_output):
+        self.result = result
         self.html_output = html_output
         self.html_output_dir = os.path.abspath(os.path.dirname(html_output))
 
@@ -64,14 +63,14 @@ class ReportModel(object):
             return value
 
     def job_id(self):
-        return self.result_dict['job_id']
+        return self.result.job_unique_id
 
     def execution_time(self):
-        return "%.2f" % self.result_dict['time']
+        return "%.2f" % self.result.tests_total_time
 
     def results_dir(self, relative_links=True):
         results_dir = os.path.abspath(os.path.dirname(
-            self.result_dict['debuglog']))
+            self.result.logfile))
         if relative_links:
             return os.path.relpath(results_dir, self.html_output_dir)
         else:
@@ -81,18 +80,20 @@ class ReportModel(object):
         return os.path.basename(self.results_dir(False))
 
     def logdir(self):
-        return os.path.relpath(self.result_dict['logdir'],
+        logdir = os.path
+        path = os.path.relpath(self.result.logdir,
                                self.html_output_dir)
+        return urllib.quote(path)
 
     def total(self):
-        return self.result_dict['total']
+        return self.result.tests_total
 
     def passed(self):
-        return self.result_dict['pass']
+        return self.result.passed
 
     def pass_rate(self):
-        total = float(self.result_dict['total'])
-        passed = float(self.result_dict['pass'])
+        total = float(self.result.tests_total)
+        passed = float(self.result.passed)
         if total > 0:
             pr = 100 * (passed / total)
         else:
@@ -127,27 +128,34 @@ class ReportModel(object):
                    "RUNNING": "info",
                    "NOSTATUS": "info",
                    "INTERRUPTED": "danger"}
-        test_info = self.result_dict['tests']
+        test_info = []
         results_dir = self.results_dir(False)
-        for t in test_info:
+        for t in self.result.tests:
+            formatted = {}
             logdir = os.path.join(results_dir, 'test-results', t['logdir'])
-            t['logdir'] = os.path.relpath(logdir, self.html_output_dir)
+            formatted['logdir'] = os.path.relpath(logdir, self.html_output_dir)
             logfile = os.path.join(logdir, 'debug.log')
-            t['logfile'] = os.path.relpath(logfile, self.html_output_dir)
-            t['logfile_basename'] = os.path.basename(logfile)
-            t['time'] = "%.2f" % t['time']
-            t['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
-                                            time.localtime(t['time_start']))
-            t['row_class'] = mapping[t['status']]
+            formatted['logfile'] = os.path.relpath(logfile, self.html_output_dir)
+            formatted['logfile_basename'] = os.path.basename(logfile)
+            formatted['time'] = "%.2f" % t['time_elapsed']
+            formatted['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
+                                                    time.localtime(t['time_start']))
+            formatted['row_class'] = mapping[t['status']]
             exhibition_limit = 40
-            if len(t['fail_reason']) > exhibition_limit:
-                t['fail_reason'] = ('<a data-container="body" '
-                                    'data-toggle="popover" '
-                                    'data-placement="top" '
-                                    'title="Error Details" '
-                                    'data-content="%s">%s...</a>' %
-                                    (t['fail_reason'],
-                                     t['fail_reason'][:exhibition_limit]))
+            fail_reason = t.get('fail_reason')
+            if fail_reason is None:
+                fail_reason = '<unknown>'
+            fail_reason = str(fail_reason)
+            if len(fail_reason) > exhibition_limit:
+                fail_reason = ('<a data-container="body" '
+                               'data-toggle="popover" '
+                               'data-placement="top" '
+                               'title="Error Details" '
+                               'data-content="%s">%s...</a>' %
+                               ('fail_reason',
+                                'fail_reason'[:exhibition_limit]))
+            formatted['fail_reason'] = fail_reason
+            test_info.append(formatted)
         return test_info
 
     def _sysinfo_phase(self, phase):
@@ -206,51 +214,12 @@ class HTMLResult(Result):
             self.output = force_html_file
         else:
             self.output = self.args.html_output
-        self.result_dict = None
-
-    def start_tests(self):
-        """
-        Called once before any tests are executed.
-        """
-        Result.start_tests(self)
-        self.result_dict = {'debuglog': self.logfile,
-                            'job_id': runtime.CURRENT_JOB.unique_id,
-                            'tests': []}
-
-    def end_test(self, state):
-        """
-        Called when the given test has been run.
-
-        :param state: result of :class:`avocado.core.test.Test.get_state`.
-        :type state: dict
-        """
-        Result.end_test(self, state)
-        t = {'test': str(state.get('name', "<unknown>")),
-             'url': state.get('name', "<unknown>"),
-             'time_start': state.get('time_start', -1),
-             'time_end': state.get('time_end', -1),
-             'time': state.get('time_elapsed', -1),
-             'status': state.get('status', "ERROR"),
-             'fail_reason': str(state.get('fail_reason', "<unknown>")),
-             'whiteboard': state.get('whiteboard', "<unknown>"),
-             'logdir': urllib.quote(state.get('logdir', "<unknown>")),
-             'logfile': urllib.quote(state.get('logfile', "<unknown>"))
-             }
-        self.result_dict['tests'].append(t)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
         Result.end_tests(self)
-        self.result_dict.update({
-            'total': len(self.result_dict['tests']),
-            'pass': self.passed,
-            'errors': self.errors,
-            'failures': self.failed,
-            'skip': self.skipped,
-            'time': self.tests_total_time
-        })
         self._render_report()
 
     def _copy_static_resources(self):
@@ -273,7 +242,7 @@ class HTMLResult(Result):
                     shutil.copy(source, dest)
 
     def _render_report(self):
-        context = ReportModel(result_dict=self.result_dict,
+        context = ReportModel(result=self,
                               html_output=self.output)
         template = pkg_resources.resource_string(
             'avocado.core',
