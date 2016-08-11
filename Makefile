@@ -150,7 +150,7 @@ requirements-plugins: requirements
 	done
 
 smokecheck:
-	./scripts/avocado run passtest
+	./scripts/avocado run passtest.py
 
 check: clean develop check_cyclical modules_boundaries
 	selftests/checkall
