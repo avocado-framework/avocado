@@ -170,6 +170,7 @@ modules_boundaries:
 
 develop:
 	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
+	cd html && $(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user) && cd -
 
 link: develop
 	for MAKEFILE in $(AVOCADO_PLUGINS);\
