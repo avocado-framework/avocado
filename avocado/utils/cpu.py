@@ -115,3 +115,14 @@ def get_cpu_arch():
         return 'x86_64'
     else:
         return 'i386'
+
+
+def cpu_online_list():
+    """
+    Reports a list of indexes of the online cpus
+    """
+    cpus = []
+    for line in open('/proc/cpuinfo', 'r'):
+        if line.startswith('processor'):
+            cpus.append(int(line.split()[2]))  # grab cpu number
+    return cpus
