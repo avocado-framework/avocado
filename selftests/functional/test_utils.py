@@ -1,9 +1,15 @@
+import multiprocessing
 import os
-import sys
-import stat
-import time
-import tempfile
+import random
 import shutil
+import stat
+import sys
+import tempfile
+import time
+
+from avocado.utils.filelock import FileLock
+from avocado.utils.stacktrace import prepare_exc_info
+
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -154,6 +160,38 @@ class ProcessTest(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.base_logdir)
+
+
+def file_lock_action(args):
+    path, players = args
+    max_individual_timeout = 0.021
+    max_timeout = max_individual_timeout * players
+    with FileLock(path, max_timeout):
+        sleeptime = random.random() / 100
+        time.sleep(sleeptime)
+
+
+class FileLockTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+
+    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_LONG") != "1",
+                     "Skipping test that takes a long time to run")
+    def test_filelock(self):
+        players = 1000
+        pool = multiprocessing.Pool(players)
+        args = [(self.tmpdir, players)] * players
+        try:
+            pool.map(file_lock_action, args)
+        except:
+            msg = 'Failed to run FileLock with %s players:\n%s'
+            msg %= (players, prepare_exc_info(sys.exc_info()))
+            self.fail(msg)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
 
 if __name__ == '__main__':
     unittest.main()
