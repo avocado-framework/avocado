@@ -20,7 +20,6 @@ It also contains the most basic result class, HumanResult, used by the
 test runner.
 """
 
-import os
 import logging
 
 from . import output
@@ -216,11 +215,6 @@ class HumanResult(Result):
                       "WARN %d | INTERRUPT %s", self.passed,
                       self.errors, self.failed, self.skipped,
                       self.warned, self.interrupted)
-        if self.args is not None:
-            if 'html_output' in self.args:
-                logdir = os.path.dirname(self.logfile)
-                html_file = os.path.join(logdir, 'html', 'results.html')
-                self.log.info("JOB HTML   : %s", html_file)
         self.log.info("TESTS TIME : %.2f s", self.tests_total_time)
 
     def start_test(self, state):

@@ -29,8 +29,8 @@ that is, the job and its test(s) results are constantly updated::
      (2/3) failtest.py:FailTest.test: FAIL (0.00 s)
      (3/3) synctest.py:SyncTest.test: PASS (1.98 s)
     RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
     TESTS TIME : 3.17 s
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
 
 The most important thing is to remember that programs should never need to parse
 human output to figure out what happened to a test job run.
