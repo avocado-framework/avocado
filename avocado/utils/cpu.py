@@ -71,7 +71,8 @@ def get_cpu_vendor_name():
     """
     Get the current cpu vendor name
 
-    :returns: string 'intel' or 'amd' or 'power7' depending on the current CPU architecture.
+    :returns: string 'intel' or 'amd' or 'power7' depending on the
+         current CPU architecture.
     :rtype: `string`
     """
     vendors_map = {
