@@ -42,14 +42,11 @@ def check_resource_requirements():
 class ReportModel(object):
 
     """
-    Prepares JSON that can be passed up to mustache for rendering.
+    Prepares an object that can be passed up to mustache for rendering.
     """
 
-    def __init__(self, json_input, html_output):
-        """
-        Base JSON that comes from test results.
-        """
-        self.json = json_input
+    def __init__(self, result_dict, html_output):
+        self.result_dict = result_dict
         self.html_output = html_output
         self.html_output_dir = os.path.abspath(os.path.dirname(html_output))
 
@@ -67,13 +64,14 @@ class ReportModel(object):
             return value
 
     def job_id(self):
-        return self.json['job_id']
+        return self.result_dict['job_id']
 
     def execution_time(self):
-        return "%.2f" % self.json['time']
+        return "%.2f" % self.result_dict['time']
 
     def results_dir(self, relative_links=True):
-        results_dir = os.path.abspath(os.path.dirname(self.json['debuglog']))
+        results_dir = os.path.abspath(os.path.dirname(
+            self.result_dict['debuglog']))
         if relative_links:
             return os.path.relpath(results_dir, self.html_output_dir)
         else:
@@ -83,17 +81,18 @@ class ReportModel(object):
         return os.path.basename(self.results_dir(False))
 
     def logdir(self):
-        return os.path.relpath(self.json['logdir'], self.html_output_dir)
+        return os.path.relpath(self.result_dict['logdir'],
+                               self.html_output_dir)
 
     def total(self):
-        return self.json['total']
+        return self.result_dict['total']
 
     def passed(self):
-        return self.json['pass']
+        return self.result_dict['pass']
 
     def pass_rate(self):
-        total = float(self.json['total'])
-        passed = float(self.json['pass'])
+        total = float(self.result_dict['total'])
+        passed = float(self.result_dict['pass'])
         if total > 0:
             pr = 100 * (passed / total)
         else:
@@ -128,7 +127,7 @@ class ReportModel(object):
                    "RUNNING": "info",
                    "NOSTATUS": "info",
                    "INTERRUPTED": "danger"}
-        test_info = self.json['tests']
+        test_info = self.result_dict['tests']
         results_dir = self.results_dir(False)
         for t in test_info:
             logdir = os.path.join(results_dir, 'test-results', t['logdir'])
@@ -207,16 +206,16 @@ class HTMLResult(Result):
             self.output = force_html_file
         else:
             self.output = self.args.html_output
-        self.json = None
+        self.result_dict = None
 
     def start_tests(self):
         """
         Called once before any tests are executed.
         """
         Result.start_tests(self)
-        self.json = {'debuglog': self.logfile,
-                     'job_id': runtime.CURRENT_JOB.unique_id,
-                     'tests': []}
+        self.result_dict = {'debuglog': self.logfile,
+                            'job_id': runtime.CURRENT_JOB.unique_id,
+                            'tests': []}
 
     def end_test(self, state):
         """
@@ -237,15 +236,15 @@ class HTMLResult(Result):
              'logdir': urllib.quote(state.get('logdir', "<unknown>")),
              'logfile': urllib.quote(state.get('logfile', "<unknown>"))
              }
-        self.json['tests'].append(t)
+        self.result_dict['tests'].append(t)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
         Result.end_tests(self)
-        self.json.update({
-            'total': len(self.json['tests']),
+        self.result_dict.update({
+            'total': len(self.result_dict['tests']),
             'pass': self.passed,
             'errors': self.errors,
             'failures': self.failed,
@@ -274,7 +273,8 @@ class HTMLResult(Result):
                     shutil.copy(source, dest)
 
     def _render_report(self):
-        context = ReportModel(json_input=self.json, html_output=self.output)
+        context = ReportModel(result_dict=self.result_dict,
+                              html_output=self.output)
         template = pkg_resources.resource_string(
             'avocado.core',
             'resources/htmlresult/templates/report.mustache')
@@ -298,7 +298,7 @@ class HTMLResult(Result):
                         template)
             ui.critical("-" * 80)
             ui.critical("%s:\n\n", details)
-            ui.critical("%r\n\n", self.json)
+            ui.critical("%r\n\n", self.result_dict)
             ui.critical("%r", getattr(details, "object", "object not found"))
             ui.critical("-" * 80)
             raise
