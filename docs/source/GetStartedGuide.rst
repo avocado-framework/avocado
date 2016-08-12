@@ -103,8 +103,8 @@ recognizable name::
     TESTS     : 1
      (1/1) /bin/true: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
     TESTS TIME : 0.01 s
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
 
 You probably noticed that we used ``/bin/true`` as a test, and in accordance with our
 expectations, it passed! These are known as `simple tests`, but there is also another
@@ -123,8 +123,8 @@ using the ``--dry-run`` argument::
     TESTS      : 1
      (1/1) /bin/true: SKIP
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
-    JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
     TESTS TIME : 0.00 s
+    JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
 
 which supports all ``run`` arguments, simulates the run and even lists the test params.
 
@@ -213,8 +213,8 @@ instrumented and simple tests::
      (6/6) /bin/true: PASS (0.00 s)
      (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
     RESULTS    : PASS 2 | ERROR 2 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
     TESTS TIME : 5.88 s
+    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
 
 Interrupting The Job On First Failed Test (failfast)
 ====================================================
@@ -230,8 +230,8 @@ on first failed test::
      (2/4) /bin/false: FAIL (0.01 s)
     Interrupting job (failfast).
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0
-    JOB HTML   : /home/apahim/avocado/job-results/job-2016-07-19T09.43-eaf51b8/html/results.html
     TESTS TIME : 0.02 s
+    JOB HTML   : /home/apahim/avocado/job-results/job-2016-07-19T09.43-eaf51b8/html/results.html
 
 The ``--failfast`` option accepts the argument ``off``. Since it's disabled
 by default, the ``off`` argument only makes sense in replay jobs, when the
@@ -277,8 +277,8 @@ files with shell code could be considered tests::
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TESTS TIME : 0.01 s
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This example is pretty obvious, and could be achieved by giving
 `/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
@@ -295,8 +295,8 @@ But now consider the following example::
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TESTS TIME : 3.04 s
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This effectively makes `/bin/curl` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.

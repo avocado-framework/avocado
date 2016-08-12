@@ -12,7 +12,7 @@
 
 PYTHON=$(shell which python)
 PYTHON26=$(shell $(PYTHON) -V 2>&1 | grep 2.6 -q && echo true || echo false)
-VERSION=$(shell $(PYTHON) $(CURDIR)/avocado/core/version.py)
+VERSION=$(shell $(PYTHON) setup.py --version)
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/avocado
 PROJECT=avocado
@@ -130,6 +130,8 @@ clean:
 	done
 	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
 	rm -rf avocado.egg-info
+	rm -rf html/avocado_result_html.egg-info
+	rm -rf avocado_result_html.egg-info
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
@@ -150,7 +152,7 @@ requirements-plugins: requirements
 	done
 
 smokecheck:
-	./scripts/avocado run passtest
+	./scripts/avocado run passtest.py
 
 check: clean develop check_cyclical modules_boundaries
 	selftests/checkall
@@ -168,6 +170,7 @@ modules_boundaries:
 
 develop:
 	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
+	cd html && $(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user) && cd -
 
 link: develop
 	for MAKEFILE in $(AVOCADO_PLUGINS);\

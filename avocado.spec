@@ -39,10 +39,16 @@ these days a framework) to perform automated testing.
 
 %build
 %{__python} setup.py build
+cd html
+%{__python} setup.py build
+cd ..
 %{__make} man
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
+cd html
+%{__python} setup.py install --root %{buildroot} --skip-build
+cd ..
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
@@ -78,8 +84,7 @@ selftests/run
 %{_mandir}/man1/avocado-rest-client.1.gz
 %{_docdir}/avocado/avocado.rst
 %{_docdir}/avocado/avocado-rest-client.rst
-%exclude %{python_sitelib}/avocado/plugins/html.py*
-%exclude %{python_sitelib}/avocado/core/resources/htmlresult/*
+%exclude %{python_sitelib}/avocado_result_html*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -96,8 +101,7 @@ directory. It also gives the user the ability to write a report on an
 arbitrary filesystem location.
 
 %files plugins-output-html
-%{python_sitelib}/avocado/plugins/html.py*
-%{python_sitelib}/avocado/core/resources/htmlresult/*
+%{python_sitelib}/avocado_result_html*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
