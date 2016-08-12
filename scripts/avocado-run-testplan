@@ -14,11 +14,14 @@
 # Author: Cleber Rosa <cleber@redhat.com>
 
 
-import sys
-import json
-import getpass
-import argparse
 import datetime
+import getpass
+import json
+import os
+import sys
+
+import argparse
+import git
 
 
 class Parser(argparse.ArgumentParser):
@@ -145,10 +148,21 @@ class App(object):
         print("Test Plan: %s" % data.get("name"))
         print("Run by '%s' at %s" % (data.get("user_identification"),
                                      data.get("datetime")))
+        print("")
         for result in data.get("results"):
             print("%s: '%s': %s" % (result.get("result"),
                                     result.get("name"),
                                     result.get("notes")))
+        print("")
+        for name in sorted(os.listdir(os.path.pardir)):
+            path = os.path.join(os.path.pardir, name)
+            if not os.path.isdir(path):
+                continue
+            try:
+                repo = git.Repo(path)
+                print("%s: %s" % (name, repo.head.commit))
+            except git.exc.InvalidGitRepositoryError:
+                pass
         return 0
 
 if __name__ == '__main__':
