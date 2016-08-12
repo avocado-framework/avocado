@@ -15,11 +15,14 @@
 # Original author: Ross Brattain <ross.b.brattain@intel.com>
 
 """
-APIs to list and load/unload linux kernel modules.
+APIs
+    :check  config is enable or not
+    :list and load/unload linux kernel modules.
 """
 
 import re
 import logging
+import platform
 
 from . import process
 
@@ -153,3 +156,29 @@ def module_is_loaded(module_name):
 def get_loaded_modules():
     lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
     return [line.split(None, 1)[0] for line in lsmod_output]
+
+
+def check_kernel_config(config_name):
+    """
+    Method : pass a config option and it return
+             -config not  avilable
+             -config as in  loadable
+             -config already loaded
+    """
+
+    kernel_version = platform.uname()[2]
+
+    config_output = process.system_output(
+        'cat /boot/config-' + kernel_version +
+        '| grep -i --color=never ' + config_name, shell=True)
+
+    if "=" not in config_output:
+        return 'Config is not set'
+
+    elif "m" in config_output:
+        mesg = 'config set as Dynamically loadable'
+        return mesg
+
+    else:
+
+        return 'config set as module already loaded'
