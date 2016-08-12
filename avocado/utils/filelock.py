@@ -35,7 +35,7 @@ class FileLock(object):
 
     """
     Creates an exclusive advisory lock for a file.
-    All processes should would use and honour the advisory
+    All processes should use and honor the advisory
     locking scheme, but uncooperative processes are free to
     ignore the lock and access the file in any way they choose.
     """
