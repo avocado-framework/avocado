@@ -12,7 +12,7 @@
 
 PYTHON=$(shell which python)
 PYTHON26=$(shell $(PYTHON) -V 2>&1 | grep 2.6 -q && echo true || echo false)
-VERSION=$(shell $(PYTHON) $(CURDIR)/avocado/core/version.py)
+VERSION=$(shell $(PYTHON) setup.py --version)
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/avocado
 PROJECT=avocado

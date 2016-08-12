@@ -264,6 +264,8 @@ class Job(object):
             for klass in self.args.test_result_classes:
                 test_result_instance = klass(self)
                 self.result_proxy.add_output_plugin(test_result_instance)
+        else:
+            self.result_proxy.add_output_plugin(result.Result(self))
 
     def _make_test_result(self):
         """
