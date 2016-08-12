@@ -130,19 +130,20 @@ class ReportModel(object):
                    "INTERRUPTED": "danger"}
         test_info = []
         results_dir = self.results_dir(False)
-        for t in self.result.tests:
-            formatted = {}
-            logdir = os.path.join(results_dir, 'test-results', t['logdir'])
-            formatted['logdir'] = os.path.relpath(logdir, self.html_output_dir)
+        for tst in self.result.tests:
+            tst = tst.copy()    # we don't want to override other's results
+            tst["test"] = str(tst["name"])
+            logdir = os.path.join(results_dir, 'test-results', tst['logdir'])
+            tst['logdir'] = os.path.relpath(logdir, self.html_output_dir)
             logfile = os.path.join(logdir, 'debug.log')
-            formatted['logfile'] = os.path.relpath(logfile, self.html_output_dir)
-            formatted['logfile_basename'] = os.path.basename(logfile)
-            formatted['time'] = "%.2f" % t['time_elapsed']
-            formatted['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
-                                                    time.localtime(t['time_start']))
-            formatted['row_class'] = mapping[t['status']]
+            tst['logfile'] = os.path.relpath(logfile, self.html_output_dir)
+            tst['logfile_basename'] = os.path.basename(logfile)
+            tst['time'] = "%.2f" % tst['time_elapsed']
+            tst['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
+                                              time.localtime(tst['time_start']))
+            tst['row_class'] = mapping[tst['status']]
             exhibition_limit = 40
-            fail_reason = t.get('fail_reason')
+            fail_reason = tst.get('fail_reason')
             if fail_reason is None:
                 fail_reason = '<unknown>'
             fail_reason = str(fail_reason)
@@ -154,8 +155,8 @@ class ReportModel(object):
                                'data-content="%s">%s...</a>' %
                                ('fail_reason',
                                 'fail_reason'[:exhibition_limit]))
-            formatted['fail_reason'] = fail_reason
-            test_info.append(formatted)
+            tst['fail_reason'] = fail_reason
+            test_info.append(tst)
         return test_info
 
     def _sysinfo_phase(self, phase):
