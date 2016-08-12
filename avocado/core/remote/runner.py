@@ -132,6 +132,45 @@ class RemoteTestRunner(TestRunner):
         except IndexError:
             return (False, None)
 
+    @staticmethod
+    def _parse_json_response(output):
+        """
+        Try to parse JSON response from the remote output.
+
+        It tries to find start of the json dictionary and then grabs
+        everything till the end of the dictionary. It supports single-
+        line as well as multi-line pretty json output.
+        """
+        _result = iter(output.splitlines())
+        json_result = ""
+        response = None
+        for line in _result:    # Find the beginning
+            if line.startswith('{'):
+                json_result += line
+                break
+        else:
+            raise ValueError("Could not find the beginning of the remote JSON"
+                             " output:\n%s" % result.stdout)
+        if json_result.endswith('}'):   # probably single-line
+            try:
+                response = json.loads(json_result)
+            except ValueError:
+                pass
+        if not response:
+            # Json was incomplete, try to find another end
+            for line in _result:
+                json_result += line
+                if line.startswith('}'):
+                    try:
+                        response = json.loads(json_result)
+                        break
+                    except ValueError:
+                        pass
+        if not response:
+            raise ValueError("Could not find the end of the remote JSON "
+                             "output:\n%s" % result.stdout)
+        return response
+
     def run_test(self, urls, timeout):
         """
         Run tests.
@@ -169,19 +208,8 @@ class RemoteTestRunner(TestRunner):
             raise exceptions.JobError("Remote execution took longer than "
                                       "specified timeout (%s). Interrupting."
                                       % (timeout))
-        json_result = None
-        for json_output in result.stdout.splitlines():
-            # We expect dictionary:
-            if json_output.startswith('{') and json_output.endswith('}'):
-                try:
-                    json_result = json.loads(json_output)
-                except ValueError:
-                    pass
 
-        if json_result is None:
-            raise ValueError("Could not parse JSON from avocado remote output:"
-                             "\n%s" % result.stdout)
-
+        json_result = self._parse_json_response(result.stdout)
         for t_dict in json_result['tests']:
             logdir = os.path.join(self.job.logdir, 'test-results')
             relative_path = astring.string_to_safe_path(t_dict['test'])
