@@ -412,15 +412,22 @@ class Mux(object):
         else:
             return len(test_suite)
 
-    def itertests(self):
+    def itertests(self, template):
         """
-        Yield variant-id and test params
+        Processes the template and yields test definition with proper params
         """
         if self.variants:  # Copy template and modify it's params
             i = None
             for i, variant in enumerate(self.variants, 1):
-                yield i if self._has_multiple_variants else None, variant
+                test_factory = [template[0], template[1].copy()]
+                if "params" in test_factory[1]:
+                    msg = ("Unable to multiplex test %s, params are already "
+                           "present in test factory: %s"
+                           % (test_factory[0], test_factory[1]))
+                    raise ValueError(msg)
+                test_factory[1]['params'] = (variant, self._mux_path)
+                yield test_factory, i if self._has_multiple_variants else None
             if i is None:   # No variants, use template
-                yield None, None
+                yield template, None
         else:   # No variants, use template
-            yield None, None
+            yield template, None
