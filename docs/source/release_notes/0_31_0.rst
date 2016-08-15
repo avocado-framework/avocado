@@ -55,7 +55,7 @@ the project repos for Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
 
 Happy hacking and testing!
 
----
+----
 
 | [1] http://avocado-framework.readthedocs.org/en/0.31.0/ReferenceGuide.html#job-cleanup
 | [2] http://avocado-framework.readthedocs.org/en/0.31.0/Plugins.html

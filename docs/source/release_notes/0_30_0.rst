@@ -47,7 +47,7 @@ packages or from source[1].
 
 Happy hacking and testing!
 
----
+----
 
 | [1] http://avocado-framework.readthedocs.org/en/0.30.0/GetStartedGuide.html
 | [2] https://github.com/avocado-framework/avocado/compare/0.29.0...0.30.0

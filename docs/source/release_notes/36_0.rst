@@ -49,7 +49,7 @@ either with packages or from source[4].
 
 Happy hacking and testing!
 
----
+----
 
 | [1] https://github.com/avocado-framework/avocado/tree/36lts
 | [2] https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html

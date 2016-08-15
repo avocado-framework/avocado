@@ -121,6 +121,6 @@ community and avoid confusion.
 
 Happy hacking and testing!
 
----
+----
 
 Sprint Theme: https://trello.com/c/Y6IIFXBS/732-sprint-theme

@@ -53,7 +53,7 @@ Changes in avocado-vt:
 
 See you in a couple of weeks for our next release! Happy testing!
 
----
+----
 
 | [1] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.cpu
 | [2] http://avocado-framework.readthedocs.org/en/latest/api/utils/avocado.utils.html#module-avocado.utils.git
