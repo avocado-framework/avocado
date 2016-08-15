@@ -21,7 +21,7 @@ import logging
 import tempfile
 from distutils.version import LooseVersion
 
-from . import asset, archive, build
+from . import asset, archive, build, process
 
 log = logging.getLogger('avocado.test')
 
@@ -97,13 +97,39 @@ class KernelBuild(object):
         """
         log.info("Starting build the kernel")
         if self.config_path is None:
-            build.make(self.linux_dir, extra_args='O=%s defconfig' % self.build_dir)
+            build.make(self.linux_dir, extra_args='O=%s defconfig' %
+                       self.build_dir)
         else:
-            build.make(self.linux_dir, extra_args='O=%s olddefconfig' % self.build_dir)
+            build.make(self.linux_dir, extra_args='O=%s olddefconfig' %
+                       self.build_dir)
         build.make(self.linux_dir, extra_args='O=%s' % self.build_dir)
 
     def __del__(self):
         shutil.rmtree(self.work_dir)
+
+    def kernel_build_time(self, threads, timefile='/dev/null', make_opts='',
+                          output='/dev/null'):
+        """time the bulding of the kernel"""
+
+        os.chdir(self.build_dir)
+
+        self.clean()
+
+        kernel_build_string = ("/usr/bin/time -o %s make %s -j %s vmlinux" %
+                               (timefile, make_opts, threads))
+        kernel_build_string += ' > %s 2>&1' % output
+        print build_string
+        process.run(build_string)
+
+        if (not os.path.isfile('vmlinux')):
+            errmsg = "no vmlinux found, kernel build failed"
+            self.error(errmsg)
+
+    def clean(self):
+        """make clean in the kernel tree"""
+        os.chdir(self.build_dir)
+        print "make clean"
+        process.run('make clean > /dev/null 2> /dev/null')
 
 
 def check_version(version):
