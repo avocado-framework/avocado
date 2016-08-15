@@ -313,9 +313,9 @@ Advanced YAML tags
 ==================
 
 There are additional features related to YAML files. Most of them require values
-separated by ``:``. Again, in all such cases it's mandatory to add a white space (``
-``) between the tag and the ``:``, otherwise ``:`` is part of the tag name and the
-parsing fails.
+separated by ``":"``. Again, in all such cases it's mandatory to add a white space
+(``" "``) between the tag and the ``":"``, otherwise ``":"`` is part of the tag
+name and the parsing fails.
 
 !include
 --------
