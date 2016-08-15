@@ -15,11 +15,17 @@
 # Original author: Ross Brattain <ross.b.brattain@intel.com>
 
 """
-APIs to list and load/unload linux kernel modules.
+APIs
+    check config option availability in running kernel
+        return 0 , 1 and 2 respectively
+        in running kernel : config not set , loadable , loaded
+    list and load/unload linux kernel modules.
 """
 
 import re
 import logging
+import platform
+from enum import Enum
 
 from . import process
 
@@ -153,3 +159,42 @@ def module_is_loaded(module_name):
 def get_loaded_modules():
     lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
     return [line.split(None, 1)[0] for line in lsmod_output]
+
+
+class Config_check_mesg(Enum):
+    """
+    enum class to config option , represent in
+    running kernel
+    0 : config not avilable
+    1 : config avilable as dynamic loadable
+    2: config avilable as loaded
+    """
+    notset = 0
+    Dynamically_loadable = 1
+    loaded = 2
+
+
+def check_kernel_config(config_name):
+    """
+    Method : pass a config option and it return
+             - return enum 0 : config not  avilable
+             - return enum 1 : config as in  loadable
+             - return enum 2 : config already loaded
+    """
+
+    kernel_version = platform.uname()[2]
+
+    config_file = '/boot/config-' + kernel_version
+    for line in open(config_file, 'r'):
+        line = line.split('=')
+        if len(line) != 2:
+            continue
+        config = line[0].strip()
+        if config == config_name:
+            option = line[1].strip()
+            if option == "m":
+                return Config_check_mesg.Dynamically_loadable
+            else:
+                return Config_check_mesg.loaded
+
+    return Config_check_mesg.notset
