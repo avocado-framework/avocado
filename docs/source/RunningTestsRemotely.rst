@@ -168,7 +168,7 @@ the test execution to be properly performed.  There's one ready to use
 image (``ldoktor/fedora-avocado``) in the default image repository
 (``docker.io``)::
 
-    $ docker pull ldoktor/fedora-avocado
+    $ sudo docker pull ldoktor/fedora-avocado
     Using default tag: latest
     Trying to pull repository docker.io/ldoktor/fedora-avocado ...
     latest: Pulling from docker.io/ldoktor/fedora-avocado
@@ -182,7 +182,7 @@ Assuming your system is properly setup to run Docker, including having
 an image with Avocado, you can run a test inside the container with a
 command similar to::
 
-    $ avocado run passtest.py warntest.py failtest.py --docker ldoktor/fedora-avocado
+    $ avocado run passtest.py warntest.py failtest.py --docker ldoktor/fedora-avocado --docker-cmd "sudo docker"
     DOCKER     : Container id '4bcbcd69801211501a0dde5926c0282a9630adbe29ecb17a21ef04f024366943'
     JOB ID     : db309f5daba562235834f97cad5f4458e3fe6e32
     JOB LOG    : $HOME/avocado/job-results/job-2016-07-25T08.01-db309f5/job.log
