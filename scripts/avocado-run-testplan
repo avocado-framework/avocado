@@ -14,11 +14,14 @@
 # Author: Cleber Rosa <cleber@redhat.com>
 
 
-import sys
-import json
-import getpass
-import argparse
 import datetime
+import getpass
+import json
+import os
+import subprocess
+import sys
+
+import argparse
 
 
 class Parser(argparse.ArgumentParser):
@@ -145,10 +148,23 @@ class App(object):
         print("Test Plan: %s" % data.get("name"))
         print("Run by '%s' at %s" % (data.get("user_identification"),
                                      data.get("datetime")))
+        print("")
         for result in data.get("results"):
             print("%s: '%s': %s" % (result.get("result"),
                                     result.get("name"),
                                     result.get("notes")))
+        print("")
+        for name in sorted(os.listdir(os.path.pardir)):
+            path = os.path.join(os.path.pardir, name)
+            if not os.path.isdir(path):
+                continue
+            proc = subprocess.Popen("cd '%s' && git rev-parse HEAD" % path,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
+                                    shell=True)
+            out = proc.communicate()[0].strip()
+            if not proc.poll():
+                print("%s: %s" % (name, out))
         return 0
 
 if __name__ == '__main__':
