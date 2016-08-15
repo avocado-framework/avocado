@@ -396,3 +396,4 @@ dkrcmd
 flexmock
 lockfile
 urlparse
+cpus
