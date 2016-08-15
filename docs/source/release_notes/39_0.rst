@@ -51,22 +51,6 @@ this release.  For more information, please check out the complete
 `Avocado changelog
 <https://github.com/avocado-framework/avocado/compare/38.0...39.0>`_.
 
-Sprint Theme
-============
-
-After so much love that we had on the previous version, let's twist
-things a bit with an antagonist title.  Info on this pretty good movie
-by Tarantino can be found at:
-
- http://www.imdb.com/title/tt3460252/?ref_=nm_flmg_wr_2
-
- https://www.youtube.com/watch?v=6_UI1GzaWv0
-
-The story line:
-
-In the dead of a Wyoming winter, a bounty hunter and his prisoner
-find shelter in a cabin currently inhabited by a collection of
-nefarious characters.
 
 Release Meeting
 ===============
@@ -78,3 +62,7 @@ Hangouts on Air.  The meetings are recorded and made available on the
 
 For this release, you can watch the meeting on `this link
 <https://www.youtube.com/watch?v=GotEH7SmHSw>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/nEiT7IjJ/755-sprint-theme-the-hateful-eight

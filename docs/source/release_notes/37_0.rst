@@ -32,7 +32,7 @@ For Avocado-VT, please check the full Avocado-VT changelog[4].
 
 Happy hacking and testing!
 
----
+----
 
 | [1] https://www.redhat.com/archives/avocado-devel/2016-May/msg00025.html
 | [2] https://en.wikipedia.org/wiki/Test_Anything_Protocol

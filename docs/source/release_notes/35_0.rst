@@ -99,7 +99,7 @@ If you have any concerns or questions, please let us know.
 
 Happy hacking and testing!
 
----
+----
 
 | [1] http://avocado-framework.readthedocs.org/en/35.0/ResultFormats.html#exit-codes
 | [2] https://github.com/avocado-framework/avocado/blob/35.0/etc/avocado/avocado.conf#L41

@@ -31,7 +31,7 @@ We, the people that bring you avocado will be at LinuxCon North America
 and say hello to yours truly (lmr). And of course, consider attending
 my presentation on avocado [2].
 
----
+----
 
 | [1] https://github.com/avocado-framework/avocado/compare/0.27.0...0.27.1
 | [2] http://sched.co/3Xh9

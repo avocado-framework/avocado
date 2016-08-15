@@ -51,7 +51,7 @@ Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
 
 Happy hacking and testing!
 
----
+----
 
 | [1] http://avocado-framework.readthedocs.org/en/0.32.0/Replay.html
 | [2] http://github.com/avocado-framework/avocado-misc-tests

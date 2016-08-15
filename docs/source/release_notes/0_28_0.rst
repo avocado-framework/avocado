@@ -39,7 +39,7 @@ See you in a few weeks for our next release! Happy testing!
 
 The avocado development team
 
----
+----
 
 | [1] https://github.com/avocado-framework/avocado/compare/0.27.0...0.28.0
 | [2] https://github.com/avocado-framework/avocado-vt/commit/fd9b29bbf77d7f0f3041e66a66517f9ba6b8bf48

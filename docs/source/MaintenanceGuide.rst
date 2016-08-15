@@ -75,11 +75,6 @@ content in the following repositories:
 
 * ``avocado``
 * ``avocado-vt``
-* ``avocado-virt``
-* ``avocado-virt-tests``
-
-In this order of importance. Some times ``avocado-virt`` and ``avocado-virt-tests``
-might not get updates, so it's OK to skip them.
 
 Tag all repositories
 ====================

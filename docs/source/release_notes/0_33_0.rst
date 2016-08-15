@@ -87,7 +87,7 @@ Fedora 22, Fedora 23, EPEL 6 and EPEL 7.
 
 Happy hacking and testing!
 
----
+----
 
 | [1] https://github.com/avocado-framework/avocado/compare/0.32.0...0.33.0
 | [2] https://github.com/avocado-framework/avocado-vt/compare/0.32.0...0.33.0
