@@ -336,9 +336,9 @@ class Diff(CLICmd):
             resultsdir = os.path.dirname(os.path.expanduser(job_id))
             job_id = ''
         else:
-            logs_dir = settings.get_value('datadir.paths', 'logs_dir',
-                                          default=None)
-            logdir = os.path.expanduser(logs_dir)
+            logdir = settings.get_value(section='datadir.paths',
+                                        key='logs_dir', key_type='path',
+                                        default=None)
             try:
                 resultsdir = jobdata.get_resultsdir(logdir, job_id)
             except ValueError as exception:
