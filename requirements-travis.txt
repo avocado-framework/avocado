@@ -4,7 +4,7 @@ pystache==0.4.1; python_version < '2.7'
 pystache==0.5.4; python_version >= '2.7'
 Sphinx==1.3b1
 flexmock==0.9.7
-inspektor==0.2.0
+inspektor==0.2.2
 pep8==1.6.2
 requests==1.2.3
 PyYAML==3.11
