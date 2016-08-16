@@ -28,6 +28,7 @@ all:
 	@echo
 	@echo "Development related targets:"
 	@echo "check:      Runs tree static check, unittests and functional tests"
+	@echo "check-long: Runs tree static check, unittests and long functional tests"
 	@echo "develop:    Runs 'python setup.py --develop on this tree alone"
 	@echo "link:       Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:      Get rid of scratch, byte files and removes the links to other subprojects"
@@ -154,6 +155,10 @@ smokecheck:
 
 check: clean develop check_cyclical modules_boundaries
 	selftests/checkall
+	selftests/check_tmp_dirs
+
+check-long: clean develop check_cyclical modules_boundaries
+	AVOCADO_CHECK_LONG=1 selftests/checkall
 	selftests/check_tmp_dirs
 
 selfcheck: clean check_cyclical modules_boundaries
