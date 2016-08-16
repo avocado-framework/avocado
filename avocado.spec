@@ -6,8 +6,8 @@
 
 Summary: Avocado Test Framework
 Name: avocado
-Version: 39.0
-Release: 1%{?dist}
+Version: 40.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -113,6 +113,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Aug 16 2016 Cleber Rosa <cleber@redhat.com> - 40.0-0
+- New upstream release
+
 * Tue Aug  2 2016 Cleber Rosa <cleber@redhat.com> - 39.0-1
 - Added expect requirement (for Docker plugin)
 

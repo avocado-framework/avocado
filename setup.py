@@ -102,7 +102,7 @@ def get_long_description():
 
 if __name__ == '__main__':
     setup(name='avocado',
-          version='39.0',
+          version='40.0',
           description='Avocado Test Framework',
           long_description=get_long_description(),
           author='Avocado Developers',
