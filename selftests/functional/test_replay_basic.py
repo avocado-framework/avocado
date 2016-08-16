@@ -58,9 +58,9 @@ class ReplayTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_data(self):
-        file_list = ['multiplex', 'config', 'urls', 'pwd', 'args']
+        file_list = ['multiplex', 'config', 'urls', 'pwd', 'args', 'cmdline']
         for filename in file_list:
-            path = os.path.join(self.jobdir, 'replay', filename)
+            path = os.path.join(self.jobdir, 'jobdata', filename)
             self.assertTrue(glob.glob(path))
 
     def test_run_replay(self):
