@@ -62,10 +62,10 @@ class ReportModel(object):
         else:
             return value
 
-    def job_id(self):
+    def job_unique_id(self):
         return self.result.job_unique_id
 
-    def execution_time(self):
+    def tests_total_time(self):
         return "%.2f" % self.result.tests_total_time
 
     def results_dir(self, relative_links=True):
@@ -85,7 +85,7 @@ class ReportModel(object):
                                self.html_output_dir)
         return urllib.quote(path)
 
-    def total(self):
+    def tests_total(self):
         return self.result.tests_total
 
     def passed(self):
