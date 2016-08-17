@@ -329,17 +329,10 @@ class Diff(CLICmd):
 
     @staticmethod
     def _setup_job(job_id):
-        if os.path.isdir(job_id):
-            resultsdir = os.path.expanduser(job_id)
-            job_id = ''
-        elif os.path.isfile(job_id):
-            resultsdir = os.path.dirname(os.path.expanduser(job_id))
-            job_id = ''
-        else:
-            logs_dir = settings.get_value('datadir.paths', 'logs_dir',
-                                          default=None)
-            logdir = os.path.expanduser(logs_dir)
-            resultsdir = jobdata.get_resultsdir(logdir, job_id)
+        logs_dir = settings.get_value('datadir.paths', 'logs_dir',
+                                      default=None)
+        logdir = os.path.expanduser(logs_dir)
+        resultsdir = jobdata.get_resultsdir(logdir, job_id)
 
         if resultsdir is None:
             LOG.error("Can't find job results directory for '%s' in '%s'",

@@ -170,7 +170,11 @@ def get_resultsdir(logdir, jobid):
     """
     Gets the job results directory using a Job ID.
     """
-    if jobid == 'latest':
+    if os.path.isdir(jobid):
+        return os.path.expanduser(jobid)
+    elif os.path.isfile(jobid):
+        return os.path.dirname(os.path.expanduser(jobid))
+    elif jobid == 'latest':
         try:
             actual_dir = os.readlink(os.path.join(logdir, 'latest'))
             return os.path.join(logdir, actual_dir)
@@ -203,7 +207,9 @@ def get_id(path, jobid):
     Gets the full Job ID using the results directory path and a partial
     Job ID or the string 'latest'.
     """
-    if jobid == 'latest':
+    if os.path.isdir(jobid) or os.path.isfile(jobid):
+        jobid = ''
+    elif jobid == 'latest':
         jobid = os.path.basename(os.path.dirname(path))[-7:]
 
     if not os.path.exists(path):

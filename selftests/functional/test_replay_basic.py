@@ -57,6 +57,13 @@ class ReplayTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
+    def test_run_replay_jobdir(self):
+        cmd_line = ('./scripts/avocado run --replay %s '
+                    '--job-results-dir %s --sysinfo=off' %
+                    (self.jobdir, self.tmpdir))
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.run_and_check(cmd_line, expected_rc)
+
     def test_run_replay_data(self):
         file_list = ['multiplex', 'config', 'urls', 'pwd', 'args', 'cmdline']
         for filename in file_list:
