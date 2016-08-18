@@ -13,17 +13,33 @@
 #
 # client/base_utils.py
 # Original author: Ross Brattain <ross.b.brattain@intel.com>
+#          Author : Praveen K Pandey <praveen@linux.vnet.ibm.com>
+#
 
 """
-APIs to list and load/unload linux kernel modules.
+APIs
+    check config option availability in
+        running kernel return config status as
+        config not set,avilable as  module or builtin
+    list and load/unload linux kernel modules.
 """
 
 import re
 import logging
+import platform
 
 from . import process
 
 LOG = logging.getLogger('avocado.test')
+
+#: Config commented out or not set
+NOT_SET = 0
+
+#: Config compiled as loadable module (`=m`)
+MODULE = 1
+
+#: Config built-in to kernel (`=y`)
+BUILTIN = 2
 
 
 def load_module(module_name):
@@ -153,3 +169,31 @@ def module_is_loaded(module_name):
 def get_loaded_modules():
     lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
     return [line.split(None, 1)[0] for line in lsmod_output]
+
+
+def check_kernel_config(config_name):
+    """
+    Use a running kernel config file to  get config information
+    :param  config_name:Name of kernel config to search
+    :type config_name:str
+    :return: Config status in running kernel
+    :rtype: enum
+    """
+
+    kernel_version = platform.uname()[2]
+
+    config_file = '/boot/config-' + kernel_version
+    for line in open(config_file, 'r'):
+        line = line.split('=')
+
+        if len(line) != 2:
+            continue
+
+        config = line[0].strip()
+        if config == config_name:
+            option = line[1].strip()
+            if option == "m":
+                return MODULE
+            else:
+                return BUILTIN
+    return NOT_SET
