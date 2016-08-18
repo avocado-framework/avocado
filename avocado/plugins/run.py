@@ -196,4 +196,5 @@ class Run(CLICmd):
             if len(job_instance.result_proxy.output_plugins) > 0:
                 result = job_instance.result_proxy.output_plugins[0]
                 result_dispatcher.map_method('render', result, job_instance)
+        job_instance.post_run()
         return job_run
