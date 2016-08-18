@@ -42,6 +42,19 @@ warn_non_existing_dir = False
 warn_non_zero_status = True"""
 
 
+TEST_RESULT_FILES = """#!/bin/sh -e
+# Post script should run before results archivation
+test -f ${AVOCADO_JOB_LOGDIR}.zip && exit 1
+# But results.json should exist
+test -f $AVOCADO_JOB_LOGDIR/results.json || exit 1
+test -f $AVOCADO_JOB_LOGDIR/results.xml || exit 1
+"""
+
+SCRIPT_RESULT_FILES_CFG = """[plugins.jobscripts]
+post = %s
+warn_non_zero_status = True"""
+
+
 class JobScriptsTest(unittest.TestCase):
 
     def setUp(self):
@@ -93,12 +106,35 @@ class JobScriptsTest(unittest.TestCase):
         config = script.TemporaryScript("non_zero.conf",
                                         SCRIPT_NON_ZERO_CFG % self.pre_dir)
         with config:
-            cmd = './scripts/avocado --config %s run passtest.py' % config
+            cmd = './scripts/avocado --config %s run /bin/true' % config
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual('Pre job script "%s" exited with status "1"\n' % non_zero_script,
+                         result.stderr)
+
+    def test_result_files(self):
+        """
+        Checks that post script executed after result plugins
+        regression test for https://github.com/avocado-framework/avocado/issues/1403
+        """
+        test_result_files = script.Script(os.path.join(self.post_dir,
+                                                       'test_result_files.sh'),
+                                          TEST_RESULT_FILES)
+        test_result_files.save()
+        config = script.TemporaryScript("check_result_file.conf",
+                                        SCRIPT_RESULT_FILES_CFG % self.post_dir)
+        with config:
+            process.run("cp %s /tmp/config.conf" % config)
+            process.run("cp %s /tmp/test_result_files.sh" % test_result_files)
+
+            cmd = './scripts/avocado --config %s run -z /bin/true' % config
+            result = process.run(cmd)
+
+        # Pre/Post scripts failures do not (currently?) alter the exit status
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertNotIn('Post job script "%s" exited with status "1"' % test_result_files,
                          result.stderr)
 
     def test_non_existing_dir(self):
@@ -114,7 +150,7 @@ class JobScriptsTest(unittest.TestCase):
         config = script.TemporaryScript("non_existing_dir.conf",
                                         SCRIPT_NON_EXISTING_DIR_CFG % self.pre_dir)
         with config:
-            cmd = './scripts/avocado --config %s run passtest.py' % config
+            cmd = './scripts/avocado --config %s run /bin/true' % config
             result = process.run(cmd)
 
         # Pre/Post scripts failures do not (currently?) alter the exit status

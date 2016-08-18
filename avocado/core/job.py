@@ -500,9 +500,6 @@ class Job(object):
         if self.status == 'RUNNING':
             self.status = 'PASS'
         # Let's clean up test artifacts
-        if getattr(self.args, 'archive', False):
-            filename = self.logdir + '.zip'
-            archive.create(filename, self.logdir)
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
         if summary is None:
@@ -515,6 +512,15 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode
+
+    def post_run(self):
+        """
+        Called by run plugin at the time when all results are generated
+        """
+        self.job_pre_post_dispatcher.map_methods('post', self)
+        if getattr(self.args, 'archive', False):
+            filename = self.logdir + '.zip'
+            archive.create(filename, self.logdir)
 
     def run(self):
         """
@@ -564,7 +570,6 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
-            self.job_pre_post_dispatcher.map_methods('post', self)
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
