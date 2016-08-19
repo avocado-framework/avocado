@@ -48,7 +48,7 @@ class Multiplex(CLICmd):
 
         parser.add_argument('--filter-out', nargs='*', default=[],
                             help='Filter out path(s) from multiplexing')
-        parser.add_argument('-s', '--system-wide', action='store_true',
+        parser.add_argument('--system-wide', action='store_true',
                             help="Combine the files with the default "
                             "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
