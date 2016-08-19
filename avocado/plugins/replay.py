@@ -18,7 +18,7 @@ import os
 import sys
 
 from avocado.core import exit_codes
-from avocado.core import replay
+from avocado.core import jobdata
 from avocado.core import status
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
@@ -117,14 +117,14 @@ class Replay(CLI):
             logs_dir = settings.get_value('datadir.paths', 'logs_dir',
                                           default=None)
             logdir = os.path.expanduser(logs_dir)
-            resultsdir = replay.get_resultsdir(logdir, args.replay_jobid)
+            resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
 
         if resultsdir is None:
             log.error("Can't find job results directory in '%s'", logdir)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
-        sourcejob = replay.get_id(os.path.join(resultsdir, 'id'),
-                                  args.replay_jobid)
+        sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'),
+                                   args.replay_jobid)
         if sourcejob is None:
             msg = ("Can't find matching job id '%s' in '%s' directory."
                    % (args.replay_jobid, resultsdir))
@@ -132,7 +132,7 @@ class Replay(CLI):
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         setattr(args, 'replay_sourcejob', sourcejob)
 
-        replay_args = replay.retrieve_args(resultsdir)
+        replay_args = jobdata.retrieve_args(resultsdir)
         whitelist = ['loaders',
                      'external_runner',
                      'external_runner_testdir',
@@ -158,7 +158,7 @@ class Replay(CLI):
             log.warn('Overriding the replay urls with urls provided in '
                      'command line.')
         else:
-            urls = replay.retrieve_urls(resultsdir)
+            urls = jobdata.retrieve_urls(resultsdir)
             if urls is None:
                 log.error('Source job urls data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -182,7 +182,7 @@ class Replay(CLI):
                 args.multiplex_files = [os.path.abspath(_)
                                         for _ in args.multiplex_files]
             else:
-                mux = replay.retrieve_mux(resultsdir)
+                mux = jobdata.retrieve_mux(resultsdir)
                 if mux is None:
                     log.error('Source job multiplex data not found. Aborting.')
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -190,12 +190,12 @@ class Replay(CLI):
                     setattr(args, "multiplex_files", mux)
 
         if args.replay_teststatus:
-            replay_map = replay.retrieve_replay_map(resultsdir,
-                                                    args.replay_teststatus)
+            replay_map = jobdata.retrieve_replay_map(resultsdir,
+                                                     args.replay_teststatus)
             setattr(args, 'replay_map', replay_map)
 
         # Use the original directory to discover test urls properly
-        pwd = replay.retrieve_pwd(resultsdir)
+        pwd = jobdata.retrieve_pwd(resultsdir)
         if pwd is not None:
             if os.path.exists(pwd):
                 os.chdir(pwd)
