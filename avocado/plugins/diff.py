@@ -28,7 +28,7 @@ import tempfile
 from difflib import unified_diff, HtmlDiff
 
 from avocado.core import exit_codes
-from avocado.core import replay
+from avocado.core import jobdata
 from avocado.core import output
 
 from avocado.core.plugin_interfaces import CLICmd
@@ -329,24 +329,17 @@ class Diff(CLICmd):
 
     @staticmethod
     def _setup_job(job_id):
-        if os.path.isdir(job_id):
-            resultsdir = os.path.expanduser(job_id)
-            job_id = ''
-        elif os.path.isfile(job_id):
-            resultsdir = os.path.dirname(os.path.expanduser(job_id))
-            job_id = ''
-        else:
-            logs_dir = settings.get_value('datadir.paths', 'logs_dir',
-                                          default=None)
-            logdir = os.path.expanduser(logs_dir)
-            resultsdir = replay.get_resultsdir(logdir, job_id)
+        logs_dir = settings.get_value('datadir.paths', 'logs_dir',
+                                      default=None)
+        logdir = os.path.expanduser(logs_dir)
+        resultsdir = jobdata.get_resultsdir(logdir, job_id)
 
         if resultsdir is None:
             LOG.error("Can't find job results directory for '%s' in '%s'",
                       job_id, logdir)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        sourcejob = replay.get_id(os.path.join(resultsdir, 'id'), job_id)
+        sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'), job_id)
         if sourcejob is None:
             LOG.error("Can't find matching job id '%s' in '%s' directory.",
                       job_id, resultsdir)
@@ -356,7 +349,7 @@ class Diff(CLICmd):
 
     @staticmethod
     def _get_command_line(resultsdir):
-        command_line = replay.retrieve_cmdline(resultsdir)
+        command_line = jobdata.retrieve_cmdline(resultsdir)
         if command_line is not None:
             return '%s\n' % ' '.join(command_line)
 
@@ -365,7 +358,7 @@ class Diff(CLICmd):
     @staticmethod
     def _get_variants(resultsdir):
         results = []
-        mux = replay.retrieve_mux(resultsdir)
+        mux = jobdata.retrieve_mux(resultsdir)
         if mux is not None:
             env = set()
             for (index, tpl) in enumerate(mux.variants):
@@ -387,7 +380,7 @@ class Diff(CLICmd):
 
     @staticmethod
     def _get_config(resultsdir):
-        config_file = os.path.join(resultsdir, 'replay', 'config')
+        config_file = jobdata.retrieve_config(resultsdir)
         try:
             with open(config_file, 'r') as conf:
                 return conf.readlines()
