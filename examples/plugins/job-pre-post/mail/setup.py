@@ -2,7 +2,7 @@ from setuptools import setup
 
 name = 'avocado_job_mail'
 klass = 'Mail'
-entry_point = '%s = %s:%s' % (name, name, klass)
+entry_point = '%s = %s:%s' % ('job_mail', name, klass)
 
 if __name__ == '__main__':
     setup(name=name,
@@ -10,6 +10,11 @@ if __name__ == '__main__':
           description='Avocado Pre/Post Job Mail Notification',
           py_modules=[name],
           entry_points={
-              'avocado.plugins.job.prepost': [entry_point]
-              }
-          )
+              'avocado.plugins.job.prepost': [
+                  'mail = avocado_job_mail:Mail',
+              ],
+              'avocado.plugins.cli': [
+                  'job_mail = avocado_job_mail:MailCLI'
+              ]
+          }
+    )
