@@ -26,8 +26,8 @@ class TestPartition(unittest.TestCase):
     Unit tests for avocado.utils.partition
     """
 
-    @unittest.skipIf(process.system("which mkfs.ext3", ignore_status=True),
-                     "mkfs.ext3 is required for these tests to run.")
+    @unittest.skipIf(process.system("which mkfs.ext2", ignore_status=True),
+                     "mkfs.ext2 is required for these tests to run.")
     def setUp(self):
         try:
             process.system("/bin/true", sudo=True)
@@ -63,7 +63,7 @@ class TestPartition(unittest.TestCase):
 
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
-        self.disk.mkfs("ext2")
+        self.disk.mkfs()
         self.disk.mount()
         self.assertIn(self.mountpoint, open("/proc/mounts").read())
         self.assertRaises(partition.PartitionError, self.disk.mount)
