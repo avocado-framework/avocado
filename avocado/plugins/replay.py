@@ -9,8 +9,8 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2014
-# Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
+# Copyright: Red Hat Inc. 2016
+# Author: Amador Pahim <apahim@redhat.com>
 
 import argparse
 import logging
