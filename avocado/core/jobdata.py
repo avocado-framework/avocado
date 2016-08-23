@@ -12,127 +12,152 @@
 # Copyright: Red Hat Inc. 2016
 # Author: Amador Pahim <apahim@redhat.com>
 
+"""
+Record/retrieve job information
+"""
+
 import ast
 import glob
-import json
 import os
 import pickle
 import sys
 
+
 from . import exit_codes
-from .test import ReplaySkipTest
-
 from .settings import settings
-from ..utils import path
+from ..utils.path import init_dir
 
-"""
-Record/retrieve job information for job replay
-"""
+
+JOB_DATA_DIR = 'jobdata'
+JOB_DATA_FALLBACK_DIR = 'replay'
+CONFIG_FILENAME = 'config'
+URLS_FILENAME = 'urls'
+MUX_FILENAME = 'multiplex'
+PWD_FILENAME = 'pwd'
+ARGS_FILENAME = 'args'
+CMDLINE_FILENAME = 'cmdline'
 
 
 def record(args, logdir, mux, urls=None, cmdline=None):
-    replay_dir = path.init_dir(logdir, 'replay')
-    path_cfg = os.path.join(replay_dir, 'config')
-    path_urls = os.path.join(replay_dir, 'urls')
-    path_mux = os.path.join(replay_dir, 'multiplex')
-    path_pwd = os.path.join(replay_dir, 'pwd')
-    path_args = os.path.join(replay_dir, 'args')
-    path_cmdline = os.path.join(replay_dir, 'cmdline')
+    """
+    Records all required job information.
+    """
+    base_dir = init_dir(logdir, JOB_DATA_DIR)
+    path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
+    path_urls = os.path.join(base_dir, URLS_FILENAME)
+    path_mux = os.path.join(base_dir, MUX_FILENAME)
+    path_pwd = os.path.join(base_dir, PWD_FILENAME)
+    path_args = os.path.join(base_dir, ARGS_FILENAME)
+    path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
     if urls:
-        with open(path_urls, 'w') as f:
-            f.write('%s' % urls)
+        with open(path_urls, 'w') as urls_file:
+            urls_file.write('%s' % urls)
 
-    with open(path_cfg, 'w') as f:
-        settings.config.write(f)
+    with open(path_cfg, 'w') as config_file:
+        settings.config.write(config_file)
 
-    with open(path_mux, 'w') as f:
-        pickle.dump(mux, f, pickle.HIGHEST_PROTOCOL)
+    with open(path_mux, 'w') as mux_file:
+        pickle.dump(mux, mux_file, pickle.HIGHEST_PROTOCOL)
 
-    with open(path_pwd, 'w') as f:
-        f.write('%s' % os.getcwd())
+    with open(path_pwd, 'w') as pwd_file:
+        pwd_file.write('%s' % os.getcwd())
 
-    with open(path_args, 'w') as f:
-        pickle.dump(args.__dict__, f, pickle.HIGHEST_PROTOCOL)
+    with open(path_args, 'w') as args_file:
+        pickle.dump(args.__dict__, args_file, pickle.HIGHEST_PROTOCOL)
 
-    with open(path_cmdline, 'w') as f:
-        f.write('%s' % cmdline)
+    with open(path_cmdline, 'w') as cmdline_file:
+        cmdline_file.write('%s' % cmdline)
 
 
-def retrieve_cmdline(resultsdir):
-    recorded_cmdline = os.path.join(resultsdir, "replay", "cmdline")
-    if not os.path.exists(recorded_cmdline):
-        return None
+def _retrieve(resultsdir, resource):
+    path = os.path.join(resultsdir, JOB_DATA_DIR, resource)
+    if not os.path.exists(path):
+        path = os.path.join(resultsdir, JOB_DATA_FALLBACK_DIR, resource)
+        if not os.path.exists(path):
+            return None
 
-    with open(recorded_cmdline, 'r') as f:
-        cmdline = f.read()
-
-    return ast.literal_eval(cmdline)
+    return path
 
 
 def retrieve_pwd(resultsdir):
-    recorded_pwd = os.path.join(resultsdir, "replay", "pwd")
-    if not os.path.exists(recorded_pwd):
+    """
+    Retrieves the job pwd from the results directory.
+    """
+    recorded_pwd = _retrieve(resultsdir, PWD_FILENAME)
+    if recorded_pwd is None:
         return None
-
-    with open(recorded_pwd, 'r') as f:
-        return f.read()
+    with open(recorded_pwd, 'r') as pwd_file:
+        return pwd_file.read()
 
 
 def retrieve_urls(resultsdir):
-    recorded_urls = os.path.join(resultsdir, "replay", "urls")
-    if not os.path.exists(recorded_urls):
+    """
+    Retrieves the job urls from the results directory.
+    """
+    recorded_urls = _retrieve(resultsdir, URLS_FILENAME)
+    if recorded_urls is None:
         return None
-
-    with open(recorded_urls, 'r') as f:
-        urls = f.read()
-
-    return ast.literal_eval(urls)
+    with open(recorded_urls, 'r') as urls_file:
+        return ast.literal_eval(urls_file.read())
 
 
 def retrieve_mux(resultsdir):
-    pkl_path = os.path.join(resultsdir, 'replay', 'multiplex')
-    if not os.path.exists(pkl_path):
+    """
+    Retrieves the job multiplex from the results directory.
+    """
+    recorded_mux = _retrieve(resultsdir, MUX_FILENAME)
+    if recorded_mux is None:
         return None
-
-    with open(pkl_path, 'r') as f:
-        return pickle.load(f)
-
-
-def retrieve_replay_map(resultsdir, replay_filter):
-    replay_map = None
-    resultsfile = os.path.join(resultsdir, "results.json")
-    if not os.path.exists(resultsfile):
-        return None
-
-    with open(resultsfile, 'r') as results_file_obj:
-        results = json.loads(results_file_obj.read())
-
-    replay_map = []
-    for test in results['tests']:
-        if test['status'] not in replay_filter:
-            replay_map.append(ReplaySkipTest)
-        else:
-            replay_map.append(None)
-
-    return replay_map
+    with open(recorded_mux, 'r') as mux_file:
+        return pickle.load(mux_file)
 
 
 def retrieve_args(resultsdir):
-    pkl_path = os.path.join(resultsdir, 'replay', 'args')
-    if not os.path.exists(pkl_path):
+    """
+    Retrieves the job args from the results directory.
+    """
+    recorded_args = _retrieve(resultsdir, ARGS_FILENAME)
+    if recorded_args is None:
         return None
+    with open(recorded_args, 'r') as args_file:
+        return pickle.load(args_file)
 
-    with open(pkl_path, 'r') as f:
-        return pickle.load(f)
+
+def retrieve_config(resultsdir):
+    """
+    Retrieves the job settings from the results directory.
+    """
+    recorded_config = _retrieve(resultsdir, CONFIG_FILENAME)
+    if recorded_config is None:
+        return None
+    return recorded_config
+
+
+def retrieve_cmdline(resultsdir):
+    """
+    Retrieves the job command line from the results directory.
+    """
+    recorded_cmdline = _retrieve(resultsdir, CMDLINE_FILENAME)
+    if recorded_cmdline is None:
+        return None
+    with open(recorded_cmdline, 'r') as cmdline_file:
+        return ast.literal_eval(cmdline_file.read())
 
 
 def get_resultsdir(logdir, jobid):
-    if jobid == 'latest':
+    """
+    Gets the job results directory using a Job ID.
+    """
+    if os.path.isdir(jobid):
+        return os.path.expanduser(jobid)
+    elif os.path.isfile(jobid):
+        return os.path.dirname(os.path.expanduser(jobid))
+    elif jobid == 'latest':
         try:
             actual_dir = os.readlink(os.path.join(logdir, 'latest'))
             return os.path.join(logdir, actual_dir)
-        except:
+        except IOError:
             return None
 
     matches = 0
@@ -157,14 +182,20 @@ def get_resultsdir(logdir, jobid):
 
 
 def get_id(path, jobid):
-    if jobid == 'latest':
+    """
+    Gets the full Job ID using the results directory path and a partial
+    Job ID or the string 'latest'.
+    """
+    if os.path.isdir(jobid) or os.path.isfile(jobid):
+        jobid = ''
+    elif jobid == 'latest':
         jobid = os.path.basename(os.path.dirname(path))[-7:]
 
     if not os.path.exists(path):
         return None
 
-    with open(path, 'r') as f:
-        content = f.read().strip('\n')
+    with open(path, 'r') as jobid_file:
+        content = jobid_file.read().strip('\n')
     if content.startswith(jobid):
         return content
     else:
