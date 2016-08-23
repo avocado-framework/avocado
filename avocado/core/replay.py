@@ -9,7 +9,7 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2013-2015
+# Copyright: Red Hat Inc. 2016
 # Author: Amador Pahim <apahim@redhat.com>
 
 import ast
