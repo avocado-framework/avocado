@@ -20,10 +20,7 @@ import ast
 import glob
 import os
 import pickle
-import sys
 
-
-from . import exit_codes
 from .settings import settings
 from ..utils.path import init_dir
 
@@ -173,7 +170,7 @@ def get_resultsdir(logdir, jobid):
                 from logging import getLogger
                 getLogger("avocado.app").error("hash '%s' is not unique "
                                                "enough", jobid)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                raise ValueError
 
     if matches == 1:
         return os.path.dirname(match_file)
