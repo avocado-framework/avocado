@@ -143,7 +143,11 @@ class Replay(CLI):
             logs_dir = settings.get_value('datadir.paths', 'logs_dir',
                                           default=None)
             logdir = os.path.expanduser(logs_dir)
-            resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
+            try:
+                resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
+            except ValueError as exception:
+                log.error(exception.message)
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if resultsdir is None:
             log.error("Can't find job results directory in '%s'", logdir)
