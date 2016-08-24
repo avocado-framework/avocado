@@ -42,7 +42,7 @@ class RemoteTestRunner(TestRunner):
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
-    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+lts|\d+)$',
+    remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+lts|\d+)\r?$',
                                    re.MULTILINE)
 
     def _copy_files(self):
