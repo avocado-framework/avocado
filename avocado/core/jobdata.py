@@ -27,7 +27,8 @@ from .settings import settings
 from ..utils.path import init_dir
 
 
-JOB_DATA_DIR = 'replay'
+JOB_DATA_DIR = 'jobdata'
+JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
 URLS_FILENAME = 'urls'
 MUX_FILENAME = 'multiplex'
@@ -71,7 +72,9 @@ def record(args, logdir, mux, urls=None, cmdline=None):
 def _retrieve(resultsdir, resource):
     path = os.path.join(resultsdir, JOB_DATA_DIR, resource)
     if not os.path.exists(path):
-        return None
+        path = os.path.join(resultsdir, JOB_DATA_FALLBACK_DIR, resource)
+        if not os.path.exists(path):
+            return None
     return path
 
 

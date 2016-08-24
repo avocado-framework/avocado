@@ -247,6 +247,13 @@ results directory structure can be seen below ::
 
     $HOME/avocado/job-results/job-2014-08-13T00.45-4a92bc0/
     ├── id
+    ├── jobdata
+    │   ├── args
+    │   ├── cmdline
+    │   ├── config
+    │   ├── multiplex
+    │   ├── pwd
+    │   └── urls
     ├── job.log
     ├── results.json
     ├── results.xml
@@ -327,7 +334,7 @@ results directory structure can be seen below ::
                     ├── post
                     └── pre
     
-    21 directories, 59 files
+    22 directories, 65 files
 
 
 From what you can see, the results dir has:
@@ -335,11 +342,12 @@ From what you can see, the results dir has:
 1) A human readable ``id`` in the top level, with the job SHA1.
 2) A human readable ``job.log`` in the top level, with human readable logs of
    the task
-3) A machine readable ``results.xml`` and ``results.json`` in the top level,
+3) Subdirectory ``jobdata``, that contains machine readable data about the job.
+4) A machine readable ``results.xml`` and ``results.json`` in the top level,
    with a summary of the job information in xUnit/json format.
-4) A top level ``sysinfo`` dir, with sub directories ``pre``, ``post`` and
+5) A top level ``sysinfo`` dir, with sub directories ``pre``, ``post`` and
    ``profile``, that store sysinfo files pre/post/during job, respectively.
-5) Subdirectory ``test-results``, that contains a number of subdirectories
+6) Subdirectory ``test-results``, that contains a number of subdirectories
    (filesystem-friendly test ids). Those test ids represent instances of test
    execution results.
 

@@ -80,7 +80,7 @@ class ReplayTests(unittest.TestCase):
         """
         file_list = ['multiplex', 'config', 'urls', 'pwd', 'args', 'cmdline']
         for filename in file_list:
-            path = os.path.join(self.jobdir, 'replay', filename)
+            path = os.path.join(self.jobdir, 'jobdata', filename)
             self.assertTrue(glob.glob(path))
 
     def test_run_replay(self):
@@ -193,6 +193,18 @@ class ReplayTests(unittest.TestCase):
         msg = "Option --replay-test-status is incompatible with "\
               "test URLs given on the command line."
         self.assertIn(msg, result.stderr)
+
+    def test_run_replay_fallbackdir(self):
+        """
+        Runs a replay job with the fallback job data directory name.
+        """
+        shutil.move(os.path.join(self.jobdir, 'jobdata'),
+                    os.path.join(self.jobdir, 'replay'))
+        cmd_line = ('./scripts/avocado run --replay %s '
+                    '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
+                    % (self.jobid, self.tmpdir, self.jobdir))
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.run_and_check(cmd_line, expected_rc)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
