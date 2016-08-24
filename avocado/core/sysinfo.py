@@ -549,7 +549,7 @@ def collect_sysinfo(args):
         timestamp = time.strftime('%Y-%m-%d-%H.%M.%S')
         basedir = os.path.join(cwd, 'sysinfo-%s' % timestamp)
 
-    sysinfo_logger = SysInfo(basedir=basedir, log_packages=True)
+    sysinfo_logger = SysInfo(basedir=basedir)
     sysinfo_logger.start_job_hook()
     sysinfo_logger.end_job_hook()
     log.info("Logged system information to %s", basedir)
