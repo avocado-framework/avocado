@@ -170,15 +170,17 @@ class ReportModel(object):
         for s_f in sysinfo_files:
             sysinfo_dict = {}
             sysinfo_path = os.path.join(base_path, s_f)
+            sysinfo_dict['file'] = " ".join(s_f.split("_"))
+            sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
+            sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
             try:
                 with codecs.open(sysinfo_path, 'r', encoding="utf-8") as sysinfo_file:
-                    sysinfo_dict['file'] = " ".join(s_f.split("_"))
                     sysinfo_dict['contents'] = sysinfo_file.read()
-                    sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
-                    sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
             except (OSError, UnicodeDecodeError) as details:
-                sysinfo_dict[s_f] = ('Error reading sysinfo file %s: %s' %
-                                     (sysinfo_path, details))
+                path = os.path.relpath(sysinfo_path, self.html_output_dir)
+                sysinfo_dict['err'] = ("Error reading sysinfo file, check out"
+                                       "the file <a href=%s>%s</a>: %s"
+                                       % (path, path, details))
             sysinfo_list.append(sysinfo_dict)
             s_id += 1
         return sysinfo_list
