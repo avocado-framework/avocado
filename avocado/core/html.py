@@ -182,9 +182,9 @@ class ReportModel(object):
                     sysinfo_dict['contents'] = sysinfo_file.read()
                     sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
                     sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
-            except OSError:
-                sysinfo_dict[s_f] = ('Error reading sysinfo file %s' %
-                                     sysinfo_path)
+            except (OSError, UnicodeDecodeError) as details:
+                sysinfo_dict[s_f] = ('Error reading sysinfo file %s: %s' %
+                                     (sysinfo_path, details))
             sysinfo_list.append(sysinfo_dict)
             s_id += 1
         return sysinfo_list
