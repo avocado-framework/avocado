@@ -13,6 +13,7 @@
 # Author: Amador Pahim <apahim@redhat.com>
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -20,8 +21,10 @@ import sys
 from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import status
+
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
+from avocado.core.test import ReplaySkipTest
 
 
 class Replay(CLI):
@@ -88,9 +91,32 @@ class Replay(CLI):
         return ignore_list
 
     def load_config(self, resultsdir):
-        config = os.path.join(resultsdir, 'replay', 'config')
-        with open(config, 'r') as f:
-            settings.process_config_path(f.read())
+        config = jobdata.retrieve_config(resultsdir)
+        if config is not None:
+            settings.process_config_path(config)
+
+    def _create_replay_map(self, resultsdir, replay_filter):
+        """
+        Creates a mapping to be used as filter for the replay. Given
+        the replay_filter, tests that should be filtered out will have a
+        correspondent ReplaySkipTest class in the map. Tests that should
+        be replayed will have a correspondent None in the map.
+        """
+        json_results = os.path.join(resultsdir, "results.json")
+        if not os.path.exists(json_results):
+            return None
+
+        with open(json_results, 'r') as json_file:
+            results = json.loads(json_file.read())
+
+        replay_map = []
+        for test in results['tests']:
+            if test['status'] not in replay_filter:
+                replay_map.append(ReplaySkipTest)
+            else:
+                replay_map.append(None)
+
+        return replay_map
 
     def run(self, args):
         if getattr(args, 'replay_jobid', None) is None:
@@ -190,8 +216,8 @@ class Replay(CLI):
                     setattr(args, "multiplex_files", mux)
 
         if args.replay_teststatus:
-            replay_map = jobdata.retrieve_replay_map(resultsdir,
-                                                     args.replay_teststatus)
+            replay_map = self._create_replay_map(resultsdir,
+                                                 args.replay_teststatus)
             setattr(args, 'replay_map', replay_map)
 
         # Use the original directory to discover test urls properly

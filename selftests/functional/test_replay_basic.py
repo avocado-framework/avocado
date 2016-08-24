@@ -44,6 +44,9 @@ class ReplayTests(unittest.TestCase):
         return result
 
     def test_run_replay_noid(self):
+        """
+        Runs a replay job with an invalid jobid.
+        """
         cmd_line = ('./scripts/avocado run --replay %s '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off' %
                     ('foo', self.tmpdir, self.jobdir))
@@ -51,19 +54,39 @@ class ReplayTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_latest(self):
+        """
+        Runs a replay job using the 'latest' keyword.
+        """
         cmd_line = ('./scripts/avocado run --replay latest '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off' %
                     (self.tmpdir, self.jobdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
+    def test_run_replay_jobdir(self):
+        """
+        Runs a replay job pointing the --job-results-dir without
+        the --replay-data-dir.
+        """
+        cmd_line = ('./scripts/avocado run --replay %s '
+                    '--job-results-dir %s --sysinfo=off' %
+                    (self.jobdir, self.tmpdir))
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.run_and_check(cmd_line, expected_rc)
+
     def test_run_replay_data(self):
-        file_list = ['multiplex', 'config', 'urls', 'pwd', 'args']
+        """
+        Checks if all expected files are there.
+        """
+        file_list = ['multiplex', 'config', 'urls', 'pwd', 'args', 'cmdline']
         for filename in file_list:
             path = os.path.join(self.jobdir, 'replay', filename)
             self.assertTrue(glob.glob(path))
 
     def test_run_replay(self):
+        """
+        Runs a replay job.
+        """
         cmd_line = ('./scripts/avocado run --replay %s '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir, self.jobdir))
@@ -71,6 +94,9 @@ class ReplayTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_partialid(self):
+        """
+        Runs a replay job with a partial jobid.
+        """
         partial_id = self.jobid[:5]
         cmd_line = ('./scripts/avocado run --replay %s '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
@@ -79,6 +105,9 @@ class ReplayTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_invalidignore(self):
+        """
+        Runs a replay job with an invalid option for '--replay-ignore'
+        """
         cmd_line = ('./scripts/avocado run --replay %s --replay-ignore foo'
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir, self.jobdir))
@@ -89,6 +118,9 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_ignoremux(self):
+        """
+        Runs a replay job ignoring the mux.
+        """
         cmd_line = ('./scripts/avocado run --replay %s --replay-ignore mux '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir, self.jobdir))
@@ -98,6 +130,9 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_invalidstatus(self):
+        """
+        Runs a replay job with an invalid option for '--replay-test-status'
+        """
         cmd_line = ('./scripts/avocado run --replay %s --replay-test-status E '
                     '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir, self.jobdir))
@@ -108,6 +143,9 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_statusfail(self):
+        """
+        Runs a replay job only with tests that failed.
+        """
         cmd_line = ('./scripts/avocado run --replay %s --replay-test-status '
                     'FAIL --job-results-dir %s --replay-data-dir %s '
                     '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
@@ -117,6 +155,9 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stdout)
 
     def test_run_replay_remotefail(self):
+        """
+        Runs a replay job using remote plugin (not supported).
+        """
         cmd_line = ('./scripts/avocado run --replay %s --remote-hostname '
                     'localhost --job-results-dir %s --replay-data-dir %s '
                     '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
@@ -126,6 +167,9 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_mux(self):
+        """
+        Runs a replay job with custom a mux and using '--replay-test-status'
+        """
         cmd_line = ('./scripts/avocado run --replay %s --multiplex '
                     'examples/mux-environment.yaml --replay-test-status FAIL '
                     '--job-results-dir %s --replay-data-dir %s '
@@ -137,6 +181,9 @@ class ReplayTests(unittest.TestCase):
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_urls(self):
+        """
+        Runs a replay job with custom urls and '--replay-test-status'.
+        """
         cmd_line = ('./scripts/avocado run sleeptest --replay %s '
                     '--replay-test-status FAIL --job-results-dir %s '
                     '--replay-data-dir %s --sysinfo=off' %
