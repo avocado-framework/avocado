@@ -348,7 +348,7 @@ def lv_create(vg_name, lv_name, lv_size, force_flag=True):
     elif lv_check(vg_name, lv_name) and force_flag:
         lv_remove(vg_name, lv_name)
 
-    cmd = "lvcreate --size %s --name %s %s" % (lv_size, lv_name, vg_name)
+    cmd = "lvcreate --size %s --name %s %s -y" % (lv_size, lv_name, vg_name)
     process.run(cmd, sudo=True)
 
 
@@ -396,7 +396,7 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
     :param thinlv_name: The name of thin volume
     :param thinlv_size: The size of thin volume
     """
-    tp_cmd = "lvcreate --thinpool %s --size %s %s" % (thinpool_name,
+    tp_cmd = "lvcreate --thinpool %s --size %s %s -y" % (thinpool_name,
                                                       thinpool_size,
                                                       vg_name)
     try:
@@ -406,7 +406,7 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
         raise LVException("Create thin volume pool failed.")
     LOGGER.debug("Created thin volume pool: %s", thinpool_name)
     lv_cmd = ("lvcreate --name %s --virtualsize %s "
-              "--thin %s/%s" % (thinlv_name, thinlv_size,
+              "--thin %s/%s -y" % (thinlv_name, thinlv_size,
                                 vg_name, thinpool_name))
     try:
         process.run(lv_cmd, sudo=True)
@@ -435,7 +435,7 @@ def lv_take_snapshot(vg_name, lv_name,
     if not lv_check(vg_name, lv_name):
         raise LVException("Snapshot's origin could not be found")
 
-    cmd = ("lvcreate --size %s --snapshot --name %s /dev/%s/%s" %
+    cmd = ("lvcreate --size %s --snapshot --name %s /dev/%s/%s -y" %
            (lv_snapshot_size, lv_snapshot_name, vg_name, lv_name))
     try:
         process.run(cmd, sudo=True)
