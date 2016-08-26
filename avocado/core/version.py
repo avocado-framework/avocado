@@ -14,7 +14,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-__all__ = ['MAJOR', 'MINOR', 'VERSION']
+__all__ = ['MAJOR', 'MINOR', 'BUILD', 'VERSION']
 
 import pkg_resources
 
@@ -23,7 +23,11 @@ try:
 except pkg_resources.DistributionNotFound:
     VERSION = "unknown.unknown"
 
-MAJOR, MINOR = VERSION.split('.')
+if len(VERSION) > 3:
+    MAJOR, MINOR, BUILD = VERSION.split('.')
+else:
+    MAJOR, MINOR = VERSION.split('.')
+    BUILD = None
 
 if __name__ == '__main__':
     print(VERSION)
