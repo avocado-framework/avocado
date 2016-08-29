@@ -103,3 +103,18 @@ Use it::
 .. warning::
    You can not use the merge button on github to do signed merges as github
    does not have your private key.
+
+Tests Repositories
+==================
+
+We encourage you or your company to create public Avocado tests
+repositories so the community can also benefit of your tests. We will be
+pleased to advertise your repository here in our documentation.
+
+List of known community and third party maintained repositories:
+
+- https://github.com/avocado-framework-tests/avocado-misc-tests:
+  Community maintained Avocado miscellaneous tests repository. There you
+  will find, among others, performance tests like ``lmbench``,
+  ``stress``, cpu tests like ``ebizzy`` and generic tests like ``ltp``.
+  Some of them were ported from Autotest Client Tests repository.
