@@ -140,7 +140,7 @@ class Replay(CLI):
         if args.replay_datadir is not None:
             resultsdir = args.replay_datadir
         else:
-            logs_dir = settings.get_value('datadir.paths', 'logs_dir',
+            logs_dir = settings.get_value('datadir.paths', 'logs_dir', 'path',
                                           default=None)
             logdir = os.path.expanduser(logs_dir)
             try:
