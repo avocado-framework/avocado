@@ -175,8 +175,11 @@ class ArchiveFile(object):
         for path, info in self._engine.NameToInfo.iteritems():
             dst = os.path.join(dst_dir, path)
             if not os.path.exists(dst):
-                LOG.warn("Paths in this zip file are stored in unsupported "
-                         "format, not updating the attributes. (%s)", msg)
+                LOG.warn("One or more files in the ZIP archive '%s' could "
+                         "not be found after extraction. Their paths are "
+                         "probably stored in unsupported format and their "
+                         "attributes are not going to be updated",
+                         self.filename)
                 return
             attr = info.external_attr >> 16
             if attr & stat.S_IFLNK == stat.S_IFLNK:

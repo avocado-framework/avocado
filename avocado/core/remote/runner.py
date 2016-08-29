@@ -150,7 +150,7 @@ class RemoteTestRunner(TestRunner):
                 break
         else:
             raise ValueError("Could not find the beginning of the remote JSON"
-                             " output:\n%s" % result.stdout)
+                             " output:\n%s" % output)
         if json_result.endswith('}'):   # probably single-line
             try:
                 response = json.loads(json_result)
@@ -168,7 +168,7 @@ class RemoteTestRunner(TestRunner):
                         pass
         if not response:
             raise ValueError("Could not find the end of the remote JSON "
-                             "output:\n%s" % result.stdout)
+                             "output:\n%s" % output)
         return response
 
     def run_test(self, urls, timeout):
