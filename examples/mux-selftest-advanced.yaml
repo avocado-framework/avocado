@@ -28,3 +28,8 @@ new_node:
     # not even planned)
     !using : /absolutely/fresh/
     new_value: "something"
+# Check that mapping keys are not converted to values, while values are
+# while value between quotes stays as string.
+on:
+    on: on
+    true: "true"

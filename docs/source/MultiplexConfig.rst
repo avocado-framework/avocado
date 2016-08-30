@@ -54,6 +54,10 @@ They define context of the key=>value pairs allowing us to easily identify
 for what this values might be used for and also it makes possible to define
 multiple values of the same keys with different scope.
 
+Due to their purpose the YAML automatic type conversion for nodes names
+is disabled, so the value of node name is always as written in the yaml
+file (unlike values, where `yes` converts to `True` and such).
+
 Nodes are organized in parent-child relationship and together they create
 a tree. To view this structure use ``avocado multiplex --tree <file>``::
 
@@ -117,6 +121,10 @@ The environment created for the nodes ``fedora`` and ``osx`` are:
 - Node ``//devtools/fedora`` environment ``compiler: 'gcc'``, ``flags: ['-O2', '-Wall']``
 - Node ``//devtools/osx`` environment ``compiler: 'clang'``, ``flags: ['-O2', '-arch i386', '-arch x86_64']``
 
+Note that due to different usage of key and values in environment we disabled
+the automatic value conversion for keys while keeping it enabled for values.
+This means that the value can be of any YAML supported value, eg. bool, None,
+list or custom type, while the key is always string.
 
 Variants
 ========
