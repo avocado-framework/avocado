@@ -159,7 +159,8 @@ class Partition(object):
         """
         Format a partition to filesystem type
 
-        :param fstype: the filesystem type, e.g.. "ext3", "ext2"
+        :param fstype: the filesystem type, such as "ext3", "ext2". Defaults
+                       to previously set type or "ext2" if none has set.
         :param args: arguments to be passed to mkfs command.
         """
 
