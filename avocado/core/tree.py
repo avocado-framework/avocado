@@ -712,7 +712,7 @@ def tree_view(root, verbose=None, use_utf8=None):
             else:
                 val_prefix = '  '
             for key, value in values:
-                out.extend(prefixed_write(val_prefix, val + key + ': ',
+                out.extend(prefixed_write(val_prefix, "%s%s: " % (val, key),
                                           value))
         if node.children:
             for child in node.children[:-1]:
