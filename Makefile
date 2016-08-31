@@ -21,6 +21,7 @@ RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
+MOCK_CONFIG=default
 
 all:
 	@echo
@@ -78,19 +79,19 @@ install:
 
 srpm: source
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock --resultdir BUILD/SRPM -D "commit $(COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "commit $(COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
 
 rpm: srpm
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock --resultdir BUILD/RPM -D "commit $(COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "commit $(COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
 
 srpm-release: source-release
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock --resultdir BUILD/SRPM -D "commit $(RELEASE_COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "commit $(RELEASE_COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
 
 rpm-release: srpm-release
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock --resultdir BUILD/RPM -D "commit $(RELEASE_COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "commit $(RELEASE_COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
 
 clean:
 	$(PYTHON) setup.py clean
@@ -169,6 +170,7 @@ variables:
 	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
 	@echo "COMMIT: $(COMMIT)"
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
+	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
 
 .PHONY: source install clean check link variables
 
