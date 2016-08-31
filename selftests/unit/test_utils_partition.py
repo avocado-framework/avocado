@@ -13,11 +13,28 @@ import time
 from flexmock import flexmock, flexmock_teardown
 
 from avocado.utils import partition, process
+from avocado.utils import path as utils_path
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest    # pylint: disable=E0401
 else:
     import unittest     # pylint: disable=C0411
+
+
+def missing_binary(binary):
+    try:
+        utils_path.find_command(binary)
+        return False
+    except utils_path.CmdNotFoundError:
+        return True
+
+
+def cannot_sudo(command):
+    try:
+        process.run(command, sudo=True)
+        False
+    except process.CmdError:
+        return True
 
 
 class TestPartition(unittest.TestCase):
@@ -26,13 +43,15 @@ class TestPartition(unittest.TestCase):
     Unit tests for avocado.utils.partition
     """
 
-    @unittest.skipIf(process.system("which mkfs.ext3", ignore_status=True),
-                     "mkfs.ext3 is required for these tests to run.")
+    @unittest.skipIf(missing_binary('mkfs.ext2'),
+                     "mkfs.ext2 is required for these tests to run.")
+    @unittest.skipIf(missing_binary('sudo'),
+                     "sudo is required for these tests to run.")
+    @unittest.skipIf(cannot_sudo('mount'),
+                     'current user must be allowed to run "mount" under sudo')
+    @unittest.skipIf(cannot_sudo('mkfs.ext2 -V'),
+                     'current user must be allowed to run "mkfs.ext2" under sudo')
     def setUp(self):
-        try:
-            process.system("/bin/true", sudo=True)
-        except process.CmdError:
-            self.skipTest("Sudo not available")
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
         self.mountpoint = os.path.join(self.tmpdir, "disk")
         os.mkdir(self.mountpoint)
@@ -63,7 +82,7 @@ class TestPartition(unittest.TestCase):
 
     def test_double_mount(self):
         """ Check the attempt for second mount fails """
-        self.disk.mkfs("ext2")
+        self.disk.mkfs()
         self.disk.mount()
         self.assertIn(self.mountpoint, open("/proc/mounts").read())
         self.assertRaises(partition.PartitionError, self.disk.mount)

@@ -373,7 +373,14 @@ def _create_from_yaml(path, cls_node=TreeNode):
 
     def mapping_to_tree_loader(loader, node):
         """ Maps yaml mapping tag to TreeNode structure """
-        _value = loader.construct_pairs(node)
+        _value = []
+        for key_node, value_node in node.value:
+            if key_node.tag.startswith('!'):    # reflect tags everywhere
+                key = loader.construct_object(key_node)
+            else:
+                key = loader.construct_python_str(key_node)
+            value = loader.construct_object(value_node)
+            _value.append((key, value))
         objects = ListOfNodeObjects()
         for name, values in _value:
             if isinstance(values, ListOfNodeObjects):   # New node from list
@@ -712,7 +719,7 @@ def tree_view(root, verbose=None, use_utf8=None):
             else:
                 val_prefix = '  '
             for key, value in values:
-                out.extend(prefixed_write(val_prefix, val + key + ': ',
+                out.extend(prefixed_write(val_prefix, "%s%s: " % (val, key),
                                           value))
         if node.children:
             for child in node.children[:-1]:
