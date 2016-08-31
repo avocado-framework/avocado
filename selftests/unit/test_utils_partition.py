@@ -33,7 +33,7 @@ def cannot_sudo(command):
     try:
         process.run(command, sudo=True)
         False
-    except process.CmdError:
+    except (process.CmdError, OSError):
         return True
 
 
