@@ -152,8 +152,11 @@ class Run(CLICmd):
                              help="Inject [path:]key:node values into the "
                              "final multiplex tree.")
 
-    def _activate(self, args):
-        # Extend default multiplex tree of --mux_inject values
+    @staticmethod
+    def _process_mux_inject(args):
+        """
+        Extend default multiplex tree of --mux_inject values
+        """
         for value in getattr(args, "mux_inject", []):
             value = value.split(':', 2)
             if len(value) < 2:
@@ -172,7 +175,7 @@ class Run(CLICmd):
         :param args: Command line args received from the run subparser.
         """
         log = logging.getLogger("avocado.app")
-        self._activate(args)
+        self._process_mux_inject(args)
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
