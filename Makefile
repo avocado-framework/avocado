@@ -7,7 +7,8 @@
 # https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo
 #
 # Since the RPM build steps are based on mock, edit your chroot config
-# file (/etc/mock/<your-config>.cnf) and add the COPR repo configuration there.
+# file (/etc/mock/<your-config>.cnf) and add the corresponding repo
+# configuration there.
 #
 
 PYTHON=$(shell which python)
