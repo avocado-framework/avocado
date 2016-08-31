@@ -1,0 +1,10 @@
+This is a collection of files that are useful to generate packages for
+Debian(-like) systems.  Their "contrib" status mean that they should
+work, but there's no support for them.
+
+If there are users out there interested in keeping Debian(-like)
+packages update, please step up.
+
+The basic usage is to run the various targets defined in the Makefile,
+such as running `make deb` to have both source and binary packages
+generated.
