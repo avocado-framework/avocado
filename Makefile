@@ -16,7 +16,7 @@ PYTHON26=$(shell $(PYTHON) -V 2>&1 | grep 2.6 -q && echo true || echo false)
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
-AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(wildcard ../*))
+AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
@@ -101,8 +101,8 @@ clean:
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
-	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+	for MAKEFILE in $(AVOCADO_PLUGINS); do\
+		if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
 	rm -rf avocado.egg-info
@@ -150,8 +150,8 @@ develop:
 	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
 
 link: develop
-	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+	for MAKEFILE in $(AVOCADO_PLUGINS); do\
+		if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE"; fi;\
 	done
 
 spell:
