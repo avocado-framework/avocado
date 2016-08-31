@@ -184,7 +184,19 @@ spell:
 
 man: man/avocado.1 man/avocado-rest-client.1
 
-.PHONY: source install clean check link
+show:
+	@echo "PYTHON: $(PYTHON)"
+	@echo "PYTHON26: $(PYTHON26)"
+	@echo "VERSION: $(VERSION)"
+	@echo "DESTDIR: $(DESTDIR)"
+	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
+	@echo "AVOCADO_PLUGINS: $(AVOCADO_PLUGINS)"
+	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
+	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
+	@echo "COMMIT: $(COMMIT)"
+	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
+
+.PHONY: source install clean check link show
 
 # implicit rule/recipe for man page creation
 %.1: %.rst
