@@ -7,22 +7,21 @@
 # https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo
 #
 # Since the RPM build steps are based on mock, edit your chroot config
-# file (/etc/mock/<your-config>.cnf) and add the COPR repo configuration there.
+# file (/etc/mock/<your-config>.cnf) and add the corresponding repo
+# configuration there.
 #
 
 PYTHON=$(shell which python)
 PYTHON26=$(shell $(PYTHON) -V 2>&1 | grep 2.6 -q && echo true || echo false)
-VERSION=$(shell $(PYTHON) setup.py --version)
+VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 DESTDIR=/
-BUILDIR=$(CURDIR)/debian/avocado
-PROJECT=avocado
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
-AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(wildcard ../*))
+AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
-
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
+MOCK_CONFIG=default
 
 all:
 	@echo
@@ -48,11 +47,6 @@ all:
 	@echo "RPM related targets:"
 	@echo "srpm:  Generate a source RPM package (.srpm)"
 	@echo "rpm:   Generate binary RPMs"
-	@echo
-	@echo "Debian related targets:"
-	@echo "deb:      Generate both source and binary debian packages"
-	@echo "deb-src:  Generate a source debian package"
-	@echo "deb-bin:  Generate a binary debian package"
 	@echo
 	@echo "Release related targets:"
 	@echo "source-release:  Create source package for the latest tagged release"
@@ -83,40 +77,21 @@ pypi: source-pypi develop
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
-deb-prepare-source:
-	# build the source package in the parent directory
-	# then rename it to project_version.orig.tar.gz
-	dch -D "vivid" -M -v "$(VERSION)" "Automated (make builddeb) build."
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
-	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
-
-deb-src: deb-prepare-source
-	# build the source package
-	dpkg-buildpackage -S -elookkas@gmail.com -rfakeroot
-
-deb-bin: deb-prepare-source
-	# build binary package
-	dpkg-buildpackage -b -rfakeroot
-
-deb: deb-prepare-source
-	# build both source and binary packages
-	dpkg-buildpackage -i -I -rfakeroot
-
 srpm: source
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock --resultdir BUILD/SRPM -D "commit $(COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "commit $(COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
 
 rpm: srpm
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock --resultdir BUILD/RPM -D "commit $(COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "commit $(COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
 
 srpm-release: source-release
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock --resultdir BUILD/SRPM -D "commit $(RELEASE_COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "commit $(RELEASE_COMMIT)" --buildsrpm --spec avocado.spec --sources SOURCES
 
 rpm-release: srpm-release
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock --resultdir BUILD/RPM -D "commit $(RELEASE_COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "commit $(RELEASE_COMMIT)" --rebuild BUILD/SRPM/avocado-$(VERSION)-*.src.rpm
 
 clean:
 	$(PYTHON) setup.py clean
@@ -126,8 +101,8 @@ clean:
 	rm -f man/avocado-rest-client.1
 	rm -rf docs/build
 	find docs/source/api/ -name '*.rst' -delete
-	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+	for MAKEFILE in $(AVOCADO_PLUGINS); do\
+		if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null && echo ">> UNLINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
 	rm -rf avocado.egg-info
@@ -175,8 +150,8 @@ develop:
 	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
 
 link: develop
-	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
+	for MAKEFILE in $(AVOCADO_PLUGINS); do\
+		if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null && echo ">> LINK $$MAKEFILE" || echo ">> SKIP $$MAKEFILE"; fi;\
 	done
 
 spell:
@@ -184,7 +159,20 @@ spell:
 
 man: man/avocado.1 man/avocado-rest-client.1
 
-.PHONY: source install clean check link
+variables:
+	@echo "PYTHON: $(PYTHON)"
+	@echo "PYTHON26: $(PYTHON26)"
+	@echo "VERSION: $(VERSION)"
+	@echo "DESTDIR: $(DESTDIR)"
+	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
+	@echo "AVOCADO_PLUGINS: $(AVOCADO_PLUGINS)"
+	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
+	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
+	@echo "COMMIT: $(COMMIT)"
+	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
+	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
+
+.PHONY: source install clean check link variables
 
 # implicit rule/recipe for man page creation
 %.1: %.rst
