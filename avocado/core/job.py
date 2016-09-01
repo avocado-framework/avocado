@@ -524,9 +524,9 @@ class Job(object):
 
         * If urls is provided alone, just make a simple list with no specific
           params (all tests use default params).
-        * If urls and multiplex_files are provided, multiplex provides params
+        * If urls and multiplex are provided, multiplex provides params
           and variants to all tests it can.
-        * If multiplex_files are provided alone, just use the matrix produced
+        * If multiplex are provided alone, just use the matrix produced
           by the file
 
         The test runner figures out which tests need to be run on an empty urls
