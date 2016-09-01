@@ -15,12 +15,13 @@
 
 import glob
 import os
+import sys
 # pylint: disable=E0611
 
 from setuptools import setup, find_packages
 
 
-VIRTUAL_ENV = 'VIRTUAL_ENV' in os.environ
+VIRTUAL_ENV = hasattr(sys, 'real_prefix')
 
 
 def get_dir(system_path=None, virtual_path=None):
