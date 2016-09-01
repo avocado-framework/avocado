@@ -333,14 +333,14 @@ class SysInfo(object):
 
         commands_file = settings.get_value('sysinfo.collectibles',
                                            'commands',
-                                           key_type='str',
+                                           key_type='path',
                                            default='')
         log.info('Commands configured by file: %s', commands_file)
         self.commands = genio.read_all_lines(commands_file)
 
         files_file = settings.get_value('sysinfo.collectibles',
                                         'files',
-                                        key_type='str',
+                                        key_type='path',
                                         default='')
         log.info('Files configured by file: %s', files_file)
         self.files = genio.read_all_lines(files_file)
@@ -355,7 +355,7 @@ class SysInfo(object):
 
         profiler_file = settings.get_value('sysinfo.collectibles',
                                            'profilers',
-                                           key_type='str',
+                                           key_type='path',
                                            default='')
         self.profilers = genio.read_all_lines(profiler_file)
 
