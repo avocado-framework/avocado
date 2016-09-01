@@ -133,7 +133,7 @@ class Run(CLICmd):
         loader.add_loader_options(parser)
 
         if multiplexer.MULTIPLEX_CAPABLE:
-            mux = parser.add_argument_group('multiplexer use on test execution')
+            mux = parser.add_argument_group('test parameters')
             mux.add_argument('-m', '--multiplex', nargs='*', dest='multiplex_files',
                              default=None, metavar='FILE',
                              help='Location of one or more Avocado multiplex (.yaml) '
