@@ -27,6 +27,12 @@ from avocado.core.settings import settings
 from avocado.core.test import ReplaySkipTest
 
 
+def ignore_call(*args, **kwargs):
+    """
+    Accepts anything and does nothing
+    """
+
+
 class Replay(CLI):
 
     """
@@ -206,11 +212,12 @@ class Replay(CLI):
                      "--replay-ignore.")
         else:
             if getattr(args, 'multiplex', None) is not None:
+                # Disable the mux from the original job
                 log.warn('Overriding the replay multiplex with '
-                         '--multiplex-file.')
-                # Use absolute paths to avoid problems with os.chdir
-                args.multiplex = [os.path.abspath(_)
-                                        for _ in args.multiplex]
+                         '--multiplex-file. Note that currently '
+                         'this ignores the system-wide mux options '
+                         'so it really uses only the values you provide '
+                         'on the cmdline.')
             else:
                 mux = jobdata.retrieve_mux(resultsdir)
                 if mux is None:     # Fallback to multiplex_files
@@ -218,7 +225,13 @@ class Replay(CLI):
                               "Aborting.")
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
+                    # Ignore data manipulation. This is necessary, because
+                    # we replaced the unparsed object with parsed one. There
+                    # are other plugins running before/after this which might
+                    # want to alter the mux object.
                     setattr(args, "mux", mux)
+                    mux.data_merge = ignore_call
+                    mux.data_inject = ignore_call
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,

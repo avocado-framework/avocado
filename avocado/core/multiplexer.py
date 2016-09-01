@@ -26,8 +26,6 @@ import re
 
 from . import tree
 
-MULTIPLEX_CAPABLE = tree.MULTIPLEX_CAPABLE
-
 
 class MuxTree(object):
 
@@ -78,18 +76,6 @@ class MuxTree(object):
             # TODO: Implement 2nd level filters here
             # TODO: This part takes most of the time, optimize it
             yield list(itertools.chain(*pools.next()))
-
-
-def yaml2tree(input_yamls, filter_only=None, filter_out=None,
-              debug=False):
-    if filter_only is None:
-        filter_only = []
-    if filter_out is None:
-        filter_out = []
-    input_tree = tree.create_from_yaml(input_yamls, debug)
-    # TODO: Process filters and multiplex simultaneously
-    final_tree = tree.apply_filters(input_tree, filter_only, filter_out)
-    return final_tree
 
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
