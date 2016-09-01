@@ -100,7 +100,7 @@ def retrieve_urls(resultsdir):
 
 def retrieve_mux(resultsdir):
     """
-    Retrieves the job multiplex from the results directory.
+    Retrieves the job Mux object from the results directory.
     """
     recorded_mux = _retrieve(resultsdir, MUX_FILENAME)
     if recorded_mux is None:

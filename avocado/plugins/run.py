@@ -151,17 +151,21 @@ class Run(CLICmd):
                          "final multiplex tree.")
 
     def _activate(self, args):
-        # Extend default multiplex tree of --mux_inject values
+        # Merge the multiplex_files
+        multiplex_files = getattr(args, "multiplex_files", None)
+        if multiplex_files:
+            args.mux.data_merge(multiplexer.yaml2tree(multiplex_files))
+
+        # Extend default multiplex tree of --mux-inject values
         for value in getattr(args, "mux_inject", []):
-            value = value.split(':', 2)
+            value = value.split(':', 3)
             if len(value) < 2:
                 raise ValueError("key:value pairs required, found only %s"
                                  % (value))
-            elif len(value) == 2:
-                args.default_avocado_params.value[value[0]] = value[1]
-            else:
-                node = args.default_avocado_params.get_node(value[0], True)
-                node.value[value[1]] = value[2]
+            elif len(value) == 2:   # key, value
+                args.mux.data_inject(*value)
+            else:                   # path, key, value
+                args.mux.data_inject(value[1], value[2], value[0])
 
     def run(self, args):
         """

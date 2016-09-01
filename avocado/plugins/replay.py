@@ -213,11 +213,12 @@ class Replay(CLI):
                                         for _ in args.multiplex_files]
             else:
                 mux = jobdata.retrieve_mux(resultsdir)
-                if mux is None:
-                    log.error('Source job multiplex data not found. Aborting.')
+                if mux is None:     # Fallback to multiplex_files
+                    log.error("Source job multiplex data not found. "
+                              "Aborting.")
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
-                    setattr(args, "multiplex_files", mux)
+                    setattr(args, "mux", mux)
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,
