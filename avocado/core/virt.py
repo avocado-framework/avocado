@@ -17,8 +17,7 @@ Module to provide classes for Virtual Machines.
 """
 
 import logging
-import subprocess
-import xml.etree.cElementTree as etree
+import time
 from xml.dom import minidom
 
 from . import remoter
@@ -74,6 +73,7 @@ class Hypervisor(object):
         """
         if self.connected is False:
             try:
+                libvirt.registerErrorHandler(self.handler, 'context')
                 self.connection = libvirt.open(self.uri)
             except libvirt.libvirtError:
                 self.connected = False
@@ -93,6 +93,15 @@ class Hypervisor(object):
             if name == domain.name():
                 return domain
         return None
+
+    @staticmethod
+    def handler(ctxt, err):
+        """
+        This overwrites the libvirt default error handler, in order to
+        avoid unwanted messages from libvirt exceptions to be sent for
+        stdout.
+        """
+        pass
 
 
 class VM(object):
@@ -268,34 +277,69 @@ class VM(object):
         else:
             self.logged = False
 
-    def ip_address(self):
+    def ip_address(self, timeout=30):
         """
-        Returns the IP address associated with the MAC address of this VM
-
-        Inspired from:
-        https://raw.githubusercontent.com/mcepl/virt-addr/master/virt-addr.py
+        Returns the domain IP address consulting qemu-guest-agent
+        through libvirt.
 
         :returns: either the IP address or None if not found
         :rtype: str or None
         """
-        desc = etree.fromstring(self.domain.XMLDesc(0))
-        mac_path = "devices/interface[@type='network']/mac"
-        node = desc.find(mac_path)
-        if node is None:
-            return None
+        timelimit = time.time() + timeout
+        while True:
+            try:
+                ip = self._get_ip_from_libvirt_agent()
+                if ip is not None:
+                    return ip
+            except libvirt.libvirtError as exception:
+                # Qemu guest agent takes time to be ready, but
+                # libvirt raises an exception here if it's not.
+                # Let's be nice and wait for the guest agent, if
+                # that's the problem.
+                errno = libvirt.VIR_ERR_AGENT_UNRESPONSIVE
+                if exception.get_error_code() == errno:
+                    pass
+                else:
+                    return None
 
-        mac = node.get("address")
-        if mac is None:
-            return None
+            if time.time() > timelimit:
+                return None
+            time.sleep(1)
 
-        mac = mac.lower().strip()
-        output = subprocess.Popen(["arp", "-n"],
-                                  stdout=subprocess.PIPE).communicate()[0]
-        lines = [line.split() for line in output.split("\n")[1:]]
-        addresses = [line[0] for line in lines if (line and (line[2] == mac))]
-        if addresses:
-            # Just return the first address, this is a best effort attempt
-            return addresses[0]
+    def _get_ip_from_libvirt_agent(self):
+        """
+        Retrieves from libvirt/qemu-guest-agent the first IPv4
+        non-loopback IP from the first non-loopback device.
+
+        Libvirt response example:
+        {'ens3': {'addrs': [{'addr': '192.168.122.4',
+                             'prefix': 24,
+                             'type': 0},
+                            {'addr': 'fe80::5054:ff:fe0c:9c9b',
+                             'prefix': 64,
+                             'type': 1}],
+                  'hwaddr': '52:54:00:0c:9c:9b'},
+           'lo': {'addrs': [{'addr': '127.0.0.1',
+                             'prefix': 8,
+                             'type': 0},
+                            {'addr': '::1',
+                             'prefix': 128,
+                             'type': 1}],
+                  'hwaddr': '00:00:00:00:00:00'}}
+
+        :return: either the IP address or None if not found.
+        """
+        querytype = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
+        ipversion = libvirt.VIR_IP_ADDR_TYPE_IPV4
+
+        ifaces = self.domain.interfaceAddresses(querytype)
+        for iface, data in ifaces.iteritems():
+            if data['addrs'] and data['hwaddr'] != '00:00:00:00:00:00':
+                ip_addr = data['addrs'][0]['addr']
+                ip_type = data['addrs'][0]['type']
+                if ip_type == ipversion and not ip_addr.startswith('127.'):
+                    return ip_addr
+        return None
 
 
 def vm_connect(domain_name, hypervisor_uri='qemu:///system'):
