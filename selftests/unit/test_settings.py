@@ -16,6 +16,8 @@ float_key = 1.25
 bool_key = True
 list_key = ['I', 'love', 'settings']
 empty_key =
+path = ~/path/at/home
+home_path = ~
 """
 
 
@@ -40,6 +42,21 @@ class SettingsTest(unittest.TestCase):
 
     def testBoolConversion(self):
         self.assertTrue(self.settings.get_value('foo', 'bool_key', bool))
+
+    def testPathHomeDir(self):
+        raw_from_settings = '~/path/at/home'
+        path_from_settings = self.settings.get_value('foo', 'path', 'path')
+        home_str_from_settings = self.settings.get_value('foo', 'home_path', str)
+        self.assertEqual(path_from_settings[-13:],
+                         raw_from_settings[-13:])
+        self.assertGreaterEqual(len(path_from_settings),
+                                len(raw_from_settings))
+        self.assertEqual(os.path.expanduser(home_str_from_settings),
+                         self.settings.get_value('foo', 'home_path', 'path'))
+
+    def testPathOnStrKey(self):
+        self.assertEqual(self.settings.get_value('foo', 'path', str),
+                         '~/path/at/home')
 
     def testListConversion(self):
         self.assertEqual(self.settings.get_value('foo', 'list_key', list),

@@ -58,12 +58,12 @@ class JobScripts(JobPre, JobPost):
 
     def pre(self, job):
         path = settings.get_value(section=CONFIG_SECTION,
-                                  key="pre", key_type=str,
+                                  key="pre", key_type='path',
                                   default="/etc/avocado/scripts/job/pre.d/")
         self._run_scripts('pre', path, job)
 
     def post(self, job):
         path = settings.get_value(section=CONFIG_SECTION,
-                                  key="post", key_type=str,
+                                  key="post", key_type='path',
                                   default="/etc/avocado/scripts/job/post.d/")
         self._run_scripts('post', path, job)

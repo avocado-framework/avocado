@@ -140,9 +140,9 @@ class Replay(CLI):
         if args.replay_datadir is not None:
             resultsdir = args.replay_datadir
         else:
-            logs_dir = settings.get_value('datadir.paths', 'logs_dir',
-                                          default=None)
-            logdir = os.path.expanduser(logs_dir)
+            logdir = settings.get_value(section='datadir.paths',
+                                        key='logs_dir', key_type='path',
+                                        default=None)
             try:
                 resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
             except ValueError as exception:

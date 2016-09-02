@@ -77,11 +77,12 @@ class GDB(CLI):
             gdb.GDB_ENABLE_CORE = True if args.gdb_coredump == 'on' else False
 
         system_gdb_path = utils_path.find_command('gdb', '/usr/bin/gdb')
-        gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb',
+        gdb.GDB_PATH = settings.get_value('gdb.paths', 'gdb', key_type='path',
                                           default=system_gdb_path)
         system_gdbserver_path = utils_path.find_command('gdbserver',
                                                         '/usr/bin/gdbserver')
         gdb.GDBSERVER_PATH = settings.get_value('gdb.paths',
                                                 'gdbserver',
+                                                key_type='path',
                                                 default=system_gdbserver_path)
         process.UNDEFINED_BEHAVIOR_EXCEPTION = exceptions.TestError
