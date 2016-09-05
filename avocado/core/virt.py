@@ -17,8 +17,7 @@ Module to provide classes for Virtual Machines.
 """
 
 import logging
-import subprocess
-import xml.etree.cElementTree as etree
+import time
 from xml.dom import minidom
 
 from . import remoter
@@ -74,6 +73,7 @@ class Hypervisor(object):
         """
         if self.connected is False:
             try:
+                libvirt.registerErrorHandler(self.handler, 'context')
                 self.connection = libvirt.open(self.uri)
             except libvirt.libvirtError:
                 self.connected = False
@@ -93,6 +93,15 @@ class Hypervisor(object):
             if name == domain.name():
                 return domain
         return None
+
+    @staticmethod
+    def handler(ctxt, err):
+        """
+        This overwrites the libvirt default error handler, in order to
+        avoid unwanted messages from libvirt exceptions to be sent for
+        stdout.
+        """
+        pass
 
 
 class VM(object):
@@ -268,34 +277,54 @@ class VM(object):
         else:
             self.logged = False
 
-    def ip_address(self):
+    def ip_address(self, timeout=30):
         """
-        Returns the IP address associated with the MAC address of this VM
-
-        Inspired from:
-        https://raw.githubusercontent.com/mcepl/virt-addr/master/virt-addr.py
+        Returns the IP address consulting libvirt domifaddr
 
         :returns: either the IP address or None if not found
         :rtype: str or None
         """
-        desc = etree.fromstring(self.domain.XMLDesc(0))
-        mac_path = "devices/interface[@type='network']/mac"
-        node = desc.find(mac_path)
-        if node is None:
-            return None
+        timelimit = time.time() + timeout
 
-        mac = node.get("address")
-        if mac is None:
-            return None
+        # VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_LEASE: Parse DHCP lease file
+        # VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT: Ask Qemu Guest Agent
+        querytype = libvirt.VIR_DOMAIN_INTERFACE_ADDRESSES_SRC_AGENT
 
-        mac = mac.lower().strip()
-        output = subprocess.Popen(["arp", "-n"],
-                                  stdout=subprocess.PIPE).communicate()[0]
-        lines = [line.split() for line in output.split("\n")[1:]]
-        addresses = [line[0] for line in lines if (line and (line[2] == mac))]
-        if addresses:
-            # Just return the first address, this is a best effort attempt
-            return addresses[0]
+        while True:
+            try:
+                ip = self._get_ip(querytype)
+                if ip is not None:
+                    return ip
+            except libvirt.libvirtError as exception:
+                # Qemu guest agent takes time to be ready, but
+                # libvirt raises an exception here if it's not.
+                # Let's be nice and wait for the guest agent, if
+                # that's the problem.
+                errno = libvirt.VIR_ERR_AGENT_UNRESPONSIVE
+                if exception.get_error_code() == errno:
+                    pass
+                else:
+                    return None
+
+            if time.time() > timelimit:
+                return None
+            time.sleep(1)
+
+    def _get_ip(self, querytype):
+        """
+        Retrieves from libvirt the first IP from the
+        first non-loopback device using the selected method.
+
+        :param querytype: libvirt query type code.
+        :return: either the IP address or None if not found.
+        """
+        ifaces = self.domain.interfaceAddresses(querytype)
+        for iface, data in ifaces.iteritems():
+            if data['addrs']:
+                addr = data['addrs'][0]['addr']
+                if not addr.startswith('127.'):
+                    return addr
+        return None
 
 
 def vm_connect(domain_name, hypervisor_uri='qemu:///system'):

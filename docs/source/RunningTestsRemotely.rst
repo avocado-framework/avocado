@@ -107,10 +107,9 @@ From these options, you are normally going to use `--vm-domain`,
 `--vm-hostname` and `--vm-username` in case you did set up your VM with
 password-less SSH connection (through SSH keys).
 
-If you have the VM already running, or have had it running a "while"
-back, you can probably skip the `--vm-hostname` option as Avocado will
-attempt to find out the VM IP address based on the MAC address and ARP
-table.
+If your VM has the ``qemu-guest-agent`` installed, you can skip the
+``--vm-hostname`` option. Avocado will then probe the VM IP from the
+agent.
 
 Virtual Machine Setup
 ---------------------
