@@ -17,6 +17,7 @@ VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
 AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
+AVOCADO_PLUGINS+=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
