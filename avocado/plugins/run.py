@@ -138,9 +138,6 @@ class Run(CLICmd):
                              default=None, metavar='FILE',
                              help='Location of one or more Avocado multiplex (.yaml) '
                              'FILE(s) (order dependent)')
-            mux.add_argument('--multiplex-files', nargs='*',
-                             default=None, metavar='FILE',
-                             help='DEPRECATED: please use --multiplex instead')
             mux.add_argument('--filter-only', nargs='*', default=[],
                              help='Filter only path(s) from multiplexing')
             mux.add_argument('--filter-out', nargs='*', default=[],
