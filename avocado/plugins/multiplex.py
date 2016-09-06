@@ -53,8 +53,8 @@ class Multiplex(CLICmd):
                             "the final multiplex tree.")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
-                                default=False, help="Debug multiplexed "
-                                "files.")
+                                dest="mux_debug", default=False,
+                                help="Debug the multiplex tree.")
         tree_parser = parser.add_argument_group("tree view options")
         tree_parser.add_argument('-t', '--tree', action='store_true',
                                  default=False, help='Shows the multiplex '
@@ -78,7 +78,7 @@ class Multiplex(CLICmd):
         self._activate(args)
         log = logging.getLogger("avocado.app")
         err = None
-        if args.tree and args.debug:
+        if args.tree and args.mux_debug:
             err = "Option --tree is incompatible with --debug."
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"
@@ -88,7 +88,7 @@ class Multiplex(CLICmd):
         try:
             mux_tree = multiplexer.yaml2tree(args.multiplex,
                                              args.filter_only, args.filter_out,
-                                             args.debug)
+                                             args.mux_debug)
         except IOError as details:
             log.error(details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -107,7 +107,7 @@ class Multiplex(CLICmd):
         variants = multiplexer.MuxTree(mux_tree)
         log.info('Variants generated:')
         for (index, tpl) in enumerate(variants):
-            if not args.debug:
+            if not args.mux_debug:
                 paths = ', '.join([x.path for x in tpl])
             else:
                 color = output.TERM_SUPPORT.LOWLIGHT

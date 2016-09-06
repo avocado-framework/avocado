@@ -391,10 +391,10 @@ class Mux(object):
     This is a multiplex object which multiplexes the test_suite.
     """
 
-    def __init__(self):
+    def __init__(self, debug=False):
         self._has_multiple_variants = None
         self.variants = None
-        self.data = tree.TreeNode()
+        self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
         self._mux_path = None
 
     def parse(self, args):
