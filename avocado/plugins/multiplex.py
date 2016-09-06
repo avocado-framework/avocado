@@ -33,24 +33,15 @@ class Multiplex(CLICmd):
 
     def __init__(self, *args, **kwargs):
         super(Multiplex, self).__init__(*args, **kwargs)
-        self._from_args_tree = tree.TreeNode()
 
     def configure(self, parser):
-        if multiplexer.MULTIPLEX_CAPABLE is False:
-            return
-
         parser = super(Multiplex, self).configure(parser)
-        parser.add_argument('multiplex_files', nargs='+',
-                            help='Path(s) to a multiplex file(s)')
 
         parser.add_argument('--filter-only', nargs='*', default=[],
                             help='Filter only path(s) from multiplexing')
 
         parser.add_argument('--filter-out', nargs='*', default=[],
                             help='Filter out path(s) from multiplexing')
-        parser.add_argument('--system-wide', action='store_true',
-                            help="Combine the files with the default "
-                            "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
                             default=False, help="Shows the node content "
                             "(variables)")
@@ -59,8 +50,8 @@ class Multiplex(CLICmd):
                             "the final multiplex tree.")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
-                                default=False, help="Debug multiplexed "
-                                "files.")
+                                dest="mux_debug", default=False,
+                                help="Debug the multiplex tree.")
         tree_parser = parser.add_argument_group("tree view options")
         tree_parser.add_argument('-t', '--tree', action='store_true',
                                  default=False, help='Shows the multiplex '
@@ -69,39 +60,30 @@ class Multiplex(CLICmd):
                                  help="Show the inherited values")
 
     def _activate(self, args):
-        # Extend default multiplex tree of --env values
+        # Extend default multiplex tree of --mux-inject values
         for value in getattr(args, "mux_inject", []):
-            value = value.split(':', 2)
+            value = value.split(':', 3)
             if len(value) < 2:
                 raise ValueError("key:value pairs required, found only %s"
                                  % (value))
-            elif len(value) == 2:
-                self._from_args_tree.value[value[0]] = value[1]
-            else:
-                node = self._from_args_tree.get_node(value[0], True)
-                node.value[value[1]] = value[2]
+            elif len(value) == 2:   # key, value
+                args.mux.data_inject(*value)
+            else:                   # path, key, value
+                args.mux.data_inject(value[1], value[2], value[0])
 
     def run(self, args):
         self._activate(args)
         log = logging.getLogger("avocado.app")
         err = None
-        if args.tree and args.debug:
+        if args.tree and args.mux_debug:
             err = "Option --tree is incompatible with --debug."
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"
         if err:
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        try:
-            mux_tree = multiplexer.yaml2tree(args.multiplex_files,
-                                             args.filter_only, args.filter_out,
-                                             args.debug)
-        except IOError as details:
-            log.error(details.strerror)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        if args.system_wide:
-            mux_tree.merge(args.default_avocado_params)
-        mux_tree.merge(self._from_args_tree)
+        mux = args.mux
+        mux.parse(args)
         if args.tree:
             if args.contents:
                 verbose = 1
@@ -111,13 +93,12 @@ class Multiplex(CLICmd):
                 verbose += 2
             use_utf8 = settings.get_value("runner.output", "utf8",
                                           key_type=bool, default=None)
-            log.debug(tree.tree_view(mux_tree, verbose, use_utf8))
+            log.debug(tree.tree_view(mux.variants.root, verbose, use_utf8))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
-        variants = multiplexer.MuxTree(mux_tree)
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(variants):
-            if not args.debug:
+        for (index, tpl) in enumerate(mux.variants):
+            if not args.mux_debug:
                 paths = ', '.join([x.path for x in tpl])
             else:
                 color = output.TERM_SUPPORT.LOWLIGHT

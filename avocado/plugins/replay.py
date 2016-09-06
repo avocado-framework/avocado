@@ -27,6 +27,12 @@ from avocado.core.settings import settings
 from avocado.core.test import ReplaySkipTest
 
 
+def ignore_call(*args, **kwargs):
+    """
+    Accepts anything and does nothing
+    """
+
+
 class Replay(CLI):
 
     """
@@ -125,7 +131,7 @@ class Replay(CLI):
         log = logging.getLogger("avocado.app")
 
         err = None
-        if args.replay_teststatus and args.multiplex_files:
+        if args.replay_teststatus and args.multiplex:
             err = ("Option --replay-test-status is incompatible with "
                    "--multiplex.")
         elif args.replay_teststatus and args.url:
@@ -205,19 +211,27 @@ class Replay(CLI):
             log.warn("Ignoring multiplex from source job with "
                      "--replay-ignore.")
         else:
-            if getattr(args, 'multiplex_files', None) is not None:
+            if getattr(args, 'multiplex', None) is not None:
+                # Disable the mux from the original job
                 log.warn('Overriding the replay multiplex with '
-                         '--multiplex-file.')
-                # Use absolute paths to avoid problems with os.chdir
-                args.multiplex_files = [os.path.abspath(_)
-                                        for _ in args.multiplex_files]
+                         '--multiplex-file. Note that currently '
+                         'this ignores the system-wide mux options '
+                         'so it really uses only the values you provide '
+                         'on the cmdline.')
             else:
                 mux = jobdata.retrieve_mux(resultsdir)
-                if mux is None:
-                    log.error('Source job multiplex data not found. Aborting.')
+                if mux is None:     # Fallback to multiplex_files
+                    log.error("Source job multiplex data not found. "
+                              "Aborting.")
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
-                    setattr(args, "multiplex_files", mux)
+                    # Ignore data manipulation. This is necessary, because
+                    # we replaced the unparsed object with parsed one. There
+                    # are other plugins running before/after this which might
+                    # want to alter the mux object.
+                    setattr(args, "mux", mux)
+                    mux.data_merge = ignore_call
+                    mux.data_inject = ignore_call
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,

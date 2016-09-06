@@ -474,12 +474,12 @@ class Job(object):
                          "command.")
             raise exceptions.OptionValidationError(e_msg)
 
-        if isinstance(getattr(self.args, 'multiplex_files', None),
-                      multiplexer.Mux):
-            mux = self.args.multiplex_files     # pylint: disable=E1101
-        else:
+        mux = getattr(self.args, "mux", None)
+        if mux is None:
+            mux = multiplexer.Mux()
+        if not mux.is_parsed:   # Mux not yet parsed, apply args
             try:
-                mux = multiplexer.Mux(self.args)
+                mux.parse(self.args)
             except (IOError, ValueError) as details:
                 raise exceptions.OptionValidationError(details)
         self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
@@ -519,15 +519,6 @@ class Job(object):
     def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
-
-        Note that the behavior is as follows:
-
-        * If urls is provided alone, just make a simple list with no specific
-          params (all tests use default params).
-        * If urls and multiplex_files are provided, multiplex provides params
-          and variants to all tests it can.
-        * If multiplex_files are provided alone, just use the matrix produced
-          by the file
 
         The test runner figures out which tests need to be run on an empty urls
         list by assuming the first component of the shortname is the test url.

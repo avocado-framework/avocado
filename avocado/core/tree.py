@@ -39,28 +39,12 @@ import locale
 import os
 import re
 
-try:
-    import yaml
-except ImportError:
-    MULTIPLEX_CAPABLE = False
-else:
-    MULTIPLEX_CAPABLE = True
-    try:
-        from yaml import CLoader as Loader
-    except ImportError:
-        from yaml import Loader
-
 from . import output
 
-# Mapping for yaml flags
-YAML_INCLUDE = 0
-YAML_USING = 1
-YAML_REMOVE_NODE = 2
-YAML_REMOVE_VALUE = 3
-YAML_MUX = 4
 
-__RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
-__RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
+# Tags to remove node/value
+REMOVE_NODE = 0
+REMOVE_VALUE = 1
 
 
 class Control(object):  # Few methods pylint: disable=R0903
@@ -144,7 +128,7 @@ class TreeNode(object):
         """
         for ctrl in other.ctrl:
             if isinstance(ctrl, Control):
-                if ctrl.code == YAML_REMOVE_NODE:
+                if ctrl.code == REMOVE_NODE:
                     remove = []
                     regexp = re.compile(ctrl.value)
                     for child in self.children:
@@ -152,7 +136,7 @@ class TreeNode(object):
                             remove.append(child)
                     for child in remove:
                         self.children.remove(child)
-                elif ctrl.code == YAML_REMOVE_VALUE:
+                elif ctrl.code == REMOVE_VALUE:
                     remove = []
                     regexp = re.compile(ctrl.value)
                     for key in self.value.iterkeys():
@@ -302,181 +286,6 @@ class TreeNode(object):
             self.parent.children.remove(self)
             self.parent = None
         return self
-
-
-class Value(tuple):     # Few methods pylint: disable=R0903
-
-    """ Used to mark values to simplify checking for node vs. value """
-    pass
-
-
-class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
-
-    """
-    Used to mark list as list of objects from whose node is going to be created
-    """
-    pass
-
-
-def _create_from_yaml(path, cls_node=TreeNode):
-    """ Create tree structure from yaml stream """
-    def tree_node_from_values(name, values):
-        """ Create `name` node and add values  """
-        node = cls_node(str(name))
-        using = ''
-        for value in values:
-            if isinstance(value, TreeNode):
-                node.add_child(value)
-            elif isinstance(value[0], Control):
-                if value[0].code == YAML_INCLUDE:
-                    # Include file
-                    ypath = value[1]
-                    if not os.path.isabs(ypath):
-                        ypath = os.path.join(os.path.dirname(path), ypath)
-                    if not os.path.exists(ypath):
-                        raise ValueError("File '%s' included from '%s' does not "
-                                         "exist." % (ypath, path))
-                    node.merge(_create_from_yaml('/:' + ypath, cls_node))
-                elif value[0].code == YAML_USING:
-                    if using:
-                        raise ValueError("!using can be used only once per "
-                                         "node! (%s:%s)" % (path, name))
-                    using = value[1]
-                    if using[0] == '/':
-                        using = using[1:]
-                    if using[-1] == '/':
-                        using = using[:-1]
-                elif value[0].code == YAML_REMOVE_NODE:
-                    value[0].value = value[1]   # set the name
-                    node.ctrl.append(value[0])    # add "blue pill" of death
-                elif value[0].code == YAML_REMOVE_VALUE:
-                    value[0].value = value[1]   # set the name
-                    node.ctrl.append(value[0])
-                elif value[0].code == YAML_MUX:
-                    node.multiplex = True
-            else:
-                node.value[value[0]] = value[1]
-        if using:
-            if name is not '':
-                for name in using.split('/')[::-1]:
-                    node = cls_node(name, children=[node])
-            else:
-                using = using.split('/')[::-1]
-                node.name = using.pop()
-                while True:
-                    if not using:
-                        break
-                    name = using.pop()  # 'using' is list pylint: disable=E1101
-                    node = cls_node(name, children=[node])
-                node = cls_node('', children=[node])
-        return node
-
-    def mapping_to_tree_loader(loader, node):
-        """ Maps yaml mapping tag to TreeNode structure """
-        _value = []
-        for key_node, value_node in node.value:
-            if key_node.tag.startswith('!'):    # reflect tags everywhere
-                key = loader.construct_object(key_node)
-            else:
-                key = loader.construct_python_str(key_node)
-            value = loader.construct_object(value_node)
-            _value.append((key, value))
-        objects = ListOfNodeObjects()
-        for name, values in _value:
-            if isinstance(values, ListOfNodeObjects):   # New node from list
-                objects.append(tree_node_from_values(name, values))
-            elif values is None:            # Empty node
-                objects.append(cls_node(str(name)))
-            else:                           # Values
-                objects.append(Value((name, values)))
-        return objects
-
-    def mux_loader(loader, obj):
-        """
-        Special !mux loader which allows to tag node as 'multiplex = True'.
-        """
-        if not isinstance(obj, yaml.ScalarNode):
-            objects = mapping_to_tree_loader(loader, obj)
-        else:   # This means it's empty node. Don't call mapping_to_tree_loader
-            objects = ListOfNodeObjects()
-        objects.append((Control(YAML_MUX), None))
-        return objects
-
-    Loader.add_constructor(u'!include',
-                           lambda loader, node: Control(YAML_INCLUDE))
-    Loader.add_constructor(u'!using',
-                           lambda loader, node: Control(YAML_USING))
-    Loader.add_constructor(u'!remove_node',
-                           lambda loader, node: Control(YAML_REMOVE_NODE))
-    Loader.add_constructor(u'!remove_value',
-                           lambda loader, node: Control(YAML_REMOVE_VALUE))
-    Loader.add_constructor(u'!mux', mux_loader)
-    Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-                           mapping_to_tree_loader)
-
-    # Parse file name ([$using:]$path)
-    path = __RE_FILE_SPLIT.split(path, 1)
-    if len(path) == 1:
-        path = __RE_FILE_SUBS.sub(':', path[0])
-        using = ["run"]
-    else:
-        nodes = __RE_FILE_SUBS.sub(':', path[0]).strip('/').split('/')
-        using = [node for node in nodes if node]
-        if not path[0].startswith('/'):  # relative path, put into /run
-            using.insert(0, 'run')
-        path = __RE_FILE_SUBS.sub(':', path[1])
-
-    # Load the tree
-    with open(path) as stream:
-        loaded_tree = yaml.load(stream, Loader)
-        loaded_tree = tree_node_from_values('', loaded_tree)
-
-    # Add prefix
-    if using:
-        loaded_tree.name = using.pop()
-        while True:
-            if not using:
-                break
-            loaded_tree = cls_node(using.pop(), children=[loaded_tree])
-        loaded_tree = cls_node('', children=[loaded_tree])
-    return loaded_tree
-
-
-def create_from_yaml(paths, debug=False):
-    """
-    Create tree structure from yaml-like file
-    :param fileobj: File object to be processed
-    :raise SyntaxError: When yaml-file is corrupted
-    :return: Root of the created tree structure
-    """
-    def _merge(data, path):
-        """ Normal run """
-        data.merge(_create_from_yaml(path))
-
-    def _merge_debug(data, path):
-        """ Use NamedTreeNodeDebug magic """
-        node_cls = get_named_tree_cls(path)
-        data.merge(_create_from_yaml(path, node_cls))
-
-    if not debug:
-        data = TreeNode()
-        merge = _merge
-    else:
-        data = TreeNodeDebug()
-        merge = _merge_debug
-
-    path = None
-    try:
-        for path in paths:
-            merge(data, path)
-    # Yaml can raise IndexError on some files
-    except (yaml.YAMLError, IndexError) as details:
-        if 'mapping values are not allowed in this context' in str(details):
-            details = ("%s\nMake sure !tags and colons are separated by a "
-                       "space (eg. !include :)" % details)
-        msg = "Invalid multiplex file '%s': %s" % (path, details)
-        raise IOError(2, msg, path)
-    return data
 
 
 def path_parent(path):
