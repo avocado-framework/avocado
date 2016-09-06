@@ -69,17 +69,16 @@ class Multiplex(CLICmd):
                                  help="Show the inherited values")
 
     def _activate(self, args):
-        # Extend default multiplex tree of --env values
+        # Extend default multiplex tree of --mux-inject values
         for value in getattr(args, "mux_inject", []):
-            value = value.split(':', 2)
+            value = value.split(':', 3)
             if len(value) < 2:
                 raise ValueError("key:value pairs required, found only %s"
                                  % (value))
-            elif len(value) == 2:
-                self._from_args_tree.value[value[0]] = value[1]
-            else:
-                node = self._from_args_tree.get_node(value[0], True)
-                node.value[value[1]] = value[2]
+            elif len(value) == 2:   # key, value
+                args.mux.data_inject(*value)
+            else:                   # path, key, value
+                args.mux.data_inject(value[1], value[2], value[0])
 
     def run(self, args):
         self._activate(args)
@@ -100,7 +99,7 @@ class Multiplex(CLICmd):
             log.error(details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         if args.system_wide:
-            mux_tree.merge(args.default_avocado_params)
+            mux_tree.merge(args.mux)
         mux_tree.merge(self._from_args_tree)
         if args.tree:
             if args.contents:
