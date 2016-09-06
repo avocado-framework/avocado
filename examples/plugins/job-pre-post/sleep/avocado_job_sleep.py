@@ -2,7 +2,7 @@ import time
 import logging
 
 from avocado.core.settings import settings
-from avocado.plugins.base import JobPre, JobPost
+from avocado.core.plugin_interfaces import JobPre, JobPost
 
 
 class Sleep(JobPre, JobPost):
