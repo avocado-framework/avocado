@@ -335,15 +335,24 @@ class SysInfo(object):
                                            'commands',
                                            key_type='path',
                                            default='')
-        log.info('Commands configured by file: %s', commands_file)
-        self.commands = genio.read_all_lines(commands_file)
+
+        if os.path.isfile(commands_file):
+            log.info('Commands configured by file: %s', commands_file)
+            self.commands = genio.read_all_lines(commands_file)
+        else:
+            log.debug('File %s does not exist.', commands_file)
+            self.commands = []
 
         files_file = settings.get_value('sysinfo.collectibles',
                                         'files',
                                         key_type='path',
                                         default='')
-        log.info('Files configured by file: %s', files_file)
-        self.files = genio.read_all_lines(files_file)
+        if os.path.isfile(files_file):
+            log.info('Files configured by file: %s', files_file)
+            self.files = genio.read_all_lines(files_file)
+        else:
+            log.debug('File %s does not exist.', files_file)
+            self.files = []
 
         if profiler is None:
             self.profiler = settings.get_value('sysinfo.collect',
@@ -357,18 +366,20 @@ class SysInfo(object):
                                            'profilers',
                                            key_type='path',
                                            default='')
-        self.profilers = genio.read_all_lines(profiler_file)
-
-        log.info('Profilers configured by file: %s', profiler_file)
-        log.info('Profilers declared: %s', self.profilers)
-        if not self.profilers:
-            self.profiler = False
-
-        if self.profiler is False:
+        if os.path.isfile(profiler_file):
+            self.profilers = genio.read_all_lines(profiler_file)
+            log.info('Profilers configured by file: %s', profiler_file)
             if not self.profilers:
-                log.info('Profiler disabled: no profiler commands configured')
-            else:
-                log.info('Profiler disabled')
+                self.profiler = False
+
+            if self.profiler is False:
+                if not self.profilers:
+                    log.info('Profiler disabled: no profiler commands configured')
+                else:
+                    log.info('Profiler disabled')
+        else:
+            log.debug('File %s does not exist.', profiler_file)
+            self.profilers = []
 
         self.start_job_collectibles = set()
         self.end_job_collectibles = set()
