@@ -12,7 +12,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-
 """
 Avocado application command line parsing.
 """
@@ -21,7 +20,7 @@ import argparse
 import logging
 
 from . import exit_codes
-from . import tree
+from . import multiplexer
 from . import settings
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
 from .version import VERSION
@@ -125,7 +124,7 @@ class Parser(object):
             dest='subcommand')
 
         # Allow overriding default params by plugins
-        self.args.default_avocado_params = tree.TreeNode()
+        self.args.mux = multiplexer.Mux(getattr(self.args, "mux-debug", False))
 
     def finish(self):
         """

@@ -59,7 +59,7 @@ is disabled, so the value of node name is always as written in the yaml
 file (unlike values, where `yes` converts to `True` and such).
 
 Nodes are organized in parent-child relationship and together they create
-a tree. To view this structure use ``avocado multiplex --tree <file>``::
+a tree. To view this structure use ``avocado multiplex --tree -m <file>``::
 
  ┗━━ run
       ┣━━ hw
@@ -422,7 +422,7 @@ Let's take a second look at the first example::
 After filters are applied (simply removes non-matching variants), leaves
 are gathered and all variants are generated::
 
-    $ avocado multiplex examples/mux-environment.yaml
+    $ avocado multiplex -m examples/mux-environment.yaml
     Variants generated:
     Variant 1:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/debug
     Variant 2:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/prod
