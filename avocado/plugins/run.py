@@ -135,7 +135,6 @@ class Run(CLICmd):
         mux = parser.add_argument_group('test parameters')
         if multiplexer.MULTIPLEX_CAPABLE:
             mux.add_argument('-m', '--multiplex', nargs='*',
-                             dest='multiplex_files',
                              default=None, metavar='FILE',
                              help='Location of one or more Avocado multiplex '
                              '(.yaml) FILE(s) (order dependent)')
@@ -151,8 +150,8 @@ class Run(CLICmd):
                          "final multiplex tree.")
 
     def _activate(self, args):
-        # Merge the multiplex_files
-        multiplex_files = getattr(args, "multiplex_files", None)
+        # Merge the multiplex
+        multiplex_files = getattr(args, "multiplex", None)
         if multiplex_files:
             args.mux.data_merge(multiplexer.yaml2tree(multiplex_files))
 

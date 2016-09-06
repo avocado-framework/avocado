@@ -40,7 +40,7 @@ class Multiplex(CLICmd):
             return
 
         parser = super(Multiplex, self).configure(parser)
-        parser.add_argument('multiplex_files', nargs='+',
+        parser.add_argument('multiplex', nargs='+',
                             help='Path(s) to a multiplex file(s)')
 
         parser.add_argument('--filter-only', nargs='*', default=[],
@@ -92,7 +92,7 @@ class Multiplex(CLICmd):
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
         try:
-            mux_tree = multiplexer.yaml2tree(args.multiplex_files,
+            mux_tree = multiplexer.yaml2tree(args.multiplex,
                                              args.filter_only, args.filter_out,
                                              args.debug)
         except IOError as details:
