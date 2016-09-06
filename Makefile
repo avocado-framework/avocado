@@ -129,7 +129,7 @@ requirements-plugins: requirements
 		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirements &>/dev/null && echo ">> DONE $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
 	done
 
-smokecheck:
+smokecheck: clean develop
 	./scripts/avocado run passtest.py
 
 check: clean develop check_cyclical modules_boundaries
