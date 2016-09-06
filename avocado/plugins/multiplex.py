@@ -28,7 +28,7 @@ class Multiplex(CLICmd):
     """
 
     name = 'multiplex'
-    description = 'Generate a list of dictionaries with params from a multiplex file'
+    description = "Tool to analyze and visualize test variants and params"
 
     def __init__(self, *args, **kwargs):
         super(Multiplex, self).__init__(*args, **kwargs)
@@ -58,7 +58,7 @@ class Multiplex(CLICmd):
         tree_parser.add_argument('-i', '--inherit', action="store_true",
                                  help="Show the inherited values")
 
-    def _activate(self, args):
+    def _process_mux_inject(self, args):
         # Extend default multiplex tree of --mux-inject values
         for value in getattr(args, "mux_inject", []):
             value = value.split(':', 3)
@@ -71,7 +71,7 @@ class Multiplex(CLICmd):
                 args.mux.data_inject(value[1], value[2], value[0])
 
     def run(self, args):
-        self._activate(args)
+        self._process_mux_inject(args)
         log = logging.getLogger("avocado.app")
         err = None
         if args.tree and args.mux_debug:
