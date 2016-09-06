@@ -151,6 +151,9 @@ class Command(Collectible):
         env = os.environ.copy()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
+        lang = settings.get_value("sysinfo.collect", "lang", str, None)
+        if lang:
+            env["LANG"] = lang
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
@@ -185,6 +188,9 @@ class Daemon(Command):
         env = os.environ.copy()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
+        lang = settings.get_value("sysinfo.collect", "lang", str, None)
+        if lang:
+            env["LANG"] = lang
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
