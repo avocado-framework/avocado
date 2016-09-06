@@ -132,25 +132,23 @@ class Run(CLICmd):
 
         loader.add_loader_options(parser)
 
+        mux = parser.add_argument_group('test parameters')
         if multiplexer.MULTIPLEX_CAPABLE:
-            mux = parser.add_argument_group('multiplexer use on test execution')
-            mux.add_argument('-m', '--multiplex', nargs='*', dest='multiplex_files',
+            mux.add_argument('-m', '--multiplex', nargs='*',
+                             dest='multiplex_files',
                              default=None, metavar='FILE',
-                             help='Location of one or more Avocado multiplex (.yaml) '
-                             'FILE(s) (order dependent)')
-            mux.add_argument('--multiplex-files', nargs='*',
-                             default=None, metavar='FILE',
-                             help='DEPRECATED: please use --multiplex instead')
-            mux.add_argument('--filter-only', nargs='*', default=[],
-                             help='Filter only path(s) from multiplexing')
-            mux.add_argument('--filter-out', nargs='*', default=[],
-                             help='Filter out path(s) from multiplexing')
-            mux.add_argument('--mux-path', nargs='*', default=None,
-                             help="List of paths used to determine path "
-                             "priority when querying for parameters")
-            mux.add_argument('--mux-inject', default=[], nargs='*',
-                             help="Inject [path:]key:node values into the "
-                             "final multiplex tree.")
+                             help='Location of one or more Avocado multiplex '
+                             '(.yaml) FILE(s) (order dependent)')
+        mux.add_argument('--filter-only', nargs='*', default=[],
+                         help='Filter only path(s) from multiplexing')
+        mux.add_argument('--filter-out', nargs='*', default=[],
+                         help='Filter out path(s) from multiplexing')
+        mux.add_argument('--mux-path', nargs='*', default=None,
+                         help="List of paths used to determine path "
+                         "priority when querying for parameters")
+        mux.add_argument('--mux-inject', default=[], nargs='*',
+                         help="Inject [path:]key:node values into the "
+                         "final multiplex tree.")
 
     def _activate(self, args):
         # Extend default multiplex tree of --mux_inject values
