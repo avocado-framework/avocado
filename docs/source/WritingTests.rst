@@ -174,9 +174,9 @@ it's injected directly into the specified path and it's up to the test/framework
 developer to get the value from this location (using path or adding the path to
 ``mux-path``). To understand the difference execute those commands::
 
-    $ avocado multiplex -t examples/tests/sleeptest.py.data/sleeptest.yaml
-    $ avocado multiplex -t duration:examples/tests/sleeptest.py.data/sleeptest.yaml
-    $ avocado multiplex -t /my/location:examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t -m examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t -m duration:examples/tests/sleeptest.py.data/sleeptest.yaml
+    $ avocado multiplex -t -m /my/location:examples/tests/sleeptest.py.data/sleeptest.yaml
 
 Note that, as your multiplex file specifies all parameters for sleeptest, you
 can't leave the test ID empty::
