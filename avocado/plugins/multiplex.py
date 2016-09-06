@@ -33,7 +33,6 @@ class Multiplex(CLICmd):
 
     def __init__(self, *args, **kwargs):
         super(Multiplex, self).__init__(*args, **kwargs)
-        self._from_args_tree = tree.TreeNode()
 
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
@@ -48,9 +47,6 @@ class Multiplex(CLICmd):
 
         parser.add_argument('--filter-out', nargs='*', default=[],
                             help='Filter out path(s) from multiplexing')
-        parser.add_argument('--system-wide', action='store_true',
-                            help="Combine the files with the default "
-                            "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
                             default=False, help="Shows the node content "
                             "(variables)")
@@ -98,9 +94,6 @@ class Multiplex(CLICmd):
         except IOError as details:
             log.error(details.strerror)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        if args.system_wide:
-            mux_tree.merge(args.mux)
-        mux_tree.merge(self._from_args_tree)
         if args.tree:
             if args.contents:
                 verbose = 1
