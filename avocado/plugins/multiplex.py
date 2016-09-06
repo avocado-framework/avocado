@@ -16,7 +16,6 @@ import logging
 import sys
 
 from avocado.core import exit_codes, output
-from avocado.core import multiplexer
 from avocado.core import tree
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
@@ -36,9 +35,6 @@ class Multiplex(CLICmd):
 
     def configure(self, parser):
         parser = super(Multiplex, self).configure(parser)
-        if multiplexer.MULTIPLEX_CAPABLE:
-            parser.add_argument("-m", '--multiplex', nargs='*',
-                                help='Path(s) to a multiplex file(s)')
 
         parser.add_argument('--filter-only', nargs='*', default=[],
                             help='Filter only path(s) from multiplexing')
@@ -85,13 +81,8 @@ class Multiplex(CLICmd):
         if err:
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        try:
-            mux_tree = multiplexer.yaml2tree(args.multiplex,
-                                             args.filter_only, args.filter_out,
-                                             args.mux_debug)
-        except IOError as details:
-            log.error(details.strerror)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        mux = args.mux
+        mux.parse(args)
         if args.tree:
             if args.contents:
                 verbose = 1
@@ -101,12 +92,11 @@ class Multiplex(CLICmd):
                 verbose += 2
             use_utf8 = settings.get_value("runner.output", "utf8",
                                           key_type=bool, default=None)
-            log.debug(tree.tree_view(mux_tree, verbose, use_utf8))
+            log.debug(tree.tree_view(mux.variants.root, verbose, use_utf8))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
-        variants = multiplexer.MuxTree(mux_tree)
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(variants):
+        for (index, tpl) in enumerate(mux.variants):
             if not args.mux_debug:
                 paths = ', '.join([x.path for x in tpl])
             else:
