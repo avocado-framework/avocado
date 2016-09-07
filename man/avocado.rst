@@ -484,12 +484,12 @@ files with shell code could be considered tests::
     $ avocado run --external-runner=/bin/sh /tmp/pass /tmp/fail
     JOB ID     : 4a2a1d259690cc7b226e33facdde4f628ab30741
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TESTS      : 2
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.01 s
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This example is pretty obvious, and could be achieved by giving
 `/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
@@ -502,12 +502,12 @@ But now consider the following example::
                                            http://remote-avocado-server:9405/jobs/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
     TESTS      : 2
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 3.04 s
+    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This effectively makes `/bin/curl` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.

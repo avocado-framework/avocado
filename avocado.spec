@@ -7,7 +7,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 40.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -39,10 +39,16 @@ these days a framework) to perform automated testing.
 
 %build
 %{__python} setup.py build
+cd optional_plugins/html
+%{__python} setup.py build
+cd ../../
 %{__make} man
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
+cd optional_plugins/html
+%{__python} setup.py install --root %{buildroot} --skip-build
+cd ../../
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
@@ -78,8 +84,7 @@ selftests/run
 %{_mandir}/man1/avocado-rest-client.1.gz
 %{_docdir}/avocado/avocado.rst
 %{_docdir}/avocado/avocado-rest-client.rst
-%exclude %{python_sitelib}/avocado/plugins/html.py*
-%exclude %{python_sitelib}/avocado/core/resources/htmlresult/*
+%exclude %{python_sitelib}/avocado_result_html*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -96,8 +101,7 @@ directory. It also gives the user the ability to write a report on an
 arbitrary filesystem location.
 
 %files plugins-output-html
-%{python_sitelib}/avocado/plugins/html.py*
-%{python_sitelib}/avocado/core/resources/htmlresult/*
+%{python_sitelib}/avocado_result_html*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
@@ -113,6 +117,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Sep  6 2016 Cleber Rosa <cleber@redhat.com> - 40.0-1
+- Adapt build of now separate html plugin
+
 * Tue Aug 16 2016 Cleber Rosa <cleber@redhat.com> - 40.0-0
 - New upstream release
 

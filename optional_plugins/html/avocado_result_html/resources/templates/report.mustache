@@ -37,7 +37,7 @@
                     <!-- Table -->
                     <table class="table table-bordered">
                         <tr>
-                            <td>ID</td><td><tt>{{job_id}}</tt></td>
+                            <td>ID</td><td><tt>{{job_unique_id}}</tt></td>
                         </tr>
                         <tr>
                             <td>Host</td><td><tt>{{hostname}}</tt></td>
@@ -46,10 +46,10 @@
                             <td>Results Dir</td><td><a href="{{results_dir}}"><tt>{{results_dir_basename}}</tt></a></td>
                         </tr>
                         <tr>
-                            <td>Cumulative test time</td><td>{{execution_time}} s</td>
+                            <td>Cumulative test time</td><td>{{tests_total_time}} s</td>
                         </tr>
                         <tr>
-                            <td>Stats</td><td>From {{total}} tests executed, {{passed}} passed (pass rate of {{pass_rate}}%)</td>
+                            <td>Stats</td><td>From {{tests_total}} tests executed, {{passed}} passed (pass rate of {{pass_rate}}%)</td>
                         </tr>
                     </table>
                 </div>
@@ -68,7 +68,7 @@
             {{#tests}}
                 <tr class="{{row_class}}">
                     <td>{{time_start}}</td>
-                    <td><a href="{{logdir}}">{{test}}</a></td>
+                    <td><a href="{{logdir}}">{{name}}</a></td>
                     <td>{{status}}</td>
                     <td>{{time}}</td>
                     <td>{{& fail_reason}}</td>

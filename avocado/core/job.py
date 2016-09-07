@@ -53,13 +53,6 @@ from ..utils import stacktrace
 from ..utils import data_structures
 
 
-try:
-    from . import html
-    HTML_REPORT_SUPPORT = html.check_resource_requirements()
-except ImportError:
-    HTML_REPORT_SUPPORT = False
-
-
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
 
 _TEST_LOGGER = logging.getLogger('avocado.test')
@@ -280,12 +273,6 @@ class Job(object):
         if self.args:
             # If there are any active output plugins, let's use them
             self._set_output_plugins()
-
-        # Setup the html output to the results directory
-        if HTML_REPORT_SUPPORT:
-            html_file = os.path.join(self.logdir, 'html', 'results.html')
-            html_plugin = html.HTMLResult(self, html_file)
-            self.result_proxy.add_output_plugin(html_plugin)
 
         if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
             human_plugin = result.HumanResult(self)
