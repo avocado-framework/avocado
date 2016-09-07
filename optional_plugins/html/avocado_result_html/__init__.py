@@ -71,12 +71,6 @@ class ReportModel(object):
     def results_dir_basename(self):
         return os.path.basename(self.results_dir(False))
 
-    def logdir(self):
-        logdir = os.path
-        path = os.path.relpath(self.result.logdir,
-                               self.html_output_dir)
-        return urllib.quote(path)
-
     def tests_total(self):
         return self.result.tests_total
 
