@@ -65,10 +65,134 @@ be submitted as a github Pull Request. This process tries to ensure that every
 contributed patch goes through the CI jobs before it is considered good for
 inclusion.
 
+Git workflow
+------------
+
+- Fork the repository in github.
+
+- Clone from your fork::
+
+    $ git clone git@github.com:<username>/avocado.git
+
+- Enter the directory::
+
+    $ cd avocado
+
+- Create a ``remote``, pointing to the upstream::
+
+    $ git remote add upstream git@github.com:avocado-framework/avocado.git
+
+- Configure your name and e-mail in git::
+
+    $ git config --global user.name "Your Name"
+    $ git config --global user.email email@foo.bar
+
+- Golden tip: never work on local branch master. Instead, create a new
+  local branch and checkout to it::
+
+    $ git checkout -b my_new_local_branch
+
+- Code and then commit your changes::
+
+    $ git add new-file.py
+    $ git commit -s
+    # or "git commit -as" to commit all changes
+
+- Write a good commit message, pointing motivation, issues that you're
+  addressing. Usually you should try to explain 3 points in the commit
+  message: motivation, approach and effects::
+
+    header          <- Limited to 72 characters. No period.
+                    <- Blank line
+    message         <- Any number of lines, limited to 72 characters per line.
+                    <- Blank line
+    Reference:      <- External references, one per line (issue, trello, ...)
+    Signed-off-by:  <- Signature (created by git commit -s)
+
+- Make sure your code is working (install your version of avocado, test
+  your change, run ``make check`` to make sure you didn't introduce any
+  regressions).
+
+- Paste the ``job.log`` file content from the previous step in a pastebin
+  service, like fpaste.org. If you have ``fpaste`` installed, you can
+  simply run::
+
+    $ fpaste ~/avocado/job-results/latest/job.log
+
+- Rebase your local branch on top of upstream master::
+
+    $ git fetch
+    $ git rebase upstream/master
+    (resolve merge conflicts, if any)
+
+- Push your commit(s) to your fork::
+
+    $ git push origin my_new_local_branch
+
+- Create the Pull Request on github. Add the relevant information to the
+  Pull Request description.
+
+- In the Pull Request discussion page, comment with the link to the
+  job.log output/file.
+
+- Check if your Pull Request passes the CI (travis). Your Pull Request
+  will probably be ignored until it's all green.
+
+Now you're waiting for feedback on github Pull Request page. Once you
+get some, join the discussion, answer the questions, make clear if you're
+going to change the code based on some review and, if not, why. Feel free
+to disagree with the reviewer, they probably have different use cases and
+opinions, which is expected. Try describing yours and suggest other
+solutions, if necessary.
+
+New versions of your code should not be force-updated (unless explicitly
+requested by the code reviewer). Instead, you should:
+
+- Create a new branch out of your previous branch::
+
+    $ git checkout my_new_local_branch
+    $ git checkout -b my_new_local_branch_v2
+
+- Code, and amend the commit(s) and/or create new commits. If you have
+  more than one commit in the PR, you will probably need to rebase
+  interactively to amend the right commits. ``git cola`` or ``git citool``
+  can be handy here.
+
+- Rebase your local branch on top of upstream master::
+
+    $ git fetch
+    $ git rebase upstream/master
+    (resolve merge conflicts, if any)
+
+- Push your changes::
+
+    $ git push origin my_new_local_branch_v2
+
+- Create a new Pull Request for this new branch. In the Pull Request
+  description, point the previous Pull Request and the changes the current
+  Pull Request introduced when compared to the previous Pull Request(s).
+
+- Close the previous Pull Request on github.
+
+After your PR gets merged, you can sync the master branch on your local
+repository propagate the sync to the master branch in your fork
+repository on github::
+
+    $ git checkout master
+    $ git pull upstream master
+    $ git push
+
+From time to time, you can remove old branches to avoid pollution::
+
+    # To list branches along with time reference:
+    $ git for-each-ref --sort='-authordate:iso8601' --format=' %(authordate:iso8601)%09%(refname)' refs/heads
+    # To remove branches from your fork repository:
+    $ git push origin :my_old_branch
+
 Signing commits
 ---------------
 
-Optionally we encourage people to sign the commits using GPG signatures. Doing
+Optionally you can sign the commits using GPG signatures. Doing
 it is simple and it helps from unauthorized code being merged without notice.
 
 All you need is a valid GPG signature, git configuration, slightly modified
