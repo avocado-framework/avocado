@@ -122,21 +122,23 @@ class ReportModel(object):
                    "INTERRUPTED": "danger"}
         test_info = []
         results_dir = self.results_dir(False)
-        for t in self.result.tests:
+        for tst in self.result.tests:
             formatted = {}
-            formatted['name'] = t['name']
-            formatted['status'] = t['status']
-            logdir = os.path.join(results_dir, 'test-results', t['logdir'])
+            formatted['name'] = tst['name']
+            formatted['status'] = tst['status']
+            logdir = os.path.join(results_dir, 'test-results', tst['logdir'])
             formatted['logdir'] = os.path.relpath(logdir, self.html_output_dir)
             logfile = os.path.join(logdir, 'debug.log')
-            formatted['logfile'] = os.path.relpath(logfile, self.html_output_dir)
+            formatted['logfile'] = os.path.relpath(logfile,
+                                                   self.html_output_dir)
             formatted['logfile_basename'] = os.path.basename(logfile)
-            formatted['time'] = "%.2f" % t['time_elapsed']
+            formatted['time'] = "%.2f" % tst['time_elapsed']
+            local_time_start = time.localtime(tst['time_start'])
             formatted['time_start'] = time.strftime("%Y-%m-%d %H:%M:%S",
-                                                    time.localtime(t['time_start']))
-            formatted['row_class'] = mapping[t['status']]
+                                                    local_time_start)
+            formatted['row_class'] = mapping[tst['status']]
             exhibition_limit = 40
-            fail_reason = t.get('fail_reason')
+            fail_reason = tst.get('fail_reason')
             if fail_reason is None:
                 fail_reason = '<unknown>'
             fail_reason = str(fail_reason)
@@ -173,7 +175,8 @@ class ReportModel(object):
             sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
             sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
             try:
-                with codecs.open(sysinfo_path, 'r', encoding="utf-8") as sysinfo_file:
+                with codecs.open(sysinfo_path, 'r',
+                                 encoding="utf-8") as sysinfo_file:
                     sysinfo_dict['contents'] = sysinfo_file.read()
             except (OSError, UnicodeDecodeError) as details:
                 path = os.path.relpath(sysinfo_path, self.html_output_dir)
