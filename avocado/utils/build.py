@@ -18,7 +18,9 @@ import os
 from . import process
 
 
-def make(path, make='make', env=None, extra_args='', ignore_status=False, allow_output_check='none'):
+def make(path, make='make', env=None, extra_args='', ignore_status=False,
+         allow_output_check='none'):
+
     """
     Run make, adding MAKEOPTS to the list of options.
 
