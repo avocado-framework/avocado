@@ -102,6 +102,8 @@ class Logfile(Collectible):
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
             except IOError:
                 log.debug("Not logging %s (lack of permissions)", self.path)
+        else:
+            log.debug("Not logging %s (file does not exist)", self.path)
 
 
 class Command(Collectible):
