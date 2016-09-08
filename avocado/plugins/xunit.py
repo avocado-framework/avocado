@@ -27,6 +27,9 @@ from avocado.core.plugin_interfaces import CLI, Result
 
 class XUnitResult(Result):
 
+    name = 'xunit'
+    description = 'XUnit result support'
+
     UNKNOWN = '<unknown>'
     PRINTABLE = string.ascii_letters + string.digits + string.punctuation + '\n\r '
 

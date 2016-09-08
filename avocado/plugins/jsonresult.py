@@ -30,6 +30,9 @@ UNKNOWN = '<unknown>'
 
 class JSONResult(Result):
 
+    name = 'json'
+    description = 'JSON result support'
+
     def _render(self, result):
         tests = []
         for test in result.tests:
