@@ -404,22 +404,6 @@ class SysInfo(object):
 
         self._set_collectibles()
 
-    def _get_syslog_watcher(self):
-        syslog_watcher = None
-
-        logpaths = ["/var/log/messages",
-                    "/var/log/syslog",
-                    "/var/log/system.log"]
-        for logpath in logpaths:
-            if os.path.exists(logpath):
-                syslog_watcher = LogWatcher(logpath)
-
-        if syslog_watcher is None:
-            raise ValueError("System log file not found (looked for %s)" %
-                             logpaths)
-
-        return syslog_watcher
-
     def _set_collectibles(self):
         if self.profiler:
             for cmd in self.profilers:
@@ -432,13 +416,6 @@ class SysInfo(object):
         for filename in self.files:
             self.start_job_collectibles.add(Logfile(filename))
             self.end_job_collectibles.add(Logfile(filename))
-
-        # As the system log path is not standardized between distros,
-        # we have to probe and find out the correct path.
-        try:
-            self.end_test_collectibles.add(self._get_syslog_watcher())
-        except ValueError as details:
-            log.info(details)
 
     def _get_collectibles(self, hook):
         collectibles = self.hook_mapping.get(hook)
