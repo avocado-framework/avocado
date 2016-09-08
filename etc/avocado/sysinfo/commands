@@ -13,3 +13,4 @@ ip link
 numactl --hardware show
 lscpu
 fdisk -l
+journalctl --boot --priority 5
