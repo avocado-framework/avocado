@@ -23,7 +23,7 @@ setup(name='avocado_result_html',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['pystache'],
+      install_requires=['avocado-framework', 'pystache'],
       entry_points={
           'avocado.plugins.cli': [
               'html = avocado_result_html:HTML',
