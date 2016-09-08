@@ -149,4 +149,5 @@ if __name__ == '__main__':
               },
           zip_safe=False,
           test_suite='selftests',
-          python_requires='>=2.6')
+          python_requires='>=2.6',
+          install_requires=['stevedore'])
