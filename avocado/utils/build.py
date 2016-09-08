@@ -18,8 +18,8 @@ import os
 from . import process
 
 
-def make(path, make='make', env=None, extra_args='', ignore_status=False,
-         allow_output_check='none'):
+def run_make(path, make='make', env=None, extra_args='', ignore_status=False,
+             allow_output_check='none'):
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -57,9 +57,16 @@ def make(path, make='make', env=None, extra_args='', ignore_status=False,
         cmd += ' %s' % makeopts
     if extra_args:
         cmd += ' %s' % extra_args
-    make_process = process.system(cmd,
-                                  env=env,
-                                  ignore_status=ignore_status,
-                                  allow_output_check=allow_output_check)
+    make_process = process.run(cmd,
+                               env=env,
+                               ignore_status=ignore_status,
+                               allow_output_check=allow_output_check)
     os.chdir(cwd)
     return make_process
+
+
+def make(path, make='make', env=None, extra_args='', ignore_status=False,
+         allow_output_check='none'):
+
+    return run_make(path, make, env, extra_args, ignore_status
+                    allow_output_check).exit_status
