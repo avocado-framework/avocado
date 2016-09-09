@@ -51,7 +51,7 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def test_environment_vars(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=off %s' % (self.tmpdir, self.script.path)
+        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=on %s' % (self.tmpdir, self.script.path)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
