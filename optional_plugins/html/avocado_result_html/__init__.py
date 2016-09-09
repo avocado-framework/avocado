@@ -197,6 +197,9 @@ class HTMLResult(Result):
     HTML Test Result class.
     """
 
+    name = 'html'
+    description = 'HTML result support'
+
     @staticmethod
     def _copy_static_resources(html_path):
         module = 'avocado_result_html'
