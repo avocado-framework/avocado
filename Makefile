@@ -68,7 +68,7 @@ source-pypi: clean
 	git archive --prefix="avocado-framework/" -o "PYPI_UPLOAD/avocado-framework-$(VERSION).tar.gz" $(VERSION)
 
 pypi: source-pypi develop
-	sed -e 's/Name: avocado/Name: avocado-framework/' avocado.egg-info/PKG-INFO > PYPI_UPLOAD/PKG-INFO
+	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/PKG-INFO
 	@echo
 	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
 	@echo "The URL to do that may be a bit tricky to find, so here it is:"

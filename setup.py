@@ -102,7 +102,7 @@ def get_long_description():
     return req_contents
 
 if __name__ == '__main__':
-    setup(name='avocado',
+    setup(name='avocado-framework',
           version='40.0',
           description='Avocado Test Framework',
           long_description=get_long_description(),
@@ -149,4 +149,5 @@ if __name__ == '__main__':
               },
           zip_safe=False,
           test_suite='selftests',
-          python_requires='>=2.6')
+          python_requires='>=2.6',
+          install_requires=['stevedore'])

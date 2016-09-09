@@ -7,8 +7,6 @@ PyYAML>=3.11
 libvirt-python>=1.2.9
 # .tar.xz support (avocado.utils.archive)
 pyliblzma>=0.5.3
-# HTML report plugin (avocado.core.plugins.htmlresult)
-pystache>=0.5.3
 # REST client (avocado.core.restclient)
 requests>=1.2.3
 # stevedore for loading "new style" plugins

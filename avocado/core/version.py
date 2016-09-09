@@ -19,7 +19,7 @@ __all__ = ['MAJOR', 'MINOR', 'VERSION']
 import pkg_resources
 
 try:
-    VERSION = pkg_resources.get_distribution("avocado").version
+    VERSION = pkg_resources.get_distribution("avocado-framework").version
 except pkg_resources.DistributionNotFound:
     VERSION = "unknown.unknown"
 
