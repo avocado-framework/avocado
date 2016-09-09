@@ -188,8 +188,10 @@ class Test(unittest.TestCase):
         self._stderr_file = os.path.join(self.logdir, 'stderr')
 
         self.outputdir = utils_path.init_dir(self.logdir, 'data')
-        self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
-        self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
+        self.sysinfo_enabled = getattr(self.job, 'sysinfo', False)
+        if self.sysinfo_enabled:
+            self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
+            self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
         self.log = logging.getLogger("avocado.test")
         original_log_warn = self.log.warning
@@ -418,7 +420,8 @@ class Test(unittest.TestCase):
         """
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
-        self.sysinfo_logger.start_test_hook()
+        if self.sysinfo_enabled:
+            self.sysinfo_logger.start_test_hook()
         test_exception = None
         cleanup_exception = None
         stdout_check_exception = None
@@ -513,7 +516,8 @@ class Test(unittest.TestCase):
                                       "details.")
 
         self.status = 'PASS'
-        self.sysinfo_logger.end_test_hook()
+        if self.sysinfo_enabled:
+            self.sysinfo_logger.end_test_hook()
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
@@ -526,7 +530,8 @@ class Test(unittest.TestCase):
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
-        os.environ['AVOCADO_TEST_SYSINFODIR'] = self.sysinfodir
+        if self.sysinfo_enabled:
+            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.sysinfodir
 
     def run_avocado(self):
         """
