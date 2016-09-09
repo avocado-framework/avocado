@@ -13,6 +13,7 @@
 # Author: John Admanski <jadmanski@google.com>
 
 import gzip
+import json
 import logging
 import os
 import shutil
@@ -102,6 +103,8 @@ class Logfile(Collectible):
                 shutil.copyfile(self.path, os.path.join(logdir, self.logf))
             except IOError:
                 log.debug("Not logging %s (lack of permissions)", self.path)
+        else:
+            log.debug("Not logging %s (file does not exist)", self.path)
 
 
 class Command(Collectible):
@@ -209,6 +212,45 @@ class Daemon(Command):
             log.error("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
                       self.cmd, self.pipe.pid, retcode)
         return retcode
+
+
+class JournalctlWatcher(Collectible):
+
+    """
+    Track the content of systemd journal into a compressed file.
+
+    :param logf: Basename of the file where output is logged (optional).
+    """
+
+    def __init__(self, logf=None):
+        if not logf:
+            logf = 'journalctl.gz'
+
+        super(JournalctlWatcher, self).__init__(logf)
+        self.cursor = self._get_cursor()
+
+    def _get_cursor(self):
+        try:
+            cmd = 'journalctl --lines 1 --output json'
+            result = process.system_output(cmd, verbose=False)
+            last_record = json.loads(result)
+            return last_record['__CURSOR']
+        except Exception as e:
+            log.debug("Journalctl collection failed: %s", e)
+
+    def run(self, logdir):
+        if self.cursor:
+            try:
+                cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
+                log_diff = process.system_output(cmd, verbose=False)
+                dstpath = os.path.join(logdir, self.logf)
+                with gzip.GzipFile(dstpath, "w")as out_journalctl:
+                    out_journalctl.write(log_diff)
+            except IOError:
+                log.debug("Not logging journalctl (lack of permissions)",
+                          dstpath)
+            except Exception as e:
+                log.debug("Journalctl collection failed: %s", e)
 
 
 class LogWatcher(Collectible):
@@ -405,20 +447,14 @@ class SysInfo(object):
         self._set_collectibles()
 
     def _get_syslog_watcher(self):
-        syslog_watcher = None
-
         logpaths = ["/var/log/messages",
                     "/var/log/syslog",
                     "/var/log/system.log"]
         for logpath in logpaths:
             if os.path.exists(logpath):
-                syslog_watcher = LogWatcher(logpath)
-
-        if syslog_watcher is None:
-            raise ValueError("System log file not found (looked for %s)" %
-                             logpaths)
-
-        return syslog_watcher
+                return LogWatcher(logpath)
+        raise ValueError("System log file not found (looked for %s)" %
+                         logpaths)
 
     def _set_collectibles(self):
         if self.profiler:
@@ -439,6 +475,8 @@ class SysInfo(object):
             self.end_test_collectibles.add(self._get_syslog_watcher())
         except ValueError as details:
             log.info(details)
+
+        self.end_test_collectibles.add(JournalctlWatcher())
 
     def _get_collectibles(self, hook):
         collectibles = self.hook_mapping.get(hook)
