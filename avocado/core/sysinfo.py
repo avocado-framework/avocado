@@ -447,20 +447,14 @@ class SysInfo(object):
         self._set_collectibles()
 
     def _get_syslog_watcher(self):
-        syslog_watcher = None
-
         logpaths = ["/var/log/messages",
                     "/var/log/syslog",
                     "/var/log/system.log"]
         for logpath in logpaths:
             if os.path.exists(logpath):
-                syslog_watcher = LogWatcher(logpath)
-
-        if syslog_watcher is None:
-            raise ValueError("System log file not found (looked for %s)" %
-                             logpaths)
-
-        return syslog_watcher
+                return LogWatcher(logpath)
+        raise ValueError("System log file not found (looked for %s)" %
+                         logpaths)
 
     def _set_collectibles(self):
         if self.profiler:
