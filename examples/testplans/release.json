@@ -13,7 +13,7 @@
 	 "description": "On your development machine, build the Avocado RPM packages using: `$ make rpm`. Expected result: SRPM and RPM files at `BUILD/RPM/avocado-x.y.z-r.distro.{src,noarch}.rpm`"},
 
 	{"name": "Avocado RPM install",
-	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build' and the aexpect package from src or avocado repo."},
+	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build' and the aexpect package from src or avocado repo. Also install and start the qemu-guest-agent."},
 
 	{"name": "Avocado Test Run on RPM based installation",
 	 "description": "On the same machine you just installed Avocado used during RPM packages ('Avocado RPM install'), run the simplest possible test with `$ avocado run passtest.py`. Expected results: `(1/1) passtest.py: PASS (0.00 s)`. After the test, shutdown the virtual machine."},
