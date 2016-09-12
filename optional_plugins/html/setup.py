@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 
 setup(name='avocado_result_html',
       description='Avocado HTML Report for Jobs',
-      version='40.0',
+      version='41.0',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',

@@ -1,0 +1,121 @@
+==============
+41.0 Outlander
+==============
+
+The Avocado team is proud to present another release:
+Avocado version 41.0, aka, "Outlander", is now available!
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * Multiplex: remove the `-s` (system-wide) shortcut to avoid
+   confusion with `silent` from main apps.
+
+ * New :meth:`avocado.utils.linux_modules.check_kernel_config()`
+   method, with which users can check if a kernel configuration is not
+   set, a module or built-in.
+
+ * Show link to file which failed to be processed by sysinfo.
+
+ * New `path` key type for settings that auto-expand tilde notation,
+   that is, when using :meth:`avocado.core.settings.Settings.get_value`
+   you can get this special value treatment.
+
+ * The automatic VM IP detection that kicks in when one uses
+   `--vm-domain` without a matching `--vm-hostname`, now uses a more
+   reliable method (libvirt/qemu-gust-agent query).  On the other
+   hand, the QEMU guest agent is now required if you intend to omit
+   the VM IP/hostname.
+
+ * Warn users when sysinfo configuration files are not present, and
+   consequently no sysinfo is going to be collected.
+
+ * Set `LC_ALL=C` by default on sysinfo collection to simplify
+   `avocado diff` comparison between different machines.  It can be
+   tweaked in the config file (`locale` option under
+   `sysinfo.collect`).
+
+ * Remove deprecated option `--multiplex-files`.
+
+ * List result plugins (JSON, XUnit, HTML) in `avocado plugins`
+   command output.
+
+Documentation
+=============
+
+ * Mention to the community maintained repositories.
+
+ * Add GIT workflow to the contribution guide.
+
+Developers
+==========
+
+ * New `make check-long` target to run long tests. For example, the
+   new `FileLockTest`.
+
+ * New `make variables` target to display Makefile variables.
+
+ * Plugins: add optional plugins directory `optional_plugins`. This
+   also adds all directories to be found under `optional_plugins` to
+   the list of candidate plugins when running `make clean` or `make
+   link`.
+
+Bugfixes
+========
+
+ * Fix `undefined name` error :mod:`avocado.core.remote.runner`.
+
+ * Ignore `\r` when checking for avocado in remote executions.
+
+ * Skip file if `UnicodeDecodeError` is raised when collecting
+   sysinfo.
+
+ * Sysinfo: respect package collection on/off configuration.
+
+ * Use `-y` in `lvcreate` to ignore warnings
+   :mod:`avocado.utils.lv_utils`.
+
+ * Fix crash in :mod:`avocado.core.tree` when printing non-string
+   values.
+
+ * `setup.py`: fix the virtualenv detection so readthedocs.org can
+   properly probe Avocado's version.
+
+Internal improvements
+=====================
+
+ * Cleanup runner->multiplexer API
+
+ * Replay re-factoring, renamed `avocado.core.replay` to
+   :mod:`avocado.core.jobdata`.
+
+ * Partition utility class defaults to ext2. We documented that and
+   reinforced in the accompanying unittests.
+
+ * Unittests for :mod:`avocado.utils.partition` has now more specific
+   checks for the conditions necessary to run the Partition tests
+   (sudo, mkfs.ext2 binary).
+
+ * Several Makefile improvements.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/40.0...41.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=kGNiOk8UrMs>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/5oShOR1D/812-sprint-theme-outlander
