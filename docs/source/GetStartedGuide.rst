@@ -9,6 +9,9 @@ The first step towards using Avocado is, quite obviously, installing it.
 Installing Avocado
 ==================
 
+Installing from Packages
+------------------------
+
 Avocado is officially available in RPM packages for Fedora and
 Enterprise Linux.  Other RPM based distributions may package and ship
 Avocado themselves.  DEB package support is available in the source
@@ -20,7 +23,7 @@ Avocado is primarily being developed on Fedora, but reasonable efforts
 are being made to support other GNU/Linux based platforms.
 
 Fedora
-------
+~~~~~~
 
 First, get the package repositories configuration file by running the following command::
 
@@ -46,7 +49,7 @@ can install the RPM packages by running the following commands::
     sudo dnf install avocado
 
 Enterprise Linux
-----------------
+~~~~~~~~~~~~~~~~
 
 If you're running either Red Hat Enterprise Linux or one of the derivatives
 such as CentOS, just adapt to the following URL and commands::
@@ -83,6 +86,30 @@ If you're having trouble to install, you can try again and use the command line
 utilities `python2.7` and `pip2.7`.
 
 If you intend to hack on Avocado, you may want to look at :ref:`hacking-and-using`.
+
+Installing from standard Python tools
+-------------------------------------
+
+Avocado can also be installed by the standard Python packaging tools,
+namely ``pip``.  On most POSIX systems with Python >= 2.7 and ``pip``
+available, installation can be performed with the following commands::
+
+  pip install avocado-framework
+
+.. note:: As a design decision, only the dependencies for the core
+          Avocado test runner will be installed.  You may notice,
+          depending on your system, that some plugins will fail to load,
+          due to those missing dependencies.
+
+If you want to install all the requirements for all plugins, you may
+attempt to do so by running::
+
+  pip install -r https://raw.githubusercontent.com/avocado-framework/avocado/master/requirements.txt
+
+The result, though, is highly dependent on your system setup, such as
+having the right compilers, header files and libraries available.  The
+more predictable and complete Avocado experience can be achieved with
+the official RPM packages.
 
 Using Avocado
 =============
