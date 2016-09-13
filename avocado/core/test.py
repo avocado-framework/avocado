@@ -453,6 +453,11 @@ class Test(unittest.TestCase):
             if not isinstance(details, Exception):  # Avoid passing nasty exc
                 details = exceptions.TestError("%r: %s" % (details, details))
             test_exception = details
+            stacktrace.log_message('Local variables:', logger='avocado.test')
+            local_vars = inspect.trace()[1][0].f_locals
+            for key, value in local_vars.iteritems():
+                stacktrace.log_message(' -> %s: %s' % (key, value),
+                                       logger='avocado.test')
         finally:
             try:
                 self.tearDown()
