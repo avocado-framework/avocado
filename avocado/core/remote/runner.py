@@ -336,11 +336,11 @@ class VMTestRunner(RemoteTestRunner):
         """
         # Super called after VM is found and initialized
         self.job.log.info("DOMAIN     : %s", self.job.args.vm_domain)
-        self.vm = virt.vm_connect(self.job.args.vm_domain,
-                                  self.job.args.vm_hypervisor_uri)
-        if self.vm is None:
-            e_msg = "Could not connect to VM '%s'" % self.job.args.vm_domain
-            raise exceptions.JobError(e_msg)
+        try:
+            self.vm = virt.vm_connect(self.job.args.vm_domain,
+                                      self.job.args.vm_hypervisor_uri)
+        except virt.VirtError as exception:
+            raise exceptions.JobError(exception.message)
         if self.vm.start() is False:
             e_msg = "Could not start VM '%s'" % self.job.args.vm_domain
             raise exceptions.JobError(e_msg)
