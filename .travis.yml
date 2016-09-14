@@ -24,7 +24,7 @@ script:
     - inspekt style
     - ./selftests/cyclical_deps avocado
     - ./selftests/modules_boundaries
-    - python setup.py develop
+    - make link
     - ./selftests/run
     - ./selftests/check_tmp_dirs
     - |
