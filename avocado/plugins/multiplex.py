@@ -39,7 +39,7 @@ class Multiplex(CLICmd):
             return
 
         parser = super(Multiplex, self).configure(parser)
-        parser.add_argument('multiplex_files', nargs='+',
+        parser.add_argument('multiplex', nargs='+',
                             help='Path(s) to a multiplex file(s)')
 
         parser.add_argument('--filter-only', nargs='*', default=[],

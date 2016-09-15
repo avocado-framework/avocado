@@ -38,7 +38,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
                         remote_no_copy=False,
                         remote_timeout=60,
                         show_job_log=False,
-                        multiplex_files=['foo.yaml', 'bar/baz.yaml'],
+                        multiplex=['foo.yaml', 'bar/baz.yaml'],
                         dry_run=True,
                         env_keep=None)
         log = flexmock()
@@ -113,7 +113,7 @@ _=/usr/bin/env''', exit_status=0)
         Results = flexmock(remote=Remote, urls=['sleeptest'],
                            stream=stream, timeout=None,
                            args=flexmock(show_job_log=False,
-                                         multiplex_files=['foo.yaml', 'bar/baz.yaml'],
+                                         multiplex=['foo.yaml', 'bar/baz.yaml'],
                                          dry_run=True))
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
