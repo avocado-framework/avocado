@@ -63,7 +63,7 @@ class Replay(CLI):
         replay_parser.add_argument('--replay-ignore',
                                    dest='replay_ignore',
                                    type=self._valid_ignore,
-                                   default=None,
+                                   default=[],
                                    help='Ignore multiplex (mux) and/or '
                                    'configuration (config) from the '
                                    'source job')
@@ -201,13 +201,13 @@ class Replay(CLI):
             else:
                 setattr(args, 'url', urls)
 
-        if args.replay_ignore and 'config' in args.replay_ignore:
+        if 'config' in args.replay_ignore:
             log.warn("Ignoring configuration from source job with "
                      "--replay-ignore.")
         else:
             self.load_config(resultsdir)
 
-        if args.replay_ignore and 'mux' in args.replay_ignore:
+        if 'mux' in args.replay_ignore:
             log.warn("Ignoring multiplex from source job with "
                      "--replay-ignore.")
         else:
