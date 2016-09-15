@@ -131,9 +131,9 @@ class Replay(CLI):
         log = logging.getLogger("avocado.app")
 
         err = None
-        if args.replay_teststatus and args.multiplex:
-            err = ("Option --replay-test-status is incompatible with "
-                   "--multiplex.")
+        if args.replay_teststatus and 'mux' in args.replay_ignore:
+            err = ("Option `--replay-test-status` is incompatible with "
+                   "`--replay-ignore mux`.")
         elif args.replay_teststatus and args.url:
             err = ("Option --replay-test-status is incompatible with "
                    "test URLs given on the command line.")
@@ -211,26 +211,21 @@ class Replay(CLI):
             log.warn("Ignoring multiplex from source job with "
                      "--replay-ignore.")
         else:
-            if getattr(args, 'multiplex', None) is not None:
-                # Disable the mux from the original job
-                log.warn('Overriding the replay multiplex with '
-                         '--multiplex-file. Note that currently '
-                         'this ignores the system-wide mux options '
-                         'so it really uses only the values you provide '
-                         'on the cmdline.')
+            mux = jobdata.retrieve_mux(resultsdir)
+            if mux is None:
+                log.error('Source job multiplex data not found. Aborting.')
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
-                mux = jobdata.retrieve_mux(resultsdir)
-                if mux is None:
-                    log.error('Source job multiplex data not found. Aborting.')
-                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                else:
-                    # Ignore data manipulation. This is necessary, because
-                    # we replaced the unparsed object with parsed one. There
-                    # are other plugins running before/after this which might
-                    # want to alter the mux object.
-                    setattr(args, "mux", mux)
-                    mux.data_merge = ignore_call
-                    mux.data_inject = ignore_call
+                # Ignore data manipulation. This is necessary, because
+                # we replaced the unparsed object with parsed one. There
+                # are other plugins running before/after this which might
+                # want to alter the mux object.
+                if len(args.mux.data) or args.mux.data.environment:
+                    log.warning("Using src job Mux data only, use `--replay-"
+                                "ignore mux` to override them.")
+                setattr(args, "mux", mux)
+                mux.data_merge = ignore_call
+                mux.data_inject = ignore_call
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,
