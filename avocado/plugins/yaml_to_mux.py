@@ -13,11 +13,13 @@
 # Author: Lukas Doktor <ldoktor@redhat.com>
 """Multiplexer plugin to parse yaml files to params"""
 
-from avocado.core import tree, exit_codes
-from avocado.core.plugin_interfaces import CLI
+import logging
 import os
 import re
 import sys
+
+from avocado.core import tree, exit_codes
+from avocado.core.plugin_interfaces import CLI
 
 
 try:
@@ -238,19 +240,34 @@ class YamlToMux(CLI):
             if subparser is None:
                 continue
             mux = subparser.add_argument_group("yaml to mux options")
-            mux.add_argument("-m", "--multiplex", nargs='*', dest="multiplex",
+            mux.add_argument("-m", "--mux-yaml", nargs='*', metavar="FILE",
+                             help="Location of one or more Avocado"
+                             " multiplex (.yaml) FILE(s) (order dependent)")
+            mux.add_argument("--multiplex", nargs='*',
                              default=None, metavar="FILE",
-                             help="Location of one or more Avocado multiplex "
-                             "(.yaml) FILE(s) (order dependent)")
+                             help="DEPRECATED: Location of one or more Avocado"
+                             " multiplex (.yaml) FILE(s) (order dependent)")
 
     def run(self, args):
         # Merge the multiplex
-        multiplex_files = getattr(args, "multiplex", None)
+        multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:
             debug = getattr(args, "mux_debug", False)
             try:
                 args.mux.data_merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
-                import logging
+                logging.getLogger("avocado.app").error(details.strerror)
+                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        # Deprecated --multiplex option
+        multiplex_files = getattr(args, "multiplex", None)
+        if multiplex_files:
+            msg = ("The use of `--multiplex` is deprecated, use `--mux-yaml` "
+                   "instead.")
+            logging.getLogger("avocado.test").warning(msg)
+            debug = getattr(args, "mux_debug", False)
+            try:
+                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+            except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)

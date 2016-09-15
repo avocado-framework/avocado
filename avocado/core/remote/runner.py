@@ -183,7 +183,7 @@ class RemoteTestRunner(TestRunner):
                      for mux_file in getattr(self.job.args,
                                              'multiplex') or []]
         if mux_files:
-            extra_params.append("--multiplex %s" % " ".join(mux_files))
+            extra_params.append("-m %s" % " ".join(mux_files))
 
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")
