@@ -57,8 +57,8 @@ class Multiplex(CLICmd):
                             "the final multiplex tree.")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
-                                default=False, help="Debug multiplexed "
-                                "files.")
+                                dest="mux_debug", default=False,
+                                help="Debug the multiplex tree.")
         tree_parser = parser.add_argument_group("tree view options")
         tree_parser.add_argument('-t', '--tree', action='store_true',
                                  default=False, help='Shows the multiplex '
@@ -69,7 +69,7 @@ class Multiplex(CLICmd):
     def run(self, args):
         log = logging.getLogger("avocado.app")
         err = None
-        if args.tree and args.debug:
+        if args.tree and args.mux_debug:
             err = "Option --tree is incompatible with --debug."
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"
