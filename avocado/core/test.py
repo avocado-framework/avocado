@@ -456,7 +456,8 @@ class Test(unittest.TestCase):
             stacktrace.log_message('Local variables:', logger='avocado.test')
             local_vars = inspect.trace()[1][0].f_locals
             for key, value in local_vars.iteritems():
-                stacktrace.log_message(' -> %s: %s' % (key, value),
+                stacktrace.log_message(' -> %s %s: %s'
+                                       % (key, type(value), value),
                                        logger='avocado.test')
         finally:
             try:
