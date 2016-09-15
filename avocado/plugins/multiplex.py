@@ -33,7 +33,6 @@ class Multiplex(CLICmd):
 
     def __init__(self, *args, **kwargs):
         super(Multiplex, self).__init__(*args, **kwargs)
-        self._from_args_tree = tree.TreeNode()
 
     def configure(self, parser):
         if multiplexer.MULTIPLEX_CAPABLE is False:
@@ -48,7 +47,8 @@ class Multiplex(CLICmd):
 
         parser.add_argument('--filter-out', nargs='*', default=[],
                             help='Filter out path(s) from multiplexing')
-        parser.add_argument('--system-wide', action='store_true',
+        parser.add_argument('--system-wide', action='store_false',
+                            default=True, dest="mux-skip-defaults",
                             help="Combine the files with the default "
                             "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
@@ -68,21 +68,7 @@ class Multiplex(CLICmd):
         tree_parser.add_argument('-i', '--inherit', action="store_true",
                                  help="Show the inherited values")
 
-    def _activate(self, args):
-        # Extend default multiplex tree of --env values
-        for value in getattr(args, "mux_inject", []):
-            value = value.split(':', 2)
-            if len(value) < 2:
-                raise ValueError("key:value pairs required, found only %s"
-                                 % (value))
-            elif len(value) == 2:
-                self._from_args_tree.value[value[0]] = value[1]
-            else:
-                node = self._from_args_tree.get_node(value[0], True)
-                node.value[value[1]] = value[2]
-
     def run(self, args):
-        self._activate(args)
         log = logging.getLogger("avocado.app")
         err = None
         if args.tree and args.debug:
@@ -92,16 +78,9 @@ class Multiplex(CLICmd):
         if err:
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        try:
-            mux_tree = multiplexer.yaml2tree(args.multiplex_files,
-                                             args.filter_only, args.filter_out,
-                                             args.debug)
-        except IOError as details:
-            log.error(details.strerror)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        if args.system_wide:
-            mux_tree.merge(args.default_avocado_params)
-        mux_tree.merge(self._from_args_tree)
+        mux = multiplexer.Mux()
+        root = mux.data
+        mux.parse(args)
         if args.tree:
             if args.contents:
                 verbose = 1
@@ -111,12 +90,11 @@ class Multiplex(CLICmd):
                 verbose += 2
             use_utf8 = settings.get_value("runner.output", "utf8",
                                           key_type=bool, default=None)
-            log.debug(tree.tree_view(mux_tree, verbose, use_utf8))
+            log.debug(tree.tree_view(root, verbose, use_utf8))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
-        variants = multiplexer.MuxTree(mux_tree)
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(variants):
+        for (index, tpl) in enumerate(mux.variants):
             if not args.debug:
                 paths = ', '.join([x.path for x in tpl])
             else:

@@ -461,12 +461,12 @@ class Job(object):
                          "command.")
             raise exceptions.OptionValidationError(e_msg)
 
-        if isinstance(getattr(self.args, 'multiplex_files', None),
-                      multiplexer.Mux):
-            mux = self.args.multiplex_files     # pylint: disable=E1101
-        else:
+        mux = getattr(self.args, "mux", None)
+        if mux is None:
+            mux = multiplexer.Mux()
+        if not mux.is_parsed:   # Mux not yet parsed, apply args
             try:
-                mux = multiplexer.Mux(self.args)
+                mux.parse(self.args)
             except (IOError, ValueError) as details:
                 raise exceptions.OptionValidationError(details)
         self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
