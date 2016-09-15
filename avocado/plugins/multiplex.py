@@ -29,7 +29,7 @@ class Multiplex(CLICmd):
     """
 
     name = 'multiplex'
-    description = 'Generate a list of dictionaries with params from a multiplex file'
+    description = "Tool to analyze and visualize test variants and params"
 
     def __init__(self, *args, **kwargs):
         super(Multiplex, self).__init__(*args, **kwargs)
