@@ -137,6 +137,7 @@ if __name__ == '__main__':
                   'tap = avocado.plugins.tap:TAP',
                   'vm = avocado.plugins.vm:VM',
                   'docker = avocado.plugins.docker:Docker',
+                  'yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMux',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
