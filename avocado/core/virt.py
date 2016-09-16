@@ -38,6 +38,15 @@ if remoter.REMOTE_CAPABLE is False:
     LOG.info('Virt module is disabled: remote module is disabled')
 
 
+class VirtError(Exception):
+
+    """
+    Generic exception class to propagate underling
+    errors to the caller.
+    """
+    pass
+
+
 class Hypervisor(object):
 
     """
@@ -351,7 +360,13 @@ def vm_connect(domain_name, hypervisor_uri='qemu:///system'):
     :return: an instance of :class:`VM`
     """
     hyper = Hypervisor(hypervisor_uri)
-    hyper.connect()
+    if hyper.connect() is None:
+        raise VirtError('Cannot connect to hypervisor at "%s"' %
+                        hypervisor_uri)
+
     dom = hyper.find_domain_by_name(domain_name)
-    vm = VM(hyper, dom)
-    return vm
+    if dom is None:
+        raise VirtError('Domain "%s" could not be found' %
+                        domain_name)
+
+    return VM(hyper, dom)
