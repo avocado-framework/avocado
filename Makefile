@@ -109,7 +109,7 @@ clean:
 		else echo ">> SKIP $$MAKEFILE"; fi;\
 	done
 	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
-	rm -rf avocado.egg-info
+	rm -rf avocado_framework.egg-info
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
