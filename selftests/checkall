@@ -7,11 +7,11 @@ run_rc() {
         GR=1
     fi
 }
-run_rc 'inspekt lint'
+run_rc 'inspekt --exclude=.git lint'
 echo ""
-run_rc 'inspekt indent'
+run_rc 'inspekt --exclude=.git indent'
 echo ""
-run_rc 'inspekt style'
+run_rc 'inspekt --exclude=.git style'
 echo ""
 run_rc 'selftests/modules_boundaries'
 echo ""
