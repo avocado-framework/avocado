@@ -43,9 +43,8 @@ def has_userland_tool(executable):
     if os.path.isabs(executable):
         return os.path.exists(executable)
     else:
-        for d in os.environ['PATH'].split(':'):
-            f = os.path.join(d, executable)
-            if os.path.exists(f):
+        for path in os.environ['PATH'].split(':'):
+            if os.path.exists(os.path.join(path, executable)):
                 return True
     return False
 
@@ -216,6 +215,9 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         self._get_extensions(path)
 
     def _get_extensions(self, path):
+        """
+        Get and store the image's extensions
+        """
         cmd = 'isoinfo -i %s -d' % path
         output = process.system_output(cmd)
 
@@ -228,11 +230,17 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
 
     @staticmethod
     def _normalize_path(path):
+        """
+        Normalize the path to match isoinfo notation
+        """
         if not os.path.isabs(path):
             path = os.path.join('/', path)
         return path
 
     def _get_filename_in_iso(self, path):
+        """
+        Locate the path in the list of files inside the iso image
+        """
         cmd = 'isoinfo -i %s -f' % self.path
         flist = process.system_output(cmd)
 
