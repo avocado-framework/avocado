@@ -98,6 +98,18 @@ class CmdError(Exception):
             return "CmdError"
 
 
+def can_sudo():
+    """
+    :return: True when sudo is available (or is root)
+    """
+    if os.getuid() == 0:
+        return True
+    elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
+        return True
+    else:
+        return False
+
+
 def pid_exists(pid):
     """
     Return True if a given PID exists.
