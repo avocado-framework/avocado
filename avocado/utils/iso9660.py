@@ -92,8 +92,10 @@ def can_mount():
         return False
 
     if 'iso9660' not in open('/proc/filesystems').read():
-        logging.debug('Can not use mount: lack of iso9660 kernel support')
-        return False
+        process.system("modprobe iso9660", ignore_status=True, sudo=True)
+        if 'iso9660' not in open('/proc/filesystems').read():
+            logging.debug('Can not use mount: lack of iso9660 kernel support')
+            return False
 
     return True
 
