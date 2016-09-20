@@ -82,8 +82,9 @@ def can_mount():
 
     :rtype: bool
     """
-    if os.getuid() != 0:
-        logging.debug('Can not use mount: current user is not "root"')
+    if not process.can_sudo():
+        logging.debug('Can not use mount: current user is not "root" and'
+                      "sudo is not configured.")
         return False
 
     if not has_userland_tool('mount'):
@@ -301,7 +302,7 @@ class Iso9660Mount(BaseIso9660):
         super(Iso9660Mount, self).__init__(path)
         self._mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         process.run('mount -t iso9660 -v -o loop,ro %s %s' %
-                    (path, self.mnt_dir))
+                    (path, self.mnt_dir), sudo=True)
 
     def read(self, path):
         """
@@ -334,8 +335,9 @@ class Iso9660Mount(BaseIso9660):
         """
         if self._mnt_dir:
             if os.path.ismount(self._mnt_dir):
-                process.run('fuser -k %s' % self.mnt_dir, ignore_status=True)
-                process.run('umount %s' % self.mnt_dir)
+                process.run('fuser -k %s' % self.mnt_dir, ignore_status=True,
+                            sudo=True)
+                process.run('umount %s' % self.mnt_dir, sudo=True)
             shutil.rmtree(self._mnt_dir)
             self._mnt_dir = None
 
