@@ -9,7 +9,6 @@ import os
 root_path = os.path.abspath(os.path.join("..", ".."))
 sys.path.insert(0, root_path)
 
-from avocado import VERSION
 from avocado.utils import path
 from avocado.utils import process
 
@@ -97,6 +96,8 @@ master_doc = 'index'
 project = u'Avocado'
 copyright = u'2014-2015, Red Hat'
 
+version_file = os.path.join(root_path, 'VERSION')
+VERSION = open(version_file, 'r').read().strip()
 version = VERSION
 release = VERSION
 
