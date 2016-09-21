@@ -21,6 +21,7 @@ import sys
 from setuptools import setup, find_packages
 
 
+VERSION = open('VERSION', 'r').read().strip()
 VIRTUAL_ENV = hasattr(sys, 'real_prefix')
 
 
@@ -103,7 +104,7 @@ def get_long_description():
 
 if __name__ == '__main__':
     setup(name='avocado-framework',
-          version='41.0',
+          version=VERSION,
           description='Avocado Test Framework',
           long_description=get_long_description(),
           author='Avocado Developers',

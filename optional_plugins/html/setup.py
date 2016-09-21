@@ -13,11 +13,17 @@
 # Copyright: Red Hat Inc. 2016
 # Author: Cleber Rosa <crosa@redhat.com>
 
+import os
 from setuptools import setup, find_packages
+
+
+root_path = os.path.abspath(os.path.join("..", ".."))
+version_file = os.path.join(root_path, 'VERSION')
+VERSION = open(version_file, 'r').read().strip()
 
 setup(name='avocado_result_html',
       description='Avocado HTML Report for Jobs',
-      version='41.0',
+      version=VERSION,
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
