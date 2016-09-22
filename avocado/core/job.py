@@ -19,7 +19,6 @@ Job module - describes a sequence of automated test operations.
 
 import argparse
 import commands
-import fnmatch
 import logging
 import os
 import re
@@ -301,20 +300,6 @@ class Job(object):
         for i in xrange(len(suite)):
             suite[i] = [test.DryRunTest, suite[i][1]]
         return suite
-
-    def _filter_test_suite(self, test_suite):
-        # Filter tests methods with params.filter and methodName
-        filtered_suite = []
-        for test_template in test_suite:
-            test_factory, test_parameters = test_template
-            filter_pattern = test_parameters['params'].get('filter', None)
-            method = test_parameters.get('methodName')
-            if not filter_pattern:
-                filtered_suite.append(test_template)
-            else:
-                if method and fnmatch.fnmatch(method, filter_pattern):
-                    filtered_suite.append(test_template)
-        return filtered_suite
 
     def _log_job_id(self):
         job_log = _TEST_LOGGER
