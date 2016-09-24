@@ -242,3 +242,8 @@ List of known community and third party maintained repositories:
   will find, among others, performance tests like ``lmbench``,
   ``stress``, cpu tests like ``ebizzy`` and generic tests like ``ltp``.
   Some of them were ported from Autotest Client Tests repository.
+
+- https://github.com/scylladb/scylla-cluster-tests:
+  Avocado tests for Scylla Clusters. Those tests can automatically create
+  a scylla cluster, some loader machines and then run operations defined by
+  the test writers, such as database workloads.
