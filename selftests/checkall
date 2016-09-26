@@ -1,24 +1,39 @@
 #!/bin/bash
-GR=0
+ERR=()
 run_rc() {
-    echo "Running '$1'"
+    CHECK=$1
+    shift
+    echo -e "\n\e[32mRunning '$1'\e[0m"
     eval $1
     if [ $? != 0 ]; then
-        GR=1
+        echo -e "\e[31m$CHECK FAILED\e[0m"
+        ERR+=("$CHECK")
         [ ! "$SELF_CHECK_CONTINUOUS" ] && exit 1
+    else
+        echo -e "\e[32m$CHECK PASSED\e[0m\n"
     fi
 }
-run_rc 'inspekt --exclude=.git lint'
-echo ""
-run_rc 'inspekt --exclude=.git indent'
-echo ""
-run_rc 'inspekt --exclude=.git style'
-echo ""
-run_rc 'selftests/modules_boundaries'
-echo ""
+run_rc lint 'inspekt --exclude=.git lint'
+run_rc indent 'inspekt --exclude=.git indent'
+run_rc style 'inspekt --exclude=.git style'
+run_rc boundaries 'selftests/modules_boundaries'
 if [ -z "$AVOCADO_SELF_CHECK" ]; then
-    run_rc selftests/run
+    run_rc selftests selftests/run
 else
-    run_rc 'scripts/avocado run `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/env python -m unittest"'
+    run_rc selftests 'scripts/avocado run `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/env python -m unittest"'
 fi
-exit ${GR}
+
+if [ "$ERR" ]; then
+    echo -e "\e[31m"
+    echo "Checks:"
+    for CHECK in "${ERR[@]}"; do
+        echo -e " * $CHECK FAILED"
+    done
+    echo -ne "\e[0m"
+else
+    echo -e "\e[32mAll checks PASSED\e[0m"
+fi
+if [ "$ERR" ]; then
+    exit 1
+fi
+exit 0
