@@ -440,7 +440,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_dry_run(self):
         os.chdir(basedir)
         cmd = ("./scripts/avocado run --sysinfo=off passtest.py failtest.py "
-               "errortest.py --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a"
+               "gendata.py --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a"
                " foo:bar:b foo:baz:c bar:bar:bar --dry-run")
         result = json.loads(process.run(cmd).stdout)
         debuglog = result['debuglog']
@@ -450,8 +450,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('/tmp', debuglog)   # Use tmp dir, not default location
         self.assertEqual(result['job_id'], u'0' * 40)
         # Check if all tests were skipped
-        self.assertEqual(result['skip'], 3)
-        for i in xrange(3):
+        self.assertEqual(result['skip'], 4)
+        for i in xrange(4):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
                              u'Test skipped due to --dry-run')
@@ -460,7 +460,7 @@ class RunnerOperationTest(unittest.TestCase):
         # from test.
         for line in ("/:foo ==> 1", "/:baz ==> 3", "/foo:foo ==> a",
                      "/foo:bar ==> b", "/foo:baz ==> c", "/bar:bar ==> bar"):
-            self.assertEqual(log.count(line), 3)
+            self.assertEqual(log.count(line), 4)
 
     def test_invalid_python(self):
         os.chdir(basedir)

@@ -805,6 +805,8 @@ class SkipTest(Test):
                 super_kwargs[arg] = kwargs[arg]
             elif args:
                 super_kwargs[arg] = args.pop()
+        # The methodName might not exist in SkipTest, make sure it's self.test
+        super_kwargs["methodName"] = "test"
         super(SkipTest, self).__init__(**super_kwargs)
 
     def setUp(self):
