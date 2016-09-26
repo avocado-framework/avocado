@@ -418,7 +418,8 @@ class OutputPluginTest(unittest.TestCase):
     def test_broken_pipe(self):
         os.chdir(basedir)
         cmd_line = "(./scripts/avocado run --help | whacky-unknown-command)"
-        result = process.run(cmd_line, shell=True, ignore_status=True)
+        result = process.run(cmd_line, shell=True, ignore_status=True,
+                             env={"LC_ALL": "C"})
         expected_rc = 127
         self.assertEqual(result.exit_status, expected_rc,
                          ("avocado run to broken pipe did not return "
