@@ -248,8 +248,7 @@ class HTMLResult(Result):
             else:
                 from pystache import view
                 v = view.View(template, context)
-                report_contents = v.render('utf8')  # encodes into ascii
-                report_contents = codecs.decode("utf8")  # decode to unicode
+                report_contents = v.render('utf8')
         except UnicodeDecodeError as details:
             # FIXME: Remove me when UnicodeDecodeError problem is fixed
             import logging
