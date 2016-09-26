@@ -13,11 +13,48 @@ run_rc() {
         echo -e "\e[32m$CHECK PASSED\e[0m\n"
     fi
 }
+
+
+parallel_selftests() {
+    local START=$(date +%s)
+    local ERR=0
+    # Use sort -R to randomize the order as longer tests seems to be likely in the same file
+    local ALL=($(./contrib/scripts/avocado-find-unittests selftests/*/*.py | sort -R))
+    [ ${#ALL[@]} -eq 0 ] && return 0
+    local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
+    local PER_SLICE=$((${#ALL[@]} / $NO_WORKERS))
+    [ $PER_SLICE -eq 0 ] && PER_SLICE=1
+    local PIDS=()
+    local TMPS=()
+    for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
+        TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
+        TMPS+=("$TMP")
+        python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP &
+        PIDS+=("$!")
+    done
+    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+        wait ${PIDS[$I]}
+        RET=$?
+        if [ $RET -ne 0 ]; then
+            ERR=1
+            cat ${TMPS[$I]}
+        fi
+        rm ${TMPS[$I]}
+    done
+    echo
+    echo ----------------------------------------------------------------------
+    echo Ran ${#ALL[@]} tests in $(($(date +%s) - START))s
+    return $ERR
+}
+
+
 run_rc lint 'inspekt --exclude=.git lint'
 run_rc indent 'inspekt --exclude=.git indent'
 run_rc style 'inspekt --exclude=.git style'
 run_rc boundaries 'selftests/modules_boundaries'
-if [ -z "$AVOCADO_SELF_CHECK" ]; then
+if [ "$AVOCADO_PARALLEL_CHECK" ]; then
+    run_rc selftests parallel_selftests
+elif [ -z "$AVOCADO_SELF_CHECK" ]; then
     run_rc selftests selftests/run
 else
     run_rc selftests 'scripts/avocado run `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/env python -m unittest"'
