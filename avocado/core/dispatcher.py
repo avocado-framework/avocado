@@ -75,7 +75,7 @@ class JobPrePostDispatcher(Dispatcher):
     def __init__(self):
         super(JobPrePostDispatcher, self).__init__('avocado.plugins.job.prepost')
 
-    def map_methods(self, method_name, job):
+    def map_method(self, method_name, job):
         for ext in self.extensions:
             try:
                 if hasattr(ext.obj, method_name):

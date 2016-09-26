@@ -433,7 +433,7 @@ class Job(object):
                 self._remove_job_results()
                 raise exceptions.OptionValidationError(details)
 
-        self.job_pre_post_dispatcher.map_methods('pre', self)
+        self.job_pre_post_dispatcher.map_method('pre', self)
 
         if not self.test_suite:
             self._remove_job_results()
@@ -527,7 +527,7 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
-            self.job_pre_post_dispatcher.map_methods('post', self)
+            self.job_pre_post_dispatcher.map_method('post', self)
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
