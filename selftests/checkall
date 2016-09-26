@@ -5,6 +5,7 @@ run_rc() {
     eval $1
     if [ $? != 0 ]; then
         GR=1
+        [ ! "$SELF_CHECK_CONTINUOUS" ] && exit 1
     fi
 }
 run_rc 'inspekt --exclude=.git lint'
