@@ -19,7 +19,7 @@ from avocado.core import exit_codes
 from avocado.utils import astring
 from avocado.utils import process
 from avocado.utils import script
-
+from avocado.utils import path as utils_path
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
@@ -96,6 +96,14 @@ class MyTest(Test):
 '''
 
 
+def missing_binary(binary):
+    try:
+        utils_path.find_command(binary)
+        return False
+    except utils_path.CmdNotFoundError:
+        return True
+
+
 class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
@@ -160,6 +168,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    @unittest.skipIf(missing_binary('cc'),
+                     "C compiler is required by the underlying datadir.py test")
     def test_datadir_alias(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
@@ -173,6 +183,8 @@ class RunnerOperationTest(unittest.TestCase):
                     'env_variables.sh' % self.tmpdir)
         process.run(cmd_line)
 
+    @unittest.skipIf(missing_binary('cc'),
+                     "C compiler is required by the underlying datadir.py test")
     def test_datadir_noalias(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s examples/tests/datadir.py '
