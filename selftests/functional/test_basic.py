@@ -17,6 +17,7 @@ else:
 
 from avocado.core import exit_codes
 from avocado.utils import astring
+from avocado.utils import path as utils_path
 from avocado.utils import process
 from avocado.utils import script
 
@@ -475,6 +476,21 @@ class RunnerOperationTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('1-%s:MyTest.test_my_name -> TestError' % test,
                       result.stdout)
+
+    @unittest.skipIf(process.system("which /bin/read", ignore_status=True),
+                     "/bin/read not available.")
+    def test_read(self):
+        try:
+            cmd = utils_path.find_command("read")
+        except utils_path.CmdNotFoundError:
+            self.skipTest("'read' command not available")
+        os.chdir(basedir)
+        result = process.run("./scripts/avocado run %s" % cmd, timeout=10,
+                             ignore_status=True)
+        self.assertLess(result.duration, 8, "Duration longer than expected."
+                        "\n%s" % result)
+        self.assertEqual(result.exit_status, 1, "Expected exit status is 1\n%s"
+                         % result)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
