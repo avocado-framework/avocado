@@ -42,13 +42,13 @@ class Plugins(CLICmd):
         log = logging.getLogger("avocado.app")
         plugin_types = [
             (dispatcher.CLICmdDispatcher(),
-             'Plugins that add new commands (avocado.plugins.cli.cmd):'),
+             'Plugins that add new commands (cli.cmd):'),
             (dispatcher.CLIDispatcher(),
-             'Plugins that add new options to commands (avocado.plugins.cli):'),
+             'Plugins that add new options to commands (cli):'),
             (dispatcher.JobPrePostDispatcher(),
-             'Plugins that run before/after the execution of jobs (avocado.plugins.job.prepost):'),
+             'Plugins that run before/after the execution of jobs (job.prepost):'),
             (dispatcher.ResultDispatcher(),
-             'Plugins that generate job result in different formats (avocado.plugins.result):')
+             'Plugins that generate job result in different formats (result):')
         ]
         for plugins_active, msg in plugin_types:
             log.info(msg)
