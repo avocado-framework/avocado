@@ -7,14 +7,14 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 41.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver, python-stevedore, aexpect
-BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness
+BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock
 
 %if 0%{?el6}
 Requires: PyYAML
@@ -23,11 +23,7 @@ BuildRequires: PyYAML
 BuildRequires: python-argparse, python-importlib, python-logutils, python-unittest2, procps
 %else
 Requires: python-yaml, procps-ng
-BuildRequires: python-yaml, fabric, procps-ng
-%endif
-
-%if !0%{?el7}
-BuildRequires: python-flexmock
+BuildRequires: python-yaml, procps-ng
 %endif
 
 %description
@@ -53,12 +49,11 @@ cd ../../
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
-# Running the unittests is currently disabled on EL6 because fabric is
-# missing on EPEL 6 and also on EL7 because python-flexmock is missing
-# on EPEL7.
-%if !0%{?rhel}
+# Running selftests on EL7 is currently disabled because of a few
+# broken tests
+%if !0%{?el7}
 %check
-selftests/run
+ selftests/run
 %endif
 
 %files
@@ -117,6 +112,10 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Fri Sep 16 2016 Cleber Rosa <cleber@redhat.com> - 41.0-1
+- Consolidated build requires common to all targets
+- Enabled check on EL6
+
 * Mon Sep 12 2016 Cleber Rosa <cleber@redhat.com> - 41.0-0
 - New upstream release
 
