@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import errno
 import os
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -18,10 +19,13 @@ ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 #
 # Auto generate API documentation
 #
-apidoc = path.find_command('sphinx-apidoc')
 api_source_dir = os.path.join(root_path, 'avocado')
-apidoc_template = apidoc + " -o %(output_dir)s " + api_source_dir + " %(exclude_dirs)s"
 base_api_output_dir = os.path.join(root_path, 'docs', 'source', 'api')
+try:
+    apidoc = path.find_command('sphinx-apidoc')
+    apidoc_template = apidoc + " -o %(output_dir)s " + api_source_dir + " %(exclude_dirs)s"
+except path.CmdNotFoundError:
+    apidoc = False
 
 # Documentation sections. Key is the name of the section, followed by:
 # Second level module name (after avocado), Module description,
@@ -66,11 +70,13 @@ for (section, params) in API_SECTIONS.iteritems():
     files_to_remove = [os.path.join(base_api_output_dir, output_dir, d)
                        for d in params[4]]
     # generate all rst files
-    cmd = apidoc_template % locals()
-    process.run(cmd)
-    # remove unnecessary ones
-    for f in files_to_remove:
-        os.unlink(f)
+    if apidoc:
+        cmd = apidoc_template % locals()
+        process.run(cmd)
+        # remove unnecessary ones
+        for f in files_to_remove:
+            os.unlink(f)
+
     # rewrite first lines of main rst file for this section
     second_level_module_name = params[0]
     if second_level_module_name is None:
@@ -79,7 +85,16 @@ for (section, params) in API_SECTIONS.iteritems():
     else:
         main_rst = os.path.join(output_dir,
                                 "avocado.%s.rst" % second_level_module_name)
-    main_rst_content = open(main_rst).readlines()
+    if not apidoc:
+        main_rst_content = []
+        try:
+            os.makedirs(os.path.dirname(main_rst))
+        except OSError as details:
+            if not details.errno == errno.EEXIST:
+                raise
+    else:
+        main_rst_content = open(main_rst).readlines()
+
     new_main_rst_content = [section, "=" * len(section), "",
                             params[1], ""]
     new_main_rst = open(main_rst, "w")
