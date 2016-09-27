@@ -81,6 +81,54 @@ to add to your setuptools based `setup.py` file something like::
 Then, by running either ``$ python setup.py install`` or ``$ python setup.py
 develop`` your plugin should be visible to Avocado.
 
+Fully qualified named for a plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The plugin registry mentioned earlier, (`setuptools`_ and its `entry
+points`_) is global to a given Python installation.  Avocado uses the
+namespace prefix ``avocado.plugins.`` to avoid name clashes with other
+software.  Now, inside Avocado itself, there's no need keep using the
+``avocado.plugins.`` prefix.
+
+Take for instance, the Job Pre/Post plugins are defined on
+``setup.py``::
+
+  'avocado.plugins.job.prepost': [
+     'jobscripts = avocado.plugins.jobscripts:JobScripts'
+  ]
+
+The setuptools entry point namespace is composed of the mentioned
+prefix ``avocado.plugins.``, which is is then followed by the Avocado
+plugin type, in this case, ``job.prepost``.
+
+Inside avocado itself, the fully qualified name for a plugin is the
+plugin type, such as ``job.prepost`` concatenated to the name used in
+the entry point definition itself, in this case, ``jobscripts``.
+
+To summarize, still using the same example, the fully qualified
+Avocado plugin name is going to be ``job.prepost.jobscripts``.
+
+Disabling a plugin
+~~~~~~~~~~~~~~~~~~
+
+Even though a plugin can be installed and registered under
+`setuptools`_ `entry points`_, it can be explicitly disabled in
+Avocado.
+
+The mechanism available to do so is to add entries to the ``disable``
+key under the ``plugins`` section of the Avocado configuration file.
+Example::
+
+  [plugins]
+  disable = ['cli.hello', 'job.prepost.jobscripts']
+
+The exact effect on Avocado when a plugin is disabled depends on the
+plugin type.  For instance, by disabling plugins of type ``cli.cmd``,
+the command implemented by the plugin should no longer be available on
+the Avocado command line application.  Now, by disabling a
+``job.prepost`` plugin, those won't be executed before/after the
+execution of the jobs.
+
 Wrap Up
 ~~~~~~~
 

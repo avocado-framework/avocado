@@ -865,6 +865,28 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertNotIn('Disabled', output)
 
+    def test_disable_plugin(self):
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado plugins'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn("Collect system information", result.stdout)
+
+        config_content = "[plugins]\ndisable=['cli.cmd.sysinfo',]"
+        config = script.TemporaryScript("disable_sysinfo_cmd.conf",
+                                        config_content)
+        with config:
+            cmd_line = './scripts/avocado --config %s plugins' % config
+            result = process.run(cmd_line, ignore_status=True)
+            expected_rc = exit_codes.AVOCADO_ALL_OK
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+            self.assertNotIn("Collect system information", result.stdout)
+
     def test_Namespace_object_has_no_attribute(self):
         os.chdir(basedir)
         cmd_line = './scripts/avocado plugins'
