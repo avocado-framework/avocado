@@ -1,24 +1,78 @@
 #!/bin/bash
-GR=0
+ERR=()
 run_rc() {
-    echo "Running '$1'"
+    CHECK=$1
+    shift
+    echo -e "\n\e[32mRunning '$1'\e[0m"
     eval $1
     if [ $? != 0 ]; then
-        GR=1
+        echo -e "\e[31m$CHECK FAILED\e[0m"
+        ERR+=("$CHECK")
+        [ ! "$SELF_CHECK_CONTINUOUS" ] && exit 1
+    else
+        echo -e "\e[32m$CHECK PASSED\e[0m\n"
     fi
 }
-run_rc 'inspekt --exclude=.git lint'
-echo ""
-run_rc 'inspekt --exclude=.git indent'
-echo ""
-run_rc 'inspekt --exclude=.git style'
-echo ""
-run_rc 'selftests/modules_boundaries'
-echo ""
-if [ -z "$AVOCADO_SELF_CHECK" ]; then
-    run_rc selftests/run
+
+
+parallel_selftests() {
+    local START=$(date +%s)
+    local ERR=0
+    # Use sort -R to randomize the order as longer tests seems to be likely in the same file
+    local ALL=($(./contrib/scripts/avocado-find-unittests selftests/*/*.py | sort -R))
+    [ ${#ALL[@]} -eq 0 ] && return 0
+    local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
+    local PER_SLICE=$((${#ALL[@]} / $NO_WORKERS))
+    [ $PER_SLICE -eq 0 ] && PER_SLICE=1
+    local PIDS=()
+    local TMPS=()
+    for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
+        TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
+        TMPS+=("$TMP")
+        python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP &
+        PIDS+=("$!")
+    done
+    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+        wait ${PIDS[$I]}
+        RET=$?
+        if [ $RET -ne 0 ]; then
+            ERR=1
+            cat ${TMPS[$I]}
+        fi
+        rm ${TMPS[$I]}
+    done
+    echo
+    echo ----------------------------------------------------------------------
+    echo Ran ${#ALL[@]} tests in $(($(date +%s) - START))s
+    return $ERR
+}
+
+
+run_rc lint 'inspekt --exclude=.git lint'
+run_rc indent 'inspekt --exclude=.git indent'
+run_rc style 'inspekt --exclude=.git style'
+run_rc boundatires 'selftests/modules_boundaries'
+if [ "$AVOCADO_PARALLEL_CHECK" ]; then
+    run_rc selftests parallel_selftests
+elif [ -z "$AVOCADO_SELF_CHECK" ]; then
+    run_rc selftests selftests/run
 else
-    run_rc 'python setup.py develop --user'
-    run_rc 'scripts/avocado run `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/env python -m unittest"'
+    CMD='scripts/avocado run `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/env python -m unittest"'
+    [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
+    run_rc selftests "$CMD"
 fi
-exit ${GR}
+
+if [ "$ERR" ]; then
+    echo -e "\e[31m"
+    echo "Checks:"
+    for CHECK in "${ERR[@]}"; do
+        echo -e " * $CHECK FAILED"
+    done
+    echo -ne "\e[0m"
+else
+    echo -e "\e[32mAll checks PASSED\e[0m"
+fi
+if [ "$ERR" ]; then
+    exit 1
+fi
+exit 0
