@@ -120,8 +120,9 @@ class Job(object):
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
-        self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-        output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
+
+        #: A job may not have a dispatcher for pre/post tests execution plugins
+        self.job_pre_post_dispatcher = None
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -409,19 +410,12 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
-    def _run(self):
+    def create_test_suite(self):
         """
-        Unhandled job method. Runs a list of test URLs to its completion.
+        Creates the test suite for this Job
 
-        :return: Integer with overall job status. See
-                 :mod:`avocado.core.exit_codes` for more information.
-        :raise: Any exception (avocado crashed), or
-                :class:`avocado.core.exceptions.JobBaseException` errors,
-                that configure a job failure.
+        This is a public Job API as part of the documented Job phases
         """
-        self._setup_job_results()
-        self.__start_job_logging()
-
         if (getattr(self.args, 'remote_hostname', False) and
            getattr(self.args, 'remote_no_copy', False)):
             self.test_suite = [(None, {})]
@@ -433,8 +427,18 @@ class Job(object):
                 self._remove_job_results()
                 raise exceptions.OptionValidationError(details)
 
+    def pre_tests(self):
+        """
+        Run the pre tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPre` interface.
+        """
+        self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+        output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
         self.job_pre_post_dispatcher.map_methods('pre', self)
 
+    def run_tests(self):
         if not self.test_suite:
             self._remove_job_results()
             if self.urls:
@@ -488,6 +492,18 @@ class Job(object):
 
         return self.exitcode
 
+    def post_tests(self):
+        """
+        Run the post tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPost` interface.
+        """
+        if self.job_pre_post_dispatcher is None:
+            self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+            output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
+        self.job_pre_post_dispatcher.map_methods('post', self)
+
     def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
@@ -500,7 +516,12 @@ class Job(object):
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run()
+            self._setup_job_results()
+            self.__start_job_logging()
+
+            self.create_test_suite()
+            self.pre_tests()
+            return self.run_tests()
         except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
@@ -527,7 +548,7 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
-            self.job_pre_post_dispatcher.map_methods('post', self)
+            self.post_tests()
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
