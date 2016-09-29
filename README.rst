@@ -37,7 +37,11 @@ If you want to `develop` avocado, or run it directly from the git repository,
 you have a couple of options:
 
 1) The avocado test runner was designed to run in tree, for rapid development
-   prototypes. Just use::
+   prototypes. After running::
+
+    $ make develop
+
+   Just use::
 
     $ scripts/avocado --help
 
