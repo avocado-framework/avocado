@@ -75,7 +75,7 @@ class JobPrePostDispatcher(Dispatcher):
     def __init__(self):
         super(JobPrePostDispatcher, self).__init__('avocado.plugins.job.prepost')
 
-    def map_methods(self, method_name, job):
+    def map_method(self, method_name, job):
         for ext in self.extensions:
             try:
                 if hasattr(ext.obj, method_name):
@@ -94,3 +94,17 @@ class ResultDispatcher(Dispatcher):
 
     def __init__(self):
         super(ResultDispatcher, self).__init__('avocado.plugins.result')
+
+    def map_method(self, method_name, result, job):
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    method(result, job)
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:
+                job.log.error('Error running method "%s" of plugin "%s": %s',
+                              method_name, ext.name, sys.exc_info()[1])
