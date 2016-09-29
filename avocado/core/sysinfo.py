@@ -13,7 +13,6 @@
 # Author: John Admanski <jadmanski@google.com>
 
 import gzip
-import json
 import logging
 import os
 import shutil
@@ -30,6 +29,9 @@ from ..utils import genio
 from ..utils import process
 from ..utils import software_manager
 from ..utils import path as utils_path
+
+from systemd import journal
+
 
 log = logging.getLogger("avocado.sysinfo")
 
@@ -230,27 +232,29 @@ class JournalctlWatcher(Collectible):
         self.cursor = self._get_cursor()
 
     def _get_cursor(self):
-        try:
-            cmd = 'journalctl --lines 1 --output json'
-            result = process.system_output(cmd, verbose=False)
-            last_record = json.loads(result)
-            return last_record['__CURSOR']
-        except Exception as e:
-            log.debug("Journalctl collection failed: %s", e)
+        jctl = journal.Reader()
+        jctl.seek_tail()
+        cursor = jctl.get_previous()['__CURSOR']
+        jctl.close()
+        return cursor
 
     def run(self, logdir):
-        if self.cursor:
-            try:
-                cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
-                log_diff = process.system_output(cmd, verbose=False)
-                dstpath = os.path.join(logdir, self.logf)
-                with gzip.GzipFile(dstpath, "w")as out_journalctl:
-                    out_journalctl.write(log_diff)
-            except IOError:
-                log.debug("Not logging journalctl (lack of permissions)",
-                          dstpath)
-            except Exception as e:
-                log.debug("Journalctl collection failed: %s", e)
+        dstpath = os.path.join(logdir, self.logf)
+        try:
+            out_journalctl = gzip.GzipFile(dstpath, "w")
+        except IOError:
+            log.debug("Not logging journalctl (lack of permissions)", dstpath)
+        else:
+            jctl = journal.Reader()
+            jctl.seek_cursor(self.cursor)
+            for log_record in jctl:
+                msg = '%s %s %s: %s\n' % (log_record['__REALTIME_TIMESTAMP'],
+                                          log_record['_HOSTNAME'],
+                                          log_record['SYSLOG_IDENTIFIER'],
+                                          log_record['MESSAGE'])
+                out_journalctl.write(msg)
+            jctl.close()
+            out_journalctl.close()
 
 
 class LogWatcher(Collectible):
