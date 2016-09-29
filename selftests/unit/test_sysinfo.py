@@ -85,8 +85,8 @@ class SysinfoTest(unittest.TestCase):
         job_postdir = os.path.join(testdir, 'post')
         self.assertTrue(os.path.isdir(job_postdir))
         # By default, there are no post test files
-        self.assertLess(len(os.listdir(job_postdir)), 3,
-                        "Post dir can contain 0-2 files depending on whether "
+        self.assertLess(len(os.listdir(job_postdir)), 2,
+                        "Post dir can contain 0-1 files depending on whether "
                         "sys messages are obtainable or not:\n%s"
                         % os.listdir(job_postdir))
 
