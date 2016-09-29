@@ -7,13 +7,13 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 41.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver, python-stevedore, aexpect
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, pystache, gdb, gdb-gdbserver, python-stevedore, aexpect, python-systemd
 BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness
 
 %if 0%{?el6}
@@ -117,6 +117,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Sep 29 2016 Amador Pahim <apahim@redhat.com> - 41.0-1
+- Added python-systemd requirement
+
 * Mon Sep 12 2016 Cleber Rosa <cleber@redhat.com> - 41.0-0
 - New upstream release
 

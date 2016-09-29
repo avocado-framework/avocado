@@ -13,6 +13,7 @@ pygraphviz==1.3rc2
 mock==1.2.0
 aexpect==1.0.0
 psutil==3.1.1
+systemd-python>=232
 # stevedore for loading "new style" plugins
 stevedore==1.8.0
 lxml>=3.4.4

@@ -20,3 +20,5 @@ importlib>=1.0.3; python_version < '2.7'
 unittest2>=1.0.0; python_version < '2.7'
 # Aexpect is now used on Docker plugin
 aexpect>=1.2.0
+# Systemd is now required by sysinfo
+systemd-python>=232
