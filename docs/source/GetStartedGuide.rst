@@ -70,7 +70,7 @@ OpenSUSE
 
 Avocado test framework has a [package in
 OpenSUSE](https://build.opensuse.org/package/show/Virtualization:Tests/avocado).
-You can install packages by running the following commands:
+You can install packages by running the following commands::
 
     sudo zypper install avocado
 
@@ -78,12 +78,12 @@ Ubuntu
 ~~~~~~~~
 
 First, add PPA ppa:lmr/avocado with the package to your system's Software
-Sources by running the following command:
+Sources by running the following command::
 
     sudo add-apt-repository ppa:lmr/avocado
     sudo apt-get update
 
-Then you can install package by running the following command:
+Then you can install package by running the following command::
 
     sudo apt-get install avocado
 
