@@ -12,12 +12,14 @@
 #
 
 PYTHON=$(shell which python)
-PYTHON26=$(shell $(PYTHON) -V 2>&1 | grep 2.6 -q && echo true || echo false)
+PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
-AVOCADO_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
-AVOCADO_PLUGINS+=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
+AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
+AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
+AVOCADO_PLUGINS=$(AVOCADO_EXTERNAL_PLUGINS)
+AVOCADO_PLUGINS+=$(AVOCADO_OPTIONAL_PLUGINS)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
@@ -105,10 +107,10 @@ clean:
 	for MAKEFILE in $(AVOCADO_PLUGINS); do\
 		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> UNLINK $$MAKEFILE";\
 			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null;\
-			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user); cd -; fi;\
+			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$MAKEFILE"; fi;\
 	done
-	$(PYTHON) setup.py develop --uninstall $(shell $(PYTHON26) || echo --user)
+	$(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS)
 	rm -rf avocado_framework.egg-info
 	rm -rf /var/tmp/avocado*
 	rm -rf /tmp/avocado*
@@ -151,13 +153,19 @@ modules_boundaries:
 	selftests/modules_boundaries
 
 develop:
-	$(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user)
-
-link: develop
-	for MAKEFILE in $(AVOCADO_PLUGINS); do\
+	$(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS)
+	for MAKEFILE in $(AVOCADO_OPTIONAL_PLUGINS); do\
 		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> LINK $$MAKEFILE";\
 			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null;\
-			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(shell $(PYTHON26) || echo --user); cd -; fi;\
+			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+		else echo ">> SKIP $$MAKEFILE"; fi;\
+	done
+
+link: develop
+	for MAKEFILE in $(AVOCADO_EXTERNAL_PLUGINS); do\
+		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> LINK $$MAKEFILE";\
+			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null;\
+			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$MAKEFILE"; fi;\
 	done
 
@@ -168,7 +176,6 @@ man: man/avocado.1 man/avocado-rest-client.1
 
 variables:
 	@echo "PYTHON: $(PYTHON)"
-	@echo "PYTHON26: $(PYTHON26)"
 	@echo "VERSION: $(VERSION)"
 	@echo "DESTDIR: $(DESTDIR)"
 	@echo "AVOCADO_DIRNAME: $(AVOCADO_DIRNAME)"
@@ -178,6 +185,7 @@ variables:
 	@echo "COMMIT: $(COMMIT)"
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
+	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
 
 .PHONY: source install clean check link variables
 

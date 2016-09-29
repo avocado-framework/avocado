@@ -11,6 +11,7 @@ else:
 from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
+from avocado.utils import path as utils_path
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
@@ -24,6 +25,14 @@ exec -- $@
 DUMMY_CONTENT = """#!/bin/bash
 exec -- $@
 """
+
+
+def missing_binary(binary):
+    try:
+        utils_path.find_command(binary)
+        return False
+    except utils_path.CmdNotFoundError:
+        return True
 
 
 class WrapperTest(unittest.TestCase):
@@ -42,6 +51,8 @@ class WrapperTest(unittest.TestCase):
             'avocado_wrapper_functional')
         self.dummy.save()
 
+    @unittest.skipIf(missing_binary('cc'),
+                     "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s '
@@ -56,6 +67,8 @@ class WrapperTest(unittest.TestCase):
                         "%s\nCmdline: %s" %
                         (self.tmpfile, result.stdout, cmd_line))
 
+    @unittest.skipIf(missing_binary('cc'),
+                     "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s:*/datadir '
@@ -70,6 +83,8 @@ class WrapperTest(unittest.TestCase):
                         "%s\nStdout: %s" %
                         (self.tmpfile, cmd_line, result.stdout))
 
+    @unittest.skipIf(missing_binary('cc'),
+                     "C compiler is required by the underlying datadir.py test")
     def test_both_wrappers(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s --wrapper %s:*/datadir '
