@@ -410,23 +410,6 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
-    def _run(self):
-        """
-        Unhandled job method. Runs a list of test URLs to its completion.
-
-        :return: Integer with overall job status. See
-                 :mod:`avocado.core.exit_codes` for more information.
-        :raise: Any exception (avocado crashed), or
-                :class:`avocado.core.exceptions.JobBaseException` errors,
-                that configure a job failure.
-        """
-        self._setup_job_results()
-        self.__start_job_logging()
-
-        self.create_test_suite()
-        self.pre_tests()
-        return self.run_tests()
-
     def create_test_suite(self):
         """
         Creates the test suite for this Job
@@ -533,7 +516,12 @@ class Job(object):
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run()
+            self._setup_job_results()
+            self.__start_job_logging()
+
+            self.create_test_suite()
+            self.pre_tests()
+            return self.run_tests()
         except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
