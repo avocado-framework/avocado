@@ -16,10 +16,12 @@
 
 import sys
 
-from stevedore import ExtensionManager
+from stevedore import EnabledExtensionManager
+
+from .settings import settings
 
 
-class Dispatcher(ExtensionManager):
+class Dispatcher(EnabledExtensionManager):
 
     """
     Base dispatcher for various extension types
@@ -28,9 +30,20 @@ class Dispatcher(ExtensionManager):
     def __init__(self, namespace):
         self.load_failures = []
         super(Dispatcher, self).__init__(namespace=namespace,
+                                         check_func=self.enabled,
                                          invoke_on_load=True,
                                          on_load_failure_callback=self.store_load_failure,
                                          propagate_map_exceptions=True)
+
+    def enabled(self, extension):
+        namespace_prefix = 'avocado.plugins.'
+        if self.namespace.startswith(namespace_prefix):
+            namespace = self.namespace[len(namespace_prefix):]
+        else:
+            namespace = self.namespace
+        disabled = settings.get_value('plugins', 'disable', key_type=list)
+        fqn = "%s.%s" % (namespace, extension.entry_point.name)
+        return fqn not in disabled
 
     @staticmethod
     def store_load_failure(manager, entrypoint, exception):
