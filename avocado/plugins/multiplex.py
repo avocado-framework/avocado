@@ -59,6 +59,9 @@ class Multiplex(CLICmd):
         parser.add_argument('--list-variant-id', action='store_true',
                             default=False, help="Append variant id to list")
 
+        parser.add_argument('--get-count', action='store_true',
+                            default=False, help="Return number of variants")
+
         parser.add_argument('--mux-inject', default=[], nargs='*',
                             help="Inject [path:]key:node values into "
                             "the final multiplex tree.")
@@ -120,6 +123,10 @@ class Multiplex(CLICmd):
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         variants = multiplexer.MuxTree(mux_tree)
+        if args.get_count:
+            log.info("%d" % len(list(enumerate(variants))))
+            sys.exit(exit_codes.AVOCADO_ALL_OK)
+
         if args.list:
             prefix = '  '
             for (index, tpl) in enumerate(variants):
