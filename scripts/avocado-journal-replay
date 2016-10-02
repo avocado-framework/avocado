@@ -29,7 +29,7 @@ class ArgumentParser(argparse.ArgumentParser):
     def __init__(self):
         super(ArgumentParser, self).__init__(
             prog='avocado-journal-replay',
-            description=('Avocado Test Journal Replay. Sends test journal data'
+            description=('Avocado Test Journal Replay. Sends test journal data '
                          'to an Avocado Server'))
 
         self.add_argument('-s', '--server-uri',
