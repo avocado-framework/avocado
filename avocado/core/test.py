@@ -63,7 +63,7 @@ class TestName(object):
     Test name representation
     """
 
-    def __init__(self, uid, name, variant=None, no_digits=None):
+    def __init__(self, uid, name, variant=None, no_digits=None, variant_name=None):
         """
         Test name according to avocado specification
 
@@ -79,7 +79,10 @@ class TestName(object):
             self.str_uid = str(uid)
         self.name = name or "<unknown>"
         self.variant = variant
+        self.variant_name = variant_name
         self.str_variant = "" if variant is None else ";" + str(variant)
+        if self.variant_name is not None and self.variant_name != "":
+            self.str_variant += '-' + self.variant_name
 
     def __str__(self):
         return "%s-%s%s" % (self.str_uid, self.name, self.str_variant)
