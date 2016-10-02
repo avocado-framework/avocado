@@ -483,7 +483,7 @@ class Job(object):
 
         if 'INTERRUPTED' in summary:
             self.exitcode |= exit_codes.AVOCADO_JOB_INTERRUPTED
-        if 'FAIL' in summary:
+        if 'FAIL' in summary and not getattr(self.args, 'relax_exit_code', False):
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode

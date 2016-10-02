@@ -82,6 +82,9 @@ class Run(CLICmd):
                             help='Enable or disable the job interruption on '
                                  'first failed test.')
 
+        parser.add_argument('--relax-exit-code', action='store_true', default=False,
+                            help='Test failures not affects exit code')
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
