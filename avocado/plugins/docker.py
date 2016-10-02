@@ -33,7 +33,7 @@ class DockerRemoter(object):
     of the commands on docker container.
     """
 
-    def __init__(self, dkrcmd, image):
+    def __init__(self, dkrcmd, image, options):
         """
         Executes docker container and attaches it.
 
@@ -42,7 +42,7 @@ class DockerRemoter(object):
         """
         self._dkrcmd = dkrcmd
         self._docker = None
-        run_cmd = "%s run -t -i -d '%s' bash" % (self._dkrcmd, image)
+        run_cmd = "%s run -t -i -d %s '%s' bash" % (self._dkrcmd, options, image)
         self._docker_id = (process.system_output(run_cmd, None).splitlines()[-1]
                            .strip())
         self._docker = aexpect.ShellSession("%s attach %s"
@@ -133,7 +133,8 @@ class DockerTestRunner(RemoteTestRunner):
 
     def setup(self):
         dkrcmd = self.job.args.docker_cmd
-        self.remote = DockerRemoter(dkrcmd, self.job.args.docker)
+        dkr_opt = self.job.args.docker_options
+        self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt)
         # We need to create the base dir, otherwise docker creates it as root
         self.remote.makedir(self.remote_test_dir)
         self.job.log.info("DOCKER     : Container id '%s'"
@@ -173,6 +174,10 @@ class Docker(CLI):
                                 "docker' or other base docker options like "
                                 "hypervisor. Default: '%(default)s'",
                                 metavar="CMD")
+        cmd_parser.add_argument("--docker-options", default="",
+                                help="Extra options for docker run cmd."
+                                " (see: man docker-run)", metavar="OPT")
+
         cmd_parser.add_argument("--docker-no-copy", action="store_true",
                                 help="Assume tests are already in the "
                                 "container")
