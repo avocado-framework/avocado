@@ -992,6 +992,82 @@ Now, trying to list the tests on the ``mytest.py`` file again::
 You can also use the ``:avocado: disable`` tag, that works the opposite way:
 Something looks like an Avocado test, but we force it to not be listed as one.
 
+Python :mod:`unittest` Compatibility Limitations And Caveats
+============================================================
+
+When executing tests, Avocado uses different techniques than most
+other Python unittest runners.  This brings some compatibility
+limitations that Avocado users should be aware.
+
+Execution Model
+---------------
+
+One of the main differences is a consequence of the Avocado design
+decision that tests should be self contained and isolated from other
+tests.  Additionally, the Avocado test runner runs each test in a
+separate process.
+
+If you have a unittest class with many test methods and run them
+using most test runners, you'll find that all test methods run under
+the same process.  To check that behavior you could add to your
+:meth:`setUp <unittest.TestCase.setUp>` method::
+
+   def setUp(self):
+       print("PID: %s", os.getpid())
+
+If you run the same test under Avocado, you'll find that each test
+is run on a separate process.
+
+Class Level :meth:`setUp <unittest.TestCase.setUpClass>` and :meth:`tearDown <unittest.TestCase.tearDownClass>`
+---------------------------------------------------------------------------------------------------------------
+
+Because of Avocado's test execution model (each test is run on a
+separate process), it doesn't make sense to support unittest's
+:meth:`unittest.TestCase.setUpClass` and
+:meth:`unittest.TestCase.tearDownClass`.  Test classes are freshly
+instantiated for each test, so it's pointless to run code in those
+methods, since they're supposed to keep class state between tests.
+
+If you require a common setup to a number of tests, the current
+recommended approach is to to write regular :meth:`setUp
+<unittest.TestCase.setUp>` and :meth:`tearDown
+<unittest.TestCase.tearDown>` code that checks if a given state was
+already set.  One example for such a test that requires a binary
+installed by a package::
+
+  from avocado import Test
+
+  from avocado.utils import software_manager
+  from avocado.utils import path as utils_path
+  from avocado.utils import process
+
+
+  class BinSleep(Test):
+
+      """
+      Sleeps using the /bin/sleep binary
+      """
+      def setUp(self):
+          self.sleep = None
+          try:
+              self.sleep = utils_path.find_command('sleep')
+          except utils_path.CmdNotFoundError:
+              software_manager.install_distro_packages({'fedora': ['coreutils']})
+              self.sleep = utils_path.find_command('sleep')
+
+      def test(self):
+          process.run("%s 1" % self.sleep)
+
+If your test setup is some kind of action that will last accross
+processes, like the installation of a software package given in the
+previous example, you're pretty much covered here.
+
+If you need to keep other type of data a class acrross test
+executions, you'll have to resort to saving and restoring the data
+from an outside source (say a "pickle" file).  Finding and using a
+reliable and safe location for saving such data is currently not in
+the Avocado supported use cases.
+
 Environment Variables for Simple Tests
 ======================================
 
