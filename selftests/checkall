@@ -37,6 +37,7 @@ parallel_selftests() {
         RET=$?
         if [ $RET -ne 0 ]; then
             ERR=1
+            echo python -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
             cat ${TMPS[$I]}
         fi
         rm ${TMPS[$I]}
