@@ -64,6 +64,8 @@ class RemoteTestRunner(TestRunner):
         paths = set()
         for i in xrange(len(self.job.urls)):
             url = self.job.urls[i]
+            if ':' in url:
+                url = url.split(':')[0]
             if not os.path.exists(url):     # use test_dir path + py
                 url = os.path.join(data_dir.get_test_dir(), url)
             if not os.path.exists(url):
