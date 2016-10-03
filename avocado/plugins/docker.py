@@ -138,7 +138,7 @@ class DockerTestRunner(RemoteTestRunner):
         self.remote.makedir(self.remote_test_dir)
         self.job.log.info("DOCKER     : Container id '%s'"
                           % self.remote.get_cid())
-        self.job.args.remote_no_copy = self.job.args.docker_no_copy
+        self.job.args.remote_copy = self.job.args.docker_copy
 
     def tear_down(self):
         try:
@@ -173,9 +173,8 @@ class Docker(CLI):
                                 "docker' or other base docker options like "
                                 "hypervisor. Default: '%(default)s'",
                                 metavar="CMD")
-        cmd_parser.add_argument("--docker-no-copy", action="store_true",
-                                help="Assume tests are already in the "
-                                "container")
+        cmd_parser.add_argument("--docker-copy", action="store_true",
+                                help="Copy tests to the container")
         cmd_parser.add_argument("--docker-no-cleanup", action="store_true",
                                 help="Preserve container after test")
 

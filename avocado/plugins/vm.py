@@ -74,8 +74,8 @@ class VM(CLI):
                                     action='store_true', default=False,
                                     help='Restore VM to a previous state, '
                                     'before running tests')
-        self.vm_parser.add_argument('--vm-no-copy', action='store_true',
-                                    help="Don't copy tests and use the "
+        self.vm_parser.add_argument('--vm-copy', action='store_true',
+                                    help="Copy tests and use the "
                                     "exact uri on VM machine.")
         self.vm_parser.add_argument('--vm-timeout', metavar='SECONDS',
                                     help=("Amount of time (in seconds) to "

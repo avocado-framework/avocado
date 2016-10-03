@@ -56,7 +56,7 @@ class RemoteTestRunner(TestRunner):
         $remote_test_dir + $test_absolute_path.
         :note: Default tests execution is translated into absolute paths too
         """
-        if self.job.args.remote_no_copy:    # Leave everything as is
+        if not self.job.args.remote_copy:    # Leave everything as is
             return
 
         # TODO: Use `avocado.core.loader.TestLoader` instead
@@ -367,7 +367,7 @@ class VMTestRunner(RemoteTestRunner):
         self.job.args.remote_username = self.job.args.vm_username
         self.job.args.remote_password = self.job.args.vm_password
         self.job.args.remote_key_file = self.job.args.vm_key_file
-        self.job.args.remote_no_copy = self.job.args.vm_no_copy
+        self.job.args.remote_copy = self.job.args.vm_copy
         self.job.args.remote_timeout = self.job.args.vm_timeout
         super(VMTestRunner, self).setup()
 
