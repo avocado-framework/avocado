@@ -31,6 +31,9 @@ class BaseIso9660(unittest.TestCase):
     def basic_workflow(self):
         """
         Check the basic Iso9660 workflow
+
+        :warning: Make sure to include this in per-implementation tests
+                  due to ast loader we can't just define a base-class.
         """
         self.assertEqual(self.iso.read("file"),
                          "file content\n")
@@ -45,6 +48,9 @@ class BaseIso9660(unittest.TestCase):
     def mnt_dir_workflow(self):
         """
         Check the mnt_dir functionality
+
+        :warning: Make sure to include this in per-implementation tests
+                  due to ast loader we can't just define a base-class.
         """
         base = self.iso.mnt_dir
         os.path.isdir(os.path.join(base, "Dir"))
@@ -62,23 +68,7 @@ class BaseIso9660(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class BasicWorkflows(object):
-
-    """
-    Call basic workflows from BaseIso9660 (to avoid the Base class to run
-    them they are defined as `test_` here).
-    """
-
-    def test_basic_workflow(self):
-        """Call the basic workflow"""
-        getattr(self, "basic_workflow")()
-
-    def test_mnt_dir(self):
-        """Use the mnt_dir property"""
-        getattr(self, "mnt_dir_workflow")()
-
-
-class IsoInfo(BasicWorkflows, BaseIso9660):
+class IsoInfo(BaseIso9660):
 
     """
     IsoInfo-based check
@@ -90,8 +80,16 @@ class IsoInfo(BasicWorkflows, BaseIso9660):
         super(IsoInfo, self).setUp()
         self.iso = iso9660.Iso9660IsoInfo(self.iso_path)
 
+    def test_basic_workflow(self):
+        """Call the basic workflow"""
+        self.basic_workflow()
 
-class IsoRead(BasicWorkflows, BaseIso9660):
+    def test_mnt_dir(self):
+        """Use the mnt_dir property"""
+        self.mnt_dir_workflow()
+
+
+class IsoRead(BaseIso9660):
 
     """
     IsoRead-based check
@@ -103,8 +101,16 @@ class IsoRead(BasicWorkflows, BaseIso9660):
         super(IsoRead, self).setUp()
         self.iso = iso9660.Iso9660IsoRead(self.iso_path)
 
+    def test_basic_workflow(self):
+        """Call the basic workflow"""
+        self.basic_workflow()
 
-class IsoMount(BasicWorkflows, BaseIso9660):
+    def test_mnt_dir(self):
+        """Use the mnt_dir property"""
+        self.mnt_dir_workflow()
+
+
+class IsoMount(BaseIso9660):
 
     """
     Mount-based check
@@ -115,6 +121,14 @@ class IsoMount(BasicWorkflows, BaseIso9660):
     def setUp(self):
         super(IsoMount, self).setUp()
         self.iso = iso9660.Iso9660Mount(self.iso_path)
+
+    def test_basic_workflow(self):
+        """Call the basic workflow"""
+        self.basic_workflow()
+
+    def test_mnt_dir(self):
+        """Use the mnt_dir property"""
+        self.mnt_dir_workflow()
 
 
 if __name__ == "__main__":
