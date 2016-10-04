@@ -170,14 +170,14 @@ class ReplayTests(unittest.TestCase):
         """
         Runs a replay job with custom a mux and using '--replay-test-status'
         """
-        cmd_line = ('./scripts/avocado run --replay %s --multiplex '
-                    'examples/mux-environment.yaml --replay-test-status FAIL '
+        cmd_line = ('./scripts/avocado run --replay %s --replay-ignore mux '
+                    '--replay-test-status FAIL '
                     '--job-results-dir %s --replay-data-dir %s '
                     '--sysinfo=off' % (self.jobid, self.tmpdir, self.jobdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = "Option --replay-test-status is incompatible with "\
-              "--multiplex."
+        msg = ("Option `--replay-test-status` is incompatible with "
+               "`--replay-ignore mux`")
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_urls(self):
