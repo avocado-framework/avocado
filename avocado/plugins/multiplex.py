@@ -35,12 +35,10 @@ class Multiplex(CLICmd):
         super(Multiplex, self).__init__(*args, **kwargs)
 
     def configure(self, parser):
-        if multiplexer.MULTIPLEX_CAPABLE is False:
-            return
-
         parser = super(Multiplex, self).configure(parser)
-        parser.add_argument('multiplex', nargs='+',
-                            help='Path(s) to a multiplex file(s)')
+        if multiplexer.MULTIPLEX_CAPABLE:
+            parser.add_argument("-m", '--multiplex', nargs='*',
+                                help='Path(s) to a multiplex file(s)')
 
         parser.add_argument('--filter-only', nargs='*', default=[],
                             help='Filter only path(s) from multiplexing')

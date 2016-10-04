@@ -43,18 +43,18 @@ class MultiplexTests(unittest.TestCase):
         return result
 
     def test_mplex_plugin(self):
-        cmd_line = './scripts/avocado multiplex examples/tests/sleeptest.py.data/sleeptest.yaml'
+        cmd_line = './scripts/avocado multiplex -m examples/tests/sleeptest.py.data/sleeptest.yaml'
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_mplex_plugin_nonexistent(self):
-        cmd_line = './scripts/avocado multiplex nonexist'
+        cmd_line = './scripts/avocado multiplex -m nonexist'
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr)
 
     def test_mplex_debug(self):
-        cmd_line = ('./scripts/avocado multiplex -c -d '
+        cmd_line = ('./scripts/avocado multiplex -c -d -m '
                     '/:examples/mux-selftest.yaml '
                     '/:examples/mux-environment.yaml '
                     '/:examples/mux-selftest.yaml '
