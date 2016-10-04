@@ -391,22 +391,27 @@ class Mux(object):
     This is a multiplex object which multiplexes the test_suite.
     """
 
-    def __init__(self):
+    def __init__(self, debug=False):
+        """
+        :param debug: Store whether this instance should debug the mux
+        :note: people need to check whether mux uses debug and reflect that
+               in order to provide the right results.
+        """
         self._has_multiple_variants = None
         self.variants = None
-        self.data = tree.TreeNode()
+        self.debug = debug
+        self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
         self._mux_path = None
 
-    def parse(self, args, debug=False):
+    def parse(self, args):
         """
         Apply options defined on the cmdline
 
         :param args: Parsed cmdline arguments
-        :param debug: Whether to debug the mux parsing
         """
         filter_only = getattr(args, 'filter_only', None)
         filter_out = getattr(args, 'filter_out', None)
-        self._parse_basic_injects(args, debug)
+        self._parse_basic_injects(args)
         mux_tree = tree.apply_filters(self.data, filter_only, filter_out)
         self.variants = MuxTree(mux_tree)
         self._mux_path = getattr(args, 'mux_path', None)
@@ -417,17 +422,16 @@ class Mux(object):
         self.data_inject = _report_mux_already_parsed
         self.data_merge = _report_mux_already_parsed
 
-    def _parse_basic_injects(self, args, debug):
+    def _parse_basic_injects(self, args):
         """
         Inject data from the basic injects defined by Mux
 
         :param args: Parsed cmdline arguments
-        :param debug: Whether to debug the mux parsing
         """
         # Merge the multiplex_files
         multiplex_files = getattr(args, "multiplex", None)
         if multiplex_files:
-            self.data_merge(yaml2tree(multiplex_files, debug=debug))
+            self.data_merge(yaml2tree(multiplex_files, debug=self.debug))
 
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
