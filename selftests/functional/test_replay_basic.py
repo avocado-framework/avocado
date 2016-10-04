@@ -24,8 +24,7 @@ class ReplayTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         cmd_line = ('./scripts/avocado run passtest.py '
-                    '--multiplex '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    '-m examples/tests/sleeptest.py.data/sleeptest.yaml '
                     '--job-results-dir %s --sysinfo=off --json -' %
                     self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
