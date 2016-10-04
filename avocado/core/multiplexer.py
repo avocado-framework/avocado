@@ -425,7 +425,7 @@ class Mux(object):
         :param debug: Whether to debug the mux parsing
         """
         # Merge the multiplex_files
-        multiplex_files = getattr(args, "multiplex_files", None)
+        multiplex_files = getattr(args, "multiplex", None)
         if multiplex_files:
             self.data_merge(yaml2tree(multiplex_files, debug=debug))
 

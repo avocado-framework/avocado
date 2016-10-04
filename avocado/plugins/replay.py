@@ -125,7 +125,7 @@ class Replay(CLI):
         log = logging.getLogger("avocado.app")
 
         err = None
-        if args.replay_teststatus and args.multiplex_files:
+        if args.replay_teststatus and args.multiplex:
             err = ("Option --replay-test-status is incompatible with "
                    "--multiplex.")
         elif args.replay_teststatus and args.url:
@@ -205,12 +205,12 @@ class Replay(CLI):
             log.warn("Ignoring multiplex from source job with "
                      "--replay-ignore.")
         else:
-            if getattr(args, 'multiplex_files', None) is not None:
+            if getattr(args, 'multiplex', None) is not None:
                 log.warn('Overriding the replay multiplex with '
                          '--multiplex-file.')
                 # Use absolute paths to avoid problems with os.chdir
-                args.multiplex_files = [os.path.abspath(_)
-                                        for _ in args.multiplex_files]
+                args.multiplex = [os.path.abspath(_)
+                                  for _ in args.multiplex]
             else:
                 mux = jobdata.retrieve_mux(resultsdir)
                 if mux is None:
