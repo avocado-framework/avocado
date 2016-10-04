@@ -80,7 +80,7 @@ class RemoteTestRunner(TestRunner):
             test_data = path + '.data'
             if os.path.isdir(test_data):
                 self.remote.send_files(test_data, os.path.dirname(rpath))
-        for mux_file in getattr(self.job.args, 'multiplex_files') or []:
+        for mux_file in getattr(self.job.args, 'multiplex') or []:
             rpath = os.path.join(self.remote_test_dir, mux_file)
             self.remote.makedir(os.path.dirname(rpath))
             self.remote.send_files(mux_file, rpath)
@@ -181,9 +181,9 @@ class RemoteTestRunner(TestRunner):
         extra_params = []
         mux_files = [os.path.join(self.remote_test_dir, mux_file)
                      for mux_file in getattr(self.job.args,
-                                             'multiplex_files') or []]
+                                             'multiplex') or []]
         if mux_files:
-            extra_params.append("--multiplex %s" % " ".join(mux_files))
+            extra_params.append("-m %s" % " ".join(mux_files))
 
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")

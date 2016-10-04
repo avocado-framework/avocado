@@ -59,7 +59,7 @@ is disabled, so the value of node name is always as written in the yaml
 file (unlike values, where `yes` converts to `True` and such).
 
 Nodes are organized in parent-child relationship and together they create
-a tree. To view this structure use ``avocado multiplex --tree <file>``::
+a tree. To view this structure use ``avocado multiplex --tree -m <file>``::
 
  ┗━━ run
       ┣━━ hw
@@ -229,7 +229,7 @@ Injecting files
 
 You can run any test with any YAML file by::
 
-    avocado run sleeptest.py --multiplex file.yaml
+    avocado run sleeptest.py --mux-yaml file.yaml
 
 This puts the content of ``file.yaml`` into ``/run``
 location, which as mentioned in previous section, is the default ``mux-path``
@@ -241,7 +241,7 @@ when you have two files and you don't want the content to be merged into
 a single place becomming effectively a single blob, you can do that by
 giving a name to your yaml file::
 
-    avocado run sleeptest.py --multiplex duration:duration.yaml
+    avocado run sleeptest.py --mux-yaml duration:duration.yaml
 
 The content of ``duration.yaml`` is injected into ``/run/duration``. Still when
 keys from other files don't clash, you can use ``params.get(key)`` and retrieve
@@ -253,7 +253,7 @@ multiple files by using the same or different name, or even a complex
 Last but not least, advanced users can inject the file into whatever location
 they prefer by::
 
-    avocado run sleeptest.py --multiplex /my/variants/duration:duration.yaml
+    avocado run sleeptest.py --mux-yaml /my/variants/duration:duration.yaml
 
 Simple ``params.get(key)`` won't look in this location, which might be the
 intention of the test writer. There are several ways to access the values:
@@ -422,7 +422,7 @@ Let's take a second look at the first example::
 After filters are applied (simply removes non-matching variants), leaves
 are gathered and all variants are generated::
 
-    $ avocado multiplex examples/mux-environment.yaml
+    $ avocado multiplex -m examples/mux-environment.yaml
     Variants generated:
     Variant 1:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/debug
     Variant 2:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/prod
