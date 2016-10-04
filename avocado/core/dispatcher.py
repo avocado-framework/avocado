@@ -60,6 +60,12 @@ class Dispatcher(EnabledExtensionManager):
         """
         return "%s.%s" % (self.plugin_type(), extension.entry_point.name)
 
+    def settings_section(self):
+        """
+        Returns the config section name for the plugin type handled by itself
+        """
+        return "plugins.%s" % self.plugin_type()
+
     def enabled(self, extension):
         disabled = settings.get_value('plugins', 'disable', key_type=list)
         return self.fully_qualified_name(extension) not in disabled
