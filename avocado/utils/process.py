@@ -222,6 +222,7 @@ class CmdResult(object):
     :param stdout: String containing stdout of the process
     :param stderr: String containing stderr of the process
     :param duration: Elapsed wall clock time running the process
+    :param pid: ID of the process
     """
 
     def __init__(self, command="", stdout="", stderr="",
@@ -433,6 +434,7 @@ class SubProcess(object):
         if self.verbose:
             log.info("Command '%s' finished with %s after %ss", self.cmd, rc,
                      self.result.duration)
+        self.result.pid = self._popen.pid
         self._fill_streams()
 
     def _fill_streams(self):
