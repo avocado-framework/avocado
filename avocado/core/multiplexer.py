@@ -377,28 +377,104 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
+def _report_mux_already_parsed(self, *args, **kwargs):
+    """
+    Raises exception describing that `self.data` alteration is restricted
+    """
+    raise RuntimeError("Mux already parsed, altering is restricted. %s %s"
+                       % (args, kwargs))
+
+
 class Mux(object):
 
     """
     This is a multiplex object which multiplexes the test_suite.
     """
 
-    def __init__(self, args):
+    def __init__(self):
         self._has_multiple_variants = None
-        mux_files = getattr(args, 'multiplex_files', None)
+        self.variants = None
+        self.data = tree.TreeNode()
+        self._mux_path = None
+
+    def parse(self, args, debug=False):
+        """
+        Apply options defined on the cmdline
+
+        :param args: Parsed cmdline arguments
+        :param debug: Whether to debug the mux parsing
+        """
         filter_only = getattr(args, 'filter_only', None)
         filter_out = getattr(args, 'filter_out', None)
-        if mux_files:
-            mux_tree = yaml2tree(mux_files)
-        else:   # no variants
-            mux_tree = tree.TreeNode()
-        if getattr(args, 'default_avocado_params', None):
-            mux_tree.merge(args.default_avocado_params)
-        mux_tree = tree.apply_filters(mux_tree, filter_only, filter_out)
+        self._parse_basic_injects(args, debug)
+        mux_tree = tree.apply_filters(self.data, filter_only, filter_out)
         self.variants = MuxTree(mux_tree)
         self._mux_path = getattr(args, 'mux_path', None)
         if self._mux_path is None:
             self._mux_path = ['/run/*']
+        # disable data alteration (and remove data as they are not useful)
+        self.data = None
+        self.data_inject = _report_mux_already_parsed
+        self.data_merge = _report_mux_already_parsed
+
+    def _parse_basic_injects(self, args, debug):
+        """
+        Inject data from the basic injects defined by Mux
+
+        :param args: Parsed cmdline arguments
+        :param debug: Whether to debug the mux parsing
+        """
+        # Merge the multiplex_files
+        multiplex_files = getattr(args, "multiplex_files", None)
+        if multiplex_files:
+            self.data_merge(yaml2tree(multiplex_files, debug=debug))
+
+        # FIXME: Backward compatibility params, to be removed when 36 LTS is
+        # discontinued
+        if (not getattr(args, "mux_skip_defaults", False) and
+                hasattr(args, "default_avocado_params")):
+            self.data_merge(args.default_avocado_params)
+
+        # Extend default multiplex tree of --mux-inject values
+        for inject in getattr(args, "mux_inject", []):
+            entry = inject.split(':', 3)
+            if len(entry) < 2:
+                raise ValueError("key:entry pairs required, found only %s"
+                                 % (entry))
+            elif len(entry) == 2:   # key, entry
+                self.data_inject(*entry)
+            else:                   # path, key, entry
+                self.data_inject(key=entry[1], value=entry[2], path=entry[0])
+
+    def is_parsed(self):
+        """
+        Reports whether the tree was already multiplexed
+        """
+        return self.variants is not None
+
+    def data_inject(self, key, value, path=None):
+        """
+        Inject entry to the mux tree (params database)
+
+        :param key: Key to which we'd like to assign the value
+        :param value: The key's value
+        :param path: Optional path to the node to which we assign the value,
+                     by default '/'.
+        """
+        if path:
+            node = self.data.get_node(path, True)
+        else:
+            node = self.data
+        node.value[key] = value
+
+    def data_merge(self, tree):
+        """
+        Merge tree into the mux tree (params database)
+
+        :param tree: Tree to be merged into this database.
+        :type tree: :class:`avocado.core.tree.TreeNode`
+        """
+        self.data.merge(tree)
 
     def get_number_of_tests(self, test_suite):
         """

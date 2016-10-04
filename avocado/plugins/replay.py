@@ -217,7 +217,7 @@ class Replay(CLI):
                     log.error('Source job multiplex data not found. Aborting.')
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
-                    setattr(args, "multiplex_files", mux)
+                    setattr(args, "mux", mux)
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,
