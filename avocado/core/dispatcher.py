@@ -133,8 +133,25 @@ class ResultDispatcher(Dispatcher):
     def __init__(self):
         super(ResultDispatcher, self).__init__('avocado.plugins.result')
 
-    def map_method(self, method_name, result, job):
+    def ordered_extensions(self):
+        """
+        Returns the extensions based on configured order
+        """
+        configured_order = settings.get_value(self.settings_section(), "order",
+                                              key_type=list, default=[])
+
+        ordered = []
+        for name in configured_order:
+            for ext in self.extensions:
+                if name == ext.name:
+                    ordered.append(ext)
         for ext in self.extensions:
+            if ext not in ordered:
+                ordered.append(ext)
+        return ordered
+
+    def map_method(self, method_name, result, job):
+        for ext in self.ordered_extensions():
             try:
                 if hasattr(ext.obj, method_name):
                     method = getattr(ext.obj, method_name)
