@@ -222,24 +222,28 @@ class CmdResult(object):
     :param stdout: String containing stdout of the process
     :param stderr: String containing stderr of the process
     :param duration: Elapsed wall clock time running the process
+    :param pid: ID of the process
     """
 
     def __init__(self, command="", stdout="", stderr="",
-                 exit_status=None, duration=0):
+                 exit_status=None, duration=0, pid=None):
         self.command = command
         self.exit_status = exit_status
         self.stdout = stdout
         self.stderr = stderr
         self.duration = duration
         self.interrupted = False
+        self.pid = pid
 
     def __repr__(self):
         cmd_rep = ("Command: %s\n"
                    "Exit status: %s\n"
                    "Duration: %s\n"
                    "Stdout:\n%s\n"
-                   "Stderr:\n%s\n" % (self.command, self.exit_status,
-                                      self.duration, self.stdout, self.stderr))
+                   "Stderr:\n%s\n"
+                   "PID:\n%s\n" % (self.command, self.exit_status,
+                                   self.duration, self.stdout, self.stderr,
+                                   self.pid))
         if self.interrupted:
             cmd_rep += "Command interrupted by %s\n" % self.interrupted
         return cmd_rep
@@ -433,6 +437,7 @@ class SubProcess(object):
         if self.verbose:
             log.info("Command '%s' finished with %s after %ss", self.cmd, rc,
                      self.result.duration)
+        self.result.pid = self._popen.pid
         self._fill_streams()
 
     def _fill_streams(self):
