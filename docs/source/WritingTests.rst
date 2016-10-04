@@ -55,7 +55,7 @@ Note that the test class provides you with a number of convenience attributes:
   of ``self.log``. It lets you log debug, info, error and warning messages.
 * A parameter passing system (and fetching system) that can be accessed by
   means of ``self.params``. This is hooked to the Multiplexer, about which
-  you can find that more information at :doc:`MultiplexConfig`.
+  you can find that more information at :doc:`Mux`.
 
 Saving test generated (custom) data
 ===================================
@@ -88,7 +88,7 @@ Accessing test parameters
 Each test has a set of parameters that can be accessed through
 ``self.params.get($name, $path=None, $default=None)``.
 Avocado finds and populates ``self.params`` with all parameters you define on
-a Multiplex Config file (see :doc:`MultiplexConfig`). As an example, consider
+a Multiplex Config file (see :doc:`Mux`). As an example, consider
 the following multiplex file for sleeptest::
 
     sleeptest:
@@ -103,7 +103,7 @@ the following multiplex file for sleeptest::
 
 When running this example by ``avocado run $test --multiplex $file.yaml``
 three variants are executed and the content is injected into ``/run`` namespace
-(see :doc:`MultiplexConfig` for details). Every variant contains variables
+(see :doc:`Mux` for details). Every variant contains variables
 "type" and "sleep_length". To obtain the current value, you need the name
 ("sleep_length") and its path. The path differs for each variant so it's
 needed to use the most suitable portion of the path, in this example:
@@ -146,7 +146,7 @@ simply inject the values elsewhere (eg. `/run/sleeptest` =>
 default path, which won't generate clash, but would return their values
 instead. Then you need to clarify the path (eg. `'*'` =>  `sleeptest/*`)
 
-More details on that are in :doc:`MultiplexConfig`
+More details on that are in :doc:`Mux`
 
 Using a multiplex file
 ======================
@@ -166,7 +166,7 @@ generation for sleeptest just like::
     JOB HTML   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
 
 The ``--multiplex`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
-As explained in :doc:`MultiplexConfig` without any path the content gets
+As explained in :doc:`Mux` without any path the content gets
 injected into ``/run`` in order to be in the default relative path location.
 The ``$INJECT_TO`` can be either relative path, then it's injected into
 ``/run/$INJECT_TO`` location, or absolute path (starting with ``'/'``), then

@@ -23,7 +23,6 @@ import sys
 from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
-from avocado.core import multiplexer
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.settings import settings
@@ -134,11 +133,6 @@ class Run(CLICmd):
         loader.add_loader_options(parser)
 
         mux = parser.add_argument_group('test parameters')
-        if multiplexer.MULTIPLEX_CAPABLE:
-            mux.add_argument('-m', '--multiplex', nargs='*',
-                             default=None, metavar='FILE',
-                             help='Location of one or more Avocado multiplex '
-                             '(.yaml) FILE(s) (order dependent)')
         mux.add_argument('--filter-only', nargs='*', default=[],
                          help='Filter only path(s) from multiplexing')
         mux.add_argument('--filter-out', nargs='*', default=[],
