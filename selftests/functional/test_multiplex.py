@@ -34,12 +34,17 @@ class MultiplexTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    def run_and_check(self, cmd_line, expected_rc):
+    def run_and_check(self, cmd_line, expected_rc, tests=None):
         os.chdir(basedir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
+        if tests:
+            exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "
+                   "INTERRUPT 0" % tests)
+            self.assertIn(exp, result.stdout, "%s not in stdout:\n%s"
+                          % (exp, result))
         return result
 
     def test_mplex_plugin(self):
@@ -100,6 +105,12 @@ class MultiplexTests(unittest.TestCase):
                     % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
+
+    def test_empty_file(self):
+        cmd_line = ("./scripts/avocado run -m selftests/.data/empty_file "
+                    "-- passtest.py")
+        result = self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK,
+                                    (1, 0))
 
     def test_run_mplex_params(self):
         for variant_msg in (('/run/short', 'A'),

@@ -170,6 +170,8 @@ def _create_from_yaml(path, cls_node=tree.TreeNode):
     # Load the tree
     with open(path) as stream:
         loaded_tree = yaml.load(stream, Loader)
+        if loaded_tree is None:
+            return
         loaded_tree = tree_node_from_values('', loaded_tree)
 
     # Add prefix
@@ -192,12 +194,16 @@ def create_from_yaml(paths, debug=False):
     """
     def _merge(data, path):
         """ Normal run """
-        data.merge(_create_from_yaml(path))
+        tmp = _create_from_yaml(path)
+        if tmp:
+            data.merge(tmp)
 
     def _merge_debug(data, path):
         """ Use NamedTreeNodeDebug magic """
         node_cls = tree.get_named_tree_cls(path)
-        data.merge(_create_from_yaml(path, node_cls))
+        tmp = _create_from_yaml(path, node_cls)
+        if tmp:
+            data.merge(tmp)
 
     if not debug:
         data = tree.TreeNode()
