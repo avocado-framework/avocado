@@ -488,6 +488,17 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('1-%s:MyTest.test_my_name -> TestError' % test,
                       result.stdout)
 
+    @unittest.skipIf(process.system("which /bin/read", ignore_status=True),
+                     "/bin/read not available.")
+    def test_read(self):
+        os.chdir(basedir)
+        result = process.run("./scripts/avocado run /bin/read", timeout=10,
+                             ignore_status=True)
+        self.assertLess(result.duration, 8, "Duration longer than expected."
+                        "\n%s" % result)
+        self.assertEqual(result.exit_status, 1, "Expected exit status is 1\n%s"
+                         % result)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
