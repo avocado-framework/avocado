@@ -47,7 +47,7 @@ class VMTestRunnerSetup(unittest.TestCase):
                         vm_password='password',
                         vm_key_file=None,
                         vm_cleanup=True,
-                        vm_no_copy=False,
+                        vm_copy=False,
                         vm_timeout=120,
                         vm_hypervisor_uri='my_hypervisor_uri',
                         env_keep=None)

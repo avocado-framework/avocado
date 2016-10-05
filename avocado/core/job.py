@@ -43,6 +43,7 @@ from . import tree
 from . import test
 from . import jobdata
 from .output import STD_OUTPUT
+from .remote.runner import RemoteTestRunner
 from .settings import settings
 from ..utils import archive
 from ..utils import astring
@@ -285,6 +286,11 @@ class Job(object):
                      Optionally, a list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
+        suite = [(None, {})]
+        # Don't load tests when using the remote test runner
+        if isinstance(self.test_runner, RemoteTestRunner):
+            return suite
+
         loader.loader.load_plugins(self.args)
         try:
             suite = loader.loader.discover(urls)
@@ -422,16 +428,13 @@ class Job(object):
         self._setup_job_results()
         self.__start_job_logging()
 
-        if (getattr(self.args, 'remote_hostname', False) and
-           getattr(self.args, 'remote_no_copy', False)):
-            self.test_suite = [(None, {})]
-        else:
-            try:
-                self.test_suite = self._make_test_suite(self.urls)
-            except loader.LoaderError as details:
-                stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                self._remove_job_results()
-                raise exceptions.OptionValidationError(details)
+        self._make_test_runner()
+        try:
+            self.test_suite = self._make_test_suite(self.urls)
+        except loader.LoaderError as details:
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
+            self._remove_job_results()
+            raise exceptions.OptionValidationError(details)
 
         self.job_pre_post_dispatcher.map_method('pre', self)
 
@@ -459,7 +462,6 @@ class Job(object):
         self._make_test_result()
         if not (self.standalone or getattr(self.args, "dry_run", False)):
             self._update_latest_link()
-        self._make_test_runner()
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
