@@ -174,6 +174,22 @@ image (``ldoktor/fedora-avocado``) in the default image repository
     ...
     Status: Downloaded newer image for docker.io/ldoktor/fedora-avocado:latest
 
+Use custom docker images
+------------------------
+
+One of possible ways to develop avocado is to create docker image with your devel tree.
+This is good way to test your devel branch w/o breaking system instalation ::
+
+    Fetch git source as usual
+    $ git clone github.com/avocado-framework/avocado.git avocado.git
+    $ cd avocado.git
+    Make some changes
+    $ patch -p1 < MY_PATCH
+    Finally build a docker image
+    $ docker build -t fedora-avocado-custom -f contrib/docker//Dockerfile.fedora .
+    Run test inside custom docker image
+    $ avocado run --docker fedora-avocado-custom examples/tests/passtest.py
+
 Running your test
 -----------------
 
