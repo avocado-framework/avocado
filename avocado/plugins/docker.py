@@ -14,6 +14,8 @@
 """Run the job inside a docker container."""
 
 import logging
+import os
+import socket
 import time
 
 import aexpect
@@ -33,7 +35,7 @@ class DockerRemoter(object):
     of the commands on docker container.
     """
 
-    def __init__(self, dkrcmd, image):
+    def __init__(self, dkrcmd, image, options, name=None):
         """
         Executes docker container and attaches it.
 
@@ -42,7 +44,12 @@ class DockerRemoter(object):
         """
         self._dkrcmd = dkrcmd
         self._docker = None
-        run_cmd = "%s run -t -i -d '%s' bash" % (self._dkrcmd, image)
+
+        if name is not None:
+            options += " --name %s --hostname %s" % \
+                       (name, name + '.' + socket.gethostname())
+
+        run_cmd = "%s run -t -i -d %s '%s' bash" % (self._dkrcmd, options, image)
         self._docker_id = (process.system_output(run_cmd, None).splitlines()[-1]
                            .strip())
         self._docker = aexpect.ShellSession("%s attach %s"
@@ -133,11 +140,14 @@ class DockerTestRunner(RemoteTestRunner):
 
     def setup(self):
         dkrcmd = self.job.args.docker_cmd
-        self.remote = DockerRemoter(dkrcmd, self.job.args.docker)
+        dkr_opt = self.job.args.docker_options
+        dkr_name = os.path.basename(self.job.logdir) + '.' + 'avocado'
+        self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt, dkr_name)
         # We need to create the base dir, otherwise docker creates it as root
         self.remote.makedir(self.remote_test_dir)
         self.job.log.info("DOCKER     : Container id '%s'"
                           % self.remote.get_cid())
+        self.job.log.debug("DOCKER     : Container name '%s'" % dkr_name)
         self.job.args.remote_no_copy = self.job.args.docker_no_copy
 
     def tear_down(self):
@@ -173,6 +183,10 @@ class Docker(CLI):
                                 "docker' or other base docker options like "
                                 "hypervisor. Default: '%(default)s'",
                                 metavar="CMD")
+        cmd_parser.add_argument("--docker-options", default="",
+                                help="Extra options for docker run cmd."
+                                " (see: man docker-run)", metavar="OPT")
+
         cmd_parser.add_argument("--docker-no-copy", action="store_true",
                                 help="Assume tests are already in the "
                                 "container")
