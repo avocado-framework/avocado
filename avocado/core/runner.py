@@ -30,6 +30,7 @@ from . import exceptions
 from . import output
 from . import status
 from .loader import loader
+from .settings import settings
 from .status import mapping
 from ..utils import wait
 from ..utils import runtime
@@ -468,6 +469,12 @@ class TestRunner(object):
         :raises ValueError: When variant and template declare params.
         """
         for variant, params in mux.itertests():
+            variant_name = ''
+            for x in params[0]:
+                path = x.path[len('/run'):]
+                variant_name += path.replace('/', '-')
+            # trim first '-'
+            variant_name = variant_name[1:]
             if params:
                 if "params" in template[1]:
                     msg = ("Unable to multiplex test %s, params are already "
@@ -478,7 +485,7 @@ class TestRunner(object):
                 factory[1]["params"] = params
             else:
                 factory = template
-            yield factory, variant
+            yield factory, variant, variant_name
 
     def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
                   test_result_total=0):
@@ -504,19 +511,24 @@ class TestRunner(object):
         no_digits = len(str(test_result_total))
 
         index = -1
+        use_varinat_name = settings.get_value('runner.output', 'variant_name',
+                                              key_type=bool, default=False)
         try:
             for test_template in test_suite:
                 test_template[1]['base_logdir'] = self.job.logdir
                 test_template[1]['job'] = self.job
                 break_loop = False
-                for test_factory, variant in self._iter_variants(test_template,
-                                                                 mux):
+                for test_factory, variant, variant_name in self._iter_variants(test_template,
+                                                                               mux):
                     index += 1
                     test_parameters = test_factory[1]
                     name = test_parameters.get("name")
+                    if not use_varinat_name:
+                        variant_name = None
                     test_parameters["name"] = test.TestName(index + 1, name,
                                                             variant,
-                                                            no_digits)
+                                                            no_digits,
+                                                            variant_name)
                     if deadline is not None and time.time() > deadline:
                         summary.add('INTERRUPTED')
                         if 'methodName' in test_parameters:
