@@ -69,7 +69,7 @@ place, the test notifies you and you can investigate the problem. This is
 demonstrated in ``examples/tests/doublefree_nasty.py`` test. To unveil the
 power of Avocado, run this test using::
 
-    avocado run --gdb-run-bin=doublefree: examples/tests/doublefree_nasty.py --gdb-prerun-commands examples/tests/doublefree_nasty.py.data/gdb_pre --multiplex examples/tests/doublefree_nasty.py.data/iterations.yaml
+    avocado run --gdb-run-bin=doublefree: examples/tests/doublefree_nasty.py --gdb-prerun-commands examples/tests/doublefree_nasty.py.data/gdb_pre --mux-yaml examples/tests/doublefree_nasty.py.data/iterations.yaml
 
 which executes 100 iterations of this test while setting all breakpoints from
 the ``examples/tests/doublefree_nasty.py.data/gdb_pre`` file (you can specify
