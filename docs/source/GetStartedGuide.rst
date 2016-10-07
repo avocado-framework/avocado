@@ -65,6 +65,14 @@ Enterprise Linux.  Please refer to the `Avocado Long Term
 Stability`_ thread and to your package management docs on how to
 switch to the ``avocado-lts`` repo.
 
+OpenSUSE
+~~~~~~~~
+
+The `OpenSUSE`_ project packages LTS versions of Avocado.  You can
+install packages by running the following commands::
+
+  sudo zypper install avocado
+
 Generic installation from a GIT repository
 ------------------------------------------
 
@@ -361,3 +369,4 @@ As you can see, the UI output is suppressed and only the job log is shown,
 making this a useful feature for test development and debugging.
 
 .. _Avocado Long Term Stability: https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
+.. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
