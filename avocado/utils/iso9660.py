@@ -43,9 +43,8 @@ def has_userland_tool(executable):
     if os.path.isabs(executable):
         return os.path.exists(executable)
     else:
-        for d in os.environ['PATH'].split(':'):
-            f = os.path.join(d, executable)
-            if os.path.exists(f):
+        for path in os.environ['PATH'].split(':'):
+            if os.path.exists(os.path.join(path, executable)):
                 return True
     return False
 
@@ -82,8 +81,9 @@ def can_mount():
 
     :rtype: bool
     """
-    if os.getuid() != 0:
-        logging.debug('Can not use mount: current user is not "root"')
+    if not process.can_sudo():
+        logging.debug('Can not use mount: current user is not "root" and'
+                      "sudo is not configured.")
         return False
 
     if not has_userland_tool('mount'):
@@ -91,8 +91,10 @@ def can_mount():
         return False
 
     if 'iso9660' not in open('/proc/filesystems').read():
-        logging.debug('Can not use mount: lack of iso9660 kernel support')
-        return False
+        process.system("modprobe iso9660", ignore_status=True, sudo=True)
+        if 'iso9660' not in open('/proc/filesystems').read():
+            logging.debug('Can not use mount: lack of iso9660 kernel support')
+            return False
 
     return True
 
@@ -151,6 +153,12 @@ class BaseIso9660(object):
         output.write(content)
         output.close()
 
+    def mnt_dir(self):
+        """
+        Returns a path to the browsable content of the iso
+        """
+        raise NotImplementedError
+
     def close(self):
         """
         Cleanup and free any resources being used
@@ -160,7 +168,38 @@ class BaseIso9660(object):
         pass
 
 
-class Iso9660IsoInfo(BaseIso9660):
+class MixInMntDirMount(object):
+    """
+    Mix in class which defines `mnt_dir` property and instantiates the
+    Iso9660Mount class to provide one. It requires `self.path` to store
+    path to the target iso file.
+    """
+    _mount_instance = None
+    path = None
+
+    @property
+    def mnt_dir(self):
+        """
+        Returns a path to the browsable content of the iso
+        """
+        if self._mount_instance is None:
+            if not self.path:
+                raise RuntimeError("Path to iso image not available: %s"
+                                   % self.path)
+            self._mount_instance = Iso9660Mount(self.path)
+        return self._mount_instance.mnt_dir
+
+    def close(self):
+        """
+        Cleanups and frees any resources being used
+        """
+        super(MixInMntDirMount, self).close()
+        if self._mount_instance:
+            self._mount_instance.close()
+            self._mount_instance = None
+
+
+class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
 
     """
     Represents a ISO9660 filesystem
@@ -176,6 +215,9 @@ class Iso9660IsoInfo(BaseIso9660):
         self._get_extensions(path)
 
     def _get_extensions(self, path):
+        """
+        Get and store the image's extensions
+        """
         cmd = 'isoinfo -i %s -d' % path
         output = process.system_output(cmd)
 
@@ -188,11 +230,17 @@ class Iso9660IsoInfo(BaseIso9660):
 
     @staticmethod
     def _normalize_path(path):
+        """
+        Normalize the path to match isoinfo notation
+        """
         if not os.path.isabs(path):
             path = os.path.join('/', path)
         return path
 
     def _get_filename_in_iso(self, path):
+        """
+        Locate the path in the list of files inside the iso image
+        """
         cmd = 'isoinfo -i %s -f' % self.path
         flist = process.system_output(cmd)
 
@@ -212,7 +260,8 @@ class Iso9660IsoInfo(BaseIso9660):
         else:
             fname = self._get_filename_in_iso(path)
             if not fname:
-                logging.warn("Could not find '%s' in iso '%s'", path, self.path)
+                logging.warn(
+                    "Could not find '%s' in iso '%s'", path, self.path)
                 return ""
 
         cmd.append("-x %s" % fname)
@@ -220,7 +269,7 @@ class Iso9660IsoInfo(BaseIso9660):
         return result.stdout
 
 
-class Iso9660IsoRead(BaseIso9660):
+class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
 
     """
     Represents a ISO9660 filesystem
@@ -243,6 +292,7 @@ class Iso9660IsoRead(BaseIso9660):
         process.run(cmd)
 
     def close(self):
+        super(Iso9660IsoRead, self).close()
         shutil.rmtree(self.temp_dir, True)
 
 
@@ -260,9 +310,9 @@ class Iso9660Mount(BaseIso9660):
         :type path: str
         """
         super(Iso9660Mount, self).__init__(path)
-        self.mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self._mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         process.run('mount -t iso9660 -v -o loop,ro %s %s' %
-                    (path, self.mnt_dir))
+                    (path, self.mnt_dir), sudo=True)
 
     def read(self, path):
         """
@@ -293,11 +343,20 @@ class Iso9660Mount(BaseIso9660):
 
         :rtype: None
         """
-        if os.path.ismount(self.mnt_dir):
-            process.run('fuser -k %s' % self.mnt_dir, ignore_status=True)
-            process.run('umount %s' % self.mnt_dir)
+        if self._mnt_dir:
+            if os.path.ismount(self._mnt_dir):
+                process.run('fuser -k %s' % self.mnt_dir, ignore_status=True,
+                            sudo=True)
+                process.run('umount %s' % self.mnt_dir, sudo=True)
+            shutil.rmtree(self._mnt_dir)
+            self._mnt_dir = None
 
-        shutil.rmtree(self.mnt_dir)
+    @property
+    def mnt_dir(self):
+        if not self._mnt_dir:
+            raise RuntimeError("Trying to get mnt_dir of already closed iso %s"
+                               % self.path)
+        return self._mnt_dir
 
 
 def iso9660(path):
