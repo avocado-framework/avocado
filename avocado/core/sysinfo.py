@@ -231,7 +231,7 @@ class JournalctlWatcher(Collectible):
 
     def _get_cursor(self):
         try:
-            cmd = 'journalctl --lines 1 --output json'
+            cmd = 'journalctl --quiet --lines 1 --output json'
             result = subprocess.check_output(cmd.split())
             last_record = json.loads(result)
             return last_record['__CURSOR']
