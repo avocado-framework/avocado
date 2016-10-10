@@ -21,6 +21,7 @@ import fnmatch
 import logging
 import os
 import re
+import select
 import shlex
 import shutil
 import signal
@@ -308,6 +309,7 @@ class SubProcess(object):
         else:
             self.env = None
         self._popen = None
+        self._running = None    # Whether the process is running, or finishing
 
     def __repr__(self):
         if self._popen is None:
@@ -370,6 +372,7 @@ class SubProcess(object):
             self.stdout_file = StringIO()
             self.stderr_file = StringIO()
             self.stdout_lock = threading.Lock()
+            self._running = True
             self.stdout_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stdout" % self.cmd,
                                                   args=[self._popen.stdout])
@@ -418,14 +421,12 @@ class SubProcess(object):
         fileno = input_pipe.fileno()
 
         bfr = ''
-        while True:
+        while (self.result.exit_status is None or
+               select.select([fileno], [], [], 1)[0]):
+            if not select.select([fileno], [], [], 1)[0]:
+                continue
             tmp = os.read(fileno, 1024)
             if tmp == '':
-                if self.verbose and bfr:
-                    for line in bfr.splitlines():
-                        log.debug(prefix, line)
-                        if stream_logger is not None:
-                            stream_logger.debug(stream_prefix, line)
                 break
             lock.acquire()
             try:
@@ -440,6 +441,11 @@ class SubProcess(object):
                         bfr = ''
             finally:
                 lock.release()
+        if self.verbose and bfr:
+            for line in bfr.splitlines():
+                log.debug(prefix, line)
+                if stream_logger is not None:
+                    stream_logger.debug(stream_prefix, line)
 
     def _fill_results(self, rc):
         self._init_subprocess()
