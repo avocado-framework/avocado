@@ -108,6 +108,8 @@ the entry point definition itself, in this case, ``jobscripts``.
 To summarize, still using the same example, the fully qualified
 Avocado plugin name is going to be ``job.prepost.jobscripts``.
 
+.. _disabling-a-plugin:
+
 Disabling a plugin
 ~~~~~~~~~~~~~~~~~~
 

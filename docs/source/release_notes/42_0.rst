@@ -1,0 +1,117 @@
+====================
+42.0 Stranger Things
+====================
+
+The Avocado team is proud to present another release: Avocado version
+42.0, aka, "Stranger Things", is now available!
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * Multiplexer: it now defines an API to inject and merge data into
+   the multiplexer tree.  With that, it's now possible to come up
+   with various mechanisms to feed data into the Multiplexer.  The
+   standard way to do so continues to be by YAML files, which is now
+   implemented in the :mod:`avocado.plugins.yaml_to_mux` plugin module.
+   The `--multiplex` option, which used to load YAML files into the
+   multiplexer is now deprecated in favor of `--mux-yaml`.
+
+ * Docker improvements: Avocado will now name the container accordingly
+   to the job it's running.  Also, it not allows generic Docker options
+   to be passed by using `--docker-options` on the Avocado command line.
+
+ * It's now possible to disable plugins by using the configuration file.
+   This is documented at :ref:`disabling-a-plugin`.
+
+ * :mod:`avocado.utils.iso9660`: this utils module received a lot of
+   TLC and it now provides a more complete standard API across all
+   backend implementations.  Previously, only the mount based backend
+   implementation would support the `mnt_dir` API, which would point
+   to a filesystem location where the contents of the ISO would be
+   available.  Now all other backends can support that API, given that
+   requirements (such as having the right privileges) are met.
+
+ * Users of the :mod:`avocado.utils.process` module will now be able
+   to access the process ID in the
+   :class:`avocado.utils.process.CmdResult`
+
+ * Users of the :mod:`avocado.utils.build` module will find an
+   improved version of :func:`avocado.utils.build.make` which will now
+   return the `make` process exit status code.
+
+ * Users of the virtual machine plugin (``--vm-domain`` and related
+   options) will now receive better messages when errors occur.
+
+Documentation
+=============
+
+ * Added section on how to use custom Docker images with user's own
+   version of Avocado (or anything else for that matter).
+
+ * Added section on how to install Avocado using standard OpenSUSE
+   packages.
+
+ * Added section on :mod:`unittest` compatibility limitations and
+   caveats.
+
+ * A link to Scylla Clusters tests has been added to the list of
+   Avocado test repos.
+
+ * Added section on how to install Avocado by using standard Python
+   packages.
+
+Developers
+==========
+
+ * The `make develop` target will now activate in-tree optional plugins,
+   such as the HTML report plugin.
+
+ * The `selftests/run` script, usually called as part of `make check`,
+   will now fail at the first failure (by default).  This is controlled
+   by the `SELF_CHECK_CONTINUOUS` environment variable.
+
+ * The `make check` target can also run tests in parallel, which can be
+   enabled by setting the environment variable `AVOCADO_PARALLEL_CHECK`.
+
+Bugfixes
+========
+
+ * An issue where `KeyboardInterrupts` would be caught by the
+   `journalctl` run as part of sysinfo was fixed with a workaround.
+   The root cause appears to be located in the
+   :mod:`avocado.utils.process` library, and a task is already on
+   track to verify that possible bug.
+
+ * :mod:`avocado.util.git` module had an issue where git executions
+   would generate content that would erroneously be considered as
+   part of the output check mechanism.
+
+Internal improvements
+=====================
+
+ * Selftests are now run while building Enterprise Linux 6 packages.
+   Since most Avocado developers use newer platforms for development,
+   this should make Avocado more reliable for users of those older
+   platforms.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/41.0...42.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=LlrXKEOxeAY>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/icVc5Szx/851-sprint-theme-stranger-things

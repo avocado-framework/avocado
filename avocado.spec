@@ -1,13 +1,13 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit d4561f6a6f65fab241d40979411909c152263925
+ %define commit b1254c09ff1e5c0f61c1e965bd70b4464dc2b9c2
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Summary: Avocado Test Framework
 Name: avocado
-Version: 41.0
-Release: 1%{?dist}
+Version: 42.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -112,6 +112,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Oct 10 2016 Cleber Rosa <cleber@redhat.com> - 42.0-0
+- New upstream release
+
 * Fri Sep 16 2016 Cleber Rosa <cleber@redhat.com> - 41.0-1
 - Consolidated build requires common to all targets
 - Enabled check on EL6
