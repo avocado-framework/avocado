@@ -270,7 +270,7 @@ class YamlToMux(CLI):
         if multiplex_files:
             msg = ("The use of `--multiplex` is deprecated, use `--mux-yaml` "
                    "instead.")
-            logging.getLogger("avocado.test").warning(msg)
+            logging.getLogger("avocado.app").warning(msg)
             debug = getattr(args, "mux_debug", False)
             try:
                 args.mux.data_merge(create_from_yaml(multiplex_files, debug))
