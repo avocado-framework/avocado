@@ -48,6 +48,11 @@ can install the RPM packages by running the following commands::
 
     sudo dnf install avocado
 
+Additionally, two other Avocado packages are available for Fedora:
+
+ * ``avocado-examples``: contains example tests and other example files
+ * ``avocado-plugins-output-html``: HTML job report plugin
+
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
 
@@ -59,6 +64,12 @@ such as CentOS, just adapt to the following URL and commands::
     # Add avocado repository and install avocado
     sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     sudo yum install avocado
+
+As with Fedora, two other Avocado packages are available for
+Enterprise Linux:
+
+ * ``avocado-examples``: contains example tests and other example files
+ * ``avocado-plugins-output-html``: HTML job report plugin
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  Please refer to the `Avocado Long Term
@@ -92,6 +103,12 @@ Then to install Avocado from the git repository run::
 Note that `python` and `pip` should point to the Python interpreter version 2.7.x.
 If you're having trouble to install, you can try again and use the command line
 utilities `python2.7` and `pip2.7`.
+
+Please note that some Avocado functionality may be implemented by
+optional plugins.  To install say, the HTML report plugin, run::
+
+    cd optional_plugins/html
+    sudo python setup.py install
 
 If you intend to hack on Avocado, you may want to look at :ref:`hacking-and-using`.
 
