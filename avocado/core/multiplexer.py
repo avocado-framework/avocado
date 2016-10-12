@@ -22,7 +22,9 @@ Multiplex and create variants.
 import collections
 import itertools
 import logging
+import pickle
 import re
+import sha
 
 from . import tree
 
@@ -482,9 +484,23 @@ class Mux(object):
         """
         if self.variants:  # Copy template and modify it's params
             if self._has_multiple_variants:
-                for i, variant in enumerate(self.variants, 1):
-                    yield i, (variant, self._mux_path)
+                for variant in self.variants:
+                    fingerprint = "-".join(_.fingerprint() for _ in variant)
+                    variant_sha = sha.sha(fingerprint).hexdigest()
+                    variant_name = "-".join(node.name for node in variant)
+                    yield {"variant": variant,
+                           "variant_id": variant_name + "-" + variant_sha,
+                           "variant_id_short": variant_name + "-" +
+                           variant_sha[:4],
+                           "mux_path": self._mux_path}
             else:
-                yield None, (iter(self.variants).next(), self._mux_path)
+                variant = iter(self.variants).next()
+                fingerprint = "-".join(_.fingerprint() for _ in variant)
+                variant_sha = sha.sha(fingerprint).hexdigest()
+                variant_name = "-".join(node.name for node in variant)
+                yield {"variant": variant,
+                       "variant_id": variant_name + "-" + variant_sha,
+                       "variant_id_short": None,
+                       "mux_path": self._mux_path}
         else:   # No variants, use template
-            yield None, None
+            yield None

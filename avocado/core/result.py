@@ -222,7 +222,7 @@ class HumanResult(Result):
         if "name" in state:
             name = state["name"]
             uid = name.str_uid
-            name = name.name + name.str_variant
+            name = name.name + name.str_variant_short
         else:
             name = "<unknown>"
             uid = '?'

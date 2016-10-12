@@ -389,9 +389,9 @@ class Job(object):
     def _log_mux_variants(self, mux):
         job_log = _TEST_LOGGER
 
-        for (index, tpl) in enumerate(mux.variants):
-            paths = ', '.join([x.path for x in tpl])
-            job_log.info('Variant %s:    %s', index + 1, paths)
+        for variant in mux.itertests():
+            paths = ', '.join([x.path for x in variant["variant"]])
+            job_log.info('Variant %s:    %s', variant["variant_id"], paths)
 
         if mux.variants:
             job_log.info('')

@@ -78,6 +78,10 @@ class TreeNode(object):
         for child in children:
             self.add_child(child)
 
+    def fingerprint(self):
+        return (str(self.path) + str(self.environment) + str(self.ctrl) +
+                str(self.multiplex))
+
     def __repr__(self):
         return 'TreeNode(name=%r)' % self.name
 
