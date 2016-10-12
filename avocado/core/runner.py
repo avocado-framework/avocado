@@ -379,7 +379,7 @@ class TestRunner(object):
         stage_1_msg_displayed = False
         stage_2_msg_displayed = False
         first = 0.01
-        step = 0.1
+        step = 0.01
         abort_reason = None
 
         while True:
