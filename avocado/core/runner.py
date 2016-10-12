@@ -142,6 +142,7 @@ class TestStatus(object):
         :param timeout: timeout for early_state
         :raise exceptions.TestError: On timeout/error
         """
+        step = 0.01
         end = time.time() + timeout
         while not self.early_status:
             if not proc.is_alive():
@@ -154,7 +155,7 @@ class TestStatus(object):
                        "avocado framework." % timeout)
                 os.kill(proc.pid, signal.SIGKILL)
                 raise exceptions.TestError(msg)
-            time.sleep(0)
+            time.sleep(step)
 
     def _tick(self):
         """
