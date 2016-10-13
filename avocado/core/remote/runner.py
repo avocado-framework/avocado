@@ -209,7 +209,11 @@ class RemoteTestRunner(TestRunner):
                                       "specified timeout (%s). Interrupting."
                                       % (timeout))
 
-        json_result = self._parse_json_response(result.stdout)
+        try:
+            json_result = self._parse_json_response(result.stdout)
+        except:
+            raise exceptions.JobError(result.stdout)
+
         for t_dict in json_result['tests']:
             logdir = os.path.join(self.job.logdir, 'test-results')
             relative_path = astring.string_to_safe_path(t_dict['test'])
