@@ -422,8 +422,7 @@ class Job(object):
         self._setup_job_results()
         self.__start_job_logging()
 
-        if (getattr(self.args, 'remote_hostname', False) and
-           getattr(self.args, 'remote_no_copy', False)):
+        if getattr(self.args, 'remote_execution', False):
             self.test_suite = [(None, {})]
         else:
             try:

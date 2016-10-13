@@ -195,4 +195,5 @@ class Docker(CLI):
 
     def run(self, args):
         if getattr(args, "docker", None):
+            args.remote_execution = True
             args.test_runner = DockerTestRunner

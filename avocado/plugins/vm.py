@@ -109,6 +109,7 @@ class VM(CLI):
 
     def run(self, args):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
+            args.remote_execution = True
             register_test_result_class(args, VMResult)
             args.test_runner = VMTestRunner
             setattr(args, 'stdout_claimed_by', '--vm-domain')

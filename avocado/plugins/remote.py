@@ -106,6 +106,7 @@ class Remote(CLI):
     def run(self, args):
         if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
+            args.remote_execution = True
             register_test_result_class(args, RemoteResult)
             args.test_runner = RemoteTestRunner
             setattr(args, 'stdout_claimed_by', '--remote-hostname')
