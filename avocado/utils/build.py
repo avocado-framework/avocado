@@ -18,8 +18,8 @@ import os
 from . import process
 
 
-def run_make(path, make='make', env=None, extra_args='', ignore_status=False,
-             allow_output_check='none'):
+def run_make(path, make='make', env=None, extra_args='', ignore_status=None,
+             allow_output_check=None, process_kwargs=None):
     """
     Run make, adding MAKEOPTS to the list of options.
 
@@ -38,6 +38,8 @@ def run_make(path, make='make', env=None, extra_args='', ignore_status=False,
                                'none', because usually we don't want
                                to use the compilation output as a reference
                                in tests.
+    :param process_kwargs: Additional key word arguments to the underlying
+                           process running the make.
     :type allow_output_check: str
     :returns: the make command result object
     """
@@ -58,16 +60,32 @@ def run_make(path, make='make', env=None, extra_args='', ignore_status=False,
         cmd += ' %s' % makeopts
     if extra_args:
         cmd += ' %s' % extra_args
+
+    # Compatibility with 36LTS
+    # process_kwargs was added in 43.0 and supersedes the old way of
+    # specifying the proces's arguments. When 36LTS is discontinued the
+    # ignore_status, allow_output_check and env args should be removed.
+    if process_kwargs is None:
+        process_kwargs = {}
+    if ignore_status is not None:   # Compatibility with 36LTS
+        process_kwargs["ignore_status"] = ignore_status
+    if allow_output_check is not None:  # Compatibility with 36LTS
+        process_kwargs["allow_output_check"] = allow_output_check
+    else:
+        process_kwargs["allow_output_check"] = "none"
+    if env:     # Compatibility with 36LTS
+        if process_kwargs.get("env"):
+            process_kwargs["env"].update(env)
+        else:
+            process_kwargs["env"] = env
     make_process = process.run(cmd,
-                               env=env,
-                               ignore_status=ignore_status,
-                               allow_output_check=allow_output_check)
+                               **process_kwargs)
     os.chdir(cwd)
     return make_process
 
 
-def make(path, make='make', env=None, extra_args='', ignore_status=False,
-         allow_output_check='none'):
+def make(path, make='make', env=None, extra_args='', ignore_status=None,
+         allow_output_check=None, process_kwargs=None):
     """
     Run make, adding MAKEOPTS to the list of options.
 
