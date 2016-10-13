@@ -148,7 +148,6 @@ class DockerTestRunner(RemoteTestRunner):
         self.job.log.info("DOCKER     : Container id '%s'"
                           % self.remote.get_cid())
         self.job.log.debug("DOCKER     : Container name '%s'" % dkr_name)
-        self.job.args.remote_no_copy = self.job.args.docker_no_copy
 
     def tear_down(self):
         try:
@@ -186,10 +185,6 @@ class Docker(CLI):
         cmd_parser.add_argument("--docker-options", default="",
                                 help="Extra options for docker run cmd."
                                 " (see: man docker-run)", metavar="OPT")
-
-        cmd_parser.add_argument("--docker-no-copy", action="store_true",
-                                help="Assume tests are already in the "
-                                "container")
         cmd_parser.add_argument("--docker-no-cleanup", action="store_true",
                                 help="Preserve container after test")
 
