@@ -34,7 +34,7 @@ class TAPResult(Result):
             """
             return self.output.write(msg % args + "\n")
         super(TAPResult, self).__init__(job)
-        self.output = force_output_file or getattr(self.args, 'tap', '-')
+        self.output = force_output_file or getattr(job.args, 'tap', '-')
         if self.output != '-':
             self.output = open(self.output, "w", 1)
             self.__write = writeln
