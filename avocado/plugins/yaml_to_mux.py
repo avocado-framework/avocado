@@ -255,6 +255,8 @@ class YamlToMux(CLI):
                              " multiplex (.yaml) FILE(s) (order dependent)")
 
     def run(self, args):
+        if getattr(args, 'remote_execution', False):
+            return
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:

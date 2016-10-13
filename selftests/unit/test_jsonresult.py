@@ -32,7 +32,7 @@ class JSONResultTest(unittest.TestCase):
         self.job = job.Job(args)
         self.test_result = Result(FakeJob(args))
         self.test_result.filename = self.tmpfile[1]
-        self.test_result.start_tests()
+        self.test_result.start_tests(1)
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
         self.test1.status = 'PASS'
         self.test1.time_elapsed = 1.23

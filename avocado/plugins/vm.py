@@ -74,9 +74,6 @@ class VM(CLI):
                                     action='store_true', default=False,
                                     help='Restore VM to a previous state, '
                                     'before running tests')
-        self.vm_parser.add_argument('--vm-no-copy', action='store_true',
-                                    help="Don't copy tests and use the "
-                                    "exact uri on VM machine.")
         self.vm_parser.add_argument('--vm-timeout', metavar='SECONDS',
                                     help=("Amount of time (in seconds) to "
                                           "wait for a successful connection"
@@ -109,6 +106,7 @@ class VM(CLI):
 
     def run(self, args):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
+            args.remote_execution = True
             register_test_result_class(args, VMResult)
             args.test_runner = VMTestRunner
             setattr(args, 'stdout_claimed_by', '--vm-domain')

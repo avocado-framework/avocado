@@ -22,11 +22,11 @@ import logging
 from fabric.exceptions import CommandTimeout
 
 from .test import RemoteTest
-from .. import data_dir
 from .. import output
 from .. import remoter
 from .. import virt
 from .. import exceptions
+from .. import exit_codes
 from .. import status
 from ..runner import TestRunner
 from ..test import TestName
@@ -38,8 +38,6 @@ from ...utils import stacktrace
 class RemoteTestRunner(TestRunner):
 
     """ Tooled TestRunner to run on remote machine using ssh """
-    remote_test_dir = '~/avocado/tests'
-
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\r?$',
@@ -49,41 +47,6 @@ class RemoteTestRunner(TestRunner):
         super(RemoteTestRunner, self).__init__(job, test_result)
         #: remoter connection to the remote machine
         self.remote = None
-
-    def _copy_files(self):
-        """
-        Gather test directories and copy them recursively to
-        $remote_test_dir + $test_absolute_path.
-        :note: Default tests execution is translated into absolute paths too
-        """
-        if self.job.args.remote_no_copy:    # Leave everything as is
-            return
-
-        # TODO: Use `avocado.core.loader.TestLoader` instead
-        self.remote.makedir(self.remote_test_dir)
-        paths = set()
-        for i in xrange(len(self.job.urls)):
-            url = self.job.urls[i]
-            if not os.path.exists(url):     # use test_dir path + py
-                url = os.path.join(data_dir.get_test_dir(), url)
-            if not os.path.exists(url):
-                raise exceptions.JobError("Unable to map test id '%s' to file"
-                                          % self.job.urls[i])
-            url = os.path.abspath(url)  # always use abspath; avoid clashes
-            # modify url to remote_path + abspath
-            paths.add(url)
-            self.job.urls[i] = self.remote_test_dir + url
-        for path in sorted(paths):
-            rpath = self.remote_test_dir + path
-            self.remote.makedir(os.path.dirname(rpath))
-            self.remote.send_files(path, os.path.dirname(rpath))
-            test_data = path + '.data'
-            if os.path.isdir(test_data):
-                self.remote.send_files(test_data, os.path.dirname(rpath))
-        for mux_file in getattr(self.job.args, 'mux_yaml') or []:
-            rpath = os.path.join(self.remote_test_dir, mux_file)
-            self.remote.makedir(os.path.dirname(rpath))
-            self.remote.send_files(mux_file, rpath)
 
     def setup(self):
         """ Setup remote environment and copy test directories """
@@ -179,27 +142,16 @@ class RemoteTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         extra_params = []
-        mux_files = [os.path.join(self.remote_test_dir, mux_file)
-                     for mux_file in getattr(self.job.args,
-                                             'mux_yaml') or []]
+        mux_files = [mux_file for mux_file in getattr(self.job.args,
+                                                      'mux_yaml') or []]
         if mux_files:
             extra_params.append("-m %s" % " ".join(mux_files))
 
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")
         urls_str = " ".join(urls)
-        avocado_check_urls_cmd = ('cd %s; avocado list %s '
-                                  '--paginator=off' % (self.remote_test_dir,
-                                                       urls_str))
-        check_urls_result = self.remote.run(avocado_check_urls_cmd,
-                                            ignore_status=True,
-                                            timeout=60)
-        if check_urls_result.exit_status != 0:
-            raise exceptions.JobError(check_urls_result.stdout)
-
-        avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
-                       '--archive %s %s' % (self.remote_test_dir,
-                                            self.job.unique_id,
+        avocado_cmd = ('avocado run --force-job-id %s --json - '
+                       '--archive %s %s' % (self.job.unique_id,
                                             urls_str, " ".join(extra_params)))
         try:
             result = self.remote.run(avocado_cmd, ignore_status=True,
@@ -208,6 +160,9 @@ class RemoteTestRunner(TestRunner):
             raise exceptions.JobError("Remote execution took longer than "
                                       "specified timeout (%s). Interrupting."
                                       % (timeout))
+
+        if result.exit_status & exit_codes.AVOCADO_JOB_FAIL:
+            raise exceptions.JobError(result.stdout)
 
         json_result = self._parse_json_response(result.stdout)
         for t_dict in json_result['tests']:
@@ -219,8 +174,7 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
-                  test_result_total=0):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
         """
         Run one or more tests and report with test result.
 
@@ -231,7 +185,6 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.job.urls instead
         del mux            # we're not using multiplexation here
-        del test_result_total  # evaluated by the remote avocado
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()
@@ -264,13 +217,13 @@ class RemoteTestRunner(TestRunner):
                 if not avocado_installed:
                     raise exceptions.JobError('Remote machine does not seem to'
                                               ' have avocado installed')
-                self._copy_files()
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
             results = self.run_test(self.job.urls, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
-            self.result.start_tests()
+            test_result_total = results['total']
+            self.result.start_tests(test_result_total)
             for tst in results['tests']:
                 name = tst['test'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
@@ -365,7 +318,6 @@ class VMTestRunner(RemoteTestRunner):
         self.job.args.remote_username = self.job.args.vm_username
         self.job.args.remote_password = self.job.args.vm_password
         self.job.args.remote_key_file = self.job.args.vm_key_file
-        self.job.args.remote_no_copy = self.job.args.vm_no_copy
         self.job.args.remote_timeout = self.job.args.vm_timeout
         super(VMTestRunner, self).setup()
 

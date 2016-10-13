@@ -61,9 +61,9 @@ class ResultProxy(object):
                                       "Result" % plugin)
         self.output_plugins.append(plugin)
 
-    def start_tests(self):
+    def start_tests(self, tests_total):
         for output_plugin in self.output_plugins:
-            output_plugin.start_tests()
+            output_plugin.start_tests(tests_total)
 
     def end_tests(self):
         for output_plugin in self.output_plugins:
@@ -97,7 +97,6 @@ class Result(object):
         self.job_unique_id = getattr(job, "unique_id", None)
         self.logfile = getattr(job, "logfile", None)
         self.args = getattr(job, "args", None)
-        self.tests_total = getattr(self.args, 'test_result_total', 1)
         self.tests_run = 0
         self.tests_total_time = 0.0
         self.passed = 0
@@ -107,6 +106,7 @@ class Result(object):
         self.warned = 0
         self.interrupted = 0
         self.tests = []
+        self.tests_total = 0
 
         # Where this results intends to write to. Convention is that a dash (-)
         # means stdout, and stdout is a special output that can be exclusively
@@ -130,10 +130,11 @@ class Result(object):
         else:
             self.tests_total -= other_skipped_count
 
-    def start_tests(self):
+    def start_tests(self, tests_total):
         """
         Called once before any tests are executed.
         """
+        self.tests_total = tests_total
         self.tests_run += 1
 
     def end_tests(self):
@@ -195,11 +196,11 @@ class HumanResult(Result):
         self.log = logging.getLogger("avocado.app")
         self.__throbber = output.Throbber()
 
-    def start_tests(self):
+    def start_tests(self, tests_total):
         """
         Called once before any tests are executed.
         """
-        super(HumanResult, self).start_tests()
+        super(HumanResult, self).start_tests(tests_total)
         self.log.info("JOB ID     : %s", self.job_unique_id)
         if getattr(self.args, "replay_sourcejob", None):
             self.log.info("SRC JOB ID : %s", self.args.replay_sourcejob)

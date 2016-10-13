@@ -68,11 +68,6 @@ class Remote(CLI):
                                         help='Specify an identity file with '
                                         'a private key instead of a password '
                                         '(Example: .pem files from Amazon EC2)')
-        self.remote_parser.add_argument('--remote-no-copy',
-                                        dest='remote_no_copy',
-                                        action='store_true',
-                                        help="Don't copy tests and use the "
-                                        "exact uri on guest machine.")
         self.remote_parser.add_argument('--remote-timeout', metavar='SECONDS',
                                         help=("Amount of time (in seconds) to "
                                               "wait for a successful connection"
@@ -106,6 +101,7 @@ class Remote(CLI):
     def run(self, args):
         if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
+            args.remote_execution = True
             register_test_result_class(args, RemoteResult)
             args.test_runner = RemoteTestRunner
             setattr(args, 'stdout_claimed_by', '--remote-hostname')
