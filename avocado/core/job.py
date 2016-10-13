@@ -249,33 +249,34 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             test_result=self.result_proxy)
+                                             result_proxy=self.result_proxy)
 
-    def _set_output_plugins(self):
-        if getattr(self.args, 'test_result_classes', None) is not None:
-            for klass in self.args.test_result_classes:
-                test_result_instance = klass(self)
-                self.result_proxy.add_output_plugin(test_result_instance)
-        else:
-            self.result_proxy.add_output_plugin(result.Result(self))
-
-    def _make_test_result(self):
+    def _make_old_style_test_result(self):
         """
-        Set up output plugins.
+        Old style result output plugins setup.
 
-        The basic idea behind the output plugins is:
+        This supports the activation of old style result classes which are
+        registered with :func:`avocado.core.result.register_test_result_class`.
 
-        * If there are any active output plugins, use them
-        * If at the end we only have 2 output plugins (Xunit and JSON), we can
-          add the human output plugin.
+        Then, if no plugin has claimed the STDOUT, activate a HumanResult
+        instance.
+
+        Finally, if no old style result plugin is given, activate a bare
+        bones Result instance, as they serve result information (only)
+        to the new style result plugins.
         """
         if self.args:
-            # If there are any active output plugins, let's use them
-            self._set_output_plugins()
+            if getattr(self.args, 'test_result_classes', None) is not None:
+                for klass in self.args.test_result_classes:
+                    test_result_instance = klass(self)
+                    self.result_proxy.add_output_plugin(test_result_instance)
 
         if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
             human_plugin = result.HumanResult(self)
             self.result_proxy.add_output_plugin(human_plugin)
+
+        if not self.result_proxy.output_plugins:
+            self.result_proxy.add_output_plugin(result.Result(self))
 
     def _make_test_suite(self, urls=None):
         """
@@ -457,7 +458,7 @@ class Job(object):
                                                        "%s" % details)
         self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
 
-        self._make_test_result()
+        self._make_old_style_test_result()
         if not (self.standalone or getattr(self.args, "dry_run", False)):
             self._update_latest_link()
         self._make_test_runner()

@@ -96,8 +96,7 @@ class Result(object):
         """
         self.job_unique_id = getattr(job, "unique_id", None)
         self.logfile = getattr(job, "logfile", None)
-        self.args = getattr(job, "args", None)
-        self.tests_total = getattr(self.args, 'test_result_total', 1)
+        self.tests_total = getattr(job.args, 'test_result_total', 1)
         self.tests_run = 0
         self.tests_total_time = 0.0
         self.passed = 0
@@ -107,11 +106,6 @@ class Result(object):
         self.warned = 0
         self.interrupted = 0
         self.tests = []
-
-        # Where this results intends to write to. Convention is that a dash (-)
-        # means stdout, and stdout is a special output that can be exclusively
-        # claimed by a result class.
-        self.output = None
 
     def _reconcile(self):
         """
@@ -194,6 +188,7 @@ class HumanResult(Result):
         super(HumanResult, self).__init__(job)
         self.log = logging.getLogger("avocado.app")
         self.__throbber = output.Throbber()
+        self._replay_source_job = getattr(job.args, "replay_sourcejob", None)
 
     def start_tests(self):
         """
@@ -201,8 +196,8 @@ class HumanResult(Result):
         """
         super(HumanResult, self).start_tests()
         self.log.info("JOB ID     : %s", self.job_unique_id)
-        if getattr(self.args, "replay_sourcejob", None):
-            self.log.info("SRC JOB ID : %s", self.args.replay_sourcejob)
+        if self._replay_source_job is not None:
+            self.log.info("SRC JOB ID : %s", self._replay_source_job)
         self.log.info("JOB LOG    : %s", self.logfile)
         self.log.info("TESTS      : %s", self.tests_total)
 
