@@ -27,6 +27,7 @@ from .. import output
 from .. import remoter
 from .. import virt
 from .. import exceptions
+from .. import exit_codes
 from .. import status
 from ..runner import TestRunner
 from ..test import TestName
@@ -208,6 +209,9 @@ class RemoteTestRunner(TestRunner):
             raise exceptions.JobError("Remote execution took longer than "
                                       "specified timeout (%s). Interrupting."
                                       % (timeout))
+
+        if result.exit_status & exit_codes.AVOCADO_JOB_FAIL:
+            raise exceptions.JobError(result.stdout)
 
         json_result = self._parse_json_response(result.stdout)
         for t_dict in json_result['tests']:
