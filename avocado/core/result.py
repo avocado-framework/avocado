@@ -107,11 +107,6 @@ class Result(object):
         self.interrupted = 0
         self.tests = []
 
-        # Where this results intends to write to. Convention is that a dash (-)
-        # means stdout, and stdout is a special output that can be exclusively
-        # claimed by a result class.
-        self.output = None
-
     def _reconcile(self):
         """
         Make sure job results are reconciled

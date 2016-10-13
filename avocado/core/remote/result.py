@@ -36,7 +36,6 @@ class RemoteResult(HumanResult):
         self.remote_test_dir = '~/avocado/tests'
         self.urls = job.args.url
         self.remote = None      # Remote runner initialized during setup
-        self.output = '-'
 
     def tear_down(self):
         """ Cleanup after test execution """
