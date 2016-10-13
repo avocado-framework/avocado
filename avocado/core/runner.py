@@ -480,8 +480,7 @@ class TestRunner(object):
                 factory = template
             yield factory, variant
 
-    def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
-                  test_result_total=0):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
         """
         Run one or more tests and report with test result.
 
@@ -493,7 +492,6 @@ class TestRunner(object):
         summary = set()
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
-        self.result.start_tests()
         queue = queues.SimpleQueue()
 
         if timeout > 0:
@@ -501,7 +499,9 @@ class TestRunner(object):
         else:
             deadline = None
 
+        test_result_total = mux.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
+        self.result.start_tests(test_result_total)
 
         index = -1
         try:
