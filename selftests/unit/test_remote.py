@@ -115,6 +115,7 @@ _=/usr/bin/env''', exit_status=0)
                            args=flexmock(show_job_log=False,
                                          mux_yaml=['foo.yaml', 'bar/baz.yaml'],
                                          dry_run=True))
+        Results.should_receive('set_tests_total').once().with_args(1).ordered()
         Results.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
                 'name': '1-sleeptest;0', 'class_name': 'RemoteTest',

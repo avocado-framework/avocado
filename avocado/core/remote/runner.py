@@ -219,8 +219,7 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout=0, replay_map=None,
-                  test_result_total=0):
+    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
         """
         Run one or more tests and report with test result.
 
@@ -231,7 +230,6 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.job.urls instead
         del mux            # we're not using multiplexation here
-        del test_result_total  # evaluated by the remote avocado
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()
@@ -270,6 +268,7 @@ class RemoteTestRunner(TestRunner):
                 raise exceptions.JobError(details)
             results = self.run_test(self.job.urls, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
+            self.result_proxy.set_tests_total(results['total'])
             self.result_proxy.start_tests()
             for tst in results['tests']:
                 name = tst['test'].split('-', 1)

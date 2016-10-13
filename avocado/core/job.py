@@ -461,7 +461,6 @@ class Job(object):
             except (IOError, ValueError) as details:
                 raise exceptions.OptionValidationError("Unable to parse mux: "
                                                        "%s" % details)
-        self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
 
         self._make_old_style_test_result()
         self._make_test_runner()
@@ -470,9 +469,10 @@ class Job(object):
         self._log_job_debug_info(mux)
         jobdata.record(self.args, self.logdir, mux, self.urls, sys.argv)
         replay_map = getattr(self.args, 'replay_map', None)
-        summary = self.test_runner.run_suite(self.test_suite, mux, self.timeout,
-                                             replay_map,
-                                             self.args.test_result_total)
+        summary = self.test_runner.run_suite(self.test_suite,
+                                             mux,
+                                             self.timeout,
+                                             replay_map)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
