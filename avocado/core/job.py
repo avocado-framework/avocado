@@ -249,7 +249,7 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             test_result=self.result_proxy)
+                                             result_proxy=self.result_proxy)
 
     def _make_old_style_test_result(self):
         """
