@@ -137,7 +137,7 @@ _=/usr/bin/env''', exit_status=0)
          .with_args('/local/path/run-2014-05-26-15.45.37.zip').once()
          .ordered())
         Results.should_receive('end_tests').once().ordered()
-        self.runner.result = Results
+        self.runner.result_proxy = Results
 
     def tearDown(self):
         flexmock_teardown()
