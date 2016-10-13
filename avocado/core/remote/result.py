@@ -34,7 +34,7 @@ class RemoteResult(HumanResult):
         HumanResult.__init__(self, job)
         self.test_dir = os.getcwd()
         self.remote_test_dir = '~/avocado/tests'
-        self.urls = self.args.url
+        self.urls = job.args.url
         self.remote = None      # Remote runner initialized during setup
         self.output = '-'
 
