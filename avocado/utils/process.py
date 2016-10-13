@@ -21,6 +21,7 @@ import fnmatch
 import logging
 import os
 import re
+import select
 import shlex
 import shutil
 import signal
@@ -268,7 +269,8 @@ class SubProcess(object):
     """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None, sudo=False):
+                 shell=False, env=None, sudo=False,
+                 ignore_bg_processes=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -295,6 +297,13 @@ class SubProcess(object):
                      has a sudo configuration such that a password won't be
                      prompted. If that's not the case, the command will
                      straight out fail.
+        :param ignore_bg_processes: When True the process does not wait for
+                    child processes which keep opened stdout/stderr streams
+                    after the main process finishes (eg. forked daemon which
+                    did not closed the stdout/stderr). Note this might result
+                    in missing output produced by those daemons after the
+                    main thread finishes and also it allows those daemons
+                    to be running after the process fininshes.
         """
         # Now assemble the final command considering the need for sudo
         self.cmd = self._prepend_sudo(cmd, sudo, shell)
@@ -308,6 +317,7 @@ class SubProcess(object):
         else:
             self.env = None
         self._popen = None
+        self._ignore_bg_processes = ignore_bg_processes
 
     def __repr__(self):
         if self._popen is None:
@@ -370,14 +380,17 @@ class SubProcess(object):
             self.stdout_file = StringIO()
             self.stderr_file = StringIO()
             self.stdout_lock = threading.Lock()
+            ignore_bg_processes = self._ignore_bg_processes
             self.stdout_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stdout" % self.cmd,
-                                                  args=[self._popen.stdout])
+                                                  args=[self._popen.stdout,
+                                                        ignore_bg_processes])
             self.stdout_thread.daemon = True
             self.stderr_lock = threading.Lock()
             self.stderr_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stderr" % self.cmd,
-                                                  args=[self._popen.stderr])
+                                                  args=[self._popen.stderr,
+                                                        ignore_bg_processes])
             self.stderr_thread.daemon = True
             self.stdout_thread.start()
             self.stderr_thread.start()
@@ -391,7 +404,7 @@ class SubProcess(object):
                 if self.verbose:
                     log.info("Command %s running on a thread", self.cmd)
 
-    def _fd_drainer(self, input_pipe):
+    def _fd_drainer(self, input_pipe, ignore_bg_processes=False):
         """
         Read from input_pipe, storing and logging output.
 
@@ -419,13 +432,16 @@ class SubProcess(object):
 
         bfr = ''
         while True:
+            if ignore_bg_processes:
+                # Exit if there are no new data and the main process finished
+                if (not select.select([fileno], [], [], 1)[0] and
+                        self.result.exit_status is not None):
+                    break
+                # Don't read unless there are new data available:
+                if not select.select([fileno], [], [], 1)[0]:
+                    continue
             tmp = os.read(fileno, 1024)
             if tmp == '':
-                if self.verbose and bfr:
-                    for line in bfr.splitlines():
-                        log.debug(prefix, line)
-                        if stream_logger is not None:
-                            stream_logger.debug(stream_prefix, line)
                 break
             lock.acquire()
             try:
@@ -440,6 +456,12 @@ class SubProcess(object):
                         bfr = ''
             finally:
                 lock.release()
+        # Write the rest of the bfr unfinished by \n
+        if self.verbose and bfr:
+            for line in bfr.splitlines():
+                log.debug(prefix, line)
+                if stream_logger is not None:
+                    stream_logger.debug(stream_prefix, line)
 
     def _fill_results(self, rc):
         self._init_subprocess()
@@ -623,7 +645,8 @@ class WrapSubProcess(SubProcess):
     """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None, wrapper=None, sudo=False):
+                 shell=False, env=None, wrapper=None, sudo=False,
+                 ignore_bg_processes=False):
         if wrapper is None and CURRENT_WRAPPER is not None:
             wrapper = CURRENT_WRAPPER
         self.wrapper = wrapper
@@ -632,7 +655,8 @@ class WrapSubProcess(SubProcess):
                 raise IOError("No such wrapper: '%s'" % self.wrapper)
             cmd = wrapper + ' ' + cmd
         super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
-                                             shell, env, sudo)
+                                             shell, env, sudo,
+                                             ignore_bg_processes)
 
 
 class GDBSubProcess(object):
@@ -642,7 +666,7 @@ class GDBSubProcess(object):
     """
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None, sudo=False):
+                 shell=False, env=None, sudo=False, ignore_bg_processes=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -664,6 +688,9 @@ class GDBSubProcess(object):
         :param sudo: This param will be ignored in this implementation,
                      since the GDB wrapping code does not have support to run
                      commands under sudo just yet.
+        :param ignore_bg_processes: This param will be ignored in this
+                     implementation, since the GDB wrapping code does not have
+                     support to run commands in that way.
         """
 
         self.cmd = cmd
@@ -1014,7 +1041,8 @@ def get_sub_process_klass(cmd):
 
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
-        allow_output_check='all', shell=False, env=None, sudo=False):
+        allow_output_check='all', shell=False, env=None, sudo=False,
+        ignore_bg_processes=False):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -1056,7 +1084,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
-               sudo=sudo)
+               sudo=sudo, ignore_bg_processes=ignore_bg_processes)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -1065,7 +1093,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
 
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check='all', shell=False, env=None, sudo=False):
+           allow_output_check='all', shell=False, env=None, sudo=False,
+           ignore_bg_processes=False):
     """
     Run a subprocess, returning its exit code.
 
@@ -1107,12 +1136,13 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo)
+                     sudo=sudo, ignore_bg_processes=ignore_bg_processes)
     return cmd_result.exit_status
 
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
-                  allow_output_check='all', shell=False, env=None, sudo=False):
+                  allow_output_check='all', shell=False, env=None, sudo=False,
+                  ignore_bg_processes=False):
     """
     Run a subprocess, returning its output.
 
@@ -1153,5 +1183,5 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo)
+                     sudo=sudo, ignore_bg_processes=ignore_bg_processes)
     return cmd_result.stdout
