@@ -420,15 +420,11 @@ class Job(object):
 
         This is a public Job API as part of the documented Job phases
         """
-        if (getattr(self.args, 'remote_hostname', False) and
-           getattr(self.args, 'remote_no_copy', False)):
-            self.test_suite = [(None, {})]
-        else:
-            try:
-                self.test_suite = self._make_test_suite(self.urls)
-            except loader.LoaderError as details:
-                stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                raise exceptions.OptionValidationError(details)
+        try:
+            self.test_suite = self._make_test_suite(self.urls)
+        except loader.LoaderError as details:
+            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
+            raise exceptions.OptionValidationError(details)
 
     def pre_tests(self):
         """
