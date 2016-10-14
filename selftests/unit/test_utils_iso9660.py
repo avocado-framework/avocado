@@ -43,8 +43,8 @@ class BaseIso9660(unittest.TestCase):
         self.iso.close()
         self.iso.close()    # check that double-close won't fail
 
-    @unittest.skipIf(not process.can_sudo(),
-                     "This test requires sudo or root")
+    @unittest.skipIf(not process.can_sudo("mount"),
+                     "This test requires mount to run under sudo or root")
     def mnt_dir_workflow(self):
         """
         Check the mnt_dir functionality
@@ -116,7 +116,7 @@ class IsoMount(BaseIso9660):
     Mount-based check
     """
 
-    @unittest.skipIf(not process.can_sudo(),
+    @unittest.skipIf(not process.can_sudo("mount"),
                      "This test requires sudo or root")
     def setUp(self):
         super(IsoMount, self).setUp()
