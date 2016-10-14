@@ -98,12 +98,20 @@ class CmdError(Exception):
             return "CmdError"
 
 
-def can_sudo():
+def can_sudo(cmd=None):
     """
-    :return: True when sudo is available (or is root)
+    Check whether sudo is available (or running as root)
     """
-    if os.getuid() == 0:
+    if os.getuid() == 0:    # Root
         return True
+
+    try:    # Does sudo binary exists?
+        path.find_command('sudo')
+    except path.CmdNotFoundError:
+        return False
+
+    if cmd:     # Am I able to run the cmd or plain sudo id?
+        return not system(cmd, ignore_status=True, sudo=True)
     elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
         return True
     else:
