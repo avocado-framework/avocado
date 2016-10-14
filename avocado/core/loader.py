@@ -116,6 +116,8 @@ class TestLoaderProxy(object):
             self.register_plugin(FileLoader)
         if ExternalLoader not in self.registered_plugins:
             self.register_plugin(ExternalLoader)
+        if RemoteLoader not in self.registered_plugins:
+            self.register_plugin(RemoteLoader)
         # Register external runner when --external-runner is used
         if getattr(args, "external_runner", None):
             self.register_plugin(ExternalLoader)
@@ -793,6 +795,36 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
+
+
+class RemoteLoader(TestLoader):
+
+    """
+    Remote-runner loader class
+    """
+    name = 'remote'
+
+    def __init__(self, args, extra_params):
+        super(RemoteLoader, self).__init__(args, extra_params)
+        loaders = getattr(args, 'loaders', None)
+        if loaders is not None and 'remote' in loaders:
+            self.remote = True
+        else:
+            self.remote = False
+
+    def discover(self, url, which_tests=DEFAULT):
+        if self.remote:
+            return [(test.UnknownTest, {'name': url})]
+        else:
+            return []
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {test.UnknownTest: 'REMOTE'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {test.UnknownTest: output.TERM_SUPPORT.healthy_str}
 
 
 loader = TestLoaderProxy()
