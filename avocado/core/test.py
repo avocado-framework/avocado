@@ -871,3 +871,7 @@ class TestError(Test):
 
     def test(self):
         self.error(self.exception)
+
+
+class DummyTest(object):
+    pass
