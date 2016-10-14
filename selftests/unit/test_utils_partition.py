@@ -29,14 +29,6 @@ def missing_binary(binary):
         return True
 
 
-def cannot_sudo(command):
-    try:
-        process.run(command, sudo=True)
-        False
-    except (process.CmdError, OSError):
-        return True
-
-
 class TestPartition(unittest.TestCase):
 
     """
@@ -45,12 +37,11 @@ class TestPartition(unittest.TestCase):
 
     @unittest.skipIf(missing_binary('mkfs.ext2'),
                      "mkfs.ext2 is required for these tests to run.")
-    @unittest.skipIf(missing_binary('sudo'),
-                     "sudo is required for these tests to run.")
-    @unittest.skipIf(cannot_sudo('mount'),
+    @unittest.skipIf(not process.can_sudo('mount'),
                      'current user must be allowed to run "mount" under sudo')
-    @unittest.skipIf(cannot_sudo('mkfs.ext2 -V'),
-                     'current user must be allowed to run "mkfs.ext2" under sudo')
+    @unittest.skipIf(not process.can_sudo('mkfs.ext2 -V'),
+                     'current user must be allowed to run "mkfs.ext2" under '
+                     'sudo')
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
         self.mountpoint = os.path.join(self.tmpdir, "disk")
