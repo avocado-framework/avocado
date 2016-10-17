@@ -94,7 +94,7 @@ class Result(object):
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        self.job_unique_id = getattr(job, "unique_id", None)
+        self.job_unique_id = getattr(job, "unique_id")
         self.logfile = getattr(job, "logfile", None)
         self.tests_total = getattr(job.args, 'test_result_total', 0)
         self.tests_run = 0
