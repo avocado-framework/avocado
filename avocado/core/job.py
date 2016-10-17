@@ -108,6 +108,7 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.ResultProxy()
+        self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
@@ -248,7 +249,8 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             result_proxy=self.result_proxy)
+                                             result_proxy=self.result_proxy,
+                                             result=self.result)
 
     def _make_old_style_test_result(self):
         """

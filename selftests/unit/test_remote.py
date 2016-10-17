@@ -115,7 +115,13 @@ _=/usr/bin/env''', exit_status=0)
                            args=flexmock(show_job_log=False,
                                          mux_yaml=['foo.yaml', 'bar/baz.yaml'],
                                          dry_run=True))
+        Result = flexmock(remote=Remote, urls=['sleeptest'],
+                          stream=stream, timeout=None,
+                          args=flexmock(show_job_log=False,
+                                        mux_yaml=['foo.yaml', 'bar/baz.yaml'],
+                                        dry_run=True))
         Results.should_receive('start_tests').once().ordered()
+        Result.should_receive('start_tests').once().ordered()
         args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
                 'name': '1-sleeptest;0', 'class_name': 'RemoteTest',
                 'traceback': 'Not supported yet',
@@ -126,7 +132,9 @@ _=/usr/bin/env''', exit_status=0)
                 'logdir': u'/local/path/test-results/1-sleeptest;0',
                 'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log'}
         Results.should_receive('start_test').once().with_args(args).ordered()
+        Result.should_receive('start_test').once().with_args(args).ordered()
         Results.should_receive('check_test').once().with_args(args).ordered()
+        Result.should_receive('check_test').once().with_args(args).ordered()
         (Remote.should_receive('receive_files')
          .with_args('/local/path', '/home/user/avocado/logs/run-2014-05-26-'
                     '15.45.37.zip')).once().ordered()
@@ -137,7 +145,9 @@ _=/usr/bin/env''', exit_status=0)
          .with_args('/local/path/run-2014-05-26-15.45.37.zip').once()
          .ordered())
         Results.should_receive('end_tests').once().ordered()
+        Result.should_receive('end_tests').once().ordered()
         self.runner.result_proxy = Results
+        self.runner.result = Result
 
     def tearDown(self):
         flexmock_teardown()
@@ -176,7 +186,7 @@ class RemoteTestRunnerSetup(unittest.TestCase):
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log)
-        self.runner = remote.RemoteTestRunner(job, None)
+        self.runner = remote.RemoteTestRunner(job, None, None)
 
     def tearDown(self):
         flexmock_teardown()
