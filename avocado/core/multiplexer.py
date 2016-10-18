@@ -52,7 +52,7 @@ class MuxTree(object):
         """ yield leaves or muxes of the tree """
         queue = collections.deque()
         while node is not None:
-            if node.is_leaf or node.multiplex:
+            if node.is_leaf or getattr(node, "multiplex", False):
                 yield node
             else:
                 queue.extendleft(reversed(node.children))

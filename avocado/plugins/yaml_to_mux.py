@@ -59,7 +59,51 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     pass
 
 
-def _create_from_yaml(path, cls_node=tree.TreeNode):
+class MuxTreeNode(tree.TreeNode):
+
+    """
+    Class for bounding nodes into tree-structure with support for
+    multiplexation
+    """
+
+    def __init__(self, name='', value=None, parent=None, children=None):
+        super(MuxTreeNode, self).__init__(name, value, parent, children)
+        self.multiplex = None
+
+    def __repr__(self):
+        return 'TreeNode(name=%r)' % self.name
+
+    def merge(self, other):
+        """
+        Merges `other` node into this one without checking the name of the
+        other node. New values are appended, existing values overwritten
+        and unaffected ones are kept. Then all other node children are
+        added as children (recursively they get either appended at the end
+        or merged into existing node in the previous position.
+        """
+        super(MuxTreeNode, self).merge(other)
+        if other.multiplex is True:
+            self.multiplex = True
+        elif other.multiplex is False:
+            self.multiplex = False
+
+
+class MuxTreeNodeDebug(MuxTreeNode, tree.TreeNodeDebug):
+
+    """
+    Debug version of TreeNodeDebug
+    :warning: Origin of the value is appended to all values thus it's not
+    suitable for running tests.
+    """
+
+    def __init__(self, name='', value=None, parent=None, children=None,
+                 srcyaml=None):
+        MuxTreeNode.__init__(self, name, value, parent, children)
+        tree.TreeNodeDebug.__init__(self, name, value, parent, children,
+                                    srcyaml)
+
+
+def _create_from_yaml(path, cls_node=MuxTreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
@@ -200,16 +244,16 @@ def create_from_yaml(paths, debug=False):
 
     def _merge_debug(data, path):
         """ Use NamedTreeNodeDebug magic """
-        node_cls = tree.get_named_tree_cls(path)
+        node_cls = tree.get_named_tree_cls(path, MuxTreeNodeDebug)
         tmp = _create_from_yaml(path, node_cls)
         if tmp:
             data.merge(tmp)
 
     if not debug:
-        data = tree.TreeNode()
+        data = MuxTreeNode()
         merge = _merge
     else:
-        data = tree.TreeNodeDebug()
+        data = MuxTreeNodeDebug()
         merge = _merge_debug
 
     path = None
