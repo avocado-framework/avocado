@@ -270,6 +270,63 @@ def create_from_yaml(paths, debug=False):
     return data
 
 
+def path_parent(path):
+    """
+    From a given path, return its parent path.
+
+    :param path: the node path as string.
+    :return: the parent path as string.
+    """
+    parent = path.rpartition('/')[0]
+    if not parent:
+        return '/'
+    return parent
+
+
+def apply_filters(root, filter_only=None, filter_out=None):
+    """
+    Apply a set of filters to the tree.
+
+    The basic filtering is filter only, which includes nodes,
+    and the filter out rules, that exclude nodes.
+
+    Note that filter_out is stronger than filter_only, so if you filter out
+    something, you could not bypass some nodes by using a filter_only rule.
+
+    :param filter_only: the list of paths which will include nodes.
+    :param filter_out: the list of paths which will exclude nodes.
+    :return: the original tree minus the nodes filtered by the rules.
+    """
+    if filter_only is None:
+        filter_only = []
+    else:
+        filter_only = [_.rstrip('/') for _ in filter_only if _]
+    if filter_out is None:
+        filter_out = []
+    else:
+        filter_out = [_.rstrip('/') for _ in filter_out if _]
+    for node in root.iter_children_preorder():
+        keep_node = True
+        for path in filter_only:
+            if path == '':
+                continue
+            if node.path == path:
+                keep_node = True
+                break
+            if node.parent and node.parent.path == path_parent(path):
+                keep_node = False
+                continue
+        for path in filter_out:
+            if path == '':
+                continue
+            if node.path == path:
+                keep_node = False
+                break
+        if not keep_node:
+            node.detach()
+    return root
+
+
 class YamlToMux(CLI):
 
     """
@@ -293,10 +350,28 @@ class YamlToMux(CLI):
             mux.add_argument("-m", "--mux-yaml", nargs='*', metavar="FILE",
                              help="Location of one or more Avocado"
                              " multiplex (.yaml) FILE(s) (order dependent)")
+            mux.add_argument('--mux-only', nargs='*', default=[],
+                             help='Filter only path(s) from multiplexing')
+            mux.add_argument('--mux-out', nargs='*', default=[],
+                             help='Filter out path(s) from multiplexing')
+            mux.add_argument('--mux-path', nargs='*', default=None,
+                             help="List of paths used to determine path "
+                             "priority when querying for parameters")
+            mux.add_argument('--mux-inject', default=[], nargs='*',
+                             help="Inject [path:]key:node values into the "
+                             "final multiplex tree.")
+            mux = subparser.add_argument_group("yaml to mux options "
+                                               "[deprecated]")
             mux.add_argument("--multiplex", nargs='*',
                              default=None, metavar="FILE",
                              help="DEPRECATED: Location of one or more Avocado"
                              " multiplex (.yaml) FILE(s) (order dependent)")
+            mux.add_argument("--filter-only", nargs='*', default=[],
+                             help="DEPRECATED: Filter only path(s) from "
+                             "multiplexing (use --mux-only instead)")
+            mux.add_argument("--filter-out", nargs='*', default=[],
+                             help="DEPRECATED: Filter out path(s) from "
+                             "multiplexing (use --mux-out instead)")
 
     @staticmethod
     def _log_deprecation_msg(deprecated, current):
@@ -307,12 +382,33 @@ class YamlToMux(CLI):
         logging.getLogger("avocado.app").warning(msg, deprecated, current)
 
     def run(self, args):
+        # Deprecated filters
+        only = getattr(args, "filter_only", None)
+        if only:
+            self._log_deprecation_msg("--filter-only", "--mux-only")
+            mux_only = getattr(args, "mux_only")
+            if mux_only:
+                args.mux_only = mux_only + only
+            else:
+                args.mux_only = only
+        out = getattr(args, "filter_out", None)
+        if out:
+            self._log_deprecation_msg("--filter-out", "--mux-out")
+            mux_out = getattr(args, "mux_out")
+            if mux_out:
+                args.mux_only = mux_out + out
+            else:
+                args.mux_out = out
+
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:
             debug = getattr(args, "mux_debug", False)
             try:
-                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+                data = create_from_yaml(multiplex_files, debug)
+                data = apply_filters(data, getattr(args, 'mux_only', None),
+                                     getattr(args, 'mux_out', None))
+                args.mux.data_merge(data)
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
