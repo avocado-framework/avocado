@@ -71,15 +71,14 @@ class TreeNode(object):
         self.value = value
         self.parent = parent
         self.children = []
+        self.ctrl = []
         self._environment = None
         self.environment_origin = {}
-        self.ctrl = []
-        self.multiplex = None
         for child in children:
             self.add_child(child)
 
     def __repr__(self):
-        return 'TreeNode(name=%r)' % self.name
+        return 'SimpleTreeNode(name=%r)' % self.name
 
     def __str__(self):
         variables = ['%s=%s' % (k, v) for k, v in self.environment.items()]
@@ -148,10 +147,6 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
-        if other.multiplex is True:
-            self.multiplex = True
-        elif other.multiplex is False:
-            self.multiplex = False
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -469,9 +464,9 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
         return super(TreeNodeDebug, self).merge(other)
 
 
-def get_named_tree_cls(path):
+def get_named_tree_cls(path, klass=TreeNodeDebug):
     """ Return TreeNodeDebug class with hardcoded yaml path """
-    class NamedTreeNodeDebug(TreeNodeDebug):    # pylint: disable=R0903
+    class NamedTreeNodeDebug(klass):    # pylint: disable=R0903
 
         """ Fake class with hardcoded yaml path """
 
@@ -510,7 +505,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         Generate this node's tree-view
         :return: list of lines
         """
-        if node.multiplex:
+        if getattr(node, "multiplex", None):
             down = charset['DoubleDown']
             down_right = charset['DoubleDownRight']
             right = charset['DoubleRight']
@@ -563,7 +558,7 @@ def tree_view(root, verbose=None, use_utf8=None):
                    'DoubleDownRight': ' #== ',
                    'DoubleRight': ' #== ',
                    'Value': ' -> '}
-    if root.multiplex:
+    if getattr(root, "multiplex", False):
         down = charset['DoubleDown']
         down_right = charset['DoubleDownRight']
         right = charset['DoubleRight']
