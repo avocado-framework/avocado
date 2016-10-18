@@ -127,13 +127,15 @@ class TestTree(unittest.TestCase):
     def test_filters(self):
         tree2 = copy.deepcopy(self.tree)
         exp = ['intel', 'amd', 'arm', 'fedora', 'mint', 'prod']
-        act = tree.apply_filters(tree2,
-                                 filter_only=['/hw/cpu', '']).get_leaves()
+        act = yaml_to_mux.apply_filters(tree2,
+                                        filter_only=['/hw/cpu', ''])
+        act = act.get_leaves()
         self.assertEqual(exp, act)
         tree2 = copy.deepcopy(self.tree)
         exp = ['scsi', 'virtio', 'fedora', 'mint', 'prod']
-        act = tree.apply_filters(tree2,
-                                 filter_out=['/hw/cpu', '']).get_leaves()
+        act = yaml_to_mux.apply_filters(tree2,
+                                        filter_out=['/hw/cpu', ''])
+        act = act.get_leaves()
         self.assertEqual(exp, act)
 
     def test_merge_trees(self):
@@ -202,6 +204,21 @@ class TestTree(unittest.TestCase):
     def test_get_node(self):
         self.assertRaises(ValueError,
                           self.tree.get_node, '/non-existing-node')
+
+
+class TestPathParent(unittest.TestCase):
+
+    def test_empty_string(self):
+        self.assertEqual(yaml_to_mux.path_parent(''), '/')
+
+    def test_on_root(self):
+        self.assertEqual(yaml_to_mux.path_parent('/'), '/')
+
+    def test_direct_parent(self):
+        self.assertEqual(yaml_to_mux.path_parent('/os/linux'), '/os')
+
+    def test_false_direct_parent(self):
+        self.assertNotEqual(yaml_to_mux.path_parent('/os/linux'), '/')
 
 
 if __name__ == '__main__':

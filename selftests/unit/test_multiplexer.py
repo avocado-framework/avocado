@@ -57,16 +57,18 @@ class TestMultiplex(unittest.TestCase):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
         act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                             'examples/mux-selftest.yaml'])
-        act = tree.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
-                                       '/hw'))
+        act = yaml_to_mux.apply_filters(act, ('/hw/cpu/intel',
+                                              '/distro/fedora',
+                                              '/hw'))
         act = tuple(multiplexer.MuxTree(act))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
         act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                             'examples/mux-selftest.yaml'])
-        act = tree.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
-                                             '/distro'))
+        act = yaml_to_mux.apply_filters(act, None, ('/hw/cpu/intel',
+                                                    '/distro/fedora',
+                                                    '/distro'))
         act = tuple(multiplexer.MuxTree(act))
         self.assertEqual(len(act), 4)
         self.assertEqual(len(act[0]), 3)

@@ -36,11 +36,6 @@ class Multiplex(CLICmd):
     def configure(self, parser):
         parser = super(Multiplex, self).configure(parser)
 
-        parser.add_argument('--filter-only', nargs='*', default=[],
-                            help='Filter only path(s) from multiplexing')
-
-        parser.add_argument('--filter-out', nargs='*', default=[],
-                            help='Filter out path(s) from multiplexing')
         parser.add_argument('--system-wide', action='store_false',
                             default=True, dest="mux-skip-defaults",
                             help="Combine the files with the default "
@@ -48,9 +43,6 @@ class Multiplex(CLICmd):
         parser.add_argument('-c', '--contents', action='store_true',
                             default=False, help="Shows the node content "
                             "(variables)")
-        parser.add_argument('--mux-inject', default=[], nargs='*',
-                            help="Inject [path:]key:node values into "
-                            "the final multiplex tree.")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
                                 dest="mux_debug", default=False,
