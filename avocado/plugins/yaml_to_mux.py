@@ -400,15 +400,14 @@ class YamlToMux(CLI):
             else:
                 args.mux_out = out
 
+        data = MuxTreeNodeDebug() if args.mux.debug else MuxTreeNode()
+
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:
             debug = getattr(args, "mux_debug", False)
             try:
-                data = create_from_yaml(multiplex_files, debug)
-                data = apply_filters(data, getattr(args, 'mux_only', None),
-                                     getattr(args, 'mux_out', None))
-                args.mux.data_merge(data)
+                data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -419,7 +418,21 @@ class YamlToMux(CLI):
             self._log_deprecation_msg("--multiplex", "--mux-yaml")
             debug = getattr(args, "mux_debug", False)
             try:
-                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+                data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        # Extend default multiplex tree of --mux-inject values
+        for inject in getattr(args, "mux_inject", []):
+            entry = inject.split(':', 3)
+            if len(entry) < 2:
+                raise ValueError("key:entry pairs required, found only %s"
+                                 % (entry))
+            elif len(entry) == 2:   # key, entry
+                entry.insert(0, '')  # add path='' (root)
+            data.get_node(entry[0]).value[entry[1]] = entry[2]
+
+        data = apply_filters(data, getattr(args, 'mux_only', None),
+                             getattr(args, 'mux_out', None))
+        args.mux.data_merge(data)

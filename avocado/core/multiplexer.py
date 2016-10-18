@@ -417,17 +417,6 @@ class Mux(object):
                 hasattr(args, "default_avocado_params")):
             self.data_merge(args.default_avocado_params)
 
-        # Extend default multiplex tree of --mux-inject values
-        for inject in getattr(args, "mux_inject", []):
-            entry = inject.split(':', 3)
-            if len(entry) < 2:
-                raise ValueError("key:entry pairs required, found only %s"
-                                 % (entry))
-            elif len(entry) == 2:   # key, entry
-                self.data_inject(*entry)
-            else:                   # path, key, entry
-                self.data_inject(key=entry[1], value=entry[2], path=entry[0])
-
     def is_parsed(self):
         """
         Reports whether the tree was already multiplexed
