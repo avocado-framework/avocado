@@ -469,9 +469,9 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
         return super(TreeNodeDebug, self).merge(other)
 
 
-def get_named_tree_cls(path):
+def get_named_tree_cls(path, klass=TreeNodeDebug):
     """ Return TreeNodeDebug class with hardcoded yaml path """
-    class NamedTreeNodeDebug(TreeNodeDebug):    # pylint: disable=R0903
+    class NamedTreeNodeDebug(klass):    # pylint: disable=R0903
 
         """ Fake class with hardcoded yaml path """
 
