@@ -254,6 +254,14 @@ class YamlToMux(CLI):
                              help="DEPRECATED: Location of one or more Avocado"
                              " multiplex (.yaml) FILE(s) (order dependent)")
 
+    @staticmethod
+    def _log_deprecation_msg(deprecated, current):
+        """
+        Log a message into the "avocado.app" warning log
+        """
+        msg = "The use of '%s' is deprecated, please use '%s' instead"
+        logging.getLogger("avocado.app").warning(msg, deprecated, current)
+
     def run(self, args):
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
@@ -268,9 +276,7 @@ class YamlToMux(CLI):
         # Deprecated --multiplex option
         multiplex_files = getattr(args, "multiplex", None)
         if multiplex_files:
-            msg = ("The use of `--multiplex` is deprecated, use `--mux-yaml` "
-                   "instead.")
-            logging.getLogger("avocado.app").warning(msg)
+            self._log_deprecation_msg("--multiplex", "--mux-yaml")
             debug = getattr(args, "mux_debug", False)
             try:
                 args.mux.data_merge(create_from_yaml(multiplex_files, debug))
