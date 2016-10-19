@@ -47,7 +47,7 @@ class TestLister(object):
         try:
             return loader.loader.discover(paths,
                                           which_tests=which_tests)
-        except loader.LoaderUnhandledUrlError as details:
+        except loader.LoaderUnhandledReferenceError as details:
             self.log.error(str(details))
             sys.exit(exit_codes.AVOCADO_FAIL)
 

@@ -47,7 +47,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(url=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found)
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(myjob.test_suite))
@@ -63,7 +63,7 @@ class JobTest(unittest.TestCase):
                 self.test_suite = filtered_test_suite
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(url=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found)
         myjob = JobFilterTime(args)
         myjob.create_test_suite()
         myjob.pre_tests()
@@ -71,7 +71,7 @@ class JobTest(unittest.TestCase):
 
     def test_job_run_tests(self):
         simple_tests_found = self._find_simple_test_candidates(['true'])
-        args = argparse.Namespace(url=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found)
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(myjob.run_tests(),
@@ -84,7 +84,7 @@ class JobTest(unittest.TestCase):
                     f.write(self.unique_id[::-1])
                 super(JobLogPost, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(url=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found)
         myjob = JobLogPost(args)
         myjob.create_test_suite()
         myjob.pre_tests()
@@ -110,7 +110,7 @@ class JobTest(unittest.TestCase):
                     f.write(self.unique_id[::-1])
                 super(JobFilterLog, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(url=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found)
         myjob = JobFilterLog(args)
         self.assertEqual(myjob.run(),
                          exit_codes.AVOCADO_ALL_OK)

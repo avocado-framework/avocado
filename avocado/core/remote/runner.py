@@ -135,11 +135,11 @@ class RemoteTestRunner(TestRunner):
                              "output:\n%s" % output)
         return response
 
-    def run_test(self, urls, timeout):
+    def run_test(self, references, timeout):
         """
         Run tests.
 
-        :param urls: a string with test URLs.
+        :param references: a string with test references.
         :return: a dictionary with test results.
         """
         extra_params = []
@@ -149,12 +149,12 @@ class RemoteTestRunner(TestRunner):
 
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")
-        urls_str = " ".join(urls)
+        references_str = " ".join(references)
 
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s %s' % (self.remote_test_dir,
                                             self.job.unique_id,
-                                            urls_str, " ".join(extra_params)))
+                                            references_str, " ".join(extra_params)))
         try:
             result = self.remote.run(avocado_cmd, ignore_status=True,
                                      timeout=timeout)
@@ -187,7 +187,7 @@ class RemoteTestRunner(TestRunner):
 
         :return: a set with types of test failures.
         """
-        del test_suite     # using self.job.urls instead
+        del test_suite     # using self.job.references instead
         del mux            # we're not using multiplexation here
         if not timeout:     # avoid timeout = 0
             timeout = None
@@ -224,7 +224,7 @@ class RemoteTestRunner(TestRunner):
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
-            results = self.run_test(self.job.urls, timeout)
+            results = self.run_test(self.job.references, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result_proxy.set_tests_total(results['total'])
             self.result_proxy.start_tests()
