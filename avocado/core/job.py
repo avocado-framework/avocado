@@ -423,16 +423,7 @@ class Job(object):
         self._setup_job_results()
         self.__start_job_logging()
 
-        if (getattr(self.args, 'remote_hostname', False) and
-           getattr(self.args, 'remote_no_copy', False)):
-            self.test_suite = [(None, {})]
-        else:
-            try:
-                self.test_suite = self._make_test_suite(self.urls)
-            except loader.LoaderError as details:
-                stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                self._remove_job_results()
-                raise exceptions.OptionValidationError(details)
+        self.create_test_suite()
 
         self.job_pre_post_dispatcher.map_method('pre', self)
 
@@ -489,6 +480,23 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode
+
+    def create_test_suite(self):
+        """
+        Creates the test suite for this Job
+
+        This is a public Job API as part of the documented Job phases
+        """
+        if (getattr(self.args, 'remote_hostname', False) and
+           getattr(self.args, 'remote_no_copy', False)):
+            self.test_suite = [(None, {})]
+        else:
+            try:
+                self.test_suite = self._make_test_suite(self.urls)
+            except loader.LoaderError as details:
+                stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
+                self._remove_job_results()
+                raise exceptions.OptionValidationError(details)
 
     def run(self):
         """
