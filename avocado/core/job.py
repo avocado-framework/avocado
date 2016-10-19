@@ -428,7 +428,36 @@ class Job(object):
         """
         self.create_test_suite()
         self.pre_tests()
+        return self.run_tests()
 
+    def create_test_suite(self):
+        """
+        Creates the test suite for this Job
+
+        This is a public Job API as part of the documented Job phases
+        """
+        if (getattr(self.args, 'remote_hostname', False) and
+           getattr(self.args, 'remote_no_copy', False)):
+            self.test_suite = [(None, {})]
+        else:
+            try:
+                self.test_suite = self._make_test_suite(self.urls)
+            except loader.LoaderError as details:
+                stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
+                raise exceptions.OptionValidationError(details)
+
+    def pre_tests(self):
+        """
+        Run the pre tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPre` interface.
+        """
+        self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+        output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
+        self._job_pre_post_dispatcher.map_method('pre', self)
+
+    def run_tests(self):
         if not self.test_suite:
             if self.urls:
                 e_msg = ("No tests found for given urls, try 'avocado list -V "
@@ -479,33 +508,6 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_TESTS_FAIL
 
         return self.exitcode
-
-    def create_test_suite(self):
-        """
-        Creates the test suite for this Job
-
-        This is a public Job API as part of the documented Job phases
-        """
-        if (getattr(self.args, 'remote_hostname', False) and
-           getattr(self.args, 'remote_no_copy', False)):
-            self.test_suite = [(None, {})]
-        else:
-            try:
-                self.test_suite = self._make_test_suite(self.urls)
-            except loader.LoaderError as details:
-                stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                raise exceptions.OptionValidationError(details)
-
-    def pre_tests(self):
-        """
-        Run the pre tests execution hooks
-
-        By default this runs the plugins that implement the
-        :class:`avocado.core.plugin_interfaces.JobPre` interface.
-        """
-        self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-        output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
-        self._job_pre_post_dispatcher.map_method('pre', self)
 
     def run(self):
         """
