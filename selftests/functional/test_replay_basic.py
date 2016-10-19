@@ -77,7 +77,8 @@ class ReplayTests(unittest.TestCase):
         """
         Checks if all expected files are there.
         """
-        file_list = ['multiplex', 'config', 'urls', 'pwd', 'args', 'cmdline']
+        file_list = ['multiplex', 'config', 'test_references', 'pwd', 'args',
+                     'cmdline']
         for filename in file_list:
             path = os.path.join(self.jobdir, 'jobdata', filename)
             self.assertTrue(glob.glob(path))
@@ -179,9 +180,9 @@ class ReplayTests(unittest.TestCase):
                "`--replay-ignore mux`")
         self.assertIn(msg, result.stderr)
 
-    def test_run_replay_status_and_urls(self):
+    def test_run_replay_status_and_references(self):
         """
-        Runs a replay job with custom urls and '--replay-test-status'.
+        Runs a replay job with custom test references and --replay-test-status
         """
         cmd_line = ('./scripts/avocado run sleeptest --replay %s '
                     '--replay-test-status FAIL --job-results-dir %s '
@@ -189,8 +190,8 @@ class ReplayTests(unittest.TestCase):
                     (self.jobid, self.tmpdir, self.jobdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = "Option --replay-test-status is incompatible with "\
-              "test URLs given on the command line."
+        msg = ("Option --replay-test-status is incompatible with "
+               "test references given on the command line.")
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_fallbackdir(self):

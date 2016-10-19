@@ -134,9 +134,9 @@ class Replay(CLI):
         if args.replay_teststatus and 'mux' in args.replay_ignore:
             err = ("Option `--replay-test-status` is incompatible with "
                    "`--replay-ignore mux`.")
-        elif args.replay_teststatus and args.url:
+        elif args.replay_teststatus and args.reference:
             err = ("Option --replay-test-status is incompatible with "
-                   "test URLs given on the command line.")
+                   "test references given on the command line.")
         elif args.remote_hostname:
             err = "Currently we don't replay jobs in remote hosts."
         if err is not None:
@@ -189,17 +189,17 @@ class Replay(CLI):
                     setattr(args, option, replay_args[option])
 
         # Keeping this for compatibility.
-        # TODO: Use replay_args['url'] at some point in the future.
-        if getattr(args, 'url', None):
-            log.warn('Overriding the replay urls with urls provided in '
-                     'command line.')
+        # TODO: Use replay_args['reference'] at some point in the future.
+        if getattr(args, 'reference', None):
+            log.warn('Overriding the replay test references with test '
+                     'references given in the command line.')
         else:
-            urls = jobdata.retrieve_urls(resultsdir)
-            if urls is None:
-                log.error('Source job urls data not found. Aborting.')
+            references = jobdata.retrieve_references(resultsdir)
+            if references is None:
+                log.error('Source job test references data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
-                setattr(args, 'url', urls)
+                setattr(args, 'reference', references)
 
         if 'config' in args.replay_ignore:
             log.warn("Ignoring configuration from source job with "
@@ -232,7 +232,7 @@ class Replay(CLI):
                                                  args.replay_teststatus)
             setattr(args, 'replay_map', replay_map)
 
-        # Use the original directory to discover test urls properly
+        # Use the original directory to resolve test references properly
         pwd = jobdata.retrieve_pwd(resultsdir)
         if pwd is not None:
             if os.path.exists(pwd):
