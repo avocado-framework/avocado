@@ -120,8 +120,9 @@ class Job(object):
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
-        self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-        output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
+
+        # A job may not have a dispatcher for pre/post tests execution plugins
+        self._job_pre_post_dispatcher = None
 
     def _setup_job_results(self):
         logdir = getattr(self.args, 'logdir', None)
@@ -424,8 +425,7 @@ class Job(object):
         self.__start_job_logging()
 
         self.create_test_suite()
-
-        self.job_pre_post_dispatcher.map_method('pre', self)
+        self.pre_tests()
 
         if not self.test_suite:
             self._remove_job_results()
@@ -498,6 +498,17 @@ class Job(object):
                 self._remove_job_results()
                 raise exceptions.OptionValidationError(details)
 
+    def pre_tests(self):
+        """
+        Run the pre tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPre` interface.
+        """
+        self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+        output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
+        self._job_pre_post_dispatcher.map_method('pre', self)
+
     def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
@@ -537,7 +548,8 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
-            self.job_pre_post_dispatcher.map_method('post', self)
+            if self._job_pre_post_dispatcher is not None:
+                self._job_pre_post_dispatcher.map_method('post', self)
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()

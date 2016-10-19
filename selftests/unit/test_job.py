@@ -5,6 +5,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import test
 from avocado.core import job
 from avocado.utils import path as utils_path
 
@@ -49,6 +50,23 @@ class JobTest(unittest.TestCase):
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(myjob.test_suite))
+
+    def test_job_pre_tests(self):
+        class JobFilterTime(job.Job):
+            def pre_tests(self):
+                filtered_test_suite = []
+                for test_factory in self.test_suite:
+                    if test_factory[0] is test.SimpleTest:
+                        if not test_factory[1].get('name', '').endswith('time'):
+                            filtered_test_suite.append(test_factory)
+                self.test_suite = filtered_test_suite
+                super(JobFilterTime, self).pre_tests()
+        simple_tests_found = self._find_simple_test_candidates()
+        args = argparse.Namespace(url=simple_tests_found)
+        myjob = JobFilterTime(args)
+        myjob.create_test_suite()
+        myjob.pre_tests()
+        self.assertLessEqual(len(myjob.test_suite), 1)
 
 if __name__ == '__main__':
     unittest.main()
