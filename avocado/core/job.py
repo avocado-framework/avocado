@@ -106,8 +106,6 @@ class Job(object):
         else:
             self.loglevel = logging.DEBUG
 
-        self.test_dir = data_dir.get_test_dir()
-        self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.ResultProxy()
         self.sysinfo = None
