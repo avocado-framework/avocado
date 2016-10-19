@@ -11,7 +11,7 @@ the provided part corresponds to the initial characters of the original
 job id and it is also unique enough. Or, instead of the job id, you can
 use the string ``latest`` and avocado will replay the latest job executed.
 
-Let's see an example. First, running a simple job with two urls::
+Let's see an example. First, running a simple job with two test references::
 
      $ avocado run /bin/true /bin/false
      JOB ID     : 825b860b0c2f6ec48953c638432e3e323f8d7cad
@@ -36,7 +36,7 @@ Now we can replay the job by running::
      TESTS TIME : 0.01 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
 
-The replay feature will retrieve the original job urls, the multiplex
+The replay feature will retrieve the original test references, the multiplex
 tree and the configuration. Let's see another example, now using
 multiplex file::
 
