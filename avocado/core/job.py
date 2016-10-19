@@ -373,6 +373,8 @@ class Job(object):
         job_log.info('')
 
     def _log_mux_tree(self, mux):
+        if not mux.variants:
+            return
         job_log = _TEST_LOGGER
         tree_repr = tree.tree_view(mux.variants.root, verbose=True,
                                    use_utf8=False)
@@ -388,6 +390,8 @@ class Job(object):
         job_log.info('')
 
     def _log_mux_variants(self, mux):
+        if not mux.variants:
+            return
         job_log = _TEST_LOGGER
 
         for (index, tpl) in enumerate(mux.variants):
