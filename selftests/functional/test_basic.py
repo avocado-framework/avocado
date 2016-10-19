@@ -381,7 +381,8 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = './scripts/avocado run --sysinfo=off'
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
-        expected_output = 'No urls provided nor any arguments produced'
+        expected_output = ('No test references provided nor any other '
+                           'arguments resolved into tests')
         self.assertEqual(result.exit_status, expected_rc)
         self.assertIn(expected_output, result.stderr)
 
@@ -391,8 +392,8 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc)
-        self.assertIn('Unable to discover url', result.stderr)
-        self.assertNotIn('Unable to discover url', result.stdout)
+        self.assertIn('Unable to resolve reference', result.stderr)
+        self.assertNotIn('Unable to resolve reference', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = ('./scripts/avocado run --sysinfo=off --force-job-id foobar'
@@ -798,7 +799,8 @@ class ExternalRunnerTest(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
                     '--external-runner=/bin/true' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
-        expected_output = ('No urls provided nor any arguments produced')
+        expected_output = ('No test references provided nor any other '
+                           'arguments resolved into tests')
         self.assertIn(expected_output, result.stderr)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -853,7 +855,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn("Unable to discover url", output)
+        self.assertIn("Unable to resolve reference", output)
 
     def test_plugin_list(self):
         os.chdir(basedir)
