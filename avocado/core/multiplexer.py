@@ -19,6 +19,7 @@
 Multiplex and create variants.
 """
 
+import copy
 import collections
 import itertools
 import logging
@@ -385,7 +386,7 @@ class Mux(object):
         :note: people need to check whether mux uses debug and reflect that
                in order to provide the right results.
         """
-        self._has_multiple_variants = None
+        self.default_params = {}
         self.variants = None
         self.debug = debug
         self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
@@ -397,8 +398,16 @@ class Mux(object):
 
         :param args: Parsed cmdline arguments
         """
-        self._parse_basic_injects(args)
-        self.variants = MuxTree(self.data)
+        if self.is_parsed():
+            return
+        root = copy.deepcopy(self._process_default_params(args))
+        # Only produce variants if there are any
+        if self.data != tree.TreeNode():
+            # TODO: Do this per-variant-plugin
+            root.merge(self.data)
+            self.variants = MuxTree(root)
+        else:
+            self.variants = False
         self._mux_path = getattr(args, 'mux_path', None)
         if self._mux_path is None:
             self._mux_path = ['/run/*']
@@ -407,17 +416,22 @@ class Mux(object):
         self.data_inject = _report_mux_already_parsed
         self.data_merge = _report_mux_already_parsed
 
-    def _parse_basic_injects(self, args):
+    def _process_default_params(self, args):
         """
-        Inject data from the basic injects defined by Mux
+        Process the default params
 
         :param args: Parsed cmdline arguments
         """
+        default_params = tree.TreeNode()
+        for default_param in self.default_params.itervalues():
+            default_params.merge(default_param)
+        self.default_params = default_params
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
         if (not getattr(args, "mux_skip_defaults", False) and
                 hasattr(args, "default_avocado_params")):
-            self.data_merge(args.default_avocado_params)
+            self.default_params.merge(args.default_avocado_params)
+        return self.default_params
 
     def is_parsed(self):
         """
@@ -425,7 +439,7 @@ class Mux(object):
         """
         return self.variants is not None
 
-    def data_inject(self, key, value, path=None):
+    def data_inject(self, name, key, value, path=None):
         """
         Inject entry to the mux tree (params database)
 
@@ -434,11 +448,11 @@ class Mux(object):
         :param path: Optional path to the node to which we assign the value,
                      by default '/'.
         """
-        if path:
-            node = self.data.get_node(path, True)
-        else:
-            node = self.data
-        node.value[key] = value
+        if path is None:
+            path = "/"
+        if name not in self.default_params:
+            self.default_params[name] = tree.TreeNode()
+        self.default_params[name].get_node(path, True).value[key] = value
 
     def data_merge(self, tree):
         """
@@ -456,11 +470,20 @@ class Mux(object):
         # Currently number of tests is symmetrical
         if self.variants:
             no_variants = sum(1 for _ in self.variants)
-            if no_variants > 1:
-                self._has_multiple_variants = True
             return (len(test_suite) * no_variants)
         else:
             return len(test_suite)
+
+    def _merge_defaults(self, variant):
+        """
+        Copy the default params tree, merge the individual leaves of the
+        variant and return the combination's leaves (variant with defaults)
+        """
+        data = copy.deepcopy(self.default_params)
+        for leaf in variant:
+            data.get_node(leaf.path, True).merge(leaf)
+        data.set_environment_dirty()
+        return data.get_leaves()
 
     def itertests(self):
         """
@@ -469,10 +492,7 @@ class Mux(object):
         :yield (variant-id, (list of leaves, list of multiplex paths))
         """
         if self.variants:  # Copy template and modify it's params
-            if self._has_multiple_variants:
-                for i, variant in enumerate(self.variants, 1):
-                    yield i, (variant, self._mux_path)
-            else:
-                yield None, (iter(self.variants).next(), self._mux_path)
+            for i, variant in enumerate(self.variants, 1):
+                yield i, (variant, self._mux_path)
         else:   # No variants, use template
-            yield None, None
+            yield None, (self.default_params.get_leaves(), self._mux_path)
