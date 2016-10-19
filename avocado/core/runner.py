@@ -468,15 +468,15 @@ class TestRunner(object):
         :return: Yields tuple(test_factory including params, variant id)
         :raises ValueError: When variant and template declare params.
         """
-        for variant, params in mux.itertests():
-            if params:
+        for variant in mux.itertests():
+            if variant:
                 if "params" in template[1]:
                     msg = ("Unable to multiplex test %s, params are already "
                            "present in test factory: %s"
                            % (template[0], template[1]))
                     raise ValueError(msg)
                 factory = [template[0], template[1].copy()]
-                factory[1]["params"] = params
+                factory[1]["params"] = variant["variant"]
             else:
                 factory = template
             yield factory, variant
