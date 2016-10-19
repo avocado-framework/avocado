@@ -26,6 +26,8 @@ class LVUtilsTest(unittest.TestCase):
 
     @unittest.skipIf(process.system("which vgs", ignore_status=True),
                      "LVM utils not installed (command vgs is missing)")
+    @unittest.skipIf(not process.can_sudo(), "This test requires root or "
+                     "passwordless sudo configured.")
     def setUp(self):
         try:
             process.system("/bin/true", sudo=True)

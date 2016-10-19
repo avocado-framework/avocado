@@ -29,28 +29,17 @@ def missing_binary(binary):
         return True
 
 
-def cannot_sudo(command):
-    try:
-        process.run(command, sudo=True)
-        False
-    except (process.CmdError, OSError):
-        return True
-
-
 class TestPartition(unittest.TestCase):
 
     """
     Unit tests for avocado.utils.partition
     """
 
-    @unittest.skipIf(missing_binary('mkfs.ext2'),
-                     "mkfs.ext2 is required for these tests to run.")
-    @unittest.skipIf(missing_binary('sudo'),
-                     "sudo is required for these tests to run.")
-    @unittest.skipIf(cannot_sudo('mount'),
+    @unittest.skipIf(not process.can_sudo('mount'),
                      'current user must be allowed to run "mount" under sudo')
-    @unittest.skipIf(cannot_sudo('mkfs.ext2 -V'),
-                     'current user must be allowed to run "mkfs.ext2" under sudo')
+    @unittest.skipIf(not process.can_sudo('mkfs.ext2 -V'),
+                     'current user must be allowed to run "mkfs.ext2" under '
+                     'sudo')
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
         self.mountpoint = os.path.join(self.tmpdir, "disk")
@@ -68,6 +57,8 @@ class TestPartition(unittest.TestCase):
         self.disk.unmount()
         self.assertNotIn(self.mountpoint, open("/proc/mounts").read())
 
+    @unittest.skipIf(not process.can_sudo('kill -l'),
+                     "requires running kill as a privileged user")
     def test_force_unmount(self):
         """ Test force-unmount feature """
         self.disk.mkfs()
