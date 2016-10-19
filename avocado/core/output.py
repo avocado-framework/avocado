@@ -66,7 +66,7 @@ class TermSupport(object):
     """
     Class to help applications to colorize their outputs for terminals.
 
-    This will probe the current terminal and colorize ouput only if the
+    This will probe the current terminal and colorize output only if the
     stdout is in a tty or the terminal type is recognized.
     """
 
