@@ -92,3 +92,28 @@ class JobTest(unittest.TestCase):
         myjob.post_tests()
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
+
+    @unittest.skip("Issue described at https://trello.com/c/qgSTIK0Y")
+    def test_job_run(self):
+        class JobFilterLog(job.Job):
+            def pre_tests(self):
+                filtered_test_suite = []
+                for test_factory in self.test_suite:
+                    if test_factory[0] is test.SimpleTest:
+                        if not test_factory[1].get('name', '').endswith('time'):
+                            filtered_test_suite.append(test_factory)
+                self.test_suite = filtered_test_suite
+                super(JobFilterLog, self).pre_tests()
+
+            def post_tests(self):
+                with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
+                    f.write(self.unique_id[::-1])
+                super(JobFilterLog, self).post_tests()
+        simple_tests_found = self._find_simple_test_candidates()
+        args = argparse.Namespace(url=simple_tests_found)
+        myjob = JobFilterLog(args)
+        self.assertEqual(myjob.run(),
+                         exit_codes.AVOCADO_ALL_OK)
+        self.assertLessEqual(len(myjob.test_suite), 1)
+        self.assertEqual(myjob.unique_id[::-1],
+                         open(os.path.join(myjob.logdir, "reversed_id")).read())
