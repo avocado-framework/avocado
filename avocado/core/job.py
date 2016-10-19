@@ -75,7 +75,7 @@ class Job(object):
         if args is None:
             args = argparse.Namespace()
         self.args = args
-        self.urls = getattr(args, "url", [])
+        self.references = getattr(args, "reference", [])
         self.log = logging.getLogger("avocado.app")
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
@@ -278,18 +278,19 @@ class Job(object):
         if not self.result_proxy.output_plugins:
             self.result_proxy.add_output_plugin(result.Result(self))
 
-    def _make_test_suite(self, urls=None):
+    def _make_test_suite(self, references=None):
         """
         Prepares a test suite to be used for running tests
 
-        :param urls: String with tests to run, separated by whitespace.
-                     Optionally, a list of tests (each test a string).
+        :param references: String with tests references to be resolved, and then
+                           run, separated by whitespace. Optionally, a
+                           list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
         loader.loader.load_plugins(self.args)
         try:
-            suite = loader.loader.discover(urls)
-        except loader.LoaderUnhandledUrlError as details:
+            suite = loader.loader.discover(references)
+        except loader.LoaderUnhandledReferenceError as details:
             self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
@@ -412,7 +413,9 @@ class Job(object):
 
     def _run(self):
         """
-        Unhandled job method. Runs a list of test URLs to its completion.
+        Resolves a list of references and runs them to their completion.
+
+        This is an unhandled job method.
 
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
@@ -428,7 +431,7 @@ class Job(object):
             self.test_suite = [(None, {})]
         else:
             try:
-                self.test_suite = self._make_test_suite(self.urls)
+                self.test_suite = self._make_test_suite(self.references)
             except loader.LoaderError as details:
                 stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
                 self._remove_job_results()
@@ -438,13 +441,14 @@ class Job(object):
 
         if not self.test_suite:
             self._remove_job_results()
-            if self.urls:
-                e_msg = ("No tests found for given urls, try 'avocado list -V "
-                         "%s' for details" % " ".join(self.urls))
+            if self.references:
+                references = " ".join(self.references)
+                e_msg = ("No tests found for given test references, try "
+                         "'avocado list -V %s' for details" % references)
             else:
-                e_msg = ("No urls provided nor any arguments produced "
-                         "runable tests. Please double check the executed "
-                         "command.")
+                e_msg = ("No test references provided nor any other arguments "
+                         "resolved into tests. Please double check the executed"
+                         " command.")
             raise exceptions.OptionValidationError(e_msg)
 
         mux = getattr(self.args, "mux", None)
@@ -465,7 +469,7 @@ class Job(object):
         self._start_sysinfo()
 
         self._log_job_debug_info(mux)
-        jobdata.record(self.args, self.logdir, mux, self.urls, sys.argv)
+        jobdata.record(self.args, self.logdir, mux, self.references, sys.argv)
         replay_map = getattr(self.args, 'replay_map', None)
         summary = self.test_runner.run_suite(self.test_suite, mux, self.timeout,
                                              replay_map,
@@ -492,10 +496,9 @@ class Job(object):
 
     def run(self):
         """
-        Handled main job method. Runs a list of test URLs to its completion.
+        Resolves a list of test references and runs them to their completion.
 
-        The test runner figures out which tests need to be run on an empty urls
-        list by assuming the first component of the shortname is the test url.
+        This is the handled main job method.
 
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
@@ -557,7 +560,7 @@ class TestProgram(object):
         output.add_log_handler("", output.ProgressStreamHandler,
                                fmt="%(message)s")
         self.parseArgs(sys.argv[1:])
-        self.args.url = [sys.argv[0]]
+        self.args.reference = [sys.argv[0]]
         self.runTests()
 
     def parseArgs(self, argv):
