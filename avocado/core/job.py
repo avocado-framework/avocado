@@ -115,7 +115,7 @@ class Job(object):
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
-        self.stdout_stderr = None
+        self._stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
         self.exitcode = exit_codes.AVOCADO_ALL_OK
         #: The list of discovered/resolved tests that will be attempted to
@@ -190,7 +190,7 @@ class Job(object):
         enabled_logs = getattr(self.args, "show", [])
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
-            self.stdout_stderr = sys.stdout, sys.stderr
+            self._stdout_stderr = sys.stdout, sys.stderr
             # Enable std{out,err} but redirect booth to stderr
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
@@ -203,8 +203,8 @@ class Job(object):
             self.__logging_handlers[test_handler] = ["avocado.test", ""]
 
     def __stop_job_logging(self):
-        if self.stdout_stderr:
-            sys.stdout, sys.stderr = self.stdout_stderr
+        if self._stdout_stderr:
+            sys.stdout, sys.stderr = self._stdout_stderr
         for handler, loggers in self.__logging_handlers.iteritems():
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
