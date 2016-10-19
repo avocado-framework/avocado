@@ -7,16 +7,16 @@ else:
 
 from avocado.core import test
 from avocado.core import job
+from avocado.core import exit_codes
 from avocado.utils import path as utils_path
 
 
 class JobTest(unittest.TestCase):
 
     @staticmethod
-    def _find_simple_test_candidates():
-        simple_test_candidates = ['true', 'time', 'uptime']
+    def _find_simple_test_candidates(candidates=['true', 'time', 'uptime']):
         found = []
-        for candidate in simple_test_candidates:
+        for candidate in candidates:
             try:
                 found.append(utils_path.find_command(candidate))
             except utils_path.CmdNotFoundError:
@@ -67,3 +67,11 @@ class JobTest(unittest.TestCase):
         myjob.create_test_suite()
         myjob.pre_tests()
         self.assertLessEqual(len(myjob.test_suite), 1)
+
+    def test_job_run_tests(self):
+        simple_tests_found = self._find_simple_test_candidates(['true'])
+        args = argparse.Namespace(url=simple_tests_found)
+        myjob = job.Job(args)
+        myjob.create_test_suite()
+        self.assertEqual(myjob.run_tests(),
+                         exit_codes.AVOCADO_ALL_OK)
