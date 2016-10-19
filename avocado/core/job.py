@@ -89,7 +89,11 @@ class Job(object):
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
+        #: The log directory for this job, also known as the job results
+        #: directory.  If it's set to None, it means that the job results
+        #: directory has not yet been created.
         self.logdir = None
+        self._setup_job_results()
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
         mapping = {'info': logging.INFO,
@@ -109,6 +113,7 @@ class Job(object):
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
+        self.__start_job_logging()
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
@@ -125,6 +130,9 @@ class Job(object):
         self._job_pre_post_dispatcher = None
 
     def _setup_job_results(self):
+        """
+        Prepares a job result directory, also known as logdir, for this job
+        """
         logdir = getattr(self.args, 'logdir', None)
         if self.standalone:
             if logdir is not None:
@@ -140,6 +148,8 @@ class Job(object):
                 logdir = os.path.abspath(logdir)
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
                                                            unique_id=self.unique_id)
+        if not (self.standalone or getattr(self.args, "dry_run", False)):
+            self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
         self.idfile = os.path.join(self.logdir, "id")
         with open(self.idfile, 'w') as id_file_obj:
@@ -240,9 +250,6 @@ class Job(object):
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
-    def _remove_job_results(self):
-        shutil.rmtree(self.logdir, ignore_errors=True)
-
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
             test_runner_class = self.args.test_runner
@@ -291,10 +298,8 @@ class Job(object):
         try:
             suite = loader.loader.discover(urls)
         except loader.LoaderUnhandledUrlError as details:
-            self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
-            self._remove_job_results()
             raise exceptions.JobError('Command interrupted by user...')
 
         if not getattr(self.args, "dry_run", False):
@@ -421,14 +426,10 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        self._setup_job_results()
-        self.__start_job_logging()
-
         self.create_test_suite()
         self.pre_tests()
 
         if not self.test_suite:
-            self._remove_job_results()
             if self.urls:
                 e_msg = ("No tests found for given urls, try 'avocado list -V "
                          "%s' for details" % " ".join(self.urls))
@@ -450,8 +451,6 @@ class Job(object):
         self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
 
         self._make_old_style_test_result()
-        if not (self.standalone or getattr(self.args, "dry_run", False)):
-            self._update_latest_link()
         self._make_test_runner()
         self._start_sysinfo()
 
@@ -495,7 +494,6 @@ class Job(object):
                 self.test_suite = self._make_test_suite(self.urls)
             except loader.LoaderError as details:
                 stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                self._remove_job_results()
                 raise exceptions.OptionValidationError(details)
 
     def pre_tests(self):
