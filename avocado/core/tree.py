@@ -103,6 +103,10 @@ class TreeNode(object):
                     return False
             return True
 
+    def __ne__(self, other):
+        """ Inverted eq """
+        return not self == other
+
     def add_child(self, node):
         """
         Append node as child. Nodes with the same name gets merged into the
