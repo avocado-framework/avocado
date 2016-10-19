@@ -509,6 +509,18 @@ class Job(object):
 
         return self.exitcode
 
+    def post_tests(self):
+        """
+        Run the post tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPost` interface.
+        """
+        if self._job_pre_post_dispatcher is None:
+            self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+            output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
+        self._job_pre_post_dispatcher.map_method('post', self)
+
     def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
@@ -548,8 +560,7 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
-            if self._job_pre_post_dispatcher is not None:
-                self._job_pre_post_dispatcher.map_method('post', self)
+            self.post_tests()
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()

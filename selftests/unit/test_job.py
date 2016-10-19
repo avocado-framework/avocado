@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -75,3 +76,19 @@ class JobTest(unittest.TestCase):
         myjob.create_test_suite()
         self.assertEqual(myjob.run_tests(),
                          exit_codes.AVOCADO_ALL_OK)
+
+    def test_job_post_tests(self):
+        class JobLogPost(job.Job):
+            def post_tests(self):
+                with open(os.path.join(self.logdir, "reversed_id"), "w") as f:
+                    f.write(self.unique_id[::-1])
+                super(JobLogPost, self).post_tests()
+        simple_tests_found = self._find_simple_test_candidates()
+        args = argparse.Namespace(url=simple_tests_found)
+        myjob = JobLogPost(args)
+        myjob.create_test_suite()
+        myjob.pre_tests()
+        myjob.run_tests()
+        myjob.post_tests()
+        self.assertEqual(myjob.unique_id[::-1],
+                         open(os.path.join(myjob.logdir, "reversed_id")).read())
