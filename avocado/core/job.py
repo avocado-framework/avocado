@@ -149,8 +149,8 @@ class Job(object):
         if not (self.standalone or getattr(self.args, "dry_run", False)):
             self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
-        self.idfile = os.path.join(self.logdir, "id")
-        with open(self.idfile, 'w') as id_file_obj:
+        idfile = os.path.join(self.logdir, "id")
+        with open(idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
 
     def __start_job_logging(self):
