@@ -443,4 +443,6 @@ class Mux(object):
             for variant in iter_variants:
                 yield variant
         else:   # No variants, use template
-            yield None, (self.default_params.get_leaves(), "/run")
+            yield {"variant": self.default_params.get_leaves(),
+                   "variant_id": None,
+                   "mux_path": "/run"}

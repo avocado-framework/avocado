@@ -373,10 +373,11 @@ class Diff(CLICmd):
             mux = jobdata.retrieve_mux(resultsdir)
             if mux:
                 env = set()
-                for (variant_id, tpl) in mux.itertests():
-                    paths = ', '.join([x.path for x in tpl[0]])
-                    results.append('Variant %s: %s\n' % (variant_id, paths))
-                    for node in tpl[0]:
+                for variant in mux.itertests():
+                    paths = ', '.join([x.path for x in variant["variant"]])
+                    results.append('Variant %s: %s\n'
+                                   % (variant["variant_id"], paths))
+                    for node in variant["variant"]:
                         for key, value in node.environment.iteritems():
                             origin = node.environment_origin[key].path
                             env.add(("%s:%s" % (origin, key), str(value)))

@@ -402,7 +402,9 @@ class MuxPlugin(object):
                 data.set_environment_dirty()
             yield i, (data.get_leaves(), self.mux_path)
             '''
-            yield i, (variant, self.mux_path)
+            yield {"variant_id": i,
+                   "variant": variant,
+                   "mux_path": self.mux_path}
 
     def update_defaults(self, defaults):
         if self.default_params:
@@ -424,9 +426,9 @@ class MuxPlugin(object):
         out += tree_repr
         out += "\n\n"
 
-        for variant_id, tpl in self:
-            paths = ', '.join([x.path for x in tpl[0]])
-            out += 'Variant %s:    %s\n' % (variant_id, paths)
+        for variant in self:
+            paths = ', '.join([x.path for x in variant["variant"]])
+            out += 'Variant %s:    %s\n' % (variant["variant_id"], paths)
 
         if not out.endswith("\n"):
             out += "\n"
