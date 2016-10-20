@@ -19,6 +19,7 @@ import itertools
 import logging
 import os
 import re
+import sha
 import sys
 
 from avocado.core import tree, exit_codes
@@ -391,14 +392,19 @@ class MuxPlugin(object):
         self.mux_path = mux_path
 
     def __iter__(self):
-        for i, variant in enumerate(self.variants, 1):
+        for variant in self.variants:
+            variant.sort(key=lambda x: x.path)
+            fingerprint = "-".join(_.fingerprint() for _ in variant)
+            variant_sha = sha.sha(fingerprint).hexdigest()
+            variant_name = "-".join(node.name for node in variant)
+
             data = copy.deepcopy(self.default_params)
             for leaf in variant:
                 data.get_node(leaf.path, True).merge(leaf)
                 data.set_environment_dirty()
-            yield {"variant_id": i,
+            yield {"variant_id": variant_name + "-" + variant_sha,
                    "variant": data.get_leaves(),
-                   "variant_id_short": i,
+                   "variant_id_short": variant_name + "-" + variant_sha[:4],
                    "mux_path": self.mux_path}
 
     def update_defaults(self, defaults):
