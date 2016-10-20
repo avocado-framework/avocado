@@ -372,34 +372,16 @@ class Job(object):
         job_log.info('logs     ' + data_dir.get_logs_dir())
         job_log.info('')
 
-    def _log_mux_tree(self, mux):
-        if not mux.variants:
-            return
-        job_log = _TEST_LOGGER
-        tree_repr = tree.tree_view(mux.variants.root, verbose=True,
-                                   use_utf8=False)
-        if tree_repr:
-            job_log.info('Multiplex tree representation:')
-            for line in tree_repr.splitlines():
-                job_log.info(line)
-            job_log.info('')
-
     def _log_tmp_dir(self):
         job_log = _TEST_LOGGER
         job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
         job_log.info('')
 
     def _log_mux_variants(self, mux):
-        if not mux.variants:
-            return
-        job_log = _TEST_LOGGER
-
-        for (index, tpl) in enumerate(mux.variants):
-            paths = ', '.join([x.path for x in tpl])
-            job_log.info('Variant %s:    %s', index + 1, paths)
-
-        if mux.variants:
-            job_log.info('')
+        out = mux.str_variants()
+        if out:
+            _TEST_LOGGER.info(out)
+            _TEST_LOGGER.info('')
 
     def _log_job_debug_info(self, mux):
         """
@@ -409,7 +391,6 @@ class Job(object):
         self._log_avocado_version()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_mux_tree(mux)
         self._log_tmp_dir()
         self._log_mux_variants(mux)
         self._log_job_id()
