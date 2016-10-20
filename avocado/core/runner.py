@@ -467,7 +467,8 @@ class TestRunner(object):
         :return: Yields tuple(test_factory including params, variant id)
         :raises ValueError: When variant and template declare params.
         """
-        for variant, params in mux.itertests():
+        for variant in mux.itertests():
+            params = variant.get("variant")
             if params:
                 if "params" in template[1]:
                     msg = ("Unable to multiplex test %s, params are already "
