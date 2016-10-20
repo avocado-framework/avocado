@@ -543,4 +543,5 @@ class YamlToMux(CLI):
 
         data = apply_filters(data, getattr(args, 'mux_only', None),
                              getattr(args, 'mux_out', None))
-        args.mux.add_variants_plugin(MuxPlugin(data, mux_path))
+        if data != MuxTreeNode():   # Only include it when there are any data
+            args.mux.add_variants_plugin(MuxPlugin(data, mux_path))

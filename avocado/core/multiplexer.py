@@ -441,4 +441,5 @@ class Mux(object):
         else:   # No variants, use template
             yield {"variant": self.default_params.get_leaves(),
                    "variant_id": None,
+                   "variant_id_short": None,
                    "mux_path": "/run"}
