@@ -364,14 +364,6 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
-def _report_mux_already_parsed(self, *args, **kwargs):
-    """
-    Raises exception describing that `self.data` alteration is restricted
-    """
-    raise RuntimeError("Mux already parsed, altering is restricted. %s %s"
-                       % (args, kwargs))
-
-
 class Mux(object):
 
     """
@@ -389,6 +381,7 @@ class Mux(object):
         self.debug = debug
         self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
         self._mux_path = None
+        self.ignore_new_data = False   # Used to ignore new data on parsed Mux
 
     def parse(self, args):
         """
@@ -432,6 +425,21 @@ class Mux(object):
         Reports whether the tree was already multiplexed
         """
         return self.variants is not None
+    def _skip_new_data_check(self, fction, args):
+        """
+        Check whether we can inject the data
+
+        :param fction: Name of the data-inject function
+        :param args: Arguments of the data-inject function
+        :raise RuntimeError: When data injection is restricted
+        :return: True if new data should be ignored
+        """
+        if self.is_parsed():
+            if self.ignore_new_data:
+                return
+            raise RuntimeError("Mux already parsed, unable to execute "
+                               "%s%s"
+                               % (fction, args))
 
     def data_inject(self, name, key, value, path=None):
         """
@@ -442,6 +450,8 @@ class Mux(object):
         :param path: Optional path to the node to which we assign the value,
                      by default '/'.
         """
+        if self._skip_new_data_check("data_inject", (name, key, value, path)):
+            return
         if path is None:
             path = "/"
         if name not in self.default_params:
@@ -455,6 +465,8 @@ class Mux(object):
         :param tree: Tree to be merged into this database.
         :type tree: :class:`avocado.core.tree.TreeNode`
         """
+        if self._skip_new_data_check("data_merge", (tree,)):
+            return
         self.data.merge(tree)
 
     def get_number_of_tests(self, test_suite):
