@@ -398,6 +398,7 @@ class MuxPlugin(object):
                 data.set_environment_dirty()
             yield {"variant_id": i,
                    "variant": data.get_leaves(),
+                   "variant_id_short": i,
                    "mux_path": self.mux_path}
 
     def update_defaults(self, defaults):
