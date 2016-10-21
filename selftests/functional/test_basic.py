@@ -96,12 +96,16 @@ class MyTest(Test):
 '''
 
 
-def missing_binary(binary):
+def probe_binary(binary):
     try:
-        utils_path.find_command(binary)
-        return False
+        return utils_path.find_command(binary)
     except utils_path.CmdNotFoundError:
-        return True
+        return None
+
+CC_BINARY = probe_binary('cc')
+ECHO_BINARY = probe_binary('echo')
+READ_BINARY = probe_binary('read')
+SLEEP_BINARY = probe_binary('sleep')
 
 
 class RunnerOperationTest(unittest.TestCase):
@@ -168,7 +172,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skipIf(missing_binary('cc'),
+    @unittest.skipIf(not CC_BINARY,
                      "C compiler is required by the underlying datadir.py test")
     def test_datadir_alias(self):
         os.chdir(basedir)
@@ -183,7 +187,7 @@ class RunnerOperationTest(unittest.TestCase):
                     'env_variables.sh' % self.tmpdir)
         process.run(cmd_line)
 
-    @unittest.skipIf(missing_binary('cc'),
+    @unittest.skipIf(not CC_BINARY,
                      "C compiler is required by the underlying datadir.py test")
     def test_datadir_noalias(self):
         os.chdir(basedir)
@@ -488,13 +492,11 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn('1-%s:MyTest.test_my_name -> TestError' % test,
                       result.stdout)
 
-    @unittest.skipIf(missing_binary("read"),
-                     "read binary not available.")
+    @unittest.skipIf(not READ_BINARY, "read binary not available.")
     def test_read(self):
-        cmd = utils_path.find_command("read")
         os.chdir(basedir)
-        result = process.run("./scripts/avocado run %s" % cmd, timeout=10,
-                             ignore_status=True)
+        result = process.run("./scripts/avocado run %s" % READ_BINARY,
+                             timeout=10, ignore_status=True)
         self.assertLess(result.duration, 8, "Duration longer than expected."
                         "\n%s" % result)
         self.assertEqual(result.exit_status, 1, "Expected exit status is 1\n%s"
@@ -554,13 +556,13 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
                       '  SKIP', result.stdout)
 
+    @unittest.skipIf(not ECHO_BINARY, 'echo binary not available')
     def test_ugly_echo_cmd(self):
-        if not os.path.exists("/bin/echo"):
-            self.skipTest("Program /bin/echo does not exist")
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run "/bin/echo -ne '
+        cmd_line = ('./scripts/avocado run "%s -ne '
                     'foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
-                    ' --sysinfo=off  --show-job-log' % self.tmpdir)
+                    ' --sysinfo=off  --show-job-log' %
+                    (ECHO_BINARY, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -569,8 +571,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('[stdout] foo', result.stdout, result)
         self.assertIn('[stdout] \'"', result.stdout, result)
         self.assertIn('[stdout] bar/baz', result.stdout, result)
-        self.assertIn('PASS 1-/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz',
-                      result.stdout, result)
+        self.assertIn('PASS 1-%s -ne foo\\\\n\\\'\\"\\\\nbar/baz' %
+                      ECHO_BINARY, result.stdout, result)
         # logdir name should escape special chars (/)
         test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
                                            'test-results', '*'))
@@ -578,7 +580,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          " test-results dir, but only one test was executed: "
                          "%s" % (test_dirs))
         self.assertEqual(os.path.basename(test_dirs[0]),
-                         '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
+                         '1-%s -ne foo\\\\n\\\'\\"\\\\nbar_baz' %
+                         ECHO_BINARY.replace('/', '_'))
 
     def test_replay_skip_skipped(self):
         result = process.run("./scripts/avocado run skiponsetup.py --json -")
@@ -696,11 +699,9 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    @unittest.skipIf(not SLEEP_BINARY, 'sleep binary not available')
     def test_kill_stopped_sleep(self):
-        sleep = process.run("which sleep", ignore_status=True, shell=True)
-        if sleep.exit_status:
-            self.skipTest("Sleep binary not found in PATH")
-        sleep = "'%s 60'" % sleep.stdout.strip()
+        sleep = "'%s 60'" % SLEEP_BINARY
         proc = aexpect.Expect("./scripts/avocado run %s --job-results-dir %s "
                               "--sysinfo=off --job-timeout 3"
                               % (sleep, self.tmpdir))
@@ -1056,9 +1057,8 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
+    @unittest.skipIf(not ECHO_BINARY, 'echo binary not available')
     def test_ugly_echo_cmd(self):
-        if not os.path.exists("/bin/echo"):
-            self.skipTest("Program /bin/echo does not exist")
         data = self.run_and_check('"/bin/echo -ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
                                   'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
                                   0, 0)
