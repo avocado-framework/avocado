@@ -29,10 +29,6 @@ class LVUtilsTest(unittest.TestCase):
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
                      "passwordless sudo configured.")
     def setUp(self):
-        try:
-            process.system("/bin/true", sudo=True)
-        except process.CmdError as details:
-            self.skipTest("Sudo not available: %s" % details)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.vgs = []
 

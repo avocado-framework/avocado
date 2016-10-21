@@ -554,9 +554,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
                       '  SKIP', result.stdout)
 
+    @unittest.skipIf(missing_binary('echo'), 'echo binary not available')
     def test_ugly_echo_cmd(self):
-        if not os.path.exists("/bin/echo"):
-            self.skipTest("Program /bin/echo does not exist")
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run "/bin/echo -ne '
                     'foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
@@ -696,11 +695,9 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    @unittest.skipIf(missing_binary('sleep'), 'sleep binary not available')
     def test_kill_stopped_sleep(self):
-        sleep = process.run("which sleep", ignore_status=True, shell=True)
-        if sleep.exit_status:
-            self.skipTest("Sleep binary not found in PATH")
-        sleep = "'%s 60'" % sleep.stdout.strip()
+        sleep = "'%s 60'" % utils_path.find_command('sleep')
         proc = aexpect.Expect("./scripts/avocado run %s --job-results-dir %s "
                               "--sysinfo=off --job-timeout 3"
                               % (sleep, self.tmpdir))
@@ -1056,9 +1053,8 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
+    @unittest.skipIf(missing_binary('echo'), 'echo binary not available')
     def test_ugly_echo_cmd(self):
-        if not os.path.exists("/bin/echo"):
-            self.skipTest("Program /bin/echo does not exist")
         data = self.run_and_check('"/bin/echo -ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
                                   'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
                                   0, 0)
