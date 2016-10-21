@@ -261,9 +261,9 @@ class YamlToMux(CLI):
             debug = getattr(args, "mux_debug", False)
             try:
                 args.mux.data_merge(create_from_yaml(multiplex_files, debug))
-            except IOError as details:
-                logging.getLogger("avocado.app").error(details.strerror)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            except IOError:
+                msg = 'Cannot access the multiplex file(s) in this host.'
+                logging.getLogger("avocado.app").warning(msg)
 
         # Deprecated --multiplex option
         multiplex_files = getattr(args, "multiplex", None)

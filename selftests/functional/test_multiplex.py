@@ -54,9 +54,10 @@ class MultiplexTests(unittest.TestCase):
 
     def test_mplex_plugin_nonexistent(self):
         cmd_line = './scripts/avocado multiplex -m nonexist'
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn('No such file or directory', result.stderr)
+        self.assertIn('Cannot access the multiplex file(s) in this host.',
+                      result.stderr)
 
     def test_mplex_debug(self):
         cmd_line = ('./scripts/avocado multiplex -c -d -m '
