@@ -511,8 +511,9 @@ class FileLoader(TestLoader):
         else:  # DEFAULT, AVAILABLE => skip missing tests
             onerror = skip_non_test
 
-        for dirpath, _, filenames in os.walk(url, onerror=onerror):
-            for file_name in filenames:
+        for dirpath, dirs, filenames in os.walk(url, onerror=onerror):
+            dirs.sort()
+            for file_name in sorted(filenames):
                 if not file_name.startswith('.'):
                     for suffix in ignore_suffix:
                         if file_name.endswith(suffix):
