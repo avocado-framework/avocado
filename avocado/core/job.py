@@ -89,7 +89,11 @@ class Job(object):
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
+        #: The log directory for this job, also known as the job results
+        #: directory.  If it's set to None, it means that the job results
+        #: directory has not yet been created.
         self.logdir = None
+        self._setup_job_results()
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
         mapping = {'info': logging.INFO,
@@ -102,17 +106,16 @@ class Job(object):
         else:
             self.loglevel = logging.DEBUG
 
-        self.test_dir = data_dir.get_test_dir()
-        self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.ResultProxy()
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
+        self.__start_job_logging()
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            _TEST_LOGGER)
-        self.stdout_stderr = None
+        self._stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
         self.exitcode = exit_codes.AVOCADO_ALL_OK
         #: The list of discovered/resolved tests that will be attempted to
@@ -120,10 +123,14 @@ class Job(object):
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
-        self.job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-        output.log_plugin_failures(self.job_pre_post_dispatcher.load_failures)
+
+        # A job may not have a dispatcher for pre/post tests execution plugins
+        self._job_pre_post_dispatcher = None
 
     def _setup_job_results(self):
+        """
+        Prepares a job result directory, also known as logdir, for this job
+        """
         logdir = getattr(self.args, 'logdir', None)
         if self.standalone:
             if logdir is not None:
@@ -139,9 +146,11 @@ class Job(object):
                 logdir = os.path.abspath(logdir)
                 self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
                                                            unique_id=self.unique_id)
+        if not (self.standalone or getattr(self.args, "dry_run", False)):
+            self._update_latest_link()
         self.logfile = os.path.join(self.logdir, "job.log")
-        self.idfile = os.path.join(self.logdir, "id")
-        with open(self.idfile, 'w') as id_file_obj:
+        idfile = os.path.join(self.logdir, "id")
+        with open(idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
 
     def __start_job_logging(self):
@@ -181,7 +190,7 @@ class Job(object):
         enabled_logs = getattr(self.args, "show", [])
         if ('test' in enabled_logs and
                 'early' not in enabled_logs):
-            self.stdout_stderr = sys.stdout, sys.stderr
+            self._stdout_stderr = sys.stdout, sys.stderr
             # Enable std{out,err} but redirect booth to stderr
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
@@ -194,8 +203,8 @@ class Job(object):
             self.__logging_handlers[test_handler] = ["avocado.test", ""]
 
     def __stop_job_logging(self):
-        if self.stdout_stderr:
-            sys.stdout, sys.stderr = self.stdout_stderr
+        if self._stdout_stderr:
+            sys.stdout, sys.stderr = self._stdout_stderr
         for handler, loggers in self.__logging_handlers.iteritems():
             for logger in loggers:
                 logging.getLogger(logger).removeHandler(handler)
@@ -238,9 +247,6 @@ class Job(object):
             if self.args.sysinfo == 'on':
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
-
-    def _remove_job_results(self):
-        shutil.rmtree(self.logdir, ignore_errors=True)
 
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
@@ -290,10 +296,8 @@ class Job(object):
         try:
             suite = loader.loader.discover(urls)
         except loader.LoaderUnhandledUrlError as details:
-            self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
-            self._remove_job_results()
             raise exceptions.JobError('Command interrupted by user...')
 
         if not getattr(self.args, "dry_run", False):
@@ -410,19 +414,12 @@ class Job(object):
         self._log_mux_variants(mux)
         self._log_job_id()
 
-    def _run(self):
+    def create_test_suite(self):
         """
-        Unhandled job method. Runs a list of test URLs to its completion.
+        Creates the test suite for this Job
 
-        :return: Integer with overall job status. See
-                 :mod:`avocado.core.exit_codes` for more information.
-        :raise: Any exception (avocado crashed), or
-                :class:`avocado.core.exceptions.JobBaseException` errors,
-                that configure a job failure.
+        This is a public Job API as part of the documented Job phases
         """
-        self._setup_job_results()
-        self.__start_job_logging()
-
         if (getattr(self.args, 'remote_hostname', False) and
            getattr(self.args, 'remote_no_copy', False)):
             self.test_suite = [(None, {})]
@@ -431,13 +428,21 @@ class Job(object):
                 self.test_suite = self._make_test_suite(self.urls)
             except loader.LoaderError as details:
                 stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                self._remove_job_results()
                 raise exceptions.OptionValidationError(details)
 
-        self.job_pre_post_dispatcher.map_method('pre', self)
+    def pre_tests(self):
+        """
+        Run the pre tests execution hooks
 
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPre` interface.
+        """
+        self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+        output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
+        self._job_pre_post_dispatcher.map_method('pre', self)
+
+    def run_tests(self):
         if not self.test_suite:
-            self._remove_job_results()
             if self.urls:
                 e_msg = ("No tests found for given urls, try 'avocado list -V "
                          "%s' for details" % " ".join(self.urls))
@@ -459,8 +464,6 @@ class Job(object):
         self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
 
         self._make_old_style_test_result()
-        if not (self.standalone or getattr(self.args, "dry_run", False)):
-            self._update_latest_link()
         self._make_test_runner()
         self._start_sysinfo()
 
@@ -490,6 +493,18 @@ class Job(object):
 
         return self.exitcode
 
+    def post_tests(self):
+        """
+        Run the post tests execution hooks
+
+        By default this runs the plugins that implement the
+        :class:`avocado.core.plugin_interfaces.JobPost` interface.
+        """
+        if self._job_pre_post_dispatcher is None:
+            self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
+            output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
+        self._job_pre_post_dispatcher.map_method('post', self)
+
     def run(self):
         """
         Handled main job method. Runs a list of test URLs to its completion.
@@ -502,7 +517,9 @@ class Job(object):
         """
         runtime.CURRENT_JOB = self
         try:
-            return self._run()
+            self.create_test_suite()
+            self.pre_tests()
+            return self.run_tests()
         except exceptions.JobBaseException as details:
             self.status = details.status
             fail_class = details.__class__.__name__
@@ -529,7 +546,7 @@ class Job(object):
             self.exitcode |= exit_codes.AVOCADO_FAIL
             return self.exitcode
         finally:
-            self.job_pre_post_dispatcher.map_method('post', self)
+            self.post_tests()
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
