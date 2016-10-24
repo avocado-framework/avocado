@@ -166,12 +166,10 @@ class Run(CLICmd):
             sys.exit(exit_codes.AVOCADO_FAIL)
         job_instance = job.Job(args)
         job_run = job_instance.run()
-        result_dispatcher = ResultDispatcher()
-        if result_dispatcher.extensions:
-            # At this point job_instance doesn't have a single results
-            # attribute which is the end goal.  For now, we pick any of the
-            # plugin classes added to the result proxy.
-            if len(job_instance.result_proxy.output_plugins) > 0:
-                result = job_instance.result_proxy.output_plugins[0]
-                result_dispatcher.map_method('render', result, job_instance)
+        if job_instance.result.tests_total > 0:
+            result_dispatcher = ResultDispatcher()
+            if result_dispatcher.extensions:
+                result_dispatcher.map_method('render',
+                                             job_instance.result,
+                                             job_instance)
         return job_run

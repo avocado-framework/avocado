@@ -89,7 +89,9 @@ class Job(object):
         if unique_id is None:
             unique_id = job_id.create_unique_job_id()
         self.unique_id = unique_id
-        self.logdir = None
+        self._setup_job_results()
+        if not (self.standalone or getattr(self.args, "dry_run", False)):
+            self._update_latest_link()
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
         mapping = {'info': logging.INFO,
@@ -106,6 +108,7 @@ class Job(object):
         self.test_index = 1
         self.status = "RUNNING"
         self.result_proxy = result.ResultProxy()
+        self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
@@ -239,9 +242,6 @@ class Job(object):
                 sysinfo_dir = path.init_dir(self.logdir, 'sysinfo')
                 self.sysinfo = sysinfo.SysInfo(basedir=sysinfo_dir)
 
-    def _remove_job_results(self):
-        shutil.rmtree(self.logdir, ignore_errors=True)
-
     def _make_test_runner(self):
         if hasattr(self.args, 'test_runner'):
             test_runner_class = self.args.test_runner
@@ -249,7 +249,8 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             result_proxy=self.result_proxy)
+                                             result_proxy=self.result_proxy,
+                                             result=self.result)
 
     def _make_old_style_test_result(self):
         """
@@ -290,10 +291,8 @@ class Job(object):
         try:
             suite = loader.loader.discover(urls)
         except loader.LoaderUnhandledUrlError as details:
-            self._remove_job_results()
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
-            self._remove_job_results()
             raise exceptions.JobError('Command interrupted by user...')
 
         if not getattr(self.args, "dry_run", False):
@@ -420,7 +419,6 @@ class Job(object):
                 :class:`avocado.core.exceptions.JobBaseException` errors,
                 that configure a job failure.
         """
-        self._setup_job_results()
         self.__start_job_logging()
 
         if (getattr(self.args, 'remote_hostname', False) and
@@ -431,13 +429,11 @@ class Job(object):
                 self.test_suite = self._make_test_suite(self.urls)
             except loader.LoaderError as details:
                 stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
-                self._remove_job_results()
                 raise exceptions.OptionValidationError(details)
 
         self.job_pre_post_dispatcher.map_method('pre', self)
 
         if not self.test_suite:
-            self._remove_job_results()
             if self.urls:
                 e_msg = ("No tests found for given urls, try 'avocado list -V "
                          "%s' for details" % " ".join(self.urls))
@@ -459,8 +455,6 @@ class Job(object):
         self.args.test_result_total = mux.get_number_of_tests(self.test_suite)
 
         self._make_old_style_test_result()
-        if not (self.standalone or getattr(self.args, "dry_run", False)):
-            self._update_latest_link()
         self._make_test_runner()
         self._start_sysinfo()
 
