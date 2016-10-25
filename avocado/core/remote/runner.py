@@ -62,17 +62,17 @@ class RemoteTestRunner(TestRunner):
         # TODO: Use `avocado.core.loader.TestLoader` instead
         self.remote.makedir(self.remote_test_dir)
         paths = set()
-        for i in xrange(len(self.job.urls)):
-            url = self.job.urls[i]
-            if not os.path.exists(url):     # use test_dir path + py
-                url = os.path.join(data_dir.get_test_dir(), url)
-            if not os.path.exists(url):
+        for i in xrange(len(self.job.references)):
+            reference = self.job.references[i]
+            if not os.path.exists(reference):     # use test_dir path + py
+                reference = os.path.join(data_dir.get_test_dir(), reference)
+            if not os.path.exists(reference):
                 raise exceptions.JobError("Unable to map test id '%s' to file"
-                                          % self.job.urls[i])
-            url = os.path.abspath(url)  # always use abspath; avoid clashes
-            # modify url to remote_path + abspath
-            paths.add(url)
-            self.job.urls[i] = self.remote_test_dir + url
+                                          % self.job.references[i])
+            reference = os.path.abspath(reference)  # always use abspath; avoid clashes
+            # modify reference to remote_path + abspath
+            paths.add(reference)
+            self.job.references[i] = self.remote_test_dir + reference
         for path in sorted(paths):
             rpath = self.remote_test_dir + path
             self.remote.makedir(os.path.dirname(rpath))
@@ -171,11 +171,11 @@ class RemoteTestRunner(TestRunner):
                              "output:\n%s" % output)
         return response
 
-    def run_test(self, urls, timeout):
+    def run_test(self, references, timeout):
         """
         Run tests.
 
-        :param urls: a string with test URLs.
+        :param references: a string with test references.
         :return: a dictionary with test results.
         """
         extra_params = []
@@ -187,20 +187,20 @@ class RemoteTestRunner(TestRunner):
 
         if getattr(self.job.args, "dry_run", False):
             extra_params.append("--dry-run")
-        urls_str = " ".join(urls)
-        avocado_check_urls_cmd = ('cd %s; avocado list %s '
-                                  '--paginator=off' % (self.remote_test_dir,
-                                                       urls_str))
-        check_urls_result = self.remote.run(avocado_check_urls_cmd,
-                                            ignore_status=True,
-                                            timeout=60)
-        if check_urls_result.exit_status != 0:
-            raise exceptions.JobError(check_urls_result.stdout)
+        references_str = " ".join(references)
+        avocado_check_references_cmd = ('cd %s; avocado list %s '
+                                        '--paginator=off' % (self.remote_test_dir,
+                                                             references_str))
+        check_references_result = self.remote.run(avocado_check_references_cmd,
+                                                  ignore_status=True,
+                                                  timeout=60)
+        if check_references_result.exit_status != 0:
+            raise exceptions.JobError(check_references_result.stdout)
 
         avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
                        '--archive %s %s' % (self.remote_test_dir,
                                             self.job.unique_id,
-                                            urls_str, " ".join(extra_params)))
+                                            references_str, " ".join(extra_params)))
         try:
             result = self.remote.run(avocado_cmd, ignore_status=True,
                                      timeout=timeout)
@@ -229,7 +229,7 @@ class RemoteTestRunner(TestRunner):
 
         :return: a set with types of test failures.
         """
-        del test_suite     # using self.job.urls instead
+        del test_suite     # using self.job.references instead
         del mux            # we're not using multiplexation here
         del test_result_total  # evaluated by the remote avocado
         if not timeout:     # avoid timeout = 0
@@ -268,7 +268,7 @@ class RemoteTestRunner(TestRunner):
             except Exception as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 raise exceptions.JobError(details)
-            results = self.run_test(self.job.urls, timeout)
+            results = self.run_test(self.job.references, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result_proxy.start_tests()
             for tst in results['tests']:
