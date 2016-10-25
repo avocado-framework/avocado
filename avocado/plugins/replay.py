@@ -194,7 +194,7 @@ class Replay(CLI):
             log.warn('Overriding the replay test references with test '
                      'references given in the command line.')
         else:
-            references = jobdata.retrieve_urls(resultsdir)
+            references = jobdata.retrieve_references(resultsdir)
             if references is None:
                 log.error('Source job test references data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
