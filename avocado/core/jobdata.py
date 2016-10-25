@@ -28,28 +28,32 @@ from ..utils.path import init_dir
 JOB_DATA_DIR = 'jobdata'
 JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
-URLS_FILENAME = 'urls'
+TEST_REFERENCES_FILENAME = 'test_references'
+TEST_REFERENCES_FILENAME_LEGACY = 'urls'
 MUX_FILENAME = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
 
 
-def record(args, logdir, mux, urls=None, cmdline=None):
+def record(args, logdir, mux, references=None, cmdline=None):
     """
     Records all required job information.
     """
     base_dir = init_dir(logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
-    path_urls = os.path.join(base_dir, URLS_FILENAME)
+    path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
+    path_references_legacy = os.path.join(base_dir,
+                                          TEST_REFERENCES_FILENAME_LEGACY)
     path_mux = os.path.join(base_dir, MUX_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
     path_args = os.path.join(base_dir, ARGS_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
-    if urls:
-        with open(path_urls, 'w') as urls_file:
-            urls_file.write('%s' % urls)
+    if references:
+        with open(path_references, 'w') as references_file:
+            references_file.write('%s' % references)
+        os.symlink(TEST_REFERENCES_FILENAME, path_references_legacy)
 
     with open(path_cfg, 'w') as config_file:
         settings.config.write(config_file)
@@ -87,15 +91,18 @@ def retrieve_pwd(resultsdir):
         return pwd_file.read()
 
 
-def retrieve_urls(resultsdir):
+def retrieve_references(resultsdir):
     """
-    Retrieves the job urls from the results directory.
+    Retrieves the job test references from the results directory.
     """
-    recorded_urls = _retrieve(resultsdir, URLS_FILENAME)
-    if recorded_urls is None:
+    recorded_references = _retrieve(resultsdir, TEST_REFERENCES_FILENAME)
+    if recorded_references is None:
+        recorded_references = _retrieve(resultsdir,
+                                        TEST_REFERENCES_FILENAME_LEGACY)
+    if recorded_references is None:
         return None
-    with open(recorded_urls, 'r') as urls_file:
-        return ast.literal_eval(urls_file.read())
+    with open(recorded_references, 'r') as references_file:
+        return ast.literal_eval(references_file.read())
 
 
 def retrieve_mux(resultsdir):
