@@ -35,10 +35,10 @@ class RemoteTestRunnerTest(unittest.TestCase):
                         remote_port=22,
                         remote_password='password',
                         remote_key_file=None,
-                        remote_no_copy=False,
                         remote_timeout=60,
                         show_job_log=False,
-                        mux_yaml=['foo.yaml', 'bar/baz.yaml'],
+                        mux_yaml=['~/avocado/tests/foo.yaml',
+                                  '~/avocado/tests/bar/baz.yaml'],
                         dry_run=True,
                         env_keep=None)
         log = flexmock()
@@ -51,7 +51,6 @@ class RemoteTestRunnerTest(unittest.TestCase):
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
         self.runner = remote.RemoteTestRunner(job, None)
         self.runner.job = job
-        self.runner._copy_files = lambda: True  # Skip _copy_files
 
         filehandler = logging.StreamHandler()
         flexmock(logging).should_receive("FileHandler").and_return(filehandler)
@@ -96,13 +95,6 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args_version, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
-        args = ('cd ~/avocado/tests; avocado list /tests/sleeptest '
-                '/tests/other/test passtest --paginator=off')
-        urls_result = flexmock(exit_status=0)
-        (Remote.should_receive('run')
-         .with_args(args, ignore_status=True, timeout=60)
-         .once().and_return(urls_result))
-
         args = ("cd ~/avocado/tests; avocado run --force-job-id 1-sleeptest;0 "
                 "--json - --archive /tests/sleeptest /tests/other/test "
                 "passtest -m ~/avocado/tests/foo.yaml "
@@ -113,7 +105,8 @@ _=/usr/bin/env''', exit_status=0)
         Results = flexmock(remote=Remote, urls=['sleeptest'],
                            stream=stream, timeout=None,
                            args=flexmock(show_job_log=False,
-                                         mux_yaml=['foo.yaml', 'bar/baz.yaml'],
+                                         mux_yaml=['~/avocado/tests/foo.yaml',
+                                                   '~/avocado/tests/bar/baz.yaml'],
                                          dry_run=True))
         Results.should_receive('set_tests_total').once().with_args(1).ordered()
         Results.should_receive('start_tests').once().ordered()
@@ -170,7 +163,6 @@ class RemoteTestRunnerSetup(unittest.TestCase):
                         remote_port=22,
                         remote_password='password',
                         remote_key_file=None,
-                        remote_no_copy=False,
                         remote_timeout=60,
                         show_job_log=False,
                         env_keep=None)
