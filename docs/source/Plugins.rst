@@ -131,6 +131,32 @@ the Avocado command line application.  Now, by disabling a
 ``job.prepost`` plugin, those won't be executed before/after the
 execution of the jobs.
 
+Default plugin execution order
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In many situations, such as result generation, not one, but all of the
+enabled plugin types will be executed.  The order in which the plugins
+are executed follows the lexical order of the entry point name.
+
+For example, for the JSON result plugin, whose fully qualified name
+is ``result.json``, has an entry point name of ``json``, as can be seen
+on its registration code in ``setup.py``::
+
+   ...
+   entry_points={
+      'avocado.plugins.result': [
+         'json = avocado.plugins.jsonresult:JSONResult',
+   ...
+
+If it sounds too complicated, it isn't.  It just means that for
+plugins of the same type, a plugin named ``automated`` will be
+executed before the plugin named ``uploader``.
+
+In the default Avocado set of result plugins, it means that the JSON
+plugin (``json``) will be executed before the XUnit plugin (``xunit``).
+If the HTML result plugin is installed and enabled (``html``) it will
+be executed before both JSON and XUnit.
+
 Wrap Up
 ~~~~~~~
 
