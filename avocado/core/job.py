@@ -44,7 +44,6 @@ from . import test
 from . import jobdata
 from .output import STD_OUTPUT
 from .settings import settings
-from ..utils import archive
 from ..utils import astring
 from ..utils import path
 from ..utils import runtime
@@ -472,10 +471,6 @@ class Job(object):
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
-        # Let's clean up test artifacts
-        if getattr(self.args, 'archive', False):
-            filename = self.logdir + '.zip'
-            archive.create(filename, self.logdir)
         _TEST_LOGGER.info('Test results available in %s', self.logdir)
 
         if summary is None:
