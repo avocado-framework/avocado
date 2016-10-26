@@ -45,6 +45,20 @@ class Dispatcher(EnabledExtensionManager):
         fqn = "%s.%s" % (namespace, extension.entry_point.name)
         return fqn not in disabled
 
+    def names(self):
+        """
+        Returns the names of the discovered extensions
+
+        This differs from :func:`stevedore.extension.ExtensionManager.names`
+        in that it returns names in a predictable order, by using standard
+        :func:`order`.
+        """
+        return sorted(super(Dispatcher, self).names())
+
+    def _init_plugins(self, extensions):
+        super(Dispatcher, self)._init_plugins(extensions)
+        self.extensions.sort(key=lambda x: x.name)
+
     @staticmethod
     def store_load_failure(manager, entrypoint, exception):
         manager.load_failures.append((entrypoint, exception))
