@@ -27,6 +27,9 @@ class Dispatcher(EnabledExtensionManager):
     Base dispatcher for various extension types
     """
 
+    #: Default namespace prefix for Avocado extensions
+    NAMESPACE_PREFIX = 'avocado.plugins.'
+
     def __init__(self, namespace):
         self.load_failures = []
         super(Dispatcher, self).__init__(namespace=namespace,
@@ -35,14 +38,22 @@ class Dispatcher(EnabledExtensionManager):
                                          on_load_failure_callback=self.store_load_failure,
                                          propagate_map_exceptions=True)
 
-    def enabled(self, extension):
-        namespace_prefix = 'avocado.plugins.'
-        if self.namespace.startswith(namespace_prefix):
-            namespace = self.namespace[len(namespace_prefix):]
+    def plugin_type(self):
+        """
+        Subset of entry points namespace for this dispatcher
+
+        Given an entry point `avocado.plugins.foo`, plugin type is `foo`.  If
+        entry point does not conform to the Avocado standard prefix, it's
+        returned unchanged.
+        """
+        if self.namespace.startswith(self.NAMESPACE_PREFIX):
+            return self.namespace[len(self.NAMESPACE_PREFIX):]
         else:
-            namespace = self.namespace
+            return self.namespace
+
+    def enabled(self, extension):
         disabled = settings.get_value('plugins', 'disable', key_type=list)
-        fqn = "%s.%s" % (namespace, extension.entry_point.name)
+        fqn = "%s.%s" % (self.plugin_type(), extension.entry_point.name)
         return fqn not in disabled
 
     def names(self):
