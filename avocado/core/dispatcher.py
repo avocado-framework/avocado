@@ -83,6 +83,17 @@ class Dispatcher(EnabledExtensionManager):
     def _init_plugins(self, extensions):
         super(Dispatcher, self)._init_plugins(extensions)
         self.extensions.sort(key=lambda x: x.name)
+        configured_order = settings.get_value(self.settings_section(), "order",
+                                              key_type=list, default=[])
+        ordered = []
+        for name in configured_order:
+            for ext in self.extensions:
+                if name == ext.name:
+                    ordered.append(ext)
+        for ext in self.extensions:
+            if ext not in ordered:
+                ordered.append(ext)
+        self.extensions = ordered
 
     @staticmethod
     def store_load_failure(manager, entrypoint, exception):
