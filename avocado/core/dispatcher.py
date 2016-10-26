@@ -51,10 +51,18 @@ class Dispatcher(EnabledExtensionManager):
         else:
             return self.namespace
 
+    def fully_qualified_name(self, extension):
+        """
+        Returns the Avocado fully qualified plugin name
+
+        :param extension: an Stevedore Extension instance
+        :type extension: :class:`stevedore.extension.Extension`
+        """
+        return "%s.%s" % (self.plugin_type(), extension.entry_point.name)
+
     def enabled(self, extension):
         disabled = settings.get_value('plugins', 'disable', key_type=list)
-        fqn = "%s.%s" % (self.plugin_type(), extension.entry_point.name)
-        return fqn not in disabled
+        return self.fully_qualified_name(extension) not in disabled
 
     def names(self):
         """
