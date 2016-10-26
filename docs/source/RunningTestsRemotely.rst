@@ -62,9 +62,8 @@ Once the remote machine is properly setup, you may run your test. Example::
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 1.01 s
 
-As you can see, Avocado will copy the tests you have to your remote machine and
-execute them. A bit of extra logging information is added to your job summary,
-mainly to distinguish the regular execution from the remote one. Note here that
+A bit of extra logging information is added to your job summary, mainly
+to distinguish the regular execution from the remote one. Note here that
 we did not need `--remote-password` because an SSH key was already setup.
 
 Running Tests on a Virtual Machine
@@ -141,9 +140,8 @@ Once the virtual machine is properly setup, you may run your test. Example::
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 1.01 s
 
-As you can see, Avocado will copy the tests you have to your libvirt domain and
-execute them. A bit of extra logging information is added to your job summary,
-mainly to distinguish the regular execution from the remote one. Note here that
+A bit of extra logging information is added to your job summary, mainly
+to distinguish the regular execution from the remote one. Note here that
 we did not need `--vm-password` because the SSH key is already setup.
 
 Running Tests on a Docker container
@@ -233,3 +231,18 @@ below::
 
 By doing that, both `MYVAR1` and `MYVAR2` will be available in remote
 environment.
+
+Known Issues
+============
+
+Given the modular architecture of Avocado, the fact that the ``remote``
+feature is a plugin and also the fact that the plugins are engaged in no
+particular order, other plugins will not have the information that we
+are in a remote execution. As consequence, plugins that look for local
+resources that are available only remotely can fail. That's the case of
+the so called ``multiplex`` plugin. If you're using the multiplex plugin
+(``-m`` or ``--mux-yaml``) options in addition to the remote plugin (or
+any derived plugin, like ``vm`` or ``docker``), the multiplex files must
+exist locally in the provided path. Notice the multiplex files must be
+also available remotely in the provided path, since we don't copy files
+for remote executions.
