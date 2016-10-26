@@ -83,9 +83,9 @@ class Multiplex(CLICmd):
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(mux.variants):
+        for (variant_id, tpl) in mux.itertests():
             if not args.mux_debug:
-                paths = ', '.join([x.path for x in tpl])
+                paths = ', '.join([x.path for x in tpl[0]])
             else:
                 color = output.TERM_SUPPORT.LOWLIGHT
                 cend = output.TERM_SUPPORT.ENDC
@@ -93,12 +93,12 @@ class Multiplex(CLICmd):
                                                   getattr(_, 'yaml',
                                                           "Unknown"),
                                                   cend)
-                                   for _ in tpl])
+                                   for _ in tpl[0]])
             log.debug('%sVariant %s:    %s', '\n' if args.contents else '',
-                      index + 1, paths)
+                      variant_id, paths)
             if args.contents:
                 env = set()
-                for node in tpl:
+                for node in tpl[0]:
                     for key, value in node.environment.iteritems():
                         origin = node.environment_origin[key].path
                         env.add(("%s:%s" % (origin, key), str(value)))

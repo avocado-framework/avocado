@@ -15,6 +15,13 @@ else:
     PATH_PREFIX = ""
 
 
+def combine(leaves_pools):
+    """ Joins remaining leaves and pools and create product """
+    if leaves_pools[0]:
+        leaves_pools[1].extend(leaves_pools[0])
+    return itertools.product(*leaves_pools[1])
+
+
 class TestTree(unittest.TestCase):
     # Share tree with all tests
     tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
@@ -219,6 +226,62 @@ class TestPathParent(unittest.TestCase):
 
     def test_false_direct_parent(self):
         self.assertNotEqual(yaml_to_mux.path_parent('/os/linux'), '/')
+
+
+class TestMultiplex(unittest.TestCase):
+
+    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE,
+                     "Not multiplex capable")
+    def setUp(self):
+        self.mux_tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
+                                                      'examples/mux-selftest.'
+                                                      'yaml'])
+        self.mux_full = tuple(yaml_to_mux.MuxTree(self.mux_tree))
+
+    def test_empty(self):
+        act = tuple(yaml_to_mux.MuxTree(tree.TreeNode()))
+        self.assertEqual(act, (['', ],))
+
+    def test_partial(self):
+        exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
+               ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
+        act = tuple(yaml_to_mux.MuxTree(self.mux_tree.children[0]))
+        self.assertEqual(act, exp)
+
+    def test_full(self):
+        self.assertEqual(len(self.mux_full), 12)
+
+    def test_create_variants(self):
+        from_file = yaml_to_mux.create_from_yaml(
+            ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
+        from_file = yaml_to_mux.MuxTree(from_file)
+        self.assertEqual(self.mux_full, tuple(from_file))
+
+    # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
+    def test_filter_only(self):
+        exp = (['intel', 'scsi'], ['intel', 'virtio'])
+        act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
+                                            'examples/mux-selftest.yaml'])
+        act = yaml_to_mux.apply_filters(act, ('/hw/cpu/intel',
+                                              '/distro/fedora',
+                                              '/hw'))
+        act = tuple(yaml_to_mux.MuxTree(act))
+        self.assertEqual(act, exp)
+
+    def test_filter_out(self):
+        act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
+                                            'examples/mux-selftest.yaml'])
+        act = yaml_to_mux.apply_filters(act, None, ('/hw/cpu/intel',
+                                                    '/distro/fedora',
+                                                    '/distro'))
+        act = tuple(yaml_to_mux.MuxTree(act))
+        self.assertEqual(len(act), 4)
+        self.assertEqual(len(act[0]), 3)
+        str_act = str(act)
+        self.assertIn('amd', str_act)
+        self.assertIn('prod', str_act)
+        self.assertNotIn('intel', str_act)
+        self.assertNotIn('fedora', str_act)
 
 
 if __name__ == '__main__':

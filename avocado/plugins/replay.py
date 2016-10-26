@@ -214,9 +214,8 @@ class Replay(CLI):
                 # we replaced the unparsed object with parsed one. There
                 # are other plugins running before/after this which might
                 # want to alter the mux object.
-                if len(args.mux.data) or args.mux.data.environment:
-                    log.warning("Using src job Mux data only, use `--replay-"
-                                "ignore mux` to override them.")
+                log.warning("Using src job Mux data only, use `--replay-"
+                            "ignore mux` to override them.")
                 setattr(args, "mux", mux)
                 mux.ignore_new_data = True
 

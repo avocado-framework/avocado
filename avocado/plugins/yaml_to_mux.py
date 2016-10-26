@@ -13,6 +13,8 @@
 # Author: Lukas Doktor <ldoktor@redhat.com>
 """Multiplexer plugin to parse yaml files to params"""
 
+import collections
+import itertools
 import logging
 import os
 import re
@@ -101,6 +103,10 @@ class MuxTreeNodeDebug(MuxTreeNode, tree.TreeNodeDebug):
         MuxTreeNode.__init__(self, name, value, parent, children)
         tree.TreeNodeDebug.__init__(self, name, value, parent, children,
                                     srcyaml)
+
+    def merge(self, other):
+        MuxTreeNode.merge(self, other)
+        tree.TreeNodeDebug.merge(self, other)
 
 
 def _create_from_yaml(path, cls_node=MuxTreeNode):
@@ -327,6 +333,106 @@ def apply_filters(root, filter_only=None, filter_out=None):
     return root
 
 
+class MuxTree(object):
+
+    """
+    Object representing part of the tree from the root to leaves or another
+    multiplex domain. Recursively it creates multiplexed variants of the full
+    tree.
+    """
+
+    def __init__(self, root):
+        """
+        :param root: Root of this tree slice
+        """
+        self.pools = []
+        for node in self._iter_mux_leaves(root):
+            if node.is_leaf:
+                self.pools.append(node)
+            else:
+                self.pools.append([MuxTree(child) for child in node.children])
+
+    @staticmethod
+    def _iter_mux_leaves(node):
+        """ yield leaves or muxes of the tree """
+        queue = collections.deque()
+        while node is not None:
+            if node.is_leaf or getattr(node, "multiplex", False):
+                yield node
+            else:
+                queue.extendleft(reversed(node.children))
+            try:
+                node = queue.popleft()
+            except IndexError:
+                raise StopIteration
+
+    def __iter__(self):
+        """
+        Iterates through variants
+        """
+        pools = []
+        for pool in self.pools:
+            if isinstance(pool, list):
+                pools.append(itertools.chain(*pool))
+            else:
+                pools.append(pool)
+        pools = itertools.product(*pools)
+        while True:
+            # TODO: Implement 2nd level filters here
+            # TODO: This part takes most of the time, optimize it
+            yield list(itertools.chain(*pools.next()))
+
+
+class MuxPlugin(object):
+    """
+    Follows the Multiplexer API to produce variants
+    """
+    def __init__(self, root, mux_path):
+        self.root = root
+        self.variants = None
+        self.default_params = None
+        self.mux_path = mux_path
+
+    def __iter__(self):
+        for i, variant in enumerate(self.variants, 1):
+            '''
+            data = copy.deepcopy(self.default_params)
+            for leaf in variant:
+                data.get_node(leaf.path, True).merge(leaf)
+                data.set_environment_dirty()
+            yield i, (data.get_leaves(), self.mux_path)
+            '''
+            yield i, (variant, self.mux_path)
+
+    def update_defaults(self, defaults):
+        if self.default_params:
+            self.default_params.merge(defaults)
+        self.default_params = defaults
+        combination = defaults
+        combination.merge(self.root)
+        self.variants = MuxTree(combination)
+
+    def str_variants(self):
+        if not self.variants:
+            return
+        out = ""
+        tree_repr = tree.tree_view(self.root, verbose=True,
+                                   use_utf8=False)
+        if not tree_repr:
+            return ""
+        out += "Multiplex tree representation:\n"
+        out += tree_repr
+        out += "\n\n"
+
+        for variant_id, tpl in self:
+            paths = ', '.join([x.path for x in tpl[0]])
+            out += 'Variant %s:    %s\n' % (variant_id, paths)
+
+        if not out.endswith("\n"):
+            out += "\n"
+        return out
+
+
 class YamlToMux(CLI):
 
     """
@@ -432,7 +538,11 @@ class YamlToMux(CLI):
                 entry.insert(0, '')  # add path='' (root)
             data.get_node(entry[0], True).value[entry[1]] = entry[2]
 
+        mux_path = getattr(args, 'mux_path', None)
+        if mux_path is None:
+            mux_path = ['/run/*']
+
         data = apply_filters(data, getattr(args, 'mux_filter_only', None),
                              getattr(args, 'mux_filter_out', None))
         if data != MuxTreeNode():
-            args.mux.data_merge(data)
+            args.mux.add_variants_plugin(MuxPlugin(data, mux_path))

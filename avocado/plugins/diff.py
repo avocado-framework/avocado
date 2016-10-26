@@ -369,23 +369,26 @@ class Diff(CLICmd):
     @staticmethod
     def _get_variants(resultsdir):
         results = []
-        mux = jobdata.retrieve_mux(resultsdir)
-        if mux and mux.variants:
-            env = set()
-            for (index, tpl) in enumerate(mux.variants):
-                paths = ', '.join([x.path for x in tpl])
-                results.append('Variant %s: %s\n' % (index + 1, paths))
-                for node in tpl:
-                    for key, value in node.environment.iteritems():
-                        origin = node.environment_origin[key].path
-                        env.add(("%s:%s" % (origin, key), str(value)))
-                if not env:
-                    continue
-                fmt = '    %%-%ds => %%s\n' % max([len(_[0]) for _ in env])
-                for record in sorted(env):
-                    results.append(fmt % record)
-        else:
-            results.append('Not found\n')
+        try:
+            mux = jobdata.retrieve_mux(resultsdir)
+            if mux:
+                env = set()
+                for (variant_id, tpl) in mux.itertests():
+                    paths = ', '.join([x.path for x in tpl[0]])
+                    results.append('Variant %s: %s\n' % (variant_id, paths))
+                    for node in tpl[0]:
+                        for key, value in node.environment.iteritems():
+                            origin = node.environment_origin[key].path
+                            env.add(("%s:%s" % (origin, key), str(value)))
+                    if not env:
+                        continue
+                    fmt = '    %%-%ds => %%s\n' % max([len(_[0]) for _ in env])
+                    for record in sorted(env):
+                        results.append(fmt % record)
+            else:
+                results.append('Not found\n')
+        except AttributeError as details:
+            return ["Unsupported version of multiplexer: %s" % details]
 
         return results
 
