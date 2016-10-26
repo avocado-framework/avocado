@@ -37,7 +37,6 @@ from ...utils import stacktrace
 class RemoteTestRunner(TestRunner):
 
     """ Tooled TestRunner to run on remote machine using ssh """
-    remote_test_dir = '~/avocado/tests'
 
     # Let's use re.MULTILINE because sometimes servers might have MOTD
     # that will introduce a line break on output.
@@ -151,9 +150,8 @@ class RemoteTestRunner(TestRunner):
             extra_params.append("--dry-run")
         urls_str = " ".join(urls)
 
-        avocado_cmd = ('cd %s; avocado run --force-job-id %s --json - '
-                       '--archive %s %s' % (self.remote_test_dir,
-                                            self.job.unique_id,
+        avocado_cmd = ('avocado run --force-job-id %s --json - '
+                       '--archive %s %s' % (self.job.unique_id,
                                             urls_str, " ".join(extra_params)))
         try:
             result = self.remote.run(avocado_cmd, ignore_status=True,

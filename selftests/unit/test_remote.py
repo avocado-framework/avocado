@@ -95,7 +95,7 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args_version, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
-        args = ("cd ~/avocado/tests; avocado run --force-job-id 1-sleeptest;0 "
+        args = ("avocado run --force-job-id 1-sleeptest;0 "
                 "--json - --archive /tests/sleeptest /tests/other/test "
                 "passtest -m ~/avocado/tests/foo.yaml "
                 "~/avocado/tests/bar/baz.yaml --dry-run")
