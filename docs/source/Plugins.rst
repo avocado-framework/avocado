@@ -157,6 +157,20 @@ plugin (``json``) will be executed before the XUnit plugin (``xunit``).
 If the HTML result plugin is installed and enabled (``html``) it will
 be executed before both JSON and XUnit.
 
+Configuring the plugin execution order
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On some circumstances it may be necessary to change the order in which plugins
+are executed.  To do so, add a ``order`` entry a configuration file section
+named after the plugin type.  For ``job.prepost`` plugin types, the section name
+has to be named ``plugins.job.prepost``, and it would look like this::
+
+  [plugins.job.prepost]
+  order = ['myplugin', 'jobscripts']
+
+That configuration sets the ``job.prepost.myplugin`` plugin to execute before
+the standard Avocado ``job.prepost.jobscripts`` does.
+
 Wrap Up
 ~~~~~~~
 
