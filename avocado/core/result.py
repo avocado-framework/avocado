@@ -81,6 +81,10 @@ class ResultProxy(object):
         for output_plugin in self.output_plugins:
             output_plugin.check_test(state)
 
+    def tests_total(self, tests_total):
+        for output_plugin in self.output_plugins:
+            output_plugin.tests_total = tests_total
+
 
 class Result(object):
 
@@ -96,7 +100,7 @@ class Result(object):
         """
         self.job_unique_id = getattr(job, "unique_id", None)
         self.logfile = getattr(job, "logfile", None)
-        self.tests_total = getattr(job.args, 'test_result_total', 1)
+        self.tests_total = 0
         self.tests_run = 0
         self.tests_total_time = 0.0
         self.passed = 0

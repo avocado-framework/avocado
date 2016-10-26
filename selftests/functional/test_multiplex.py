@@ -58,6 +58,13 @@ class MultiplexTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr)
 
+    def test_mplex_plugin_nonexistent_ignore_missing(self):
+        cmd_line = './scripts/avocado multiplex -m nonexist --mux-ignore-missing on'
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        result = self.run_and_check(cmd_line, expected_rc)
+        self.assertIn('Cannot access the multiplex file(s) in this host.',
+                      result.stderr)
+
     def test_mplex_debug(self):
         cmd_line = ('./scripts/avocado multiplex -c -d -m '
                     '/:examples/mux-selftest.yaml '

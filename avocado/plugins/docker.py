@@ -61,29 +61,6 @@ class DockerRemoter(object):
         """ Return this remoter's container ID """
         return self._docker_id
 
-    def makedir(self, remote_path):
-        """
-        Create a directory on the container
-
-        :warning: No other process must be running on foreground
-        :param remote_path: the remote path to create.
-        """
-        self._docker.cmd("mkdir -p %s" % remote_path)
-
-    def send_files(self, local_path, remote_path):
-        """
-        Send files to the container
-        """
-        process.run("%s cp %s %s:%s" % (self._dkrcmd, local_path,
-                                        self._docker_id, remote_path))
-
-    def receive_files(self, local_path, remote_path):
-        """
-        Receive files from the container
-        """
-        process.run("%s cp %s:%s %s" % (self._dkrcmd, self._docker_id,
-                                        remote_path, local_path))
-
     def run(self, command, ignore_status=False, quiet=None, timeout=60):
         """
         Run command inside the container
@@ -132,8 +109,6 @@ class DockerTestRunner(RemoteTestRunner):
     Test runner which runs the job inside a docker container
     """
 
-    remote_test_dir = "/avocado_remote_test_dir"  # Absolute path only
-
     def __init__(self, job, test_result):
         super(DockerTestRunner, self).__init__(job, test_result)
         self.remote = None      # Will be set in `setup`
@@ -143,12 +118,9 @@ class DockerTestRunner(RemoteTestRunner):
         dkr_opt = self.job.args.docker_options
         dkr_name = os.path.basename(self.job.logdir) + '.' + 'avocado'
         self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt, dkr_name)
-        # We need to create the base dir, otherwise docker creates it as root
-        self.remote.makedir(self.remote_test_dir)
         self.job.log.info("DOCKER     : Container id '%s'"
                           % self.remote.get_cid())
         self.job.log.debug("DOCKER     : Container name '%s'" % dkr_name)
-        self.job.args.remote_no_copy = self.job.args.docker_no_copy
 
     def tear_down(self):
         try:
@@ -186,10 +158,6 @@ class Docker(CLI):
         cmd_parser.add_argument("--docker-options", default="",
                                 help="Extra options for docker run cmd."
                                 " (see: man docker-run)", metavar="OPT")
-
-        cmd_parser.add_argument("--docker-no-copy", action="store_true",
-                                help="Assume tests are already in the "
-                                "container")
         cmd_parser.add_argument("--docker-no-cleanup", action="store_true",
                                 help="Preserve container after test")
 

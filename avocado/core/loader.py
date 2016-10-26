@@ -264,6 +264,9 @@ class TestLoaderProxy(object):
 
         return test_instance
 
+    def clear_plugins(self):
+        self.registered_plugins = []
+
 
 class TestLoader(object):
 
@@ -794,6 +797,28 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
+
+
+class DummyLoader(TestLoader):
+
+    """
+    Dummy-runner loader class
+    """
+    name = 'dummy'
+
+    def __init__(self, args, extra_params):
+        super(DummyLoader, self).__init__(args, extra_params)
+
+    def discover(self, url, which_tests=DEFAULT):
+        return [(test.DummyTest, {'name': url})]
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {test.DummyTest: 'DUMMY'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {test.DummyTest: output.TERM_SUPPORT.healthy_str}
 
 
 loader = TestLoaderProxy()

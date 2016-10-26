@@ -253,6 +253,12 @@ class YamlToMux(CLI):
                              default=None, metavar="FILE",
                              help="DEPRECATED: Location of one or more Avocado"
                              " multiplex (.yaml) FILE(s) (order dependent)")
+            mux.add_argument("--mux-ignore-missing", default='off',
+                             choices=('on', 'off'),
+                             help="Avoid interrupting the job due to missing"
+                             " multiplex files. This is useful for remote"
+                             " executions, when the multiplex file is not"
+                             " present locally.")
 
     def run(self, args):
         # Merge the multiplex
@@ -262,8 +268,12 @@ class YamlToMux(CLI):
             try:
                 args.mux.data_merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
-                logging.getLogger("avocado.app").error(details.strerror)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                if getattr(args, "mux_ignore_missing", 'off') == 'on':
+                    msg = 'Cannot access the multiplex file(s) in this host.'
+                    logging.getLogger("avocado.app").warning(msg)
+                else:
+                    logging.getLogger("avocado.app").error(details.strerror)
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         # Deprecated --multiplex option
         multiplex_files = getattr(args, "multiplex", None)
