@@ -12,6 +12,9 @@
 	{"name": "Avocado RPM build",
 	 "description": "On your development machine, build the Avocado RPM packages using: `$ make rpm`. Expected result: SRPM and RPM files at `BUILD/RPM/avocado-x.y.z-r.distro.{src,noarch}.rpm`"},
 
+	{"name": "Avocado RPM lint",
+	 "description": "With the built RPMs, check if there are no packaging errors or warnings by running: `$ rpmlint BUILD/RPM/avocado-x.y.z-r.distro.noarch.rpm`.  Expected result: 1 packages and 0 specfiles checked; 0 errors, 0 warnings."},
+
 	{"name": "Avocado RPM install",
 	 "description": "On a fresh virtual machine, perform the installation of Avocado using the packages built on test 'Avocado RPM build' and the aexpect package from src or avocado repo. Also install and start the qemu-guest-agent."},
 
