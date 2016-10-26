@@ -13,7 +13,8 @@ import logging
 cwd = os.getcwd()
 
 JSON_RESULTS = ('Something other than json\n'
-                '{"tests": [{"test": "1-sleeptest;0", "url": "sleeptest", '
+                '{"tests": [{"test": "1-sleeptest;0",'
+                '"reference": "sleeptest", '
                 '"fail_reason": "None", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
                 '"debuglog": "/home/user/avocado/logs/run-2014-05-26-15.45.'
@@ -44,8 +45,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log,
-                       urls=['/tests/sleeptest', '/tests/other/test',
-                             'passtest'], unique_id='1-sleeptest;0',
+                       references=['/tests/sleeptest', '/tests/other/test',
+                                   'passtest'], unique_id='1-sleeptest;0',
                        logdir="/local/path")
 
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
@@ -102,7 +103,7 @@ _=/usr/bin/env''', exit_status=0)
         (Remote.should_receive('run')
          .with_args(args, timeout=61, ignore_status=True)
          .once().and_return(test_results))
-        Results = flexmock(remote=Remote, urls=['sleeptest'],
+        Results = flexmock(remote=Remote, references=['sleeptest'],
                            stream=stream, timeout=None,
                            args=flexmock(show_job_log=False,
                                          mux_yaml=['~/avocado/tests/foo.yaml',
@@ -156,8 +157,8 @@ class RemoteTestRunnerSetup(unittest.TestCase):
          .once().ordered()
          .and_return(Remote))
         Args = flexmock(test_result_total=1,
-                        url=['/tests/sleeptest', '/tests/other/test',
-                             'passtest'],
+                        reference=['/tests/sleeptest', '/tests/other/test',
+                                   'passtest'],
                         remote_username='username',
                         remote_hostname='hostname',
                         remote_port=22,

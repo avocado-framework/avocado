@@ -55,21 +55,21 @@ class InvalidLoaderPlugin(LoaderError):
     pass
 
 
-class LoaderUnhandledUrlError(LoaderError):
+class LoaderUnhandledReferenceError(LoaderError):
 
-    """ Urls not handled by any loader """
+    """ Test References not handled by any resolver """
 
-    def __init__(self, unhandled_urls, plugins):
-        super(LoaderUnhandledUrlError, self).__init__()
-        self.unhandled_urls = unhandled_urls
+    def __init__(self, unhandled_references, plugins):
+        super(LoaderUnhandledReferenceError, self).__init__()
+        self.unhandled_references = unhandled_references
         self.plugins = [_.name for _ in plugins]
 
     def __str__(self):
-        return ("Unable to discover url(s) '%s' with loader plugins(s) '%s', "
+        return ("Unable to resolve reference(s) '%s' with plugins(s) '%s', "
                 "try running 'avocado list -V %s' to see the details."
-                % ("', '" .join(self.unhandled_urls),
+                % ("', '" .join(self.unhandled_references),
                    "', '".join(self.plugins),
-                   " ".join(self.unhandled_urls)))
+                   " ".join(self.unhandled_references)))
 
 
 class TestLoaderProxy(object):
@@ -77,7 +77,7 @@ class TestLoaderProxy(object):
     def __init__(self):
         self._initialized_plugins = []
         self.registered_plugins = []
-        self.url_plugin_mapping = {}
+        self.reference_plugin_mapping = {}
 
     def register_plugin(self, plugin):
         try:
@@ -174,12 +174,12 @@ class TestLoaderProxy(object):
             mapping.update(loader_plugin.get_decorator_mapping())
         return mapping
 
-    def discover(self, urls, which_tests=DEFAULT):
+    def discover(self, references, which_tests=DEFAULT):
         """
-        Discover (possible) tests from test urls.
+        Discover (possible) tests from test references.
 
-        :param urls: a list of tests urls; if [] use plugin defaults
-        :type urls: builtin.list
+        :param references: a list of tests references; if [] use plugin defaults
+        :type references: builtin.list
         :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
                             DEFAULT)
         :return: A list of test factories (tuples (TestClass, test_params))
@@ -192,19 +192,19 @@ class TestLoaderProxy(object):
             # FIXME: Introduce avocado.traceback logger and use here
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
         tests = []
-        unhandled_urls = []
-        if not urls:
+        unhandled_references = []
+        if not references:
             for loader_plugin in self._initialized_plugins:
                 try:
                     tests.extend(loader_plugin.discover(None, which_tests))
                 except Exception as details:
                     handle_exception(loader_plugin, details)
         else:
-            for url in urls:
+            for reference in references:
                 handled = False
                 for loader_plugin in self._initialized_plugins:
                     try:
-                        _test = loader_plugin.discover(url, which_tests)
+                        _test = loader_plugin.discover(reference, which_tests)
                         if _test:
                             tests.extend(_test)
                             handled = True
@@ -213,14 +213,14 @@ class TestLoaderProxy(object):
                     except Exception as details:
                         handle_exception(loader_plugin, details)
                 if not handled:
-                    unhandled_urls.append(url)
-        if unhandled_urls:
+                    unhandled_references.append(reference)
+        if unhandled_references:
             if which_tests:
-                tests.extend([(test.MissingTest, {'name': url})
-                              for url in unhandled_urls])
+                tests.extend([(test.MissingTest, {'name': reference})
+                              for reference in unhandled_references])
             else:
-                raise LoaderUnhandledUrlError(unhandled_urls,
-                                              self._initialized_plugins)
+                raise LoaderUnhandledReferenceError(unhandled_references,
+                                                    self._initialized_plugins)
         return tests
 
     def load_test(self, test_factory):
@@ -324,29 +324,29 @@ class TestLoader(object):
         """
         raise NotImplementedError
 
-    def discover(self, url, which_tests=DEFAULT):
+    def discover(self, reference, which_tests=DEFAULT):
         """
-        Discover (possible) tests from an url.
+        Discover (possible) tests from an reference.
 
-        :param url: the url to be inspected.
-        :type url: str
+        :param reference: the reference to be inspected.
+        :type reference: str
         :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
                             DEFAULT)
-        :return: a list of test matching the url as params.
+        :return: a list of test matching the reference as params.
         """
         raise NotImplementedError
 
 
 class BrokenSymlink(object):
 
-    """ Dummy object to represent url pointing to a BrokenSymlink path """
+    """ Dummy object to represent reference pointing to a BrokenSymlink path """
 
     pass
 
 
 class AccessDeniedPath(object):
 
-    """ Dummy object to represent url pointing to a inaccessible path """
+    """ Dummy object to represent reference pointing to a inaccessible path """
 
     pass
 
@@ -430,7 +430,7 @@ class FileLoader(TestLoader):
                 test.Test: output.TERM_SUPPORT.healthy_str,
                 FilteredOut: output.TERM_SUPPORT.warn_header_str}
 
-    def discover(self, url, which_tests=DEFAULT):
+    def discover(self, reference, which_tests=DEFAULT):
         """
         Discover (possible) tests from a directory.
 
@@ -441,12 +441,12 @@ class FileLoader(TestLoader):
         found tests are of the allowed type. If not return None (even on
         partial match).
 
-        :param url: the directory path to inspect.
+        :param reference: the directory path to inspect.
         :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
                             DEFAULT)
         :return: list of matching tests
         """
-        tests = self._discover(url, which_tests)
+        tests = self._discover(reference, which_tests)
         if self.test_type:
             mapping = self.get_type_label_mapping()
             if self.test_type == 'INSTRUMENTED':
@@ -464,40 +464,40 @@ class FileLoader(TestLoader):
                         return None
         return tests
 
-    def _discover(self, url, which_tests=DEFAULT):
+    def _discover(self, reference, which_tests=DEFAULT):
         """
         Recursively walk in a directory and find tests params.
         The tests are returned in alphabetic order.
 
-        :param url: the directory path to inspect.
+        :param reference: the directory path to inspect.
         :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
                             DEFAULT)
         :return: list of matching tests
         """
-        if url is None:
+        if reference is None:
             if which_tests is DEFAULT:
                 return []  # Return empty set when not listing details
             else:
-                url = data_dir.get_test_dir()
+                reference = data_dir.get_test_dir()
         ignore_suffix = ('.data', '.pyc', '.pyo', '__init__.py',
                          '__main__.py')
 
         # Look for filename:test_method pattern
         subtests_filter = None
-        if ':' in url:
-            _url, _subtests_filter = url.split(':', 1)
-            if os.path.exists(_url):  # otherwise it's ':' in the file name
-                url = _url
+        if ':' in reference:
+            _reference, _subtests_filter = reference.split(':', 1)
+            if os.path.exists(_reference):  # otherwise it's ':' in the file name
+                reference = _reference
                 subtests_filter = re.compile(_subtests_filter)
 
-        if not os.path.isdir(url):  # Single file
-            if (not self._make_tests(url, DEFAULT, subtests_filter) and
+        if not os.path.isdir(reference):  # Single file
+            if (not self._make_tests(reference, DEFAULT, subtests_filter) and
                     not subtests_filter):
-                split_url = shlex.split(url)
-                if (os.access(split_url[0], os.X_OK) and
-                        not os.path.isdir(split_url[0])):
-                    return self._make_test(test.SimpleTest, url)
-            return self._make_tests(url, which_tests, subtests_filter)
+                split_reference = shlex.split(reference)
+                if (os.access(split_reference[0], os.X_OK) and
+                        not os.path.isdir(split_reference[0])):
+                    return self._make_test(test.SimpleTest, reference)
+            return self._make_tests(reference, which_tests, subtests_filter)
 
         tests = []
 
@@ -514,7 +514,7 @@ class FileLoader(TestLoader):
         else:  # DEFAULT, AVAILABLE => skip missing tests
             onerror = skip_non_test
 
-        for dirpath, dirs, filenames in os.walk(url, onerror=onerror):
+        for dirpath, dirs, filenames in os.walk(reference, onerror=onerror):
             dirs.sort()
             for file_name in sorted(filenames):
                 if not file_name.startswith('.'):
@@ -778,16 +778,16 @@ class ExternalLoader(TestLoader):
             raise LoaderError(msg)
         return None  # Skip external runner
 
-    def discover(self, url, which_tests=DEFAULT):
+    def discover(self, reference, which_tests=DEFAULT):
         """
-        :param url: arguments passed to the external_runner
+        :param reference: arguments passed to the external_runner
         :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
                             DEFAULT)
         :return: list of matching tests
         """
-        if (not self._external_runner) or (url is None):
+        if (not self._external_runner) or (reference is None):
             return []
-        return [(test.ExternalRunnerTest, {'name': url, 'external_runner':
+        return [(test.ExternalRunnerTest, {'name': reference, 'external_runner':
                                            self._external_runner})]
 
     @staticmethod
