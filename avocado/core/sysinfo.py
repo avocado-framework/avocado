@@ -231,8 +231,8 @@ class JournalctlWatcher(Collectible):
 
     def _get_cursor(self):
         try:
-            cmd = 'journalctl --quiet --lines 1 --output json'
-            result = subprocess.check_output(cmd.split())
+            cmd = 'journalctl --lines 1 --output json'
+            result = process.system_output(cmd, verbose=False)
             last_record = json.loads(result)
             return last_record['__CURSOR']
         except Exception as e:
@@ -242,7 +242,7 @@ class JournalctlWatcher(Collectible):
         if self.cursor:
             try:
                 cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
-                log_diff = subprocess.check_output(cmd.split())
+                log_diff = process.system_output(cmd, verbose=False)
                 dstpath = os.path.join(logdir, self.logf)
                 with gzip.GzipFile(dstpath, "w")as out_journalctl:
                     out_journalctl.write(log_diff)
