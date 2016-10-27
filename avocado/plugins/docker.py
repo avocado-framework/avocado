@@ -61,6 +61,13 @@ class DockerRemoter(object):
         """ Return this remoter's container ID """
         return self._docker_id
 
+    def receive_files(self, local_path, remote_path):
+        """
+        Receive files from the container
+        """
+        process.run("%s cp %s:%s %s" % (self._dkrcmd, self._docker_id,
+                                        remote_path, local_path))
+
     def run(self, command, ignore_status=False, quiet=None, timeout=60):
         """
         Run command inside the container
