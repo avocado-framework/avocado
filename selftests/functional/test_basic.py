@@ -1,14 +1,15 @@
+import aexpect
+import glob
 import json
 import os
+import re
 import shutil
-import time
+import signal
 import sys
 import tempfile
+import time
 import xml.dom.minidom
-import glob
-import aexpect
-import signal
-import re
+import zipfile
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -911,6 +912,69 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
             self.assertNotIn("Collect system information", result.stdout)
+
+    def test_plugin_order(self):
+        """
+        Tests plugin order by configuration file
+
+        First it checks if html, json, xunit and zip_archive plugins are enabled.
+        Then it runs a test with zip_archive running first, which means the html,
+        json and xunit output files do not make into the archive.
+
+        Then it runs with zip_archive set to run last, which means the html,
+        json and xunit output files *do* make into the archive.
+        """
+        os.chdir(basedir)
+        cmd_line = './scripts/avocado plugins'
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn("html", result.stdout)
+        self.assertIn("json", result.stdout)
+        self.assertIn("xunit", result.stdout)
+        self.assertIn("zip_archive", result.stdout)
+
+        config_content_zip_first = "[plugins.result]\norder=['zip_archive']"
+        config_zip_first = script.TemporaryScript("zip_first.conf",
+                                                  config_content_zip_first)
+        with config_zip_first:
+            cmd = ('./scripts/avocado --config %s run passtest.py --archive '
+                   '--job-results-dir %s') % (config_zip_first, self.base_outputdir)
+            result = process.run(cmd, ignore_status=True)
+            expected_rc = exit_codes.AVOCADO_ALL_OK
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+            archives = glob.glob(os.path.join(self.base_outputdir, '*.zip'))
+            self.assertEqual(len(archives), 1, "ZIP Archive not generated")
+            zip_file = zipfile.ZipFile(archives[0], 'r')
+            zip_file_list = zip_file.namelist()
+            self.assertNotIn("results.xml", zip_file_list)
+            self.assertNotIn("results.json", zip_file_list)
+            self.assertNotIn("html/results.html", zip_file_list)
+            os.unlink(archives[0])
+
+        config_content_zip_last = ("[plugins.result]\norder=['html', 'json',"
+                                   "'xunit', 'zip_archive']")
+        config_zip_last = script.TemporaryScript("zip_last.conf",
+                                                 config_content_zip_last)
+        with config_zip_last:
+            cmd = ('./scripts/avocado --config %s run passtest.py --archive '
+                   '--job-results-dir %s') % (config_zip_last, self.base_outputdir)
+            result = process.run(cmd, ignore_status=True)
+            expected_rc = exit_codes.AVOCADO_ALL_OK
+            self.assertEqual(result.exit_status, expected_rc,
+                             "Avocado did not return rc %d:\n%s" %
+                             (expected_rc, result))
+            archives = glob.glob(os.path.join(self.base_outputdir, '*.zip'))
+            self.assertEqual(len(archives), 1, "ZIP Archive not generated")
+            zip_file = zipfile.ZipFile(archives[0], 'r')
+            zip_file_list = zip_file.namelist()
+            self.assertIn("results.xml", zip_file_list)
+            self.assertIn("results.json", zip_file_list)
+            self.assertIn("html/results.html", zip_file_list)
 
     def test_Namespace_object_has_no_attribute(self):
         os.chdir(basedir)
