@@ -61,6 +61,13 @@ class DockerRemoter(object):
         """ Return this remoter's container ID """
         return self._docker_id
 
+    def receive_files(self, local_path, remote_path):
+        """
+        Receive files from the container
+        """
+        process.run("%s cp %s:%s %s" % (self._dkrcmd, self._docker_id,
+                                        remote_path, local_path))
+
     def run(self, command, ignore_status=False, quiet=None, timeout=60):
         """
         Run command inside the container
@@ -120,7 +127,7 @@ class DockerTestRunner(RemoteTestRunner):
         self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt, dkr_name)
         self.job.log.info("DOCKER     : Container id '%s'"
                           % self.remote.get_cid())
-        self.job.log.debug("DOCKER     : Container name '%s'" % dkr_name)
+        self.job.log.info("DOCKER     : Container name '%s'" % dkr_name)
 
     def tear_down(self):
         try:
