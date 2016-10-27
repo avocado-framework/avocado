@@ -406,6 +406,7 @@ class SubProcess(object):
             def signal_handler(signum, frame):
                 self.result.interrupted = "signal/ctrl+c"
                 self.wait()
+                signal.default_int_handler()
             try:
                 signal.signal(signal.SIGINT, signal_handler)
             except ValueError:
