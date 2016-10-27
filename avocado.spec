@@ -4,7 +4,7 @@
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
-Summary: Avocado Test Framework
+Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
 Version: 42.0
 Release: 0%{?dist}

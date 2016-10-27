@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -922,7 +920,7 @@ def install_distro_packages(distro_pkg_map, interactive=False):
     return result
 
 
-if __name__ == '__main__':
+def main():
     parser = optparse.OptionParser(
         "usage: %prog [install|remove|check-installed|list-all|list-files|add-repo|"
         "remove-repo| upgrade|what-provides|install-what-provides] arguments")
@@ -991,3 +989,7 @@ if __name__ == '__main__':
 
     elif action == 'show-help':
         parser.print_help()
+
+
+if __name__ == '__main__':
+    main()
