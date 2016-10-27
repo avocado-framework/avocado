@@ -127,7 +127,7 @@ class DockerTestRunner(RemoteTestRunner):
         self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt, dkr_name)
         self.job.log.info("DOCKER     : Container id '%s'"
                           % self.remote.get_cid())
-        self.job.log.debug("DOCKER     : Container name '%s'" % dkr_name)
+        self.job.log.info("DOCKER     : Container name '%s'" % dkr_name)
 
     def tear_down(self):
         try:
