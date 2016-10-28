@@ -26,7 +26,7 @@ basedir = os.path.abspath(basedir)
 PERL_TAP_PARSER_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['./scripts/avocado', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-'] } );
+my $parser = TAP::Parser->new( { exec => ['./scripts/avocado', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -421,7 +421,8 @@ class OutputPluginTest(unittest.TestCase):
                      "Uncapable of using Perl TAP::Parser library")
     def test_tap_parser(self):
         perl_script = script.TemporaryScript("tap_parser.pl",
-                                             PERL_TAP_PARSER_SNIPPET)
+                                             PERL_TAP_PARSER_SNIPPET
+                                             % self.tmpdir)
         perl_script.save()
         os.chdir(basedir)
         process.run("perl %s" % perl_script)
