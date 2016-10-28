@@ -53,7 +53,7 @@ class Plugins(CLICmd):
         for plugins_active, msg in plugin_types:
             log.info(msg)
             plugin_matrix = []
-            for plugin in sorted(plugins_active):
+            for plugin in sorted(plugins_active, key=lambda x: x.name):
                 plugin_matrix.append((plugin.name, plugin.obj.description))
 
             if not plugin_matrix:

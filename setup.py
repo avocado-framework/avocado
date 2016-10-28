@@ -139,6 +139,7 @@ if __name__ == '__main__':
                   'vm = avocado.plugins.vm:VM',
                   'docker = avocado.plugins.docker:Docker',
                   'yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMux',
+                  'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
@@ -157,6 +158,7 @@ if __name__ == '__main__':
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',
                   'json = avocado.plugins.jsonresult:JSONResult',
+                  'zip_archive = avocado.plugins.archive:Archive',
                   ],
               },
           zip_safe=False,
