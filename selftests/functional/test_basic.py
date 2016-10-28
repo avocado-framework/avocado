@@ -928,7 +928,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         """
         def run_config(config_path):
             cmd = ('./scripts/avocado --config %s run passtest.py --archive '
-                   '--job-results-dir %s') % (config_path, self.base_outputdir)
+                   '--job-results-dir %s --sysinfo=off'
+                   % (config_path, self.base_outputdir))
             result = process.run(cmd, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
