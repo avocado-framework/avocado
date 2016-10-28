@@ -107,6 +107,7 @@ class Job(object):
 
         self.status = "RUNNING"
         self.result_proxy = result.ResultProxy()
+        self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
@@ -254,7 +255,8 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             result_proxy=self.result_proxy)
+                                             result_proxy=self.result_proxy,
+                                             result=self.result)
 
     def _make_old_style_test_result(self):
         """
@@ -421,6 +423,7 @@ class Job(object):
         """
         try:
             self.test_suite = self._make_test_suite(self.urls)
+            self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             raise exceptions.OptionValidationError(details)

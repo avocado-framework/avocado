@@ -252,16 +252,18 @@ class TestRunner(object):
     """
     DEFAULT_TIMEOUT = 86400
 
-    def __init__(self, job, result_proxy):
+    def __init__(self, job, result_proxy, result):
         """
         Creates an instance of TestRunner class.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         :param result_proxy: an instance of
                             :class:`avocado.core.result.ResultProxy`.
+        :param result: an instance of :class:`avocado.core.result.Result`
         """
         self.job = job
         self.result_proxy = result_proxy
+        self.result = result
         self.sigstopped = False
 
     def _run_test(self, test_factory, queue):
@@ -309,6 +311,7 @@ class TestRunner(object):
             instance.error(stacktrace.str_unpickable_object(early_state))
 
         self.result_proxy.start_test(early_state)
+        self.result.start_test(early_state)
         try:
             instance.run_avocado()
         finally:
@@ -444,6 +447,7 @@ class TestRunner(object):
                                             " unsupported test status.")
 
         self.result_proxy.check_test(test_state)
+        self.result.check_test(test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
         elif not mapping[test_state['status']]:
@@ -504,7 +508,7 @@ class TestRunner(object):
         no_digits = len(str(test_result_total))
         self.result_proxy.set_tests_total(test_result_total)
         self.result_proxy.start_tests()
-
+        self.result.start_tests()
         index = -1
         try:
             for test_template in test_suite:
@@ -548,6 +552,7 @@ class TestRunner(object):
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
         self.result_proxy.end_tests()
+        self.result.end_tests()
         self.job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary
