@@ -969,7 +969,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
             os.unlink(archives[0])
 
         config_content_zip_last = ("[plugins.result]\norder=['html', 'json',"
-                                   "'xunit', 'zip_archive']")
+                                   "'xunit', 'non_existing_plugin_is_ignored'"
+                                   ",'zip_archive']")
         config_zip_last = script.TemporaryScript("zip_last.conf",
                                                  config_content_zip_last)
         with config_zip_last:
@@ -980,14 +981,6 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
             zip_file_list = zip_file.namelist()
             for result_output in result_outputs:
                 self.assertIn(result_output, zip_file_list)
-
-        config_content_missing = ("[plugins.result]\norder=['foo', "
-                                  "'html', 'json', 'xunit', "
-                                  "'zip_archive', 'bar']")
-        config_missing = script.TemporaryScript("missing.conf",
-                                                config_content_missing)
-        with config_missing:
-            run_config(config_missing)
 
     def test_Namespace_object_has_no_attribute(self):
         os.chdir(basedir)
