@@ -21,6 +21,7 @@ class FakeJob(object):
 
     def __init__(self, args):
         self.args = args
+        self.unique_id = '0000000000000000000000000000000000000000'
 
 
 class xUnitSucceedTest(unittest.TestCase):

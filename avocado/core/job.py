@@ -107,6 +107,7 @@ class Job(object):
 
         self.status = "RUNNING"
         self.result_proxy = result.ResultProxy()
+        self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
@@ -125,6 +126,9 @@ class Job(object):
 
         # A job may not have a dispatcher for pre/post tests execution plugins
         self._job_pre_post_dispatcher = None
+
+        # A job may not have a dispatcher result events plugins
+        self._result_events_dispatcher = None
 
     def _setup_job_results(self):
         """
@@ -254,7 +258,8 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             result_proxy=self.result_proxy)
+                                             result_proxy=self.result_proxy,
+                                             result=self.result)
 
     def _make_old_style_test_result(self):
         """
@@ -275,10 +280,6 @@ class Job(object):
                 for klass in self.args.test_result_classes:
                     test_result_instance = klass(self)
                     self.result_proxy.add_output_plugin(test_result_instance)
-
-        if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
-            human_plugin = result.HumanResult(self)
-            self.result_proxy.add_output_plugin(human_plugin)
 
         if not self.result_proxy.output_plugins:
             self.result_proxy.add_output_plugin(result.Result(self))
@@ -421,6 +422,7 @@ class Job(object):
         """
         try:
             self.test_suite = self._make_test_suite(self.urls)
+            self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             raise exceptions.OptionValidationError(details)
@@ -435,6 +437,10 @@ class Job(object):
         self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
         output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
         self._job_pre_post_dispatcher.map_method('pre', self)
+
+        self._result_events_dispatcher = dispatcher.ResultEventsDispatcher()
+        output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+        self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
         if not self.test_suite:

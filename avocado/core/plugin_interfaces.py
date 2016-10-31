@@ -134,3 +134,69 @@ class Result(Plugin):
         :param job: the finished job for which a result will be written
         :type job: :class:`avocado.core.job.Job`
         """
+
+class JobPreTests(Plugin):
+
+    """
+    Base plugin interface for adding actions before a job runs tests
+
+    This interface looks similar to :class:`JobPre`, but it's inteded
+    to be called at a very specific place, that is, between
+    :meth:`avocado.core.job.Job.create_test_suite` and
+    :meth:`avocado.core.job.Job.run_tests`.
+    """
+
+    @abc.abstractmethod
+    def pre_tests(self, job):
+        """
+        Entry point for job running actions before tests execution
+        """
+
+
+class JobPostTests(Plugin):
+
+    """
+    Base plugin interface for adding actions after a job runs tests
+
+    Plugins using this interface will run at the a time equivalent to
+    plugins using the :class:`JobPost` interface, that is, at
+    :meth:`avocado.core.job.Job.post_tests`.  This is because
+    :class:`JobPost` based plugins will eventually be modified to
+    really run after the job has finished, and not after it has run
+    tests.
+    """
+
+    @abc.abstractmethod
+    def post_tests(self, job):
+        """
+        Entry point for job running actions after the tests execution
+        """
+
+
+class ResultEvents(JobPreTests, JobPostTests):
+
+    """
+    Base plugin interface for event based (streameable) results
+
+    Plugins that want to add actions to be run after a job runs,
+    should use the 'avocado.plugins.result_events' namespace and
+    implement the defined interface.
+    """
+
+    @abc.abstractmethod
+    def start_test(self, result, state):
+        """
+        Event triggered when a test starts running
+        """
+
+    @abc.abstractmethod
+    def test_progress(self, progress=False):
+        """
+        Interface to notify progress (or not) of the running test
+        """
+
+    @abc.abstractmethod
+    def end_test(self, result, state):
+        """
+        Event triggered when a test finishes running
+        """

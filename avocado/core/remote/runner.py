@@ -43,8 +43,8 @@ class RemoteTestRunner(TestRunner):
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\r?$',
                                    re.MULTILINE)
 
-    def __init__(self, job, result_proxy):
-        super(RemoteTestRunner, self).__init__(job, result_proxy)
+    def __init__(self, job, result_proxy, result):
+        super(RemoteTestRunner, self).__init__(job, result_proxy, result)
         #: remoter connection to the remote machine
         self.remote = None
 
@@ -226,6 +226,7 @@ class RemoteTestRunner(TestRunner):
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result_proxy.set_tests_total(results['total'])
             self.result_proxy.start_tests()
+            self.result.start_tests()
             for tst in results['tests']:
                 name = tst['test'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
@@ -240,7 +241,9 @@ class RemoteTestRunner(TestRunner):
                                   fail_reason=tst['fail_reason'])
                 state = test.get_state()
                 self.result_proxy.start_test(state)
+                self.result.start_test(state)
                 self.result_proxy.check_test(state)
+                self.result.check_test(state)
                 if state['status'] == "INTERRUPTED":
                     summary.add("INTERRUPTED")
                 elif not status.mapping[state['status']]:
@@ -253,6 +256,7 @@ class RemoteTestRunner(TestRunner):
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
             self.result_proxy.end_tests()
+            self.result.end_tests()
         finally:
             try:
                 self.tear_down()
@@ -280,8 +284,8 @@ class VMTestRunner(RemoteTestRunner):
     Test runner to run tests using libvirt domain
     """
 
-    def __init__(self, job, result_proxy):
-        super(VMTestRunner, self).__init__(job, result_proxy)
+    def __init__(self, job, result_proxy, result):
+        super(VMTestRunner, self).__init__(job, result_proxy, result)
         #: VM used during testing
         self.vm = None
 

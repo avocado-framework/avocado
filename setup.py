@@ -160,6 +160,9 @@ if __name__ == '__main__':
                   'json = avocado.plugins.jsonresult:JSONResult',
                   'zip_archive = avocado.plugins.archive:Archive',
                   ],
+              'avocado.plugins.result_events': [
+                  'human = avocado.plugins.human:Human',
+                  ],
               },
           zip_safe=False,
           test_suite='selftests',
