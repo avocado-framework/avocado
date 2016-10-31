@@ -25,6 +25,7 @@ import signal
 import sys
 import time
 
+from . import dispatcher
 from . import test
 from . import exceptions
 from . import output
@@ -176,6 +177,11 @@ class TestStatus(object):
             elif "paused" in msg:
                 self.status = msg
                 self.job.result_proxy.notify_progress(False)
+                # TODO: reuse the job result_events_dispatcher, that
+                # is, either keep it private and create a property to
+                # get it from the test
+                result_events_dispatcher = dispatcher.ResultEventsDispatcher()
+                result_events_dispatcher.map_method('test_progress', False)
                 if msg['paused']:
                     reason = msg['paused_msg']
                     if reason:
@@ -312,6 +318,10 @@ class TestRunner(object):
 
         self.result_proxy.start_test(early_state)
         self.result.start_test(early_state)
+        # TODO: reuse the job result_events_dispatcher, that is, either keep it
+        # private and create a property to get it from the test
+        result_events_dispatcher = dispatcher.ResultEventsDispatcher()
+        result_events_dispatcher.map_method('start_test', self.result, early_state)
         try:
             instance.run_avocado()
         finally:
@@ -336,6 +346,9 @@ class TestRunner(object):
         """
         proc = None
         sigtstp = multiprocessing.Lock()
+        # TODO: reuse the job result_events_dispatcher, that is, either keep it
+        # private and create a property to get it from the test
+        result_events_dispatcher = dispatcher.ResultEventsDispatcher()
 
         def sigtstp_handler(signum, frame):     # pylint: disable=W0613
             """ SIGSTOP all test processes on SIGTSTP """
@@ -404,8 +417,10 @@ class TestRunner(object):
                         if (test_status.status.get('running') or
                                 self.sigstopped):
                             self.job.result_proxy.notify_progress(False)
+                            result_events_dispatcher.map_method('test_progress', False)
                         else:
                             self.job.result_proxy.notify_progress(True)
+                            result_events_dispatcher.map_method('test_progress', True)
                 else:
                     break
             except KeyboardInterrupt:
@@ -448,6 +463,7 @@ class TestRunner(object):
 
         self.result_proxy.check_test(test_state)
         self.result.check_test(test_state)
+        result_events_dispatcher.map_method('end_test', self.result, test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
         elif not mapping[test_state['status']]:
@@ -553,6 +569,10 @@ class TestRunner(object):
             self.job.sysinfo.end_job_hook()
         self.result_proxy.end_tests()
         self.result.end_tests()
+        # TODO: reuse the job result_events_dispatcher, that is, either keep it
+        # private and create a property to get it from the test
+        result_events_dispatcher = dispatcher.ResultEventsDispatcher()
+        result_events_dispatcher.map_method('post_tests', self.job)
         self.job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary

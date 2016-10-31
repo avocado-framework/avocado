@@ -14,6 +14,7 @@
 
 """Extensions/plugins dispatchers."""
 
+import logging
 import sys
 
 from stevedore import EnabledExtensionManager
@@ -171,3 +172,24 @@ class ResultDispatcher(Dispatcher):
             except:
                 job.log.error('Error running method "%s" of plugin "%s": %s',
                               method_name, ext.name, sys.exc_info()[1])
+
+
+class ResultEventsDispatcher(Dispatcher):
+
+    def __init__(self):
+        super(ResultEventsDispatcher, self).__init__('avocado.plugins.result_events')
+        self.log = logging.getLogger("avocado.app")
+
+    def map_method(self, method_name, *args):
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    method(*args)
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:
+                self.log.error('Error running method "%s" of plugin "%s": %s',
+                               method_name, ext.name, sys.exc_info()[1])

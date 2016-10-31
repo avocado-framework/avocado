@@ -127,6 +127,9 @@ class Job(object):
         # A job may not have a dispatcher for pre/post tests execution plugins
         self._job_pre_post_dispatcher = None
 
+        # A job may not have a dispatcher result events plugins
+        self._result_events_dispatcher = None
+
     def _setup_job_results(self):
         """
         Prepares a job result directory, also known as logdir, for this job
@@ -438,6 +441,10 @@ class Job(object):
         self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
         output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
         self._job_pre_post_dispatcher.map_method('pre', self)
+
+        self._result_events_dispatcher = dispatcher.ResultEventsDispatcher()
+        output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+        self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
         if not self.test_suite:
