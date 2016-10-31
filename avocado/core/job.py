@@ -281,10 +281,6 @@ class Job(object):
                     test_result_instance = klass(self)
                     self.result_proxy.add_output_plugin(test_result_instance)
 
-        if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
-            human_plugin = result.HumanResult(self)
-            self.result_proxy.add_output_plugin(human_plugin)
-
         if not self.result_proxy.output_plugins:
             self.result_proxy.add_output_plugin(result.Result(self))
 
