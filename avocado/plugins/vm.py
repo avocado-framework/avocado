@@ -21,9 +21,7 @@ import sys
 from avocado.core import exit_codes
 from avocado.core import virt
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.remote import VMResult
 from avocado.core.remote import VMTestRunner
-from avocado.core.result import register_test_result_class
 
 
 class VM(CLI):
@@ -106,6 +104,4 @@ class VM(CLI):
 
     def run(self, args):
         if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
-            register_test_result_class(args, VMResult)
             args.test_runner = VMTestRunner
-            setattr(args, 'stdout_claimed_by', '--vm-domain')
