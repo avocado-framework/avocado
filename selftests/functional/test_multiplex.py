@@ -107,8 +107,8 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, (4, 0))
 
     def test_empty_file(self):
-        cmd_line = ("./scripts/avocado run -m selftests/.data/empty_file "
-                    "-- passtest.py")
+        cmd_line = ("./scripts/avocado run --job-results-dir %s -m "
+                    "selftests/.data/empty_file -- passtest.py" % self.tmpdir)
         result = self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK,
                                     (1, 0))
 

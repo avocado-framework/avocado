@@ -385,7 +385,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_empty_test_list(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off'
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         expected_output = 'No urls provided nor any arguments produced'
@@ -394,7 +394,7 @@ class RunnerOperationTest(unittest.TestCase):
 
     def test_not_found(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off sbrubles'
+        cmd_line = './scripts/avocado run --sysinfo=off --job-results-dir %s sbrubles' % self.tmpdir
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc)
@@ -402,8 +402,8 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertNotIn('Unable to discover url', result.stdout)
 
     def test_invalid_unique_id(self):
-        cmd_line = ('./scripts/avocado run --sysinfo=off --force-job-id foobar'
-                    ' passtest.py')
+        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir '
+                    '%s --force-job-id foobar passtest.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertNotEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertIn('needs to be a 40 digit hex', result.stderr)
@@ -485,8 +485,8 @@ class RunnerOperationTest(unittest.TestCase):
         os.chdir(basedir)
         test = script.make_script(os.path.join(self.tmpdir, 'test.py'),
                                   INVALID_PYTHON_TEST)
-        cmd_line = './scripts/avocado --show test run --sysinfo=off '\
-                   '--job-results-dir %s %s' % (self.tmpdir, test)
+        cmd_line = ('./scripts/avocado --show test run --sysinfo=off '
+                    '--job-results-dir %s %s') % (self.tmpdir, test)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -498,8 +498,9 @@ class RunnerOperationTest(unittest.TestCase):
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
     def test_read(self):
         os.chdir(basedir)
-        result = process.run("./scripts/avocado run %s" % READ_BINARY,
-                             timeout=10, ignore_status=True)
+        cmd = "./scripts/avocado run --job-results-dir %s %s" % (self.tmpdir,
+                                                                 READ_BINARY)
+        result = process.run(cmd, timeout=10, ignore_status=True)
         self.assertLess(result.duration, 8, "Duration longer than expected."
                         "\n%s" % result)
         self.assertEqual(result.exit_status, 1, "Expected exit status is 1\n%s"
@@ -587,11 +588,17 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          ECHO_BINARY.replace('/', '_'))
 
     def test_replay_skip_skipped(self):
-        result = process.run("./scripts/avocado run skiponsetup.py --json -")
+        cmd = ("./scripts/avocado run --job-results-dir %s --json - "
+               "skiponsetup.py" % self.tmpdir)
+        result = process.run(cmd)
         result = json.loads(result.stdout)
-        jobid = result["job_id"]
-        process.run(str("./scripts/avocado run --replay %s "
-                        "--replay-test-status PASS" % jobid))
+        jobid = str(result["job_id"])
+        replay_data_dir = os.path.dirname(str(result["debuglog"]))
+        cmd = ("./scripts/avocado run --job-results-dir %s --replay-data-dir "
+               "%s --replay %s --replay-test-status PASS") % (self.tmpdir,
+                                                              replay_data_dir,
+                                                              jobid)
+        process.run(cmd)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
