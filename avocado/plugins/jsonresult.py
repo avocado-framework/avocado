@@ -36,8 +36,7 @@ class JSONResult(Result):
     def _render(self, result):
         tests = []
         for test in result.tests:
-            tests.append({'test': str(test.get('name', UNKNOWN)),
-                          'url': str(test.get('name', UNKNOWN)),
+            tests.append({'id': str(test.get('name', UNKNOWN)),
                           'start': test.get('time_start', -1),
                           'end': test.get('time_end', -1),
                           'time': test.get('time_elapsed', -1),
@@ -45,7 +44,16 @@ class JSONResult(Result):
                           'whiteboard': test.get('whiteboard', UNKNOWN),
                           'logdir': test.get('logdir', UNKNOWN),
                           'logfile': test.get('logfile', UNKNOWN),
-                          'fail_reason': str(test.get('fail_reason', UNKNOWN))})
+                          'fail_reason': str(test.get('fail_reason', UNKNOWN)),
+                          # COMPATIBILITY: `test` and `url` are backward
+                          # compatibility key names for the test ID,
+                          # as defined by the test name RFC.  `url` is
+                          # not a test reference, as it's recorded
+                          # after it has been processed by the test resolver
+                          # (currently called test loader in the code).
+                          # Expect them to be removed in the future.
+                          'test': str(test.get('name', UNKNOWN)),
+                          'url': str(test.get('name', UNKNOWN))})
         content = {'job_id': result.job_unique_id,
                    'debuglog': result.logfile,
                    'tests': tests,
