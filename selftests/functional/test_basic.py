@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 import aexpect
 import glob
 import json
@@ -609,7 +610,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
-            'avocado_pass.sh',
+            'ʊʋʉʈɑʅʛʌ',
             PASS_SCRIPT_CONTENTS,
             'avocado_simpletest_functional')
         self.pass_script.save()
