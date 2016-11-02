@@ -18,10 +18,10 @@ import os
 import sys
 # pylint: disable=E0611
 
+from version import VERSION
 from setuptools import setup, find_packages
 
 
-VERSION = open('VERSION', 'r').read().strip()
 VIRTUAL_ENV = hasattr(sys, 'real_prefix')
 
 

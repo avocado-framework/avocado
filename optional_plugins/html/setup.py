@@ -15,11 +15,8 @@
 
 import os
 from setuptools import setup, find_packages
+from version import VERSION
 
-
-root_path = os.path.abspath(os.path.join("..", ".."))
-version_file = os.path.join(root_path, 'VERSION')
-VERSION = open(version_file, 'r').read().strip()
 
 setup(name='avocado_result_html',
       description='Avocado HTML Report for Jobs',
