@@ -36,9 +36,12 @@ from ..utils import stacktrace
 from ..utils import data_structures
 from .settings import settings
 
-DEFAULT = False  # Show default tests (for execution)
-AVAILABLE = None  # Available tests (for listing purposes)
-ALL = True  # All tests (including broken ones)
+#: Show default tests (for execution)
+DEFAULT = False
+#: Available tests (for listing purposes)
+AVAILABLE = None
+# All tests (including broken ones)
+ALL = True
 
 
 class LoaderError(Exception):
