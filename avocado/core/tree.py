@@ -71,15 +71,14 @@ class TreeNode(object):
         self.value = value
         self.parent = parent
         self.children = []
+        self.ctrl = []
         self._environment = None
         self.environment_origin = {}
-        self.ctrl = []
-        self.multiplex = None
         for child in children:
             self.add_child(child)
 
     def __repr__(self):
-        return 'TreeNode(name=%r)' % self.name
+        return 'SimpleTreeNode(name=%r)' % self.name
 
     def __str__(self):
         variables = ['%s=%s' % (k, v) for k, v in self.environment.items()]
@@ -103,6 +102,16 @@ class TreeNode(object):
                 if getattr(self, attr) != getattr(other, attr):
                     return False
             return True
+
+    def __ne__(self, other):
+        """ Inverted eq """
+        return not self == other
+
+    def fingerprint(self):
+        """
+        Reports string which represents the value of this node.
+        """
+        return str(self.path) + str(self.environment) + str(self.ctrl)
 
     def add_child(self, node):
         """
@@ -144,10 +153,6 @@ class TreeNode(object):
                             remove.append(key)
                     for key in remove:
                         self.value.pop(key, None)
-        if other.multiplex is True:
-            self.multiplex = True
-        elif other.multiplex is False:
-            self.multiplex = False
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
@@ -288,62 +293,6 @@ class TreeNode(object):
         return self
 
 
-def path_parent(path):
-    """
-    From a given path, return its parent path.
-
-    :param path: the node path as string.
-    :return: the parent path as string.
-    """
-    parent = path.rpartition('/')[0]
-    if not parent:
-        return '/'
-    return parent
-
-
-def apply_filters(tree, filter_only=None, filter_out=None):
-    """
-    Apply a set of filters to the tree.
-
-    The basic filtering is filter only, which includes nodes,
-    and the filter out rules, that exclude nodes.
-
-    Note that filter_out is stronger than filter_only, so if you filter out
-    something, you could not bypass some nodes by using a filter_only rule.
-
-    :param filter_only: the list of paths which will include nodes.
-    :param filter_out: the list of paths which will exclude nodes.
-    :return: the original tree minus the nodes filtered by the rules.
-    """
-    if filter_only is None:
-        filter_only = []
-    else:
-        filter_only = [_.rstrip('/') for _ in filter_only if _]
-    if filter_out is None:
-        filter_out = []
-    else:
-        filter_out = [_.rstrip('/') for _ in filter_out if _]
-    for node in tree.iter_children_preorder():
-        keep_node = True
-        for path in filter_only:
-            if path == '':
-                continue
-            if node.path == path:
-                keep_node = True
-                break
-            if node.parent and node.parent.path == path_parent(path):
-                keep_node = False
-                continue
-        for path in filter_out:
-            if path == '':
-                continue
-            if node.path == path:
-                keep_node = False
-                break
-        if not keep_node:
-            node.detach()
-    return tree
-
 #
 # Debug version of TreeNode with additional utilities.
 #
@@ -465,9 +414,9 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
         return super(TreeNodeDebug, self).merge(other)
 
 
-def get_named_tree_cls(path):
+def get_named_tree_cls(path, klass=TreeNodeDebug):
     """ Return TreeNodeDebug class with hardcoded yaml path """
-    class NamedTreeNodeDebug(TreeNodeDebug):    # pylint: disable=R0903
+    class NamedTreeNodeDebug(klass):    # pylint: disable=R0903
 
         """ Fake class with hardcoded yaml path """
 
@@ -506,7 +455,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         Generate this node's tree-view
         :return: list of lines
         """
-        if node.multiplex:
+        if getattr(root, "multiplex", False):
             down = charset['DoubleDown']
             down_right = charset['DoubleDownRight']
             right = charset['DoubleRight']
@@ -559,7 +508,7 @@ def tree_view(root, verbose=None, use_utf8=None):
                    'DoubleDownRight': ' #== ',
                    'DoubleRight': ' #== ',
                    'Value': ' -> '}
-    if root.multiplex:
+    if getattr(root, "multiplex", False):
         down = charset['DoubleDown']
         down_right = charset['DoubleDownRight']
         right = charset['DoubleRight']

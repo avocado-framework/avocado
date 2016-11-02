@@ -19,66 +19,13 @@
 Multiplex and create variants.
 """
 
-import collections
-import itertools
+import copy
 import logging
 import re
 
 from . import tree
 
 
-class MuxTree(object):
-
-    """
-    Object representing part of the tree from the root to leaves or another
-    multiplex domain. Recursively it creates multiplexed variants of the full
-    tree.
-    """
-
-    def __init__(self, root):
-        """
-        :param root: Root of this tree slice
-        """
-        self.root = root
-        self.pools = []
-        for node in self._iter_mux_leaves(root):
-            if node.is_leaf:
-                self.pools.append(node)
-            else:
-                self.pools.append([MuxTree(child) for child in node.children])
-
-    @staticmethod
-    def _iter_mux_leaves(node):
-        """ yield leaves or muxes of the tree """
-        queue = collections.deque()
-        while node is not None:
-            if node.is_leaf or node.multiplex:
-                yield node
-            else:
-                queue.extendleft(reversed(node.children))
-            try:
-                node = queue.popleft()
-            except IndexError:
-                raise StopIteration
-
-    def __iter__(self):
-        """
-        Iterates through variants
-        """
-        pools = []
-        for pool in self.pools:
-            if isinstance(pool, list):
-                pools.append(itertools.chain(*pool))
-            else:
-                pools.append(pool)
-        pools = itertools.product(*pools)
-        while True:
-            # TODO: Implement 2nd level filters here
-            # TODO: This part takes most of the time, optimize it
-            yield list(itertools.chain(*pools.next()))
-
-
-# TODO: Create multiplexer plugin and split these functions into multiple files
 class NoMatchError(KeyError):
     pass
 
@@ -365,14 +312,6 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
-def _report_mux_already_parsed(self, *args, **kwargs):
-    """
-    Raises exception describing that `self.data` alteration is restricted
-    """
-    raise RuntimeError("Mux already parsed, altering is restricted. %s %s"
-                       % (args, kwargs))
-
-
 class Mux(object):
 
     """
@@ -385,11 +324,12 @@ class Mux(object):
         :note: people need to check whether mux uses debug and reflect that
                in order to provide the right results.
         """
-        self._has_multiple_variants = None
-        self.variants = None
+        # self.default_params = {}
+        self.default_params = {"example": tree.TreeNode(value={"FOO": "BAR"})}
+        self.variant_plugins = []
         self.debug = debug
-        self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
-        self._mux_path = None
+        self._parsed = False
+        self.ignore_new_data = False   # Used to ignore new data on parsed Mux
 
     def parse(self, args):
         """
@@ -397,49 +337,51 @@ class Mux(object):
 
         :param args: Parsed cmdline arguments
         """
-        filter_only = getattr(args, 'filter_only', None)
-        filter_out = getattr(args, 'filter_out', None)
-        self._parse_basic_injects(args)
-        mux_tree = tree.apply_filters(self.data, filter_only, filter_out)
-        self.variants = MuxTree(mux_tree)
-        self._mux_path = getattr(args, 'mux_path', None)
-        if self._mux_path is None:
-            self._mux_path = ['/run/*']
-        # disable data alteration (and remove data as they are not useful)
-        self.data = None
-        self.data_inject = _report_mux_already_parsed
-        self.data_merge = _report_mux_already_parsed
+        defaults = self._process_default_params(args)
+        for plugin in self.variant_plugins:
+            plugin.update_defaults(copy.deepcopy(defaults))
+        self._parsed = True
 
-    def _parse_basic_injects(self, args):
+    def _process_default_params(self, args):
         """
-        Inject data from the basic injects defined by Mux
+        Process the default params
 
         :param args: Parsed cmdline arguments
         """
+        default_params = tree.TreeNode()
+        for default_param in self.default_params.itervalues():
+            default_params.merge(default_param)
+        self.default_params = default_params
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
         if (not getattr(args, "mux_skip_defaults", False) and
                 hasattr(args, "default_avocado_params")):
-            self.data_merge(args.default_avocado_params)
-
-        # Extend default multiplex tree of --mux-inject values
-        for inject in getattr(args, "mux_inject", []):
-            entry = inject.split(':', 3)
-            if len(entry) < 2:
-                raise ValueError("key:entry pairs required, found only %s"
-                                 % (entry))
-            elif len(entry) == 2:   # key, entry
-                self.data_inject(*entry)
-            else:                   # path, key, entry
-                self.data_inject(key=entry[1], value=entry[2], path=entry[0])
+            self.default_params.merge(args.default_avocado_params)
+        return self.default_params
 
     def is_parsed(self):
         """
         Reports whether the tree was already multiplexed
         """
-        return self.variants is not None
+        return self._parsed
 
-    def data_inject(self, key, value, path=None):
+    def _skip_new_data_check(self, fction, args):
+        """
+        Check whether we can inject the data
+
+        :param fction: Name of the data-inject function
+        :param args: Arguments of the data-inject function
+        :raise RuntimeError: When data injection is restricted
+        :return: True if new data should be ignored
+        """
+        if self._parsed:
+            if self.ignore_new_data:
+                return
+            raise RuntimeError("Mux already parsed, unable to execute "
+                               "%s%s"
+                               % (fction, args))
+
+    def add_default_params(self, name, key, value, path=None):
         """
         Inject entry to the mux tree (params database)
 
@@ -448,33 +390,44 @@ class Mux(object):
         :param path: Optional path to the node to which we assign the value,
                      by default '/'.
         """
-        if path:
-            node = self.data.get_node(path, True)
-        else:
-            node = self.data
-        node.value[key] = value
+        if self._skip_new_data_check("add_default_params",
+                                     (name, key, value, path)):
+            return
+        if path is None:
+            path = "/"
+        if name not in self.default_params:
+            self.default_params[name] = tree.TreeNode()
+        self.default_params[name].get_node(path, True).value[key] = value
 
-    def data_merge(self, tree):
+    def add_variants_plugin(self, plugin):
         """
         Merge tree into the mux tree (params database)
 
         :param tree: Tree to be merged into this database.
         :type tree: :class:`avocado.core.tree.TreeNode`
         """
-        self.data.merge(tree)
+        if self._skip_new_data_check("add_variants_plugin", (plugin,)):
+            return
+        self.variant_plugins.append(plugin)
 
     def get_number_of_tests(self, test_suite):
         """
         :return: overall number of tests * multiplex variants
         """
         # Currently number of tests is symmetrical
-        if self.variants:
-            no_variants = sum(1 for _ in self.variants)
-            if no_variants > 1:
-                self._has_multiple_variants = True
-            return (len(test_suite) * no_variants)
+        if self.variant_plugins:
+            no_variants = sum(1 for plugin in self.variant_plugins
+                              for _ in plugin)
+            return len(test_suite) * no_variants
         else:
             return len(test_suite)
+
+    def str_variants(self):
+        """
+        Returns graphical representation of the variants
+        """
+        return "\n\n".join(plugin.str_variants()
+                           for plugin in self.variant_plugins)
 
     def itertests(self):
         """
@@ -482,11 +435,13 @@ class Mux(object):
 
         :yield (variant-id, (list of leaves, list of multiplex paths))
         """
-        if self.variants:  # Copy template and modify it's params
-            if self._has_multiple_variants:
-                for i, variant in enumerate(self.variants, 1):
-                    yield i, (variant, self._mux_path)
-            else:
-                yield None, (iter(self.variants).next(), self._mux_path)
+        if self.variant_plugins:  # Copy template and modify it's params
+            iter_variants = (variant for plugin in self.variant_plugins
+                             for variant in plugin)
+            for variant in iter_variants:
+                yield variant
         else:   # No variants, use template
-            yield None, None
+            yield {"variant": self.default_params.get_leaves(),
+                   "variant_id": None,
+                   "variant_id_short": None,
+                   "mux_path": "/run"}
