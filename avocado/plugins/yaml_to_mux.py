@@ -18,6 +18,7 @@ import itertools
 import logging
 import os
 import re
+import sha
 import sys
 
 from avocado.core import tree, exit_codes
@@ -392,9 +393,19 @@ class MuxPlugin(object):
         self.variants = None
         self.default_params = None
         self.mux_path = mux_path
+        self.variant_ids = self._get_variant_ids()
+
+    def _get_variant_ids(self):
+        variant_ids = []
+        for variant in MuxTree(self.root):
+            variant.sort(key=lambda x: x.path)
+            fingerprint = "-".join(_.fingerprint() for _ in variant)
+            variant_ids.append("-".join(node.name for node in variant) + '-' +
+                               sha.sha(fingerprint).hexdigest()[:4])
+        return variant_ids
 
     def __iter__(self):
-        for i, variant in enumerate(self.variants, 1):
+        for vid, variant in itertools.izip(self.variant_ids, self.variants):
             '''
             data = copy.deepcopy(self.default_params)
             for leaf in variant:
@@ -402,7 +413,7 @@ class MuxPlugin(object):
                 data.set_environment_dirty()
             yield i, (data.get_leaves(), self.mux_path)
             '''
-            yield {"variant_id": i,
+            yield {"variant_id": vid,
                    "variant": variant,
                    "mux_path": self.mux_path}
 
