@@ -124,6 +124,7 @@ class Test(unittest.TestCase):
     You'll inherit from this to write your own tests. Typically you'll want
     to implement setUp(), test*() and tearDown() methods on your own tests.
     """
+    #: `default_params` will be deprecated by the end of 2017.
     default_params = {}
 
     def __init__(self, methodName='test', name=None, params=None,

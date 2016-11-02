@@ -109,6 +109,8 @@ class AvocadoParams(object):
         :param test_id: test id
         :param mux_path: list of entry points
         :param default_params: dict of params used when no matches found
+
+        .. note:: `default_params` will be deprecated by the end of 2017.
         """
         self._rel_paths = []
         leaves = list(leaves)
