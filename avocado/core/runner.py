@@ -501,7 +501,7 @@ class TestRunner(object):
         else:
             deadline = None
 
-        test_result_total = mux.get_number_of_tests(test_suite)
+        test_result_total = len(mux) * len(test_suite)
         no_digits = len(str(test_result_total))
         self.result_proxy.set_tests_total(test_result_total)
         self.result_proxy.start_tests()

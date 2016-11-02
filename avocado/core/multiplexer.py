@@ -331,6 +331,12 @@ class Mux(object):
         self._parsed = False
         self.ignore_new_data = False   # Used to ignore new data on parsed Mux
 
+    def __len__(self):
+        """
+        Report the number of variants
+        """
+        return sum(len(plugin) for plugin in self.variant_plugins) or 1
+
     def parse(self, args):
         """
         Apply options defined on the cmdline

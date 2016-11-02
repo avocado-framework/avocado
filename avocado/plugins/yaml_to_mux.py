@@ -417,6 +417,12 @@ class MuxPlugin(object):
                    "variant": variant,
                    "mux_path": self.mux_path}
 
+    def __len__(self):
+        """
+        Report the number of variants
+        """
+        return len(self.variant_ids)
+
     def update_defaults(self, defaults):
         if self.default_params:
             self.default_params.merge(defaults)
