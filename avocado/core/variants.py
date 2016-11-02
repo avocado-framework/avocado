@@ -312,10 +312,10 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
-class Mux(object):
+class Variants(object):
 
     """
-    This is a multiplex object which multiplexes the test_suite.
+    This is the main object which connects the variant plugins and test params
     """
 
     def __init__(self, debug=False):
@@ -329,7 +329,7 @@ class Mux(object):
         self.debug = debug
         self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
         self._parsed = False
-        self.ignore_new_data = False   # Used to ignore new data on parsed Mux
+        self.ignore_new_data = False   # Used to ignore new data on parsed Variants
 
     def __len__(self):
         """
@@ -385,7 +385,7 @@ class Mux(object):
         if self._parsed:
             if self.ignore_new_data:
                 return
-            raise RuntimeError("Mux already parsed, unable to execute "
+            raise RuntimeError("Variants already parsed, unable to execute "
                                "%s%s"
                                % (fction, args))
 

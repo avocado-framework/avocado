@@ -38,7 +38,7 @@ from . import exit_codes
 from . import exceptions
 from . import job_id
 from . import output
-from . import multiplexer
+from . import variants
 from . import test
 from . import jobdata
 from .output import STD_OUTPUT
@@ -435,8 +435,8 @@ class Job(object):
 
         mux = getattr(self.args, "mux", None)
         if mux is None:
-            mux = multiplexer.Mux()
-        if not mux.is_parsed():   # Mux not yet parsed, apply args
+            mux = variants.Variants()
+        if not mux.is_parsed():   # Variants not yet parsed, apply args
             try:
                 mux.parse(self.args)
             except (IOError, ValueError) as details:

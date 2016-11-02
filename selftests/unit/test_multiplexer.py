@@ -1,7 +1,7 @@
 import pickle
 import sys
 
-from avocado.core import multiplexer
+from avocado.core import variants
 from avocado.plugins import yaml_to_mux
 
 if sys.version_info[:2] == (2, 6):
@@ -20,12 +20,12 @@ class TestAvocadoParams(unittest.TestCase):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                               'examples/mux-selftest-params.yaml'])
         self.yamls = iter(yaml_to_mux.MuxTree(yamls))
-        self.params1 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest1',
-                                                 ['/ch0/*', '/ch1/*'], {})
+        self.params1 = variants.AvocadoParams(self.yamls.next(), 'Unittest1',
+                                              ['/ch0/*', '/ch1/*'], {})
         self.yamls.next()    # Skip 2nd
         self.yamls.next()    # and 3rd
-        self.params2 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest2',
-                                                 ['/ch1/*', '/ch0/*'], {})
+        self.params2 = variants.AvocadoParams(self.yamls.next(), 'Unittest2',
+                                              ['/ch1/*', '/ch0/*'], {})
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_pickle(self):
@@ -39,7 +39,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertNotEqual(self.params1, self.params2)
         repr(self.params1)
         str(self.params1)
-        str(multiplexer.AvocadoParams([], 'Unittest', [], {}))
+        str(variants.AvocadoParams([], 'Unittest', [], {}))
         self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
