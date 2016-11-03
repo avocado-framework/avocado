@@ -162,9 +162,11 @@ class Run(CLICmd):
             sys.exit(exit_codes.AVOCADO_FAIL)
         job_instance = job.Job(args)
         job_run = job_instance.run()
-        result_dispatcher = ResultDispatcher()
-        if result_dispatcher.extensions:
-            result_dispatcher.map_method('render',
-                                         job_instance.result,
-                                         job_instance)
+
+        if job_instance.status != 'RUNNING':
+            result_dispatcher = ResultDispatcher()
+            if result_dispatcher.extensions:
+                result_dispatcher.map_method('render',
+                                             job_instance.result,
+                                             job_instance)
         return job_run
