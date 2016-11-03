@@ -6,6 +6,7 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
+from avocado.core import exceptions
 from avocado.core import test
 from avocado.core import job
 from avocado.core import exit_codes
@@ -42,8 +43,8 @@ class JobTest(unittest.TestCase):
     def test_job_create_test_suite_empty(self):
         args = argparse.Namespace()
         myjob = job.Job(args)
-        myjob.create_test_suite()
-        self.assertEqual(myjob.test_suite, [])
+        self.assertRaises(exceptions.OptionValidationError,
+                          myjob.create_test_suite)
 
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
