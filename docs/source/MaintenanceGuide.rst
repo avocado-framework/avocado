@@ -153,6 +153,16 @@ there as well.  To help with the process, please run::
 
 And follow the URL and brief instructions given.
 
+Configure Read The Docs
+=======================
+
+On https://readthedocs.org/dashboard/avocado-framework/edit/:
+
+ - Click in **Versions**. In **Choose Active Versions**, find the version
+   you're releasing and check the **Active** option. **Submit**.
+ - Click in **Versions** again. In **Default Version**, select the new
+   version you're releasing. **Submit**.
+
 Send e-mails to avocado-devel and other places
 ==============================================
 
