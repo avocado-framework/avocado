@@ -149,7 +149,7 @@ class LoaderTest(unittest.TestCase):
                                              'avocado_loader_unittest')
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover(simple_test.path, True)[0])
+            self.loader.discover(simple_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
@@ -157,7 +157,7 @@ class LoaderTest(unittest.TestCase):
         tc.run_avocado()
         # Load with params
         simple_with_params = simple_test.path + " 'foo bar' --baz"
-        suite = self.loader.discover(simple_with_params, True)
+        suite = self.loader.discover(simple_with_params, loader.ALL)
         self.assertEqual(len(suite), 1)
         self.assertEqual(suite[0][1]["name"], simple_with_params)
         simple_test.remove()
@@ -168,7 +168,7 @@ class LoaderTest(unittest.TestCase):
                                              mode=DEFAULT_NON_EXEC_MODE)
         simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover(simple_test.path, True)[0])
+            self.loader.discover(simple_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
@@ -182,7 +182,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_pass_test.path, True)[0])
+            self.loader.discover(avocado_pass_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'PassTest', test_class)
         avocado_pass_test.remove()
 
@@ -193,7 +193,7 @@ class LoaderTest(unittest.TestCase):
                                                     mode=DEFAULT_NON_EXEC_MODE)
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_not_a_test.path, True)[0])
+            self.loader.discover(avocado_not_a_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.NotATest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
@@ -206,7 +206,7 @@ class LoaderTest(unittest.TestCase):
                                                     'avocado_loader_unittest')
         avocado_not_a_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_not_a_test.path, True)[0])
+            self.loader.discover(avocado_not_a_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
@@ -222,7 +222,7 @@ class LoaderTest(unittest.TestCase):
                                                      'avocado_loader_unittest')
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_simple_test.path, True)[0])
+            self.loader.discover(avocado_simple_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
@@ -237,7 +237,7 @@ class LoaderTest(unittest.TestCase):
                                                      mode=DEFAULT_NON_EXEC_MODE)
         avocado_simple_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_simple_test.path, True)[0])
+            self.loader.discover(avocado_simple_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.NotATest)
         test_parameters['name'] = test.TestName(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
@@ -251,25 +251,25 @@ class LoaderTest(unittest.TestCase):
                                                         'avocado_multiple_tests_unittest',
                                                         mode=DEFAULT_NON_EXEC_MODE)
         avocado_multiple_tests.save()
-        suite = self.loader.discover(avocado_multiple_tests.path, True)
+        suite = self.loader.discover(avocado_multiple_tests.path, loader.ALL)
         self.assertEqual(len(suite), 2)
         # Try to load only some of the tests
         suite = self.loader.discover(avocado_multiple_tests.path +
-                                     ':MultipleMethods.testTwo', True)
+                                     ':MultipleMethods.testTwo', loader.ALL)
         self.assertEqual(len(suite), 1)
         self.assertEqual(suite[0][1]["methodName"], 'testTwo')
         # Load using regexp
         suite = self.loader.discover(avocado_multiple_tests.path +
-                                     ':.*_one', True)
+                                     ':.*_one', loader.ALL)
         self.assertEqual(len(suite), 1)
         self.assertEqual(suite[0][1]["methodName"], 'test_one')
         # Load booth
         suite = self.loader.discover(avocado_multiple_tests.path +
-                                     ':test.*', True)
+                                     ':test.*', loader.ALL)
         self.assertEqual(len(suite), 2)
         # Load none should return no tests
         self.assertTrue(not self.loader.discover(avocado_multiple_tests.path +
-                                                 ":no_match", True))
+                                                 ":no_match", loader.ALL))
         avocado_multiple_tests.remove()
 
     def test_multiple_methods_same_name(self):
@@ -278,11 +278,11 @@ class LoaderTest(unittest.TestCase):
                                                         'avocado_multiple_tests_unittest',
                                                         mode=DEFAULT_NON_EXEC_MODE)
         avocado_multiple_tests.save()
-        suite = self.loader.discover(avocado_multiple_tests.path, True)
+        suite = self.loader.discover(avocado_multiple_tests.path, loader.ALL)
         self.assertEqual(len(suite), 1)
         # Try to load only some of the tests
         suite = self.loader.discover(avocado_multiple_tests.path +
-                                     ':MultipleMethods.test', True)
+                                     ':MultipleMethods.test', loader.ALL)
         self.assertEqual(len(suite), 1)
         self.assertEqual(suite[0][1]["methodName"], 'test')
         avocado_multiple_tests.remove()
@@ -293,7 +293,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_pass_test.path, True)[0])
+            self.loader.discover(avocado_pass_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'First', test_class)
         avocado_pass_test.remove()
 
@@ -304,7 +304,7 @@ class LoaderTest(unittest.TestCase):
                                                    DEFAULT_NON_EXEC_MODE)
         avocado_pass_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_pass_test.path, True)[0])
+            self.loader.discover(avocado_pass_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.NotATest)
         avocado_pass_test.remove()
 
@@ -315,8 +315,8 @@ class LoaderTest(unittest.TestCase):
                                                      DEFAULT_NON_EXEC_MODE)
         avocado_nested_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_nested_test.path, True)[0])
-        results = self.loader.discover(avocado_nested_test.path, True)
+            self.loader.discover(avocado_nested_test.path, loader.ALL)[0])
+        results = self.loader.discover(avocado_nested_test.path, loader.ALL)
         self.assertTrue(test_class == test.NotATest)
         avocado_nested_test.remove()
 
@@ -327,7 +327,7 @@ class LoaderTest(unittest.TestCase):
             'avocado_loader_unittest')
         avocado_multiple_imp_test.save()
         test_class, test_parameters = (
-            self.loader.discover(avocado_multiple_imp_test.path, True)[0])
+            self.loader.discover(avocado_multiple_imp_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
 
