@@ -407,6 +407,17 @@ class Job(object):
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             raise exceptions.OptionValidationError(details)
 
+        if not self.test_suite:
+            if self.references:
+                references = " ".join(self.references)
+                e_msg = ("No tests found for given test references, try "
+                         "'avocado list -V %s' for details" % references)
+            else:
+                e_msg = ("No test references provided nor any other arguments "
+                         "resolved into tests. Please double check the executed"
+                         " command.")
+            raise exceptions.OptionValidationError(e_msg)
+
     def pre_tests(self):
         """
         Run the pre tests execution hooks
@@ -420,17 +431,6 @@ class Job(object):
         self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
-        if not self.test_suite:
-            if self.references:
-                references = " ".join(self.references)
-                e_msg = ("No tests found for given test references, try "
-                         "'avocado list -V %s' for details" % references)
-            else:
-                e_msg = ("No test references provided nor any other arguments "
-                         "resolved into tests. Please double check the executed"
-                         " command.")
-            raise exceptions.OptionValidationError(e_msg)
-
         mux = getattr(self.args, "mux", None)
         if mux is None:
             mux = multiplexer.Mux()
