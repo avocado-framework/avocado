@@ -5,6 +5,9 @@
 This is a very proud announcement: Avocado release 36.0lts, our very
 first "Long Term Stability" release, is now out!
 
+Release documentation: `Avocado 36.0
+<http://avocado-framework.readthedocs.io/en/36lts/>`_
+
 LTS in a nutshell
 -----------------
 

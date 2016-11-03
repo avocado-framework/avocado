@@ -5,6 +5,9 @@
 This is another proud announcement: Avocado release 37.0, aka "Trabant
 vs. South America", is now out!
 
+Release documentation: `Avocado 37.0
+<http://avocado-framework.readthedocs.io/en/37.0/>`_
+
 This release is yet another collection of bug fixes and some new
 features.  Along with the same changes that made the 36.0lts
 release[1], this brings the following additional changes:

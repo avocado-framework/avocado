@@ -5,6 +5,9 @@
 You guessed it right: this is another Avocado release announcement:
 release 38.0, aka "Love, Ken", is now out!
 
+Release documentation: `Avocado 38.0
+<http://avocado-framework.readthedocs.io/en/38.0/>`_
+
 Another development cycle has just finished, and our community will
 receive this new release containing a nice assortment of bug fixes and
 new features.

@@ -5,6 +5,9 @@
 The Avocado team is proud to present another release: Avocado version
 42.0, aka, "Stranger Things", is now available!
 
+Release documentation: `Avocado 42.0
+<http://avocado-framework.readthedocs.io/en/42.0/>`_
+
 The major changes introduced on this version are listed below,
 roughly categorized into major topics and intended audience:
 
