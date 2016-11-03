@@ -125,7 +125,7 @@ class Result(object):
         """
         Called once before any tests are executed.
         """
-        self.tests_run += 1
+        pass
 
     def end_tests(self):
         """
