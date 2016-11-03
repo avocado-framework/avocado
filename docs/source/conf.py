@@ -4,6 +4,7 @@ import errno
 import os
 import sys
 
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -12,6 +13,7 @@ sys.path.insert(0, root_path)
 
 from avocado.utils import path
 from avocado.utils import process
+from version import VERSION
 
 # Flag that tells if the docs are being built on readthedocs.org
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
@@ -111,8 +113,6 @@ master_doc = 'index'
 project = u'Avocado'
 copyright = u'2014-2015, Red Hat'
 
-version_file = os.path.join(root_path, 'VERSION')
-VERSION = open(version_file, 'r').read().strip()
 version = VERSION
 release = VERSION
 
