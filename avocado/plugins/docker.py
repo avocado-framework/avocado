@@ -116,8 +116,8 @@ class DockerTestRunner(RemoteTestRunner):
     Test runner which runs the job inside a docker container
     """
 
-    def __init__(self, job, result_proxy):
-        super(DockerTestRunner, self).__init__(job, result_proxy)
+    def __init__(self, job, result_proxy, result):
+        super(DockerTestRunner, self).__init__(job, result_proxy, result)
         self.remote = None      # Will be set in `setup`
 
     def setup(self):
