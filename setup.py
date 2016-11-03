@@ -163,6 +163,7 @@ if __name__ == '__main__':
               'avocado.plugins.result_events': [
                   'human = avocado.plugins.human:Human',
                   'tap = avocado.plugins.tap:TAPResult',
+                  'journal = avocado.plugins.journal:JournalResult',
                   ],
               },
           zip_safe=False,
