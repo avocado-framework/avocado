@@ -175,7 +175,6 @@ class TestStatus(object):
                 self.interrupt = True
             elif "paused" in msg:
                 self.status = msg
-                self.job.result_proxy.notify_progress(False)
                 self.job._result_events_dispatcher.map_method('test_progress',
                                                               False)
                 if msg['paused']:
@@ -254,17 +253,14 @@ class TestRunner(object):
     """
     DEFAULT_TIMEOUT = 86400
 
-    def __init__(self, job, result_proxy, result):
+    def __init__(self, job, result):
         """
         Creates an instance of TestRunner class.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param result_proxy: an instance of
-                            :class:`avocado.core.result.ResultProxy`.
         :param result: an instance of :class:`avocado.core.result.Result`
         """
         self.job = job
-        self.result_proxy = result_proxy
         self.result = result
         self.sigstopped = False
 
@@ -312,7 +308,6 @@ class TestRunner(object):
         except Exception:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
-        self.result_proxy.start_test(early_state)
         self.result.start_test(early_state)
         self.job._result_events_dispatcher.map_method('start_test',
                                                       self.result,
@@ -408,10 +403,8 @@ class TestRunner(object):
                     if ctrl_c_count == 0:
                         if (test_status.status.get('running') or
                                 self.sigstopped):
-                            self.job.result_proxy.notify_progress(False)
                             self.job._result_events_dispatcher.map_method('test_progress', False)
                         else:
-                            self.job.result_proxy.notify_progress(True)
                             self.job._result_events_dispatcher.map_method('test_progress', True)
                 else:
                     break
@@ -453,7 +446,6 @@ class TestRunner(object):
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
-        self.result_proxy.check_test(test_state)
         self.result.check_test(test_state)
         self.job._result_events_dispatcher.map_method('end_test',
                                                       self.result,
@@ -516,8 +508,6 @@ class TestRunner(object):
 
         test_result_total = mux.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
-        self.result_proxy.set_tests_total(test_result_total)
-        self.result_proxy.start_tests()
         self.result.tests_total = test_result_total
         self.result.start_tests()
         index = -1
@@ -562,7 +552,6 @@ class TestRunner(object):
 
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
-        self.result_proxy.end_tests()
         self.result.end_tests()
         self.job._result_events_dispatcher.map_method('post_tests', self.job)
         self.job.funcatexit.run()

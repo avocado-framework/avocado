@@ -14,69 +14,8 @@
 #          Ruda Moura <rmoura@redhat.com>
 
 """
-Contains the definition of the Result class, used for output in avocado.
+Contains the Result class, used for result accounting.
 """
-
-
-class InvalidOutputPlugin(Exception):
-    pass
-
-
-def register_test_result_class(application_args, klass):
-    """
-    Register the given test result class to be loaded and enabled by the job
-
-    :param application_args: the parsed application command line arguments.
-                             This is currently being abused to hold various job
-                             settings and feature choices, such as the runner.
-    :type application_args: :class:`argparse.Namespace`
-    :param klass: the test result class to enable
-    :type klass: a subclass of :class:`Result`
-    """
-    if not hasattr(application_args, 'test_result_classes'):
-        application_args.test_result_classes = set()
-    application_args.test_result_classes.add(klass)
-
-
-class ResultProxy(object):
-
-    def __init__(self):
-        self.output_plugins = []
-
-    def notify_progress(self, progress_from_test=False):
-        for output_plugin in self.output_plugins:
-            if hasattr(output_plugin, 'notify_progress'):
-                output_plugin.notify_progress(progress_from_test)
-
-    def add_output_plugin(self, plugin):
-        if not isinstance(plugin, Result):
-            raise InvalidOutputPlugin("Object %s is not an instance of "
-                                      "Result" % plugin)
-        self.output_plugins.append(plugin)
-
-    def start_tests(self):
-        for output_plugin in self.output_plugins:
-            output_plugin.start_tests()
-
-    def end_tests(self):
-        for output_plugin in self.output_plugins:
-            output_plugin.end_tests()
-
-    def start_test(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.start_test(state)
-
-    def end_test(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.end_test(state)
-
-    def check_test(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.check_test(state)
-
-    def set_tests_total(self, tests_total):
-        for output_plugin in self.output_plugins:
-            output_plugin.tests_total = tests_total
 
 
 class Result(object):
