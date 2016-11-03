@@ -127,6 +127,13 @@ class Job(object):
         # A job may not have a dispatcher for pre/post tests execution plugins
         self._job_pre_post_dispatcher = None
 
+        # The result events dispatcher is shared with the test runner.
+        # Because of our goal to support using the phases of a job
+        # freely, let's get the result events dispatcher ready early.
+        # A future optimization may load it on demand.
+        self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
+        output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+
     def _setup_job_results(self):
         """
         Prepares a job result directory, also known as logdir, for this job
@@ -450,6 +457,7 @@ class Job(object):
         self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
         output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
         self._job_pre_post_dispatcher.map_method('pre', self)
+        self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
         mux = getattr(self.args, "mux", None)
