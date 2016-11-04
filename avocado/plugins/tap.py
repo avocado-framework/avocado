@@ -63,17 +63,16 @@ class TAPResult(Result):
             if name[0].isdigit():   # Name must not start with digit
                 name = "_" + name
         # First log the system output
-        self.__write("# debug.log of %s:" % name)
+        self.__write("# debug.log of %s:", name)
         if state.get('text_output'):
             for line in state['text_output'].splitlines():
-                self.__write("#   " + line)
+                self.__write("#   %s", line)
         if status in ("PASS", "WARN"):
-            self.__write("ok %s %s" % (self.tests_run, name))
+            self.__write("ok %s %s", self.tests_run, name)
         elif status == "SKIP":
-            self.__write("ok %s %s  # SKIP %s" % (self.tests_run, name,
-                                                  state.get("fail_reason")))
+            self.__write("ok %s %s  # SKIP %s", self.tests_run, name, state.get("fail_reason"))
         else:
-            self.__write("not ok %s %s" % (self.tests_run, name))
+            self.__write("not ok %s %s", self.tests_run, name)
         super(TAPResult, self).end_test(state)
 
     def end_tests(self):
