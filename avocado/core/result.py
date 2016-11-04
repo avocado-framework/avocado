@@ -14,76 +14,10 @@
 #          Ruda Moura <rmoura@redhat.com>
 
 """
-Contains the definition of the Result class, used for output in avocado.
-
-It also contains the most basic result class, HumanResult, used by the
-test runner.
+Contains the Result class, used for result accounting.
 """
-
-import logging
-
+from . import dispatcher
 from . import output
-
-
-class InvalidOutputPlugin(Exception):
-    pass
-
-
-def register_test_result_class(application_args, klass):
-    """
-    Register the given test result class to be loaded and enabled by the job
-
-    :param application_args: the parsed application command line arguments.
-                             This is currently being abused to hold various job
-                             settings and feature choices, such as the runner.
-    :type application_args: :class:`argparse.Namespace`
-    :param klass: the test result class to enable
-    :type klass: a subclass of :class:`Result`
-    """
-    if not hasattr(application_args, 'test_result_classes'):
-        application_args.test_result_classes = set()
-    application_args.test_result_classes.add(klass)
-
-
-class ResultProxy(object):
-
-    def __init__(self):
-        self.output_plugins = []
-
-    def notify_progress(self, progress_from_test=False):
-        for output_plugin in self.output_plugins:
-            if hasattr(output_plugin, 'notify_progress'):
-                output_plugin.notify_progress(progress_from_test)
-
-    def add_output_plugin(self, plugin):
-        if not isinstance(plugin, Result):
-            raise InvalidOutputPlugin("Object %s is not an instance of "
-                                      "Result" % plugin)
-        self.output_plugins.append(plugin)
-
-    def start_tests(self):
-        for output_plugin in self.output_plugins:
-            output_plugin.start_tests()
-
-    def end_tests(self):
-        for output_plugin in self.output_plugins:
-            output_plugin.end_tests()
-
-    def start_test(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.start_test(state)
-
-    def end_test(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.end_test(state)
-
-    def check_test(self, state):
-        for output_plugin in self.output_plugins:
-            output_plugin.check_test(state)
-
-    def set_tests_total(self, tests_total):
-        for output_plugin in self.output_plugins:
-            output_plugin.tests_total = tests_total
 
 
 class Result(object):
@@ -98,7 +32,7 @@ class Result(object):
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        self.job_unique_id = getattr(job, "unique_id", None)
+        self.job_unique_id = getattr(job, "unique_id")
         self.logfile = getattr(job, "logfile", None)
         self.tests_total = 0
         self.tests_run = 0
@@ -110,6 +44,9 @@ class Result(object):
         self.warned = 0
         self.interrupted = 0
         self.tests = []
+        self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(job.args)
+        output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+        self.job = job
 
     def _reconcile(self):
         """
@@ -132,13 +69,14 @@ class Result(object):
         """
         Called once before any tests are executed.
         """
-        self.tests_run += 1
+        self._result_events_dispatcher.map_method('pre_tests', self.job)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
         self._reconcile()
+        self._result_events_dispatcher.map_method('post_tests', self.job)
 
     def start_test(self, state):
         """
@@ -147,7 +85,7 @@ class Result(object):
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        pass
+        self._result_events_dispatcher.map_method('start_test', self, state)
 
     def end_test(self, state):
         """
@@ -159,6 +97,7 @@ class Result(object):
         self.tests_run += 1
         self.tests_total_time += state.get('time_elapsed', -1)
         self.tests.append(state)
+        self._result_events_dispatcher.map_method('end_test', self, state)
 
     def check_test(self, state):
         """
@@ -181,74 +120,10 @@ class Result(object):
             self.errors += 1
         self.end_test(state)
 
-
-class HumanResult(Result):
-
-    """
-    Human output Test result class.
-    """
-
-    def __init__(self, job):
-        super(HumanResult, self).__init__(job)
-        self.log = logging.getLogger("avocado.app")
-        self.__throbber = output.Throbber()
-        self._replay_source_job = getattr(job.args, "replay_sourcejob", None)
-
-    def start_tests(self):
-        """
-        Called once before any tests are executed.
-        """
-        super(HumanResult, self).start_tests()
-        self.log.info("JOB ID     : %s", self.job_unique_id)
-        if self._replay_source_job is not None:
-            self.log.info("SRC JOB ID : %s", self._replay_source_job)
-        self.log.info("JOB LOG    : %s", self.logfile)
-        self.log.info("TESTS      : %s", self.tests_total)
-
-    def end_tests(self):
-        """
-        Called once after all tests are executed.
-        """
-        super(HumanResult, self).end_tests()
-        self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                      "WARN %d | INTERRUPT %s", self.passed,
-                      self.errors, self.failed, self.skipped,
-                      self.warned, self.interrupted)
-        self.log.info("TESTS TIME : %.2f s", self.tests_total_time)
-
-    def start_test(self, state):
-        super(HumanResult, self).start_test(state)
-        if "name" in state:
-            name = state["name"]
-            uid = name.str_uid
-            name = name.name + name.str_variant
-        else:
-            name = "<unknown>"
-            uid = '?'
-        self.log.debug(' (%s/%s) %s:  ', uid, self.tests_total, name,
-                       extra={"skip_newline": True})
-
-    def end_test(self, state):
-        super(HumanResult, self).end_test(state)
-        status = state.get("status", "ERROR")
-        if status == "TEST_NA":
-            status = "SKIP"
-        mapping = {'PASS': output.TERM_SUPPORT.PASS,
-                   'ERROR': output.TERM_SUPPORT.ERROR,
-                   'FAIL': output.TERM_SUPPORT.FAIL,
-                   'SKIP': output.TERM_SUPPORT.SKIP,
-                   'WARN': output.TERM_SUPPORT.WARN,
-                   'INTERRUPTED': output.TERM_SUPPORT.INTERRUPT}
-        duration = (" (%.2f s)" % state.get('time_elapsed', -1)
-                    if status != "SKIP"
-                    else "")
-        self.log.debug(output.TERM_SUPPORT.MOVE_BACK + mapping[status] +
-                       status + output.TERM_SUPPORT.ENDC + duration)
-
     def notify_progress(self, progress=False):
-        if progress:
-            color = output.TERM_SUPPORT.PASS
-        else:
-            color = output.TERM_SUPPORT.PARTIAL
-        self.log.debug(color + self.__throbber.render() +
-                       output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
+        """
+        Notify the progress of the test
+
+        :param progress: True means there is progress, False means test stall
+        """
+        self._result_events_dispatcher.map_method('test_progress', progress)
