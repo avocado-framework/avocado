@@ -43,8 +43,8 @@ class RemoteTestRunner(TestRunner):
     remote_version_re = re.compile(r'^Avocado (\d+)\.(\d+)\r?$',
                                    re.MULTILINE)
 
-    def __init__(self, job, result_proxy, result):
-        super(RemoteTestRunner, self).__init__(job, result_proxy, result)
+    def __init__(self, job, result):
+        super(RemoteTestRunner, self).__init__(job, result)
         #: remoter connection to the remote machine
         self.remote = None
 
@@ -224,8 +224,6 @@ class RemoteTestRunner(TestRunner):
                 raise exceptions.JobError(details)
             results = self.run_test(self.job.references, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
-            self.result_proxy.set_tests_total(results['total'])
-            self.result_proxy.start_tests()
             self.result.tests_total = results['total']
             self.result.start_tests()
             for tst in results['tests']:
@@ -241,12 +239,10 @@ class RemoteTestRunner(TestRunner):
                                   logfile=tst['logfile'],
                                   fail_reason=tst['fail_reason'])
                 state = test.get_state()
-                self.result_proxy.start_test(state)
                 self.result.start_test(state)
                 self.job._result_events_dispatcher.map_method('start_test',
                                                               self.result,
                                                               state)
-                self.result_proxy.check_test(state)
                 self.result.check_test(state)
                 self.job._result_events_dispatcher.map_method('end_test',
                                                               self.result,
@@ -262,7 +258,6 @@ class RemoteTestRunner(TestRunner):
             self.remote.receive_files(local_log_dir, zip_filename)
             archive.uncompress(zip_path_filename, local_log_dir)
             os.remove(zip_path_filename)
-            self.result_proxy.end_tests()
             self.result.end_tests()
             self.job._result_events_dispatcher.map_method('post_tests',
                                                           self.job)
@@ -293,8 +288,8 @@ class VMTestRunner(RemoteTestRunner):
     Test runner to run tests using libvirt domain
     """
 
-    def __init__(self, job, result_proxy, result):
-        super(VMTestRunner, self).__init__(job, result_proxy, result)
+    def __init__(self, job, result):
+        super(VMTestRunner, self).__init__(job, result)
         #: VM used during testing
         self.vm = None
 

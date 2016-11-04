@@ -54,7 +54,7 @@ class VMTestRunnerSetup(unittest.TestCase):
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log)
-        self.runner = VMTestRunner(job, None, None)
+        self.runner = VMTestRunner(job, None)
         mock_vm.should_receive('stop').once().ordered()
         mock_vm.should_receive('restore_snapshot').once().ordered()
 
