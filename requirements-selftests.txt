@@ -19,7 +19,7 @@ Pillow>=2.2.1
 snakefood>=1.4
 networkx>=1.9.1
 pygraphviz>=1.3rc2
-pydot>=1.0.2
+pydot>=1.2.3
 aexpect>=1.0.0
 psutil>=3.1.1
 # stevedore for loading "new style" plugins
