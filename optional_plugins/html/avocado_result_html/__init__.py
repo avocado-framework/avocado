@@ -267,6 +267,8 @@ class HTMLResult(Result):
             report_file.write(report_contents)
 
     def render(self, result, job):
+        if job.status == "RUNNING":
+            return  # Don't create results on unfinished jobs
         if not (hasattr(job.args, 'html_job_result') or
                 hasattr(job.args, 'html_output')):
             return
