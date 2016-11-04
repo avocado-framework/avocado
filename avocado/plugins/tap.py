@@ -35,7 +35,13 @@ class TAPResult(ResultEvents):
             """
             Format msg and append '\n'
             """
-            return self.output.write(msg % writeargs + "\n")
+            if writeargs:
+                try:
+                    msg %= writeargs
+                except TypeError, details:
+                    raise TypeError("%s: msg='%s' args='%s'" %
+                                    (details, msg, writeargs))
+            return self.output.write(msg + "\n")
 
         def silent(msg, *writeargs):
             pass
@@ -75,17 +81,16 @@ class TAPResult(ResultEvents):
             if name[0].isdigit():   # Name must not start with digit
                 name = "_" + name
         # First log the system output
-        self.__write("# debug.log of %s:" % name)
+        self.__write("# debug.log of %s:", name)
         if state.get('text_output'):
             for line in state['text_output'].splitlines():
-                self.__write("#   " + line)
+                self.__write("#   %s", line)
         if status in ("PASS", "WARN"):
-            self.__write("ok %s %s" % (result.tests_run, name))
+            self.__write("ok %s %s", result.tests_run, name)
         elif status == "SKIP":
-            self.__write("ok %s %s  # SKIP %s" % (result.tests_run, name,
-                                                  state.get("fail_reason")))
+            self.__write("ok %s %s  # SKIP %s", result.tests_run, name, state.get("fail_reason"))
         else:
-            self.__write("not ok %s %s" % (result.tests_run, name))
+            self.__write("not ok %s %s", result.tests_run, name)
 
     def test_progress(self, progress=False):
         pass
