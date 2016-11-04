@@ -18,38 +18,50 @@ TAP output module.
 import logging
 
 from avocado.core.parser import FileOrStdoutAction
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.result import register_test_result_class, Result
+from avocado.core.plugin_interfaces import CLI, ResultEvents
 
 
-class TAPResult(Result):
+class TAPResult(ResultEvents):
+
     """
     TAP output class
     """
 
-    def __init__(self, job, force_output_file=None):
-        def writeln(msg, *args):
+    name = 'tap'
+    description = "TAP - Test Anything Protocol results"
+
+    def __init__(self, args):
+        def writeln(msg, *writeargs):
             """
             Format msg and append '\n'
             """
-            return self.output.write(msg % args + "\n")
-        super(TAPResult, self).__init__(job)
-        self.output = force_output_file or getattr(job.args, 'tap', '-')
-        if self.output != '-':
-            self.output = open(self.output, "w", 1)
-            self.__write = writeln
-        else:
+            return self.output.write(msg % writeargs + "\n")
+
+        def silent(msg, *writeargs):
+            pass
+
+        self.output = getattr(args, 'tap', None)
+        if self.output is None:
+            self.__write = silent
+        elif self.output == '-':
             self.__write = logging.getLogger(
                 "avocado.app").debug   # pylint: disable=R0204
+        else:
+            self.output = open(self.output, "w", 1)
+            self.__write = writeln
 
-    def start_tests(self):
+    def pre_tests(self, job):
         """
         Log the test plan
         """
-        super(TAPResult, self).start_tests()
-        self.__write("1..%s", self.tests_total)
+        tests = len(job.test_suite)
+        if tests > 0:
+            self.__write("1..%d", tests)
 
-    def end_test(self, state):
+    def start_test(self, result, state):
+        pass
+
+    def end_test(self, result, state):
         """
         Log the test status and details
         """
@@ -68,16 +80,18 @@ class TAPResult(Result):
             for line in state['text_output'].splitlines():
                 self.__write("#   " + line)
         if status in ("PASS", "WARN"):
-            self.__write("ok %s %s" % (self.tests_run, name))
+            self.__write("ok %s %s" % (result.tests_run, name))
         elif status == "SKIP":
-            self.__write("ok %s %s  # SKIP %s" % (self.tests_run, name,
+            self.__write("ok %s %s  # SKIP %s" % (result.tests_run, name,
                                                   state.get("fail_reason")))
         else:
-            self.__write("not ok %s %s" % (self.tests_run, name))
-        super(TAPResult, self).end_test(state)
+            self.__write("not ok %s %s" % (result.tests_run, name))
 
-    def end_tests(self):
-        if self.output is not '-':
+    def test_progress(self, progress=False):
+        pass
+
+    def post_tests(self, job):
+        if self.output not in (None, '-'):
             self.output.close()
 
 
@@ -102,5 +116,4 @@ class TAP(CLI):
                                        "to the standard output.")
 
     def run(self, args):
-        if getattr(args, "tap", False):
-            register_test_result_class(args, TAPResult)
+        pass

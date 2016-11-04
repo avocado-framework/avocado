@@ -176,6 +176,8 @@ class TestStatus(object):
             elif "paused" in msg:
                 self.status = msg
                 self.job.result_proxy.notify_progress(False)
+                self.job._result_events_dispatcher.map_method('test_progress',
+                                                              False)
                 if msg['paused']:
                     reason = msg['paused_msg']
                     if reason:
@@ -227,8 +229,11 @@ class TestStatus(object):
         test_state['fail_class'] = (exceptions.TestAbortError.__class__.
                                     __name__)
         test_state['traceback'] = 'Traceback not available'
-        with open(test_state['logfile'], 'r') as log_file_obj:
-            test_state['text_output'] = log_file_obj.read()
+        try:
+            with open(test_state['logfile'], 'r') as log_file_obj:
+                test_state['text_output'] = log_file_obj.read()
+        except IOError:
+            test_state["text_output"] = "Not available, file not created yet"
         TEST_LOG.error('ERROR %s -> TestAbortedError: '
                        'Test process died without reporting the status.',
                        test_state['name'])
@@ -252,16 +257,15 @@ class TestRunner(object):
     """
     DEFAULT_TIMEOUT = 86400
 
-    def __init__(self, job, result_proxy):
+    def __init__(self, job, result):
         """
         Creates an instance of TestRunner class.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
-        :param result_proxy: an instance of
-                            :class:`avocado.core.result.ResultProxy`.
+        :param result: an instance of :class:`avocado.core.result.Result`
         """
         self.job = job
-        self.result_proxy = result_proxy
+        self.result = result
         self.sigstopped = False
 
     def _run_test(self, test_factory, queue):
@@ -308,7 +312,10 @@ class TestRunner(object):
         except Exception:
             instance.error(stacktrace.str_unpickable_object(early_state))
 
-        self.result_proxy.start_test(early_state)
+        self.result.start_test(early_state)
+        self.job._result_events_dispatcher.map_method('start_test',
+                                                      self.result,
+                                                      early_state)
         try:
             instance.run_avocado()
         finally:
@@ -382,6 +389,7 @@ class TestRunner(object):
         first = 0.01
         step = 0.01
         abort_reason = None
+        result_dispatcher = self.job._result_events_dispatcher
 
         while True:
             try:
@@ -400,9 +408,10 @@ class TestRunner(object):
                     if ctrl_c_count == 0:
                         if (test_status.status.get('running') or
                                 self.sigstopped):
-                            self.job.result_proxy.notify_progress(False)
+                            result_dispatcher.map_method('test_progress',
+                                                         False)
                         else:
-                            self.job.result_proxy.notify_progress(True)
+                            result_dispatcher.map_method('test_progress', True)
                 else:
                     break
             except KeyboardInterrupt:
@@ -443,7 +452,8 @@ class TestRunner(object):
             test_state = add_runner_failure(test_state, "ERROR", "Test reports"
                                             " unsupported test status.")
 
-        self.result_proxy.check_test(test_state)
+        self.result.check_test(test_state)
+        result_dispatcher.map_method('end_test', self.result, test_state)
         if test_state['status'] == "INTERRUPTED":
             summary.add("INTERRUPTED")
         elif not mapping[test_state['status']]:
@@ -502,9 +512,8 @@ class TestRunner(object):
 
         test_result_total = mux.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
-        self.result_proxy.set_tests_total(test_result_total)
-        self.result_proxy.start_tests()
-
+        self.result.tests_total = test_result_total
+        self.result.start_tests()
         index = -1
         try:
             for test_template in test_suite:
@@ -547,7 +556,8 @@ class TestRunner(object):
 
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
-        self.result_proxy.end_tests()
+        self.result.end_tests()
+        self.job._result_events_dispatcher.map_method('post_tests', self.job)
         self.job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary
