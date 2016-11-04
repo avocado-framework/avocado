@@ -130,7 +130,6 @@ class Result(object):
         """
         Called once before any tests are executed.
         """
-        self.tests_run += 1
         self._result_events_dispatcher.map_method('pre_tests', self.job)
 
     def end_tests(self):
