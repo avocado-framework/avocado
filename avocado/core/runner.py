@@ -227,8 +227,11 @@ class TestStatus(object):
         test_state['fail_class'] = (exceptions.TestAbortError.__class__.
                                     __name__)
         test_state['traceback'] = 'Traceback not available'
-        with open(test_state['logfile'], 'r') as log_file_obj:
-            test_state['text_output'] = log_file_obj.read()
+        try:
+            with open(test_state['logfile'], 'r') as log_file_obj:
+                test_state['text_output'] = log_file_obj.read()
+        except IOError:
+            test_state["text_output"] = "Not available, file not created yet"
         TEST_LOG.error('ERROR %s -> TestAbortedError: '
                        'Test process died without reporting the status.',
                        test_state['name'])
