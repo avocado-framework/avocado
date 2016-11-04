@@ -106,7 +106,6 @@ class Job(object):
             self.loglevel = logging.DEBUG
 
         self.status = "RUNNING"
-        self.result_proxy = result.ResultProxy()
         self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
@@ -260,31 +259,7 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             result_proxy=self.result_proxy,
                                              result=self.result)
-
-    def _make_old_style_test_result(self):
-        """
-        Old style result output plugins setup.
-
-        This supports the activation of old style result classes which are
-        registered with :func:`avocado.core.result.register_test_result_class`.
-
-        Then, if no plugin has claimed the STDOUT, activate a HumanResult
-        instance.
-
-        Finally, if no old style result plugin is given, activate a bare
-        bones Result instance, as they serve result information (only)
-        to the new style result plugins.
-        """
-        if self.args:
-            if getattr(self.args, 'test_result_classes', None) is not None:
-                for klass in self.args.test_result_classes:
-                    test_result_instance = klass(self)
-                    self.result_proxy.add_output_plugin(test_result_instance)
-
-        if not self.result_proxy.output_plugins:
-            self.result_proxy.add_output_plugin(result.Result(self))
 
     def _make_test_suite(self, references=None):
         """
@@ -463,7 +438,6 @@ class Job(object):
                 raise exceptions.OptionValidationError("Unable to parse mux: "
                                                        "%s" % details)
 
-        self._make_old_style_test_result()
         self._make_test_runner()
         self._start_sysinfo()
 
