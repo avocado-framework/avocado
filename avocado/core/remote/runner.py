@@ -226,6 +226,7 @@ class RemoteTestRunner(TestRunner):
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result.tests_total = results['total']
             self.result.start_tests()
+            local_log_dir = self.job.logdir
             for tst in results['tests']:
                 name = tst['test'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
@@ -237,7 +238,8 @@ class RemoteTestRunner(TestRunner):
                                   status=tst['status'],
                                   logdir=tst['logdir'],
                                   logfile=tst['logfile'],
-                                  fail_reason=tst['fail_reason'])
+                                  fail_reason=tst['fail_reason'],
+                                  job_logdir=local_log_dir)
                 state = test.get_state()
                 self.result.start_test(state)
                 self.job._result_events_dispatcher.map_method('start_test',
@@ -251,7 +253,6 @@ class RemoteTestRunner(TestRunner):
                     summary.add("INTERRUPTED")
                 elif not status.mapping[state['status']]:
                     summary.add("FAIL")
-            local_log_dir = self.job.logdir
             zip_filename = remote_log_dir + '.zip'
             zip_path_filename = os.path.join(local_log_dir,
                                              os.path.basename(zip_filename))
