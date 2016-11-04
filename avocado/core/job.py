@@ -106,7 +106,7 @@ class Job(object):
             self.loglevel = logging.DEBUG
 
         self.status = "RUNNING"
-        self.result_proxy = result.ResultProxy()
+        self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         self.__logging_handlers = {}
@@ -125,6 +125,11 @@ class Job(object):
 
         # A job may not have a dispatcher for pre/post tests execution plugins
         self._job_pre_post_dispatcher = None
+
+        # The result events dispatcher is shared with the test runner.
+        # Because of our goal to support using the phases of a job
+        # freely, let's get the result events dispatcher ready early.
+        # A future optimization may load it on demand.
 
     def _setup_job_results(self):
         """
@@ -254,34 +259,7 @@ class Job(object):
             test_runner_class = runner.TestRunner
 
         self.test_runner = test_runner_class(job=self,
-                                             result_proxy=self.result_proxy)
-
-    def _make_old_style_test_result(self):
-        """
-        Old style result output plugins setup.
-
-        This supports the activation of old style result classes which are
-        registered with :func:`avocado.core.result.register_test_result_class`.
-
-        Then, if no plugin has claimed the STDOUT, activate a HumanResult
-        instance.
-
-        Finally, if no old style result plugin is given, activate a bare
-        bones Result instance, as they serve result information (only)
-        to the new style result plugins.
-        """
-        if self.args:
-            if getattr(self.args, 'test_result_classes', None) is not None:
-                for klass in self.args.test_result_classes:
-                    test_result_instance = klass(self)
-                    self.result_proxy.add_output_plugin(test_result_instance)
-
-        if not getattr(self.args, 'stdout_claimed_by', False) or self.standalone:
-            human_plugin = result.HumanResult(self)
-            self.result_proxy.add_output_plugin(human_plugin)
-
-        if not self.result_proxy.output_plugins:
-            self.result_proxy.add_output_plugin(result.Result(self))
+                                             result=self.result)
 
     def _make_test_suite(self, references=None):
         """
@@ -422,9 +400,21 @@ class Job(object):
         """
         try:
             self.test_suite = self._make_test_suite(self.references)
+            self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
             stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
             raise exceptions.OptionValidationError(details)
+
+        if not self.test_suite:
+            if self.references:
+                references = " ".join(self.references)
+                e_msg = ("No tests found for given test references, try "
+                         "'avocado list -V %s' for details" % references)
+            else:
+                e_msg = ("No test references provided nor any other arguments "
+                         "resolved into tests. Please double check the executed"
+                         " command.")
+            raise exceptions.OptionValidationError(e_msg)
 
     def pre_tests(self):
         """
@@ -438,17 +428,6 @@ class Job(object):
         self._job_pre_post_dispatcher.map_method('pre', self)
 
     def run_tests(self):
-        if not self.test_suite:
-            if self.references:
-                references = " ".join(self.references)
-                e_msg = ("No tests found for given test references, try "
-                         "'avocado list -V %s' for details" % references)
-            else:
-                e_msg = ("No test references provided nor any other arguments "
-                         "resolved into tests. Please double check the executed"
-                         " command.")
-            raise exceptions.OptionValidationError(e_msg)
-
         mux = getattr(self.args, "mux", None)
         if mux is None:
             mux = multiplexer.Mux()
@@ -459,7 +438,6 @@ class Job(object):
                 raise exceptions.OptionValidationError("Unable to parse mux: "
                                                        "%s" % details)
 
-        self._make_old_style_test_result()
         self._make_test_runner()
         self._start_sysinfo()
 
