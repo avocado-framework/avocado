@@ -18,9 +18,7 @@ import os
 import sqlite3
 import datetime
 
-from avocado.core.plugin_interfaces import CLI
-from avocado.core.result import Result
-from avocado.core.result import register_test_result_class
+from avocado.core.plugin_interfaces import CLI, ResultEvents
 
 JOURNAL_FILENAME = ".journal.sqlite"
 
@@ -33,7 +31,7 @@ SCHEMA = {'job_info': 'CREATE TABLE job_info (unique_id TEXT UNIQUE)',
                            "flushed BOOLEAN DEFAULT 0)")}
 
 
-class ResultJournal(Result):
+class JournalResult(ResultEvents):
 
     """
     Test Result Journal class.
@@ -43,13 +41,12 @@ class ResultJournal(Result):
     feedback to users from a central place.
     """
 
-    def __init__(self, job=None):
+    def __init__(self, args):
         """
         Creates an instance of ResultJournal.
 
         :param job: an instance of :class:`avocado.core.job.Job`.
         """
-        Result.__init__(self, job)
         self.journal_initialized = False
 
     def _init_journal(self, logdir):
@@ -95,17 +92,21 @@ class ResultJournal(Result):
                                      status))
         self.journal.commit()
 
-    def start_test(self, state):
+    def pre_tests(self, job):
+        pass
+
+    def start_test(self, result, state):
         self.lazy_init_journal(state)
-        Result.start_test(self, state)
         self._record_status(state, "STARTED")
 
-    def end_test(self, state):
+    def test_progress(self, progress=False):
+        pass
+
+    def end_test(self, result, state):
         self.lazy_init_journal(state)
-        Result.end_test(self, state)
         self._record_status(state, "ENDED")
 
-    def end_tests(self):
+    def post_tests(self, job):
         self._shutdown_journal()
 
 
@@ -131,5 +132,4 @@ class Journal(CLI):
                                                   help=help_msg)
 
     def run(self, args):
-        if 'journal' in args and args.journal is True:
-            register_test_result_class(args, ResultJournal)
+        pass
