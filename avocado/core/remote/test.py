@@ -37,6 +37,7 @@ class RemoteTest(object):
         self.job_unique_id = ''
         self.logdir = logdir
         self.logfile = logfile
+        self.job_logdir = logdir
 
     def get_state(self):
         """
