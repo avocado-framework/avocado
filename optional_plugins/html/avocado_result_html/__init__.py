@@ -276,6 +276,8 @@ class HTMLResult(Result):
         open_browser = getattr(job.args, 'open_browser', False)
         if getattr(job.args, 'html_job_result', 'off') == 'on':
             html_dir = os.path.join(job.logdir, 'html')
+            if os.path.exists(html_dir):    # update the html result if exists
+                shutil.rmtree(html_dir)
             os.makedirs(html_dir)
             html_path = os.path.join(html_dir, 'results.html')
             self._render(result, html_path)
@@ -288,6 +290,8 @@ class HTMLResult(Result):
 
         html_path = getattr(job.args, 'html_output', 'None')
         if html_path is not None:
+            if os.path.exists(html_dir):    # update the html result if exists
+                shutil.rmtree(html_dir)
             self._render(result, html_path)
             if open_browser:
                 self._open_browser(html_path)
