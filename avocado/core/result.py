@@ -22,6 +22,7 @@ test runner.
 
 import logging
 
+from . import dispatcher
 from . import output
 
 
@@ -110,6 +111,9 @@ class Result(object):
         self.warned = 0
         self.interrupted = 0
         self.tests = []
+        self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(job.args)
+        output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+        self.job = job
 
     def _reconcile(self):
         """
@@ -133,12 +137,14 @@ class Result(object):
         Called once before any tests are executed.
         """
         self.tests_run += 1
+        self._result_events_dispatcher.map_method('pre_tests', self.job)
 
     def end_tests(self):
         """
         Called once after all tests are executed.
         """
         self._reconcile()
+        self._result_events_dispatcher.map_method('post_tests', self.job)
 
     def start_test(self, state):
         """
@@ -147,7 +153,7 @@ class Result(object):
         :param state: result of :class:`avocado.core.test.Test.get_state`.
         :type state: dict
         """
-        pass
+        self._result_events_dispatcher.map_method('start_test', self, state)
 
     def end_test(self, state):
         """
@@ -159,6 +165,7 @@ class Result(object):
         self.tests_run += 1
         self.tests_total_time += state.get('time_elapsed', -1)
         self.tests.append(state)
+        self._result_events_dispatcher.map_method('end_test', self, state)
 
     def check_test(self, state):
         """
@@ -180,6 +187,14 @@ class Result(object):
         else:
             self.errors += 1
         self.end_test(state)
+
+    def notify_progress(self, progress=False):
+        """
+        Notify the progress of the test
+
+        :param progress: True means there is progress, False means test stall
+        """
+        self._result_events_dispatcher.map_method('test_progress', progress)
 
 
 class HumanResult(Result):

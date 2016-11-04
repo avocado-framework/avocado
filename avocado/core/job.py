@@ -127,6 +127,11 @@ class Job(object):
         # A job may not have a dispatcher for pre/post tests execution plugins
         self._job_pre_post_dispatcher = None
 
+        # The result events dispatcher is shared with the test runner.
+        # Because of our goal to support using the phases of a job
+        # freely, let's get the result events dispatcher ready early.
+        # A future optimization may load it on demand.
+
     def _setup_job_results(self):
         """
         Prepares a job result directory, also known as logdir, for this job
