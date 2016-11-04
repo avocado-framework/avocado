@@ -14,6 +14,7 @@
 
 """Extensions/plugins dispatchers."""
 
+import logging
 import sys
 
 from stevedore import EnabledExtensionManager
@@ -30,11 +31,12 @@ class Dispatcher(EnabledExtensionManager):
     #: Default namespace prefix for Avocado extensions
     NAMESPACE_PREFIX = 'avocado.plugins.'
 
-    def __init__(self, namespace):
+    def __init__(self, namespace, invoke_kwds={}):
         self.load_failures = []
         super(Dispatcher, self).__init__(namespace=namespace,
                                          check_func=self.enabled,
                                          invoke_on_load=True,
+                                         invoke_kwds=invoke_kwds,
                                          on_load_failure_callback=self.store_load_failure,
                                          propagate_map_exceptions=True)
 
@@ -171,3 +173,26 @@ class ResultDispatcher(Dispatcher):
             except:
                 job.log.error('Error running method "%s" of plugin "%s": %s',
                               method_name, ext.name, sys.exc_info()[1])
+
+
+class ResultEventsDispatcher(Dispatcher):
+
+    def __init__(self, args):
+        super(ResultEventsDispatcher, self).__init__(
+            'avocado.plugins.result_events',
+            invoke_kwds={'args': args})
+        self.log = logging.getLogger("avocado.app")
+
+    def map_method(self, method_name, *args):
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    method(*args)
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:
+                self.log.error('Error running method "%s" of plugin "%s": %s',
+                               method_name, ext.name, sys.exc_info()[1])

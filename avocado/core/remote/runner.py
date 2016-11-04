@@ -243,8 +243,14 @@ class RemoteTestRunner(TestRunner):
                 state = test.get_state()
                 self.result_proxy.start_test(state)
                 self.result.start_test(state)
+                self.job._result_events_dispatcher.map_method('start_test',
+                                                              self.result,
+                                                              state)
                 self.result_proxy.check_test(state)
                 self.result.check_test(state)
+                self.job._result_events_dispatcher.map_method('end_test',
+                                                              self.result,
+                                                              state)
                 if state['status'] == "INTERRUPTED":
                     summary.add("INTERRUPTED")
                 elif not status.mapping[state['status']]:
@@ -258,6 +264,8 @@ class RemoteTestRunner(TestRunner):
             os.remove(zip_path_filename)
             self.result_proxy.end_tests()
             self.result.end_tests()
+            self.job._result_events_dispatcher.map_method('post_tests',
+                                                          self.job)
         finally:
             try:
                 self.tear_down()

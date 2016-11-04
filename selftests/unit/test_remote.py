@@ -44,10 +44,13 @@ class RemoteTestRunnerTest(unittest.TestCase):
                         env_keep=None)
         log = flexmock()
         log.should_receive("info")
+        result_dispatcher = flexmock()
+        result_dispatcher.should_receive("map_method")
         job = flexmock(args=Args, log=log,
                        references=['/tests/sleeptest', '/tests/other/test',
                                    'passtest'], unique_id='1-sleeptest;0',
-                       logdir="/local/path")
+                       logdir="/local/path",
+                       _result_events_dispatcher=result_dispatcher)
 
         flexmock(remote.RemoteTestRunner).should_receive('__init__')
         self.runner = remote.RemoteTestRunner(job, None)
