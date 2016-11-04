@@ -22,7 +22,7 @@ class RemoteTest(object):
     """
 
     def __init__(self, name, status, time, start, end, fail_reason, logdir,
-                 logfile):
+                 logfile, job_logdir):
         note = "Not supported yet"
         self.name = name
         self.status = status
@@ -37,6 +37,7 @@ class RemoteTest(object):
         self.job_unique_id = ''
         self.logdir = logdir
         self.logfile = logfile
+        self.job_logdir = job_logdir
 
     def get_state(self):
         """

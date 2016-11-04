@@ -117,7 +117,8 @@ _=/usr/bin/env''', exit_status=0)
                 'fail_class': 'Not supported yet', 'job_unique_id': '',
                 'fail_reason': u'None',
                 'logdir': u'/local/path/test-results/1-sleeptest;0',
-                'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log'}
+                'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log',
+                'job_logdir': u'/local/path'}
         Result.should_receive('start_test').once().with_args(args).ordered()
         Result.should_receive('check_test').once().with_args(args).ordered()
         (Remote.should_receive('receive_files')
