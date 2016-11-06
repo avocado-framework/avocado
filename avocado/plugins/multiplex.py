@@ -36,11 +36,6 @@ class Multiplex(CLICmd):
     def configure(self, parser):
         parser = super(Multiplex, self).configure(parser)
 
-        parser.add_argument('--filter-only', nargs='*', default=[],
-                            help='Filter only path(s) from multiplexing')
-
-        parser.add_argument('--filter-out', nargs='*', default=[],
-                            help='Filter out path(s) from multiplexing')
         parser.add_argument('--system-wide', action='store_false',
                             default=True, dest="mux-skip-defaults",
                             help="Combine the files with the default "
@@ -48,9 +43,6 @@ class Multiplex(CLICmd):
         parser.add_argument('-c', '--contents', action='store_true',
                             default=False, help="Shows the node content "
                             "(variables)")
-        parser.add_argument('--mux-inject', default=[], nargs='*',
-                            help="Inject [path:]key:node values into "
-                            "the final multiplex tree.")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
                                 dest="mux_debug", default=False,
@@ -91,9 +83,9 @@ class Multiplex(CLICmd):
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(mux.variants):
+        for variant in mux.itertests():
             if not args.mux_debug:
-                paths = ', '.join([x.path for x in tpl])
+                paths = ', '.join([x.path for x in variant["variant"]])
             else:
                 color = output.TERM_SUPPORT.LOWLIGHT
                 cend = output.TERM_SUPPORT.ENDC
@@ -101,12 +93,12 @@ class Multiplex(CLICmd):
                                                   getattr(_, 'yaml',
                                                           "Unknown"),
                                                   cend)
-                                   for _ in tpl])
+                                   for _ in variant["variant"]])
             log.debug('%sVariant %s:    %s', '\n' if args.contents else '',
-                      index + 1, paths)
+                      variant["variant_id"], paths)
             if args.contents:
                 env = set()
-                for node in tpl:
+                for node in variant["variant"]:
                     for key, value in node.environment.iteritems():
                         origin = node.environment_origin[key].path
                         env.add(("%s:%s" % (origin, key), str(value)))

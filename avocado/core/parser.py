@@ -20,7 +20,7 @@ import argparse
 import logging
 
 from . import exit_codes
-from . import multiplexer
+from . import variants
 from . import settings
 from . import tree
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
@@ -124,8 +124,6 @@ class Parser(object):
             help='subcommand help',
             dest='subcommand')
 
-        # Allow overriding default params by plugins
-        self.args.mux = multiplexer.Mux(getattr(self.args, "mux-debug", False))
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
         self.args.default_avocado_params = tree.TreeNode()
@@ -137,6 +135,8 @@ class Parser(object):
         Side effect: set the final value for attribute `args`.
         """
         self.args, extra = self.application.parse_known_args(namespace=self.args)
+        # Allow overriding default params by plugins
+        self.args.mux = variants.Variants(getattr(self.args, "mux_debug", False))
         if extra:
             msg = 'unrecognized arguments: %s' % ' '.join(extra)
             for sub in self.application._subparsers._actions:

@@ -6,13 +6,20 @@ if sys.version_info[:2] == (2, 6):
 else:
     import unittest
 
-from avocado.core import tree
 from avocado.plugins import yaml_to_mux
+from avocado.core import tree
 
 if __name__ == "__main__":
     PATH_PREFIX = "../../../../"
 else:
     PATH_PREFIX = ""
+
+
+def combine(leaves_pools):
+    """ Joins remaining leaves and pools and create product """
+    if leaves_pools[0]:
+        leaves_pools[1].extend(leaves_pools[0])
+    return itertools.product(*leaves_pools[1])
 
 
 class TestTree(unittest.TestCase):
@@ -21,7 +28,7 @@ class TestTree(unittest.TestCase):
                                          'examples/mux-selftest.yaml'])
 
     def test_node_order(self):
-        self.assertIsInstance(self.tree, tree.TreeNode)
+        self.assertIsInstance(self.tree, yaml_to_mux.MuxTreeNode)
         self.assertEqual('hw', self.tree.children[0])
         self.assertEqual({'cpu_CFLAGS': '-march=core2'},
                          self.tree.children[0].children[0].children[0].value)
@@ -41,7 +48,7 @@ class TestTree(unittest.TestCase):
         tree2 = copy.deepcopy(self.tree)
         self.assertEqual(self.tree, tree2)
         # Additional node
-        child = tree.TreeNode("20", {'name': 'Heisenbug'})
+        child = yaml_to_mux.MuxTreeNode("20", {'name': 'Heisenbug'})
         tree2.children[1].children[1].add_child(child)
         self.assertNotEqual(self.tree, tree2)
         # Should match again
@@ -54,7 +61,7 @@ class TestTree(unittest.TestCase):
         # Different value
         tree2.children[0].children[0].children[0].value = {'something': 'else'}
         self.assertNotEqual(self.tree.children[0], tree2.children[0])
-        tree3 = tree.TreeNode()
+        tree3 = yaml_to_mux.MuxTreeNode()
         self.assertNotEqual(tree3, tree2)
         # Merge
         tree3.merge(tree2)
@@ -127,26 +134,30 @@ class TestTree(unittest.TestCase):
     def test_filters(self):
         tree2 = copy.deepcopy(self.tree)
         exp = ['intel', 'amd', 'arm', 'fedora', 'mint', 'prod']
-        act = tree.apply_filters(tree2,
-                                 filter_only=['/hw/cpu', '']).get_leaves()
+        act = yaml_to_mux.apply_filters(tree2,
+                                        filter_only=['/hw/cpu', ''])
+        act = act.get_leaves()
         self.assertEqual(exp, act)
         tree2 = copy.deepcopy(self.tree)
         exp = ['scsi', 'virtio', 'fedora', 'mint', 'prod']
-        act = tree.apply_filters(tree2,
-                                 filter_out=['/hw/cpu', '']).get_leaves()
+        act = yaml_to_mux.apply_filters(tree2,
+                                        filter_out=['/hw/cpu', ''])
+        act = act.get_leaves()
         self.assertEqual(exp, act)
 
     def test_merge_trees(self):
         tree2 = copy.deepcopy(self.tree)
-        tree3 = tree.TreeNode()
-        tree3.add_child(tree.TreeNode('hw', {'another_value': 'bbb'}))
-        tree3.children[0].add_child(tree.TreeNode('nic'))
-        tree3.children[0].children[0].add_child(tree.TreeNode('default'))
-        tree3.children[0].children[0].add_child(tree.TreeNode('virtio',
-                                                              {'nic': 'virtio'}
-                                                              ))
-        tree3.children[0].add_child(tree.TreeNode('cpu',
-                                                  {'test_value': ['z']}))
+        tree3 = yaml_to_mux.MuxTreeNode()
+        tree3.add_child(yaml_to_mux.MuxTreeNode('hw',
+                                                {'another_value': 'bbb'}))
+        tree3.children[0].add_child(yaml_to_mux.MuxTreeNode('nic'))
+        child = yaml_to_mux.MuxTreeNode('default')
+        tree3.children[0].children[0].add_child(child)
+        child = yaml_to_mux.MuxTreeNode('virtio', {'nic': 'virtio'})
+        tree3.children[0].children[0].add_child(child)
+        child = yaml_to_mux.MuxTreeNode('cpu', {'test_value': ['z']})
+        tree3.children[0].add_child(child)
+
         tree2.merge(tree3)
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'default', 'virtio',
                'fedora', 'mint', 'prod']
@@ -205,16 +216,73 @@ class TestTree(unittest.TestCase):
 class TestPathParent(unittest.TestCase):
 
     def test_empty_string(self):
-        self.assertEqual(tree.path_parent(''), '/')
+        self.assertEqual(yaml_to_mux.path_parent(''), '/')
 
     def test_on_root(self):
-        self.assertEqual(tree.path_parent('/'), '/')
+        self.assertEqual(yaml_to_mux.path_parent('/'), '/')
 
     def test_direct_parent(self):
-        self.assertEqual(tree.path_parent('/os/linux'), '/os')
+        self.assertEqual(yaml_to_mux.path_parent('/os/linux'), '/os')
 
     def test_false_direct_parent(self):
-        self.assertNotEqual(tree.path_parent('/os/linux'), '/')
+        self.assertNotEqual(yaml_to_mux.path_parent('/os/linux'), '/')
+
+
+class TestMultiplex(unittest.TestCase):
+
+    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE,
+                     "Not multiplex capable")
+    def setUp(self):
+        self.mux_tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
+                                                      'examples/mux-selftest.'
+                                                      'yaml'])
+        self.mux_full = tuple(yaml_to_mux.MuxTree(self.mux_tree))
+
+    def test_empty(self):
+        act = tuple(yaml_to_mux.MuxTree(tree.TreeNode()))
+        self.assertEqual(act, (['', ],))
+
+    def test_partial(self):
+        exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
+               ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
+        act = tuple(yaml_to_mux.MuxTree(self.mux_tree.children[0]))
+        self.assertEqual(act, exp)
+
+    def test_full(self):
+        self.assertEqual(len(self.mux_full), 12)
+
+    def test_create_variants(self):
+        from_file = yaml_to_mux.create_from_yaml(
+            ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
+        from_file = yaml_to_mux.MuxTree(from_file)
+        self.assertEqual(self.mux_full, tuple(from_file))
+
+    # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
+    def test_filter_only(self):
+        exp = (['intel', 'scsi'], ['intel', 'virtio'])
+        act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
+                                            'examples/mux-selftest.yaml'])
+        act = yaml_to_mux.apply_filters(act, ('/hw/cpu/intel',
+                                              '/distro/fedora',
+                                              '/hw'))
+        act = tuple(yaml_to_mux.MuxTree(act))
+        self.assertEqual(act, exp)
+
+    def test_filter_out(self):
+        act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
+                                            'examples/mux-selftest.yaml'])
+        act = yaml_to_mux.apply_filters(act, None, ('/hw/cpu/intel',
+                                                    '/distro/fedora',
+                                                    '/distro'))
+        act = tuple(yaml_to_mux.MuxTree(act))
+        self.assertEqual(len(act), 4)
+        self.assertEqual(len(act[0]), 3)
+        str_act = str(act)
+        self.assertIn('amd', str_act)
+        self.assertIn('prod', str_act)
+        self.assertNotIn('intel', str_act)
+        self.assertNotIn('fedora', str_act)
+
 
 if __name__ == '__main__':
     unittest.main()

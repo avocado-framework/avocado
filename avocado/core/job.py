@@ -38,8 +38,7 @@ from . import exit_codes
 from . import exceptions
 from . import job_id
 from . import output
-from . import multiplexer
-from . import tree
+from . import variants
 from . import test
 from . import jobdata
 from .output import STD_OUTPUT
@@ -356,30 +355,16 @@ class Job(object):
         job_log.info('logs     ' + data_dir.get_logs_dir())
         job_log.info('')
 
-    def _log_mux_tree(self, mux):
-        job_log = _TEST_LOGGER
-        tree_repr = tree.tree_view(mux.variants.root, verbose=True,
-                                   use_utf8=False)
-        if tree_repr:
-            job_log.info('Multiplex tree representation:')
-            for line in tree_repr.splitlines():
-                job_log.info(line)
-            job_log.info('')
-
     def _log_tmp_dir(self):
         job_log = _TEST_LOGGER
         job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
         job_log.info('')
 
     def _log_mux_variants(self, mux):
-        job_log = _TEST_LOGGER
-
-        for (index, tpl) in enumerate(mux.variants):
-            paths = ', '.join([x.path for x in tpl])
-            job_log.info('Variant %s:    %s', index + 1, paths)
-
-        if mux.variants:
-            job_log.info('')
+        out = mux.str_variants()
+        if out:
+            _TEST_LOGGER.info(out)
+            _TEST_LOGGER.info('')
 
     def _log_job_debug_info(self, mux):
         """
@@ -389,7 +374,6 @@ class Job(object):
         self._log_avocado_version()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_mux_tree(mux)
         self._log_tmp_dir()
         self._log_mux_variants(mux)
         self._log_job_id()
@@ -433,8 +417,8 @@ class Job(object):
     def run_tests(self):
         mux = getattr(self.args, "mux", None)
         if mux is None:
-            mux = multiplexer.Mux()
-        if not mux.is_parsed():   # Mux not yet parsed, apply args
+            mux = variants.Variants()
+        if not mux.is_parsed():   # Variants not yet parsed, apply args
             try:
                 mux.parse(self.args)
             except (IOError, ValueError) as details:
