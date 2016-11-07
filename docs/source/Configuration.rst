@@ -9,7 +9,9 @@ and that's why a configuration system is in place to help with those cases
 The Avocado config file format is based on the (informal)
 `INI file 'specification' <http://en.wikipedia.org/wiki/INI_file>`__, that is implemented by
 Python's  :mod:`ConfigParser`. The format is simple and straightforward, composed by `sections`,
-that contain a number of `keys` and `values`. Take for example a basic Avocado config file::
+that contain a number of `keys` and `values`. Take for example a basic Avocado config file:
+
+.. code-block:: ini
 
     [datadir.paths]
     base_dir = ~/avocado
@@ -50,7 +52,9 @@ Plugin config files
 Plugins can also be configured by config files. In order to not disturb the main Avocado config file, those plugins,
 if they wish so, may install additional config files to ``/etc/avocado/conf.d/[pluginname].conf``, that will be parsed
 after the system wide config file. Users can override those values as well at the local config file level.
-Considering the config for the hypothethical plugin ``salad``::
+Considering the config for the hypothethical plugin ``salad``:
+
+.. code-block:: ini
 
     [salad.core]
     base = ceasar

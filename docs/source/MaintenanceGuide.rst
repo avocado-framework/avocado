@@ -12,7 +12,9 @@ Bump the version number
 =======================
 
 Go through the avocado code base and update the release number. At the time
-of this writing, the diff looked like this::
+of this writing, the diff looked like this:
+
+.. code-block:: diff
 
     diff --git a/avocado.spec b/avocado.spec
     index eb910e8..21313ca 100644

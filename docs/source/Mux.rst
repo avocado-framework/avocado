@@ -102,7 +102,9 @@ of parameters.
 
 Let's start with an example (line numbers at the first columns are for
 documentation purposes only, they are not part of the multiplex file
-format)::
+format):
+
+.. code-block:: yaml
 
      1  hw:
      2      cpu: !mux
@@ -181,7 +183,9 @@ Each node can define key/value pairs (lines 4,6,8,11,...). Additionally
 each children node inherits values of it's parent and the result is called
 node ``environment``.
 
-Given the node structure bellow::
+Given the node structure bellow:
+
+.. code-block:: yaml
 
     devtools:
         compiler: 'cc'
@@ -217,7 +221,9 @@ Variants
 --------
 
 In the end all leaves are gathered and turned into parameters, more specifically into
-``AvocadoParams``::
+``AvocadoParams``:
+
+.. code-block:: yaml
 
     setup:
         graphic:
@@ -235,7 +241,9 @@ by path. But the most powerful multiplexer feature is that it can generate
 multiple variants. To do that you need to tag a node whose children are
 ment to be multiplexed. Effectively it returns only leaves of one child at the
 time.In order to generate all possible variants multiplexer creates cartesian
-product of all of these variants::
+product of all of these variants:
+
+.. code-block:: yaml
 
     cpu: !mux
         intel:
@@ -253,7 +261,9 @@ Produces 6 variants::
     /cpu/arm, /fmt/raw
 
 The !mux evaluation is recursive so one variant can expand to multiple
-ones::
+ones:
+
+.. code-block:: yaml
 
     fmt: !mux
         qcow: !mux
@@ -291,7 +301,9 @@ be overridden by ``--mux-path``, which accepts multiple arguments. What it does
 it splits leaves by the provided paths. Each query goes one by one through
 those sub-trees and first one to hit the match returns the result. It might not
 solve all problems, but it can help to combine existing YAML files with your
-ones::
+ones:
+
+.. code-block:: yaml
 
     qa:         # large and complex read-only file, content injected into /qa
         tests:
@@ -325,7 +337,7 @@ are available in the default path and you can safely use ``params.get(key)``.
 
 When you need to put a file into a different location, for example
 when you have two files and you don't want the content to be merged into
-a single place becomming effectively a single blob, you can do that by
+a single place becoming effectively a single blob, you can do that by
 giving a name to your yaml file::
 
     avocado run sleeptest.py --mux-yaml duration:duration.yaml
@@ -353,7 +365,7 @@ intention of the test writer. There are several ways to access the values:
 It's recommended to use the simple injection for single YAML files, relative
 injection for multiple simple YAML files and the last option is for very
 advanced setups when you either can't modify the YAML files and you need to
-specify custom resoltion order or you are specifying non-test parameters, for
+specify custom resolution order or you are specifying non-test parameters, for
 example parameters for your plugin, which you need to separate from the test
 parameters.
 
@@ -363,7 +375,9 @@ Multiple files
 
 You can provide multiple files. In such scenario final tree is a combination
 of the provided files where later nodes with the same name override values of
-the preceding corresponding node. New nodes are appended as new children::
+the preceding corresponding node. New nodes are appended as new children:
+
+.. code-block:: yaml
 
     file-1.yaml:
         debug:
@@ -377,7 +391,9 @@ the preceding corresponding node. New nodes are appended as new children::
         fast:
             CFLAGS: '-Ofast'
 
-results in::
+results in:
+
+.. code-block:: yaml
 
     debug:
         CFLAGS: '-O0 -g'
@@ -387,7 +403,9 @@ results in::
         CFLAGS: '-Ofast'    # appended
 
 It's also possible to include existing file into another a given node in another
-file. This is done by the `!include : $path` directive::
+file. This is done by the `!include : $path` directive:
+
+.. code-block:: yaml
 
     os:
         fedora:
@@ -415,7 +433,9 @@ name and the parsing fails.
 !include
 --------
 
-Includes other file and injects it into the node it's specified in::
+Includes other file and injects it into the node it's specified in:
+
+.. code-block:: yaml
 
     my_other_file:
         !include : other.yaml
@@ -428,7 +448,9 @@ Relative paths start from the original file's directory.
 !using
 ------
 
-Prepends path to the node it's defined in::
+Prepends path to the node it's defined in:
+
+.. code-block:: yaml
 
     !using : /foo
     bar:
@@ -441,7 +463,9 @@ Prepends path to the node it's defined in::
 ------------
 
 Removes node if it existed during the merge. It can be used to extend
-incompatible YAML files::
+incompatible YAML files:
+
+.. code-block:: yaml
 
     os:
         fedora:

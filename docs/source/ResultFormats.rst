@@ -54,6 +54,13 @@ You can also request that the report be opened automatically by using the
 Will show you the nice looking HTML results report right after ``sleeptest``
 finishes running.
 
+.. warning:: The HTML output is an optional plugin and has to be installed
+             separately as ``avocado-plugins-output-html`` rpm or by executing
+             ``cd optional_plugins/html && python setup.py install``
+             from avocado sources. Note it's enabled by default when using
+             avocado from sorces by ``make develop`` or ``make link``.
+
+
 Machine readable results
 ------------------------
 
@@ -246,7 +253,7 @@ Exit Codes
 
 Avocado exit code tries to represent different things that can happen during
 an execution. That means exit codes can be a combination of codes that were
-ORed toghether as a simgle exit code. The final exit code can be debundled so
+ORed together as a single exit code. The final exit code can be de-bundled so
 users can have a good idea on what happened to the job.
 
 The single individual exit codes are:

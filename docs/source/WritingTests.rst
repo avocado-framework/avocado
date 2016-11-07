@@ -82,6 +82,10 @@ Additionally, we'll save a raw copy of the whiteboard contents on a file named
 (maybe you want to use the result of a benchmark directly with your custom made scripts
 to analyze that particular benchmark result).
 
+If you need to attach several output files, you can also use
+``self.outputdir``, which points to the ``test-results/data``
+location and is reserved for arbitrary test result data.
+
 Accessing test parameters
 =========================
 
@@ -89,7 +93,9 @@ Each test has a set of parameters that can be accessed through
 ``self.params.get($name, $path=None, $default=None)``.
 Avocado finds and populates ``self.params`` with all parameters you define on
 a Multiplex Config file (see :doc:`Mux`). As an example, consider
-the following multiplex file for sleeptest::
+the following multiplex file for sleeptest:
+
+.. code-block:: yaml
 
     sleeptest:
         type: "builtin"
@@ -438,13 +444,6 @@ location of the test suite code (tarball) through
 decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
 the suite.
 
-The ``setUp`` method is the only place in avocado where you are allowed to
-call the ``skip`` method, given that, if a test started to be executed, by
-definition it can't be skipped anymore. Avocado will do its best to enforce
-this boundary, so that if you use ``skip`` outside ``setUp``, the test upon
-execution will be marked with the ``ERROR`` status, and the error message
-will instruct you to fix your test's code.
-
 In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
@@ -540,7 +539,7 @@ Detailing the ``fetch_asset()`` attributes:
   cache directory, pointing to the file original location.
 * ``expire:`` (optional) time period that the cached file will be considered
   valid. After that period, the file will be dowloaded again. The value can
-  be an integer or a string containig the time and the unit. Example: '10d'
+  be an integer or a string containing the time and the unit. Example: '10d'
   (ten days). Valid units are ``s`` (second), ``m`` (minute), ``h`` (hour) and
   ``d`` (day).
 
@@ -761,7 +760,7 @@ Setting a Test Timeout
 Sometimes your test suite/test might get stuck forever, and this might
 impact your test grid. You can account for that possibility and set up a
 ``timeout`` parameter for your test. The test timeout can be set through
-the multiplex, as shown below. 
+the multiplex, as shown below.
 
 ::
 
@@ -955,6 +954,13 @@ separate process), it doesn't make sense to support unittest's
 instantiated for each test, so it's pointless to run code in those
 methods, since they're supposed to keep class state between tests.
 
+The ``setUp`` method is the only place in avocado where you are allowed to
+call the ``skip`` method, given that, if a test started to be executed, by
+definition it can't be skipped anymore. Avocado will do its best to enforce
+this boundary, so that if you use ``skip`` outside ``setUp``, the test upon
+execution will be marked with the ``ERROR`` status, and the error message
+will instruct you to fix your test's code.
+
 If you require a common setup to a number of tests, the current
 recommended approach is to to write regular :meth:`setUp
 <unittest.TestCase.setUp>` and :meth:`tearDown
@@ -989,7 +995,7 @@ If your test setup is some kind of action that will last accross
 processes, like the installation of a software package given in the
 previous example, you're pretty much covered here.
 
-If you need to keep other type of data a class acrross test
+If you need to keep other type of data a class across test
 executions, you'll have to resort to saving and restoring the data
 from an outside source (say a "pickle" file).  Finding and using a
 reliable and safe location for saving such data is currently not in
