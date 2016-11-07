@@ -39,5 +39,6 @@ class AstringTest(unittest.TestCase):
                       "avocado 123")
         self.assertEqual(astring.tabular_output(matrix), str_matrix)
 
+
 if __name__ == '__main__':
     unittest.main()

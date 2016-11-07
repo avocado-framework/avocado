@@ -26,6 +26,7 @@ def test_suite():
                                        top_level_dir=basedir))
     return suite
 
+
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(failfast=not os.environ.get("SELF_CHECK_CONTINUOUS"))
     result = runner.run(test_suite())

@@ -66,5 +66,6 @@ def symlink_coredumps():
         except Exception:
             pass
 
+
 if __name__ == "__main__":
     symlink_coredumps()

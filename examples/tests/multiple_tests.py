@@ -33,5 +33,6 @@ class MultipleTests(Test):
         """
         raise Exception('This action method should never be executed.')
 
+
 if __name__ == '__main__':
     main()

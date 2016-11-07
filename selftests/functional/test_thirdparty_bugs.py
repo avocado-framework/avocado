@@ -28,5 +28,6 @@ class TestThirdPartyBugs(unittest.TestCase):
         except download.urllib2.URLError as details:
             raise unittest.SkipTest(details)
 
+
 if __name__ == '__main__':
     unittest.main()

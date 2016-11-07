@@ -110,5 +110,6 @@ class DataDirTest(unittest.TestCase):
         if hasattr(self, 'alt_mapping'):
             shutil.rmtree(self.alt_mapping['base_dir'])
 
+
 if __name__ == '__main__':
     unittest.main()

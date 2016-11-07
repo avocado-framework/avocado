@@ -216,5 +216,6 @@ class TestPathParent(unittest.TestCase):
     def test_false_direct_parent(self):
         self.assertNotEqual(tree.path_parent('/os/linux'), '/')
 
+
 if __name__ == '__main__':
     unittest.main()

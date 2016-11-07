@@ -785,6 +785,7 @@ def service_manager(run=process.run):
                                                     internal_parser(run))
         return _service_manager
 
+
 ServiceManager = service_manager
 
 
@@ -846,5 +847,6 @@ def specific_service_manager(service_name, run=process.run):
     return _SpecificServiceManager(service_name,
                                    specific_generator(run),
                                    _get_service_result_parser(run), run)
+
 
 SpecificServiceManager = specific_service_manager

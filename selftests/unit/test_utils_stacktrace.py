@@ -80,5 +80,6 @@ class TestUnpickableObject(unittest.TestCase):
                ListWithUnpickableAttribute(ListWithUnpickableAttribute(
                    [InClassUnpickable()]))])
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -67,5 +67,6 @@ class VMTestRunnerSetup(unittest.TestCase):
         self.runner.tear_down()
         flexmock_teardown()
 
+
 if __name__ == '__main__':
     unittest.main()

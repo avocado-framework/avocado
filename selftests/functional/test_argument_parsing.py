@@ -72,5 +72,6 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         self.run_but_fail_before_create_job_dir('--whacky-option passtest',
                                                 exit_codes.AVOCADO_FAIL)
 
+
 if __name__ == '__main__':
     unittest.main()

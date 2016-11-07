@@ -23,5 +23,6 @@ class DispatcherTest(unittest.TestCase):
             self.assertEqual(names, sorted(names))
             self.assertEqual(ext_names, sorted(ext_names))
 
+
 if __name__ == '__main__':
     unittest.main()
