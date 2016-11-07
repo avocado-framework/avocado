@@ -131,9 +131,10 @@ attempt to do so by running::
 
   pip install -r https://raw.githubusercontent.com/avocado-framework/avocado/master/requirements.txt
 
-The result, though, is highly dependent on your system setup, such as
-having the right compilers, header files and libraries available.  The
-more predictable and complete Avocado experience can be achieved with
+This way you only get the base avocado-framework without the optional
+plugins. Additionally the installation requires correctly configured
+system with the right compilers, header files and libraries available.
+The more predictable and complete Avocado experience can be achieved with
 the official RPM packages.
 
 Using Avocado
