@@ -206,10 +206,11 @@ an image with Avocado, you can run a test inside the container with a
 command similar to::
 
     $ avocado run passtest.py warntest.py failtest.py --docker ldoktor/fedora-avocado --docker-cmd "sudo docker"
-    DOCKER     : Container id '4bcbcd69801211501a0dde5926c0282a9630adbe29ecb17a21ef04f024366943'
     JOB ID     : db309f5daba562235834f97cad5f4458e3fe6e32
     JOB LOG    : $HOME/avocado/job-results/job-2016-07-25T08.01-db309f5/job.log
     TESTS      : 3
+    DOCKER     : Container id '4bcbcd69801211501a0dde5926c0282a9630adbe29ecb17a21ef04f024366943'
+    DOCKER     : Container name 'job-2016-07-25T08.01-db309f5.avocado'
      (1/3) /avocado_remote_test_dir/$HOME/passtest.py:PassTest.test: PASS (0.00 s)
      (2/3) /avocado_remote_test_dir/$HOME/warntest.py:WarnTest.test: WARN (0.00 s)
      (3/3) /avocado_remote_test_dir/$HOME/failtest.py:FailTest.test: FAIL (0.00 s)
