@@ -54,6 +54,13 @@ You can also request that the report be opened automatically by using the
 Will show you the nice looking HTML results report right after ``sleeptest``
 finishes running.
 
+.. warning:: The HTML output is an optional plugin and has to be installed
+             separately as ``avocado-plugins-output-html`` rpm or by executing
+             ``cd optional_plugins/html && python setup.py install``
+             from avocado sources. Note it's enabled by default when using
+             avocado from sorces by ``make develop`` or ``make link``.
+
+
 Machine readable results
 ------------------------
 
