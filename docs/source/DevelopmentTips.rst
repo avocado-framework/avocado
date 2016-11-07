@@ -143,8 +143,8 @@ Create task query:
 #. Press `Finish`.
 #. Trello tasks assigned to you will now appear in the Mylyn Task List.
 
-Noy you can start using tasks by clicking the small bubble in front of the
-name. This closes all editors. Try openning some and then click the bubble
+Note you can start using tasks by clicking the small bubble in front of the
+name. This closes all editors. Try opening some and then click the bubble
 again. They should get closed. When you click the bubble third time, it should
 resume all the open editors from before.
 

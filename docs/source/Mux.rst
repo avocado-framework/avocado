@@ -337,7 +337,7 @@ are available in the default path and you can safely use ``params.get(key)``.
 
 When you need to put a file into a different location, for example
 when you have two files and you don't want the content to be merged into
-a single place becomming effectively a single blob, you can do that by
+a single place becoming effectively a single blob, you can do that by
 giving a name to your yaml file::
 
     avocado run sleeptest.py --mux-yaml duration:duration.yaml
@@ -365,7 +365,7 @@ intention of the test writer. There are several ways to access the values:
 It's recommended to use the simple injection for single YAML files, relative
 injection for multiple simple YAML files and the last option is for very
 advanced setups when you either can't modify the YAML files and you need to
-specify custom resoltion order or you are specifying non-test parameters, for
+specify custom resolution order or you are specifying non-test parameters, for
 example parameters for your plugin, which you need to separate from the test
 parameters.
 

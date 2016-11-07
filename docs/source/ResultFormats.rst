@@ -253,7 +253,7 @@ Exit Codes
 
 Avocado exit code tries to represent different things that can happen during
 an execution. That means exit codes can be a combination of codes that were
-ORed toghether as a simgle exit code. The final exit code can be debundled so
+ORed together as a single exit code. The final exit code can be de-bundled so
 users can have a good idea on what happened to the job.
 
 The single individual exit codes are:
