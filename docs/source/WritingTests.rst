@@ -93,7 +93,9 @@ Each test has a set of parameters that can be accessed through
 ``self.params.get($name, $path=None, $default=None)``.
 Avocado finds and populates ``self.params`` with all parameters you define on
 a Multiplex Config file (see :doc:`Mux`). As an example, consider
-the following multiplex file for sleeptest::
+the following multiplex file for sleeptest:
+
+.. code-block:: yaml
 
     sleeptest:
         type: "builtin"
