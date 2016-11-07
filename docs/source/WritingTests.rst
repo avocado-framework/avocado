@@ -82,6 +82,11 @@ Additionally, we'll save a raw copy of the whiteboard contents on a file named
 (maybe you want to use the result of a benchmark directly with your custom made scripts
 to analyze that particular benchmark result).
 
+If you need to attach several output files, you can also use
+``self.outputdir``, which points to the
+``$RESULTS/test-results/$TEST_ID/data`` location and is reserved for
+arbitrary test result data.
+
 Accessing test parameters
 =========================
 
