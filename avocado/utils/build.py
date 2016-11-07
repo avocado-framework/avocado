@@ -63,7 +63,7 @@ def run_make(path, make='make', env=None, extra_args='', ignore_status=None,
 
     # Compatibility with 36LTS
     # process_kwargs was added in 43.0 and supersedes the old way of
-    # specifying the proces's arguments. When 36LTS is discontinued the
+    # specifying the process's arguments. When 36LTS is discontinued the
     # ignore_status, allow_output_check and env args should be removed.
     if process_kwargs is None:
         process_kwargs = {}
