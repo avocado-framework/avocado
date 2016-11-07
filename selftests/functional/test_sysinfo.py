@@ -70,5 +70,6 @@ class SysInfoTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
+
 if __name__ == '__main__':
     unittest.main()

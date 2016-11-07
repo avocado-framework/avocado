@@ -54,5 +54,6 @@ class ResultResponseTest(unittest.TestCase):
                           response.ResultResponse,
                           self.BAD_DATA_RESULTS)
 
+
 if __name__ == '__main__':
     unittest.main()

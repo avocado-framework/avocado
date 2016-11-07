@@ -101,5 +101,6 @@ class SettingsTest(unittest.TestCase):
     def tearDown(self):
         os.unlink(self.config_file.name)
 
+
 if __name__ == '__main__':
     unittest.main()

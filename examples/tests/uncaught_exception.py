@@ -16,5 +16,6 @@ class ErrorTest(Test):
         """
         raise Exception("This is a generic exception")
 
+
 if __name__ == "__main__":
     main()

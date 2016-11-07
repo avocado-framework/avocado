@@ -62,5 +62,6 @@ class EnvironmentVariablesTest(unittest.TestCase):
         self.script.remove()
         shutil.rmtree(self.tmpdir)
 
+
 if __name__ == '__main__':
     unittest.main()

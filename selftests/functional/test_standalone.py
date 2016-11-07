@@ -75,5 +75,6 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc, 'errortest')
 
+
 if __name__ == '__main__':
     unittest.main()

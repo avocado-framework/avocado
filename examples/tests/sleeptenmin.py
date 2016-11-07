@@ -32,5 +32,6 @@ class SleepTenMin(Test):
             elif method == 'shell':
                 os.system("sleep %s" % length)
 
+
 if __name__ == "__main__":
     main()

@@ -38,5 +38,6 @@ class WhiteBoard(Test):
             result += data
         self.whiteboard = base64.encodestring(result)
 
+
 if __name__ == "__main__":
     main()

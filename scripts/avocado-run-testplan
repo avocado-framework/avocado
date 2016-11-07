@@ -42,6 +42,7 @@ class Parser(argparse.ArgumentParser):
                                 'will show a human readable report for the '
                                 'given result file'))
 
+
 RESULT_MAP = {"P": "PASS",
               "p": "PASS",
               "F": "FAIL",
@@ -166,6 +167,7 @@ class App(object):
             if not proc.poll():
                 print("%s: %s" % (name, out))
         return 0
+
 
 if __name__ == '__main__':
     app = App()

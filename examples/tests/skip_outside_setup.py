@@ -19,5 +19,6 @@ class SkipOutsideSetup(avocado.Test):
         """
         self.skip('Calling skip() outside setUp() will result in ERROR')
 
+
 if __name__ == "__main__":
     avocado.main()

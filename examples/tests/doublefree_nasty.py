@@ -39,5 +39,6 @@ class DoubleFreeTest(Test):
         cmd_result = process.run(cmd)
         self.log.info(cmd_result)
 
+
 if __name__ == "__main__":
     main()

@@ -16,5 +16,6 @@ class ErrorTest(Test):
         """
         self.error('This should end with ERROR.')
 
+
 if __name__ == "__main__":
     main()

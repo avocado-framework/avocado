@@ -16,5 +16,6 @@ class WarnTest(Test):
         """
         self.log.warn("This marks test as WARN")
 
+
 if __name__ == "__main__":
     main()

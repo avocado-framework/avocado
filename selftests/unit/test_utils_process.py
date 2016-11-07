@@ -218,5 +218,6 @@ class MiscProcessTests(unittest.TestCase):
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
         self.assertEqual("./bin", res)
 
+
 if __name__ == "__main__":
     unittest.main()

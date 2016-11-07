@@ -102,6 +102,7 @@ def get_long_description():
         req_contents = req.read()
     return req_contents
 
+
 if __name__ == '__main__':
     setup(name='avocado-framework',
           version=VERSION,

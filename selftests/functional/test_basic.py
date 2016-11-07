@@ -105,6 +105,7 @@ def probe_binary(binary):
     except utils_path.CmdNotFoundError:
         return None
 
+
 CC_BINARY = probe_binary('cc')
 ECHO_BINARY = probe_binary('echo')
 READ_BINARY = probe_binary('read')
@@ -1151,6 +1152,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
         super(PluginsJSONTest, self).tearDown()
+
 
 if __name__ == '__main__':
     unittest.main()

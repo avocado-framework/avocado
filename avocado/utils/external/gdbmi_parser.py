@@ -354,6 +354,7 @@ def __private():
 
     return (GdbMiScanner(), GdbMiParser(), GdbMiInterpreter, GdbMiRecord)
 
+
 (__the_scanner, __the_parser, __the_interpreter, __the_output) = __private()
 
 

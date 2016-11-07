@@ -119,5 +119,6 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
 
+
 if __name__ == '__main__':
     unittest.main()

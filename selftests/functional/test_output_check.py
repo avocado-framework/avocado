@@ -118,5 +118,6 @@ class RunnerSimpleTest(unittest.TestCase):
         self.output_script.remove()
         shutil.rmtree(self.tmpdir)
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -22,5 +22,6 @@ class FailOnException(avocado.Test):
         """
         raise ValueError('This raises a ValueError and should end as a FAIL')
 
+
 if __name__ == "__main__":
     avocado.main()

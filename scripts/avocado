@@ -55,6 +55,7 @@ def handle_exception(*exc_info):
     # imported because we are dealing with import failures
     sys.exit(-1)
 
+
 if __name__ == '__main__':
     sys.excepthook = handle_exception
 
@@ -66,7 +67,9 @@ if os.path.isdir(os.path.join(basedir, 'avocado')):
     os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
     sys.path.append(basedir)
 
+
 from avocado.core.app import AvocadoApp
+
 
 if __name__ == '__main__':
     # Override tmp in case it's not set in env

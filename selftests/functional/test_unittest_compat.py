@@ -89,5 +89,6 @@ class UnittestCompat(unittest.TestCase):
         self.assertIn('This test is supposed to error', result.stderr)
         self.assertIn('FAILED (errors=1)', result.stderr)
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -36,5 +36,6 @@ class TestFileLock(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.basedir)
 
+
 if __name__ == "__main__":
     unittest.main()
