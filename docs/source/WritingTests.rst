@@ -443,13 +443,6 @@ location of the test suite code (tarball) through
 decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
 the suite.
 
-The ``setUp`` method is the only place in avocado where you are allowed to
-call the ``skip`` method, given that, if a test started to be executed, by
-definition it can't be skipped anymore. Avocado will do its best to enforce
-this boundary, so that if you use ``skip`` outside ``setUp``, the test upon
-execution will be marked with the ``ERROR`` status, and the error message
-will instruct you to fix your test's code.
-
 In this example, the ``test`` method just gets into the base directory of
 the compiled suite  and executes the ``./synctest`` command, with appropriate
 parameters, using :func:`avocado.utils.process.system`.
@@ -959,6 +952,13 @@ separate process), it doesn't make sense to support unittest's
 :meth:`unittest.TestCase.tearDownClass`.  Test classes are freshly
 instantiated for each test, so it's pointless to run code in those
 methods, since they're supposed to keep class state between tests.
+
+The ``setUp`` method is the only place in avocado where you are allowed to
+call the ``skip`` method, given that, if a test started to be executed, by
+definition it can't be skipped anymore. Avocado will do its best to enforce
+this boundary, so that if you use ``skip`` outside ``setUp``, the test upon
+execution will be marked with the ``ERROR`` status, and the error message
+will instruct you to fix your test's code.
 
 If you require a common setup to a number of tests, the current
 recommended approach is to to write regular :meth:`setUp
