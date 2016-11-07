@@ -540,7 +540,7 @@ Detailing the ``fetch_asset()`` attributes:
   cache directory, pointing to the file original location.
 * ``expire:`` (optional) time period that the cached file will be considered
   valid. After that period, the file will be dowloaded again. The value can
-  be an integer or a string containig the time and the unit. Example: '10d'
+  be an integer or a string containing the time and the unit. Example: '10d'
   (ten days). Valid units are ``s`` (second), ``m`` (minute), ``h`` (hour) and
   ``d`` (day).
 
@@ -761,7 +761,7 @@ Setting a Test Timeout
 Sometimes your test suite/test might get stuck forever, and this might
 impact your test grid. You can account for that possibility and set up a
 ``timeout`` parameter for your test. The test timeout can be set through
-the multiplex, as shown below. 
+the multiplex, as shown below.
 
 ::
 
@@ -996,7 +996,7 @@ If your test setup is some kind of action that will last accross
 processes, like the installation of a software package given in the
 previous example, you're pretty much covered here.
 
-If you need to keep other type of data a class acrross test
+If you need to keep other type of data a class across test
 executions, you'll have to resort to saving and restoring the data
 from an outside source (say a "pickle" file).  Finding and using a
 reliable and safe location for saving such data is currently not in
