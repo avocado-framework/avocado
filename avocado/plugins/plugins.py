@@ -48,7 +48,9 @@ class Plugins(CLICmd):
             (dispatcher.JobPrePostDispatcher(),
              'Plugins that run before/after the execution of jobs (job.prepost):'),
             (dispatcher.ResultDispatcher(),
-             'Plugins that generate job result in different formats (result):')
+             'Plugins that generate job result in different formats (result):'),
+            (dispatcher.ResultEventsDispatcher(args),
+             'Plugins that generate job result based on job/test events (result_events):')
         ]
         for plugins_active, msg in plugin_types:
             log.info(msg)
