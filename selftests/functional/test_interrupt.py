@@ -83,7 +83,7 @@ class InterruptTest(unittest.TestCase):
                                           'seconds for test to finish '
                                           '(ignoring new Ctrl+C until then)')
         # We have to actually wait 2 seconds until the ignore window is over
-        time.sleep(2)
+        time.sleep(2.5)
         proc.sendline('\x03')
         proc.read_until_last_line_matches('TESTS TIME : %d s')
         wait.wait_for(lambda: not proc.is_alive(), timeout=1)
