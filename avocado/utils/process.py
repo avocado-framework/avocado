@@ -311,7 +311,7 @@ class SubProcess(object):
                     did not closed the stdout/stderr). Note this might result
                     in missing output produced by those daemons after the
                     main thread finishes and also it allows those daemons
-                    to be running after the process fininshes.
+                    to be running after the process finishes.
         """
         # Now assemble the final command considering the need for sudo
         self.cmd = self._prepend_sudo(cmd, sudo, shell)

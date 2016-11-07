@@ -141,7 +141,7 @@ class JobPreTests(Plugin):
     """
     Base plugin interface for adding actions before a job runs tests
 
-    This interface looks similar to :class:`JobPre`, but it's inteded
+    This interface looks similar to :class:`JobPre`, but it's intended
     to be called at a very specific place, that is, between
     :meth:`avocado.core.job.Job.create_test_suite` and
     :meth:`avocado.core.job.Job.run_tests`.
@@ -177,7 +177,7 @@ class JobPostTests(Plugin):
 class ResultEvents(JobPreTests, JobPostTests):
 
     """
-    Base plugin interface for event based (streameable) results
+    Base plugin interface for event based (stream-able) results
 
     Plugins that want to add actions to be run after a job runs,
     should use the 'avocado.plugins.result_events' namespace and
