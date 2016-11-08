@@ -49,6 +49,14 @@ class DocBuildTest(unittest.TestCase):
         """
         ignore_list = []
         failure_lines = []
+        # Disregard bogus warnings due to a bug in older versions of
+        # python-sphinx.
+        ignore_list.append('WARNING: toctree contains reference to ' +
+                           'nonexisting document u\'api/test/avocado.core\'')
+        ignore_list.append('WARNING: toctree contains reference to ' +
+                           'nonexisting document u\'api/test/avocado.plugins\'')
+        ignore_list.append('WARNING: toctree contains reference to ' +
+                           'nonexisting document u\'api/test/avocado.utils\'')
         doc_dir = os.path.join(basedir, 'docs')
         process.run('make -C %s clean' % doc_dir)
         result = process.run('make -C %s html' % doc_dir)

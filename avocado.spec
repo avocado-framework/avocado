@@ -26,6 +26,13 @@ Requires: python-yaml, procps-ng
 BuildRequires: python-yaml, procps-ng
 %endif
 
+%if 0%{?fedora} >= 25
+BuildRequires: kmod
+%endif
+%if 0%{?rhel} >= 7
+BuildRequires: kmod
+%endif
+
 %description
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
@@ -49,12 +56,8 @@ cd ../../
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
-# Running selftests on EL7 is currently disabled because of a few
-# broken tests
-%if !0%{?el7}
 %check
- selftests/run
-%endif
+selftests/run
 
 %files
 %defattr(-,root,root,-)
