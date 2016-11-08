@@ -129,6 +129,15 @@ format)::
     23          opt_CFLAGS: '-O2'
 
 
+.. warning:: On some architectures misbehaving versions of CYaml
+   python library were reported and avocado always fails with
+   ``unacceptable character #x0000: control characters are not
+   allowed``. To workaround this issue you need to either update
+   the PyYaml to the version which works properly, or you need
+   to remove the ``python2.7/site-packages/yaml/cyaml.py`` or
+   disable cyaml import in avocado sources. For details check
+   out the `github issue <https://github.com/avocado-framework/avocado/issues/1190>`_
+
 There are couple of key=>value pairs (lines 4,6,8,11,13,...) and there are
 named nodes which define scope (lines 1,2,3,5,7,9,...). There are also additional
 flags (lines 2, 9, 14, 19) which modifies the behavior.
