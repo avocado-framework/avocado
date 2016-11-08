@@ -1,0 +1,136 @@
+==============================
+43.0 The Emperor and the Golem
+==============================
+
+The Avocado team is proud to present another release: Avocado version
+43.0, aka, "The Emperor and the Golem", is now available!
+
+Release documentation: `Avocado 43.0
+<http://avocado-framework.readthedocs.io/en/43.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * The ``--remote-no-copy`` option has been removed.  The reason is
+   that the copying of tests to the remote hosts (as set with
+   ``--remote-hostname``) was also removed.  That feature, while
+   useful to some, had a lot of corner cases.  Instead of keeping a
+   feature with a lot of known caveats, it was decided that users
+   should setup the remote machines so that tests are available before
+   Avocado attempts to run them.
+
+ * The :mod:`avocado.utils.process` library, one of the most complex
+   pieces of utility code that Avocado ships, now makes it possible to
+   ignore background processes that never finish (while Avocado is
+   reading from their file descriptors to properly return their output
+   to the caller).  The reason for such a feature is that if a command
+   spawn many processes, specially daemon-like ones that never finish,
+   the :func:`avocado.utils.process.run` function would hang
+   indefinitely.  Since waiting for all the children processes to
+   finish is the right thing to do, users need to set the
+   ``ignore_bg_processes`` parameter to ``True`` to request this newly
+   added behavior.
+
+ * When discovering tests on a directory, that is, when running
+   ``avocado list /path/to/tests/directory`` or ``avocado run
+   /path/to/tests/directory``, Avocado would return tests in a non
+   predictable way, based on :func:`os.walk`.  Now, the result is a
+   properly alphabetically ordered list of tests.
+
+ * The ZIP Archive feature (AKA as ``--archive`` or ``-z``) feature,
+   which allows to archive job results is now a proper plugin.
+
+ * Plugins can now be setup to run at a specific order.  This is a
+   response to a user issue/request, where the ``--archive`` feature
+   would run before some other results would be generated.  This
+   feature is not limited to plugins of type `result`.  It allows
+   any ordering on the enabled set of plugins of a given plugin type.
+
+ * A contrib script that looks for a job result directory based on a
+   partial (or complete) job ID is now available at
+   ``contrib/scripts/avocado-get-job-results-dir.py``.  This should be
+   useful inside automation scripts or even for interactive users.
+
+Documentation
+=============
+
+ * Users landing on http://avocado-framework.readthedocs.io would
+   previously be redirect to the "latest" documentation, which tracks
+   the development master branch.  This could be confusing since the
+   page titles would contain a version notice with the latest
+   *released* version.  Users will now be redirected by default to the
+   latest *released* version, matching the page title, although the
+   version tracking the master branch will still be available at the
+   http://avocado-framework.readthedocs.io/en/latest URL.
+
+Bugfixes
+========
+
+ * During the previous development cycle, a bug where ``journalctl``
+   would receive `KeyboardInterrupt` received an workaround by using
+   the :mod:`subprocess` library instead of Avocado's own
+   :mod:`avocado.utils.process`, which was missing a default handler
+   for `SIGINT`.  With the misbehavior of Avocado's library now
+   properly addressed, and consequently, we've reverted the workaround
+   applied previously.
+
+ * The TAP plugin would fail at the `end_test` event with certain
+   inputs.  This has now been fixed, and in the event of errors, a
+   better error message will be presented.
+
+Internal improvements
+=====================
+
+ * The ``test_utils_partition.py`` selftest module now makes use of
+   the :func:`avocado.core.utils.process.can_sudo` function, and will
+   only be run when the user is either running as root or has sudo
+   correctly configured.
+
+ * Avocado itself preaches that tests should not attempt to skip
+   themselves during their own execution.  The idea is that, once a
+   test started executing, you can't say it wasn't executed (skipped).
+   This is actually enforced in :class:`avocado.Test` based tests.
+   But since Avocado's own selftests are based on
+   :class:`unittest.TestCase`, some of them were using skip at the
+   "wrong" place. This is now fixed.
+
+ * The :class:`avocado.core.job.Job` class received changes that make
+   it more closer to be usable as a formally announced and supported
+   API.  This is another set of changes towards the so-called "Job
+   API" support.
+
+ * There is now a new plugin type, named `result_events`.  This
+   replaces the previous implementation that used
+   :class:`avocado.core.result.Result` as a base class.  There's now a
+   single :class:`avocado.core.result.Result` instance in a given job,
+   which tracks the results, while the plugins that act on result
+   events (such as test has started, test has finished, etc) are based
+   on the :class:`avocado.core.plugins_interfaces.ResultEvents`.
+
+ * A new ``result_events`` plugin called ``human`` now replaces the
+   old `HumanResult` implementation.
+
+ * Ported versions of the TAP and journal plugins to the new
+   ``result_events`` plugin type.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/42.0...43.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=D746rSbuecc>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/r2fwf66S/853-sprint-theme-the-emperor-and-the-golem-1952
