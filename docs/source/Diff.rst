@@ -5,7 +5,9 @@ Job Diff
 ========
 
 Avocado Diff plugin allows users to easily compare several aspects of
-two given jobs. The basic usage is::
+two given jobs. The basic usage is:
+
+.. code-block:: diff
 
     $ avocado diff 7025aaba 384b949c
     --- 7025aaba9c2ab8b4bba2e33b64db3824810bb5df
@@ -40,7 +42,9 @@ can also enable/disable those sections with ``--diff-filter``. Please see
 ``avocado diff --help`` for more information.
 
 Jobs can be identified by the Job ID, by the results directory or by the
-key ``latest``. Example::
+key ``latest``. Example:
+
+.. code-block:: diff
 
     $ avocado diff ~/avocado/job-results/job-2016-08-03T15.56-4b3cb5b/ latest
     --- 4b3cb5bbbb2435c91c7b557eebc09997d4a0f544
