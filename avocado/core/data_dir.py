@@ -193,15 +193,23 @@ class _TmpDirTracker(Borg):
 
     def __init__(self):
         Borg.__init__(self)
+        self.keep_tmp = False
 
-    def get(self):
+    def get(self, basedir, keep_tmp):
+        # If someone sets the tmp_dir to be kept, further
+        # calls to get()  will not unset that.
+        if not self.keep_tmp:
+            self.keep_tmp = keep_tmp
+
         if not hasattr(self, 'tmp_dir'):
-            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_')
+            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_',
+                                            dir=basedir)
         return self.tmp_dir
 
     def __del__(self):
         tmp_dir = getattr(self, 'tmp_dir', None)
-        if tmp_dir is not None:
+
+        if tmp_dir is not None and not self.keep_tmp:
             try:
                 if os.path.isdir(tmp_dir):
                     shutil.rmtree(tmp_dir)
@@ -212,7 +220,7 @@ class _TmpDirTracker(Borg):
 _tmp_tracker = _TmpDirTracker()
 
 
-def get_tmp_dir():
+def get_tmp_dir(basedir=None, keep_tmp=False):
     """
     Get the most appropriate tmp dir location.
 
@@ -222,7 +230,7 @@ def get_tmp_dir():
         * Copies of a test suite source code
         * Compiled test suite source code
     """
-    tmp_dir = _tmp_tracker.get()
+    tmp_dir = _tmp_tracker.get(basedir, keep_tmp)
     # This assert is a security mechanism for avoiding re-creating
     # the temporary directory, since that's a security breach.
     msg = ('Temporary dir %s no longer exists. This likely means the '
