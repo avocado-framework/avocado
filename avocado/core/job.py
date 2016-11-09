@@ -132,6 +132,14 @@ class Job(object):
         # A future optimization may load it on demand.
         self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
         output.log_plugin_failures(self._result_events_dispatcher.load_failures)
+        self.keep_tmp_files = settings.get_value('runner.behavior',
+                                                 'keep_tmp_files',
+                                                 key_type=bool,
+                                                 default=False)
+        basedir = None
+        if self.keep_tmp_files:
+            basedir = self.logdir
+        data_dir.get_tmp_dir(basedir)
 
     def _setup_job_results(self):
         """
