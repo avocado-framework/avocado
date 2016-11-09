@@ -36,7 +36,7 @@ class Run(CLICmd):
     """
 
     name = 'run'
-    description = ("Runs one or more tests (native test, test alias, binary"
+    description = ("Runs one or more tests (native test, test alias, binary "
                    "or script)")
 
     def configure(self, parser):
