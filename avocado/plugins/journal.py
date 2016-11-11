@@ -41,6 +41,9 @@ class JournalResult(ResultEvents):
     feedback to users from a central place.
     """
 
+    name = 'journal'
+    description = "Journal event based results implementation"
+
     def __init__(self, args):
         """
         Creates an instance of ResultJournal.
