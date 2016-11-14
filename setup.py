@@ -155,6 +155,7 @@ if __name__ == '__main__':
                   ],
               'avocado.plugins.job.prepost': [
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
+                  'human = avocado.plugins.human:HumanJob',
                   ],
               'avocado.plugins.result': [
                   'xunit = avocado.plugins.xunit:XUnitResult',

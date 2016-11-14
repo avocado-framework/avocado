@@ -18,6 +18,7 @@ Human result UI
 import logging
 
 from avocado.core.plugin_interfaces import ResultEvents
+from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core import output
 
 
@@ -98,3 +99,22 @@ class Human(ResultEvents):
                       job.result.errors, job.result.failed, job.result.skipped,
                       job.result.warned, job.result.interrupted)
         self.log.info("TESTS TIME : %.2f s", job.result.tests_total_time)
+
+
+class HumanJob(JobPre, JobPost):
+
+    """
+    Human result UI
+    """
+
+    name = 'human'
+    description = "Human Interface UI"
+
+    def pre(self, job):
+        pass
+
+    def post(self, job):
+        if job.time_elapsed != -1:
+            if not getattr(job.args, 'stdout_claimed_by', None):
+                log = logging.getLogger("avocado.app")
+                log.info("JOB TIME   : %.2f s", job.time_elapsed)
