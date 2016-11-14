@@ -25,6 +25,7 @@ import re
 import shutil
 import sys
 import tempfile
+import time
 import traceback
 
 from . import version
@@ -109,6 +110,15 @@ class Job(object):
         self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
+        #: The time at which the job has started or `-1` if it has not been
+        #: started by means of the `run()` method.
+        self.time_start = -1
+        #: The time at which the job has finished or `-1` if it has not been
+        #: started by means of the `run()` method.
+        self.time_end = -1
+        #: The total amount of time the job took from start to finish,
+        #: or `-1` if it has not been started by means of the `run()` method
+        self.time_elapsed = -1
         self.__logging_handlers = {}
         self.__start_job_logging()
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
@@ -480,6 +490,8 @@ class Job(object):
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
+        if self.time_start == -1:
+            self.time_start = time.time()
         runtime.CURRENT_JOB = self
         try:
             self.create_test_suite()
@@ -515,6 +527,9 @@ class Job(object):
             if not settings.get_value('runner.behavior', 'keep_tmp_files',
                                       key_type=bool, default=False):
                 data_dir.clean_tmp_files()
+            if self.time_end == -1:
+                self.time_end = time.time()
+                self.time_elapsed = self.time_end - self.time_start
             self.__stop_job_logging()
 
 
