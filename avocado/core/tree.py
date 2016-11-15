@@ -510,7 +510,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         Generate this node's tree-view
         :return: list of lines
         """
-        if node.multiplex:
+        if getattr(node, "multiplex", None):
             down = charset['DoubleDown']
             down_right = charset['DoubleDownRight']
             right = charset['DoubleRight']
@@ -563,7 +563,7 @@ def tree_view(root, verbose=None, use_utf8=None):
                    'DoubleDownRight': ' #== ',
                    'DoubleRight': ' #== ',
                    'Value': ' -> '}
-    if root.multiplex:
+    if getattr(root, "multiplex", None):
         down = charset['DoubleDown']
         down_right = charset['DoubleDownRight']
         right = charset['DoubleRight']
