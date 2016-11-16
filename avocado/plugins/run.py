@@ -79,6 +79,10 @@ class Run(CLICmd):
                             help='Enable or disable the job interruption on '
                             'first failed test.')
 
+        parser.add_argument('--keep-tmp', choices=('on', 'off'),
+                            default='off', help='Keep job temporary files '
+                            'after jobs (useful for avocado debugging.')
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',
