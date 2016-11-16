@@ -521,9 +521,6 @@ class Job(object):
             return self.exitcode
         finally:
             self.post_tests()
-            if not settings.get_value('runner.behavior', 'keep_tmp_files',
-                                      key_type=bool, default=False):
-                data_dir.clean_tmp_files()
             self.__stop_job_logging()
 
 
