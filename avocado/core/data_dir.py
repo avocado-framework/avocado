@@ -25,6 +25,7 @@ The general reasoning to find paths is:
 * The next best location is the default system wide one.
 * The next best location is the default user specific one.
 """
+import logging
 import os
 import sys
 import shutil
@@ -51,6 +52,8 @@ USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
+
+LOG = logging.getLogger('avocado.test')
 
 
 def _get_settings_dir(dir_name):
@@ -193,15 +196,23 @@ class _TmpDirTracker(Borg):
 
     def __init__(self):
         Borg.__init__(self)
+        self.basedir = None
 
-    def get(self):
+    def get(self, basedir):
         if not hasattr(self, 'tmp_dir'):
-            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_')
+            if basedir is not None:
+                self.basedir = basedir
+            self.tmp_dir = tempfile.mkdtemp(prefix='avocado_',
+                                            dir=self.basedir)
+        elif basedir is not None and basedir != self.basedir:
+            LOG.error("The tmp_dir was already created. The new basedir "
+                      "you're trying to provide will have no effect.")
         return self.tmp_dir
 
     def __del__(self):
         tmp_dir = getattr(self, 'tmp_dir', None)
-        if tmp_dir is not None:
+
+        if tmp_dir is not None and self.basedir is None:
             try:
                 if os.path.isdir(tmp_dir):
                     shutil.rmtree(tmp_dir)
@@ -212,7 +223,7 @@ class _TmpDirTracker(Borg):
 _tmp_tracker = _TmpDirTracker()
 
 
-def get_tmp_dir():
+def get_tmp_dir(basedir=None):
     """
     Get the most appropriate tmp dir location.
 
@@ -222,7 +233,7 @@ def get_tmp_dir():
         * Copies of a test suite source code
         * Compiled test suite source code
     """
-    tmp_dir = _tmp_tracker.get()
+    tmp_dir = _tmp_tracker.get(basedir)
     # This assert is a security mechanism for avoiding re-creating
     # the temporary directory, since that's a security breach.
     msg = ('Temporary dir %s no longer exists. This likely means the '
