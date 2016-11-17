@@ -50,6 +50,45 @@ if __name__ == "__main__":
     main()
 """
 
+AVOCADO_TEST_TAGS = """#!/usr/bin/env python
+from avocado import Test
+from avocado import main
+
+import time
+
+class DisabledTest(Test):
+    '''
+    :avocado: disable
+    :avocado: tags=fast,net
+    '''
+    def test(self):
+        pass
+
+class FastTest(Test):
+    '''
+    :avocado: tags=fast,net
+    '''
+    def test(self):
+        pass
+
+class SlowTest(Test):
+    '''
+    :avocado: tags=slow,disk
+    '''
+    def test(self):
+        time.sleep(1)
+
+class SlowUnsafeTest(Test):
+    '''
+    :avocado: tags=slow,disk,unsafe
+    '''
+    def test(self):
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
+"""
+
 NOT_A_TEST = """
 def hello():
     print('Hello World!')
@@ -330,6 +369,21 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_multiple_imp_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
+
+    def test_load_tags(self):
+        avocado_test_tags = script.TemporaryScript('tags.py',
+                                                   AVOCADO_TEST_TAGS,
+                                                   'avocado_loader_unittest',
+                                                   DEFAULT_NON_EXEC_MODE)
+        tags_map = {'FastTest': set(['fast', 'net']),
+                    'SlowTest': set(['slow', 'disk']),
+                    'SlowUnsafeTest': set(['slow', 'disk', 'unsafe'])}
+        with avocado_test_tags:
+            for tst, info in self.loader.discover(avocado_test_tags.path,
+                                                  loader.ALL):
+                self.assertEqual(info['tags'], tags_map[tst])
+                del(tags_map[tst])
+        self.assertEqual(len(tags_map), 0)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
