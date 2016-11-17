@@ -44,6 +44,41 @@ AVAILABLE = None
 ALL = True
 
 
+def filter_test_tags(test_suite, filter_by_tags):
+    '''
+    The filtering mechanism is limited to instrumented tests with tags set
+    '''
+    filtered = []
+    for klass, info in test_suite:
+        if not isinstance(klass, str):  # not instrumented: no filtering
+            filtered.append((klass, info))
+            continue
+
+        test_tags = info['tags']
+        if not test_tags:       # not tagged: no filtering
+            filtered.append((klass, info))
+            continue
+
+        for raw_tags in filter_by_tags:
+            required_tags = raw_tags.split(',')
+            must_not_have_tags = set([_[1:] for _ in required_tags
+                                      if _.startswith('-')])
+            if must_not_have_tags:
+                if must_not_have_tags.issubset(test_tags):
+                    continue
+
+            must_have_tags = set([_ for _ in required_tags
+                                  if not _.startswith('-')])
+            if must_have_tags:
+                if not must_have_tags.issubset(test_tags):
+                    continue
+
+            filtered.append((klass, info))
+            break
+
+    return filtered
+
+
 class LoaderError(Exception):
 
     """ Loader exception """
