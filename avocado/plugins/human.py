@@ -49,7 +49,7 @@ class Human(ResultEvents):
         self.log.info("JOB ID     : %s", job.unique_id)
         replay_source_job = getattr(job.args, "replay_sourcejob", False)
         if replay_source_job:
-            self.log.info("SRC JOB ID : %s", self.__replay_source_job)
+            self.log.info("SRC JOB ID : %s", replay_source_job)
         self.log.info("JOB LOG    : %s", job.logfile)
         self.log.info("TESTS      : %s", len(job.test_suite))
 
