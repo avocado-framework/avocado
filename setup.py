@@ -24,6 +24,11 @@ from setuptools import setup, find_packages
 VERSION = open('VERSION', 'r').read().strip()
 VIRTUAL_ENV = hasattr(sys, 'real_prefix')
 
+if sys.version_info[:2] >= (2, 7):
+    stevedore_version = 'stevedore>=1.8.0'
+else:
+    stevedore_version = 'stevedore>=1.8.0,<=1.10.0'
+
 
 def get_dir(system_path=None, virtual_path=None):
     """
@@ -170,4 +175,4 @@ if __name__ == '__main__':
           zip_safe=False,
           test_suite='selftests',
           python_requires='>=2.6',
-          install_requires=['stevedore'])
+          install_requires=[stevedore_version])
