@@ -119,6 +119,25 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
 
+    @unittest.skip("Issue described at https://trello.com/c/qgSTIK0Y")
+    def test_job_run_account_time(self):
+        myjob = job.Job()
+        myjob.run()
+        self.assertNotEqual(myjob.time_start, -1)
+        self.assertNotEqual(myjob.time_end, -1)
+        self.assertNotEqual(myjob.time_elapsed, -1)
+
+    @unittest.skip("Issue described at https://trello.com/c/qgSTIK0Y")
+    def test_job_self_account_time(self):
+        myjob = job.Job()
+        myjob.time_start = 10.0
+        myjob.run()
+        myjob.time_end = 20.0
+        myjob.time_elapsed = myjob.time_end - myjob.time_start
+        self.assertEqual(myjob.time_start, 10.0)
+        self.assertEqual(myjob.time_end, 20.0)
+        self.assertEqual(myjob.time_elapsed, 10.0)
+
 
 if __name__ == '__main__':
     unittest.main()
