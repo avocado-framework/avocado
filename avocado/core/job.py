@@ -133,6 +133,16 @@ class Job(object):
         self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
         output.log_plugin_failures(self._result_events_dispatcher.load_failures)
 
+        # Checking whether we will keep the Job tmp_dir or not.
+        # If yes, we set the basedir for a stable location.
+        basedir = None
+        keep_tmp = getattr(self.args, "keep_tmp", None)
+        if keep_tmp == 'on':
+            basedir = self.logdir
+        # Calling get_tmp_dir() early as the basedir will be set
+        # in the first call.
+        data_dir.get_tmp_dir(basedir)
+
     def _setup_job_results(self):
         """
         Prepares a job result directory, also known as logdir, for this job
@@ -521,9 +531,6 @@ class Job(object):
             return self.exitcode
         finally:
             self.post_tests()
-            if not settings.get_value('runner.behavior', 'keep_tmp_files',
-                                      key_type=bool, default=False):
-                data_dir.clean_tmp_files()
             self.__stop_job_logging()
 
 
