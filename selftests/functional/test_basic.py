@@ -595,11 +595,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
         result = process.run(cmd)
         result = json.loads(result.stdout)
         jobid = str(result["job_id"])
-        replay_data_dir = os.path.dirname(str(result["debuglog"]))
-        cmd = ("./scripts/avocado run --job-results-dir %s --replay-data-dir "
-               "%s --replay %s --replay-test-status PASS") % (self.tmpdir,
-                                                              replay_data_dir,
-                                                              jobid)
+        cmd = ("./scripts/avocado run --job-results-dir %s "
+               "--replay %s --replay-test-status PASS") % (self.tmpdir, jobid)
         process.run(cmd)
 
     def tearDown(self):
