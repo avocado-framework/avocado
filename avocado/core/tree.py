@@ -104,6 +104,10 @@ class TreeNode(object):
                     return False
             return True
 
+    def __ne__(self, other):
+        """ Inverted eq """
+        return not self == other
+
     def add_child(self, node):
         """
         Append node as child. Nodes with the same name gets merged into the
@@ -465,9 +469,9 @@ class TreeNodeDebug(TreeNode):  # only container pylint: disable=R0903
         return super(TreeNodeDebug, self).merge(other)
 
 
-def get_named_tree_cls(path):
+def get_named_tree_cls(path, klass=TreeNodeDebug):
     """ Return TreeNodeDebug class with hardcoded yaml path """
-    class NamedTreeNodeDebug(TreeNodeDebug):    # pylint: disable=R0903
+    class NamedTreeNodeDebug(klass):    # pylint: disable=R0903
 
         """ Fake class with hardcoded yaml path """
 
@@ -506,7 +510,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         Generate this node's tree-view
         :return: list of lines
         """
-        if node.multiplex:
+        if getattr(node, "multiplex", None):
             down = charset['DoubleDown']
             down_right = charset['DoubleDownRight']
             right = charset['DoubleRight']
@@ -559,7 +563,7 @@ def tree_view(root, verbose=None, use_utf8=None):
                    'DoubleDownRight': ' #== ',
                    'DoubleRight': ' #== ',
                    'Value': ' -> '}
-    if root.multiplex:
+    if getattr(root, "multiplex", None):
         down = charset['DoubleDown']
         down_right = charset['DoubleDownRight']
         right = charset['DoubleRight']
