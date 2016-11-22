@@ -67,11 +67,6 @@ class Replay(CLI):
                                    help='Ignore multiplex (mux) and/or '
                                    'configuration (config) from the '
                                    'source job')
-        replay_parser.add_argument('--replay-data-dir',
-                                   dest='replay_datadir',
-                                   default=None,
-                                   help='Load replay data from an '
-                                   'alternative location')
 
     def _valid_status(self, string):
         status_list = string.split(',')
@@ -143,17 +138,17 @@ class Replay(CLI):
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        if args.replay_datadir is not None:
-            resultsdir = args.replay_datadir
+        if getattr(args, 'logdir', None) is not None:
+            logdir = args.logdir
         else:
             logdir = settings.get_value(section='datadir.paths',
                                         key='logs_dir', key_type='path',
                                         default=None)
-            try:
-                resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
-            except ValueError as exception:
-                log.error(exception.message)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+        try:
+            resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
+        except ValueError as exception:
+            log.error(exception.message)
+            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         if resultsdir is None:
             log.error("Can't find job results directory in '%s'", logdir)
