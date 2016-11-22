@@ -14,7 +14,10 @@ class SilentParser(argparse.ArgumentParser):
         super(SilentParser, self).__init__(prog='avocado')
 
     def error(self, message):
-        raise
+        """
+        Don't sys.exit, but only raise RuntimeError
+        """
+        raise RuntimeError(message)
 
 
 class FileOrStdoutActionTest(unittest.TestCase):
@@ -35,7 +38,7 @@ class FileOrStdoutActionTest(unittest.TestCase):
                                 '--json=results.json'])
 
     def test_multiple_stdout_raises(self):
-        self.assertRaises(argparse.ArgumentError,
+        self.assertRaises(RuntimeError,
                           self.parser.parse_args,
                           ['--xunit=-', '--json=-'])
 

@@ -439,7 +439,7 @@ class Mux(object):
         """
         return self.variants is not None
 
-    def data_inject(self, key, value, path=None):
+    def data_inject(self, key, value, path=None):   # pylint: disable=E0202
         """
         Inject entry to the mux tree (params database)
 
@@ -454,7 +454,7 @@ class Mux(object):
             node = self.data
         node.value[key] = value
 
-    def data_merge(self, tree):
+    def data_merge(self, tree):     # pylint: disable=E0202
         """
         Merge tree into the mux tree (params database)
 

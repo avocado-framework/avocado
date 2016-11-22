@@ -247,7 +247,7 @@ class JournalctlWatcher(Collectible):
                 with gzip.GzipFile(dstpath, "w")as out_journalctl:
                     out_journalctl.write(log_diff)
             except IOError:
-                log.debug("Not logging journalctl (lack of permissions)",
+                log.debug("Not logging journalctl (lack of permissions): %s",
                           dstpath)
             except Exception as e:
                 log.debug("Journalctl collection failed: %s", e)
