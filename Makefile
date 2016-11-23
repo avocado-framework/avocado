@@ -138,8 +138,8 @@ check: clean develop check_cyclical modules_boundaries
 	selftests/checkall
 	selftests/check_tmp_dirs
 
-check-long: clean develop check_cyclical modules_boundaries
-	AVOCADO_CHECK_LONG=1 selftests/checkall
+check-full: clean develop check_cyclical modules_boundaries
+	AVOCADO_CHECK_FULL=1 selftests/checkall
 	selftests/check_tmp_dirs
 
 selfcheck: clean check_cyclical modules_boundaries develop
