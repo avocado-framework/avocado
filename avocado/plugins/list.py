@@ -99,7 +99,7 @@ class TestLister(object):
 
     def _list(self):
         self._extra_listing()
-        test_suite = self._get_test_suite(self.args.keywords)
+        test_suite = self._get_test_suite(self.args.reference)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
 
@@ -127,9 +127,8 @@ class List(CLICmd):
         :param parser: Main test runner parser.
         """
         parser = super(List, self).configure(parser)
-        parser.add_argument('keywords', type=str, default=[], nargs='*',
-                            help="List of paths, aliases or other "
-                            "keywords used to locate tests. "
+        parser.add_argument('reference', type=str, default=[], nargs='*',
+                            help="List of test references (aliases or paths). "
                             "If empty, avocado will list tests on "
                             "the configured test source, "
                             "(see 'avocado config --datadir') Also, "
