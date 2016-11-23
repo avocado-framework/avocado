@@ -118,6 +118,9 @@ class TestLister(object):
     def _list(self):
         self._extra_listing()
         test_suite = self._get_test_suite(self.args.keywords)
+        if getattr(self.args, 'filter_by_tags', False):
+            test_suite = loader.filter_test_tags(test_suite,
+                                                 self.args.filter_by_tags)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
 
@@ -164,6 +167,10 @@ class List(CLICmd):
                             help='Turn the paginator on/off. '
                             'Current: %(default)s')
         loader.add_loader_options(parser)
+
+        filtering = parser.add_argument_group('filtering parameters')
+        filtering.add_argument('--filter-by-tags', metavar='TAGS',
+                               action='append')
 
     def run(self, args):
         test_lister = TestLister(args)

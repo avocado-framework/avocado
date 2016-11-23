@@ -144,6 +144,10 @@ class Run(CLICmd):
                          help="Inject [path:]key:node values into the "
                          "final multiplex tree.")
 
+        filtering = parser.add_argument_group('filtering parameters')
+        filtering.add_argument('--filter-by-tags', metavar='TAGS',
+                               action='append')
+
     def run(self, args):
         """
         Run test modules or simple tests.

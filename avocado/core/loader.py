@@ -44,6 +44,41 @@ AVAILABLE = None
 ALL = True
 
 
+def filter_test_tags(test_suite, filter_by_tags):
+    '''
+    The filtering mechanism is limited to instrumented tests with tags set
+    '''
+    filtered = []
+    for klass, info in test_suite:
+        if not isinstance(klass, str):  # not instrumented: no filtering
+            filtered.append((klass, info))
+            continue
+
+        test_tags = info['tags']
+        if not test_tags:       # not tagged: no filtering
+            filtered.append((klass, info))
+            continue
+
+        for raw_tags in filter_by_tags:
+            required_tags = raw_tags.split(',')
+            must_not_have_tags = set([_[1:] for _ in required_tags
+                                      if _.startswith('-')])
+            if must_not_have_tags:
+                if must_not_have_tags.issubset(test_tags):
+                    continue
+
+            must_have_tags = set([_ for _ in required_tags
+                                  if not _.startswith('-')])
+            if must_have_tags:
+                if not must_have_tags.issubset(test_tags):
+                    continue
+
+            filtered.append((klass, info))
+            break
+
+    return filtered
+
+
 class LoaderError(Exception):
 
     """ Loader exception """
@@ -237,6 +272,8 @@ class TestLoaderProxy(object):
         test_class, test_parameters = test_factory
         if 'modulePath' in test_parameters:
             test_path = test_parameters.pop('modulePath')
+        if 'tags' in test_parameters:
+            tags = test_parameters.pop('tags')
         else:
             test_path = None
         if isinstance(test_class, str):
@@ -535,7 +572,8 @@ class FileLoader(TestLoader):
 
         :param path: path to a Python source code file
         :type path: str
-        :returns: dictionary with class name and method names
+        :returns: dict with class name and additional info such as method names
+                  and tags
         :rtype: dict
         """
         # If only the Test class was imported from the avocado namespace
@@ -583,11 +621,13 @@ class FileLoader(TestLoader):
                 if safeloader.is_docstring_tag_disable(docstring):
                     continue
                 elif safeloader.is_docstring_tag_enable(docstring):
-                    functions = [st.name for st in statement.body if
-                                 isinstance(st, ast.FunctionDef) and
-                                 st.name.startswith('test')]
-                    functions = data_structures.ordered_list_unique(functions)
-                    result[statement.name] = functions
+                    methods = [st.name for st in statement.body if
+                               isinstance(st, ast.FunctionDef) and
+                               st.name.startswith('test')]
+                    methods = data_structures.ordered_list_unique(methods)
+                    tags = safeloader.get_docstring_test_tags(docstring)
+                    result[statement.name] = {'methods': methods,
+                                              'tags': tags}
                     continue
 
                 if test_import:
@@ -595,11 +635,13 @@ class FileLoader(TestLoader):
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
                     if test_import_name in base_ids:
-                        functions = [st.name for st in statement.body if
-                                     isinstance(st, ast.FunctionDef) and
-                                     st.name.startswith('test')]
-                        functions = data_structures.ordered_list_unique(functions)
-                        result[statement.name] = functions
+                        methods = [st.name for st in statement.body if
+                                   isinstance(st, ast.FunctionDef) and
+                                   st.name.startswith('test')]
+                        methods = data_structures.ordered_list_unique(methods)
+                        tags = safeloader.get_docstring_test_tags(docstring)
+                        result[statement.name] = {'methods': methods,
+                                                  'tags': tags}
                         continue
 
                 # Looking for a 'class FooTest(avocado.Test):'
@@ -608,11 +650,13 @@ class FileLoader(TestLoader):
                         module = base.value.id
                         klass = base.attr
                         if module == mod_import_name and klass == 'Test':
-                            functions = [st.name for st in statement.body if
-                                         isinstance(st, ast.FunctionDef) and
-                                         st.name.startswith('test')]
-                            functions = data_structures.ordered_list_unique(functions)
-                            result[statement.name] = functions
+                            methods = [st.name for st in statement.body if
+                                       isinstance(st, ast.FunctionDef) and
+                                       st.name.startswith('test')]
+                            methods = data_structures.ordered_list_unique(methods)
+                            tags = safeloader.get_docstring_test_tags(docstring)
+                            result[statement.name] = {'methods': methods,
+                                                      'tags': tags}
 
         return result
 
@@ -624,9 +668,9 @@ class FileLoader(TestLoader):
             tests = self._find_avocado_tests(test_path)
             if tests:
                 test_factories = []
-                for test_class, test_methods in tests.items():
+                for test_class, info in tests.items():
                     if isinstance(test_class, str):
-                        for test_method in test_methods:
+                        for test_method in info['methods']:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
                             if (subtests_filter and
@@ -634,7 +678,8 @@ class FileLoader(TestLoader):
                                 continue
                             tst = (test_class, {'name': name,
                                                 'modulePath': test_path,
-                                                'methodName': test_method})
+                                                'methodName': test_method,
+                                                'tags': info['tags']})
                             test_factories.append(tst)
                 return test_factories
             else:
