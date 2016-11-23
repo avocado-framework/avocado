@@ -48,8 +48,8 @@ class ReplayExtRunnerTests(unittest.TestCase):
     def test_run_replay_external_runner(self):
         cmd_line = ('./scripts/avocado run --replay %s '
                     '--external-runner /bin/sh '
-                    '--job-results-dir %s --replay-data-dir %s --sysinfo=off' %
-                    (self.jobid, self.tmpdir, self.jobdir))
+                    '--job-results-dir %s --sysinfo=off' %
+                    (self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         msg = "Overriding the replay external-runner with the "\

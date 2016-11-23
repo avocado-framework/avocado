@@ -43,15 +43,15 @@ class ReplayFailfastTests(unittest.TestCase):
 
     def test_run_replay_failfast(self):
         cmd_line = ('./scripts/avocado run --replay %s '
-                    '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
-                    % (self.jobid, self.tmpdir, self.jobdir))
+                    '--job-results-dir %s --sysinfo=off'
+                    % (self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
         result = self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_disable_failfast(self):
         cmd_line = ('./scripts/avocado run --replay %s --failfast off '
-                    '--job-results-dir %s --replay-data-dir %s --sysinfo=off'
-                    % (self.jobid, self.tmpdir, self.jobdir))
+                    '--job-results-dir %s --sysinfo=off'
+                    % (self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = 'Overriding the replay failfast with the --failfast value given on the command line.'
