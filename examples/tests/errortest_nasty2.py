@@ -19,6 +19,8 @@ class FailTest(Test):
 
     """
     Very nasty exception test
+
+    :avocado: tags=failure_expected
     """
 
     def test(self):

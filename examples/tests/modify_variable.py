@@ -17,6 +17,8 @@ class PrintVariableTest(Test):
     2) using GDB it modifies the variable to ff
     3) checks the output
 
+    :avocado: tags=requires_c_compiler
+
     :param source: path to the source file relative to deps dir.
     """
 

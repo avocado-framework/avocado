@@ -14,6 +14,8 @@ class DataDirTest(Test):
     """
     Test that uses resources from the data dir.
 
+    :avocado: tags=requires_c_compiler
+
     :param tarball: Path to the c-source file relative to deps dir.
     """
 

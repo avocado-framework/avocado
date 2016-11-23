@@ -15,6 +15,8 @@ class DoubleFreeTest(Test):
     """
     Double free test case.
 
+    :avocado: tags=requires_c_compiler
+
     :param source: name of the source file located in deps path
     """
 
