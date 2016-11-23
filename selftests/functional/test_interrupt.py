@@ -58,6 +58,9 @@ class InterruptTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
+    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_badly_behaved(self):
         """
         Make sure avocado can cleanly get out of a loop of badly behaved tests.
