@@ -76,26 +76,13 @@ class TestLister(object):
                 elif 'path' in params:
                     id_label = params['path']
 
-            try:
-                type_label = type_label_mapping[cls]
-                decorator = decorator_mapping[cls]
-                stats[type_label.lower()] += 1
-                type_label = decorator(type_label)
-            except KeyError:
-                if isinstance(cls, str):
-                    cls = test.Test
-                    type_label = type_label_mapping[cls]
-                    decorator = decorator_mapping[cls]
-                    stats[type_label.lower()] += 1
-                    type_label = decorator(type_label)
-                    id_label = params['name']
-                elif issubclass(cls, test.Test):
-                    cls = test.Test
-                    type_label = type_label_mapping[cls]
-                    decorator = decorator_mapping[cls]
-                    stats[type_label.lower()] += 1
-                    type_label = decorator(type_label)
-                    id_label = params['name']
+            if isinstance(cls, str):
+                cls = test.Test
+                id_label = params['name']
+            type_label = type_label_mapping[cls]
+            decorator = decorator_mapping[cls]
+            stats[type_label.lower()] += 1
+            type_label = decorator(type_label)
 
             test_matrix.append((type_label, id_label))
 
@@ -117,7 +104,12 @@ class TestLister(object):
 
     def _list(self):
         self._extra_listing()
-        test_suite = self._get_test_suite(self.args.keywords)
+        test_suite = self._get_test_suite(self.args.reference)
+        if getattr(self.args, 'filter_by_tags', False):
+            test_suite = loader.filter_test_tags(
+                test_suite,
+                self.args.filter_by_tags,
+                self.args.filter_by_tags_ignore_empty)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
 
@@ -145,9 +137,8 @@ class List(CLICmd):
         :param parser: Main test runner parser.
         """
         parser = super(List, self).configure(parser)
-        parser.add_argument('keywords', type=str, default=[], nargs='*',
-                            help="List of paths, aliases or other "
-                            "keywords used to locate tests. "
+        parser.add_argument('reference', type=str, default=[], nargs='*',
+                            help="List of test references (aliases or paths). "
                             "If empty, avocado will list tests on "
                             "the configured test source, "
                             "(see 'avocado config --datadir') Also, "
@@ -164,6 +155,19 @@ class List(CLICmd):
                             help='Turn the paginator on/off. '
                             'Current: %(default)s')
         loader.add_loader_options(parser)
+
+        filtering = parser.add_argument_group('filtering parameters')
+        filtering.add_argument('--filter-by-tags', metavar='TAGS',
+                               action='append',
+                               help='Filter INSTRUMENTED tests based on '
+                               '":avocado: tags=tag1,tag2" notation in '
+                               'their class docstring')
+        filtering.add_argument('--filter-by-tags-ignore-empty',
+                               action='store_true', default=False,
+                               help=('Ignore INSTRUMENTED tests without tags '
+                                     'during filtering.  This effectively '
+                                     'means they will be kept in the test '
+                                     'suite found previously to filtering.'))
 
     def run(self, args):
         test_lister = TestLister(args)

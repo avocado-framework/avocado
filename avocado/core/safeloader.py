@@ -101,6 +101,33 @@ def is_docstring_tag_disable(docstring):
     return result == 'disable'
 
 
+def is_docstring_test_tags(docstring):
+    """
+    Checks if there's an avocado tag that tags a test in a certain categories
+
+    :rtype: bool
+    """
+    result = get_docstring_tag(docstring)
+    if result is not None:
+        return result.startswith('tags=')
+    return False
+
+
+def get_docstring_test_tags(docstring):
+    """
+    Returns the test categories based on a `:avocado: tags=category` docstring
+
+    :rtype: set
+    """
+    if not is_docstring_test_tags(docstring):
+        return []
+
+    raw_tag = get_docstring_tag(docstring)
+    if raw_tag is not None:
+        _, comma_tags = raw_tag.split('tags=', 1)
+        return set([tag for tag in comma_tags.split(',') if tag])
+
+
 def find_class_and_methods(path, method_pattern=None, base_class=None):
     """
     Attempts to find methods names from a given Python source file

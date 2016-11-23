@@ -8,6 +8,8 @@ class PassTest(Test):
 
     """
     Example test that passes.
+
+    :avocado: tags=fast
     """
 
     def test(self):

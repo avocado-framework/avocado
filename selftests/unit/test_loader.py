@@ -50,6 +50,55 @@ if __name__ == "__main__":
     main()
 """
 
+AVOCADO_TEST_TAGS = """#!/usr/bin/env python
+from avocado import Test
+from avocado import main
+
+import time
+
+class DisabledTest(Test):
+    '''
+    :avocado: disable
+    :avocado: tags=fast,net
+    '''
+    def test_disabled(self):
+        pass
+
+class FastTest(Test):
+    '''
+    :avocado: tags=fast,net
+    '''
+    def test_fast(self):
+        pass
+
+    def test_fast_other(self):
+        pass
+
+class SlowTest(Test):
+    '''
+    :avocado: tags=slow,disk
+    '''
+    def test_slow(self):
+        time.sleep(1)
+
+class SlowUnsafeTest(Test):
+    '''
+    :avocado: tags=slow,disk,unsafe
+    '''
+    def test_slow_unsafe(self):
+        time.sleep(1)
+
+class SafeTest(Test):
+    '''
+    :avocado: tags=safe
+    '''
+    def test_safe(self):
+        pass
+
+if __name__ == "__main__":
+    main()
+"""
+
 NOT_A_TEST = """
 def hello():
     print('Hello World!')
@@ -330,6 +379,96 @@ class LoaderTest(unittest.TestCase):
             self.loader.discover(avocado_multiple_imp_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()
+
+    def test_load_tags(self):
+        avocado_test_tags = script.TemporaryScript('tags.py',
+                                                   AVOCADO_TEST_TAGS,
+                                                   'avocado_loader_unittest',
+                                                   DEFAULT_NON_EXEC_MODE)
+        tags_map = {'FastTest.test_fast': set(['fast', 'net']),
+                    'FastTest.test_fast_other': set(['fast', 'net']),
+                    'SlowTest.test_slow': set(['slow', 'disk']),
+                    'SlowUnsafeTest.test_slow_unsafe': set(['slow',
+                                                            'disk',
+                                                            'unsafe']),
+                    'SafeTest.test_safe': set(['safe'])}
+        with avocado_test_tags:
+            for _, info in self.loader.discover(avocado_test_tags.path,
+                                                loader.ALL):
+                name = info['name'].split(':', 1)[1]
+                self.assertEqual(info['tags'], tags_map[name])
+                del(tags_map[name])
+        self.assertEqual(len(tags_map), 0)
+
+    def test_filter_tags_ignore_empty(self):
+        avocado_pass_test = script.TemporaryScript('passtest.py',
+                                                   AVOCADO_TEST_OK,
+                                                   'avocado_loader_unittest',
+                                                   DEFAULT_NON_EXEC_MODE)
+        with avocado_pass_test as test:
+            test_suite = self.loader.discover(test.path, loader.ALL)
+            self.assertEqual([], loader.filter_test_tags(test_suite, []))
+            self.assertEqual(test_suite,
+                             loader.filter_test_tags(test_suite, [], True))
+
+    def test_filter_tags(self):
+        avocado_test_tags = script.TemporaryScript('tags.py',
+                                                   AVOCADO_TEST_TAGS,
+                                                   'avocado_loader_unittest',
+                                                   DEFAULT_NON_EXEC_MODE)
+        with avocado_test_tags as test:
+            test_suite = self.loader.discover(test.path, loader.ALL)
+            self.assertEqual(len(test_suite), 5)
+            self.assertEqual(test_suite[0][0], 'SafeTest')
+            self.assertEqual(test_suite[0][1]['methodName'], 'test_safe')
+            self.assertEqual(test_suite[1][0], 'FastTest')
+            self.assertEqual(test_suite[1][1]['methodName'], 'test_fast')
+            self.assertEqual(test_suite[2][0], 'FastTest')
+            self.assertEqual(test_suite[2][1]['methodName'], 'test_fast_other')
+            self.assertEqual(test_suite[3][0], 'SlowUnsafeTest')
+            self.assertEqual(test_suite[3][1]['methodName'], 'test_slow_unsafe')
+            self.assertEqual(test_suite[4][0], 'SlowTest')
+            self.assertEqual(test_suite[4][1]['methodName'], 'test_slow')
+            filtered = loader.filter_test_tags(test_suite, ['fast,net'])
+            self.assertEqual(len(filtered), 2)
+            self.assertEqual(filtered[0][0], 'FastTest')
+            self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
+            self.assertEqual(filtered[1][0], 'FastTest')
+            self.assertEqual(filtered[1][1]['methodName'], 'test_fast_other')
+            filtered = loader.filter_test_tags(test_suite,
+                                               ['fast,net',
+                                                'slow,disk,unsafe'])
+            self.assertEqual(len(filtered), 3)
+            self.assertEqual(filtered[0][0], 'FastTest')
+            self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
+            self.assertEqual(filtered[1][0], 'FastTest')
+            self.assertEqual(filtered[1][1]['methodName'], 'test_fast_other')
+            self.assertEqual(filtered[2][0], 'SlowUnsafeTest')
+            self.assertEqual(filtered[2][1]['methodName'], 'test_slow_unsafe')
+            filtered = loader.filter_test_tags(test_suite,
+                                               ['fast,net',
+                                                'slow,disk'])
+            self.assertEqual(len(filtered), 4)
+            self.assertEqual(filtered[0][0], 'FastTest')
+            self.assertEqual(filtered[0][1]['methodName'], 'test_fast')
+            self.assertEqual(filtered[1][0], 'FastTest')
+            self.assertEqual(filtered[1][1]['methodName'], 'test_fast_other')
+            self.assertEqual(filtered[2][0], 'SlowUnsafeTest')
+            self.assertEqual(filtered[2][1]['methodName'], 'test_slow_unsafe')
+            self.assertEqual(filtered[3][0], 'SlowTest')
+            self.assertEqual(filtered[3][1]['methodName'], 'test_slow')
+            filtered = loader.filter_test_tags(test_suite,
+                                               ['-fast,-slow'])
+            self.assertEqual(len(filtered), 1)
+            self.assertEqual(filtered[0][0], 'SafeTest')
+            self.assertEqual(filtered[0][1]['methodName'], 'test_safe')
+            filtered = loader.filter_test_tags(test_suite,
+                                               ['-fast,-slow,-safe'])
+            self.assertEqual(len(filtered), 0)
+            filtered = loader.filter_test_tags(test_suite,
+                                               ['-fast,-slow,-safe',
+                                                'does,not,exist'])
+            self.assertEqual(len(filtered), 0)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
