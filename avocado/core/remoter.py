@@ -245,7 +245,7 @@ class Remote(object):
         :raise fabric.exceptions.CommandTimeout: When timeout exhausted.
         """
 
-        with shell_env(**self.env_vars):
+        with shell_env(**self.env_vars):    # pylint: disable=E1129
             return_dict = fabric.tasks.execute(run, command, ignore_status,
                                                quiet, timeout,
                                                hosts=[self.hostname])
