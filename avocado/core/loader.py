@@ -354,13 +354,6 @@ class AccessDeniedPath(object):
     pass
 
 
-class FilteredOut(object):
-
-    """ Dummy object to represent test filtered out by the optional mask """
-
-    pass
-
-
 def add_loader_options(parser):
     arggrp = parser.add_argument_group('loader options')
     arggrp.add_argument('--loaders', nargs='*', help="Overrides the priority "
@@ -420,8 +413,7 @@ class FileLoader(TestLoader):
                 test.MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED',
-                FilteredOut: 'FILTERED'}
+                test.Test: 'INSTRUMENTED'}
 
     @staticmethod
     def get_decorator_mapping():
@@ -430,8 +422,7 @@ class FileLoader(TestLoader):
                 test.MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str,
-                FilteredOut: output.TERM_SUPPORT.warn_header_str}
+                test.Test: output.TERM_SUPPORT.healthy_str}
 
     def discover(self, reference, which_tests=DEFAULT):
         """
