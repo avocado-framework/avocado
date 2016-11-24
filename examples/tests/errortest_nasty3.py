@@ -19,6 +19,8 @@ class FailTest(Test):
 
     """
     This test raises old-style-class exception
+
+    :avocado: tags=failure_expected
     """
 
     def test(self):

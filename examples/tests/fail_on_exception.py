@@ -7,6 +7,8 @@ class FailOnException(avocado.Test):
 
     """
     Test illustrating the behavior of the fail_on decorator.
+
+    :avocado: tags=failure_expected
     """
 
     # @avocado.fail_on(ValueError) also possible

@@ -14,6 +14,8 @@ class CAbort(Test):
     """
     A test that calls C standard lib function abort().
 
+    :avocado: tags=requires_c_compiler
+
     params:
     :param tarball: Path to the c-source file relative to deps dir.
     """
