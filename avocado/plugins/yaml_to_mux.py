@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import tree, exit_codes
+from avocado.core import tree, exit_codes, mux
 from avocado.core.plugin_interfaces import CLI
 
 
@@ -37,8 +37,8 @@ else:
 # Mapping for yaml flags
 YAML_INCLUDE = 100
 YAML_USING = 101
-YAML_REMOVE_NODE = tree.REMOVE_NODE
-YAML_REMOVE_VALUE = tree.REMOVE_VALUE
+YAML_REMOVE_NODE = mux.REMOVE_NODE
+YAML_REMOVE_VALUE = mux.REMOVE_VALUE
 YAML_MUX = 102
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
@@ -59,16 +59,16 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     pass
 
 
-def _create_from_yaml(path, cls_node=tree.TreeNode):
+def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
         node = cls_node(str(name))
         using = ''
         for value in values:
-            if isinstance(value, tree.TreeNode):
+            if isinstance(value, cls_node):
                 node.add_child(value)
-            elif isinstance(value[0], tree.Control):
+            elif isinstance(value[0], mux.Control):
                 if value[0].code == YAML_INCLUDE:
                     # Include file
                     ypath = value[1]
@@ -140,17 +140,17 @@ def _create_from_yaml(path, cls_node=tree.TreeNode):
             objects = mapping_to_tree_loader(loader, obj)
         else:   # This means it's empty node. Don't call mapping_to_tree_loader
             objects = ListOfNodeObjects()
-        objects.append((tree.Control(YAML_MUX), None))
+        objects.append((mux.Control(YAML_MUX), None))
         return objects
 
     Loader.add_constructor(u'!include',
-                           lambda loader, node: tree.Control(YAML_INCLUDE))
+                           lambda loader, node: mux.Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
-                           lambda loader, node: tree.Control(YAML_USING))
+                           lambda loader, node: mux.Control(YAML_USING))
     Loader.add_constructor(u'!remove_node',
-                           lambda loader, node: tree.Control(YAML_REMOVE_NODE))
+                           lambda loader, node: mux.Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
-                           lambda loader, node: tree.Control(YAML_REMOVE_VALUE))
+                           lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
     Loader.add_constructor(u'!mux', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
@@ -200,16 +200,16 @@ def create_from_yaml(paths, debug=False):
 
     def _merge_debug(data, path):
         """ Use NamedTreeNodeDebug magic """
-        node_cls = tree.get_named_tree_cls(path)
+        node_cls = tree.get_named_tree_cls(path, mux.MuxTreeNodeDebug)
         tmp = _create_from_yaml(path, node_cls)
         if tmp:
             data.merge(tmp)
 
     if not debug:
-        data = tree.TreeNode()
+        data = mux.MuxTreeNode()
         merge = _merge
     else:
-        data = tree.TreeNodeDebug()
+        data = mux.MuxTreeNodeDebug()
         merge = _merge_debug
 
     path = None
