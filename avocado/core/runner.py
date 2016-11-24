@@ -221,11 +221,9 @@ class TestRunner(object):
         :type queue: :class:`multiprocessing.Queue` instance.
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
-        logger_list_stdout = [logging.getLogger('avocado.test.stdout'),
-                              TEST_LOG,
+        logger_list_stdout = [TEST_LOG,
                               logging.getLogger('paramiko')]
-        logger_list_stderr = [logging.getLogger('avocado.test.stderr'),
-                              TEST_LOG,
+        logger_list_stderr = [TEST_LOG,
                               logging.getLogger('paramiko')]
         sys.stdout = output.LoggingFile(logger=logger_list_stdout)
         sys.stderr = output.LoggingFile(logger=logger_list_stderr)
