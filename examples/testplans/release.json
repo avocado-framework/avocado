@@ -4,7 +4,7 @@
 
     "tests": [
 	{"name": "Avocado source is sound",
-	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check`. Expected result: Make command should say OK."},
+	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check-full`. Expected result: Make command should say OK."},
 
 	{"name": "Avocado source does not contain spelling errors",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
