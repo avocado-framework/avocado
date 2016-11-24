@@ -285,6 +285,11 @@ class Job(object):
         loader.loader.load_plugins(self.args)
         try:
             suite = loader.loader.discover(references)
+            if getattr(self.args, 'filter_by_tags', False):
+                suite = loader.filter_test_tags(
+                    suite,
+                    self.args.filter_by_tags,
+                    self.args.filter_by_tags_ignore_empty)
         except loader.LoaderUnhandledReferenceError as details:
             raise exceptions.OptionValidationError(details)
         except KeyboardInterrupt:
