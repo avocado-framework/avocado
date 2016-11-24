@@ -136,13 +136,13 @@ class TestMuxTree(unittest.TestCase):
     def test_filters(self):
         tree2 = copy.deepcopy(self.tree)
         exp = ['intel', 'amd', 'arm', 'fedora', 'mint', 'prod']
-        act = tree.apply_filters(tree2,
-                                 filter_only=['/hw/cpu', '']).get_leaves()
+        act = mux.apply_filters(tree2,
+                                filter_only=['/hw/cpu', '']).get_leaves()
         self.assertEqual(exp, act)
         tree2 = copy.deepcopy(self.tree)
         exp = ['scsi', 'virtio', 'fedora', 'mint', 'prod']
-        act = tree.apply_filters(tree2,
-                                 filter_out=['/hw/cpu', '']).get_leaves()
+        act = mux.apply_filters(tree2,
+                                filter_out=['/hw/cpu', '']).get_leaves()
         self.assertEqual(exp, act)
 
     def test_merge_trees(self):
@@ -242,16 +242,16 @@ class TestMultiplex(unittest.TestCase):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
         act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                             'examples/mux-selftest.yaml'])
-        act = tree.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
-                                       '/hw'))
+        act = mux.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
+                                      '/hw'))
         act = tuple(varianter.MuxTree(act))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
         act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                             'examples/mux-selftest.yaml'])
-        act = tree.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
-                                             '/distro'))
+        act = mux.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
+                                            '/distro'))
         act = tuple(varianter.MuxTree(act))
         self.assertEqual(len(act), 4)
         self.assertEqual(len(act[0]), 3)
@@ -384,6 +384,21 @@ class TestAvocadoParams(unittest.TestCase):
         # params2 is sliced the other way around so it returns before the clash
         self.assertEqual(self.params2.get('clash3', default='nnn'),
                          'also equal')
+
+
+class TestPathParent(unittest.TestCase):
+
+    def test_empty_string(self):
+        self.assertEqual(mux.path_parent(''), '/')
+
+    def test_on_root(self):
+        self.assertEqual(mux.path_parent('/'), '/')
+
+    def test_direct_parent(self):
+        self.assertEqual(mux.path_parent('/os/linux'), '/os')
+
+    def test_false_direct_parent(self):
+        self.assertNotEqual(mux.path_parent('/os/linux'), '/')
 
 
 if __name__ == '__main__':
