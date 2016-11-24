@@ -28,7 +28,7 @@ import time
 
 from . import data_dir
 from . import exceptions
-from . import multiplexer
+from . import varianter
 from . import sysinfo
 from ..utils import asset
 from ..utils import astring
@@ -208,9 +208,9 @@ class Test(unittest.TestCase):
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.params = multiplexer.AvocadoParams(params, self.name,
-                                                mux_path,
-                                                self.default_params)
+        self.params = varianter.AvocadoParams(params, self.name,
+                                              mux_path,
+                                              self.default_params)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 
