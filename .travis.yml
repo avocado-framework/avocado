@@ -45,6 +45,7 @@ script:
             git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
             SELF_CHECK_CONTINUOUS=y make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
             make clean
+            cat /tmp/log && ERR=$(echo -e "$ERR\nnull-handlers-added")
         done
         if [ "$ERR" ]; then
             echo
