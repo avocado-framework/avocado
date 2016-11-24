@@ -365,14 +365,6 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
-def _report_variants_already_parsed(self, *args, **kwargs):     # used as member function (self) pylint: disable=W0613
-    """
-    Raises exception describing that `self.data` alteration is restricted
-    """
-    raise RuntimeError("Varianter already parsed, altering is restricted. %s "
-                       "%s" % (args, kwargs))
-
-
 class Varianter(object):
 
     """
@@ -390,6 +382,7 @@ class Varianter(object):
         self.debug = debug
         self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
         self._mux_path = None
+        self.ignore_new_data = False    # Used to ignore new data when parsed
 
     def parse(self, args):
         """
@@ -407,8 +400,6 @@ class Varianter(object):
             self._mux_path = ['/run/*']
         # disable data alteration (and remove data as they are not useful)
         self.data = None
-        self.data_inject = _report_variants_already_parsed
-        self.data_merge = _report_variants_already_parsed
 
     def _parse_basic_injects(self, args):
         """
@@ -439,6 +430,22 @@ class Varianter(object):
         """
         return self.variants is not None
 
+    def _skip_new_data_check(self, fction, args):
+        """
+        Check whether we can inject the data
+
+        :param fction: Name of the data-inject function
+        :param args: Arguments of the data-inject function
+        :raise RuntimeError: When data injection is restricted
+        :return: True if new data should be ignored
+        """
+        if self.is_parsed():
+            if self.ignore_new_data:
+                return
+            raise RuntimeError("Mux already parsed, unable to execute "
+                               "%s%s"
+                               % (fction, args))
+
     def data_inject(self, key, value, path=None):   # pylint: disable=E0202
         """
         Inject entry to the mux tree (params database)
@@ -448,6 +455,8 @@ class Varianter(object):
         :param path: Optional path to the node to which we assign the value,
                      by default '/'.
         """
+        if self._skip_new_data_check("data_inject", (key, value, path)):
+            return
         if path:
             node = self.data.get_node(path, True)
         else:
@@ -461,6 +470,8 @@ class Varianter(object):
         :param tree: Tree to be merged into this database.
         :type tree: :class:`avocado.core.tree.TreeNode`
         """
+        if self._skip_new_data_check("data_merge", (tree,)):
+            return
         self.data.merge(tree)
 
     def get_number_of_tests(self, test_suite):
