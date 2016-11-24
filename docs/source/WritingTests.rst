@@ -827,15 +827,38 @@ a timeout of 3 seconds before Avocado ends the test forcefully by sending a
 :class:`avocado.core.exceptions.TestTimeoutError`.
 
 
-Test Tags
-=========
+Docstring Directives
+====================
 
-The need may arise for more complex tests, that use more advanced Python features
-such as inheritance. Due to the fact that Avocado uses a safe test introspection
-method, that is more limited than actual loading of the test classes, Avocado
-may need your help to identify those tests. For example, let's say you are
-defining a new test class that inherits from the Avocado base test class and
-putting it in ``mylibrary.py``::
+Some Avocado features, usually only available to instrumented tests,
+depend on setting directives on the test's class docstring.  The
+standard prefix used is ``:avocado:`` followed by the directive
+itself, such as ``:avocado: directive``.
+
+This is similar to docstring directives such as ``:param my_param:
+description`` and shouldn't be a surprise to most Python developers.
+
+The reason Avocado uses those docstring directives (instead of real
+Python code) is that the inspection done while looking for tests does
+not involve any execution of code.
+
+Now let's follow with some docstring directives examples.
+
+
+Explicitly enabling or disabling tests
+--------------------------------------
+
+If your test is a method in a class that directly inherits from
+:class:`avocado.Test`, then Avocado will find it as one would expect.
+
+Now, the need may arise for more complex tests, to use more advanced
+Python features such as inheritance.  For those tests that are written
+in a class not directly inherting from :class:`avocado.Test`, Avocado
+may need your help.
+
+For example, suppose that you define a new test class that inherits
+from the Avocado base test class, that is, :class:`avocado.Test`, and
+put it in ``mylibrary.py``::
 
     from avocado import Test
 
@@ -849,7 +872,8 @@ putting it in ``mylibrary.py``::
             self.log('Derived class example')
 
 
-Then implement your actual test using that derived class, in ``mytest.py``::
+Then you implement your actual test using that derived class, in
+``mytest.py``::
 
     import mylibrary
 
@@ -879,11 +903,12 @@ If you try to list the tests in that file, this is what you'll get::
     SIMPLE: 0
     VT: 0
 
-You need to give avocado a little help by adding a docstring tag. That docstring
-tag is ``:avocado: enable``. That tag tells the Avocado safe test detection
-code to consider it as an avocado test, regardless of what the (admittedly simple)
-detection code thinks of it. Let's see how that works out. Add the docstring,
-as you can see the example below::
+You need to give avocado a little help by adding a docstring
+directive. That docstring directive is ``:avocado: enable``. It tells
+the Avocado safe test detection code to consider it as an avocado
+test, regardless of what the (admittedly simple) detection code thinks
+of it. Let's see how that works out. Add the docstring, as you can see
+the example below::
 
     import mylibrary
 
@@ -916,8 +941,9 @@ Now, trying to list the tests on the ``mytest.py`` file again::
     SIMPLE: 0
     VT: 0
 
-You can also use the ``:avocado: disable`` tag, that works the opposite way:
-Something looks like an Avocado test, but we force it to not be listed as one.
+You can also use the ``:avocado: disable`` docstring directive, that
+works the opposite way: something that would be considered an Avocado
+test, but we force it to not be listed as one.
 
 Python :mod:`unittest` Compatibility Limitations And Caveats
 ============================================================
