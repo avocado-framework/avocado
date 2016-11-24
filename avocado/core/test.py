@@ -30,6 +30,7 @@ from . import data_dir
 from . import exceptions
 from . import multiplexer
 from . import sysinfo
+from . import output
 from ..utils import asset
 from ..utils import astring
 from ..utils import data_structures
@@ -187,6 +188,7 @@ class Test(unittest.TestCase):
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
         self._stderr_file = os.path.join(self.logdir, 'stderr')
+        self._logging_handlers = {}
 
         self.outputdir = utils_path.init_dir(self.logdir, 'data')
         self.sysinfo_enabled = getattr(self.job, 'sysinfo', False)
@@ -355,7 +357,7 @@ class Test(unittest.TestCase):
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-        return file_handler
+        self._logging_handlers[logger.name] = file_handler
 
     def _start_logging(self):
         """
@@ -373,22 +375,34 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self._register_log_file_handler(logging.getLogger("avocado.test.stdout"),
-                                        stream_formatter,
-                                        self._stdout_file)
-        self._register_log_file_handler(logging.getLogger("avocado.test.stderr"),
-                                        stream_formatter,
-                                        self._stderr_file)
-        self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
-                                                       formatter,
-                                                       self._ssh_logfile)
+        self._register_log_file_handler(
+                                      logging.getLogger("avocado.test.stdout"),
+                                      stream_formatter,
+                                      self._stdout_file)
+        self._register_log_file_handler(
+                                      logging.getLogger("avocado.test.stderr"),
+                                      stream_formatter,
+                                      self._stderr_file)
+        self._register_log_file_handler(logging.getLogger('paramiko'),
+                                        formatter,
+                                        self._ssh_logfile)
+
+        if isinstance(sys.stdout, output.LoggingFile):
+            sys.stdout.add_logger(logging.getLogger("avocado.test.stdout"))
+        if isinstance(sys.stderr, output.LoggingFile):
+            sys.stderr.add_logger(logging.getLogger("avocado.test.stderr"))
 
     def _stop_logging(self):
         """
         Stop the logging activity of the test by cleaning the logger handlers.
         """
         self.log.removeHandler(self.file_handler)
-        logging.getLogger('paramiko').removeHandler(self._ssh_fh)
+        if isinstance(sys.stderr, output.LoggingFile):
+            sys.stderr.rm_logger(logging.getLogger("avocado.test.stderr"))
+        if isinstance(sys.stdout, output.LoggingFile):
+            sys.stdout.rm_logger(logging.getLogger("avocado.test.stdout"))
+        for name, handler in self._logging_handlers.iteritems():
+            logging.getLogger(name).removeHandler(handler)
 
     def _record_reference_stdout(self):
         if self.datadir is not None:
