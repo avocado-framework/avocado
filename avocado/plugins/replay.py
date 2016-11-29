@@ -27,12 +27,6 @@ from avocado.core.settings import settings
 from avocado.core.test import ReplaySkipTest
 
 
-def ignore_call(*args, **kwargs):
-    """
-    Accepts anything and does nothing
-    """
-
-
 class Replay(CLI):
 
     """
@@ -219,8 +213,7 @@ class Replay(CLI):
                     log.warning("Using src job Mux data only, use `--replay-"
                                 "ignore variants` to override them.")
                 setattr(args, "xxx_variants", variants)
-                variants.data_merge = ignore_call
-                variants.data_inject = ignore_call
+                variants.ignore_new_data = True
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,
