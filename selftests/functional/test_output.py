@@ -261,8 +261,8 @@ class OutputPluginTest(unittest.TestCase):
                 pass
 
     def test_nonprintable_chars(self):
-        cmd_line = ("./scripts/avocado run '/bin/ls "
-                    "NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
+        cmd_line = ("./scripts/avocado run --external-runner /bin/ls "
+                    "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
                     "--job-results-dir %s --sysinfo=off" % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr

@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 import aexpect
 import glob
 import json
@@ -86,6 +87,11 @@ class MyTest(Test):
     def test(self):
          self.runner_queue.put({"running": False})
          time.sleep(60)
+'''
+
+SLEEP_60 = '''#!/bin/sh
+
+sleep 60
 '''
 
 DIE_WITHOUT_REPORTING_STATUS = '''
@@ -565,33 +571,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
                       '  SKIP', result.stdout)
 
-    @unittest.skipIf(not ECHO_BINARY, 'echo binary not available')
-    def test_ugly_echo_cmd(self):
-        os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run "%s -ne '
-                    'foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
-                    ' --sysinfo=off  --show-job-log' %
-                    (ECHO_BINARY, self.tmpdir))
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %s:\n%s" %
-                         (expected_rc, result))
-        self.assertIn('[stdout] foo', result.stdout, result)
-        self.assertIn('[stdout] \'"', result.stdout, result)
-        self.assertIn('[stdout] bar/baz', result.stdout, result)
-        self.assertIn('PASS 1-%s -ne foo\\\\n\\\'\\"\\\\nbar/baz' %
-                      ECHO_BINARY, result.stdout, result)
-        # logdir name should escape special chars (/)
-        test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
-                                           'test-results', '*'))
-        self.assertEqual(len(test_dirs), 1, "There are multiple directories in"
-                         " test-results dir, but only one test was executed: "
-                         "%s" % (test_dirs))
-        self.assertEqual(os.path.basename(test_dirs[0]),
-                         '1-%s -ne foo\\\\n\\\'\\"\\\\nbar_baz' %
-                         ECHO_BINARY.replace('/', '_'))
-
     def test_replay_skip_skipped(self):
         cmd = ("./scripts/avocado run --job-results-dir %s --json - "
                "skiponsetup.py" % self.tmpdir)
@@ -611,7 +590,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
-            'avocado_pass.sh',
+            'ʊʋʉʈɑ ʅʛʌ',
             PASS_SCRIPT_CONTENTS,
             'avocado_simpletest_functional')
         self.pass_script.save()
@@ -620,11 +599,16 @@ class RunnerSimpleTest(unittest.TestCase):
                                                   'avocado_simpletest_'
                                                   'functional')
         self.fail_script.save()
+        self.sleep_60 = script.TemporaryScript('avocado_sleep_60.sh',
+                                               SLEEP_60,
+                                               'avocado_simpletest_'
+                                               'functional')
+        self.sleep_60.save()
 
     def test_simpletest_pass(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
-                    ' %s' % (self.tmpdir, self.pass_script.path))
+                    ' "%s"' % (self.tmpdir, self.pass_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -704,7 +688,7 @@ class RunnerSimpleTest(unittest.TestCase):
         test_file_name = os.path.basename(self.pass_script.path)
         os.chdir(test_base_dir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
-                    ' %s' % (avocado_path, self.tmpdir, test_file_name))
+                    ' "%s"' % (avocado_path, self.tmpdir, test_file_name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -713,10 +697,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     @unittest.skipIf(not SLEEP_BINARY, 'sleep binary not available')
     def test_kill_stopped_sleep(self):
-        sleep = "'%s 60'" % SLEEP_BINARY
         proc = aexpect.Expect("./scripts/avocado run %s --job-results-dir %s "
                               "--sysinfo=off --job-timeout 3"
-                              % (sleep, self.tmpdir))
+                              % (self.sleep_60, self.tmpdir))
         proc.read_until_output_matches(["\(1/1\)"], timeout=3,
                                        internal_timeout=0.01)
         # We need pid of the avocado, not the shell executing it
@@ -739,7 +722,8 @@ class RunnerSimpleTest(unittest.TestCase):
                       "probably died unexpectadly")
         self.assertEqual(proc.get_status(), 8, "Avocado did not finish with "
                          "1.")
-        sleep_dir = astring.string_to_safe_path("1-" + sleep[1:-1])
+
+        sleep_dir = astring.string_to_safe_path("1-" + self.sleep_60.path)
         debug_log = os.path.join(self.tmpdir, "latest", "test-results",
                                  sleep_dir, "debug.log")
         debug_log = open(debug_log).read()
@@ -1136,18 +1120,6 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
-
-    @unittest.skipIf(not ECHO_BINARY, 'echo binary not available')
-    def test_ugly_echo_cmd(self):
-        data = self.run_and_check('"/bin/echo -ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
-                                  'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
-                                  0, 0)
-        # The executed test should be this
-        self.assertEqual(data['tests'][0]['url'],
-                         '1-/bin/echo -ne foo\\\\n\\\'\\"\\\\nbar/baz')
-        # logdir name should escape special chars (/)
-        self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
-                         '1-_bin_echo -ne foo\\\\n\\\'\\"\\\\nbar_baz')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
