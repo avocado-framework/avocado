@@ -66,7 +66,7 @@ def _create_from_yaml(path, cls_node=tree.TreeNode):
         node = cls_node(str(name))
         using = ''
         for value in values:
-            if isinstance(value, tree.TreeNode):
+            if isinstance(value, cls_node):
                 node.add_child(value)
             elif isinstance(value[0], tree.Control):
                 if value[0].code == YAML_INCLUDE:
