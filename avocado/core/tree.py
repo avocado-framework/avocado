@@ -37,23 +37,8 @@ import collections
 import itertools
 import locale
 import os
-import re
 
 from . import output
-
-
-# Tags to remove node/value
-REMOVE_NODE = 0
-REMOVE_VALUE = 1
-
-
-class Control(object):  # Few methods pylint: disable=R0903
-
-    """ Container used to identify node vs. control sequence """
-
-    def __init__(self, code, value=None):
-        self.code = code
-        self.value = value
 
 
 class TreeNode(object):
@@ -73,8 +58,6 @@ class TreeNode(object):
         self.children = []
         self._environment = None
         self.environment_origin = {}
-        self.ctrl = []
-        self.multiplex = None
         for child in children:
             self.add_child(child)
 
@@ -130,28 +113,6 @@ class TreeNode(object):
         added as children (recursively they get either appended at the end
         or merged into existing node in the previous position.
         """
-        for ctrl in other.ctrl:
-            if isinstance(ctrl, Control):
-                if ctrl.code == REMOVE_NODE:
-                    remove = []
-                    regexp = re.compile(ctrl.value)
-                    for child in self.children:
-                        if regexp.match(child.name):
-                            remove.append(child)
-                    for child in remove:
-                        self.children.remove(child)
-                elif ctrl.code == REMOVE_VALUE:
-                    remove = []
-                    regexp = re.compile(ctrl.value)
-                    for key in self.value.iterkeys():
-                        if regexp.match(key):
-                            remove.append(key)
-                    for key in remove:
-                        self.value.pop(key, None)
-        if other.multiplex is True:
-            self.multiplex = True
-        elif other.multiplex is False:
-            self.multiplex = False
         self.value.update(other.value)
         for child in other.children:
             self.add_child(child)
