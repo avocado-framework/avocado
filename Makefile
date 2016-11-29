@@ -29,8 +29,8 @@ MOCK_CONFIG=default
 all:
 	@echo
 	@echo "Development related targets:"
-	@echo "check:      Runs tree static check, unittests and functional tests"
-	@echo "check-long: Runs tree static check, unittests and long functional tests"
+	@echo "check:      Runs tree static check, unittests and fast functional tests"
+	@echo "check-full: Runs tree static check, unittests and all functional tests"
 	@echo "develop:    Runs 'python setup.py --develop on this tree alone"
 	@echo "link:       Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:      Get rid of scratch, byte files and removes the links to other subprojects"
