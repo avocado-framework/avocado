@@ -112,19 +112,19 @@ class ReplayTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = 'Invalid --replay-ignore option. Valid options are ' \
-              '(more than one allowed): mux,config'
+              '(more than one allowed): variants,config'
         self.assertIn(msg, result.stderr)
 
-    def test_run_replay_ignoremux(self):
+    def test_run_replay_ignorevariants(self):
         """
-        Runs a replay job ignoring the mux.
+        Runs a replay job ignoring the variants.
         """
-        cmd_line = ('./scripts/avocado run --replay %s --replay-ignore mux '
+        cmd_line = ('./scripts/avocado run --replay %s --replay-ignore variants '
                     '--job-results-dir %s --sysinfo=off'
                     % (self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = 'Ignoring multiplex from source job with --replay-ignore.'
+        msg = 'Ignoring variants from source job with --replay-ignore.'
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_invalidstatus(self):
@@ -164,17 +164,17 @@ class ReplayTests(unittest.TestCase):
         msg = "Currently we don't replay jobs in remote hosts."
         self.assertIn(msg, result.stderr)
 
-    def test_run_replay_status_and_mux(self):
+    def test_run_replay_status_and_variants(self):
         """
-        Runs a replay job with custom a mux and using '--replay-test-status'
+        Runs a replay job with custom variants using '--replay-test-status'
         """
-        cmd_line = ('./scripts/avocado run --replay %s --replay-ignore mux '
+        cmd_line = ('./scripts/avocado run --replay %s --replay-ignore variants '
                     '--replay-test-status FAIL --job-results-dir %s '
                     '--sysinfo=off' % (self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         msg = ("Option `--replay-test-status` is incompatible with "
-               "`--replay-ignore mux`")
+               "`--replay-ignore variants`")
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_references(self):

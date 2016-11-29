@@ -2,7 +2,7 @@ import itertools
 import pickle
 import sys
 
-from avocado.core import multiplexer
+from avocado.core import varianter
 from avocado.core import tree
 from avocado.plugins import yaml_to_mux
 
@@ -31,16 +31,16 @@ class TestMultiplex(unittest.TestCase):
         self.mux_tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
                                                       'examples/mux-selftest.'
                                                       'yaml'])
-        self.mux_full = tuple(multiplexer.MuxTree(self.mux_tree))
+        self.mux_full = tuple(varianter.MuxTree(self.mux_tree))
 
     def test_empty(self):
-        act = tuple(multiplexer.MuxTree(tree.TreeNode()))
+        act = tuple(varianter.MuxTree(tree.TreeNode()))
         self.assertEqual(act, (['', ],))
 
     def test_partial(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
                ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
-        act = tuple(multiplexer.MuxTree(self.mux_tree.children[0]))
+        act = tuple(varianter.MuxTree(self.mux_tree.children[0]))
         self.assertEqual(act, exp)
 
     def test_full(self):
@@ -49,7 +49,7 @@ class TestMultiplex(unittest.TestCase):
     def test_create_variants(self):
         from_file = yaml_to_mux.create_from_yaml(
             ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
-        from_file = multiplexer.MuxTree(from_file)
+        from_file = varianter.MuxTree(from_file)
         self.assertEqual(self.mux_full, tuple(from_file))
 
     # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
@@ -59,7 +59,7 @@ class TestMultiplex(unittest.TestCase):
                                             'examples/mux-selftest.yaml'])
         act = tree.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
                                        '/hw'))
-        act = tuple(multiplexer.MuxTree(act))
+        act = tuple(varianter.MuxTree(act))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
@@ -67,7 +67,7 @@ class TestMultiplex(unittest.TestCase):
                                             'examples/mux-selftest.yaml'])
         act = tree.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
                                              '/distro'))
-        act = tuple(multiplexer.MuxTree(act))
+        act = tuple(varianter.MuxTree(act))
         self.assertEqual(len(act), 4)
         self.assertEqual(len(act[0]), 3)
         str_act = str(act)
@@ -82,13 +82,13 @@ class TestAvocadoParams(unittest.TestCase):
     def setUp(self):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                               'examples/mux-selftest-params.yaml'])
-        self.yamls = iter(multiplexer.MuxTree(yamls))
-        self.params1 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest1',
-                                                 ['/ch0/*', '/ch1/*'], {})
+        self.yamls = iter(varianter.MuxTree(yamls))
+        self.params1 = varianter.AvocadoParams(self.yamls.next(), 'Unittest1',
+                                               ['/ch0/*', '/ch1/*'], {})
         self.yamls.next()    # Skip 2nd
         self.yamls.next()    # and 3rd
-        self.params2 = multiplexer.AvocadoParams(self.yamls.next(), 'Unittest2',
-                                                 ['/ch1/*', '/ch0/*'], {})
+        self.params2 = varianter.AvocadoParams(self.yamls.next(), 'Unittest2',
+                                               ['/ch1/*', '/ch0/*'], {})
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_pickle(self):
@@ -102,7 +102,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertNotEqual(self.params1, self.params2)
         repr(self.params1)
         str(self.params1)
-        str(multiplexer.AvocadoParams([], 'Unittest', [], {}))
+        str(varianter.AvocadoParams([], 'Unittest', [], {}))
         self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
