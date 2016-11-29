@@ -639,6 +639,8 @@ class LoggingFile(object):
         Passes lines of output to the logging module.
         """
         for lg in self._logger:
+            if not lg.handlers:
+                continue
             lg.log(self._level, self._prefix + line)
 
     def _flush_buffer(self):
@@ -651,6 +653,9 @@ class LoggingFile(object):
 
     def isatty(self):
         return False
+
+    def add_logger(self, logger):
+        self._logger.append(logger)
 
 
 class Throbber(object):
