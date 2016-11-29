@@ -21,6 +21,7 @@ framework tests.
 import inspect
 import logging
 import os
+import pipes
 import re
 import shutil
 import sys
@@ -702,7 +703,9 @@ class SimpleTest(Test):
     def __init__(self, name, params=None, base_logdir=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, job=job)
-        self._command = self.filename
+        self._command = None
+        if self.filename is not None:
+            self._command = pipes.quote(self.filename)
 
     @property
     def filename(self):
