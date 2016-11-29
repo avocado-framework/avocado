@@ -268,7 +268,8 @@ class YamlToMux(CLI):
         if multiplex_files:
             debug = getattr(args, "mux_debug", False)
             try:
-                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+                data = create_from_yaml(multiplex_files, debug)
+                args.avocado_variants.data_merge(data)
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -279,7 +280,8 @@ class YamlToMux(CLI):
             self._log_deprecation_msg("--multiplex", "--mux-yaml")
             debug = getattr(args, "mux_debug", False)
             try:
-                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+                data = create_from_yaml(multiplex_files, debug)
+                args.avocado_variants.data_merge(data)
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)

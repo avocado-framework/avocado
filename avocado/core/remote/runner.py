@@ -176,17 +176,17 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
+    def run_suite(self, test_suite, variants, timeout=0, replay_map=None):
         """
         Run one or more tests and report with test result.
 
         :param params_list: a list of param dicts.
-        :param mux: A multiplex iterator (unused here)
+        :param variants: A varianter iterator (unused here)
 
         :return: a set with types of test failures.
         """
         del test_suite     # using self.job.references instead
-        del mux            # we're not using multiplexation here
+        del variants            # we're not using multiplexation here
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()

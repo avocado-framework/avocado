@@ -64,7 +64,7 @@ class Replay(CLI):
                                    dest='replay_ignore',
                                    type=self._valid_ignore,
                                    default=[],
-                                   help='Ignore multiplex (mux) and/or '
+                                   help='Ignore variants (variants) and/or '
                                    'configuration (config) from the '
                                    'source job')
 
@@ -80,7 +80,7 @@ class Replay(CLI):
         return status_list
 
     def _valid_ignore(self, string):
-        options = ['mux', 'config']
+        options = ['variants', 'config']
         ignore_list = string.split(',')
         for item in ignore_list:
             if item not in options:
@@ -126,9 +126,9 @@ class Replay(CLI):
         log = logging.getLogger("avocado.app")
 
         err = None
-        if args.replay_teststatus and 'mux' in args.replay_ignore:
+        if args.replay_teststatus and 'variants' in args.replay_ignore:
             err = ("Option `--replay-test-status` is incompatible with "
-                   "`--replay-ignore mux`.")
+                   "`--replay-ignore variants`.")
         elif args.replay_teststatus and args.reference:
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
@@ -202,25 +202,26 @@ class Replay(CLI):
         else:
             self.load_config(resultsdir)
 
-        if 'mux' in args.replay_ignore:
-            log.warn("Ignoring multiplex from source job with "
+        if 'variants' in args.replay_ignore:
+            log.warn("Ignoring variants from source job with "
                      "--replay-ignore.")
         else:
-            mux = jobdata.retrieve_mux(resultsdir)
-            if mux is None:
-                log.error('Source job multiplex data not found. Aborting.')
+            variants = jobdata.retrieve_variants(resultsdir)
+            if variants is None:
+                log.error('Source job variants data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
             else:
                 # Ignore data manipulation. This is necessary, because
                 # we replaced the unparsed object with parsed one. There
                 # are other plugins running before/after this which might
-                # want to alter the mux object.
-                if len(args.mux.data) or args.mux.data.environment:
+                # want to alter the variants object.
+                if (len(args.avocado_variants.data) or
+                        args.avocado_variants.data.environment):
                     log.warning("Using src job Mux data only, use `--replay-"
-                                "ignore mux` to override them.")
-                setattr(args, "mux", mux)
-                mux.data_merge = ignore_call
-                mux.data_inject = ignore_call
+                                "ignore variants` to override them.")
+                setattr(args, "avocado_variants", variants)
+                variants.data_merge = ignore_call
+                variants.data_inject = ignore_call
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,

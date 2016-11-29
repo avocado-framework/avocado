@@ -138,7 +138,7 @@ class Run(CLICmd):
         mux.add_argument('--filter-out', nargs='*', default=[],
                          help='Filter out path(s) from multiplexing')
         mux.add_argument('--mux-path', nargs='*', default=None,
-                         help="List of paths used to determine path "
+                         help="List of default paths used to determine path "
                          "priority when querying for parameters")
         mux.add_argument('--mux-inject', default=[], nargs='*',
                          help="Inject [path:]key:node values into the "

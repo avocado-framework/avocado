@@ -369,10 +369,10 @@ class Diff(CLICmd):
     @staticmethod
     def _get_variants(resultsdir):
         results = []
-        mux = jobdata.retrieve_mux(resultsdir)
-        if mux is not None:
+        variants = jobdata.retrieve_variants(resultsdir)
+        if variants is not None:
             env = set()
-            for (index, tpl) in enumerate(mux.variants):
+            for (index, tpl) in enumerate(variants.variants):
                 paths = ', '.join([x.path for x in tpl])
                 results.append('Variant %s: %s\n' % (index + 1, paths))
                 for node in tpl:
