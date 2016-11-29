@@ -481,8 +481,8 @@ class TestRunner(object):
         for variant, params in mux.itertests():
             if params:
                 if "params" in template[1]:
-                    msg = ("Unable to multiplex test %s, params are already "
-                           "present in test factory: %s"
+                    msg = ("Unable to use test variants %s, params are already"
+                           " present in test factory: %s"
                            % (template[0], template[1]))
                     raise ValueError(msg)
                 factory = [template[0], template[1].copy()]
@@ -491,12 +491,12 @@ class TestRunner(object):
                 factory = template
             yield factory, variant
 
-    def run_suite(self, test_suite, mux, timeout=0, replay_map=None):
+    def run_suite(self, test_suite, variants, timeout=0, replay_map=None):
         """
         Run one or more tests and report with test result.
 
         :param test_suite: a list of tests to run.
-        :param mux: the multiplexer.
+        :param variants: A varianter iterator to produce test params.
         :param timeout: maximum amount of time (in seconds) to execute.
         :return: a set with types of test failures.
         """
@@ -510,7 +510,7 @@ class TestRunner(object):
         else:
             deadline = None
 
-        test_result_total = mux.get_number_of_tests(test_suite)
+        test_result_total = variants.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
         self.result.tests_total = test_result_total
         self.result.start_tests()
@@ -521,7 +521,7 @@ class TestRunner(object):
                 test_template[1]['job'] = self.job
                 break_loop = False
                 for test_factory, variant in self._iter_variants(test_template,
-                                                                 mux):
+                                                                 variants):
                     index += 1
                     test_parameters = test_factory[1]
                     name = test_parameters.get("name")

@@ -72,11 +72,11 @@ class Multiplex(CLICmd):
         if err:
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        mux = args.mux
+        variants = args.xxx_variants
         try:
-            mux.parse(args)
+            variants.parse(args)
         except (IOError, ValueError) as details:
-            log.error("Unable to parse mux: %s", details)
+            log.error("Unable to parse variants: %s", details)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         if args.tree:
             if args.contents:
@@ -87,11 +87,11 @@ class Multiplex(CLICmd):
                 verbose += 2
             use_utf8 = settings.get_value("runner.output", "utf8",
                                           key_type=bool, default=None)
-            log.debug(tree.tree_view(mux.variants.root, verbose, use_utf8))
+            log.debug(tree.tree_view(variants.variants.root, verbose, use_utf8))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(mux.variants):
+        for (index, tpl) in enumerate(variants.variants):
             if not args.mux_debug:
                 paths = ', '.join([x.path for x in tpl])
             else:

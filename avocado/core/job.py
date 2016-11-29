@@ -38,7 +38,7 @@ from . import exit_codes
 from . import exceptions
 from . import job_id
 from . import output
-from . import multiplexer
+from . import varianter
 from . import tree
 from . import test
 from . import jobdata
@@ -366,9 +366,9 @@ class Job(object):
         job_log.info('logs     ' + data_dir.get_logs_dir())
         job_log.info('')
 
-    def _log_mux_tree(self, mux):
+    def _log_variants_tree(self, variant):
         job_log = _TEST_LOGGER
-        tree_repr = tree.tree_view(mux.variants.root, verbose=True,
+        tree_repr = tree.tree_view(variant.variants.root, verbose=True,
                                    use_utf8=False)
         if tree_repr:
             job_log.info('Multiplex tree representation:')
@@ -381,14 +381,14 @@ class Job(object):
         job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
         job_log.info('')
 
-    def _log_mux_variants(self, mux):
+    def _log_variants(self, variant):
         job_log = _TEST_LOGGER
 
-        for (index, tpl) in enumerate(mux.variants):
+        for (index, tpl) in enumerate(variant.variants):
             paths = ', '.join([x.path for x in tpl])
             job_log.info('Variant %s:    %s', index + 1, paths)
 
-        if mux.variants:
+        if variant.variants:
             job_log.info('')
 
     def _log_job_debug_info(self, mux):
@@ -399,9 +399,9 @@ class Job(object):
         self._log_avocado_version()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_mux_tree(mux)
+        self._log_variants_tree(mux)
         self._log_tmp_dir()
-        self._log_mux_variants(mux)
+        self._log_variants(mux)
         self._log_job_id()
 
     def create_test_suite(self):
@@ -441,24 +441,24 @@ class Job(object):
         self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
-        mux = getattr(self.args, "mux", None)
-        if mux is None:
-            mux = multiplexer.Mux()
-        if not mux.is_parsed():   # Mux not yet parsed, apply args
+        variant = getattr(self.args, "xxx_variants", None)
+        if variant is None:
+            variant = varianter.Varianter()
+        if not variant.is_parsed():   # Varianter not yet parsed, apply args
             try:
-                mux.parse(self.args)
+                variant.parse(self.args)
             except (IOError, ValueError) as details:
-                raise exceptions.OptionValidationError("Unable to parse mux: "
+                raise exceptions.OptionValidationError("Unable to parse variant: "
                                                        "%s" % details)
 
         self._make_test_runner()
         self._start_sysinfo()
 
-        self._log_job_debug_info(mux)
-        jobdata.record(self.args, self.logdir, mux, self.references, sys.argv)
+        self._log_job_debug_info(variant)
+        jobdata.record(self.args, self.logdir, variant, self.references, sys.argv)
         replay_map = getattr(self.args, 'replay_map', None)
         summary = self.test_runner.run_suite(self.test_suite,
-                                             mux,
+                                             variant,
                                              self.timeout,
                                              replay_map)
         # If it's all good so far, set job status to 'PASS'

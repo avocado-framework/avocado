@@ -365,18 +365,18 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
-def _report_mux_already_parsed(self, *args, **kwargs):
+def _report_variants_already_parsed(self, *args, **kwargs):     # used as member function (self) pylint: disable=W0613
     """
     Raises exception describing that `self.data` alteration is restricted
     """
-    raise RuntimeError("Mux already parsed, altering is restricted. %s %s"
-                       % (args, kwargs))
+    raise RuntimeError("Varianter already parsed, altering is restricted. %s "
+                       "%s" % (args, kwargs))
 
 
-class Mux(object):
+class Varianter(object):
 
     """
-    This is a multiplex object which multiplexes the test_suite.
+    This object takes care of producing test variants
     """
 
     def __init__(self, debug=False):
@@ -407,12 +407,12 @@ class Mux(object):
             self._mux_path = ['/run/*']
         # disable data alteration (and remove data as they are not useful)
         self.data = None
-        self.data_inject = _report_mux_already_parsed
-        self.data_merge = _report_mux_already_parsed
+        self.data_inject = _report_variants_already_parsed
+        self.data_merge = _report_variants_already_parsed
 
     def _parse_basic_injects(self, args):
         """
-        Inject data from the basic injects defined by Mux
+        Inject data from the basic injects defined by Varianter
 
         :param args: Parsed cmdline arguments
         """
@@ -465,7 +465,7 @@ class Mux(object):
 
     def get_number_of_tests(self, test_suite):
         """
-        :return: overall number of tests * multiplex variants
+        :return: overall number of tests * number of variants
         """
         # Currently number of tests is symmetrical
         if self.variants:
@@ -480,7 +480,7 @@ class Mux(object):
         """
         Yield variant-id and test params
 
-        :yield (variant-id, (list of leaves, list of multiplex paths))
+        :yield (variant-id, (list of leaves, list of default paths))
         """
         if self.variants:  # Copy template and modify it's params
             if self._has_multiple_variants:
