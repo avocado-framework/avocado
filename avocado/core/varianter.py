@@ -390,11 +390,8 @@ class Varianter(object):
 
         :param args: Parsed cmdline arguments
         """
-        filter_only = getattr(args, 'filter_only', None)
-        filter_out = getattr(args, 'filter_out', None)
         self._parse_basic_injects(args)
-        mux_tree = tree.apply_filters(self.data, filter_only, filter_out)
-        self.variants = MuxTree(mux_tree)
+        self.variants = MuxTree(self.data)
         self._mux_path = getattr(args, 'mux_path', None)
         if self._mux_path is None:
             self._mux_path = ['/run/*']
@@ -412,17 +409,6 @@ class Varianter(object):
         if (not getattr(args, "mux_skip_defaults", False) and
                 hasattr(args, "default_avocado_params")):
             self.data_merge(args.default_avocado_params)
-
-        # Extend default multiplex tree of --mux-inject values
-        for inject in getattr(args, "mux_inject", []):
-            entry = inject.split(':', 3)
-            if len(entry) < 2:
-                raise ValueError("key:entry pairs required, found only %s"
-                                 % (entry))
-            elif len(entry) == 2:   # key, entry
-                self.data_inject(*entry)
-            else:                   # path, key, entry
-                self.data_inject(key=entry[1], value=entry[2], path=entry[0])
 
     def is_parsed(self):
         """
