@@ -30,7 +30,7 @@ JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
 TEST_REFERENCES_FILENAME_LEGACY = 'urls'
-MUX_FILENAME = 'multiplex'
+VARIANTS_FILENAME = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
@@ -45,7 +45,7 @@ def record(args, logdir, mux, references=None, cmdline=None):
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
     path_references_legacy = os.path.join(base_dir,
                                           TEST_REFERENCES_FILENAME_LEGACY)
-    path_mux = os.path.join(base_dir, MUX_FILENAME)
+    path_mux = os.path.join(base_dir, VARIANTS_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
     path_args = os.path.join(base_dir, ARGS_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
@@ -105,11 +105,11 @@ def retrieve_references(resultsdir):
         return ast.literal_eval(references_file.read())
 
 
-def retrieve_mux(resultsdir):
+def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
-    recorded_mux = _retrieve(resultsdir, MUX_FILENAME)
+    recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME)
     if recorded_mux is None:
         return None
     with open(recorded_mux, 'r') as mux_file:

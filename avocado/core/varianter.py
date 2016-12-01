@@ -365,18 +365,10 @@ class AvocadoParam(object):
                 yield (leaf.environment_origin[key].path, key, value)
 
 
-def _report_mux_already_parsed(self, *args, **kwargs):
-    """
-    Raises exception describing that `self.data` alteration is restricted
-    """
-    raise RuntimeError("Mux already parsed, altering is restricted. %s %s"
-                       % (args, kwargs))
-
-
-class Mux(object):
+class Varianter(object):
 
     """
-    This is a multiplex object which multiplexes the test_suite.
+    This object takes care of producing test variants
     """
 
     def __init__(self, debug=False):
@@ -390,6 +382,7 @@ class Mux(object):
         self.debug = debug
         self.data = tree.TreeNodeDebug() if debug else tree.TreeNode()
         self._mux_path = None
+        self.ignore_new_data = False    # Used to ignore new data when parsed
 
     def parse(self, args):
         """
@@ -397,22 +390,17 @@ class Mux(object):
 
         :param args: Parsed cmdline arguments
         """
-        filter_only = getattr(args, 'filter_only', None)
-        filter_out = getattr(args, 'filter_out', None)
         self._parse_basic_injects(args)
-        mux_tree = tree.apply_filters(self.data, filter_only, filter_out)
-        self.variants = MuxTree(mux_tree)
+        self.variants = MuxTree(self.data)
         self._mux_path = getattr(args, 'mux_path', None)
         if self._mux_path is None:
             self._mux_path = ['/run/*']
         # disable data alteration (and remove data as they are not useful)
         self.data = None
-        self.data_inject = _report_mux_already_parsed
-        self.data_merge = _report_mux_already_parsed
 
     def _parse_basic_injects(self, args):
         """
-        Inject data from the basic injects defined by Mux
+        Inject data from the basic injects defined by Varianter
 
         :param args: Parsed cmdline arguments
         """
@@ -422,22 +410,26 @@ class Mux(object):
                 hasattr(args, "default_avocado_params")):
             self.data_merge(args.default_avocado_params)
 
-        # Extend default multiplex tree of --mux-inject values
-        for inject in getattr(args, "mux_inject", []):
-            entry = inject.split(':', 3)
-            if len(entry) < 2:
-                raise ValueError("key:entry pairs required, found only %s"
-                                 % (entry))
-            elif len(entry) == 2:   # key, entry
-                self.data_inject(*entry)
-            else:                   # path, key, entry
-                self.data_inject(key=entry[1], value=entry[2], path=entry[0])
-
     def is_parsed(self):
         """
         Reports whether the tree was already multiplexed
         """
         return self.variants is not None
+
+    def _skip_new_data_check(self, fction, args):
+        """
+        Check whether we can inject the data
+
+        :param fction: Name of the data-inject function
+        :param args: Arguments of the data-inject function
+        :raise RuntimeError: When data injection is restricted
+        :return: True if new data should be ignored
+        """
+        if self.is_parsed():
+            if self.ignore_new_data:
+                return
+            raise RuntimeError("Varianter already parsed, unable to execute "
+                               "%s%s" % (fction, args))
 
     def data_inject(self, key, value, path=None):   # pylint: disable=E0202
         """
@@ -448,6 +440,8 @@ class Mux(object):
         :param path: Optional path to the node to which we assign the value,
                      by default '/'.
         """
+        if self._skip_new_data_check("data_inject", (key, value, path)):
+            return
         if path:
             node = self.data.get_node(path, True)
         else:
@@ -461,11 +455,13 @@ class Mux(object):
         :param tree: Tree to be merged into this database.
         :type tree: :class:`avocado.core.tree.TreeNode`
         """
+        if self._skip_new_data_check("data_merge", (tree,)):
+            return
         self.data.merge(tree)
 
     def get_number_of_tests(self, test_suite):
         """
-        :return: overall number of tests * multiplex variants
+        :return: overall number of tests * number of variants
         """
         # Currently number of tests is symmetrical
         if self.variants:
@@ -480,7 +476,7 @@ class Mux(object):
         """
         Yield variant-id and test params
 
-        :yield (variant-id, (list of leaves, list of multiplex paths))
+        :yield (variant-id, (list of leaves, list of default paths))
         """
         if self.variants:  # Copy template and modify it's params
             if self._has_multiple_variants:
