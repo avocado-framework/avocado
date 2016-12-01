@@ -8,6 +8,9 @@ class DoubleFail(Test):
 
     """
     Functional test for avocado. Straight up fail the test.
+
+    :avocado: tags=failure_expected
+
     """
 
     def test(self):

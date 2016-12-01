@@ -8,6 +8,8 @@ class ErrorTest(Test):
 
     """
     Example test that raises generic exception
+
+    :avocado: tags=failure_expected
     """
 
     def test(self):
