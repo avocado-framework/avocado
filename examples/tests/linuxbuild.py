@@ -12,6 +12,8 @@ class LinuxBuildTest(Test):
     """
     Execute the Linux Build test.
 
+    :avocado: tags=requires_c_compiler
+
     :param linux_version: kernel version to be built
     :param linux_config: name of the config file located in deps path
     """

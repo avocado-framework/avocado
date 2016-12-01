@@ -945,6 +945,102 @@ You can also use the ``:avocado: disable`` docstring directive, that
 works the opposite way: something that would be considered an Avocado
 test, but we force it to not be listed as one.
 
+Categorizing tests
+------------------
+
+Avocado allows tests to be given tags, which can be used to create
+test categories.  With tags set, users can select a subset of the
+tests found by the test resolver (also known as test loader).
+
+To make this feature easier to grasp, let's work with an example: a
+single Python source code file, named ``perf.py``, that contains both
+disk and network performance tests::
+
+  from avocado import Test
+
+  class Disk(Test):
+
+      """
+      Disk performance tests
+
+      :avocado: tags=disk,slow,superuser,unsafe
+      """
+
+      def test_device(self):
+          device = self.params.get('device', default='/dev/vdb')
+          self.whiteboard = measure_write_to_disk(device)
+
+
+  class Network(Test):
+
+      """
+      Network performance tests
+
+      :avocado: tags=net,fast,safe
+      """
+
+      def test_latency(self):
+          self.whiteboard = measure_latency()
+
+      def test_throughput(self):
+          self.whiteboard = measure_throughput()
+
+
+Usually, listing and executing tests with the Avocado test runner
+would reveal all three tests::
+
+  $ avocado list perf.py
+  INSTRUMENTED perf.py:Disk.test_device
+  INSTRUMENTED perf.py:Network.test_latency
+  INSTRUMENTED perf.py:Network.test_throughput
+
+If you want to list or run only the network based tests, you can do so
+by requesting only tests that are tagged with ``net``::
+
+  $ avocado list perf.py --filter-by-tags=net
+  INSTRUMENTED perf.py:Network.test_latency
+  INSTRUMENTED perf.py:Network.test_throughput
+
+Now, suppose you're not in an environment where you're confortable
+running a test that will write to your raw disk devices (such as your
+development workstation).  You know that some tests are tagged
+with ``safe`` while others are tagged with ``unsafe``.  To only
+select the "safe" tests you can run::
+
+  $ avocado list perf.py --filter-by-tags=safe
+  INSTRUMENTED perf.py:Network.test_latency
+  INSTRUMENTED perf.py:Network.test_throughput
+
+But you could also say that you do **not** want the "unsafe" tests
+(note the *minus* sign before the tag)::
+
+  $ avocado list perf.py --filter-by-tags=-unsafe
+  INSTRUMENTED perf.py:Network.test_latency
+  INSTRUMENTED perf.py:Network.test_throughput
+
+
+.. tip:: The ``-`` sign may cause issues with some shells.  One know
+   error condition is to use spaces between ``--filter-by-tags`` and
+   the negated tag, that is, ``--filter-by-tags -unsafe`` will most
+   likely not work.  To be on the safe side, use
+   ``--filter-by-tags=-tag``.
+
+
+If you require tests to be tagged with **multiple** tags, just add
+them separate by commas.  Example::
+
+  $ avocado list perf.py --filter-by-tags=disk,slow,superuser,unsafe
+  INSTRUMENTED perf.py:Disk.test_device
+
+If no test contains all tags given on a single `--filter-by-tags`
+parameter, no test will be included::
+
+  $ avocado list perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l
+  0
+
+Finally, multiple ``--filter-by-tags`` parameters can be given on any
+execution.
+
 Python :mod:`unittest` Compatibility Limitations And Caveats
 ============================================================
 

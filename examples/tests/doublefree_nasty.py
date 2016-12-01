@@ -14,6 +14,8 @@ class DoubleFreeTest(Test):
     """
     10% chance to execute double free exception.
 
+    :avocado: tags=failure_expected,requires_c_compiler
+
     :param source: name of the source file located in deps path
     """
 
