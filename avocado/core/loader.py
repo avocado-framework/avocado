@@ -571,9 +571,9 @@ class FileLoader(TestLoader):
                 docstring = ast.get_docstring(statement)
                 # Looking for a class that has in the docstring either
                 # ":avocado: enable" or ":avocado: disable
-                if safeloader.is_docstring_tag_disable(docstring):
+                if safeloader.is_docstring_directive_disable(docstring):
                     continue
-                elif safeloader.is_docstring_tag_enable(docstring):
+                elif safeloader.is_docstring_directive_enable(docstring):
                     functions = [st.name for st in statement.body if
                                  isinstance(st, ast.FunctionDef) and
                                  st.name.startswith('test')]

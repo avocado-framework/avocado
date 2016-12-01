@@ -63,41 +63,42 @@ def modules_imported_as(module):
     return result
 
 
-#: Gets the tag value from a string. Used to tag a test class in various ways
-AVOCADO_DOCSTRING_TAG_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
+#: Gets the docstring directive value from a string. Used to tweak
+#: test class behavior in various ways
+AVOCADO_DOCSTRING_DIRECTIVE_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
 
 
-def get_docstring_tag(docstring):
+def get_docstring_directive(docstring):
     """
-    Returns the value of the avocado custom tag inside a docstring
+    Returns the value of the avocado docstring directive
 
     :param docstring: the complete text used as documentation
     :type docstring: str
     """
     if docstring is None:
         return None
-    result = AVOCADO_DOCSTRING_TAG_RE.search(docstring)
+    result = AVOCADO_DOCSTRING_DIRECTIVE_RE.search(docstring)
     if result is not None:
         return result.groups()[0]
 
 
-def is_docstring_tag_enable(docstring):
+def is_docstring_directive_enable(docstring):
     """
-    Checks if there's an avocado tag that enables its class as a Test class
+    Checks if there's a docstring directive that enables a Test class
 
     :rtype: bool
     """
-    result = get_docstring_tag(docstring)
+    result = get_docstring_directive(docstring)
     return result == 'enable'
 
 
-def is_docstring_tag_disable(docstring):
+def is_docstring_directive_disable(docstring):
     """
-    Checks if there's an avocado tag that disables its class as a Test class
+    Checks if there's a docstring directive that disables a Test class
 
     :rtype: bool
     """
-    result = get_docstring_tag(docstring)
+    result = get_docstring_directive(docstring)
     return result == 'disable'
 
 

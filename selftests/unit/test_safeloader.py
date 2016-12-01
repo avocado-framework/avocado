@@ -45,32 +45,33 @@ class ModuleImportedAs(unittest.TestCase):
         self._test("class Foo(object): import foo as foo", {})
 
 
-class DocstringTag(unittest.TestCase):
+class DocstringDirectives(unittest.TestCase):
 
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
                      "Since we have nothing useful to put in here let's just "
-                     "mention avocado: it's awesome, but that was not a tag. "
-                     "a tag would be something line this: :avocado: enable")
-        self.assertIsNotNone(safeloader.get_docstring_tag(docstring))
+                     "mention avocado: it's awesome, but that was not a "
+                     "directive. a tag would be something line this: "
+                     ":avocado: enable")
+        self.assertIsNotNone(safeloader.get_docstring_directive(docstring))
 
     def test_newlines(self):
         docstring = ("\n\n\nThis is a docstring with many new\n\nlines "
                      "followed by an avocado tag\n"
                      "\n\n:avocado: enable\n\n")
-        self.assertIsNotNone(safeloader.get_docstring_tag(docstring))
+        self.assertIsNotNone(safeloader.get_docstring_directive(docstring))
 
     def test_enabled(self):
-        self.assertTrue(safeloader.is_docstring_tag_enable(":avocado: enable"))
-        self.assertTrue(safeloader.is_docstring_tag_enable(":avocado:\tenable"))
-        self.assertFalse(safeloader.is_docstring_tag_enable(":AVOCADO: ENABLE"))
-        self.assertFalse(safeloader.is_docstring_tag_enable(":avocado: enabled"))
+        self.assertTrue(safeloader.is_docstring_directive_enable(":avocado: enable"))
+        self.assertTrue(safeloader.is_docstring_directive_enable(":avocado:\tenable"))
+        self.assertFalse(safeloader.is_docstring_directive_enable(":AVOCADO: ENABLE"))
+        self.assertFalse(safeloader.is_docstring_directive_enable(":avocado: enabled"))
 
     def test_disabled(self):
-        self.assertTrue(safeloader.is_docstring_tag_disable(":avocado: disable"))
-        self.assertTrue(safeloader.is_docstring_tag_disable(":avocado:\tdisable"))
-        self.assertFalse(safeloader.is_docstring_tag_disable(":AVOCADO: DISABLE"))
-        self.assertFalse(safeloader.is_docstring_tag_disable(":avocado: disabled"))
+        self.assertTrue(safeloader.is_docstring_directive_disable(":avocado: disable"))
+        self.assertTrue(safeloader.is_docstring_directive_disable(":avocado:\tdisable"))
+        self.assertFalse(safeloader.is_docstring_directive_disable(":AVOCADO: DISABLE"))
+        self.assertFalse(safeloader.is_docstring_directive_disable(":avocado: disabled"))
 
 
 class UnlimitedDiff(unittest.TestCase):
@@ -93,10 +94,10 @@ class FindClassAndMethods(UnlimitedDiff):
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
                                  'test_import_inside_class'],
-            'DocstringTag': ['test_longline',
-                             'test_newlines',
-                             'test_enabled',
-                             'test_disabled'],
+            'DocstringDirectives': ['test_longline',
+                                    'test_newlines',
+                                    'test_enabled',
+                                    'test_disabled'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
                                     'test_with_base_class',
@@ -112,10 +113,10 @@ class FindClassAndMethods(UnlimitedDiff):
                                  'test_foo_as_bar',
                                  'test_foo_as_foo',
                                  'test_import_inside_class'],
-            'DocstringTag': ['test_longline',
-                             'test_newlines',
-                             'test_enabled',
-                             'test_disabled'],
+            'DocstringDirectives': ['test_longline',
+                                    'test_newlines',
+                                    'test_enabled',
+                                    'test_disabled'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
                                     'test_with_base_class',
