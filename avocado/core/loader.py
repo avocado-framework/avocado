@@ -44,6 +44,48 @@ AVAILABLE = None
 ALL = True
 
 
+def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
+    """
+    Filter the existing (unfiltered) test suite based on tags
+
+    The filtering mechanism is agnostic to test type.  It means that
+    if users request filtering by tag and the specific test type does
+    not populate the test tags, it will be considered to have empty
+    tags.
+
+    :param test_suite: the unfiltered test suite
+    :type test_suite: dict
+    :param filter_by_tags: the list of tag sets to use as filters
+    :type filter_by_tags: list of comma separated tags (['foo,bar', 'fast'])
+    :param include_empty: if true tests without tags will not be filtered out
+    :type include_empty: bool
+    """
+    filtered = []
+    for klass, info in test_suite:
+        test_tags = info.get('tags', set([]))
+        if not test_tags and include_empty:
+            filtered.append((klass, info))
+            continue
+
+        for raw_tags in filter_by_tags:
+            required_tags = raw_tags.split(',')
+            must_not_have_tags = set([_[1:] for _ in required_tags
+                                      if _.startswith('-')])
+            if must_not_have_tags.intersection(test_tags):
+                continue
+
+            must_have_tags = set([_ for _ in required_tags
+                                  if not _.startswith('-')])
+            if must_have_tags:
+                if not must_have_tags.issubset(test_tags):
+                    continue
+
+            filtered.append((klass, info))
+            break
+
+    return filtered
+
+
 class LoaderError(Exception):
 
     """ Loader exception """
