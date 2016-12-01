@@ -102,6 +102,33 @@ def is_docstring_directive_disable(docstring):
     return result == 'disable'
 
 
+def is_docstring_directive_tags(docstring):
+    """
+    Checks if there's a docstring directive that tags a test
+
+    :rtype: bool
+    """
+    result = get_docstring_directive(docstring)
+    if result is not None:
+        return result.startswith('tags=')
+    return False
+
+
+def get_docstring_directive_tags(docstring):
+    """
+    Returns the test categories based on a `:avocado: tags=category` docstring
+
+    :rtype: set
+    """
+    if not is_docstring_directive_tags(docstring):
+        return []
+
+    raw_tag = get_docstring_directive(docstring)
+    if raw_tag is not None:
+        _, comma_tags = raw_tag.split('tags=', 1)
+        return set([tag for tag in comma_tags.split(',') if tag])
+
+
 def find_class_and_methods(path, method_pattern=None, base_class=None):
     """
     Attempts to find methods names from a given Python source file
