@@ -30,6 +30,7 @@ from . import data_dir
 from . import exceptions
 from . import multiplexer
 from . import sysinfo
+from . import output
 from ..utils import asset
 from ..utils import astring
 from ..utils import data_structures
@@ -382,6 +383,11 @@ class Test(unittest.TestCase):
         self._ssh_fh = self._register_log_file_handler(logging.getLogger('paramiko'),
                                                        formatter,
                                                        self._ssh_logfile)
+
+        if isinstance(sys.stdout, output.LoggingFile):
+            sys.stdout.add_logger(logging.getLogger("avocado.test.stdout"))
+        if isinstance(sys.stderr, output.LoggingFile):
+            sys.stderr.add_logger(logging.getLogger("avocado.test.stderr"))
 
     def _stop_logging(self):
         """
