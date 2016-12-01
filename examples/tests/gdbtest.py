@@ -12,6 +12,8 @@ class GdbTest(Test):
 
     """
     Execute the gdb test
+
+    :avocado: tags=requires_c_compiler
     """
 
     VALID_CMDS = ["-list-target-features",
