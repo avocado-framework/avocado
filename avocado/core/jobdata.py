@@ -105,7 +105,7 @@ def retrieve_references(resultsdir):
         return ast.literal_eval(references_file.read())
 
 
-def retrieve_mux(resultsdir):
+def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
