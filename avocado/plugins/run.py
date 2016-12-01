@@ -144,6 +144,19 @@ class Run(CLICmd):
                          help="Inject [path:]key:node values into the "
                          "final multiplex tree.")
 
+        filtering = parser.add_argument_group('filtering parameters')
+        filtering.add_argument('--filter-by-tags', metavar='TAGS',
+                               action='append',
+                               help='Filter INSTRUMENTED tests based on '
+                               '":avocado: tags=tag1,tag2" notation in '
+                               'their class docstring')
+        filtering.add_argument('--filter-by-tags-include-empty',
+                               action='store_true', default=False,
+                               help=('Include all tests without tags during '
+                                     'filtering. This effectively means they '
+                                     'will be kept in the test suite found '
+                                     'previously to filtering.'))
+
     def run(self, args):
         """
         Run test modules or simple tests.

@@ -100,6 +100,11 @@ class TestLister(object):
     def _list(self):
         self._extra_listing()
         test_suite = self._get_test_suite(self.args.reference)
+        if getattr(self.args, 'filter_by_tags', False):
+            test_suite = loader.filter_test_tags(
+                test_suite,
+                self.args.filter_by_tags,
+                self.args.filter_by_tags_include_empty)
         test_matrix, stats = self._get_test_matrix(test_suite)
         self._display(test_matrix, stats)
 
@@ -145,6 +150,19 @@ class List(CLICmd):
                             help='Turn the paginator on/off. '
                             'Current: %(default)s')
         loader.add_loader_options(parser)
+
+        filtering = parser.add_argument_group('filtering parameters')
+        filtering.add_argument('--filter-by-tags', metavar='TAGS',
+                               action='append',
+                               help='Filter INSTRUMENTED tests based on '
+                               '":avocado: tags=tag1,tag2" notation in '
+                               'their class docstring')
+        filtering.add_argument('--filter-by-tags-include-empty',
+                               action='store_true', default=False,
+                               help=('Include all tests without tags during '
+                                     'filtering. This effectively means they '
+                                     'will be kept in the test suite found '
+                                     'previously to filtering.'))
 
     def run(self, args):
         test_lister = TestLister(args)
