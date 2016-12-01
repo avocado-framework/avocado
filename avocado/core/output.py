@@ -652,6 +652,12 @@ class LoggingFile(object):
     def isatty(self):
         return False
 
+    def add_logger(self, logger):
+        self._logger.append(logger)
+
+    def rm_logger(self, logger):
+        self._logger.remove(logger)
+
 
 class Throbber(object):
 
