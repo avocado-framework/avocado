@@ -10,6 +10,8 @@ class AbortTest(Test):
 
     """
     A test that just calls abort() (and abort).
+
+    :avocado: tags=failure_expected
     """
 
     default_params = {'timeout': 2.0}
