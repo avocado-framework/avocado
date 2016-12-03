@@ -338,6 +338,48 @@ class DebianProbe(Probe):
     CHECK_FILE_DISTRO_NAME = 'debian'
 
 
+class SUSEProbe(Probe):
+
+    """
+    Simple probe for SUSE systems in general
+    """
+
+    CHECK_FILE = '/etc/os-release'
+    CHECK_FILE_CONTAINS = 'SUSE'
+    # this is the (incorrect) spelling used in python's platform
+    # and tests are looking for it in distro.name. So keep using it
+    CHECK_FILE_DISTRO_NAME = 'SuSE'
+
+    def get_distro(self):
+        distro = Probe.get_distro(self)
+
+        # if the default methods find SUSE, detect version
+        if not distro.name == self.CHECK_FILE_DISTRO_NAME:
+            return distro
+
+        # we need to check VERSION_ID, which is number - VERSION can
+        # be a string
+
+        # for openSUSE Tumbleweed this will be e.g. 20161225
+        # for openSUSE Leap this will be e.g. 42.2
+        # for SUSE Linux Enterprise this will be e.g. 12 or 12.2 (for SP2)
+        version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
+        version_id = None
+
+        for line in open(self.CHECK_FILE).readlines():
+            match = version_id_re.match(line)
+            if match:
+                version_id = match.group(1)
+
+        if version_id:
+            version_parts = version_id.split('.')
+            distro.version = int(version_parts[0])
+            if len(version_parts) > 1:
+                distro.release = int(version_parts[1])
+
+        return distro
+
+
 #: the complete list of probes that have been registered
 REGISTERED_PROBES = []
 
@@ -354,6 +396,7 @@ register_probe(RedHatProbe)
 register_probe(CentosProbe)
 register_probe(FedoraProbe)
 register_probe(DebianProbe)
+register_probe(SUSEProbe)
 register_probe(StdLibProbe)
 
 
