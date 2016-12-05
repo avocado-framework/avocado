@@ -277,7 +277,7 @@ class TestLoaderProxy(object):
         :return: an instance of :class:`avocado.core.test.Test`.
         """
         test_class, test_parameters = test_factory
-        # discard tags, as they are *not* intented to be parameters
+        # discard tags, as they are *not* intended to be parameters
         # for the test, but used previously during filtering
         if 'tags' in test_parameters:
             del(test_parameters['tags'])
