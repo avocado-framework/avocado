@@ -52,3 +52,11 @@ as some of them result in error)::
         > EXTERNAL     this_does_not_exist
         > SIMPLE       /bin/echo
 
+Categorizing tests with tags
+============================
+
+Avocado allows tests to be given tags, which can be used to create
+test categories. With tags set, users can select a subset of the
+tests found by the test resolver (also known as test loader). For
+more information about the test tags, visit
+`<WritingTests.html#categorizing-tests>`__
