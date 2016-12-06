@@ -17,6 +17,19 @@ class AstringTest(unittest.TestCase):
                           'foo               bar\n'
                           '/bin/bar/sbrubles /home/myuser/sbrubles'))
 
+    def testTabularWithConsoleCodes(self):
+        matrix = [("a", "bb", "ccc", "dddd", "last"),
+                  ("\x1b[94ma",             # {BLUE}a
+                   "\033[0mbb",             # {END}bb
+                   "ccc\033[1D\033[1Dcc",   # ccc{MOVE_LEFT}{MOVE_LEFT}cc
+                   "d\033[1C\033[1Cd",      # d{MOVE_RIGHT}{MOVE_RIGHT}d
+                   "last")]
+        header = ['0', '1', '2', '3', '4']
+        self.assertEqual(astring.tabular_output(matrix, header),
+                         "0 1  2   3    4\n"
+                         "a bb ccc dddd last\n"
+                         "\x1b[94ma \x1b[0mbb ccc\x1b[1D\x1b[1Dcc d\x1b[1C\x1b[1Cd last")
+
     def testUnicodeTabular(self):
         """
         Verifies tabular can handle utf-8 chars properly

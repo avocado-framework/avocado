@@ -162,14 +162,15 @@ def iter_tabular_output(matrix, header=None):
     lengths = []
     if header:
         for column in header:
-            lengths.append(len(column))
+            lengths.append(len(strip_console_codes(column, allow_move=True)))
     str_matrix = []
     for row in matrix:
         str_matrix.append([])
         for i, column in enumerate(row):
             column = string_safe_encode(column)
             str_matrix[-1].append(column)
-            col_len = len(column.decode("utf-8"))
+            col_len = len(strip_console_codes(column.decode("utf-8"),
+                                              allow_move=True))
             try:
                 max_len = lengths[i]
                 if col_len > max_len:
