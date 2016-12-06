@@ -270,9 +270,8 @@ instrumented and simple tests::
      (3/6) synctest.py:SyncTest.test: PASS (2.43 s)
      (4/6) failtest.py:FailTest.test: FAIL (0.00 s)
      (5/6) synctest.py:SyncTest.test: PASS (2.44 s)
-     (6/6) /bin/true: PASS (0.00 s)
      (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
-    RESULTS    : PASS 2 | ERROR 2 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
+    RESULTS    : PASS 4 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 5.88 s
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
 
