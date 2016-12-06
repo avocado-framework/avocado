@@ -51,6 +51,7 @@ class AstringTest(unittest.TestCase):
                       "avok\xc3\xa1do 123\n"
                       "avocado 123")
         self.assertEqual(astring.tabular_output(matrix), str_matrix)
+        self.assertEqual(astring.tabular_output(matrix[1:], matrix[0]), str_matrix)
 
 
 if __name__ == '__main__':

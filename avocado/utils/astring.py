@@ -160,10 +160,14 @@ def iter_tabular_output(matrix, header=None):
     if type(header) is list:
         header = tuple(header)
     lengths = []
-    if header:
-        for column in header:
-            lengths.append(len(strip_console_codes(column, allow_move=True)))
     str_matrix = []
+    if header:
+        str_matrix.append([])
+        for column in header:
+            column = string_safe_encode(column)
+            str_matrix[-1].append(column)
+            lengths.append(len(strip_console_codes(column.decode("utf-8"),
+                                                   allow_move=True)))
     for row in matrix:
         str_matrix.append([])
         for i, column in enumerate(row):
@@ -184,9 +188,6 @@ def iter_tabular_output(matrix, header=None):
                               for leng in lengths[:-1]] +
                              ["%s"])
 
-    if header:
-        out_line = format_string % header
-        yield out_line
     for row in str_matrix:
         out_line = format_string % tuple(row)
         yield out_line
