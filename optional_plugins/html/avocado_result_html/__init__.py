@@ -142,8 +142,8 @@ class ReportModel(object):
                                'data-placement="top" '
                                'title="Error Details" '
                                'data-content="%s">%s...</a>' %
-                               ('fail_reason',
-                                'fail_reason'[:exhibition_limit]))
+                               (fail_reason,
+                                fail_reason[:exhibition_limit]))
             formatted['fail_reason'] = fail_reason
             test_info.append(formatted)
         return test_info
