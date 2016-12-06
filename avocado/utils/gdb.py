@@ -623,7 +623,7 @@ class GDBServer(object):
 
     #: The time to optionally wait for the server to initialize itself and be
     #: ready to accept new connections
-    INIT_TIMEOUT = 2.0
+    INIT_TIMEOUT = 5.0
 
     def __init__(self, path='/usr/bin/gdbserver', port=None,
                  wait_until_running=True, *extra_args):
@@ -675,10 +675,10 @@ class GDBServer(object):
             self._wait_until_running()
 
     def _wait_until_running(self):
-        init_time = time.time()
         connection_ok = False
         c = GDB()
-        while time.time() - init_time < self.INIT_TIMEOUT:
+        end_time = time.time() + self.INIT_TIMEOUT
+        while time.time() < end_time:
             try:
                 c.connect(self.port)
                 connection_ok = True
