@@ -109,6 +109,11 @@ class OutputPluginTest(unittest.TestCase):
         except Exception, details:
             raise AssertionError("Unable to parse xunit output: %s\n\n%s"
                                  % (details, open(xunit_output).read()))
+        tap_output = os.path.join(base_dir, "results.tap")
+        self.assertTrue(os.path.isfile(tap_output))
+        tap = open(tap_output).read()
+        self.assertIn("..", tap)
+        self.assertIn("\n# debug.log of ", tap)
 
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
