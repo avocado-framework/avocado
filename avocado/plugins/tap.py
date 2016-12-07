@@ -16,9 +16,30 @@ TAP output module.
 """
 
 import logging
+import os
 
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, ResultEvents
+
+
+def file_log_factory(log_file):
+    """
+    Generates a function which simulates writes to logger and outputs to file
+
+    :param log_file: The output file
+    """
+    def writeln(msg, *writeargs):
+        """
+        Format msg and append '\n'
+        """
+        if writeargs:
+            try:
+                msg %= writeargs
+            except TypeError, details:
+                raise TypeError("%s: msg='%s' args='%s'" %
+                                (details, msg, writeargs))
+        return log_file.write(msg + "\n")
+    return writeln
 
 
 class TAPResult(ResultEvents):
@@ -31,35 +52,39 @@ class TAPResult(ResultEvents):
     description = "TAP - Test Anything Protocol results"
 
     def __init__(self, args):
-        def writeln(msg, *writeargs):
-            """
-            Format msg and append '\n'
-            """
-            if writeargs:
-                try:
-                    msg %= writeargs
-                except TypeError, details:
-                    raise TypeError("%s: msg='%s' args='%s'" %
-                                    (details, msg, writeargs))
-            return self.output.write(msg + "\n")
 
         def silent(msg, *writeargs):
             pass
 
-        self.output = getattr(args, 'tap', None)
-        if self.output is None:
-            self.__write = silent
-        elif self.output == '-':
-            self.__write = logging.getLogger(
-                "avocado.app").debug   # pylint: disable=R0204
-        else:
-            self.output = open(self.output, "w", 1)
-            self.__write = writeln
+        self.__logs = []
+        self.__open_files = []
+        output = getattr(args, 'tap', None)
+        if output == '-':
+            log = logging.getLogger("avocado.app").debug
+            self.__logs.append(log)
+        elif output is not None:
+            log = open(output, "w", 1)
+            self.__open_files.append(log)
+            self.__logs.append(file_log_factory(log))
+
+    def __write(self, msg, *writeargs):
+        """
+        Pass through the message to all registered log functions
+        """
+        for log in self.__logs:
+            log(msg, *writeargs)
 
     def pre_tests(self, job):
         """
         Log the test plan
         """
+        # Should we add default results.tap?
+        if getattr(job.args, 'tap_job_result', 'off') == 'on':
+            log = open(os.path.join(job.logdir, 'results.tap'), "w", 1)
+            self.__open_files.append(log)
+            self.__logs.append(file_log_factory(log))
+
+        # Start writing the tap to all streams
         tests = len(job.test_suite)
         if tests > 0:
             self.__write("1..%d", tests)
@@ -96,8 +121,8 @@ class TAPResult(ResultEvents):
         pass
 
     def post_tests(self, job):
-        if self.output not in (None, '-'):
-            self.output.close()
+        for open_file in self.__open_files:
+            open_file.close()
 
 
 class TAP(CLI):
@@ -119,6 +144,12 @@ class TAP(CLI):
                                        help="Enable TAP result output and "
                                        "write it to FILE. Use '-' to redirect "
                                        "to the standard output.")
+
+        cmd_parser.output.add_argument('--tap-job-result', default="on",
+                                       choices=("on", "off"), help="Enables "
+                                       "default TAP result in the job results"
+                                       " directory. File will be named "
+                                       "\"results.tap\".")
 
     def run(self, args):
         pass
