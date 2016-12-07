@@ -107,6 +107,9 @@ class SystemInspector(object):
             elif ('yum' in list_supported and
                   self.distro in ('redhat', 'fedora')):
                 pm_supported = 'yum'
+            elif ('zypper' in list_supported and
+                  self.distro == 'SuSE'):
+                pm_supported = 'zypper'
             else:
                 pm_supported = list_supported[0]
 
