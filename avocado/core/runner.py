@@ -239,7 +239,8 @@ class TestStatus(object):
                        test_state['name'])
         if proc.is_alive():
             TEST_LOG.warning("Killing hanged test process %s" % proc.pid)
-            for _ in xrange(5):     # I really want to destroy it
+            end_time = time.time() + 60
+            while time.time() < end_time:
                 os.kill(proc.pid, signal.SIGKILL)
                 if not proc.is_alive():
                     break
@@ -366,7 +367,7 @@ class TestRunner(object):
         time_started = time.time()
         proc.start()
 
-        test_status.wait_for_early_status(proc, 10)
+        test_status.wait_for_early_status(proc, 60)
 
         # At this point, the test is already initialized and we know
         # for sure if there's a timeout set.
