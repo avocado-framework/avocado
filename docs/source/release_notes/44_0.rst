@@ -1,0 +1,80 @@
+====================
+44.0 The Shadow Self
+====================
+
+The Avocado team is proud to present another release: Avocado version
+44.0, aka, "The Shadow Self", is now available!
+
+Release documentation: `Avocado 44.0
+<http://avocado-framework.readthedocs.io/en/44.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * Avocado now supports filtering tests by user supplied "tags".
+   These tags are given in docstrings, similar to the already existing
+   docstring directives that force Avocado to either enable or disable
+   the detection of a class as an Avocado INSTRUMENTED test.  With this
+   feature, you can now write your tests more freely accross Python files
+   and choose to run only a subset of them, based on the their tag values.
+   For more information, please take a look at :ref:`categorizing-tests`.
+
+ * Users can now choose to keep the complete set of files, including
+   temporary ones, created during an Avocado job run by using the
+   ``--keep-tmp`` option.
+
+ * The ``--job-results-dir`` option was previously used to point to
+   where the job results should be saved.  Some features, such as job
+   replay, also look for content (``jobdata``) into the job results
+   dir, and it now respects the value given in ``--job-results-dir``.
+
+Documentation
+=============
+
+ * A warning is now present to help avocado users on some
+   architectures and older PyYAML versions to work around failures in
+   the Multiplexer.
+
+Bugfixes
+========
+
+ * A quite nasty, logging related, ``RuntimeError`` would happen every
+   now and then.  While it was quite hard to come up with a reproducer
+   (and thus a precise fix), this should be now a thing of the past.
+
+ * The Journal plugin could not handle Unicode input, such as in
+   test names.
+
+Internal improvements
+=====================
+
+ * Selftests are now also executed under EL7.  This means that Avocado
+   on EL7, and EL7 packages, have an additional level of quality
+   assurance.
+
+ * The old ``check-long`` Makefile target is now named ``check-full``
+   and includes both tests that take a long time to run, but also
+   tests that are time sensitive, and that usually fail when not
+   enough computing resources are present.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/43.0...44.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=cI4fInte9uI>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/CLTdFYLW/869-sprint-theme-the-shadow-self

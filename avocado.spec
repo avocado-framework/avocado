@@ -6,7 +6,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
-Version: 43.0
+Version: 44.0
 Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -115,6 +115,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Dec  7 2016 Cleber Rosa <cleber@redhat.com> - 44.0-0
+- New upstream release
+
 * Tue Nov  8 2016 Cleber Rosa <cleber@redhat.com> - 43.0-0
 - New upstream release
 

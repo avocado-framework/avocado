@@ -945,6 +945,8 @@ You can also use the ``:avocado: disable`` docstring directive, that
 works the opposite way: something that would be considered an Avocado
 test, but we force it to not be listed as one.
 
+.. _categorizing-tests:
+
 Categorizing tests
 ------------------
 
