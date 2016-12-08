@@ -86,7 +86,7 @@ def shell_escape(command):
     return command
 
 
-def strip_console_codes(output, custom_codes=None):
+def strip_console_codes(output, custom_codes=None, allow_move=False):
     """
     Remove the Linux console escape and control sequences from the console
     output. Make the output readable and can be used for result check. Now
@@ -96,7 +96,9 @@ def strip_console_codes(output, custom_codes=None):
     :type output: string
     :param custom_codes: The codes added to the console codes which is not
                          covered in the default codes
-    :type output: string
+    :type custom_codes: string
+    :param allow_move: Whether to emulate move (left, right only for now)
+    :type allow_move: bool
     :return: the string without any special codes
     :rtype: string
     """
@@ -126,6 +128,13 @@ def strip_console_codes(output, custom_codes=None):
         try:
             special_code = re.findall(console_codes, tmp_word)[0]
         except IndexError:
+            if allow_move:
+                if tmp_word == "[1D":
+                    return_str = return_str[:-1]
+                    continue
+                elif tmp_word == "[1C":
+                    return_str += " "
+                    continue
             if index + tmp_index < len(output):
                 raise ValueError("%s is not included in the known console "
                                  "codes list %s" % (tmp_word, console_codes))
@@ -151,16 +160,21 @@ def iter_tabular_output(matrix, header=None):
     if type(header) is list:
         header = tuple(header)
     lengths = []
-    if header:
-        for column in header:
-            lengths.append(len(column))
     str_matrix = []
+    if header:
+        str_matrix.append([])
+        for column in header:
+            column = string_safe_encode(column)
+            str_matrix[-1].append(column)
+            lengths.append(len(strip_console_codes(column.decode("utf-8"),
+                                                   allow_move=True)))
     for row in matrix:
         str_matrix.append([])
         for i, column in enumerate(row):
             column = string_safe_encode(column)
             str_matrix[-1].append(column)
-            col_len = len(column.decode("utf-8"))
+            col_len = len(strip_console_codes(column.decode("utf-8"),
+                                              allow_move=True))
             try:
                 max_len = lengths[i]
                 if col_len > max_len:
@@ -174,9 +188,6 @@ def iter_tabular_output(matrix, header=None):
                               for leng in lengths[:-1]] +
                              ["%s"])
 
-    if header:
-        out_line = format_string % header
-        yield out_line
     for row in str_matrix:
         out_line = format_string % tuple(row)
         yield out_line
