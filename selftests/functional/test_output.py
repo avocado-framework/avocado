@@ -210,7 +210,7 @@ class OutputPluginTest(unittest.TestCase):
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         tmpdir_contents = os.listdir(tmpdir)
-        self.assertEqual(len(tmpdir_contents), 5,
+        self.assertEqual(len(tmpdir_contents), 4,
                          'Not all resources dir were created: %s' % tmpdir_contents)
         try:
             self.assertEqual(result.exit_status, expected_rc,
