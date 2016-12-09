@@ -25,6 +25,7 @@ string. Even with the dot notation, people may try to do things like
 And not notice until their code starts failing.
 """
 
+import itertools
 import os.path
 import re
 
@@ -148,12 +149,11 @@ def iter_tabular_output(matrix, header=None):
     :param matrix: Matrix representation (list with n rows of m elements).
     :param header: Optional tuple or list with header elements to be displayed.
     """
-    if type(header) is list:
-        header = tuple(header)
-    lengths = []
     if header:
-        for column in header:
-            lengths.append(len(column))
+        matrix = itertools.chain([header], matrix)
+    else:
+        matrix = matrix
+    lengths = []
     str_matrix = []
     for row in matrix:
         str_matrix.append([])
@@ -174,9 +174,6 @@ def iter_tabular_output(matrix, header=None):
                               for leng in lengths[:-1]] +
                              ["%s"])
 
-    if header:
-        out_line = format_string % header
-        yield out_line
     for row in str_matrix:
         out_line = format_string % tuple(row)
         yield out_line
