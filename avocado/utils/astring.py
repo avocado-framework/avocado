@@ -149,34 +149,48 @@ def iter_tabular_output(matrix, header=None):
     :param matrix: Matrix representation (list with n rows of m elements).
     :param header: Optional tuple or list with header elements to be displayed.
     """
+    def _get_matrix_with_header():
+        return itertools.chain([header], matrix)
+
+    def _get_matrix_no_header():
+        return matrix
+
+    if header is None:
+        header = []
     if header:
-        matrix = itertools.chain([header], matrix)
+        get_matrix = _get_matrix_with_header
     else:
-        matrix = matrix
+        get_matrix = _get_matrix_no_header
+
     lengths = []
+    len_matrix = []
     str_matrix = []
-    for row in matrix:
-        str_matrix.append([])
-        for i, column in enumerate(row):
-            column = string_safe_encode(column)
-            str_matrix[-1].append(column)
-            col_len = len(column.decode("utf-8"))
+    for row in get_matrix():
+        len_matrix.append([])
+        str_matrix.append([string_safe_encode(column) for column in row])
+        for i, column in enumerate(str_matrix[-1]):
+            col_len = len(strip_console_codes(column.decode("utf-8")))
+            len_matrix[-1].append(col_len)
             try:
                 max_len = lengths[i]
                 if col_len > max_len:
                     lengths[i] = col_len
             except IndexError:
                 lengths.append(col_len)
+        # For different no cols we need to calculate `lengths` of the last item
+        # but later in `yield` we don't want it in `len_matrix`
+        len_matrix[-1] = len_matrix[-1][:-1]
 
-    if not lengths:     # No items...
-        raise StopIteration
-    format_string = " ".join(["%-" + str(leng) + "s"
-                              for leng in lengths[:-1]] +
-                             ["%s"])
-
-    for row in str_matrix:
-        out_line = format_string % tuple(row)
-        yield out_line
+    for row, row_lens in itertools.izip(str_matrix, len_matrix):
+        out = []
+        padding = [" " * (lengths[i] - row_lens[i])
+                   for i in xrange(len(row_lens))]
+        out = ["%s%s" % line for line in itertools.izip(row, padding)]
+        try:
+            out.append(row[-1])
+        except IndexError:
+            continue    # Skip empty rows
+        yield " ".join(out)
 
 
 def tabular_output(matrix, header=None):
