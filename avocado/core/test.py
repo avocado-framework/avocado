@@ -129,7 +129,8 @@ class Test(unittest.TestCase):
     default_params = {}
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None):
+                 base_logdir=None, job=None, runner_queue=None,
+                 tests_tmpdir=None):
         """
         Initializes the test.
 
@@ -145,6 +146,8 @@ class Test(unittest.TestCase):
                             provided, it'll use
                             :func:`avocado.data_dir.create_job_logs_dir`.
         :param job: The job that this test is part of.
+        :param tests_tmpdir: Temporary directory created to share resources
+                             among tests.
         :raises: :class:`avocado.core.test.NameNotTestNameError`
         """
         def record_and_warn(*args, **kwargs):
@@ -238,6 +241,10 @@ class Test(unittest.TestCase):
 
         self.time_elapsed = -1
         unittest.TestCase.__init__(self, methodName=methodName)
+
+        self.teststmpdir = None
+        if tests_tmpdir is not None:
+            self.teststmpdir = tests_tmpdir
 
     @property
     def basedir(self):
