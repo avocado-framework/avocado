@@ -280,6 +280,15 @@ class Test(unittest.TestCase):
         else:
             return None
 
+    @property
+    def teststmpdir(self):
+        env_var = 'XXX_TESTS_COMMON_TMPDIR'
+        path = os.environ.get(env_var)
+        if path is None:
+            msg = 'Environment Variable %s is not set.' % env_var
+            raise EnvironmentError(msg)
+        return path
+
     @data_structures.LazyProperty
     def workdir(self):
         basename = (os.path.basename(self.logdir).replace(':', '_')
