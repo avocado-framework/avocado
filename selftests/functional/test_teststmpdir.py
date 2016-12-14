@@ -18,6 +18,17 @@ from avocado.utils import script
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+INSTRUMENTED_SCRIPT = """import os
+from avocado import Test
+class MyTest(Test):
+    def test1(self):
+        file = os.path.join(self.teststmpdir, 'file1.txt')
+        open(file, "w+").close()
+        path, dirs, files = os.walk(self.teststmpdir).next()
+        if len(files) != 1:
+            self.fail()
+
+"""
 
 SIMPLE_SCRIPT = """#!/bin/bash
 touch ${AVOCADO_TESTS_COMMON_TMPDIR}/file1.txt
@@ -42,6 +53,15 @@ class TestsTmpDirTests(unittest.TestCase):
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
+
+    def test_instrumented(self):
+        instrumented_test = script.TemporaryScript(
+            'test_instrumented.py',
+            INSTRUMENTED_SCRIPT)
+        instrumented_test.save()
+        cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
+                    "%s" % (self.tmpdir, instrumented_test))
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
 
     def test_simple(self):
         simple_test = script.TemporaryScript(
