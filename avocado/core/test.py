@@ -280,6 +280,19 @@ class Test(unittest.TestCase):
         else:
             return None
 
+    @property
+    def teststmpdir(self):
+        """
+        Returns the path of the temporary directory that will stay the
+        same for all tests in a given Job.
+        """
+        env_var = 'AVOCADO_TESTS_COMMON_TMPDIR'
+        path = os.environ.get(env_var)
+        if path is None:
+            msg = 'Environment Variable %s is not set.' % env_var
+            raise EnvironmentError(msg)
+        return path
+
     @data_structures.LazyProperty
     def workdir(self):
         basename = (os.path.basename(self.logdir).replace(':', '_')
