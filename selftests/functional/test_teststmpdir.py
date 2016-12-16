@@ -11,6 +11,7 @@ else:
     import unittest
 
 from avocado.core import exit_codes
+from avocado.core import test
 from avocado.utils import process
 from avocado.utils import script
 
@@ -32,14 +33,14 @@ class MyTest(Test):
 """
 
 SIMPLE_SCRIPT = """#!/bin/bash
-mktemp ${AVOCADO_TESTS_COMMON_TMPDIR}/XXXXXX
-if [ $(ls ${AVOCADO_TESTS_COMMON_TMPDIR} | wc -l) == 1 ]
+mktemp ${{{0}}}/XXXXXX
+if [ $(ls ${{{0}}} | wc -l) == 1 ]
 then
     exit 0
 else
     exit 1
 fi
-"""
+""".format(test.COMMON_TMPDIR_NAME)
 
 
 class TestsTmpDirTests(unittest.TestCase):
@@ -63,6 +64,9 @@ class TestsTmpDirTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
+    @unittest.skipIf(test.COMMON_TMPDIR_NAME in os.environ,
+                     "%s already set in os.environ"
+                     % test.COMMON_TMPDIR_NAME)
     def test_tests_tmp_dir(self):
         cmd_line = ("./scripts/avocado run --sysinfo=off "
                     "--job-results-dir %s %s %s" %

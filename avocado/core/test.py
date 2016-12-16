@@ -47,6 +47,11 @@ else:
     import unittest
 
 
+#: Environment variable used to store the location of a tmpfile which is
+#: preserved across all tests execution (usually in one job)
+COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
+
+
 class NameNotTestNameError(Exception):
 
     """
@@ -286,7 +291,7 @@ class Test(unittest.TestCase):
         Returns the path of the temporary directory that will stay the
         same for all tests in a given Job.
         """
-        env_var = 'AVOCADO_TESTS_COMMON_TMPDIR'
+        env_var = COMMON_TMPDIR_NAME
         path = os.environ.get(env_var)
         if path is None:
             msg = 'Environment Variable %s is not set.' % env_var
