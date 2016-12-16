@@ -377,12 +377,8 @@ class SubProcess(object):
                                                shell=self.shell,
                                                env=self.env)
             except OSError as details:
-                if details.errno == 2:
-                    exc = OSError("File '%s' not found" % self.cmd.split()[0])
-                    exc.errno = 2
-                    raise exc
-                else:
-                    raise
+                details.strerror += " (%s)" % self.cmd
+                raise details
 
             self.start_time = time.time()
             self.stdout_file = StringIO()
