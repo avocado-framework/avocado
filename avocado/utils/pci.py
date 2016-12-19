@@ -59,21 +59,23 @@ def get_pci_addresses():
         return addresses
 
 
-def get_num_devices_in_domain(domain):
+def get_num_interfaces_in_pci(dom_pci_address):
     """
-    Gets number of devices in a pci domain.
+    Gets number of interfaces of a given partial pci_address starting with
+    full domain addr.
 
-    :parm domain: pci domain.
+    :parm dom_pci_address: Partial pci address including domain addr (0000,
+                           0000:00:1f, 0000:00:1f.2, ...)
 
     :return: number of devices in a pci domain.
     """
     cmd = "ls -l /sys/class/*/ -1"
     output = process.system_output(cmd, ignore_status=True, shell=True)
     if output:
-        domain = '/%s' % domain
+        filt = '/%s' % dom_pci_address
         count = 0
         for line in output.splitlines():
-            if domain in line:
+            if filt in line:
                 count += 1
         return count
 
