@@ -23,7 +23,7 @@ Module for all PCI devices related functions.
 
 import re
 import os
-from genio import read_file
+from .genio import read_file
 from . import process
 
 
