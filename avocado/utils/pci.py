@@ -133,7 +133,7 @@ def get_slot_from_sysfs(pci_address):
 
     :return: slot of pci address from sysfs.
     """
-    if not os.path.isdir('/sys/bus/pci/devices/%s' % pci_address):
+    if not os.path.isfile('/sys/bus/pci/devices/%s/devspec' % pci_address):
         return
     devspec = read_file("/sys/bus/pci/devices/%s/devspec" % pci_address)
     if not os.path.isfile("/proc/device-tree/%s/ibm,loc-code" % devspec):
