@@ -68,7 +68,7 @@ def get_num_devices_in_domain(domain):
     :return: number of devices in a pci domain.
     """
     cmd = "ls -l /sys/class/*/ -1"
-    output = process.system_output(cmd, ignore_status=True)
+    output = process.system_output(cmd, ignore_status=True, shell=True)
     if output:
         domain = '/%s' % domain
         count = 0
