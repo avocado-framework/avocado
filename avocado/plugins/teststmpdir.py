@@ -20,6 +20,7 @@ import shutil
 import tempfile
 
 from avocado.core.plugin_interfaces import JobPre, JobPost
+from avocado.core import test
 
 
 class TestsTmpDir(JobPre, JobPost):
@@ -28,7 +29,7 @@ class TestsTmpDir(JobPre, JobPost):
     description = 'Creates a temporary directory for tests consumption'
 
     def __init__(self):
-        self._varname = 'AVOCADO_TESTS_COMMON_TMPDIR'
+        self._varname = test.COMMON_TMPDIR_NAME
         self._dirname = None
 
     def pre(self, job):
