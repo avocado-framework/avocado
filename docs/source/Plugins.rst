@@ -44,7 +44,7 @@ Code example
 Let's say you want to write a plugin that adds a new subcommand to the test
 runner, ``hello``. This is how you'd do it::
 
-    from avocado.plugins.base import CLICmd
+    from avocado.core.plugin_interfaces import CLICmd
 
 
     class HelloWorld(CLICmd):
@@ -55,10 +55,10 @@ runner, ``hello``. This is how you'd do it::
         def run(self, args):
             print(self.description)
 
-As you can see, this plugins inherits from :class:`avocado.plugins.base.CLICmd`.
+As you can see, this plugins inherits from :class:`avocado.core.plugin_interfaces.CLICmd`.
 This specific base class allows for the creation of new commands for the Avocado
 CLI tool. The only mandatory method to be implemented is :func:`run
-<avocado.plugins.base.CLICmd.run>` and it's the plugin main entry point.
+<avocado.core.plugin_interfaces.CLICmd.run>` and it's the plugin main entry point.
 In this code example it will simply print the plugin's description.
 
 Registering Plugins
@@ -176,7 +176,7 @@ Wrap Up
 
 We have briefly discussed the making of Avocado plugins. We recommend
 the `Stevedore documentation`_ and also a look at the
-:mod:`avocado.plugins.base` module for the various plugin interface definitions.
+:mod:`avocado.core.plugin_interfaces` module for the various plugin interface definitions.
 
 Some plugins examples are available in the `Avocado source tree`_, under ``examples/plugins``.
 
