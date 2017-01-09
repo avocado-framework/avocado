@@ -35,12 +35,6 @@ class Multiplex(CLICmd):
 
     def configure(self, parser):
         parser = super(Multiplex, self).configure(parser)
-
-        parser.add_argument('--filter-only', nargs='*', default=[],
-                            help='Filter only path(s) from multiplexing')
-
-        parser.add_argument('--filter-out', nargs='*', default=[],
-                            help='Filter out path(s) from multiplexing')
         parser.add_argument('--system-wide', action='store_false',
                             default=True, dest="mux-skip-defaults",
                             help="Combine the files with the default "
@@ -48,9 +42,6 @@ class Multiplex(CLICmd):
         parser.add_argument('-c', '--contents', action='store_true',
                             default=False, help="Shows the node content "
                             "(variables)")
-        parser.add_argument('--mux-inject', default=[], nargs='*',
-                            help="Inject [path:]key:node values into "
-                            "the final multiplex tree.")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
                                 dest="mux_debug", default=False,
@@ -72,11 +63,11 @@ class Multiplex(CLICmd):
         if err:
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        mux = args.mux
+        variants = args.avocado_variants
         try:
-            mux.parse(args)
+            variants.parse(args)
         except (IOError, ValueError) as details:
-            log.error("Unable to parse mux: %s", details)
+            log.error("Unable to parse variants: %s", details)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
         if args.tree:
             if args.contents:
@@ -87,11 +78,11 @@ class Multiplex(CLICmd):
                 verbose += 2
             use_utf8 = settings.get_value("runner.output", "utf8",
                                           key_type=bool, default=None)
-            log.debug(tree.tree_view(mux.variants.root, verbose, use_utf8))
+            log.debug(tree.tree_view(variants.variants.root, verbose, use_utf8))
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(mux.variants):
+        for (index, tpl) in enumerate(variants.variants):
             if not args.mux_debug:
                 paths = ', '.join([x.path for x in tpl])
             else:

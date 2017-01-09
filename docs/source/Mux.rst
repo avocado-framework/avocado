@@ -1,10 +1,10 @@
-.. _mux:
+.. _variants:
 
-===================
-Test variants - Mux
-===================
+=============
+Test Variants
+=============
 
-The ``Mux`` is a special mechanism to produce multiple variants of the same
+The ``Varianter`` is a special mechanism to produce multiple variants of the same
 test with different parameters. This is essential in order to get a decent
 coverage and avocado allows several ways to define those parameters from
 simple enumeration of key/value pairs to complex trees which allows in simple
@@ -19,19 +19,19 @@ in reality it follows the way people are used to define dependencies,
 therefor it's very simple to use and clear even in complex cases.
 
 The best explanation comes usually from examples, so feel free to scroll down
-to `yaml_to_mux plugin`_ section, which uses the default mux plugin to feed
-the Mux.
+to `yaml_to_mux plugin`_ section, which uses the default variants plugin to feed
+the Variants.
 
 
-Mux internals
--------------
+Varianter internals
+-------------------
 
-The ``Mux`` is a core part of avocado and one can see it as a ``multiplexed``
+The ``Varianter`` is a core part of avocado and one can see it as a ``multiplexed``
 database, which contains key/value pairs associated to given paths and
 as we are talking about a tree of those, we call the paths ``Nodes``.
 
-Mux allows iterating through all possible combinations which are stored in
-the database, which is called ``multiplexation``. Mux yields ``variants``,
+Varianter allows iterating through all possible combinations which are stored in
+the database, which is called ``multiplexation``. Varianter yields ``variants``,
 which are lists of leaf nodes with their values, which are then processed
 into ``AvocadoParams``. Those params are available in tests as
 ``self.params`` and one can query for the current parameters::
@@ -39,43 +39,43 @@ into ``AvocadoParams``. Those params are available in tests as
     self.params.get(key="my_key", path="/some/location/*",
                     default="default_value")
 
-Let's get back to Mux for a while. As mentioned earlier, it's a database
+Let's get back to Variants for a while. As mentioned earlier, it's a database
 which allows storing multiple variants of test parameters. To fill the
 database, you can use several commands.
 
 1. ``--mux-inject`` - injects directly [path:]key:node values from the
    cmdline (see ``avocado multiplex -h``)
-2. ``yaml_to_mux plugin`` - allows parsing ``yaml`` files into the Mux
+2. ``yaml_to_mux plugin`` - allows parsing ``yaml`` files into the Variants
    database (see `yaml_to_mux plugin`_)
-3. Custom plugin using the simple ``Mux`` API (see `mux_api`_)
+3. Custom plugin using the simple ``Variants`` API (see `variants_api`_)
 
 
-.. _mux_api:
+.. _variants_api:
 
-Mux API
--------
+Varianter API
+-------------
 
 .. warning:: This API is internal, we might change it at any moment. On the
              other hand we maintain ``avocado-virt`` plugin which uses this
              API so in such case we'd provide a patch there demonstrating
              the necessary changes.
 
-The ``Mux`` object is defined in ``avocado/core/multiplexer.py``, is always
-instantiated in ``avocado.core.parser.py`` and always available in
-``args.mux``. The basic workflow is:
+The ``Varianter`` object is defined in :mod:`avocado.core.varianter`, is always
+instantiated in :mod:`avocado.core.parser` and always available in
+``args.avocado_variants``. The basic workflow is:
 
-1. Initialize ``Mux`` in ``args.mux``
+1. Initialize ``Variants`` in ``args.avocado_variants``
 2. Fill it with data (``plugins`` or ``job``)
 3. Multiplex it (in ``job``)
 4. Iterate through all variants on all job's tests
 
-Once the ``Mux`` object is multiplexed (3), it's restricted to alter the
+Once the ``Varianter`` object is multiplexed (3), it's restricted to alter the
 data (2) to avoid changing the already produced data.
 
 The main API needed for your plugins, which we are going to try keeping as
 stable as possible is:
 
-* mux.is_parsed() - to find out whether the object was already parsed
+* is_parsed() - to find out whether the object was already parsed
 * data_inject(key, value, path=None) - to inject key/value pairs optionaly
   to a given path (by default '/')
 * data_merge(tree) - to merge ``avocado.core.tree.TreeNode``-like tree
@@ -85,7 +85,7 @@ Given these you should be able to implement any kind of parser or params
 feeder, should you require one. We favor ``yaml`` and therefor we implemented
 a ``yaml_to_mux`` plugin which can be found in
 ``avocado/plugins/yaml_to_mux.py`` and on it we also describe the way
-``Mux`` works: `yaml_to_mux plugin`_
+``Varianter`` works: `yaml_to_mux plugin`_
 
 
 Yaml_to_mux plugin
@@ -93,7 +93,7 @@ Yaml_to_mux plugin
 
 In order to get a good coverage one always needs to execute the same test
 with different parameters or in various environments. Avocado uses the
-term ``Multiplexation`` or ``Mux`` to generate multiple variants of the same
+term ``Multiplexation`` to generate multiple variants of the same
 test with different values. To define these variants and values
 `YAML <http://www.yaml.org/>`_ files are used. The benefit of using YAML
 file is the visible separation of different scopes. Even very advanced setups

@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import tree, exit_codes
+from avocado.core import tree, exit_codes, mux
 from avocado.core.plugin_interfaces import CLI
 
 
@@ -37,8 +37,8 @@ else:
 # Mapping for yaml flags
 YAML_INCLUDE = 100
 YAML_USING = 101
-YAML_REMOVE_NODE = tree.REMOVE_NODE
-YAML_REMOVE_VALUE = tree.REMOVE_VALUE
+YAML_REMOVE_NODE = mux.REMOVE_NODE
+YAML_REMOVE_VALUE = mux.REMOVE_VALUE
 YAML_MUX = 102
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
@@ -59,16 +59,16 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     pass
 
 
-def _create_from_yaml(path, cls_node=tree.TreeNode):
+def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
         node = cls_node(str(name))
         using = ''
         for value in values:
-            if isinstance(value, tree.TreeNode):
+            if isinstance(value, cls_node):
                 node.add_child(value)
-            elif isinstance(value[0], tree.Control):
+            elif isinstance(value[0], mux.Control):
                 if value[0].code == YAML_INCLUDE:
                     # Include file
                     ypath = value[1]
@@ -140,17 +140,17 @@ def _create_from_yaml(path, cls_node=tree.TreeNode):
             objects = mapping_to_tree_loader(loader, obj)
         else:   # This means it's empty node. Don't call mapping_to_tree_loader
             objects = ListOfNodeObjects()
-        objects.append((tree.Control(YAML_MUX), None))
+        objects.append((mux.Control(YAML_MUX), None))
         return objects
 
     Loader.add_constructor(u'!include',
-                           lambda loader, node: tree.Control(YAML_INCLUDE))
+                           lambda loader, node: mux.Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
-                           lambda loader, node: tree.Control(YAML_USING))
+                           lambda loader, node: mux.Control(YAML_USING))
     Loader.add_constructor(u'!remove_node',
-                           lambda loader, node: tree.Control(YAML_REMOVE_NODE))
+                           lambda loader, node: mux.Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
-                           lambda loader, node: tree.Control(YAML_REMOVE_VALUE))
+                           lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
     Loader.add_constructor(u'!mux', mux_loader)
     Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
@@ -200,16 +200,16 @@ def create_from_yaml(paths, debug=False):
 
     def _merge_debug(data, path):
         """ Use NamedTreeNodeDebug magic """
-        node_cls = tree.get_named_tree_cls(path)
+        node_cls = tree.get_named_tree_cls(path, mux.MuxTreeNodeDebug)
         tmp = _create_from_yaml(path, node_cls)
         if tmp:
             data.merge(tmp)
 
     if not debug:
-        data = tree.TreeNode()
+        data = mux.MuxTreeNode()
         merge = _merge
     else:
-        data = tree.TreeNodeDebug()
+        data = mux.MuxTreeNodeDebug()
         merge = _merge_debug
 
     path = None
@@ -249,10 +249,28 @@ class YamlToMux(CLI):
             mux.add_argument("-m", "--mux-yaml", nargs='*', metavar="FILE",
                              help="Location of one or more Avocado"
                              " multiplex (.yaml) FILE(s) (order dependent)")
+            mux.add_argument('--mux-filter-only', nargs='*', default=[],
+                             help='Filter only path(s) from multiplexing')
+            mux.add_argument('--mux-filter-out', nargs='*', default=[],
+                             help='Filter out path(s) from multiplexing')
+            mux.add_argument('--mux-path', nargs='*', default=None,
+                             help="List of default paths used to determine "
+                             "path priority when querying for parameters")
+            mux.add_argument('--mux-inject', default=[], nargs='*',
+                             help="Inject [path:]key:node values into the "
+                             "final multiplex tree.")
+            mux = subparser.add_argument_group("yaml to mux options "
+                                               "[deprecated]")
             mux.add_argument("--multiplex", nargs='*',
                              default=None, metavar="FILE",
                              help="DEPRECATED: Location of one or more Avocado"
                              " multiplex (.yaml) FILE(s) (order dependent)")
+            mux.add_argument("--filter-only", nargs='*', default=[],
+                             help="DEPRECATED: Filter only path(s) from "
+                             "multiplexing (use --mux-only instead)")
+            mux.add_argument("--filter-out", nargs='*', default=[],
+                             help="DEPRECATED: Filter out path(s) from "
+                             "multiplexing (use --mux-out instead)")
 
     @staticmethod
     def _log_deprecation_msg(deprecated, current):
@@ -263,12 +281,34 @@ class YamlToMux(CLI):
         logging.getLogger("avocado.app").warning(msg, deprecated, current)
 
     def run(self, args):
+        # Deprecated filters
+        only = getattr(args, "filter_only", None)
+        if only:
+            self._log_deprecation_msg("--filter-only", "--mux-only")
+            mux_filter_only = getattr(args, "mux_filter_only")
+            if mux_filter_only:
+                args.mux_filter_only = mux_filter_only + only
+            else:
+                args.mux_filter_only = only
+        out = getattr(args, "filter_out", None)
+        if out:
+            self._log_deprecation_msg("--filter-out", "--mux-out")
+            mux_filter_out = getattr(args, "mux_filter_out")
+            if mux_filter_out:
+                args.mux_filter_out = mux_filter_out + out
+            else:
+                args.mux_filter_out = out
+        if args.avocado_variants.debug:
+            data = mux.MuxTreeNodeDebug()
+        else:
+            data = mux.MuxTreeNode()
+
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:
             debug = getattr(args, "mux_debug", False)
             try:
-                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+                data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
@@ -279,7 +319,25 @@ class YamlToMux(CLI):
             self._log_deprecation_msg("--multiplex", "--mux-yaml")
             debug = getattr(args, "mux_debug", False)
             try:
-                args.mux.data_merge(create_from_yaml(multiplex_files, debug))
+                data.merge(create_from_yaml(multiplex_files, debug))
+                from_yaml = create_from_yaml(multiplex_files, debug)
+                args.avocado_variants.data_merge(from_yaml)
             except IOError as details:
                 logging.getLogger("avocado.app").error(details.strerror)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+
+        # Extend default multiplex tree of --mux-inject values
+        for inject in getattr(args, "mux_inject", []):
+            entry = inject.split(':', 3)
+            if len(entry) < 2:
+                raise ValueError("key:entry pairs required, found only %s"
+                                 % (entry))
+            elif len(entry) == 2:   # key, entry
+                entry.insert(0, '')  # add path='' (root)
+            data.get_node(entry[0], True).value[entry[1]] = entry[2]
+
+        mux_filter_only = getattr(args, 'mux_filter_only', None)
+        mux_filter_out = getattr(args, 'mux_filter_out', None)
+        data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
+        if data != mux.MuxTreeNode():
+            args.avocado_variants.data_merge(data)
