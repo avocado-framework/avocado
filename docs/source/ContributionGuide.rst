@@ -107,7 +107,8 @@ Git workflow
     message         <- Any number of lines, limited to 72 characters per line.
                     <- Blank line
     Reference:      <- External references, one per line (issue, trello, ...)
-    Signed-off-by:  <- Signature (created by git commit -s)
+    Signed-off-by:  <- Signature and acknowledgment of licensing terms when
+                       contributing to the project (created by git commit -s)
 
 - Make sure your code is working (install your version of avocado, test
   your change, run ``make check`` to make sure you didn't introduce any
@@ -227,6 +228,19 @@ Use it::
 .. warning::
    You can not use the merge button on github to do signed merges as github
    does not have your private key.
+
+Licensing
+---------
+
+Except where otherwise indicated in a given source file, all original
+contributions to Avocado are licensed under the GNU General Public
+License version 2 `(GPLv2) <https://www.gnu.org/licenses/gpl-2.0.html>`_
+or any later version.
+
+By contributing you agree that these contributions are your own (or
+approved by your employer) and you grant a full, complete, irrevocable
+copyright license to all users and developers of the Avocado project,
+present and future, pursuant to the license of the project.
 
 Tests Repositories
 ==================
