@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 import aexpect
 import glob
 import json
@@ -28,8 +29,9 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
 
-PASS_SCRIPT_CONTENTS = """#!/bin/sh
-true
+PASS_SCRIPT_CONTENTS = """#!/bin/bash
+# Checks if the first argument is "arg1".
+[ "$1" == "arg1" ] && exit 0 || exit 1
 """
 
 PASS_SHELL_CONTENTS = "exit 0"
@@ -611,7 +613,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
-            'avocado_pass.sh',
+            'ʊʋʉʈɑ ʅʛʌ',
             PASS_SCRIPT_CONTENTS,
             'avocado_simpletest_functional')
         self.pass_script.save()
@@ -623,8 +625,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_simpletest_pass(self):
         os.chdir(basedir)
+        path = self.pass_script.path
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off'
-                    ' %s' % (self.tmpdir, self.pass_script.path))
+                    ' "%s arg1"' % (self.tmpdir, path.replace(' ', '\ ')))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -704,7 +707,8 @@ class RunnerSimpleTest(unittest.TestCase):
         test_file_name = os.path.basename(self.pass_script.path)
         os.chdir(test_base_dir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
-                    ' %s' % (avocado_path, self.tmpdir, test_file_name))
+                    ' "%s arg1"' % (avocado_path, self.tmpdir,
+                                    test_file_name.replace(' ', '\ ')))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
