@@ -1147,7 +1147,7 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                   allow_output_check='all', shell=False, env=None, sudo=False,
-                  ignore_bg_processes=False):
+                  ignore_bg_processes=False, strip_trail_nl=True):
     """
     Run a subprocess, returning its output.
 
@@ -1181,6 +1181,11 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                  has a sudo configuration such that a password won't be
                  prompted. If that's not the case, the command will
                  straight out fail.
+    :type sudo: bool
+    :param ignore_bg_processes: Whether to ignore background processes
+    :type ignore_bg_processes: bool
+    :param strip_trail_nl: Whether to strip the trailing newline
+    :type strip_trail_nl: bool
 
     :return: Command output.
     :rtype: str
@@ -1189,4 +1194,6 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
                      sudo=sudo, ignore_bg_processes=ignore_bg_processes)
+    if strip_trail_nl:
+        return cmd_result.stdout.rstrip('\n\r')
     return cmd_result.stdout
