@@ -204,11 +204,9 @@ class LoaderTest(unittest.TestCase):
         test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         tc.run_avocado()
-        # Load with params
-        simple_with_params = simple_test.path + " 'foo bar' --baz"
-        suite = self.loader.discover(simple_with_params, loader.ALL)
+        suite = self.loader.discover(simple_test.path, loader.ALL)
         self.assertEqual(len(suite), 1)
-        self.assertEqual(suite[0][1]["name"], simple_with_params)
+        self.assertEqual(suite[0][1]["name"], simple_test.path)
         simple_test.remove()
 
     def test_load_simple_not_exec(self):
