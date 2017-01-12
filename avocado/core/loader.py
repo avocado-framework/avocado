@@ -23,7 +23,6 @@ import imp
 import inspect
 import os
 import re
-import pipes
 import shlex
 import sys
 
@@ -531,12 +530,6 @@ class FileLoader(TestLoader):
                 subtests_filter = re.compile(_subtests_filter)
 
         if not os.path.isdir(reference):  # Single file
-            if (not self._make_tests(reference, DEFAULT, subtests_filter) and
-                    not subtests_filter):
-                split_reference = shlex.split(reference)
-                if (os.access(split_reference[0], os.X_OK) and
-                        not os.path.isdir(split_reference[0])):
-                    return self._make_test(test.SimpleTest, reference)
             return self._make_tests(reference, which_tests, subtests_filter)
 
         tests = []
@@ -740,7 +733,7 @@ class FileLoader(TestLoader):
             else:
                 if os.access(test_path, os.X_OK):
                     return self._make_test(test.SimpleTest,
-                                           pipes.quote(test_path))
+                                           test_path)
                 else:
                     return make_broken(test.NotATest, test_path)
         else:
@@ -794,10 +787,7 @@ class ExternalLoader(TestLoader):
 
         if runner:
             external_runner_and_args = shlex.split(runner)
-            if len(external_runner_and_args) > 1:
-                executable = external_runner_and_args[0]
-            else:
-                executable = runner
+            executable = external_runner_and_args[0]
             if not os.path.exists(executable):
                 msg = ('Could not find the external runner executable "%s"'
                        % executable)
