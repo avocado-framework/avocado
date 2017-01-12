@@ -449,7 +449,7 @@ class SubProcess(object):
                 # Don't read unless there are new data available:
                 if not select.select([fileno], [], [], 1)[0]:
                     continue
-            tmp = os.read(fileno, 1024)
+            tmp = os.read(fileno, 8192)
             if tmp == '':
                 break
             lock.acquire()
