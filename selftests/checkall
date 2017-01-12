@@ -51,11 +51,15 @@ parallel_selftests() {
 
 signed_off_check() {
     AUTHOR="$(git log -1 --pretty='format:%aN <%aE>')"
-    git log -1 --pretty=format:%B | grep "Signed-off-by: $AUTHOR"
-    if [ $? != 0 ]; then
+    COMMIT_MSG=$(git log -1 --pretty=format:%B)
+    [ $(echo "${COMMIT_MSG::4}") == 'Merg' ] && {
+        echo "Seems like a Merge commit. Skipping check."
+        return
+    }
+    echo "${COMMIT_MSG}" | grep -q "Signed-off-by: $AUTHOR" || {
         echo "The commit message does not contain author's signature (Signed-off-by: $AUTHOR)"
         return 1
-    fi
+    }
 }
 
 run_rc lint 'inspekt --exclude=.git lint'
