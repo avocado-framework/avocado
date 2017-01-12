@@ -19,14 +19,6 @@ install:
     - pip install -r requirements-travis.txt
 
 script:
-    - inspekt lint
-    - inspekt indent
-    - inspekt style
-    - ./selftests/cyclical_deps avocado
-    - ./selftests/modules_boundaries
-    - make link
-    - ./selftests/run
-    - ./selftests/check_tmp_dirs
     - |
         # First cleanup the previously installed files
         python setup.py develop --uninstall
@@ -37,7 +29,7 @@ script:
         # Run the "make check" per each commit in PR (TRAVIS_COMMIT_RANGE)
         ERR=""
         echo Branch is $TRAVIS_BRANCH
-        for COMMIT in $(git rev-list $TRAVIS_COMMIT_RANGE~1); do
+        for COMMIT in $(git rev-list $TRAVIS_COMMIT_RANGE); do
             echo
             echo "--------------------< $(git log -1 --oneline $COMMIT) >--------------------"
             echo
