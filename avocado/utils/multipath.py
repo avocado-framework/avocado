@@ -38,8 +38,8 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     """
     Form a multipath configuration file, and restart multipath service.
 
-    :parm blacklist: Entry in conf file to indicate blacklist section.
-    :parm defaults_extra: Extra entry in conf file in defaults section.
+    :param blacklist: Entry in conf file to indicate blacklist section.
+    :param defaults_extra: Extra entry in conf file in defaults section.
     """
     conf_file = "/etc/multipath.conf"
     with open(conf_file, "w") as mpath_fp:
@@ -76,7 +76,7 @@ def get_mpath_name(wwid):
     """
     Get multipath name for a given wwid.
 
-    :parm wwid: wwid of multipath device.
+    :param wwid: wwid of multipath device.
 
     :return: Name of multipath device.
     """
