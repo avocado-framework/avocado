@@ -64,8 +64,8 @@ def get_num_interfaces_in_pci(dom_pci_address):
     Gets number of interfaces of a given partial pci_address starting with
     full domain addr.
 
-    :parm dom_pci_address: Partial pci address including domain addr (0000,
-                           0000:00:1f, 0000:00:1f.2, ...)
+    :param dom_pci_address: Partial pci address including domain addr (0000,
+                            0000:00:1f, 0000:00:1f.2, ...)
 
     :return: number of devices in a pci domain.
     """
@@ -84,7 +84,7 @@ def get_disks_in_pci_address(pci_address):
     """
     Gets disks in a pci_address.
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: list of disks in a pci address.
     """
@@ -101,7 +101,7 @@ def get_nics_in_pci_address(pci_address):
     """
     Gets network interface(nic) in a pci address.
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: list of network interfaces in a pci address.
     """
@@ -118,7 +118,7 @@ def get_pci_fun_list(pci_address):
     Gets list of functions in the given pci address.
     Example: in address 0000:03:00, functions are 0000:03:00.0 and 0000:03:00.1
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: list of functions in a pci address.
     """
@@ -131,7 +131,7 @@ def get_slot_from_sysfs(full_pci_address):
 
     :note: Specific for ppc64 processor.
 
-    :parm full_pci_address: Full pci address including domain (0000:03:00.0)
+    :param full_pci_address: Full pci address including domain (0000:03:00.0)
 
     :return: slot of pci address from sysfs.
     """
@@ -160,7 +160,7 @@ def get_pci_id_from_sysfs(full_pci_address):
     """
     Gets the pci id from sysfs of given pci address.
 
-    :parm full_pci_address: Full pci address including domain (0000:03:00.0)
+    :param full_pci_address: Full pci address including domain (0000:03:00.0)
 
     :return: pci id of a pci address from sysfs.
     """
@@ -176,8 +176,8 @@ def get_pci_prop(pci_address, prop):
     """
     Gets specific pci id of given pci address. (first match only)
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
-    :parm part: prop of pci id.
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param part: prop of pci id.
 
     :return: specific pci id of a pci address.
     """
@@ -193,7 +193,7 @@ def get_pci_id(pci_address):
     """
     Gets pci id of given address. (first match only)
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: pci id of a pci address.
     """
@@ -211,7 +211,7 @@ def get_driver(pci_address):
     """
     Gets the kernel driver in use of given pci address. (first match only)
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: driver of a pci address.
     """
@@ -230,7 +230,7 @@ def get_memory_address(pci_address):
     :note: There may be multiple memory address for a pci address.
     :note: This function returns only the first such address.
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: memory address of a pci_address.
     """
@@ -249,7 +249,7 @@ def get_mask(pci_address):
     :note: There may be multiple memory entries for a pci address.
     :note: This mask is calculated only with the first such entry.
 
-    :parm pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
 
     :return: mask of a pci address.
     """
@@ -274,8 +274,8 @@ def get_vpd(dom_pci_address):
 
     :note: Specific for ppc64 processor.
 
-    :parm dom_pci_address: Partial pci address including domain addr and at
-                           least bus addr (0003:00, 0003:00:1f.2, ...)
+    :param dom_pci_address: Partial pci address including domain addr and at
+                            least bus addr (0003:00, 0003:00:1f.2, ...)
 
     :return: dictionary of vpd of a pci address.
     """
@@ -307,8 +307,8 @@ def get_cfg(dom_pci_address):
 
     :note: Specific for ppc64 processor.
 
-    :parm dom_pci_address: Partial pci address including domain addr and at
-                           least bus addr (0003:00, 0003:00:1f.2, ...)
+    :param dom_pci_address: Partial pci address including domain addr and at
+                            least bus addr (0003:00, 0003:00:1f.2, ...)
 
     :return: dictionary of cfg data of a pci address.
     """
