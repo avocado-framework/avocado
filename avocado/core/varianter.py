@@ -416,11 +416,11 @@ class Varianter(object):
         """
         return self.variants is not None
 
-    def _skip_new_data_check(self, fction, args):
+    def _skip_new_data_check(self, function, args):
         """
         Check whether we can inject the data
 
-        :param fction: Name of the data-inject function
+        :param function: Name of the data-inject function
         :param args: Arguments of the data-inject function
         :raise RuntimeError: When data injection is restricted
         :return: True if new data should be ignored
@@ -429,7 +429,7 @@ class Varianter(object):
             if self.ignore_new_data:
                 return
             raise RuntimeError("Varianter already parsed, unable to execute "
-                               "%s%s" % (fction, args))
+                               "%s%s" % (function, args))
 
     def data_inject(self, key, value, path=None):   # pylint: disable=E0202
         """
