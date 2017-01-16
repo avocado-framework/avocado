@@ -18,19 +18,19 @@ class AstringTest(unittest.TestCase):
                           '/bin/bar/sbrubles /home/myuser/sbrubles'))
 
     def testTabularWithConsoleCodes(self):
-        matrix = [("a", "bb", "ccc", "dddd", "last"),
+        matrix = [("a", "an", "dog", "word", "last"),
                   ("\x1b[94ma",             # {BLUE}a
-                   "\033[0mbb",             # {END}bb
+                   "\033[0man",             # {END}an
                    "cc\033[91mc",   # cc{RED}c
-                   # {RED}d{GREEN}d{BLUE}d{GREY}d{END}
+                   # {RED}d{GREEN}d{BLUE}d{GRAY}d{END}
                    "\033[91md\033[92md\033[94md\033[90md\033[0m",
                    "last")]
         header = ['0', '1', '2', '3', '4']
         self.assertEqual(astring.tabular_output(matrix, header),
                          "0 1  2   3    4\n"
-                         "a bb ccc dddd last\n"
-                         "\x1b[94ma \x1b[0mbb cc\033[91mc "
-                         "\033[91md\033[92md\033[94md\033[90md\033[0m last")
+                         "a an dog word last\n"
+                         "[94ma [0man cc[91mc "
+                         "[91md[92md[94md[90md[0m last")
 
     def testTabularOutputDifferentNOCols(self):
         matrix = [[], [1], [2, 2], [333, 333, 333], [4, 4, 4, 4444]]

@@ -29,10 +29,10 @@ from . import process
 
 def get_domains():
     """
-    Gets all pci domains.
+    Gets all PCI domains.
     Example, it returns ['0000', '0001', ...]
 
-    :return: List of pci domains.
+    :return: List of PCI domains.
     """
     cmd = "lspci -D"
     output = process.system_output(cmd, ignore_status=True)
@@ -45,10 +45,10 @@ def get_domains():
 
 def get_pci_addresses():
     """
-    Gets list of pci addresses in the system.
+    Gets list of PCI addresses in the system.
     Does not return the PCI Bridges/Switches.
 
-    :return: list of full pci addresses including domain (0000:00:14.0)
+    :return: list of full PCI addresses including domain (0000:00:14.0)
     """
     addresses = []
     cmd = "lspci -D"
@@ -61,13 +61,13 @@ def get_pci_addresses():
 
 def get_num_interfaces_in_pci(dom_pci_address):
     """
-    Gets number of interfaces of a given partial pci_address starting with
-    full domain addr.
+    Gets number of interfaces of a given partial PCI address starting with
+    full domain address.
 
-    :param dom_pci_address: Partial pci address including domain addr (0000,
-                            0000:00:1f, 0000:00:1f.2, ...)
+    :param dom_pci_address: Partial PCI address including domain
+                            address (0000, 0000:00:1f, 0000:00:1f.2, etc)
 
-    :return: number of devices in a pci domain.
+    :return: number of devices in a PCI domain.
     """
     cmd = "ls -l /sys/class/*/ -1"
     output = process.system_output(cmd, ignore_status=True, shell=True)
@@ -82,11 +82,11 @@ def get_num_interfaces_in_pci(dom_pci_address):
 
 def get_disks_in_pci_address(pci_address):
     """
-    Gets disks in a pci_address.
+    Gets disks in a PCI address.
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: list of disks in a pci address.
+    :return: list of disks in a PCI address.
     """
     disks_path = "/dev/disk/by-path/"
     disk_list = []
@@ -99,11 +99,11 @@ def get_disks_in_pci_address(pci_address):
 
 def get_nics_in_pci_address(pci_address):
     """
-    Gets network interface(nic) in a pci address.
+    Gets network interface(nic) in a PCI address.
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: list of network interfaces in a pci address.
+    :return: list of network interfaces in a PCI address.
     """
     iface_path = "/sys/class/net/"
     net_interfaces_list = []
@@ -115,25 +115,25 @@ def get_nics_in_pci_address(pci_address):
 
 def get_pci_fun_list(pci_address):
     """
-    Gets list of functions in the given pci address.
+    Gets list of functions in the given PCI address.
     Example: in address 0000:03:00, functions are 0000:03:00.0 and 0000:03:00.1
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: list of functions in a pci address.
+    :return: list of functions in a PCI address.
     """
     return list(dev for dev in get_pci_addresses() if pci_address in dev)
 
 
 def get_slot_from_sysfs(full_pci_address):
     """
-    Gets the pci slot of given address.
+    Gets the PCI slot of given address.
 
     :note: Specific for ppc64 processor.
 
-    :param full_pci_address: Full pci address including domain (0000:03:00.0)
+    :param full_pci_address: Full PCI address including domain (0000:03:00.0)
 
-    :return: slot of pci address from sysfs.
+    :return: slot of PCI address from sysfs.
     """
     if not os.path.isfile('/sys/bus/pci/devices/%s/devspec' % full_pci_address):
         return
@@ -147,7 +147,7 @@ def get_slot_from_sysfs(full_pci_address):
 
 def get_slot_list():
     """
-    Gets list of pci slots in the system.
+    Gets list of PCI slots in the system.
 
     :note: Specific for ppc64 processor.
 
@@ -158,11 +158,11 @@ def get_slot_list():
 
 def get_pci_id_from_sysfs(full_pci_address):
     """
-    Gets the pci id from sysfs of given pci address.
+    Gets the PCI ID from sysfs of given PCI address.
 
-    :param full_pci_address: Full pci address including domain (0000:03:00.0)
+    :param full_pci_address: Full PCI address including domain (0000:03:00.0)
 
-    :return: pci id of a pci address from sysfs.
+    :return: PCI ID of a PCI address from sysfs.
     """
     path = "/sys/bus/pci/devices/%s" % full_pci_address
     if os.path.isdir(path):
@@ -174,12 +174,12 @@ def get_pci_id_from_sysfs(full_pci_address):
 
 def get_pci_prop(pci_address, prop):
     """
-    Gets specific pci id of given pci address. (first match only)
+    Gets specific PCI ID of given PCI address. (first match only)
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
-    :param part: prop of pci id.
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
+    :param part: prop of PCI ID.
 
-    :return: specific pci id of a pci address.
+    :return: specific PCI ID of a PCI address.
     """
     cmd = "lspci -Dnvmm -s %s" % pci_address
     output = process.system_output(cmd, ignore_status=True)
@@ -191,11 +191,11 @@ def get_pci_prop(pci_address, prop):
 
 def get_pci_id(pci_address):
     """
-    Gets pci id of given address. (first match only)
+    Gets PCI id of given address. (first match only)
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: pci id of a pci address.
+    :return: PCI ID of a PCI address.
     """
     pci_id = []
     for params in ['Vendor', 'Device', 'SVendor', 'SDevice']:
@@ -209,11 +209,11 @@ def get_pci_id(pci_address):
 
 def get_driver(pci_address):
     """
-    Gets the kernel driver in use of given pci address. (first match only)
+    Gets the kernel driver in use of given PCI address. (first match only)
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: driver of a pci address.
+    :return: driver of a PCI address.
     """
     cmd = "lspci -ks %s" % pci_address
     output = process.system_output(cmd, ignore_status=True)
@@ -225,12 +225,12 @@ def get_driver(pci_address):
 
 def get_memory_address(pci_address):
     """
-    Gets the memory address of a pci address. (first match only)
+    Gets the memory address of a PCI address. (first match only)
 
-    :note: There may be multiple memory address for a pci address.
+    :note: There may be multiple memory address for a PCI address.
     :note: This function returns only the first such address.
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
     :return: memory address of a pci_address.
     """
@@ -244,14 +244,14 @@ def get_memory_address(pci_address):
 
 def get_mask(pci_address):
     """
-    Gets the mask of pci address. (first match only)
+    Gets the mask of PCI address. (first match only)
 
-    :note: There may be multiple memory entries for a pci address.
+    :note: There may be multiple memory entries for a PCI address.
     :note: This mask is calculated only with the first such entry.
 
-    :param pci_address: Any segment of a pci address (1f, 0000:00:1f, ...)
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: mask of a pci address.
+    :return: mask of a PCI address.
     """
     cmd = "lspci -vv -s %s" % pci_address
     output = process.system_output(cmd, ignore_status=True)
@@ -269,15 +269,14 @@ def get_mask(pci_address):
 
 def get_vpd(dom_pci_address):
     """
-    Gets the vpd of the given pci address.
-    lsvpd lists the Vital Product Data of a pci address.
+    Gets the VPD (Virtual Product Data) of the given PCI address.
 
     :note: Specific for ppc64 processor.
 
-    :param dom_pci_address: Partial pci address including domain addr and at
+    :param dom_pci_address: Partial PCI address including domain addr and at
                             least bus addr (0003:00, 0003:00:1f.2, ...)
 
-    :return: dictionary of vpd of a pci address.
+    :return: dictionary of VPD of a PCI address.
     """
     cmd = "lsvpd -l %s" % dom_pci_address
     vpd = process.system_output(cmd)
@@ -302,15 +301,14 @@ def get_vpd(dom_pci_address):
 
 def get_cfg(dom_pci_address):
     """
-    Gets the cfg data of the given pci address.
-    lscfg lists the hardware configuration of a pci address.
+    Gets the hardware configuration data of the given PCI address.
 
     :note: Specific for ppc64 processor.
 
-    :param dom_pci_address: Partial pci address including domain addr and at
+    :param dom_pci_address: Partial PCI address including domain addr and at
                             least bus addr (0003:00, 0003:00:1f.2, ...)
 
-    :return: dictionary of cfg data of a pci address.
+    :return: dictionary of configuration data of a PCI address.
     """
     cmd = "lscfg -vl %s" % dom_pci_address
     cfg = process.system_output(cmd)
