@@ -48,8 +48,9 @@ else:
     import unittest
 
 
-#: Environment variable used to store the location of a tmpfile which is
-#: preserved across all tests execution (usually in one job)
+#: Environment variable used to store the location of a temporary
+#: directory which is : preserved across all tests execution (usually in
+#: one job)
 COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
 
 
