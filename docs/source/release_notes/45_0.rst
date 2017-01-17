@@ -1,0 +1,91 @@
+===============
+45.0 Anthropoid
+===============
+
+The Avocado team is proud to present another release: Avocado version
+45.0, aka, "Anthropoid", is now available!
+
+Release documentation: `Avocado 45.0
+<http://avocado-framework.readthedocs.io/en/45.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * Tests running with the external runner (``--external-runner``)
+   feature will now have access to the extended behavior for SIMPLE
+   tests, such as being able to exit a test with the WARNING status.
+
+ * Users will now be able to properly run tests based on any Unicode
+   string (as a test reference).  To achieve that, the support for
+   arguments to SIMPLE tests was dropped, as it was impossible to have
+   a consistent way to determine if special characters were word
+   separators, arguments or part of the main test name.  To overcome
+   the removal of support for arguments on SIMPLE tests, one can use
+   custom loader configurations and the external runner.
+
+ * Test writers now have access to a test temporary directory that
+   will last not only for the duration of the test, but for the
+   duration of the whole job execution.  This is a feature that has
+   been requested by many users and one practical example is a test
+   reusing binaries built on by a previous test on the same job.
+   Please note that Avocado still provides as much test isolation and
+   independence as before, but now allows tests to share this one
+   directory.
+
+ * When running jobs with the TAP plugin enabled (the default), users
+   will now also get a ``results.tap`` file created by default in
+   their job results directory.  This is similar to how JSON, XUNIT
+   and other supported result formats already operate.  To disable the
+   TAP creation, either disable the plugin or use
+   ``--tap-job-result=off``.
+
+Distribution
+============
+
+ * Avocado is now available on `Fedora
+   <https://admin.fedoraproject.org/pkgdb/package/rpms/python-avocado/>`_.
+   That's great news for test writers and test runners, who will now
+   be able to rely on Avocado installed on test systems much more
+   easily.  Because of Fedora's rules that favor the stability of
+   packages during a given release, users will find older Avocado
+   versions (currently 43.0) on already released Fedora versions.  For
+   users interested in packages for the latest Avocado releases, we'll
+   continue to provide updated packages on our own repo.
+
+ * After some interruption, we've addressed issues that were preventing
+   the update of Avocado packages on PyPI, and thus, preventing users
+   from getting the latest Avocado versions when running ``$ pip install
+   avocado-framework``.
+
+Internal improvements
+=====================
+
+ * The HTML report plugin contained a font, included by the default
+   bootstrap framework data files, that was not really used.  It has
+   now been removed.
+
+ * The selfcheck will now require commits to have a ``Signed-off-by``
+   line, in order to make sure contributors are aware of the terms of
+   their contributions.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/44.0...45.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=4LxdWAfnQB4>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/fwEUquwd/881-sprint-theme-anthropoid

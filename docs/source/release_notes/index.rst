@@ -9,6 +9,7 @@ The following pages summarize what is new in Avocado:
 .. toctree::
    :maxdepth: 1
 
+   45_0
    44_0
    43_0
    42_0
