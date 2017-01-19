@@ -359,6 +359,10 @@ class TestRunner(object):
 
         signal.signal(signal.SIGTSTP, sigtstp_handler)
 
+        filename = loader.load_test(test_factory).filename
+        if filename is not None:
+            sys.path.insert(0, os.path.dirname(filename))
+
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
         test_status = TestStatus(self.job, queue)
