@@ -153,7 +153,7 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
     """
     errs = []
     if vg_name is not None:
-        loop_device = re.search(r"([/\w]+) +%s +lvm2" % vg_name,
+        loop_device = re.search(r"([/\w-]+) +%s +lvm2" % vg_name,
                                 process.run("pvs", sudo=True).stdout)
         if loop_device is not None:
             loop_device = loop_device.group(1)
