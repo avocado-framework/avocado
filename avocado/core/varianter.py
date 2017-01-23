@@ -435,4 +435,6 @@ class Varianter(object):
             for variant in iter(iter_variants):
                 yield variant
         else:   # No variants, use template
-            yield None, (self.default_params.get_leaves(), "/run")  # self.default_params is TreeNode pylint: disable=E1101
+            yield {"variant": self.default_params.get_leaves(),  # self.default_params is TreeNode pylint: disable=E1101
+                   "variant_id": None,
+                   "mux_path": "/run"}
