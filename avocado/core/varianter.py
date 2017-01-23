@@ -409,14 +409,15 @@ class Varianter(object):
             return
         self.variant_plugins.append(plugin)
 
-    def str_variants(self, summary=False, contents=False):
+    def str_variants(self, summary=0, variants=0, use_utf8=False):
         """
-        Return human readable variants
+        Return human readable representation
 
-        :param summary: Whether to report summary (eg. tree of params)
-        :param contents: Whether to report contents (individual params)
+        :param summary: How verbose summary to output
+        :param variants: How verbose list of variants to output
+        :rtype: str
         """
-        return "\n\n".join(plugin.str_variants(summary, contents)
+        return "\n\n".join(plugin.str_variants(summary, variants, use_utf8)
                            for plugin in self.variant_plugins)
 
     def get_number_of_tests(self, test_suite):
