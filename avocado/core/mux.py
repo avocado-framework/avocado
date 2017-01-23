@@ -17,8 +17,15 @@
 This file contains mux-enabled implementations of parts useful for creating
 a custom Varianter plugin.
 """
+#
+# Multiplex-enabled tree objects
+#
+
+import collections
+import itertools
 import re
 
+from . import output
 from . import tree
 
 
@@ -27,6 +34,152 @@ from . import tree
 #
 REMOVE_NODE = 0
 REMOVE_VALUE = 1
+
+
+class MuxTree(object):
+
+    """
+    Object representing part of the tree from the root to leaves or another
+    multiplex domain. Recursively it creates multiplexed variants of the full
+    tree.
+    """
+
+    def __init__(self, root):
+        """
+        :param root: Root of this tree slice
+        """
+        self.pools = []
+        for node in self._iter_mux_leaves(root):
+            if node.is_leaf:
+                self.pools.append(node)
+            else:
+                self.pools.append([MuxTree(child) for child in node.children])
+
+    @staticmethod
+    def _iter_mux_leaves(node):
+        """ yield leaves or muxes of the tree """
+        queue = collections.deque()
+        while node is not None:
+            if node.is_leaf or getattr(node, "multiplex", None):
+                yield node
+            else:
+                queue.extendleft(reversed(node.children))
+            try:
+                node = queue.popleft()
+            except IndexError:
+                raise StopIteration
+
+    def __iter__(self):
+        """
+        Iterates through variants
+        """
+        pools = []
+        for pool in self.pools:
+            if isinstance(pool, list):
+                pools.append(itertools.chain(*pool))
+            else:
+                pools.append(pool)
+        pools = itertools.product(*pools)
+        while True:
+            # TODO: Implement 2nd level filters here
+            # TODO: This part takes most of the time, optimize it
+            yield list(itertools.chain(*pools.next()))
+
+
+class MuxPlugin(object):
+    """
+    Follows the Multiplexer API to produce variants
+    """
+    def __init__(self, root, mux_path, debug):
+        self.root = root
+        self.variants = None
+        self.default_params = None
+        self.mux_path = mux_path
+        self.debug = debug
+
+    def __iter__(self):
+        for i, variant in enumerate(self.variants, 1):
+            yield i, (variant, self.mux_path)
+
+    def update_defaults(self, defaults):
+        if self.default_params:
+            self.default_params.merge(defaults)
+        self.default_params = defaults
+        combination = defaults
+        combination.merge(self.root)
+        self.variants = MuxTree(combination)
+
+    def str_variants(self):
+        """
+        Return human readable variants
+        """
+        if not self.variants:
+            return ""
+        out = []
+        for (index, tpl) in enumerate(self.variants):
+            paths = ', '.join([x.path for x in tpl])
+            out.append('Variant %s:    %s' % (index + 1, paths))
+
+        return "\n".join(out)
+
+    def str_variants_long(self, contents=False):
+        """
+        Return human readable variants with their environment
+        """
+        if not self.variants:
+            return ""
+        out = []
+        for (index, tpl) in enumerate(self.variants):
+            if not self.debug:
+                paths = ', '.join([x.path for x in tpl])
+            else:
+                color = output.TERM_SUPPORT.LOWLIGHT
+                cend = output.TERM_SUPPORT.ENDC
+                paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                                  getattr(_, 'yaml',
+                                                          "Unknown"),
+                                                  cend)
+                                   for _ in tpl])
+            out.append('%sVariant %s:    %s' % ('\n' if contents else '',
+                                                index + 1, paths))
+            if contents:
+                env = set()
+                for node in tpl:
+                    for key, value in node.environment.iteritems():
+                        origin = node.environment_origin[key].path
+                        env.add(("%s:%s" % (origin, key), str(value)))
+                if not env:
+                    continue
+                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                for record in sorted(env):
+                    out.append(fmt % record)
+        return "\n".join(out)
+
+    def str_long(self):
+        """
+        Return human readable description of all variants
+        """
+        if not self.variants:
+            return ""
+        out = []
+        # Log tree representation
+        out.append("Multiplex tree representation:")
+        tree_repr = tree.tree_view(self.root, verbose=True,
+                                   use_utf8=False)
+        out.append(tree_repr)
+        out.append("")
+
+        variants = self.str_variants()
+        out.append(variants)
+        out.append('')
+
+        return "\n".join(out)
+
+    def __len__(self):
+        """
+        Reports the number of variants
+        """
+        return sum(1 for _ in self)
 
 
 class Control(object):  # Few methods pylint: disable=R0903
@@ -99,6 +252,10 @@ class MuxTreeNodeDebug(MuxTreeNode, tree.TreeNodeDebug):
         MuxTreeNode.__init__(self, name, value, parent, children)
         tree.TreeNodeDebug.__init__(self, name, value, parent, children,
                                     srcyaml)
+
+    def merge(self, other):
+        MuxTreeNode.merge(self, other)
+        tree.TreeNodeDebug.merge(self, other)
 
 
 #

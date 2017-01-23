@@ -124,9 +124,6 @@ class Parser(object):
             help='subcommand help',
             dest='subcommand')
 
-        # Allow overriding default params by plugins
-        variants = varianter.Varianter(getattr(self.args, "mux-debug", False))
-        self.args.avocado_variants = variants
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
         self.args.default_avocado_params = tree.TreeNode()
@@ -145,3 +142,7 @@ class Parser(object):
                     sub.choices[self.args.subcommand].error(msg)
 
             self.application.error(msg)
+
+        # Allow overriding default params by plugins
+        variants = varianter.Varianter(getattr(self.args, "mux-debug", False))
+        self.args.avocado_variants = variants
