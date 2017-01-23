@@ -19,11 +19,11 @@
 Multiplex and create variants.
 """
 
-import copy
 import logging
 import re
 
 from . import tree
+from . import dispatcher
 
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
@@ -326,11 +326,11 @@ class Varianter(object):
                in order to provide the right results.
         """
         self.default_params = {}
-        self.variant_plugins = []
         self.debug = debug
         self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
         self.ignore_new_data = False    # Used to ignore new data when parsed
-        self._parsed = False
+        self._variant_plugins = dispatcher.VarianterDispatcher()
+        self._no_variants = None
 
     def parse(self, args):
         """
@@ -339,9 +339,9 @@ class Varianter(object):
         :param args: Parsed cmdline arguments
         """
         defaults = self._process_default_params(args)
-        for plugin in self.variant_plugins:
-            plugin.update_defaults(copy.deepcopy(defaults))
-        self._parsed = True
+        self._variant_plugins.map_method_copy("initialize", args)
+        self._variant_plugins.map_method_copy("update_defaults", defaults)
+        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
 
     def _process_default_params(self, args):
         """
@@ -364,7 +364,7 @@ class Varianter(object):
         """
         Reports whether the tree was already multiplexed
         """
-        return self._parsed
+        return self._no_variants is not None
 
     def _skip_new_data_check(self, function, args):
         """
@@ -399,16 +399,6 @@ class Varianter(object):
             self.default_params[name] = self.node_class()
         self.default_params[name].get_node(path, True).value[key] = value
 
-    def add_variants_plugin(self, plugin):     # pylint: disable=E0202
-        """
-        Registers a variants plugin
-
-        :param plugin: Varianter-compatible plugin
-        """
-        if self._skip_new_data_check("add_variants_plugin", (plugin,)):
-            return
-        self.variant_plugins.append(plugin)
-
     def to_str(self, summary=0, variants=0, use_utf8=False):
         """
         Return human readable representation
@@ -417,17 +407,17 @@ class Varianter(object):
         :param variants: How verbose list of variants to output
         :rtype: str
         """
-        return "\n\n".join(plugin.to_str(summary, variants, use_utf8)
-                           for plugin in self.variant_plugins)
+        return "\n\n".join(self._variant_plugins.map_method("to_str", summary,
+                                                            variants,
+                                                            use_utf8))
 
     def get_number_of_tests(self, test_suite):
         """
         :return: overall number of tests * number of variants
         """
         # Currently number of tests is symmetrical
-        if self.variant_plugins:
-            no_variants = sum(len(plugin) for plugin in self.variant_plugins)
-            return len(test_suite) * no_variants
+        if self._no_variants:
+            return len(test_suite) * self._no_variants
         else:
             return len(test_suite)
 
@@ -437,10 +427,12 @@ class Varianter(object):
 
         :yield (variant-id, (list of leaves, list of default paths))
         """
-        if self.variant_plugins:  # Copy template and modify it's params
-            iter_variants = (variant for plugin in self.variant_plugins
-                             for variant in plugin)
+        if self._no_variants:  # Copy template and modify it's params
+            pluginss_variants = self._variant_plugins.map_method("__iter__")
+            iter_variants = (variant
+                             for plugin_variants in pluginss_variants
+                             for variant in plugin_variants)
             for variant in iter(iter_variants):
                 yield variant
         else:   # No variants, use template
-            yield None, (self.default_params.get_leaves(), "/run")
+            yield None, (self.default_params.get_leaves(), "/run")  # self.default_params is TreeNode pylint: disable=E1101
