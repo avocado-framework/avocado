@@ -30,6 +30,7 @@ from ..utils import genio
 from ..utils import process
 from ..utils import software_manager
 from ..utils import path as utils_path
+from ..utils import wait
 
 log = logging.getLogger("avocado.sysinfo")
 
@@ -161,8 +162,24 @@ class Command(Collectible):
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
         try:
-            subprocess.call(self.cmd, stdin=stdin, stdout=stdout,
-                            stderr=subprocess.STDOUT, shell=True, env=env)
+            proc = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
+                                    stderr=subprocess.STDOUT, shell=True,
+                                    env=env)
+            deadline = time.time() + 10
+            while time.time() < deadline:
+                if proc.poll() is not None:
+                    break
+                time.sleep(0.01)
+            else:
+                log.error("sysinfo: Interrupting cmd '%s' which took longer "
+                          "than 60s to finish", self.cmd)
+                try:
+                    proc.terminate()
+                    if wait.wait_for(lambda: proc.poll() is None, timeout=1,
+                                     step=0.01) is None:
+                        proc.kill()
+                except OSError:
+                    pass    # Ignore errors when the process finishes
         finally:
             for f in (stdin, stdout):
                 f.close()
