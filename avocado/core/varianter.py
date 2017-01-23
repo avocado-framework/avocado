@@ -328,13 +328,15 @@ class Varianter(object):
         self.default_params = {}
         self.debug = debug
         self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
-        self.ignore_new_data = False    # Used to ignore new data when parsed
+        #: Ignore new data on parsed `Varianter` (otherwise it raises an
+        #: exception, can be used to replace `Varianter` by CLI plugin)
+        self.ignore_new_data = False
         self._variant_plugins = dispatcher.VarianterDispatcher()
         self._no_variants = None
 
     def parse(self, args):
         """
-        Apply options defined on the cmdline
+        Apply options defined on the cmdline and initialize the plugins.
 
         :param args: Parsed cmdline arguments
         """
@@ -362,7 +364,7 @@ class Varianter(object):
 
     def is_parsed(self):
         """
-        Reports whether the tree was already multiplexed
+        Reports whether the varianter was already parsed (stage1 vs. stage2)
         """
         return self._no_variants is not None
 
@@ -385,6 +387,10 @@ class Varianter(object):
         """
         Stores the path/key/value into default params
 
+        This allow injecting default arguments which are mainly intended for
+        machine/os-related params. It should not affect the test results
+        and by definition it should not affect the variant id.
+
         :param name: Name of the component which injects this param
         :param key: Key to which we'd like to assign the value
         :param value: The key's value
@@ -403,8 +409,12 @@ class Varianter(object):
         """
         Return human readable representation
 
-        :param summary: How verbose summary to output
-        :param variants: How verbose list of variants to output
+        The summary/variants accepts verbosity where 0 means do not display
+        at all and maximum is up to the plugin.
+
+        :param summary: How verbose summary to output (int)
+        :param variants: How verbose list of variants to output (int)
+        :param extra: Dict of extra parameters
         :rtype: str
         """
         if extra is None:
@@ -425,9 +435,16 @@ class Varianter(object):
 
     def itertests(self):
         """
-        Yield variant-id and test params
+        Yields all variants of all plugins
 
-        :yield (variant-id, (list of leaves, list of default paths))
+        The variant is defined as dictionary with at least:
+         * variant_id - name of the current variant
+         * variant - AvocadoParams-compatible variant (usually a list of
+                     TreeNodes but dict or simply None are also possible
+                     values)
+         * mux_path - default path(s)
+
+        :yield variant
         """
         if self._no_variants:  # Copy template and modify it's params
             pluginss_variants = self._variant_plugins.map_method("__iter__")

@@ -213,7 +213,14 @@ class VarianterPlugin(Plugin):
     @abc.abstractmethod
     def __iter__(self):
         """
-        Yield variant in form of (variant_id, (variant, mux_path))
+        Yields all variants
+
+        The variant is defined as dictionary with at least:
+         * variant_id - name of the current variant
+         * variant - AvocadoParams-compatible variant (usually a list)
+         * mux_path - default path(s)
+
+        :yield variant
         """
 
     @abc.abstractmethod
@@ -225,7 +232,7 @@ class VarianterPlugin(Plugin):
     @abc.abstractmethod
     def update_defaults(self, defaults):
         """
-        Add default values
+        Add default values.
 
         :note: Those values should not be part of the variant_id
         """
@@ -235,8 +242,11 @@ class VarianterPlugin(Plugin):
         """
         Return human readable representation
 
-        :param summary: How verbose summary to output
-        :param variants: How verbose list of variants to output
+        The summary/variants accepts verbosity where 0 means do not display
+        at all and maximum is up to the plugin.
+
+        :param summary: How verbose summary to output (int)
+        :param variants: How verbose list of variants to output (int)
         :param extra: Dict of extra parameters
         :rtype: str
         """
