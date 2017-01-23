@@ -109,7 +109,7 @@ class MuxPlugin(object):
         combination.merge(self.root)
         self.variants = MuxTree(combination)
 
-    def str_variants(self, summary=0, variants=0, use_utf8=False):
+    def to_str(self, summary=0, variants=0, use_utf8=False):
         """
         Return human readable representation
 
