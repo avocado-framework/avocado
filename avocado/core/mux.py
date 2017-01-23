@@ -132,7 +132,7 @@ class MuxPlugin(object):
         combination.merge(self.root)
         self.variants = MuxTree(combination)
 
-    def to_str(self, summary=0, variants=0, use_utf8=False):
+    def to_str(self, summary, variants, extra):
         """
         See :class:`avocado.core.plugin_interfaces.VarianterPlugin`
         """
@@ -144,7 +144,7 @@ class MuxPlugin(object):
             out.append("Multiplex tree representation:")
             # summary == 0 means disable, but in plugin it's brief
             tree_repr = tree.tree_view(self.root, verbose=summary - 1,
-                                       use_utf8=use_utf8)
+                                       use_utf8=extra.get("use_utf8", False))
             out.append(tree_repr)
             out.append("")
 
