@@ -16,7 +16,6 @@ import logging
 import sys
 
 from avocado.core import exit_codes
-from avocado.core import tree
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
 
@@ -35,23 +34,28 @@ class Multiplex(CLICmd):
 
     def configure(self, parser):
         parser = super(Multiplex, self).configure(parser)
+        parser.add_argument("--summary", type=int, help="Verbosity of "
+                            "the variants summary.")
+        parser.add_argument("--variants", type=int, help="Verbosity of "
+                            "the list of variants.")
         parser.add_argument('--system-wide', action='store_false',
                             default=True, dest="variants-skip-defaults",
                             help="Combine the files with the default "
                             "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
-                            default=False, help="Shows the node content "
-                            "(variables)")
+                            default=False, help="[obsoleted by --variants] "
+                            "Shows the node content (variables)")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
                                 dest="mux_debug", default=False,
                                 help="Debug the multiplex tree.")
         tree_parser = parser.add_argument_group("tree view options")
         tree_parser.add_argument('-t', '--tree', action='store_true',
-                                 default=False, help='Shows the multiplex '
-                                 'tree structure')
+                                 default=False, help='[obsoleted by --summary]'
+                                 ' Shows the multiplex tree structure')
         tree_parser.add_argument('-i', '--inherit', action="store_true",
-                                 help="Show the inherited values")
+                                 help="[obsoleted by --summary] Show the "
+                                 "inherited values")
 
     def run(self, args):
         log = logging.getLogger("avocado.app")
@@ -63,26 +67,36 @@ class Multiplex(CLICmd):
         if err:
             log.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        variants = args.avocado_variants
+        varianter = args.avocado_variants
         try:
-            variants.parse(args)
+            varianter.parse(args)
         except (IOError, ValueError) as details:
-            log.error("Unable to parse variants: %s", details)
+            log.error("Unable to parse varianter: %s", details)
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-        if args.tree:
-            if args.contents:
-                verbose = 1
-            else:
-                verbose = 0
-            if args.inherit:
-                verbose += 2
-            use_utf8 = settings.get_value("runner.output", "utf8",
-                                          key_type=bool, default=None)
-            log.debug(tree.tree_view(variants.variants.root, verbose, use_utf8))
-            sys.exit(exit_codes.AVOCADO_ALL_OK)
+        use_utf8 = settings.get_value("runner.output", "utf8",
+                                      key_type=bool, default=None)
+        summary = args.summary or 0
+        variants = args.variants or 0
 
-        log.info('Variants generated:')
-        lines = args.avocado_variants.str_variants(contents=True)
+        # Parse obsolete options (unsafe to combine them with new args)
+        if args.tree:
+            summary += 1
+            if args.contents:
+                summary += 1
+            if args.inherit:
+                summary += 2
+        else:
+            if args.contents:
+                variants += 2
+
+        # When nothing is specified, show variants
+        if not summary and not variants:
+            variants = 1
+
+        # Produce the output
+        lines = args.avocado_variants.str_variants(summary=summary,
+                                                   variants=variants,
+                                                   use_utf8=use_utf8)
         for line in lines.splitlines():
             log.debug(line)
 
