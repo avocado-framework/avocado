@@ -459,6 +459,57 @@ class Varianter(object):
             return
         self.data.merge(tree)
 
+    def str_variants(self):
+        """
+        Return human readable variants
+        """
+        out = []
+        for (index, tpl) in enumerate(self.variants):
+            paths = ', '.join([x.path for x in tpl])
+            out.append('Variant %s:    %s' % (index + 1, paths))
+
+        return "\n".join(out)
+
+    def str_variants_long(self):
+        """
+        Return human readable variants with their environment
+        """
+        out = []
+        for (index, tpl) in enumerate(self.variants):
+            env = set()
+            paths = ', '.join([x.path for x in tpl])
+            out.append('Variant %s: %s\n' % (index + 1, paths))
+            for node in tpl:
+                for key, value in node.environment.iteritems():
+                    origin = node.environment_origin[key].path
+                    env.add(("%s:%s" % (origin, key), str(value)))
+            if not env:
+                continue
+            fmt = '    %%-%ds => %%s\n' % max([len(_[0]) for _ in env])
+            for record in sorted(env):
+                out.append(fmt % record)
+        return "\n".join(out)
+
+    def str_long(self):
+        """
+        Return human readable description of all variants
+        """
+        out = []
+        # Log tree representation
+        tree_repr = tree.tree_view(self.variants.root, verbose=True,
+                                   use_utf8=False)
+        if tree_repr:
+            out.append("Multiplex tree representation:")
+            out.append(tree_repr)
+            out.append('')
+
+        variants = self.str_variants()
+        if variants:
+            out.append(variants)
+            out.append('')
+
+        return "\n".join(out)
+
     def get_number_of_tests(self, test_suite):
         """
         :return: overall number of tests * number of variants
