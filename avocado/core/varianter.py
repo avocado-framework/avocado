@@ -25,6 +25,7 @@ import itertools
 import logging
 import re
 
+from . import output
 from . import tree
 
 
@@ -487,26 +488,39 @@ class Varianter(object):
 
         return "\n".join(out)
 
-    def str_variants_long(self):
+    def str_variants_long(self, contents=False):
         """
         Return human readable variants with their environment
+
+        :param contents: Whether to show the contents of each variant
         """
         if not self.variants:
             return ""
         out = []
         for (index, tpl) in enumerate(self.variants):
-            env = set()
-            paths = ', '.join([x.path for x in tpl])
-            out.append('Variant %s: %s\n' % (index + 1, paths))
-            for node in tpl:
-                for key, value in node.environment.iteritems():
-                    origin = node.environment_origin[key].path
-                    env.add(("%s:%s" % (origin, key), str(value)))
-            if not env:
-                continue
-            fmt = '    %%-%ds => %%s\n' % max([len(_[0]) for _ in env])
-            for record in sorted(env):
-                out.append(fmt % record)
+            if not self.debug:
+                paths = ', '.join([x.path for x in tpl])
+            else:
+                color = output.TERM_SUPPORT.LOWLIGHT
+                cend = output.TERM_SUPPORT.ENDC
+                paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                                  getattr(_, 'yaml',
+                                                          "Unknown"),
+                                                  cend)
+                                   for _ in tpl])
+            out.append('%sVariant %s:    %s' % ('\n' if contents else '',
+                                                index + 1, paths))
+            if contents:
+                env = set()
+                for node in tpl:
+                    for key, value in node.environment.iteritems():
+                        origin = node.environment_origin[key].path
+                        env.add(("%s:%s" % (origin, key), str(value)))
+                if not env:
+                    continue
+                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                for record in sorted(env):
+                    out.append(fmt % record)
         return "\n".join(out)
 
     def str_long(self):
