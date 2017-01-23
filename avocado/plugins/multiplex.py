@@ -82,12 +82,8 @@ class Multiplex(CLICmd):
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         log.info('Variants generated:')
-        if args.mux_debug:
-            # In this version `avocado_variants.debug` is not set properly,
-            # let's force-enable it before calling str_variants_long to
-            # get the expected results.
-            args.avocado_variants.debug = True
-        for line in args.avocado_variants.str_variants_long(True).splitlines():
+        lines = args.avocado_variants.str_variants(contents=True)
+        for line in lines.splitlines():
             log.debug(line)
 
         sys.exit(exit_codes.AVOCADO_ALL_OK)

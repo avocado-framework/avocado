@@ -109,26 +109,21 @@ class MuxPlugin(object):
         combination.merge(self.root)
         self.variants = MuxTree(combination)
 
-    def str_variants(self):
+    def str_variants(self, summary=False, contents=False):
         """
         Return human readable variants
         """
         if not self.variants:
             return ""
         out = []
-        for (index, tpl) in enumerate(self.variants):
-            paths = ', '.join([x.path for x in tpl])
-            out.append('Variant %s:    %s' % (index + 1, paths))
+        if summary:
+            # Log tree representation
+            out.append("Multiplex tree representation:")
+            tree_repr = tree.tree_view(self.root, verbose=True,
+                                       use_utf8=False)
+            out.append(tree_repr)
+            out.append("")
 
-        return "\n".join(out)
-
-    def str_variants_long(self, contents=False):
-        """
-        Return human readable variants with their environment
-        """
-        if not self.variants:
-            return ""
-        out = []
         for (index, tpl) in enumerate(self.variants):
             if not self.debug:
                 paths = ', '.join([x.path for x in tpl])
@@ -153,26 +148,6 @@ class MuxPlugin(object):
                 fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
                 for record in sorted(env):
                     out.append(fmt % record)
-        return "\n".join(out)
-
-    def str_long(self):
-        """
-        Return human readable description of all variants
-        """
-        if not self.variants:
-            return ""
-        out = []
-        # Log tree representation
-        out.append("Multiplex tree representation:")
-        tree_repr = tree.tree_view(self.root, verbose=True,
-                                   use_utf8=False)
-        out.append(tree_repr)
-        out.append("")
-
-        variants = self.str_variants()
-        out.append(variants)
-        out.append('')
-
         return "\n".join(out)
 
     def __len__(self):
