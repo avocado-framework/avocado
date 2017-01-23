@@ -96,7 +96,7 @@ class Multiplex(CLICmd):
         # Produce the output
         lines = args.avocado_variants.to_str(summary=summary,
                                              variants=variants,
-                                             use_utf8=use_utf8)
+                                             extra={"use_utf8": use_utf8})
         for line in lines.splitlines():
             log.debug(line)
 

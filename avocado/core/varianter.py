@@ -399,7 +399,7 @@ class Varianter(object):
             self.default_params[name] = self.node_class()
         self.default_params[name].get_node(path, True).value[key] = value
 
-    def to_str(self, summary=0, variants=0, use_utf8=False):
+    def to_str(self, summary=0, variants=0, extra=None):
         """
         Return human readable representation
 
@@ -407,9 +407,11 @@ class Varianter(object):
         :param variants: How verbose list of variants to output
         :rtype: str
         """
+        if extra is None:
+            extra = {}
         return "\n\n".join(self._variant_plugins.map_method("to_str", summary,
                                                             variants,
-                                                            use_utf8))
+                                                            extra))
 
     def get_number_of_tests(self, test_suite):
         """

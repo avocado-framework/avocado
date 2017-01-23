@@ -231,11 +231,12 @@ class VarianterPlugin(Plugin):
         """
 
     @abc.abstractmethod
-    def to_str(self, summary=0, variants=0, use_utf8=False):
+    def to_str(self, summary, variants, extra):
         """
         Return human readable representation
 
         :param summary: How verbose summary to output
         :param variants: How verbose list of variants to output
+        :param extra: Dict of extra parameters
         :rtype: str
         """
