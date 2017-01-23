@@ -14,6 +14,7 @@
 
 """Extensions/plugins dispatchers."""
 
+import copy
 import logging
 import sys
 
@@ -196,3 +197,58 @@ class ResultEventsDispatcher(Dispatcher):
             except:
                 self.log.error('Error running method "%s" of plugin "%s": %s',
                                method_name, ext.name, sys.exc_info()[1])
+
+
+class VarianterDispatcher(Dispatcher):
+
+    def __init__(self):
+        super(VarianterDispatcher, self).__init__('avocado.plugins.varianter')
+
+    def __getstate__(self):
+        """
+        Very fragile pickle which works when all Varianter plugins are
+        available on both machines.
+
+        TODO: Replace this with per-plugin-refresh-mechanism
+        """
+        return {"extensions": getattr(self, "extensions")}
+
+    def __setstate__(self, state):
+        """
+        Very fragile pickle which works when all Varianter plugins are
+        available on both machines.
+
+        TODO: Replace this with per-plugin-refresh-mechanism
+        """
+        self.__init__()
+        self.extensions = state.get("extensions")
+
+    def _map_method(self, method_name, deepcopy=False, *args):
+        ret = []
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    if deepcopy:
+                        copied_args = [copy.deepcopy(arg) for arg in args]
+                        ret.append(method(*copied_args))
+                    else:
+                        ret.append(method(*args))
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:     # catch any exception pylint: disable=W0702
+                log = logging.getLogger("avocado.app")
+                log.error('Error running method "%s" of plugin "%s": %s',
+                          method_name, ext.name, sys.exc_info()[1])
+        return ret
+
+    def map_method(self, method_name, *args):
+        return self._map_method(method_name, False, *args)
+
+    def map_method_copy(self, method_name, *args):
+        """
+        The same as map_method, but use copy.deepcopy on each passed arg
+        """
+        return self._map_method(method_name, True, *args)
