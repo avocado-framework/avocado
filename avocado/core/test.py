@@ -478,6 +478,9 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail(details)
         try:
             testMethod()
+        except exceptions.TestSkipIfError as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestSkipError(details)
         except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             skip_illegal_msg = ('Calling skip() in places other than '
@@ -690,6 +693,30 @@ class Test(unittest.TestCase):
             expire = data_structures.time_to_seconds(str(expire))
         return asset.Asset(name, asset_hash, algorithm, locations,
                            self.cache_dirs, expire).fetch()
+
+    @staticmethod
+    def skipIf(condition, reason):
+        """
+        Decorator to skip a test if a condition is True.
+        """
+        def decorator(function):
+            def wrapper(*args, **kwargs):
+                if condition:
+                    raise exceptions.TestSkipIfError(reason)
+            return wrapper
+        return decorator
+
+    @staticmethod
+    def skipUnless(condition, reason):
+        """
+        Decorator to skip a test if a condition is False.
+        """
+        def decorator(function):
+            def wrapper(*args, **kwargs):
+                if not condition:
+                    raise exceptions.TestSkipUnlessError(reason)
+            return wrapper
+        return decorator
 
 
 class SimpleTest(Test):
