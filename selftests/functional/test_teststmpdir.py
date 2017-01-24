@@ -71,7 +71,7 @@ class TestsTmpDirTests(unittest.TestCase):
         Tests whether automatically created teststmpdir is shared across
         all tests.
         """
-        cmd_line = ("./scripts/avocado run --sysinfo=off "
+        cmd_line = ("./scripts/avocado --show all run --sysinfo=off "
                     "--job-results-dir %s %s %s" %
                     (self.tmpdir, self.simple_test, self.instrumented_test))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
