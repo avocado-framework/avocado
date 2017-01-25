@@ -22,6 +22,8 @@ import tempfile
 from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core import test
 
+import logging
+LOG=logging.getLogger("avocado.test")
 
 class TestsTmpDir(JobPre, JobPost):
 
@@ -33,11 +35,15 @@ class TestsTmpDir(JobPre, JobPost):
         self._dirname = None
 
     def pre(self, job):
+        LOG.debug("Checking for TMPDIR presence")
         if os.environ.get(self._varname) is None:
             self._dirname = tempfile.mkdtemp(prefix='avocado_')
+            LOG.debug("TMPDIR %s created", self._dirname)
             os.environ[self._varname] = self._dirname
+            LOG.debug("Checking the presence of TMPDIR: %s", os.path.isdir(self._dirname))
 
     def post(self, job):
+        LOG.debug("Checking for TMPDIR presence (REMOVE)")
         if (self._dirname is not None and
                 os.environ.get(self._varname) == self._dirname):
             try:
@@ -45,7 +51,9 @@ class TestsTmpDir(JobPre, JobPost):
                 del os.environ[self._varname]
             except:
                 pass
+            LOG.debug("TMPDIR %s removed", self._dirname)
 
     def __del__(self):
         # Make sure we will cleanup if something bad happens
+        LOG.debug("Running TMPDIR __del__")
         self.post(None)

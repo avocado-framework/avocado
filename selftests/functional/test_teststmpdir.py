@@ -30,7 +30,8 @@ class MyTest(Test):
 
 """
 
-SIMPLE_SCRIPT = """#!/bin/bash
+SIMPLE_SCRIPT = """#!/bin/bash -x
+ls /tmp
 mktemp ${{{0}}}/XXXXXX
 if [ $(ls ${{{0}}} | wc -l) == 1 ]
 then
