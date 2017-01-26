@@ -58,6 +58,23 @@ signed_off_check() {
     fi
 }
 
+
+results_dir_content() {
+    NOW="$(ls ~/avocado/job-results/)"
+    if [ "$(echo $* | xargs)" != "$(echo $NOW | xargs)" ]; then
+        echo "The output of 'ls ~/avocado/job-results/' is not the same as before running the checks"
+        echo "ORIGINAL:"
+        echo "$*"
+        echo "NOW:"
+        echo "$NOW"
+        return 1
+    else:
+        echo "No extra files were created in '~/avocado/job-results/'"
+        return 0
+    fi
+}
+
+[ "$AVOCADO_RESULTSDIR_CHECK" ] && RESULTS_DIR_CONTENT="$(ls ~/avocado/job-results/)"
 run_rc lint 'inspekt --exclude=.git lint'
 run_rc indent 'inspekt --exclude=.git indent'
 run_rc style 'inspekt --exclude=.git style'
@@ -72,6 +89,7 @@ else
     [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
     run_rc selftests "$CMD"
 fi
+[ "$AVOCADO_RESULTSDIR_CHECK" ] && run_rc job-results results_dir_content "$RESULTS_DIR_CONTENT"
 
 if [ "$ERR" ]; then
     echo -e "\e[31m"
