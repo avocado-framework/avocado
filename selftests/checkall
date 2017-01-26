@@ -4,7 +4,7 @@ run_rc() {
     CHECK=$1
     shift
     echo -e "\n\e[32mRunning '$1'\e[0m"
-    eval $1
+    eval $*
     if [ $? != 0 ]; then
         echo -e "\e[31m$CHECK FAILED\e[0m"
         ERR+=("$CHECK")
