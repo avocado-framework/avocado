@@ -50,11 +50,13 @@ class RemoteTestRunner(TestRunner):
 
     def setup(self):
         """ Setup remote environment and copy test directories """
-        self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
-                          self.job.args.remote_username,
-                          self.job.args.remote_hostname,
-                          self.job.args.remote_port,
-                          self.job.args.remote_timeout)
+        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        if not stdout_claimed_by:
+            self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
+                              self.job.args.remote_username,
+                              self.job.args.remote_hostname,
+                              self.job.args.remote_port,
+                              self.job.args.remote_timeout)
         self.remote = remoter.Remote(
             hostname=self.job.args.remote_hostname,
             username=self.job.args.remote_username,
