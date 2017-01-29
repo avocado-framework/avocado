@@ -13,10 +13,19 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 
-__all__ = ['main', 'Test', 'VERSION', 'fail_on']
+__all__ = ['main',
+           'Test',
+           'VERSION',
+           'fail_on',
+           'skip',
+           'skipIf',
+           'skipUnless']
 
 
 from avocado.core.job import main
 from avocado.core.test import Test
 from avocado.core.version import VERSION
 from avocado.core.exceptions import fail_on
+from avocado.core.decorators import skip
+from avocado.core.decorators import skipIf
+from avocado.core.decorators import skipUnless
