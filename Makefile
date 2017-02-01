@@ -172,7 +172,7 @@ develop:
 link: develop
 	for MAKEFILE in $(AVOCADO_EXTERNAL_PLUGINS); do\
 		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> LINK $$MAKEFILE";\
-			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null;\
+			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE link &>/dev/null || echo ">> FAIL $$MAKEFILE";\
 			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$MAKEFILE"; fi;\
 	done
