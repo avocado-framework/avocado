@@ -310,7 +310,7 @@ class YamlToMux(CLI):
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
-                logging.getLogger("avocado.app").error(details.strerror)
+                logging.getLogger("avocado.app").error(details)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         # Deprecated --multiplex option
