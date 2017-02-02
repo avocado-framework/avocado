@@ -310,7 +310,8 @@ class YamlToMux(CLI):
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
-                logging.getLogger("avocado.app").error(details)
+                error_msg = "%s:%s" % (details.strerror, details.filename)
+                logging.getLogger("avocado.app").error(error_msg)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         # Deprecated --multiplex option
@@ -323,7 +324,8 @@ class YamlToMux(CLI):
                 from_yaml = create_from_yaml(multiplex_files, debug)
                 args.avocado_variants.data_merge(from_yaml)
             except IOError as details:
-                logging.getLogger("avocado.app").error(details.strerror)
+                error_msg = "%s:%s" % (details.strerror, details.filename)
+                logging.getLogger("avocado.app").error(error_msg)
                 sys.exit(exit_codes.AVOCADO_JOB_FAIL)
 
         # Extend default multiplex tree of --mux-inject values
