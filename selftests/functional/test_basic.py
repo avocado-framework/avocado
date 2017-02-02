@@ -505,8 +505,8 @@ class RunnerOperationTest(unittest.TestCase):
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
     def test_read(self):
         os.chdir(basedir)
-        cmd = "./scripts/avocado run --job-results-dir %s %s" % (self.tmpdir,
-                                                                 READ_BINARY)
+        cmd = "./scripts/avocado run --sysinfo=off --job-results-dir %s %s"
+        cmd %= (self.tmpdir, READ_BINARY)
         result = process.run(cmd, timeout=10, ignore_status=True)
         self.assertLess(result.duration, 8, "Duration longer than expected."
                         "\n%s" % result)
