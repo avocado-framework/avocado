@@ -60,7 +60,7 @@ signed_off_check() {
 
 run_rc lint 'inspekt --exclude=.git lint'
 run_rc indent 'inspekt --exclude=.git indent'
-run_rc style 'inspekt --exclude=.git style'
+run_rc style 'inspekt --exclude=.git style --disable E501,E265,W601,E402,E722'
 run_rc boundaries 'selftests/modules_boundaries'
 run_rc signed-off-by signed_off_check
 if [ "$AVOCADO_PARALLEL_CHECK" ]; then
