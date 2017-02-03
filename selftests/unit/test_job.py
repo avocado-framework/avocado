@@ -1,6 +1,8 @@
 import argparse
 import os
+import shutil
 import sys
+import tempfile
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
 else:
@@ -15,6 +17,9 @@ from avocado.utils import path as utils_path
 
 class JobTest(unittest.TestCase):
 
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
+
     @staticmethod
     def _find_simple_test_candidates(candidates=['true', 'time', 'uptime']):
         found = []
@@ -26,29 +31,30 @@ class JobTest(unittest.TestCase):
         return found
 
     def test_job_empty_suite(self):
-        args = argparse.Namespace()
+        args = argparse.Namespace(logdir=self.tmpdir)
         empty_job = job.Job(args)
         self.assertIsNone(empty_job.test_suite)
 
     def test_job_empty_has_id(self):
-        args = argparse.Namespace()
+        args = argparse.Namespace(logdir=self.tmpdir)
         empty_job = job.Job(args)
         self.assertIsNotNone(empty_job.unique_id)
 
     def test_job_test_suite_not_created(self):
-        args = argparse.Namespace()
+        args = argparse.Namespace(logdir=self.tmpdir)
         myjob = job.Job(args)
         self.assertIsNone(myjob.test_suite)
 
     def test_job_create_test_suite_empty(self):
-        args = argparse.Namespace()
+        args = argparse.Namespace(logdir=self.tmpdir)
         myjob = job.Job(args)
         self.assertRaises(exceptions.OptionValidationError,
                           myjob.create_test_suite)
 
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(reference=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found,
+                                  logdir=self.tmpdir)
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(myjob.test_suite))
@@ -64,7 +70,8 @@ class JobTest(unittest.TestCase):
                 self.test_suite = filtered_test_suite
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(reference=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found,
+                                  logdir=self.tmpdir)
         myjob = JobFilterTime(args)
         myjob.create_test_suite()
         myjob.pre_tests()
@@ -72,7 +79,8 @@ class JobTest(unittest.TestCase):
 
     def test_job_run_tests(self):
         simple_tests_found = self._find_simple_test_candidates(['true'])
-        args = argparse.Namespace(reference=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found,
+                                  logdir=self.tmpdir)
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(myjob.run_tests(),
@@ -85,7 +93,8 @@ class JobTest(unittest.TestCase):
                     f.write(self.unique_id[::-1])
                 super(JobLogPost, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(reference=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found,
+                                  logdir=self.tmpdir)
         myjob = JobLogPost(args)
         myjob.create_test_suite()
         myjob.pre_tests()
@@ -111,13 +120,17 @@ class JobTest(unittest.TestCase):
                     f.write(self.unique_id[::-1])
                 super(JobFilterLog, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
-        args = argparse.Namespace(reference=simple_tests_found)
+        args = argparse.Namespace(reference=simple_tests_found,
+                                  logdir=self.tmpdir)
         myjob = JobFilterLog(args)
         self.assertEqual(myjob.run(),
                          exit_codes.AVOCADO_ALL_OK)
         self.assertLessEqual(len(myjob.test_suite), 1)
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':

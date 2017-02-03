@@ -21,13 +21,11 @@ false
 """
 
 
-class DummyTest(test.Test):
-
-    def test(self):
-        pass
-
-
 class TestClassTestUnit(unittest.TestCase):
+
+    class DummyTest(test.Test):
+        def test(self):
+            pass
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
@@ -39,8 +37,8 @@ class TestClassTestUnit(unittest.TestCase):
     def testUglyName(self):
         def run(name, path_name):
             """ Initialize test and check the dirs were created """
-            tst = DummyTest("test", test.TestName(1, name),
-                            base_logdir=self.tmpdir)
+            tst = self.DummyTest("test", test.TestName(1, name),
+                                 base_logdir=self.tmpdir)
             self.assertEqual(os.path.basename(tst.logdir), path_name)
             self.assertTrue(os.path.exists(tst.logdir))
             self.assertEqual(os.path.dirname(os.path.dirname(tst.logdir)),
@@ -64,7 +62,8 @@ class TestClassTestUnit(unittest.TestCase):
 
     def testLongName(self):
         def check(uid, name, variant, exp_logdir):
-            tst = DummyTest("test", test.TestName(uid, name, variant))
+            tst = self.DummyTest("test", test.TestName(uid, name, variant),
+                                 base_logdir=self.tmpdir)
             self.assertEqual(os.path.basename(tst.logdir), exp_logdir)
             return tst
 
@@ -100,8 +99,8 @@ class TestClassTestUnit(unittest.TestCase):
     def testAllDirsExistsNoHang(self):
         flexmock(os.path)
         os.path.should_receive('exists').and_return(True)
-        self.assertRaises(exceptions.TestSetupFail, DummyTest, "test",
-                          test.TestName(1, "name"))
+        self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
+                          test.TestName(1, "name"), base_logdir=self.tmpdir)
 
 
 class TestClassTest(unittest.TestCase):
@@ -245,7 +244,7 @@ class SkipTest(unittest.TestCase):
     def tearDown(self):
         for tst in self.tests:
             try:
-                shutil.rmtree(os.path.dirname(tst.logdir))
+                shutil.rmtree(os.path.dirname(os.path.dirname(tst.logdir)))
             except Exception:
                 pass
 
