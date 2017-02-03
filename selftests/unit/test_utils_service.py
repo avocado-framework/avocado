@@ -16,12 +16,7 @@
 #  The full GNU General Public License is included in this distribution in
 #  the file called "COPYING".
 
-import sys
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from mock import MagicMock, patch
 

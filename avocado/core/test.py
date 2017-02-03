@@ -26,6 +26,7 @@ import re
 import shutil
 import sys
 import time
+import unittest
 
 from . import data_dir
 from . import exceptions
@@ -41,11 +42,6 @@ from ..utils import process
 from ..utils import stacktrace
 from .settings import settings
 from .version import VERSION
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 
 
 #: Environment variable used to store the location of a temporary
