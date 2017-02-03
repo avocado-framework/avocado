@@ -1,5 +1,7 @@
 import os
 import sys
+import shutil
+import tempfile
 
 if sys.version_info[:2] == (2, 6):
     import unittest2 as unittest
@@ -16,7 +18,14 @@ basedir = os.path.abspath(basedir)
 
 UNITTEST_GOOD = """from avocado import Test
 from unittest import main
-class AvocadoPassTest(Test):
+
+
+class CustomBaselogDirInit(Test):
+    def __init__(self, *args, **kwargs):
+        super(CustomBaselogDirInit, self).__init__(base_logdir="%s", *args,
+                                                   **kwargs)
+
+class AvocadoPassTest(CustomBaselogDirInit):
     def test(self):
         self.assertTrue(True)
 if __name__ == '__main__':
@@ -25,7 +34,14 @@ if __name__ == '__main__':
 
 UNITTEST_FAIL = """from avocado import Test
 from unittest import main
-class AvocadoFailTest(Test):
+
+
+class CustomBaselogDirInit(Test):
+    def __init__(self, *args, **kwargs):
+        super(CustomBaselogDirInit, self).__init__(base_logdir="%s", *args,
+                                                   **kwargs)
+
+class AvocadoFailTest(CustomBaselogDirInit):
     def test(self):
         self.fail('This test is supposed to fail')
 if __name__ == '__main__':
@@ -34,7 +50,14 @@ if __name__ == '__main__':
 
 UNITTEST_ERROR = """from avocado import Test
 from unittest import main
-class AvocadoErrorTest(Test):
+
+
+class CustomBaselogDirInit(Test):
+    def __init__(self, *args, **kwargs):
+        super(CustomBaselogDirInit, self).__init__(base_logdir="%s", *args,
+                                                   **kwargs)
+
+class AvocadoErrorTest(CustomBaselogDirInit):
     def test(self):
         self.error('This test is supposed to error')
 if __name__ == '__main__':
@@ -45,6 +68,7 @@ if __name__ == '__main__':
 class UnittestCompat(unittest.TestCase):
 
     def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
         self.original_pypath = os.environ.get('PYTHONPATH')
         if self.original_pypath is not None:
             os.environ['PYTHONPATH'] = '%s:%s' % (
@@ -53,17 +77,17 @@ class UnittestCompat(unittest.TestCase):
             os.environ['PYTHONPATH'] = '%s' % basedir
         self.unittest_script_good = script.TemporaryScript(
             'unittest_good.py',
-            UNITTEST_GOOD,
+            UNITTEST_GOOD % self.tmpdir,
             'avocado_as_unittest_functional')
         self.unittest_script_good.save()
         self.unittest_script_fail = script.TemporaryScript(
             'unittest_fail.py',
-            UNITTEST_FAIL,
+            UNITTEST_FAIL % self.tmpdir,
             'avocado_as_unittest_functional')
         self.unittest_script_fail.save()
         self.unittest_script_error = script.TemporaryScript(
             'unittest_error.py',
-            UNITTEST_ERROR,
+            UNITTEST_ERROR % self.tmpdir,
             'avocado_as_unittest_functional')
         self.unittest_script_error.save()
 
@@ -88,6 +112,9 @@ class UnittestCompat(unittest.TestCase):
         self.assertIn('Ran 1 test in', result.stderr)
         self.assertIn('This test is supposed to error', result.stderr)
         self.assertIn('FAILED (errors=1)', result.stderr)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
