@@ -4,13 +4,8 @@ Build documentation and report whether we had warning/error messages.
 This is geared towards documentation build regression testing.
 """
 import os
-import sys
 import urllib
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from avocado.utils import process
 

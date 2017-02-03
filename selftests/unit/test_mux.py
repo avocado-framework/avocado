@@ -1,16 +1,12 @@
 import copy
 import itertools
 import pickle
-import sys
+import unittest
 
 from avocado.core import mux, tree, varianter
 from avocado.plugins import yaml_to_mux
 
 
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 if __name__ == "__main__":
     PATH_PREFIX = "../../../../"
 else:

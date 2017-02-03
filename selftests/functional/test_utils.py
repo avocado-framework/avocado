@@ -6,16 +6,10 @@ import stat
 import sys
 import tempfile
 import time
+import unittest
 
 from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
-
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
-
 from avocado.utils import process
 
 

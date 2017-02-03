@@ -1,9 +1,5 @@
-import sys
 import argparse
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from avocado.core.result import Result
 

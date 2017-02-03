@@ -6,12 +6,7 @@ __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 import os
 import sys
 import logging
-
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 logger = logging.getLogger(__name__)
 

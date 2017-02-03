@@ -3,16 +3,10 @@ Verifies the avocado.utils.iso9660 functionality
 """
 import os
 import shutil
-import sys
 import tempfile
+import unittest
 
 from avocado.utils import iso9660, process
-
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 
 
 class BaseIso9660(unittest.TestCase):
