@@ -46,7 +46,7 @@ class TestsTmpDirTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.simple_test = script.TemporaryScript(
-            'test_simple.py',
+            'test_simple.sh',
             SIMPLE_SCRIPT)
         self.simple_test.save()
         self.instrumented_test = script.TemporaryScript(
