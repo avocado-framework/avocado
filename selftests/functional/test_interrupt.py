@@ -1,17 +1,12 @@
 import os
-import sys
 import tempfile
 import time
 import shutil
 import stat
+import unittest
 
 import aexpect
 import psutil
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 
 from avocado.utils import wait
 from avocado.utils import script

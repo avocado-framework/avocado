@@ -11,13 +11,9 @@ import tempfile
 import time
 import xml.dom.minidom
 import zipfile
+import unittest
 
 import pkg_resources
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import astring

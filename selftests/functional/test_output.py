@@ -2,16 +2,11 @@ import json
 import tempfile
 import os
 import re
-import sys
 import shutil
+import unittest
 from xml.dom import minidom
 
 import pkg_resources
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 
 from avocado.core import exit_codes
 from avocado.core.output import TermSupport

@@ -1,11 +1,6 @@
 import os
-import sys
+import unittest
 from mock import MagicMock, patch
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
 
 from avocado.utils import gdb
 from avocado.utils import process

@@ -2,11 +2,7 @@ import os
 import sys
 import shutil
 import tempfile
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from avocado.utils import script
 from avocado.utils import process
