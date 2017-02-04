@@ -466,25 +466,28 @@ class Test(unittest.TestCase):
         stderr_check_exception = None
         try:
             self.setUp()
-        except exceptions.TestSkipError as details:
+        except (exceptions.TestSetupSkip,
+                exceptions.TestDecoratorSkip,
+                exceptions.TestTimeoutSkip,
+                exceptions.TestSkipError) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
-        except exceptions.TestTimeoutSkip as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.TestTimeoutSkip(details)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
         try:
             testMethod()
-        except exceptions.TestSkipError as details:
+        except exceptions.TestSetupSkip as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             skip_illegal_msg = ('Calling skip() in places other than '
                                 'setUp() is not allowed in avocado, you '
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
+        except exceptions.TestDecoratorSkip as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestSkipError(details)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
@@ -498,12 +501,19 @@ class Test(unittest.TestCase):
         finally:
             try:
                 self.tearDown()
-            except exceptions.TestSkipError as details:
+            except exceptions.TestSetupSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Calling skip() in places other than '
                                     'setUp() is not allowed in avocado, '
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
+                raise exceptions.TestError(skip_illegal_msg)
+            except exceptions.TestDecoratorSkip as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                skip_illegal_msg = ('Using skip decorators after the test '
+                                    'will have no effect, you must fix your '
+                                    'test. Original skip exception: %s' %
+                                    details)
                 raise exceptions.TestError(skip_illegal_msg)
             except:  # avoid old-style exception failures
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
@@ -669,7 +679,7 @@ class Test(unittest.TestCase):
         :param message: an optional message that will be recorded in the logs
         :type message: str
         """
-        raise exceptions.TestSkipError(message)
+        raise exceptions.TestSetupSkip(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
                     locations=None, expire=None):

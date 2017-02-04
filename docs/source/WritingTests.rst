@@ -827,6 +827,93 @@ a timeout of 3 seconds before Avocado ends the test forcefully by sending a
 :class:`avocado.core.exceptions.TestTimeoutError`.
 
 
+Skipping Tests
+==============
+
+Avocado offers some options for the test writers to skip a test:
+
+Test ``skip()`` Method
+----------------------
+
+Using the ``skip()`` method available in the Test API is only allowed
+inside the ``setUp()`` method. Calling ``skip()`` from inside the test is not
+allowed as, by concept, you cannot skip a test after it's already initiated.
+
+The test below::
+
+    import avocado
+
+    class MyTestClass(avocado.Test):
+
+        def setUp(self):
+            if self.check_condition():
+                self.skip('Test skipped due to the condition.')
+
+        def test(self):
+            pass
+
+        def check_condition(self):
+            return True
+
+Will produce the following result::
+
+    $ avocado run test_skip_method.py 
+    JOB ID     : 1bd8642400e3b6c584979504cafc4318f7a5fb65
+    JOB LOG    : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/job.log
+    TESTS      : 1
+     (1/1) test_skip_method.py:MyTestClass.test: SKIP
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
+    TESTS TIME : 0.00 s
+    JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
+
+
+Avocado Skip Decorators
+-----------------------
+
+Another way to skip tests is by using the Avocado skip decorators:
+
+- ``@avocado.skip(reason)``: Skips a test.
+- ``@avocado.skipIf(condition, reason)``: Skips a test if the condition is
+  ``True``.
+- ``@avocado.skipUnless(condition, reason)``: Skips a test if the condition is
+  ``False``
+
+Those decorators can be used with both ``setUp()`` method and/or and in the
+test methods. The test below::
+
+    import avocado
+
+    class MyTest(avocado.Test):
+
+        @avocado.skipIf(1 == 1, 'Skipping on True condition.')
+        def test1(self):
+            pass
+
+        @avocado.skip("Don't want this test now.")
+        def test2(self):
+            pass
+
+        @avocado.skipUnless(1 == 1, 'Skipping on False condition.')
+        def test3(self):
+            pass
+
+Will produce the following result::
+
+    $ avocado run  test_skip_decorators.py
+    JOB ID     : 59c815f6a42269daeaf1e5b93e52269fb8a78119
+    JOB LOG    : $HOME/avocado/job-results/job-2017-02-03T17.41-59c815f/job.log
+    TESTS      : 3
+     (1/3) test_skip_decorators.py:MyTest.test1: SKIP
+     (2/3) test_skip_decorators.py:MyTest.test2: SKIP
+     (3/3) test_skip_decorators.py:MyTest.test3: PASS (0.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 2 | WARN 0 | INTERRUPT 0
+    TESTS TIME : 0.03 s
+    JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.41-59c815f/html/results.html
+
+Notice the ``test3`` was not skipped because the provided condition was
+not ``False``.
+
+
 Docstring Directives
 ====================
 
