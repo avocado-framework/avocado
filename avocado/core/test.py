@@ -469,6 +469,9 @@ class Test(unittest.TestCase):
         except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestSkip as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestSkip(details)
         except exceptions.TestTimeoutSkip as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestTimeoutSkip(details)
@@ -478,6 +481,9 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail(details)
         try:
             testMethod()
+        except exceptions.TestSkip as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestSkip(details)
         except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             skip_illegal_msg = ('Calling skip() in places other than '
