@@ -177,6 +177,28 @@ class TestSkipError(TestBaseException):
     status = "SKIP"
 
 
+class TestSkipIfError(TestBaseException):
+
+    """
+    Indictates that the test is skipped due to a given True condition.
+
+    Should be thrown by the Test.skipIf decorator when a given condition
+    is True.
+    """
+    status = "SKIP"
+
+
+class TestSkipUnlessError(TestBaseException):
+
+    """
+    Indictates that the test is skipped due to a given False condition.
+
+    Should be thrown by the Test.skipUnless decorator when a given
+    condition False.
+    """
+    status = "SKIP"
+
+
 class TestFail(TestBaseException, AssertionError):
 
     """
