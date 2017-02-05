@@ -48,10 +48,13 @@ can install the RPM packages by running the following commands::
 
     sudo dnf install avocado
 
-Additionally, two other Avocado packages are available for Fedora:
+Additionally, other Avocado packages are available for Fedora:
 
  * ``avocado-examples``: contains example tests and other example files
  * ``avocado-plugins-output-html``: HTML job report plugin
+ * ``avocado-plugins-runner-remote``: execution of jobs on a remote machine
+ * ``avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+ * ``avocado-plugins-runner-docker``: execution of jobs on a Docker container
 
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
@@ -65,11 +68,14 @@ such as CentOS, just adapt to the following URL and commands::
     sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     sudo yum install avocado
 
-As with Fedora, two other Avocado packages are available for
-Enterprise Linux:
+As with Fedora, other Avocado packages are available for Enterprise
+Linux:
 
  * ``avocado-examples``: contains example tests and other example files
  * ``avocado-plugins-output-html``: HTML job report plugin
+ * ``avocado-plugins-runner-remote``: execution of jobs on a remote machine
+ * ``avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+ * ``avocado-plugins-runner-docker``: execution of jobs on a Docker container
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  Please refer to the `Avocado Long Term
