@@ -22,6 +22,7 @@ import logging
 from fabric.exceptions import CommandTimeout
 
 from .test import RemoteTest
+from .. import version
 from .. import output
 from .. import remoter
 from .. import virt
@@ -47,6 +48,8 @@ class RemoteTestRunner(TestRunner):
         super(RemoteTestRunner, self).__init__(job, result)
         #: remoter connection to the remote machine
         self.remote = None
+        self.remote_version = ""
+        self.local_version = ""
 
     def setup(self):
         """ Setup remote environment and copy test directories """
@@ -88,7 +91,13 @@ class RemoteTestRunner(TestRunner):
         if result.exit_status == 127:
             return (False, None)
 
+        # Get the remote and local versions of avocado, and compare the major versions only
         match = self.remote_version_re.findall(result.stdout)
+        self.remote_version = '.'.join(list(match[0]))
+        self.local_version = version.VERSION
+        if self.remote_version.split('.')[0] != self.local_version.split('.')[0]:
+            self.job.log.info("WARNING    : avocado version on the remote system is %s, local is %s",
+                              self.remote_version, self.local_version)
         if match is None:
             return (False, None)
 
@@ -272,6 +281,9 @@ class RemoteTestRunner(TestRunner):
                 raise exceptions.JobError(details)
             sys.stdout = stdout_backup
             sys.stderr = stderr_backup
+        # returning the remote and local avocado version to be added to job.log as a possible warning
+        summary.add(self.remote_version.split('.')[0])
+        summary.add(self.local_version.split('.')[0])
         return summary
 
     def tear_down(self):
