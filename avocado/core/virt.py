@@ -33,11 +33,6 @@ else:
     VIRT_CAPABLE = True
 
 
-if remoter.REMOTE_CAPABLE is False:
-    VIRT_CAPABLE = False
-    LOG.info('Virt module is disabled: remote module is disabled')
-
-
 class VirtError(Exception):
 
     """
