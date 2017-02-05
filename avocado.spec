@@ -7,14 +7,14 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
 Version: 45.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, gdb, gdb-gdbserver, python-stevedore, aexpect
-BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock
+Requires: python, python-requests, pyliblzma, gdb, gdb-gdbserver, python-stevedore
+BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock, libvirt-python
 
 %if 0%{?el6}
 Requires: PyYAML
@@ -39,10 +39,20 @@ these days a framework) to perform automated testing.
 
 %prep
 %setup -q -n %{name}-%{commit}
+# package plugins-runner-vm requires libvirt-python, but the RPM
+# version of libvirt-python does not publish the egg info and this
+# causes that dep to be attempted to be installed by pip
+sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
 %{__python} setup.py build
 cd optional_plugins/html
+%{__python} setup.py build
+cd ../runner_remote
+%{__python} setup.py build
+cd ../runner_vm
+%{__python} setup.py build
+cd ../runner_docker
 %{__python} setup.py build
 cd ../../
 %{__make} man
@@ -51,12 +61,28 @@ cd ../../
 %{__python} setup.py install --root %{buildroot} --skip-build
 cd optional_plugins/html
 %{__python} setup.py install --root %{buildroot} --skip-build
+cd ../runner_remote
+%{__python} setup.py install --root %{buildroot} --skip-build
+cd ../runner_vm
+%{__python} setup.py install --root %{buildroot} --skip-build
+cd ../runner_docker
+%{__python} setup.py install --root %{buildroot} --skip-build
 cd ../../
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
 %check
+%{__python} setup.py develop --user
+cd optional_plugins/html
+%{__python} setup.py develop --user
+cd ../runner_remote
+%{__python} setup.py develop --user
+cd ../runner_vm
+%{__python} setup.py develop --user
+cd ../runner_docker
+%{__python} setup.py develop --user
+cd ../../
 selftests/run
 
 %files
@@ -83,6 +109,9 @@ selftests/run
 %{_docdir}/avocado/avocado.rst
 %{_docdir}/avocado/avocado-rest-client.rst
 %exclude %{python_sitelib}/avocado_result_html*
+%exclude %{python_sitelib}/avocado_runner_remote*
+%exclude %{python_sitelib}/avocado_runner_vm*
+%exclude %{python_sitelib}/avocado_runner_docker*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -101,6 +130,46 @@ arbitrary filesystem location.
 %files plugins-output-html
 %{python_sitelib}/avocado_result_html*
 
+%package plugins-runner-remote
+Summary: Avocado Runner for Remote Execution
+Requires: avocado == %{version}, fabric
+
+%description plugins-runner-remote
+Allows Avocado to run jobs on a remote machine, by means of an SSH
+connection.  Avocado should be previously installed on the remote machine.
+
+%files plugins-runner-remote
+%{python_sitelib}/avocado_runner_remote*
+
+%package plugins-runner-vm
+Summary: Avocado Runner for libvirt VM Execution
+Requires: avocado == %{version}, avocado-plugins-runner-remote == %{version}
+Requires: libvirt-python
+
+%description plugins-runner-vm
+Allows Avocado to run jobs on a libvirt based VM, by means of
+interaction with a libvirt daemon and an SSH connection to the VM
+itself.  Avocado should be previously installed on the VM.
+
+%files plugins-runner-vm
+%{python_sitelib}/avocado_runner_vm*
+
+%package plugins-runner-docker
+Summary: Avocado Runner for Execution on Docker Containers
+Requires: avocado == %{version}, avocado-plugins-runner-remote == %{version}
+Requires: aexpect
+# FIXME: add conditional dependency, since python-aexpect is still AFAIK
+# not available on EPEL.
+
+%description plugins-runner-docker
+Allows Avocado to run jobs on a Docker container by interacting with a
+Docker daemon and attaching to the container itself.  Avocado should
+be previously installed on the container.
+
+%files plugins-runner-docker
+%{python_sitelib}/avocado_runner_docker*
+
+
 %package examples
 Summary: Avocado Test Framework Example Tests
 Requires: avocado == %{version}
@@ -115,6 +184,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Sun Feb  5 2017 Cleber Rosa <cleber@redhat.com> - 45.0-1
+- Split package into plugins-runner-{remote,vm,docker} packages
+
 * Tue Jan 17 2017 Cleber Rosa <cleber@redhat.com> - 45.0-0
 - New upstream release
 
