@@ -12,7 +12,6 @@
 # Copyright: Red Hat Inc. 2014-2015
 # Author: Ruda Moura <rmoura@redhat.com>
 
-from .test import RemoteTest
 from .runner import RemoteTestRunner, VMTestRunner
 
-__all__ = ['RemoteTestRunner', 'VMTestRunner', 'RemoteTest']
+__all__ = ['RemoteTestRunner', 'VMTestRunner']
