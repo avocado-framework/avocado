@@ -16,15 +16,12 @@
 Module to provide classes for Virtual Machines.
 """
 
-import logging
 import time
 from xml.dom import minidom
 
 import libvirt
 
 from . import remoter
-
-LOG = logging.getLogger('avocado.test')
 
 
 class VirtError(Exception):
