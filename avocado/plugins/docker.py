@@ -25,9 +25,6 @@ from avocado.utils import process
 from avocado.utils.wait import wait_for
 
 
-LOG = logging.getLogger('avocado.remote')
-
-
 class DockerRemoter(object):
 
     """
@@ -79,7 +76,7 @@ class DockerRemoter(object):
             timeout = 31536000  # aexpect does not support None, use one year
         start = time.time()
         if quiet is not False:
-            print_func = LOG.debug
+            print_func = logging.getLogger('avocado.remote').debug
         status, output = self._docker.cmd_status_output(command,
                                                         timeout=timeout,
                                                         print_func=print_func)
