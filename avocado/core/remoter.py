@@ -17,14 +17,11 @@ Module to provide remote operations.
 """
 
 import getpass
-import logging
 import os
 import time
 
 from .settings import settings
 from ..utils import process
-
-LOG = logging.getLogger('avocado.test')
 
 try:
     import fabric.api
