@@ -22,6 +22,7 @@ import logging
 from fabric.exceptions import CommandTimeout
 
 from .test import RemoteTest
+from .. import version
 from .. import output
 from .. import remoter
 from .. import virt
@@ -217,7 +218,7 @@ class RemoteTestRunner(TestRunner):
         try:
             try:
                 self.setup()
-                avocado_installed, _ = self.check_remote_avocado()
+                avocado_installed, remote_version = self.check_remote_avocado()
                 if not avocado_installed:
                     raise exceptions.JobError('Remote machine does not seem to'
                                               ' have avocado installed')
@@ -264,6 +265,13 @@ class RemoteTestRunner(TestRunner):
             self.result.end_tests()
             self.job._result_events_dispatcher.map_method('post_tests',
                                                           self.job)
+            # compare the major versions of remote and local version of avocado. If different write to UI and job.log
+            if str(remote_version[0]) != version.MAJOR:
+                log = logging.getLogger("avocado.job")
+                self.job.log.info("WARNING    : avocado version on the remote system is %s, local is %s",
+                                  '.'.join(map(str, remote_version)), version.VERSION)
+                log.warn("WARNING    : avocado version on the remote system is %s, local is %s",
+                         '.'.join(map(str, remote_version)), version.VERSION)
         finally:
             try:
                 self.tear_down()
