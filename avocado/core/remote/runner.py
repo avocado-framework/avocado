@@ -21,7 +21,6 @@ import logging
 
 from fabric.exceptions import CommandTimeout
 
-from .test import RemoteTest
 from .. import version
 from .. import output
 from .. import remoter
@@ -238,16 +237,16 @@ class RemoteTestRunner(TestRunner):
                 name = tst['test'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
                 name = TestName(*name, no_digits=-1)
-                test = RemoteTest(name=name,
-                                  time=tst['time'],
-                                  start=tst['start'],
-                                  end=tst['end'],
-                                  status=tst['status'],
-                                  logdir=tst['logdir'],
-                                  logfile=tst['logfile'],
-                                  fail_reason=tst['fail_reason'],
-                                  job_logdir=local_log_dir)
-                state = test.get_state()
+                state = dict(name=name,
+                             time_elapsed=tst['time'],
+                             time_start=tst['start'],
+                             time_end=tst['end'],
+                             status=tst['status'],
+                             logdir=tst['logdir'],
+                             logfile=tst['logfile'],
+                             fail_reason=tst['fail_reason'],
+                             job_logdir=local_log_dir,
+                             job_unique_id='')
                 self.result.start_test(state)
                 self.job._result_events_dispatcher.map_method('start_test',
                                                               self.result,

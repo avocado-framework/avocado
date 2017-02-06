@@ -112,12 +112,9 @@ _=/usr/bin/env''', exit_status=0)
                                         mux_yaml=['foo.yaml', 'bar/baz.yaml'],
                                         dry_run=True))
         Result.should_receive('start_tests').once().ordered()
-        args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
-                'name': '1-sleeptest;0', 'class_name': 'RemoteTest',
-                'traceback': 'Not supported yet',
-                'text_output': 'Not supported yet', 'time_end': 1.23,
-                'time_elapsed': 1.23,
-                'fail_class': 'Not supported yet', 'job_unique_id': '',
+        args = {'name': '1-sleeptest;0', 'time_end': 1.23,
+                'status': u'PASS', 'time_start': 0,
+                'time_elapsed': 1.23, 'job_unique_id': '',
                 'fail_reason': u'None',
                 'logdir': u'/local/path/test-results/1-sleeptest;0',
                 'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log',
