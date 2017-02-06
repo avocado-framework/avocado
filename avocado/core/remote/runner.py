@@ -89,7 +89,6 @@ class RemoteTestRunner(TestRunner):
         if result.exit_status == 127:
             return (False, None)
 
-        # Get the remote and local versions of avocado, and compare the major versions only
         match = self.remote_version_re.findall(result.stdout)
         if match is None:
             return (False, None)
