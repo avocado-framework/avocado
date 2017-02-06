@@ -125,9 +125,11 @@ class DockerTestRunner(RemoteTestRunner):
         dkr_opt = self.job.args.docker_options
         dkr_name = os.path.basename(self.job.logdir) + '.' + 'avocado'
         self.remote = DockerRemoter(dkrcmd, self.job.args.docker, dkr_opt, dkr_name)
-        self.job.log.info("DOCKER     : Container id '%s'"
-                          % self.remote.get_cid())
-        self.job.log.info("DOCKER     : Container name '%s'" % dkr_name)
+        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        if not stdout_claimed_by:
+            self.job.log.info("DOCKER     : Container id '%s'"
+                              % self.remote.get_cid())
+            self.job.log.info("DOCKER     : Container name '%s'" % dkr_name)
 
     def tear_down(self):
         try:
@@ -136,7 +138,9 @@ class DockerTestRunner(RemoteTestRunner):
                 if not self.job.args.docker_no_cleanup:
                     self.remote.cleanup()
         except Exception as details:
-            self.job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
+            stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+            if not stdout_claimed_by:
+                self.job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
 
 
 class Docker(CLI):
