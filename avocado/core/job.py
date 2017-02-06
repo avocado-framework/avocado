@@ -467,6 +467,19 @@ class Job(object):
                                              variant,
                                              self.timeout,
                                              replay_map)
+        # if the length of summary is 2, check if it came from remote/runner.py
+        # the summary set holds both versions of avocado local and remote
+        # if the values are not from remote/runner.py add them back to the set and continue code execution
+        if len(summary) == 2:
+            local_version = summary.pop()
+            remote_version = summary.pop()
+            if (local_version.isdigit() and remote_version.isdigit()) and (remote_version != local_version):
+                _TEST_LOGGER.warn("WARNING: avocado version on the remote system is %s, local is %s",
+                                  remote_version, local_version)
+            else:
+                summary.add(local_version)
+                summary.add(remote_version)
+
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
