@@ -20,17 +20,11 @@ import logging
 import time
 from xml.dom import minidom
 
+import libvirt
+
 from . import remoter
 
 LOG = logging.getLogger('avocado.test')
-
-try:
-    import libvirt
-except ImportError:
-    VIRT_CAPABLE = False
-    LOG.info('Virt module is disabled: could not import libvirt')
-else:
-    VIRT_CAPABLE = True
 
 
 class VirtError(Exception):
