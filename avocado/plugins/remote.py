@@ -20,7 +20,6 @@ import sys
 
 from avocado.core import exit_codes
 from avocado.core import loader
-from avocado.core import remoter
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.remote import RemoteTestRunner
 
@@ -35,9 +34,6 @@ class Remote(CLI):
     description = "Remote machine options for 'run' subcommand"
 
     def configure(self, parser):
-        if remoter.REMOTE_CAPABLE is False:
-            return
-
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return

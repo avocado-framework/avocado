@@ -20,21 +20,14 @@ import getpass
 import os
 import time
 
+import fabric.api
+import fabric.network
+import fabric.operations
+import fabric.tasks
+from fabric.context_managers import shell_env
+
 from .settings import settings
 from ..utils import process
-
-try:
-    import fabric.api
-    import fabric.network
-    import fabric.operations
-    import fabric.tasks
-    from fabric.context_managers import shell_env
-except ImportError:
-    REMOTE_CAPABLE = False
-    LOG.info('Remote module is disabled: could not import fabric')
-    fabric = None
-else:
-    REMOTE_CAPABLE = True
 
 
 class RemoterError(Exception):
