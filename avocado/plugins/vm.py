@@ -19,7 +19,6 @@ import logging
 import sys
 
 from avocado.core import exit_codes
-from avocado.core import virt
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.remote import VMTestRunner
 
@@ -34,9 +33,6 @@ class VM(CLI):
     description = "Virtual Machine options for 'run' subcommand"
 
     def configure(self, parser):
-        if virt.VIRT_CAPABLE is False:
-            return
-
         run_subcommand_parser = parser.subcommands.choices.get('run', None)
         if run_subcommand_parser is None:
             return
