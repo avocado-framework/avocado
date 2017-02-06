@@ -1,15 +1,9 @@
 # Avocado functional requirements
-# SSH lib (avocado.utils.remote)
-fabric>=1.11.0
 # multiplexer (avocado.core.tree)
 PyYAML>=3.11
-# vm plugin (avocado.core.plugins.vm)
-libvirt-python>=1.2.9
 # .tar.xz support (avocado.utils.archive)
 pyliblzma>=0.5.3
 # REST client (avocado.core.restclient)
 requests>=1.2.3
 # stevedore for loading "new style" plugins
 stevedore>=1.8.0
-# Aexpect is now used on Docker plugin
-aexpect>=1.2.0
