@@ -101,7 +101,7 @@ class RemoteTestRunner(TestRunner):
             return (False, None)
 
     @staticmethod
-    def _parse_json_response(output):
+    def _parse_json_response(json_output):
         """
         Try to parse JSON response from the remote output.
 
@@ -109,7 +109,7 @@ class RemoteTestRunner(TestRunner):
         everything till the end of the dictionary. It supports single-
         line as well as multi-line pretty json output.
         """
-        _result = iter(output.splitlines())
+        _result = iter(json_output.splitlines())
         json_result = ""
         response = None
         for line in _result:    # Find the beginning
