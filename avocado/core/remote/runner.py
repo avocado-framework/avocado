@@ -48,8 +48,6 @@ class RemoteTestRunner(TestRunner):
         super(RemoteTestRunner, self).__init__(job, result)
         #: remoter connection to the remote machine
         self.remote = None
-        self.remote_version = ""
-        self.local_version = ""
 
     def setup(self):
         """ Setup remote environment and copy test directories """
@@ -93,11 +91,6 @@ class RemoteTestRunner(TestRunner):
 
         # Get the remote and local versions of avocado, and compare the major versions only
         match = self.remote_version_re.findall(result.stdout)
-        self.remote_version = '.'.join(list(match[0]))
-        self.local_version = version.VERSION
-        if self.remote_version.split('.')[0] != self.local_version.split('.')[0]:
-            self.job.log.info("WARNING    : avocado version on the remote system is %s, local is %s",
-                              self.remote_version, self.local_version)
         if match is None:
             return (False, None)
 
@@ -226,7 +219,7 @@ class RemoteTestRunner(TestRunner):
         try:
             try:
                 self.setup()
-                avocado_installed, _ = self.check_remote_avocado()
+                avocado_installed, remote_version = self.check_remote_avocado()
                 if not avocado_installed:
                     raise exceptions.JobError('Remote machine does not seem to'
                                               ' have avocado installed')
@@ -273,6 +266,13 @@ class RemoteTestRunner(TestRunner):
             self.result.end_tests()
             self.job._result_events_dispatcher.map_method('post_tests',
                                                           self.job)
+            # compare the major versions of remote and local version of avocado. If different write to UI and job.log
+            if str(remote_version[0]) != version.MAJOR:
+                log = logging.getLogger("avocado.job")
+                self.job.log.info("WARNING    : avocado version on the remote system is %s, local is %s",
+                                  '.'.join(map(str, remote_version)), version.VERSION)
+                log.warn("WARNING    : avocado version on the remote system is %s, local is %s",
+                         '.'.join(map(str, remote_version)), version.VERSION)
         finally:
             try:
                 self.tear_down()
@@ -281,9 +281,6 @@ class RemoteTestRunner(TestRunner):
                 raise exceptions.JobError(details)
             sys.stdout = stdout_backup
             sys.stderr = stderr_backup
-        # returning the remote and local avocado version to be added to job.log as a possible warning
-        summary.add(self.remote_version.split('.')[0])
-        summary.add(self.local_version.split('.')[0])
         return summary
 
     def tear_down(self):
