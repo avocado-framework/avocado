@@ -7,24 +7,14 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
 Version: 45.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
-Requires: python, python-requests, fabric, pyliblzma, libvirt-python, gdb, gdb-gdbserver, python-stevedore, aexpect
-BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock
-
-%if 0%{?el6}
-Requires: PyYAML
-Requires: python-argparse, python-importlib, python-logutils, python-unittest2, procps
-BuildRequires: PyYAML
-BuildRequires: python-argparse, python-importlib, python-logutils, python-unittest2, procps
-%else
-Requires: python-yaml, procps-ng
-BuildRequires: python-yaml, procps-ng
-%endif
+Requires: python, python-requests, fabric, pyliblzma, libvirt-python, gdb, gdb-gdbserver, python-stevedore, python-yaml, procps-ng, aexpect
+BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, aexpect, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock, python-yaml, procps-ng
 
 %if 0%{?fedora} >= 25
 BuildRequires: kmod
@@ -115,6 +105,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Fri Feb  3 2017 Cleber Rosa <cleber@redhat.com> - 45.0-1
+- Removed support for EL6 requirements
+
 * Tue Jan 17 2017 Cleber Rosa <cleber@redhat.com> - 45.0-0
 - New upstream release
 

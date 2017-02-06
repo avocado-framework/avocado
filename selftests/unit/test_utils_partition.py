@@ -6,19 +6,14 @@ avocado.utils.partition unittests
 
 import os
 import shutil
-import sys
 import tempfile
 import time
+import unittest     # pylint: disable=C0411
 
 from flexmock import flexmock, flexmock_teardown
 
 from avocado.utils import partition, process
 from avocado.utils import path as utils_path
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest    # pylint: disable=E0401
-else:
-    import unittest     # pylint: disable=C0411
 
 
 def missing_binary(binary):

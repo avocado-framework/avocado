@@ -1,17 +1,13 @@
 import os
-import sys
 import tempfile
 import shutil
-
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
+
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)

@@ -1,13 +1,9 @@
 import os
 import shutil
-import sys
 import tempfile
-from flexmock import flexmock, flexmock_teardown
+import unittest
 
-if sys.version_info[:2] == (2, 6):
-    import unittest2 as unittest
-else:
-    import unittest
+from flexmock import flexmock, flexmock_teardown
 
 from avocado.core import test, exceptions
 from avocado.utils import script
