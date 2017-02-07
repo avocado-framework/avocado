@@ -18,6 +18,7 @@ import logging
 import os
 import shutil
 import time
+import threading
 
 try:
     import subprocess32 as subprocess
@@ -30,6 +31,7 @@ from ..utils import genio
 from ..utils import process
 from ..utils import software_manager
 from ..utils import path as utils_path
+from ..utils import wait
 
 log = logging.getLogger("avocado.sysinfo")
 
@@ -151,6 +153,16 @@ class Command(Collectible):
 
         :param logdir: Path to a log directory.
         """
+        def destroy(proc, cmd, timeout):
+            log.error("sysinfo: Interrupting cmd '%s' which took longer "
+                      "than %ss to finish", cmd, timeout)
+            try:
+                proc.terminate()
+                if wait.wait_for(lambda: proc.poll() is None, timeout=1,
+                                 step=0.01) is None:
+                    proc.kill()
+            except OSError:
+                pass    # Ignore errors when the process already finished
         env = os.environ.copy()
         if "PATH" not in env:
             env["PATH"] = "/usr/bin:/bin"
@@ -161,8 +173,21 @@ class Command(Collectible):
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
         try:
-            subprocess.call(self.cmd, stdin=stdin, stdout=stdout,
-                            stderr=subprocess.STDOUT, shell=True, env=env)
+            proc = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
+                                    stderr=subprocess.STDOUT, shell=True,
+                                    env=env)
+            timeout = settings.get_value("sysinfo.collect", "commands_timeout",
+                                         int, -1)
+            if timeout <= 0:
+                proc.wait()
+                return
+            timer = threading.Timer(timeout, destroy, (proc, self.cmd,
+                                                       timeout))
+            try:
+                timer.start()
+                proc.wait()
+            finally:
+                timer.cancel()
         finally:
             for f in (stdin, stdout):
                 f.close()
