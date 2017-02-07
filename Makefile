@@ -17,7 +17,11 @@ VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 DESTDIR=/
 AVOCADO_DIRNAME=$(shell echo $${PWD\#\#*/})
 AVOCADO_EXTERNAL_PLUGINS=$(filter-out ../$(AVOCADO_DIRNAME), $(shell find ../ -maxdepth 1 -mindepth 1 -type d))
-AVOCADO_OPTIONAL_PLUGINS=$(shell find ./optional_plugins -maxdepth 1 -mindepth 1 -type d)
+# List of optional plugins is now static, because there may be depedencies between plugins
+AVOCADO_OPTIONAL_PLUGINS="./optional_plugins/html"
+AVOCADO_OPTIONAL_PLUGINS+="./optional_plugins/runner_remote"
+AVOCADO_OPTIONAL_PLUGINS+="./optional_plugins/runner_vm"
+AVOCADO_OPTIONAL_PLUGINS+="./optional_plugins/runner_docker"
 AVOCADO_PLUGINS=$(AVOCADO_EXTERNAL_PLUGINS)
 AVOCADO_PLUGINS+=$(AVOCADO_OPTIONAL_PLUGINS)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
