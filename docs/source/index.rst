@@ -14,6 +14,7 @@ Contents:
    Configuration
    Loaders
    LoggingSystem
+   Sysinfo
    Mux
    Replay
    Diff
