@@ -16,6 +16,8 @@
 #
 # Copyright: 2016 IBM
 # Authors : Praveen K Pandey <praveen@linux.vnet.ibm.com>
+# Copyright: 2017 IBM
+# Authors: Narasimhan V <sim@linux.vnet.ibm.com>
 
 """
 Linux kernel modules APIs
@@ -40,7 +42,12 @@ BUILTIN = 2
 
 
 def load_module(module_name):
-    # Checks if a module has already been loaded
+    """
+    Checks if a module has already been loaded.
+    :param module_name: Name of module to check
+    :return: True if module is loaded, False otherwise
+    :rtype: Bool
+    """
     if module_is_loaded(module_name):
         return False
 
@@ -92,11 +99,31 @@ def loaded_module_info(module_name):
 
     :param module_name: Name of module to search for
     :type module_name: str
-    :return: Dictionary of module info, name, size, submodules if present
+    :return: Dictionary of module name, size, submodules if present, filename,
+             version, number of modules using it, list of modules it is
+             dependent on, list of params
     :rtype: dict
     """
     l_raw = process.system_output('/sbin/lsmod')
-    return parse_lsmod_for_module(l_raw, module_name)
+    modinfo_dic = parse_lsmod_for_module(l_raw, module_name)
+    output = process.system_output("/sbin/modinfo %s" % module_name)
+    if output:
+        param_list = []
+        for line in output.splitlines():
+            items = line.split()
+            key = items[0].rstrip(':')
+            value = None
+            if key == 'filename' or key == 'version':
+                value = str(items[-1])
+            elif key == 'depends':
+                if len(items) > 1:
+                    value = items[1].split(',')
+            elif key == 'parm':
+                param_list.append(items[1].split(':')[0])
+            if value:
+                modinfo_dic[key] = value
+        modinfo_dic['params'] = param_list
+    return modinfo_dic
 
 
 def get_submodules(module_name):
@@ -164,6 +191,11 @@ def module_is_loaded(module_name):
 
 
 def get_loaded_modules():
+    """
+    Gets list of loaded modules.
+
+    :return: List of loaded modules.
+    """
     lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
     return [line.split(None, 1)[0] for line in lsmod_output]
 
