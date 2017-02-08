@@ -303,10 +303,11 @@ class YamlToMux(CLI):
         else:
             data = mux.MuxTreeNode()
 
+        debug = getattr(args, "mux_debug", False)
+
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:
-            debug = getattr(args, "mux_debug", False)
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
@@ -318,7 +319,6 @@ class YamlToMux(CLI):
         multiplex_files = getattr(args, "multiplex", None)
         if multiplex_files:
             self._log_deprecation_msg("--multiplex", "--mux-yaml")
-            debug = getattr(args, "mux_debug", False)
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
                 from_yaml = create_from_yaml(multiplex_files, debug)
@@ -342,4 +342,8 @@ class YamlToMux(CLI):
         mux_filter_out = getattr(args, 'mux_filter_out', None)
         data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
         if data != mux.MuxTreeNode():
-            args.avocado_variants.data_merge(data)
+            mux_path = getattr(args, "mux_path", ["/run/*"])
+            if mux_path is None:
+                mux_path = ["/run/*"]
+            plugin = mux.MuxPlugin(data, mux_path, debug)
+            args.avocado_variants.add_variants_plugin(plugin)

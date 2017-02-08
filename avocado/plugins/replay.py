@@ -209,8 +209,7 @@ class Replay(CLI):
                 # we replaced the unparsed object with parsed one. There
                 # are other plugins running before/after this which might
                 # want to alter the variants object.
-                if (len(args.avocado_variants.data) or
-                        args.avocado_variants.data.environment):
+                if args.avocado_variants.is_parsed():
                     log.warning("Using src job Mux data only, use `--replay-"
                                 "ignore variants` to override them.")
                 setattr(args, "avocado_variants", variants)
