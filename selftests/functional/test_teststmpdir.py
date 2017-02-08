@@ -25,7 +25,8 @@ class MyTest(Test):
 
 """
 
-SIMPLE_SCRIPT = """#!/bin/bash
+SIMPLE_SCRIPT = """#!/bin/bash -x
+ls /tmp
 mktemp ${{{0}}}/XXXXXX
 if [ $(ls ${{{0}}} | wc -l) == 1 ]
 then
@@ -67,7 +68,7 @@ class TestsTmpDirTests(unittest.TestCase):
         Tests whether automatically created teststmpdir is shared across
         all tests.
         """
-        cmd_line = ("./scripts/avocado run --sysinfo=off "
+        cmd_line = ("./scripts/avocado --show all run --sysinfo=off "
                     "--job-results-dir %s %s %s" %
                     (self.tmpdir, self.simple_test, self.instrumented_test))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
