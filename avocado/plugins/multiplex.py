@@ -15,7 +15,7 @@
 import logging
 import sys
 
-from avocado.core import exit_codes, output
+from avocado.core import exit_codes
 from avocado.core import tree
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
@@ -82,29 +82,12 @@ class Multiplex(CLICmd):
             sys.exit(exit_codes.AVOCADO_ALL_OK)
 
         log.info('Variants generated:')
-        for (index, tpl) in enumerate(variants.variants):
-            if not args.mux_debug:
-                paths = ', '.join([x.path for x in tpl])
-            else:
-                color = output.TERM_SUPPORT.LOWLIGHT
-                cend = output.TERM_SUPPORT.ENDC
-                paths = ', '.join(["%s%s@%s%s" % (_.name, color,
-                                                  getattr(_, 'yaml',
-                                                          "Unknown"),
-                                                  cend)
-                                   for _ in tpl])
-            log.debug('%sVariant %s:    %s', '\n' if args.contents else '',
-                      index + 1, paths)
-            if args.contents:
-                env = set()
-                for node in tpl:
-                    for key, value in node.environment.iteritems():
-                        origin = node.environment_origin[key].path
-                        env.add(("%s:%s" % (origin, key), str(value)))
-                if not env:
-                    continue
-                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
-                for record in sorted(env):
-                    log.debug(fmt, *record)
+        if args.mux_debug:
+            # In this version `avocado_variants.debug` is not set properly,
+            # let's force-enable it before calling str_variants_long to
+            # get the expected results.
+            args.avocado_variants.debug = True
+        for line in args.avocado_variants.str_variants_long(True).splitlines():
+            log.debug(line)
 
         sys.exit(exit_codes.AVOCADO_ALL_OK)
