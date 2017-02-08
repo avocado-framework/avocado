@@ -88,20 +88,41 @@ class MuxTree(object):
 
 class MuxPlugin(object):
     """
-    Follows the Multiplexer API to produce variants
+    Base implementation of Mux-like Varianter plugin and should be instantiated
+    as :class:`avocado.core.plugin_interfaces.VarianterPlugin`.
     """
-    def __init__(self, root, mux_path, debug):
+    root = None
+    variants = None
+    default_params = None
+    mux_path = None
+    debug = None
+
+    def initialize_mux(self, root, mux_path, debug):
+        """
+        Initialize the basic values
+
+        :note: We can't use __init__ as this object is intended to be used
+               via dispatcher with no __init__ arguments.
+        """
         self.root = root
-        self.variants = None
-        self.default_params = None
         self.mux_path = mux_path
         self.debug = debug
 
     def __iter__(self):
+        """
+        See :class:`avocado.core.plugin_interfaces.VarianterPlugin`
+        """
+        if self.root is None:
+            return
         for i, variant in enumerate(self.variants, 1):
             yield i, (variant, self.mux_path)
 
     def update_defaults(self, defaults):
+        """
+        See :class:`avocado.core.plugin_interfaces.VarianterPlugin`
+        """
+        if self.root is None:
+            return
         if self.default_params:
             self.default_params.merge(defaults)
         self.default_params = defaults
@@ -111,11 +132,7 @@ class MuxPlugin(object):
 
     def to_str(self, summary=0, variants=0, use_utf8=False):
         """
-        Return human readable representation
-
-        :param summary: How verbose summary to output
-        :param variants: How verbose list of variants to output
-        :rtype: str
+        See :class:`avocado.core.plugin_interfaces.VarianterPlugin`
         """
         if not self.variants:
             return ""
@@ -161,8 +178,10 @@ class MuxPlugin(object):
 
     def __len__(self):
         """
-        Reports the number of variants
+        See :class:`avocado.core.plugin_interfaces.VarianterPlugin`
         """
+        if self.root is None:
+            return 0
         return sum(1 for _ in self)
 
 
