@@ -36,7 +36,7 @@ class Multiplex(CLICmd):
     def configure(self, parser):
         parser = super(Multiplex, self).configure(parser)
         parser.add_argument('--system-wide', action='store_false',
-                            default=True, dest="mux-skip-defaults",
+                            default=True, dest="variants-skip-defaults",
                             help="Combine the files with the default "
                             "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
