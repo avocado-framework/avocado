@@ -377,7 +377,7 @@ class Varianter(object):
         """
         if self.is_parsed():
             if self.ignore_new_data:
-                return
+                return True
             raise RuntimeError("Varianter already parsed, unable to execute "
                                "%s%s" % (function, args))
 
