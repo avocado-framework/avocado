@@ -14,7 +14,7 @@ Contents:
    Configuration
    Loaders
    LoggingSystem
-   Mux
+   TestParameters
    Replay
    Diff
    RunningTestsRemotely

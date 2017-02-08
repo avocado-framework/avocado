@@ -477,7 +477,8 @@ class TestRunner(object):
         :return: Yields tuple(test_factory including params, variant id)
         :raises ValueError: When variant and template declare params.
         """
-        for variant, params in variants.itertests():
+        for variant in variants.itertests():
+            params = variant.get("variant")
             if params:
                 if "params" in template[1]:
                     msg = ("Unable to use test variants %s, params are already"
