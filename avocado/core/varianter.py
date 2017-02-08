@@ -77,6 +77,12 @@ class MuxTree(object):
             # TODO: This part takes most of the time, optimize it
             yield list(itertools.chain(*pools.next()))
 
+    def __len__(self):
+        """
+        Reports the number of variants
+        """
+        return sum(1 for _ in self)
+
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
 class NoMatchError(KeyError):
@@ -515,11 +521,10 @@ class Varianter(object):
         :return: overall number of tests * number of variants
         """
         # Currently number of tests is symmetrical
-        if self.variants:
-            no_variants = sum(1 for _ in self.variants)
-            if no_variants > 1:
-                self._has_multiple_variants = True
-            return (len(test_suite) * no_variants)
+        no_variants = len(self.variants)
+        if no_variants > 1:
+            self._has_multiple_variants = True
+            return len(test_suite) * no_variants
         else:
             return len(test_suite)
 
