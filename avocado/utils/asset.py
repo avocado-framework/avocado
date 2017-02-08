@@ -106,6 +106,7 @@ class Asset(object):
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             self.asset_file = os.path.join(cache_dir, self.basename)
+            self.hashfile = '%s-CHECKSUM' % self.asset_file
             if not utils_path.usable_rw_dir(cache_dir):
                 continue
 
