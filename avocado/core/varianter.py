@@ -409,27 +409,14 @@ class Varianter(object):
             return
         self.variant_plugins.append(plugin)
 
-    def str_variants(self):
+    def str_variants(self, summary=False, contents=False):
         """
         Return human readable variants
-        """
-        return "\n\n".join(plugin.str_variants()
-                           for plugin in self.variant_plugins)
 
-    def str_variants_long(self, contents=False):
+        :param summary: Whether to report summary (eg. tree of params)
+        :param contents: Whether to report contents (individual params)
         """
-        Return human readable variants with their environment
-
-        :param contents: Whether to show the contents of each variant
-        """
-        return "\n\n".join(plugin.str_variants_long(contents)
-                           for plugin in self.variant_plugins)
-
-    def str_long(self):
-        """
-        Return human readable description of all variants
-        """
-        return "\n\n".join(plugin.str_long()
+        return "\n\n".join(plugin.str_variants(summary, contents)
                            for plugin in self.variant_plugins)
 
     def get_number_of_tests(self, test_suite):
