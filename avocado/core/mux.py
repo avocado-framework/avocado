@@ -109,9 +109,13 @@ class MuxPlugin(object):
         combination.merge(self.root)
         self.variants = MuxTree(combination)
 
-    def str_variants(self, summary=False, contents=False):
+    def str_variants(self, summary=0, variants=0, use_utf8=False):
         """
-        Return human readable variants
+        Return human readable representation
+
+        :param summary: How verbose summary to output
+        :param variants: How verbose list of variants to output
+        :rtype: str
         """
         if not self.variants:
             return ""
@@ -119,35 +123,40 @@ class MuxPlugin(object):
         if summary:
             # Log tree representation
             out.append("Multiplex tree representation:")
-            tree_repr = tree.tree_view(self.root, verbose=True,
-                                       use_utf8=False)
+            # summary == 0 means disable, but in plugin it's brief
+            tree_repr = tree.tree_view(self.root, verbose=summary - 1,
+                                       use_utf8=use_utf8)
             out.append(tree_repr)
             out.append("")
 
-        for (index, tpl) in enumerate(self.variants):
-            if not self.debug:
-                paths = ', '.join([x.path for x in tpl])
-            else:
-                color = output.TERM_SUPPORT.LOWLIGHT
-                cend = output.TERM_SUPPORT.ENDC
-                paths = ', '.join(["%s%s@%s%s" % (_.name, color,
-                                                  getattr(_, 'yaml',
-                                                          "Unknown"),
-                                                  cend)
-                                   for _ in tpl])
-            out.append('%sVariant %s:    %s' % ('\n' if contents else '',
-                                                index + 1, paths))
-            if contents:
-                env = set()
-                for node in tpl:
-                    for key, value in node.environment.iteritems():
-                        origin = node.environment_origin[key].path
-                        env.add(("%s:%s" % (origin, key), str(value)))
-                if not env:
-                    continue
-                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
-                for record in sorted(env):
-                    out.append(fmt % record)
+        if variants:
+            # variants == 0 means disable, but in plugin it's brief
+            contents = variants - 1
+            out.append("Multiplex variants:")
+            for (index, tpl) in enumerate(self.variants):
+                if not self.debug:
+                    paths = ', '.join([x.path for x in tpl])
+                else:
+                    color = output.TERM_SUPPORT.LOWLIGHT
+                    cend = output.TERM_SUPPORT.ENDC
+                    paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                                      getattr(_, 'yaml',
+                                                              "Unknown"),
+                                                      cend)
+                                       for _ in tpl])
+                out.append('%sVariant %s:    %s' % ('\n' if contents else '',
+                                                    index + 1, paths))
+                if contents:
+                    env = set()
+                    for node in tpl:
+                        for key, value in node.environment.iteritems():
+                            origin = node.environment_origin[key].path
+                            env.add(("%s:%s" % (origin, key), str(value)))
+                    if not env:
+                        continue
+                    fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                    for record in sorted(env):
+                        out.append(fmt % record)
         return "\n".join(out)
 
     def __len__(self):
