@@ -15,45 +15,6 @@
 """
 Exception classes, useful for tests, and other parts of the framework code.
 """
-from functools import wraps
-import types
-
-
-def fail_on(exceptions=None):
-    """
-    Fail the test when decorated function produces exception of the specified
-    type.
-
-    (For example, our method may raise IndexError on tested software failure.
-    We can either try/catch it or use this decorator instead)
-
-    :param exceptions: Tuple or single exception to be assumed as
-                       test fail [Exception]
-    :note: self.error and self.skip behavior remains intact
-    :note: To allow simple usage param "exceptions" must not be callable
-    """
-    func = False
-    if exceptions is None:
-        exceptions = Exception
-    elif isinstance(exceptions, types.FunctionType):     # @fail_on without ()
-        func = exceptions
-        exceptions = Exception
-
-    def decorate(func):
-        """ Decorator """
-        @wraps(func)
-        def wrap(*args, **kwargs):
-            """ Function wrapper """
-            try:
-                return func(*args, **kwargs)
-            except TestBaseException:
-                raise
-            except exceptions as details:
-                raise TestFail(str(details))
-        return wrap
-    if func:
-        return decorate(func)
-    return decorate
 
 
 class JobBaseException(Exception):

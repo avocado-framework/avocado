@@ -13,8 +13,46 @@
 # Author: Amador Pahim <apahim@redhat.com>
 
 from functools import wraps
+import types
 
-from . import exceptions
+from . import exceptions as core_exceptions
+
+
+def fail_on(exceptions=None):
+    """
+    Fail the test when decorated function produces exception of the specified
+    type.
+
+    (For example, our method may raise IndexError on tested software failure.
+    We can either try/catch it or use this decorator instead)
+
+    :param exceptions: Tuple or single exception to be assumed as
+                       test fail [Exception]
+    :note: self.error and self.skip behavior remains intact
+    :note: To allow simple usage param "exceptions" must not be callable
+    """
+    func = False
+    if exceptions is None:
+        exceptions = Exception
+    elif isinstance(exceptions, types.FunctionType):     # @fail_on without ()
+        func = exceptions
+        exceptions = Exception
+
+    def decorate(func):
+        """ Decorator """
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            """ Function wrapper """
+            try:
+                return func(*args, **kwargs)
+            except core_exceptions.TestBaseException:
+                raise
+            except exceptions as details:
+                raise core_exceptions.TestFail(str(details))
+        return wrap
+    if func:
+        return decorate(func)
+    return decorate
 
 
 def skip(message=None):
@@ -25,7 +63,7 @@ def skip(message=None):
         if not isinstance(function, type):
             @wraps(function)
             def wrapper(*args, **kwargs):
-                raise exceptions.TestDecoratorSkip(message)
+                raise core_exceptions.TestDecoratorSkip(message)
             function = wrapper
         return function
     return decorator
