@@ -75,6 +75,8 @@ So the file parsing order is:
 In this order, meaning that what you set on your local config file may override what's defined in the system wide files.
 
 .. note::  Please note that if avocado is running from git repos, those files will be ignored in favor of in tree configuration files. This is something that would normally only affect people developing avocado, and if you are in doubt, ``avocado config`` will tell you exactly which files are being used in any given situation.
+.. note::  When avocado runs inside virtualenv than path for global config files is also changed. For example, `avocado.conf` comes from the virual-env path `venv/etc/avocado/avocado.conf`.
+
 
 Order of precedence for values used in tests
 ============================================
