@@ -512,7 +512,8 @@ class TestRunner(object):
         test_result_total = variants.get_number_of_tests(test_suite)
         no_digits = len(str(test_result_total))
         self.result.tests_total = test_result_total
-        self.result.start_tests()
+        self.job._result_events_dispatcher.map_method('start_tests',
+                                                      self.result)
         index = -1
         try:
             for test_template in test_suite:

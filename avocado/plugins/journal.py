@@ -98,6 +98,9 @@ class JournalResult(ResultEvents):
     def pre_tests(self, job):
         pass
 
+    def start_tests(self, result):
+        pass
+
     def start_test(self, result, state):
         self.lazy_init_journal(state)
         self._record_status(state, "STARTED")
