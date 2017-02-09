@@ -14,6 +14,7 @@ basedir = os.path.abspath(basedir)
 
 AVOCADO_TEST_SKIP_DECORATORS = """
 import avocado
+import unittest
 from lib_skip_decorators import check_condition
 
 class AvocadoSkipTests(avocado.Test):
@@ -32,15 +33,16 @@ class AvocadoSkipTests(avocado.Test):
     def test3(self):
         pass
 
-    @avocado.skipIf(False)
+    @avocado.skipIf(False, "won't be skipped")
     def test4(self):
         pass
 
-    @avocado.skipUnless(True)
+    @avocado.skipUnless(True, "won't be skipped")
     def test5(self):
         pass
 
-    @avocado.skip()
+    @unittest.skipIf(True, "Skipped using unittest's skipIf which works"
+                     "but is not recommended.")
     def test6(self):
         pass
 """

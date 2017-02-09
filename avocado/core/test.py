@@ -463,9 +463,9 @@ class Test(unittest.TestCase):
         try:
             self.setUp()
         except (exceptions.TestSetupSkip,
-                exceptions.TestDecoratorSkip,
                 exceptions.TestTimeoutSkip,
-                exceptions.TestSkipError) as details:
+                exceptions.TestSkipError,
+                unittest.SkipTest) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
         except:  # Old-style exceptions are not inherited from Exception()
@@ -481,7 +481,9 @@ class Test(unittest.TestCase):
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
-        except exceptions.TestDecoratorSkip as details:
+        # For compatibility reasons allow unittest.SkipTest in tests as well
+        # (which allows using decorators)
+        except unittest.SkipTest as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
         except:  # Old-style exceptions are not inherited from Exception()
@@ -504,7 +506,7 @@ class Test(unittest.TestCase):
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
-            except exceptions.TestDecoratorSkip as details:
+            except unittest.SkipTest as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Using skip decorators after the test '
                                     'will have no effect, you must fix your '

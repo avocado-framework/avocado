@@ -148,16 +148,6 @@ class TestSetupSkip(TestBaseException):
     status = "SKIP"
 
 
-class TestDecoratorSkip(TestBaseException):
-
-    """
-    Indictates that the test is skipped by a decorator.
-
-    Should be thrown when the skip decorators are used.
-    """
-    status = "SKIP"
-
-
 class TestFail(TestBaseException, AssertionError):
 
     """
