@@ -29,17 +29,25 @@ class MultiplexTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    def run_and_check(self, cmd_line, expected_rc, tests=None):
+    def run_and_check(self, cmd_line, expected_rc, tests=None, ui_str=None):
         os.chdir(basedir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
+
+        def check_ui(exp, output):
+            self.assertIn(exp, output, "'%s' not in stdout:\n%s"
+                          % (exp, output))
+
         if tests:
             exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "
                    "INTERRUPT 0" % tests)
-            self.assertIn(exp, result.stdout, "%s not in stdout:\n%s"
-                          % (exp, result))
+            check_ui(exp, result.stdout)
+
+        if ui_str:
+            check_ui(ui_str, result.stdout)
+
         return result
 
     def test_mplex_plugin(self):
@@ -75,7 +83,10 @@ class MultiplexTests(unittest.TestCase):
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % self.tmpdir)
         expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.run_and_check(cmd_line, expected_rc, (4, 0))
+        result = self.run_and_check(cmd_line,
+                                    expected_rc,
+                                    (4, 0),
+                                    'TESTS      : 4')
 
     def test_run_mplex_doublepass(self):
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '

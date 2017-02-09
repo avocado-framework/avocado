@@ -51,7 +51,11 @@ class Human(ResultEvents):
         if replay_source_job:
             self.log.info("SRC JOB ID : %s", replay_source_job)
         self.log.info("JOB LOG    : %s", job.logfile)
-        self.log.info("TESTS      : %s", len(job.test_suite))
+
+    def start_tests(self, result):
+        if not self.owns_stdout:
+            return
+        self.log.info("TESTS      : %s", result.tests_total)
 
     def start_test(self, result, state):
         if not self.owns_stdout:
