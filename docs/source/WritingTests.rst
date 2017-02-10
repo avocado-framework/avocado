@@ -56,6 +56,7 @@ Note that the test class provides you with a number of convenience attributes:
 * A parameter passing system (and fetching system) that can be accessed by
   means of ``self.params``. This is hooked to the Multiplexer, about which
   you can find that more information at :doc:`Mux`.
+* And many more (see :mod:`avocado.core.test.Test`)
 
 Saving test generated (custom) data
 ===================================
@@ -377,6 +378,8 @@ It can be run by::
    Ran 1 test in 0.000s
 
    OK
+
+But we'd still recommend using ``avocado.main`` instead which is our main entry point.
 
 Setup and cleanup methods
 =========================
@@ -873,7 +876,7 @@ Another way to skip tests is by using the Avocado skip decorators:
   ``False``
 
 Those decorators can be used with both ``setUp()`` method and/or and in the
-test methods. The test below::
+``test*()`` methods. The test below::
 
     import avocado
 
@@ -935,7 +938,8 @@ If your test is a method in a class that directly inherits from
 Now, the need may arise for more complex tests, to use more advanced
 Python features such as inheritance.  For those tests that are written
 in a class not directly inherting from :class:`avocado.Test`, Avocado
-may need your help.
+may need your help, because Avocado uses only static analysis to examine
+the files.
 
 For example, suppose that you define a new test class that inherits
 from the Avocado base test class, that is, :class:`avocado.Test`, and
@@ -1297,7 +1301,7 @@ Here are the current variables that Avocado exports to the tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_SYSINFODIR     | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/sysinfo         |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| *                           | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
+| `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 
