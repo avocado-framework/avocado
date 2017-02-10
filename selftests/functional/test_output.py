@@ -427,6 +427,17 @@ class OutputPluginTest(unittest.TestCase):
         os.chdir(basedir)
         process.run("perl %s" % perl_script)
 
+    def test_tap_totaltests(self):
+        os.chdir(basedir)
+        cmd_line = ("./scripts/avocado run passtest.py "
+                    "-m examples/tests/sleeptest.py.data/sleeptest.yaml "
+                    "--job-results-dir %s "
+                    "--tap -" % self.tmpdir)
+        result = process.run(cmd_line)
+        expr = '1..4'
+        self.assertIn(expr, result.stdout, "'%s' not found in:\n%s"
+                      % (expr, result.stdout))
+
     def test_broken_pipe(self):
         os.chdir(basedir)
         cmd_line = "(./scripts/avocado run --help | whacky-unknown-command)"
