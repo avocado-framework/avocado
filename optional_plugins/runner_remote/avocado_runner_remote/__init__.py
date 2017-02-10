@@ -536,7 +536,6 @@ class RemoteTestRunner(TestRunner):
             results = self.run_test(self.job.references, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
             self.result.tests_total = results['total']
-            self.result.start_tests()
             local_log_dir = self.job.logdir
             for tst in results['tests']:
                 name = tst['test'].split('-', 1)

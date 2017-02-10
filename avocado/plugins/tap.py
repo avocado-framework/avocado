@@ -66,6 +66,7 @@ class TAPResult(ResultEvents):
             log = open(output, "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
+        self.is_header_printed = False
 
     def __write(self, msg, *writeargs):
         """
@@ -84,11 +85,6 @@ class TAPResult(ResultEvents):
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
 
-        # Start writing the tap to all streams
-        tests = len(job.test_suite)
-        if tests > 0:
-            self.__write("1..%d", tests)
-
     def start_test(self, result, state):
         pass
 
@@ -96,6 +92,10 @@ class TAPResult(ResultEvents):
         """
         Log the test status and details
         """
+        if not self.is_header_printed:
+            self.__write("1..%d", result.tests_total)
+            self.is_header_printed = True
+
         status = state.get("status", "ERROR")
         name = state.get("name")
         if not name:
