@@ -9,33 +9,21 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2014
-# Author: Ruda Moura <rmoura@redhat.com>
+# Copyright: Red Hat Inc. 2014-2017
+# Authors: Ruda Moura <rmoura@redhat.com>
+#          Cleber Rosa <crosa@redhat.com>
 
-"""
-Module to provide classes for Virtual Machines.
-"""
-
+import getpass
 import logging
+import sys
 import time
 from xml.dom import minidom
 
-from . import remoter
+import libvirt
 
-LOG = logging.getLogger('avocado.test')
-
-try:
-    import libvirt
-except ImportError:
-    VIRT_CAPABLE = False
-    LOG.info('Virt module is disabled: could not import libvirt')
-else:
-    VIRT_CAPABLE = True
-
-
-if remoter.REMOTE_CAPABLE is False:
-    VIRT_CAPABLE = False
-    LOG.info('Virt module is disabled: remote module is disabled')
+from avocado.core import exit_codes
+from avocado.core.plugin_interfaces import CLI
+from avocado_runner_remote import Remote, RemoteTestRunner
 
 
 class VirtError(Exception):
@@ -279,7 +267,7 @@ class VM(object):
         :param password: the password.
         """
         if not self.logged:
-            self.remote = remoter.Remote(hostname, username, password)
+            self.remote = Remote(hostname, username, password)
             res = self.remote.uptime()
             if res.succeeded:
                 self.logged = True
@@ -370,3 +358,147 @@ def vm_connect(domain_name, hypervisor_uri='qemu:///system'):
                         domain_name)
 
     return VM(hyper, dom)
+
+
+class VMTestRunner(RemoteTestRunner):
+
+    """
+    Test runner to run tests using libvirt domain
+    """
+
+    def __init__(self, job, result):
+        super(VMTestRunner, self).__init__(job, result)
+        #: VM used during testing
+        self.vm = None
+
+    def setup(self):
+        """
+        Initialize VM and establish connection
+        """
+        # Super called after VM is found and initialized
+        stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
+        if not stdout_claimed_by:
+            self.job.log.info("DOMAIN     : %s", self.job.args.vm_domain)
+        try:
+            self.vm = vm_connect(self.job.args.vm_domain,
+                                 self.job.args.vm_hypervisor_uri)
+        except VirtError as exception:
+            raise exceptions.JobError(exception.message)
+        if self.vm.start() is False:
+            e_msg = "Could not start VM '%s'" % self.job.args.vm_domain
+            raise exceptions.JobError(e_msg)
+        assert self.vm.domain.isActive() is not False
+        # If hostname wasn't given, let's try to find out the IP address
+        if self.job.args.vm_hostname is None:
+            self.job.args.vm_hostname = self.vm.ip_address()
+            if self.job.args.vm_hostname is None:
+                e_msg = ("Could not find the IP address for VM '%s'. Please "
+                         "set it explicitly with --vm-hostname" %
+                         self.job.args.vm_domain)
+                raise exceptions.JobError(e_msg)
+        if self.job.args.vm_cleanup is True:
+            self.vm.create_snapshot()
+            if self.vm.snapshot is None:
+                e_msg = ("Could not create snapshot on VM '%s'" %
+                         self.job.args.vm_domain)
+                raise exceptions.JobError(e_msg)
+        # Finish remote setup and copy the tests
+        self.job.args.remote_hostname = self.job.args.vm_hostname
+        self.job.args.remote_port = self.job.args.vm_port
+        self.job.args.remote_username = self.job.args.vm_username
+        self.job.args.remote_password = self.job.args.vm_password
+        self.job.args.remote_key_file = self.job.args.vm_key_file
+        self.job.args.remote_timeout = self.job.args.vm_timeout
+        super(VMTestRunner, self).setup()
+
+    def tear_down(self):
+        """
+        Stop VM and restore snapshot (if asked for it)
+        """
+        super(VMTestRunner, self).tear_down()
+        if (self.job.args.vm_cleanup is True and
+                isinstance(getattr(self, 'vm', None), VM)):
+            self.vm.stop()
+            if self.vm.snapshot is not None:
+                self.vm.restore_snapshot()
+            self.vm = None
+
+
+class VMCLI(CLI):
+
+    """
+    Run tests on a Virtual Machine
+    """
+
+    name = 'vm'
+    description = "Virtual Machine options for 'run' subcommand"
+
+    def configure(self, parser):
+        run_subcommand_parser = parser.subcommands.choices.get('run', None)
+        if run_subcommand_parser is None:
+            return
+
+        msg = 'test execution on a Virtual Machine'
+        self.vm_parser = run_subcommand_parser.add_argument_group(msg)
+        self.vm_parser.add_argument('--vm-domain',
+                                    help=('Specify Libvirt Domain Name'))
+        self.vm_parser.add_argument('--vm-hypervisor-uri',
+                                    default='qemu:///system',
+                                    help=('Specify hypervisor URI driver '
+                                          'connection. Current: %(default)s'))
+        self.vm_parser.add_argument('--vm-hostname', default=None,
+                                    help=('Specify VM hostname to login. By '
+                                          'default Avocado attempts to '
+                                          'automatically find the VM IP '
+                                          'address.'))
+        self.vm_parser.add_argument('--vm-port', dest='vm_port',
+                                    default=22, type=int, help='Specify '
+                                    'the port number to login on VM. '
+                                    'Current: 22')
+        self.vm_parser.add_argument('--vm-username', default=getpass.getuser(),
+                                    help='Specify the username to login on VM')
+        self.vm_parser.add_argument('--vm-password',
+                                    default=None,
+                                    help='Specify the password to login on VM')
+        self.vm_parser.add_argument('--vm-key-file',
+                                    dest='vm_key_file', default=None,
+                                    help='Specify an identity file with '
+                                    'a private key instead of a password '
+                                    '(Example: .pem files from Amazon EC2)')
+        self.vm_parser.add_argument('--vm-cleanup',
+                                    action='store_true', default=False,
+                                    help='Restore VM to a previous state, '
+                                    'before running tests')
+        self.vm_parser.add_argument('--vm-timeout', metavar='SECONDS',
+                                    help=("Amount of time (in seconds) to "
+                                          "wait for a successful connection"
+                                          " to the virtual machine. Defaults"
+                                          " to %(default)s seconds."),
+                                    default=120, type=int)
+        self.configured = True
+
+    @staticmethod
+    def _check_required_args(args, enable_arg, required_args):
+        """
+        :return: True when enable_arg enabled and all required args are set
+        :raise sys.exit: When missing required argument.
+        """
+        if (not hasattr(args, enable_arg) or
+                not getattr(args, enable_arg)):
+            return False
+        missing = []
+        for arg in required_args:
+            if not getattr(args, arg):
+                missing.append(arg)
+        if missing:
+            log = logging.getLogger("avocado.app")
+            log.error("Use of %s requires %s arguments to be set. Please set "
+                      "%s.", enable_arg, ', '.join(required_args),
+                      ', '.join(missing))
+
+            return sys.exit(exit_codes.AVOCADO_FAIL)
+        return True
+
+    def run(self, args):
+        if self._check_required_args(args, 'vm_domain', ('vm_domain',)):
+            args.test_runner = VMTestRunner

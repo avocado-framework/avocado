@@ -4,8 +4,8 @@ import unittest
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core.remote import VMTestRunner
-from avocado.core import virt
+import avocado_runner_vm
+
 
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"test": "sleeptest.1", "url": "sleeptest", '
@@ -16,13 +16,14 @@ JSON_RESULTS = ('Something other than json\n'
                 '1}\nAdditional stuff other than json')
 
 
-class _FakeVM(virt.VM):
+class _FakeVM(avocado_runner_vm.VM):
 
     """
     Fake VM-inherited object (it's better to inherit it, than to flexmock the
     isinstance)
     """
-    def __init__(self):     # don't call virt.VM.__init__ pylint: disable=W0231
+    def __init__(self):  # pylint: disable=W0231
+        # don't call avocado_runner_vm.VM.__init__
         self.snapshot = True
         self.domain = flexmock(isActive=lambda: True)
 
@@ -33,7 +34,7 @@ class VMTestRunnerSetup(unittest.TestCase):
 
     def setUp(self):
         mock_vm = flexmock(_FakeVM())
-        flexmock(virt).should_receive('vm_connect').and_return(mock_vm).once().ordered()
+        flexmock(avocado_runner_vm).should_receive('vm_connect').and_return(mock_vm).once().ordered()
         mock_vm.should_receive('start').and_return(True).once().ordered()
         mock_vm.should_receive('create_snapshot').once().ordered()
         # VMTestRunner()
@@ -54,7 +55,7 @@ class VMTestRunnerSetup(unittest.TestCase):
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log)
-        self.runner = VMTestRunner(job, None)
+        self.runner = avocado_runner_vm.VMTestRunner(job, None)
         mock_vm.should_receive('stop').once().ordered()
         mock_vm.should_receive('restore_snapshot').once().ordered()
 

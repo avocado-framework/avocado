@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
-import unittest
+import logging
 import os
+import unittest
 
 from flexmock import flexmock, flexmock_teardown
 
-from avocado.core import remoter
-from avocado.core import remote
 from avocado.utils import archive
-import logging
+import avocado_runner_remote
 
-cwd = os.getcwd()
 
 JSON_RESULTS = ('Something other than json\n'
                 '{"tests": [{"test": "1-sleeptest;0",'
@@ -52,8 +50,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
                        logdir="/local/path",
                        _result_events_dispatcher=result_dispatcher)
 
-        flexmock(remote.RemoteTestRunner).should_receive('__init__')
-        self.runner = remote.RemoteTestRunner(job, None)
+        flexmock(avocado_runner_remote.RemoteTestRunner).should_receive('__init__')
+        self.runner = avocado_runner_remote.RemoteTestRunner(job, None)
         self.runner.job = job
 
         filehandler = logging.StreamHandler()
@@ -63,7 +61,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         stream = flexmock(job_unique_id='1-sleeptest;0',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
-        Remoter = flexmock(remoter.Remote)
+        Remoter = flexmock(avocado_runner_remote.Remote)
         Remoter.new_instances(Remote)
         args_version = 'avocado -v'
         version_result = flexmock(stdout='Avocado 1.2', exit_status=0)
@@ -112,12 +110,9 @@ _=/usr/bin/env''', exit_status=0)
                                         mux_yaml=['foo.yaml', 'bar/baz.yaml'],
                                         dry_run=True))
         Result.should_receive('start_tests').once().ordered()
-        args = {'status': u'PASS', 'whiteboard': '', 'time_start': 0,
-                'name': '1-sleeptest;0', 'class_name': 'RemoteTest',
-                'traceback': 'Not supported yet',
-                'text_output': 'Not supported yet', 'time_end': 1.23,
-                'time_elapsed': 1.23,
-                'fail_class': 'Not supported yet', 'job_unique_id': '',
+        args = {'name': '1-sleeptest;0', 'time_end': 1.23,
+                'status': u'PASS', 'time_start': 0,
+                'time_elapsed': 1.23, 'job_unique_id': '',
                 'fail_reason': u'None',
                 'logdir': u'/local/path/test-results/1-sleeptest;0',
                 'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log',
@@ -151,7 +146,7 @@ class RemoteTestRunnerSetup(unittest.TestCase):
 
     def setUp(self):
         Remote = flexmock()
-        remote_remote = flexmock(remoter)
+        remote_remote = flexmock(avocado_runner_remote)
         (remote_remote.should_receive('Remote')
          .with_args(hostname='hostname', username='username',
                     password='password', key_filename=None, port=22,
@@ -172,7 +167,7 @@ class RemoteTestRunnerSetup(unittest.TestCase):
         log = flexmock()
         log.should_receive("info")
         job = flexmock(args=Args, log=log)
-        self.runner = remote.RemoteTestRunner(job, None)
+        self.runner = avocado_runner_remote.RemoteTestRunner(job, None)
 
     def tearDown(self):
         flexmock_teardown()
