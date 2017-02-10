@@ -31,6 +31,7 @@ from . import output
 from . import status
 from .loader import loader
 from .status import mapping
+from .teststmpdir import teststmpdir
 from ..utils import wait
 from ..utils import runtime
 from ..utils import process
@@ -513,11 +514,13 @@ class TestRunner(object):
         no_digits = len(str(test_result_total))
         self.result.tests_total = test_result_total
         self.result.start_tests()
+        tests_tmpdir = teststmpdir.create()
         index = -1
         try:
             for test_template in test_suite:
                 test_template[1]['base_logdir'] = self.job.logdir
                 test_template[1]['job'] = self.job
+                test_template[1]['tests_tmpdir'] = tests_tmpdir
                 break_loop = False
                 for test_factory, variant in self._iter_variants(test_template,
                                                                  variants):
@@ -556,6 +559,7 @@ class TestRunner(object):
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
         self.result.end_tests()
+        teststmpdir.destroy()
         self.job._result_events_dispatcher.map_method('post_tests', self.job)
         self.job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
