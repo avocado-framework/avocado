@@ -141,8 +141,7 @@ def get_slot_from_sysfs(full_pci_address):
     if not os.path.isfile("/proc/device-tree/%s/ibm,loc-code" % devspec):
         return
     slot = read_file("/proc/device-tree/%s/ibm,loc-code" % devspec)
-    return re.match(r'((\w+)[\.])+(\w+)-(\w*\d+)-(\w*\d+)|Slot(\d+)',
-                    slot).group()
+    return slot
 
 
 def get_slot_list():
