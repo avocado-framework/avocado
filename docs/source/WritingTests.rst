@@ -747,14 +747,6 @@ namely the ``--output-check-record`` argument with values ``stdout``,
 to the files ``stdout.expected`` and ``stderr.expected`` at the test's
 data directory (which is different from the job/test results directory).
 
-Avocado Tests run on a separate process
-=======================================
-
-In order to avoid tests to mess around the environment used by the main
-Avocado runner process, tests are run on a forked subprocess. This allows
-for more robustness (tests are not easily able to mess/break Avocado) and
-some nifty features, such as setting test timeouts.
-
 Setting a Test Timeout
 ======================
 
