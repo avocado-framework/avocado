@@ -89,6 +89,9 @@ class TAPResult(ResultEvents):
         if tests > 0:
             self.__write("1..%d", tests)
 
+    def start_tests(self, result):
+        pass
+
     def start_test(self, result, state):
         pass
 

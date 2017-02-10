@@ -185,6 +185,12 @@ class ResultEvents(JobPreTests, JobPostTests):
     """
 
     @abc.abstractmethod
+    def start_tests(self, result):
+        """
+        Event triggered when the tests are about to start
+        """
+
+    @abc.abstractmethod
     def start_test(self, result, state):
         """
         Event triggered when a test starts running
