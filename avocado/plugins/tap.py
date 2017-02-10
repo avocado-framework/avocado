@@ -84,10 +84,10 @@ class TAPResult(ResultEvents):
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
 
+    def start_tests(self, result):
         # Start writing the tap to all streams
-        tests = len(job.test_suite)
-        if tests > 0:
-            self.__write("1..%d", tests)
+        if result.tests_total > 0:
+            self.__write("1..%d", result.tests_total)
 
     def start_test(self, result, state):
         pass
