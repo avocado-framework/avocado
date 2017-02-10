@@ -53,7 +53,7 @@ def get_pci_addresses():
     addresses = []
     cmd = "lspci -D"
     for line in process.system_output(cmd).splitlines():
-        if "PCI bridge" not in line:
+        if "PCI bridge" not in line and "peripheral" not in line:
             addresses.append(line.split()[0])
     if addresses:
         return addresses
