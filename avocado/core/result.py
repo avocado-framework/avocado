@@ -60,12 +60,6 @@ class Result(object):
         else:
             self.tests_total -= other_skipped_count
 
-    def start_tests(self):
-        """
-        Called once before any tests are executed.
-        """
-        pass
-
     def end_tests(self):
         """
         Called once after all tests are executed.

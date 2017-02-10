@@ -109,7 +109,6 @@ _=/usr/bin/env''', exit_status=0)
                           args=flexmock(show_job_log=False,
                                         mux_yaml=['foo.yaml', 'bar/baz.yaml'],
                                         dry_run=True))
-        Result.should_receive('start_tests').once().ordered()
         args = {'name': '1-sleeptest;0', 'time_end': 1.23,
                 'status': u'PASS', 'time_start': 0,
                 'time_elapsed': 1.23, 'job_unique_id': '',
