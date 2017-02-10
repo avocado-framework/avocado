@@ -359,6 +359,16 @@ class TestRunner(object):
 
         signal.signal(signal.SIGTSTP, sigtstp_handler)
 
+        # Saving the original sys.path state
+        _syspath = sys.path[:]
+
+        # Injecting the test module into the sys.path, so user can define
+        # a method from the test module to be used in func_at_exit
+        if 'modulePath' in test_factory[1]:
+            test_path = test_factory[1]['modulePath']
+            test_module_dir = os.path.abspath(os.path.dirname(test_path))
+            sys.path.insert(0, test_module_dir)
+
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
         test_status = TestStatus(self.job, queue)
@@ -436,6 +446,9 @@ class TestRunner(object):
         # Get/update the test status
         test_state = test_status.finish(proc, time_started, cycle_timeout,
                                         step)
+
+        # Restoring the sys.path to the original state
+        sys.path = _syspath
 
         # Try to log the timeout reason to test's results and update test_state
         if abort_reason:
