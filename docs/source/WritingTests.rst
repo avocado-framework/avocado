@@ -62,9 +62,11 @@ Saving test generated (custom) data
 
 Each test instance provides a so called ``whiteboard``. It can be accessed
 through ``self.whiteboard``. This whiteboard is simply a string that will be
-automatically saved to test results (as long as the output format supports it).
-If you choose to save binary data to the whiteboard, it's your responsibility to
-encode it first (base64 is the obvious choice).
+automatically saved to test results after the test finishes (it's not synced
+during the execution so when the machine or python crashes badly it might
+not be present and one should use direct io to the ``outputdir`` for
+critical data). If you choose to save binary data to the whiteboard,
+it's your responsibility to encode it first (base64 is the obvious choice).
 
 Building on the previously demonstrated ``sleeptest``, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
