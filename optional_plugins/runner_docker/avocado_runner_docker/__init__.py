@@ -19,20 +19,19 @@ import socket
 import time
 
 import aexpect
+
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.remote.runner import RemoteTestRunner
 from avocado.utils import process
 from avocado.utils.wait import wait_for
-
-
-LOG = logging.getLogger('avocado.remote')
+from avocado_runner_remote import RemoteTestRunner
 
 
 class DockerRemoter(object):
 
     """
-    Remoter object similar to `avocado.core.remoter` which implements subset
-    of the commands on docker container.
+    Remoter object similar to
+    :class:`avocado_runner_remoter.RemoteTestRunner` which implements
+    subset of the commands on docker container.
     """
 
     def __init__(self, dkrcmd, image, options, name=None):
@@ -79,7 +78,7 @@ class DockerRemoter(object):
             timeout = 31536000  # aexpect does not support None, use one year
         start = time.time()
         if quiet is not False:
-            print_func = LOG.debug
+            print_func = logging.getLogger('avocado.remote').debug
         status, output = self._docker.cmd_status_output(command,
                                                         timeout=timeout,
                                                         print_func=print_func)
@@ -143,7 +142,7 @@ class DockerTestRunner(RemoteTestRunner):
                 self.job.log.warn("DOCKER     : Fail to cleanup: %s" % details)
 
 
-class Docker(CLI):
+class DockerCLI(CLI):
 
     """
     Run the job inside a docker container
