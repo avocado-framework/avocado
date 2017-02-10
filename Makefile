@@ -114,7 +114,7 @@ clean:
 	find docs/source/api/ -name '*.rst' -delete
 	for MAKEFILE in $(AVOCADO_PLUGINS); do\
 		if test -f $$MAKEFILE/Makefile -o -f $$MAKEFILE/setup.py; then echo ">> UNLINK $$MAKEFILE";\
-			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null;\
+			if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE unlink &>/dev/null || echo ">> FAIL $$MAKEFILE";\
 			elif test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop --uninstall $(PYTHON_DEVELOP_ARGS); cd -; fi;\
 		else echo ">> SKIP $$MAKEFILE"; fi;\
 	done
