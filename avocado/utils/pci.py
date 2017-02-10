@@ -53,7 +53,7 @@ def get_pci_addresses():
     addresses = []
     cmd = "lspci -D"
     for line in process.system_output(cmd).splitlines():
-        if "PCI bridge" not in line:
+        if "PCI bridge" not in line and "peripheral" not in line:
             addresses.append(line.split()[0])
     if addresses:
         return addresses
@@ -142,7 +142,7 @@ def get_slot_from_sysfs(full_pci_address):
         return
     slot = read_file("/proc/device-tree/%s/ibm,loc-code" % devspec)
     return re.match(r'((\w+)[\.])+(\w+)-(\w*\d+)-(\w*\d+)|Slot(\d+)',
-                    slot).group()
+-                   slot).group()
 
 
 def get_slot_list():
