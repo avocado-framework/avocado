@@ -139,7 +139,7 @@ if __name__ == '__main__':
                   'tap = avocado.plugins.tap:TAP',
                   'vm = avocado.plugins.vm:VM',
                   'docker = avocado.plugins.docker:Docker',
-                  'yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMux',
+                  'yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMuxCLI',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   ],
               'avocado.plugins.cli.cmd': [
@@ -166,6 +166,9 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:Human',
                   'tap = avocado.plugins.tap:TAPResult',
                   'journal = avocado.plugins.journal:JournalResult',
+                  ],
+              "avocado.plugins.varianter": [
+                  "yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMux",
                   ],
               },
           zip_safe=False,
