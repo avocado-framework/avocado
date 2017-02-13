@@ -369,6 +369,9 @@ trying to fetch those URLs, and reporting PASS or FAIL for each of them.
 Debugging tests
 ===============
 
+Showing test output
+-------------------
+
 When developing new tests, you frequently want to look straight at the
 job log, without switching screens or having to "tail" the job log.
 
@@ -390,6 +393,30 @@ In order to do that, you can use ``avocado --show test run ...`` or
 
 As you can see, the UI output is suppressed and only the job log is shown,
 making this a useful feature for test development and debugging.
+
+Interrupting tests execution
+----------------------------
+
+To interrupt a job execution a user can press ``ctrl+c`` which after a single
+press sends SIGTERM to the main test's process and waits for it to finish.
+If this does not help user can press ``ctrl+c`` again (after 2s grace period)
+which destroys the test's process ungracefully and safely finishes the job
+execution always providing the test results.
+
+To pause the test execution a user can use ``ctrl+z`` which sends ``SIGSTOP``
+to all processes inherited from the test's PID. We do our best to stop all
+processes, but the operation is not atomic and some new processes might
+not be stopped. Another ``ctrl+z`` sends ``SIGCONT`` to all
+processes inherited by the test's PID resuming the execution. Note the
+test execution time (concerning the test timeout) are still running while
+the test's process is stopped.
+
+The test can also be interrupted by an Avocado feature. One example would
+be the `Debugging with GDB` :doc:`DebuggingWithGDB` feature.
+
+For custom interactions it is also possible to use other means like ``pdb``
+or ``pydevd`` :doc:`DevelopmentTips` breakpoints. Beware it's not possible
+to use ``STDIN`` from tests (unless dark magic is used).
 
 .. _Avocado Long Term Stability: https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado
