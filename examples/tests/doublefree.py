@@ -3,6 +3,7 @@
 import os
 import shutil
 import signal
+import sys
 
 from avocado import Test
 from avocado import main
@@ -19,6 +20,8 @@ class DoubleFreeTest(Test):
 
     :param source: name of the source file located in deps path
     """
+    GLIBC_MSG = 'double free or corruption'
+    MAC_LIBC_MSG = 'pointer being freed was not allocated'
 
     def setUp(self):
         """
@@ -43,7 +46,13 @@ class DoubleFreeTest(Test):
         expected_exit_status = -signal.SIGABRT
         output = cmd_result.stdout + cmd_result.stderr
         self.assertEqual(cmd_result.exit_status, expected_exit_status)
-        self.assertIn('double free or corruption', output)
+        if sys.platform.startswith('darwin'):
+            pattern = self.MAC_LIBC_MSG
+        else:
+            pattern = self.GLIBC_MSG
+        self.assertTrue(pattern in output,
+                        msg='Could not find pattern %s in output %s' %
+                            (pattern, output))
 
 
 if __name__ == "__main__":
