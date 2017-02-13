@@ -12,6 +12,7 @@ import time
 import xml.dom.minidom
 import zipfile
 import unittest
+import psutil
 
 import pkg_resources
 
@@ -24,6 +25,7 @@ from avocado.utils import path as utils_path
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+TRUE_CMD = utils_path.find_command('true')
 
 PASS_SCRIPT_CONTENTS = """#!/bin/sh
 true
@@ -105,7 +107,11 @@ def probe_binary(binary):
 
 
 CC_BINARY = probe_binary('cc')
+# On macOS, the default coreutils installation (brew)
+# installs the gnu utility versions with a g prefix.
 ECHO_BINARY = probe_binary('echo')
+if ECHO_BINARY is not None:
+    ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
 
@@ -469,7 +475,7 @@ class RunnerOperationTest(unittest.TestCase):
         log = open(debuglog, 'r').read()
         # Remove the result dir
         shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
-        self.assertIn('/tmp', debuglog)   # Use tmp dir, not default location
+        self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
         self.assertEqual(result['job_id'], u'0' * 40)
         # Check if all tests were skipped
         self.assertEqual(result['skip'], 4)
@@ -715,8 +721,10 @@ class RunnerSimpleTest(unittest.TestCase):
                               % (self.tmpdir, SLEEP_BINARY))
         proc.read_until_output_matches(["\(1/1\)"], timeout=3,
                                        internal_timeout=0.01)
-        # We need pid of the avocado, not the shell executing it
-        pid = int(process.get_children_pids(proc.get_pid())[0])
+        # We need pid of the avocado process, not the shell executing it
+        avocado_shell = psutil.Process(proc.get_pid())
+        avocado_proc = avocado_shell.children()[0]
+        pid = avocado_proc.pid
         os.kill(pid, signal.SIGTSTP)   # This freezes the process
         deadline = time.time() + 9
         while time.time() < deadline:
@@ -806,7 +814,7 @@ class ExternalRunnerTest(unittest.TestCase):
     def test_externalrunner_no_url(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--external-runner=/bin/true' % self.tmpdir)
+                    '--external-runner=%s' % (self.tmpdir, TRUE_CMD))
         result = process.run(cmd_line, ignore_status=True)
         expected_output = ('No test references provided nor any other '
                            'arguments resolved into tests')
