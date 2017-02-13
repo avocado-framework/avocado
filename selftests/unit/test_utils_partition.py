@@ -6,6 +6,7 @@ avocado.utils.partition unittests
 
 import os
 import shutil
+import sys
 import tempfile
 import time
 import unittest     # pylint: disable=C0411
@@ -30,6 +31,8 @@ class TestPartition(unittest.TestCase):
     Unit tests for avocado.utils.partition
     """
 
+    @unittest.skipIf(sys.platform.startswith('darwin'),
+                     'macOS does not have /proc/mounts')
     @unittest.skipIf(not process.can_sudo('mount'),
                      'current user must be allowed to run "mount" under sudo')
     @unittest.skipIf(not process.can_sudo('mkfs.ext2 -V'),
@@ -96,6 +99,8 @@ class TestPartition(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
+@unittest.skipIf(sys.platform.startswith('darwin'),
+                 'macOS does not have /etc/mtab')
 class TestMtabLock(unittest.TestCase):
 
     """
