@@ -56,15 +56,18 @@ Note that the test class provides you with a number of convenience attributes:
 * A parameter passing system (and fetching system) that can be accessed by
   means of ``self.params``. This is hooked to the Multiplexer, about which
   you can find that more information at :doc:`Mux`.
+* And many more (see :mod:`avocado.core.test.Test`)
 
 Saving test generated (custom) data
 ===================================
 
 Each test instance provides a so called ``whiteboard``. It can be accessed
 through ``self.whiteboard``. This whiteboard is simply a string that will be
-automatically saved to test results (as long as the output format supports it).
-If you choose to save binary data to the whiteboard, it's your responsibility to
-encode it first (base64 is the obvious choice).
+automatically saved to test results after the test finishes (it's not synced
+during the execution so when the machine or python crashes badly it might
+not be present and one should use direct io to the ``outputdir`` for
+critical data). If you choose to save binary data to the whiteboard,
+it's your responsibility to encode it first (base64 is the obvious choice).
 
 Building on the previously demonstrated ``sleeptest``, suppose that you want to save the
 sleep length to be used by some other script or data analysis tool::
@@ -375,6 +378,8 @@ It can be run by::
    Ran 1 test in 0.000s
 
    OK
+
+But we'd still recommend using ``avocado.main`` instead which is our main entry point.
 
 Setup and cleanup methods
 =========================
@@ -747,14 +752,6 @@ namely the ``--output-check-record`` argument with values ``stdout``,
 to the files ``stdout.expected`` and ``stderr.expected`` at the test's
 data directory (which is different from the job/test results directory).
 
-Avocado Tests run on a separate process
-=======================================
-
-In order to avoid tests to mess around the environment used by the main
-Avocado runner process, tests are run on a forked subprocess. This allows
-for more robustness (tests are not easily able to mess/break Avocado) and
-some nifty features, such as setting test timeouts.
-
 Setting a Test Timeout
 ======================
 
@@ -879,7 +876,7 @@ Another way to skip tests is by using the Avocado skip decorators:
   ``False``
 
 Those decorators can be used with both ``setUp()`` method and/or and in the
-test methods. The test below::
+``test*()`` methods. The test below::
 
     import avocado
 
@@ -941,7 +938,8 @@ If your test is a method in a class that directly inherits from
 Now, the need may arise for more complex tests, to use more advanced
 Python features such as inheritance.  For those tests that are written
 in a class not directly inherting from :class:`avocado.Test`, Avocado
-may need your help.
+may need your help, because Avocado uses only static analysis to examine
+the files.
 
 For example, suppose that you define a new test class that inherits
 from the Avocado base test class, that is, :class:`avocado.Test`, and
@@ -1303,7 +1301,7 @@ Here are the current variables that Avocado exports to the tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_SYSINFODIR     | The system information directory      | $HOME/logs/job-results/job-2014-09-16T14.38-ac332e6/test-results/$HOME/my_test.sh.1/sysinfo         |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| *                           | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
+| `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 

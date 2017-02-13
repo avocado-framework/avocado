@@ -55,17 +55,11 @@ Remote debug with Eclipse
 =========================
 
 Eclipse is a nice debugging frontend which allows remote debugging. It's very
-simple. The only thing you need is Eclipse with pydev plugin. Then you
-need to locate the pydevd path (usually
-`$INSTALL_LOCATION/plugins/org.python.pydev_*/pysrc` or
-`~/.eclipse/plugins/org.python.pydev_*/pysrc`. Then you set the breakpoint by::
+simple. The only thing you need is Eclipse with pydev plugin. The simplest
+way is to use ``pip install pydevd`` and then you set the breakpoint by::
 
-    import sys
-    sys.path.append("$PYDEV_PATH")
     import pydevd
-    pydevd.settrace("$IP_ADDR_OF_ECLIPSE_MACHINE")
-
-Alternatively you can export PYTHONPATH=$PYDEV_PATH and use only last 2 lines.
+    pydevd.settrace(host="$IP_ADDR_OF_ECLIPSE_MACHINE", stdoutToServer=False, stderrToServer=False, port=5678, suspend=True, trace_only_current_thread=False, overwrite_prev_trace=False, patch_multiprocessing=False)
 
 Before you run the code, you need to start the Eclipse's debug server. Switch
 to `Debug` perspective (you might need to open it first

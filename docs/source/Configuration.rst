@@ -124,7 +124,7 @@ When running tests, we are frequently looking to:
   images
 
 Avocado has a module dedicated to find those paths, to avoid cumbersome
-path manipulation magic that people had to do in previous test frameworks [1].
+path manipulation magic that people had to do in previous test frameworks [#f1]_.
 
 If you want to list all relevant directories for your test, you can use
 `avocado config --datadir` command to list those directories. Executing
@@ -163,4 +163,4 @@ since that is customary among unix programs.
 The next section of the documentation explains how you can see and set config
 values that modify the behavior for the Avocado utilities and plugins.
 
-[1] For example, autotest.
+.. [#f1] For example, autotest.
