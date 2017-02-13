@@ -6,6 +6,7 @@ avocado.utils.lv_utils selftests
 from avocado.utils import process, lv_utils
 import glob
 import os
+import sys
 import shutil
 import tempfile
 import unittest
@@ -17,6 +18,8 @@ class LVUtilsTest(unittest.TestCase):
     Check the LVM related utilities
     """
 
+    @unittest.skipIf(sys.platform.startswith('darwin'),
+                     'macOS does not support LVM')
     @unittest.skipIf(process.system("which vgs", ignore_status=True),
                      "LVM utils not installed (command vgs is missing)")
     @unittest.skipIf(not process.can_sudo(), "This test requires root or "
@@ -30,7 +33,10 @@ class LVUtilsTest(unittest.TestCase):
         for vg_name in self.vgs:
             lv_utils.vg_remove(vg_name)
 
-    @unittest.skipIf(process.system("modinfo scsi_debug", ignore_status=True),
+    @unittest.skipIf(sys.platform.startswith('darwin'),
+                     'macOS does not support LVM')
+    @unittest.skipIf(process.system("modinfo scsi_debug", shell=True,
+                                    ignore_status=True),
                      "Kernel mod 'scsi_debug' not available.")
     @unittest.skipIf(process.system("lsmod | grep -q scsi_debug; [ $? -ne 0 ]",
                                     shell=True, ignore_status=True),
@@ -64,6 +70,8 @@ class LVUtilsTest(unittest.TestCase):
         else:
             self.fail("Fail to remove scsi_debug after testing: %s" % res)
 
+    @unittest.skipIf(sys.platform.startswith('darwin'),
+                     'macOS does not support LVM')
     @unittest.skipIf(process.system("vgs --all | grep -q avocado_testing_vg_"
                                     "e5kj3erv11a; [ $? -ne 0 ]", sudo=True,
                                     shell=True, ignore_status=True),
