@@ -1,0 +1,99 @@
+=================
+46.0 Burning Bush
+=================
+
+The Avocado team is proud to present another release: Avocado version
+46.0, aka, "Burning Bush" now available!
+
+Release documentation: `Avocado 46.0
+<http://avocado-framework.readthedocs.io/en/46.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * Avocado test writers can now use a family of decorators, namely
+   :func:`avocado.skip`, :func:`avocado.skipIf` and
+   :func:`avocado.skipUnless` to skip the execution of tests.  These are
+   similar to the well known :mod:`unittest` decorators.
+
+ * Sysinfo collection based on command execution now allows a timeout
+   to be set.  This makes test job executions with sysinfo enabled
+   more reliable, because the job won't hang until it reaches the job
+   timeout.
+
+ * Users will receive better error messages from the multiplexer
+   (variant subsystem) when the given YAML files do not exist.
+
+ * Users of the :func:`avocado.utils.process.system_output` will now
+   get the command output with the trailing newline stripped by
+   default.  If needed, a parameter can be used to preserve the
+   newline.  This is now consistent with most Python process execution
+   utility APIs.
+
+Distribution
+============
+
+ * The non-local runner plugins are now distributed in separate RPM
+   packages.  Users installing from RPM packages should also install
+   packages such as ``avocado-plugins-runners-remote``,
+   ``avocado-plugins-runners-vm`` and
+   ``avocado-plugins-runners-docker``.  Users upgrading from previous
+   Avocado versions should also install these packages manually or
+   they will lose the corresponding functionality.
+
+Internal improvements
+=====================
+
+ * Python 2.6 support has been dropped.  This now paves the way for
+   our energy to be better spent on developing new features and also
+   bring proper support for Python 3.x.
+
+Bug fixes
+=========
+
+ * The TAP result plugin was printing an incorrect test plan when using
+   the multiplexer (variants) mechanism.  The total number of tests to
+   be executed (the first line in TAP output) did not account for the
+   number of variants.
+
+ * The remote, vm and docker runners would print some UI related
+   messages even when other types of result (such as TAP, json, etc)
+   would be set to output to STDOUT.
+
+ * Under some scenarios, an Avocado test would create an undesirable
+   and incomplete job result directory on demand.
+
+Documentation / Contrib
+=======================
+
+ * The `Avocado page on PythonHosted.org
+   <http://pythonhosted.org/avocado-framework>`_ now redirects to our
+   `official documentation page
+   <http://avocado-framework.readthedocs.io>`_.
+
+ * We now document how to pause and unpause tests.
+
+ * A script to simplify bisecting with Avocado has been added to the
+   ``contrib`` directory.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/45.0...46.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=hj31AJq94Nk>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/I6KG9bpq/893-sprint-theme-burning-bush

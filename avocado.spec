@@ -1,13 +1,13 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit e8b774aa9d3e760b32e2d3eaacd6c603833fd342
+ %define commit 337b333e1b58f18f876c993121454f2f6cb599db
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
-Version: 45.0
-Release: 2%{?dist}
+Version: 46.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -181,6 +181,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Feb 14 2017 Cleber Rosa <cleber@localhost.localdomain> - 46.0-0
+- New upstream release
+
 * Sun Feb  5 2017 Cleber Rosa <cleber@redhat.com> - 45.0-2
 - Split package into plugins-runner-{remote,vm,docker} packages
 
