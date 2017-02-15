@@ -424,6 +424,9 @@ class RemoteTestRunner(TestRunner):
         try:
             result = self.remote.run(avocado_cmd, ignore_status=True,
                                      timeout=timeout)
+            if result.exit_status & exit_codes.AVOCADO_JOB_FAIL:
+                raise exceptions.JobError("Remote execution failed with: %s" % result.stderr)
+
         except CommandTimeout:
             raise exceptions.JobError("Remote execution took longer than "
                                       "specified timeout (%s). Interrupting."
