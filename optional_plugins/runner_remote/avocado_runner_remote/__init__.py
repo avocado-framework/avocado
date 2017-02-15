@@ -96,7 +96,9 @@ def run(command, ignore_status=False, quiet=True, timeout=60):
             fabric_result = fabric.operations.run(command=command,
                                                   quiet=quiet,
                                                   warn_only=True,
-                                                  timeout=timeout)
+                                                  timeout=timeout,
+                                                  pty=False,
+                                                  combine_stderr=False)
             break
         except fabric.network.NetworkError, details:
             fabric_exception = details
@@ -114,8 +116,8 @@ def run(command, ignore_status=False, quiet=True, timeout=60):
     end_time = time.time()
     duration = end_time - start_time
     result.command = command
-    result.stdout = str(fabric_result)
-    result.stderr = fabric_result.stderr
+    result.stdout = str(fabric_result.stdout)
+    result.stderr = str(fabric_result.stderr)
     result.duration = duration
     result.exit_status = fabric_result.return_code
     result.failed = fabric_result.failed
@@ -352,7 +354,7 @@ class RemoteTestRunner(TestRunner):
         if result.exit_status == 127:
             return (False, None)
 
-        match = self.remote_version_re.findall(result.stdout)
+        match = self.remote_version_re.findall(result.stderr)
         if match is None:
             return (False, None)
 

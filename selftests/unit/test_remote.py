@@ -64,7 +64,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         Remoter = flexmock(avocado_runner_remote.Remote)
         Remoter.new_instances(Remote)
         args_version = 'avocado -v'
-        version_result = flexmock(stdout='Avocado 1.2', exit_status=0)
+        version_result = flexmock(stderr='Avocado 1.2', exit_status=0)
         args_env = 'env'
         env_result = flexmock(stdout='''XDG_SESSION_ID=20
 HOSTNAME=rhel7.0
