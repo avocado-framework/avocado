@@ -7,7 +7,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
 Version: 46.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -27,7 +27,6 @@ BuildRequires: aexpect
 # from Crypto import Random; except: Random = None) and thus do not
 # need this requirement.
 %if 0%{?fedora} == 24
-Requires: python-crypto
 BuildRequires: python-crypto
 %endif
 
@@ -195,6 +194,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Feb 15 2017 Cleber Rosa <cleber@redhat.com> - 46.0-2
+- Removed python-crypto dependency from base avocado package
+
 * Wed Feb 15 2017 Cleber Rosa <cleber@redhat.com> - 46.0-1
 - Fixed packager email
 - Added explicit requirement
