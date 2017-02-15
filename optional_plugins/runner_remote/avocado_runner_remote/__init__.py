@@ -254,51 +254,6 @@ class Remote(object):
                                                hosts=[self.hostname])
             return return_dict[self.hostname]
 
-    @staticmethod
-    def _run(command, ignore_status=False, quiet=True, timeout=60):
-        result = process.CmdResult()
-        start_time = time.time()
-        end_time = time.time() + (timeout or 0)   # Support timeout=None
-        # Fabric sometimes returns NetworkError even when timeout not reached
-        fabric_result = None
-        fabric_exception = None
-        while True:
-            try:
-                fabric_result = fabric.operations.run(command=command,
-                                                      quiet=quiet,
-                                                      warn_only=True,
-                                                      timeout=timeout,
-                                                      pty=False)
-                break
-            except fabric.network.NetworkError as details:
-                fabric_exception = details
-                if 'not found in known_hosts' in details.message:
-                    break
-                timeout = end_time - time.time()
-            if time.time() > end_time:
-                break
-        if fabric_result is None:
-            if fabric_exception is not None:
-                raise fabric_exception  # it's not None pylint: disable=E0702
-            else:
-                raise fabric.network.NetworkError("Remote execution of '%s'"
-                                                  "failed without any "
-                                                  "exception. This should not "
-                                                  "happen." % command)
-        end_time = time.time()
-        duration = end_time - start_time
-        result.command = command
-        result.stdout = str(fabric_result)
-        result.stderr = fabric_result.stderr
-        result.duration = duration
-        result.exit_status = fabric_result.return_code
-        result.failed = fabric_result.failed
-        result.succeeded = fabric_result.succeeded
-        if not ignore_status:
-            if result.failed:
-                raise process.CmdError(command=command, result=result)
-        return result
-
     def uptime(self):
         """
         Performs uptime (good to check connection).
