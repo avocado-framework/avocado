@@ -13,6 +13,7 @@
 # Author: Lukas Doktor <ldoktor@redhat.com>
 """Multiplexer plugin to parse yaml files to params"""
 
+import copy
 import logging
 import os
 import re
@@ -43,6 +44,23 @@ YAML_MUX = 102
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
+
+
+class _BaseLoader(Loader):
+    """
+    YAML loader with additional features related to mux
+    """
+    pass
+
+
+_BaseLoader.add_constructor(u'!include', lambda loader,
+                            node: mux.Control(YAML_INCLUDE))
+_BaseLoader.add_constructor(u'!using',
+                            lambda loader, node: mux.Control(YAML_USING))
+_BaseLoader.add_constructor(u'!remove_node',
+                            lambda loader, node: mux.Control(YAML_REMOVE_NODE))
+_BaseLoader.add_constructor(u'!remove_value',
+                            lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
 
 
 class Value(tuple):     # Few methods pylint: disable=R0903
@@ -143,16 +161,11 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
         objects.append((mux.Control(YAML_MUX), None))
         return objects
 
-    Loader.add_constructor(u'!include',
-                           lambda loader, node: mux.Control(YAML_INCLUDE))
-    Loader.add_constructor(u'!using',
-                           lambda loader, node: mux.Control(YAML_USING))
-    Loader.add_constructor(u'!remove_node',
-                           lambda loader, node: mux.Control(YAML_REMOVE_NODE))
-    Loader.add_constructor(u'!remove_value',
-                           lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
-    Loader.add_constructor(u'!mux', mux_loader)
-    Loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    # For each instance we need different `cls_node`, therefor different
+    # !mux and default mapping loader constructors
+    loader = copy.copy(_BaseLoader)
+    loader.add_constructor(u'!mux', mux_loader)
+    loader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
                            mapping_to_tree_loader)
 
     # Parse file name ([$using:]$path)
@@ -169,7 +182,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
 
     # Load the tree
     with open(path) as stream:
-        loaded_tree = yaml.load(stream, Loader)
+        loaded_tree = yaml.load(stream, loader)
         if loaded_tree is None:
             return
         loaded_tree = tree_node_from_values('', loaded_tree)
