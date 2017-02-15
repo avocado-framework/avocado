@@ -7,7 +7,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
 Version: 46.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -19,6 +19,16 @@ BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, p
 BuildRequires: python-aexpect
 %else
 BuildRequires: aexpect
+%endif
+
+# For some strange reason, fabric on Fedora 24 does not require the
+# python-crypto package, but the fabric code always imports it.  Newer
+# fabric versions, such from Fedora 25 do conditional imports (try:
+# from Crypto import Random; except: Random = None) and thus do not
+# need this requirement.
+%if 0%{?fedora} == 24
+Requires: python-crypto
+BuildRequires: python-crypto
 %endif
 
 %if 0%{?fedora} >= 25
@@ -128,6 +138,10 @@ arbitrary filesystem location.
 %package plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
 Requires: avocado == %{version}, fabric
+%if 0%{?fedora} == 24
+Requires: python-crypto
+BuildRequires: python-crypto
+%endif
 
 %description plugins-runner-remote
 Allows Avocado to run jobs on a remote machine, by means of an SSH
@@ -181,7 +195,11 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
-* Tue Feb 14 2017 Cleber Rosa <cleber@localhost.localdomain> - 46.0-0
+* Wed Feb 15 2017 Cleber Rosa <cleber@redhat.com> - 46.0-1
+- Fixed packager email
+- Added explicit requirement
+
+* Tue Feb 14 2017 Cleber Rosa <cleber@redhat.com> - 46.0-0
 - New upstream release
 
 * Sun Feb  5 2017 Cleber Rosa <cleber@redhat.com> - 45.0-2
