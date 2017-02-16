@@ -1,0 +1,9 @@
+This is a set of utility APIs that Avocado provides as added value to
+test writers.
+
+It's suppose to be generic, without any knowledge of Avocado and reusable
+in different projects.
+
+.. note:: In the current version there is a hidden knowledge of avocado
+   logging streams. More about this issue can be found here
+   https://trello.com/c/4QyUgWsW/720-get-rid-of-avocado-test-loggers-from-avocado-utils
