@@ -78,7 +78,7 @@ results_dir_content() {
     fi
 }
 
-[ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR)"
+[ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR 2> /dev/null)"
 run_rc lint 'inspekt --exclude=.git lint'
 run_rc indent 'inspekt --exclude=.git indent'
 run_rc style 'inspekt --exclude=.git style --disable E501,E265,W601,E402,E722'
