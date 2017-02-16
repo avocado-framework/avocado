@@ -58,6 +58,86 @@ Note that the test class provides you with a number of convenience attributes:
   you can find that more information at :doc:`Mux`.
 * And many more (see :mod:`avocado.core.test.Test`)
 
+Test statuses
+=============
+
+Avocado supports the most common exit statuses:
+
+* ``PASS`` - test passed, there were no untreated exceptions
+* ``WARN`` - the test passed, but there were some warnings in the main
+  avocado log. The purpose of this is to say that the item under testing
+  behaved correctly, but there were some (probably unrelated) things which
+  might or might not require attention. An example could be ``soft lockup``
+  present in the ``dmesg`` output. It's not related to the test results
+  and unless there are failures in the test it means the feature probably
+  works as expected, but there were certain condition which might be nice
+  to review. (some result plugins does not support this and report
+  ``PASS`` instead)
+* ``SKIP`` - the test's pre-requisites were not satisfied and the test
+  body was not executed (nor the ``tearDown``)
+* ``FAIL`` - the object under testing failed in expected manner. There is
+  a great difference between ``FAIL`` and ``ERROR``, because ``FAIL`` means
+  we do expect that this happens when the object under testing is not working
+  properly. This means on ``FAIL`` result no further actions are required,
+  we are certain that the tested feature is broken.
+* ``ERROR`` - the test execution failed in unexpected manner. This usually
+  means unrelated system failure or unexplored feature behavior. It is
+  the most generic way to fail test and such results should always be
+  thoroughly analyzed and if it turns out to be expected failure of the
+  object under testing the test should be adjusted to use ``self.fail``
+  instead of generic ``ERROR``.
+* ``INTERRUPTED`` - this result can't be set by the test writer, it is
+  only possible when the timeout is reached or when the user hits
+  ``ctrl+c`` while executing this test.
+* other - there are some other internal test statuses, but you should not
+  ever face them.
+
+As you can see the ``FAIL`` is a neat status, if tests are developed
+correctly. When writing tests always think about what is a ``setUp``,
+what is the ``test body`` and what is expected to go wrong in the test.
+To support you Avocado supports several methods:
+
+Test methods
+------------
+
+The simplest way to set the status is to use ``self.fail`` or
+``self.error`` directly from test. One can also use ``self.skip``
+but only from the ``setUp`` method. Those result in the correct
+exception being emitted and the test interruption.
+
+To remember a warning, one simply writes to ``self.log.warning``
+logger. This won't interrupt the test execution, but it would
+remember the log was used and if there are no other failures
+it reports the test as ``WARN``.
+
+Catching exceptions
+-------------------
+
+It's common to rely on libraries, which usually raise custom (or
+builtin) exceptions. Those exceptions would normally result in
+``ERROR`` but if you are certain this is an odd behavior of the
+object under testing, you should catch the exception and explain
+the failure in ``self.fail`` method::
+
+    try:
+        process.run("stress_my_feature")
+    except process.CmdError as details:
+        self.fail("The stress comamnd failed: %s" % details)
+
+If your test compounds of many executions and you can't get this exception
+in other case then expected failure, you can simplify the code by using
+``fail_on`` decorator::
+
+    avocado.fail_on(process.CmdError)
+    def test(self):
+        process.run("first cmd")
+        process.run("second cmd")
+        process.run("third cmd")
+
+Once again, keeping your tests up-to-date and distinguishing between
+``FAIL`` and ``ERROR`` will save you a lot of time while reviewing the
+test results.
+
 Saving test generated (custom) data
 ===================================
 
