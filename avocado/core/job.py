@@ -356,15 +356,14 @@ class Job(object):
             job_log.info(line)
         job_log.info('')
 
-    @staticmethod
-    def _log_avocado_datadir():
+    def _log_avocado_datadir(self):
         job_log = _TEST_LOGGER
         job_log.info('Avocado Data Directories:')
         job_log.info('')
         job_log.info('base     ' + data_dir.get_base_dir())
         job_log.info('tests    ' + data_dir.get_test_dir())
         job_log.info('data     ' + data_dir.get_data_dir())
-        job_log.info('logs     ' + data_dir.get_logs_dir())
+        job_log.info('logs     ' + self.logdir)
         job_log.info('')
 
     def _log_variants_tree(self, variant):
