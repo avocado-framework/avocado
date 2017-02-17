@@ -361,10 +361,6 @@ class Job(object):
         job_log = _TEST_LOGGER
         job_log.info('Avocado Data Directories:')
         job_log.info('')
-        job_log.info("Avocado replaces config dirs that can't be accessed")
-        job_log.info('with sensible defaults. Please edit your local config')
-        job_log.info('file to customize values')
-        job_log.info('')
         job_log.info('base     ' + data_dir.get_base_dir())
         job_log.info('tests    ' + data_dir.get_test_dir())
         job_log.info('data     ' + data_dir.get_data_dir())
