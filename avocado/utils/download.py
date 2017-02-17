@@ -87,30 +87,33 @@ def url_download_interactive(url, output_file, title='', chunk_size=102400):
     """
     output_dir = os.path.dirname(output_file)
     output_file = open(output_file, 'w+b')
-    input_file = urllib2.urlopen(url)
 
     try:
+        input_file = urllib2.urlopen(url)
         file_size = int(input_file.headers['Content-Length'])
+
+        logging.info('Downloading %s, %s to %s', os.path.basename(url),
+                     output.display_data_size(file_size), output_dir)
+
+        progress_bar = output.ProgressBar(maximum=file_size, title=title)
+
+        # Download the file, while interactively updating the progress
+        progress_bar.draw()
+        while True:
+            data = input_file.read(chunk_size)
+            if data:
+                progress_bar.append_amount(len(data))
+                output_file.write(data)
+            else:
+                progress_bar.update_amount(file_size)
+                break
     except KeyError:
         raise ValueError('Could not find file size in HTTP headers')
-
-    logging.info('Downloading %s, %s to %s', os.path.basename(url),
-                 output.display_data_size(file_size), output_dir)
-
-    progress_bar = output.ProgressBar(maximum=file_size, title=title)
-
-    # Download the file, while interactively updating the progress
-    progress_bar.draw()
-    while True:
-        data = input_file.read(chunk_size)
-        if data:
-            progress_bar.append_amount(len(data))
-            output_file.write(data)
-        else:
-            progress_bar.update_amount(file_size)
-            break
-
-    output_file.close()
+    except Exception as e:
+        logging.warn('Please, check your internet connection: %s',
+                     e)
+    finally:
+        output_file.close()
 
 
 def _get_file(src, dst, permissions=None):
