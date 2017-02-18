@@ -17,6 +17,7 @@
 # Authors: Yiqiao Pu <ypu@redhat.com>
 
 
+import os
 import re
 import glob
 import math
@@ -278,3 +279,35 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
             buddyinfo_dict[chunk_size] += int(chunk_info)
 
     return buddyinfo_dict
+
+
+def set_thp_value(value, feature):
+    """
+    Sets THP feature to a given value
+
+    :param value : Value to be set to feature
+    :type value : str
+    :param feature : Thp feature to set
+    :type feature : str
+    """
+    thp_path = '/sys/kernel/mm/transparent_hugepage/'
+    thp_feature_to_set = os.path.join(thp_path, feature)
+    cmd = 'echo %s > %s ' % (value, thp_feature_to_set)
+    process.system(cmd, shell=True)
+
+
+def get_thp_value(feature):
+    """
+    Gets the value of the thp feature arg passed
+
+    :param feature : Thp feature to get value
+    :type feature : str
+    """
+    thp_path = '/sys/kernel/mm/transparent_hugepage/'
+    thp_feature_to_get = os.path.join(thp_path, feature)
+    cmd = 'cat %s' % thp_feature_to_get
+    value = process.system_output(cmd, shell=True)
+    if feature == 'enabled' or feature == 'defrag':
+        return (re.search(r"\[(\w+)\]", value)).group(1)
+    else:
+        return value
