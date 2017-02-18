@@ -39,8 +39,7 @@ API_SECTIONS = {"Test APIs": (None,
                               ("modules.rst", )),
 
                 "Utilities APIs": ("utils",
-                                   "This is a set of utility APIs that Avocado "
-                                   "provides as added value to test writers.",
+                                   open("api_utils_heading", "r").read(),
                                    "utils",
                                    ("core", "plugins"),
                                    ("avocado.rst", "modules.rst"),),
