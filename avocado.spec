@@ -13,7 +13,7 @@ Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
-Requires: python, python-requests, pyliblzma, gdb, gdb-gdbserver, python-stevedore, python-yaml, procps-ng
+Requires: python, python-requests, python-setuptools, pyliblzma, gdb, gdb-gdbserver, python-stevedore, python-yaml, procps-ng
 BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock, libvirt-python, python-yaml, procps-ng
 %if 0%{?fedora}
 BuildRequires: python-aexpect
