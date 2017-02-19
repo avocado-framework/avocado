@@ -65,6 +65,26 @@ source-release: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
 	git archive --prefix="avocado-$(RELEASE_COMMIT)/" -o "SOURCES/avocado-$(VERSION)-$(RELEASE_SHORT_COMMIT).tar.gz" $(VERSION)
 
+source-pypi: clean
+	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
+	git archive --format="tar" --prefix="avocado-framework/" -o "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" $(VERSION)
+
+pypi: source-pypi develop
+	mkdir -p PYPI_UPLOAD/avocado-framework
+	sed -e 's/Name: avocado/Name: avocado-framework/' avocado.egg-info/PKG-INFO > PYPI_UPLOAD/avocado-framework/PKG-INFO
+	tar rf "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" -C PYPI_UPLOAD avocado-framework/PKG-INFO
+	gzip -9 "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
+	rm -f PYPI_UPLOAD/avocado-framework/PKG-INFO
+	rmdir PYPI_UPLOAD/avocado-framework
+	@echo
+	@echo "Please use the files on PYPI_UPLOAD dir to upload a new version to PyPI"
+	@echo "The URL to do that may be a bit tricky to find, so here it is:"
+	@echo " https://pypi.python.org/pypi?%3Aaction=submit_form"
+	@echo
+	@echo "Alternatively, you can also run: "
+	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/avocado-framework-$(VERSION).tar.gz"
+	@echo
+
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
