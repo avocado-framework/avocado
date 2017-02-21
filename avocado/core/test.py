@@ -243,7 +243,7 @@ class Test(unittest.TestCase):
         self.paused = False
         self.paused_msg = ''
 
-        self.runner_queue = runner_queue
+        self.__runner_queue = runner_queue
 
         unittest.TestCase.__init__(self, methodName=methodName)
 
@@ -364,6 +364,22 @@ class Test(unittest.TestCase):
         if datadir_cache not in cache_dirs:
             cache_dirs.append(datadir_cache)
         return cache_dirs
+
+    @property
+    def runner_queue(self):
+        """
+        The communication channel between test and test runner
+        """
+        return self.__runner_queue
+
+    def set_runner_queue(self, runner_queue):
+        """
+        Override the runner_queue
+        """
+        self.assertTrue(self.__runner_queue is None, "Overriding of runner_"
+                        "queue multiple times is not allowed -> old=%s new=%s"
+                        % (self.__runner_queue, runner_queue))
+        self.__runner_queue = runner_queue
 
     @property
     def status(self):

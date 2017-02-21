@@ -302,7 +302,7 @@ class TestRunner(object):
 
         instance = loader.load_test(test_factory)
         if instance.runner_queue is None:
-            instance.runner_queue = queue
+            instance.set_runner_queue(queue)
         runtime.CURRENT_TEST = instance
         early_state = instance.get_state()
         early_state['early_status'] = True
