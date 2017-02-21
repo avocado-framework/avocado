@@ -233,7 +233,6 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.name)
 
-        self.text_output = None
         self.__status = None
         self.__fail_reason = None
         self.__fail_class = None
@@ -449,7 +448,7 @@ class Test(unittest.TestCase):
             self._update_time_elapsed()
         preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_reason',
                          'logdir', 'logfile', 'name', 'resultsdir', 'srcdir',
-                         'status', 'text_output', 'time_elapsed',
+                         'status', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
@@ -710,8 +709,6 @@ class Test(unittest.TestCase):
             self._tag_end()
             self._report()
             self.log.info("")
-            with open(self.logfile, 'r') as log_file_obj:
-                self.text_output = log_file_obj.read()
             self._stop_logging()
 
     def _report(self):
