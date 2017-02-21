@@ -57,7 +57,8 @@ from avocado import Test
 class FakeStatusTest(Test):
     def run_avocado(self):
         super(FakeStatusTest, self).run_avocado()
-        self.status = 'not supported'
+        # Please do NOT ever use this, it's for unittesting only.
+        self._Test__status = 'not supported'
 
     def test(self):
         pass
