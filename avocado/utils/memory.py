@@ -17,12 +17,14 @@
 # Authors: Yiqiao Pu <ypu@redhat.com>
 
 
+import os
 import re
 import glob
 import math
 import logging
 
 from . import process
+from . import genio
 
 
 # Returns total memory in kb
@@ -278,3 +280,33 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
             buddyinfo_dict[chunk_size] += int(chunk_info)
 
     return buddyinfo_dict
+
+
+def set_thp_value(feature, value):
+    """
+    Sets THP feature to a given value
+
+    :param feature: Thp feature to set
+    :type feature: str
+    :param value: Value to be set to feature
+    :type value: str
+    """
+    thp_path = '/sys/kernel/mm/transparent_hugepage/'
+    thp_feature_to_set = os.path.join(thp_path, feature)
+    genio.write_file_or_fail(thp_feature_to_set, value)
+
+
+def get_thp_value(feature):
+    """
+    Gets the value of the thp feature arg passed
+
+    :Param feature: Thp feature to get value
+    :type feature: str
+    """
+    thp_path = '/sys/kernel/mm/transparent_hugepage/'
+    thp_feature_to_get = os.path.join(thp_path, feature)
+    value = genio.read_file(thp_feature_to_get)
+    if feature in ("enabled", "defrag", "shmem_enabled"):
+        return (re.search(r"\[(\w+)\]", value)).group(1)
+    else:
+        return value

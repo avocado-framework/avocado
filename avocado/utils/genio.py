@@ -29,6 +29,13 @@ _open_log_files = {}
 _log_file_dir = os.environ.get('TMPDIR', '/tmp')
 
 
+class GenIOError(Exception):
+    """
+    Base Exception Class for all IO exceptions
+    """
+    pass
+
+
 def log_line(filename, line):
     """
     Write a line to a file.
@@ -174,3 +181,21 @@ def write_one_line(filename, line):
     :type line: str
     """
     write_file(filename, line.rstrip('\n') + '\n')
+
+
+def write_file_or_fail(filename, data):
+    """
+    Write to a file and raise exception on write failure
+
+    :param filename: Path to file
+    :type filename: str
+    :param data: Data to be written to file
+    :type data: str
+    :raises GenIOError: On write Failure
+    """
+    fd = os.open(filename, os.O_WRONLY)
+    try:
+        ret = os.write(fd, data)
+    except OSError as details:
+        raise GenIOError("The write to %s failed: %s" % (
+                         filename, details))
