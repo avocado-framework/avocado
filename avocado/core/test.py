@@ -361,7 +361,7 @@ class Test(unittest.TestCase):
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
-        state = dict([(key, self.__dict__.get(key)) for key in preserve_attr])
+        state = {key: getattr(self, key, None) for (key) in preserve_attr}
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
         state['job_unique_id'] = self.job.unique_id
