@@ -130,6 +130,18 @@ class Test(unittest.TestCase):
     """
     #: `default_params` will be deprecated by the end of 2017.
     default_params = {}
+    #: Arbitrary string which will be stored in `$logdir/whiteboard` location
+    #: when the test finishes.
+    whiteboard = ''
+    #: (unix) time when the test started (could be forced from test)
+    time_start = -1
+    #: (unix) time when the test finished (could be forced from test)
+    time_end = -1
+    #: duration of the test execution (always recalculated from time_end -
+    #: time_start
+    time_elapsed = -1
+    #: Test timeout (the timeout from params takes precedence)
+    timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
                  base_logdir=None, job=None, runner_queue=None):
@@ -229,19 +241,15 @@ class Test(unittest.TestCase):
         self.traceback = None
         self.text_output = None
 
-        self.whiteboard = ''
         # Avoid sharing mutable default params
         self.default_params = self.default_params.copy()
 
         self.running = False
-        self.time_start = -1
-        self.time_end = -1
         self.paused = False
         self.paused_msg = ''
 
         self.runner_queue = runner_queue
 
-        self.time_elapsed = -1
         unittest.TestCase.__init__(self, methodName=methodName)
 
     @property
