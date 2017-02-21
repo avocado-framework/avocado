@@ -233,11 +233,11 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.name)
 
-        self.status = None
         self.fail_reason = None
         self.fail_class = None
         self.traceback = None
         self.text_output = None
+        self.__status = None
 
         self.__running = False
         self.paused = False
@@ -364,6 +364,13 @@ class Test(unittest.TestCase):
         if datadir_cache not in cache_dirs:
             cache_dirs.append(datadir_cache)
         return cache_dirs
+
+    @property
+    def status(self):
+        """
+        The result status of this test
+        """
+        return self.__status
 
     @property
     def running(self):
@@ -617,7 +624,7 @@ class Test(unittest.TestCase):
                                       "during execution. Check the log for "
                                       "details.")
 
-        self.status = 'PASS'
+        self.__status = 'PASS'
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.end_test_hook()
 
@@ -646,17 +653,17 @@ class Test(unittest.TestCase):
             self._tag_start()
             self._run_avocado()
         except exceptions.TestBaseException as detail:
-            self.status = detail.status
+            self.__status = detail.status
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except AssertionError as detail:
-            self.status = 'FAIL'
+            self.__status = 'FAIL'
             self.fail_class = detail.__class__.__name__
             self.fail_reason = detail
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception as detail:
-            self.status = 'ERROR'
+            self.__status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
@@ -688,7 +695,7 @@ class Test(unittest.TestCase):
 
         else:
             if self.status is None:
-                self.status = 'INTERRUPTED'
+                self.__status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
                           self.name)
 

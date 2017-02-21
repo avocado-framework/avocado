@@ -41,7 +41,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result = Result(FakeJob(args))
         self.test_result.tests_total = 1
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
-        self.test1.status = 'PASS'
+        self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
         unittests_path = os.path.dirname(os.path.abspath(__file__))
         self.junit_schema_path = os.path.join(unittests_path, 'junit-4.xsd')
