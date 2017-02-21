@@ -443,8 +443,8 @@ class Test(unittest.TestCase):
         """
         if self.running and self.time_start:
             self._update_time_elapsed()
-        preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_reason',
-                         'logdir', 'logfile', 'name', 'resultsdir', 'srcdir',
+        preserve_attr = ['basedir', 'fail_reason',
+                         'logdir', 'logfile', 'name', 'srcdir',
                          'status', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
