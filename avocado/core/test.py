@@ -233,11 +233,11 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.name)
 
-        self.fail_reason = None
-        self.fail_class = None
-        self.traceback = None
         self.text_output = None
         self.__status = None
+        self.__fail_reason = None
+        self.__fail_class = None
+        self.__traceback = None
 
         self.__running = False
         self.paused = False
@@ -378,6 +378,18 @@ class Test(unittest.TestCase):
         Whether this test is currently being executed
         """
         return self.__running
+
+    @property
+    def fail_reason(self):
+        return self.__fail_reason
+
+    @property
+    def fail_class(self):
+        return self.__fail_class
+
+    @property
+    def traceback(self):
+        return self.__traceback
 
     def __str__(self):
         return str(self.name)
@@ -654,25 +666,25 @@ class Test(unittest.TestCase):
             self._run_avocado()
         except exceptions.TestBaseException as detail:
             self.__status = detail.status
-            self.fail_class = detail.__class__.__name__
-            self.fail_reason = detail
-            self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            self.__fail_class = detail.__class__.__name__
+            self.__fail_reason = detail
+            self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except AssertionError as detail:
             self.__status = 'FAIL'
-            self.fail_class = detail.__class__.__name__
-            self.fail_reason = detail
-            self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            self.__fail_class = detail.__class__.__name__
+            self.__fail_reason = detail
+            self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception as detail:
             self.__status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
-            self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
-                self.fail_class = str(detail.__class__.__name__)
-                self.fail_reason = str(detail)
+                self.__fail_class = str(detail.__class__.__name__)
+                self.__fail_reason = str(detail)
             except TypeError:
-                self.fail_class = "Exception"
-                self.fail_reason = ("Unable to get exception, check the "
-                                    "traceback for details.")
+                self.__fail_class = "Exception"
+                self.__fail_reason = ("Unable to get exception, check the "
+                                      "traceback for details.")
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
