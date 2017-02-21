@@ -206,10 +206,10 @@ class Test(unittest.TestCase):
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
-        self.sysinfo_enabled = getattr(self.job, 'sysinfo', False)
-        if self.sysinfo_enabled:
-            self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
-            self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
+        self.__sysinfo_enabled = getattr(self.job, 'sysinfo', False)
+        if self.__sysinfo_enabled:
+            self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
+            self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)
 
         self.__log = logging.getLogger("avocado.test")
         original_log_warn = self.log.warning
@@ -413,7 +413,7 @@ class Test(unittest.TestCase):
             self._update_time_elapsed()
         preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_reason',
                          'logdir', 'logfile', 'name', 'resultsdir', 'srcdir',
-                         'status', 'sysinfodir', 'text_output', 'time_elapsed',
+                         'status', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
@@ -510,8 +510,8 @@ class Test(unittest.TestCase):
         """
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
-        if self.sysinfo_enabled:
-            self.sysinfo_logger.start_test_hook()
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.start_test_hook()
         test_exception = None
         cleanup_exception = None
         stdout_check_exception = None
@@ -620,8 +620,8 @@ class Test(unittest.TestCase):
                                       "details.")
 
         self.status = 'PASS'
-        if self.sysinfo_enabled:
-            self.sysinfo_logger.end_test_hook()
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.end_test_hook()
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
@@ -634,8 +634,8 @@ class Test(unittest.TestCase):
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
-        if self.sysinfo_enabled:
-            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.sysinfodir
+        if self.__sysinfo_enabled:
+            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
 
     def run_avocado(self):
         """
