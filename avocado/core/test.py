@@ -225,9 +225,9 @@ class Test(unittest.TestCase):
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.params = varianter.AvocadoParams(params, self.name,
-                                              mux_path,
-                                              self.default_params)
+        self.__params = varianter.AvocadoParams(params, self.name,
+                                                mux_path,
+                                                self.default_params)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 
@@ -287,6 +287,13 @@ class Test(unittest.TestCase):
         Directory available to test writers to attach files to the results
         """
         return self.__outputdir
+
+    @property
+    def params(self):
+        """
+        Parameters of this test (AvocadoParam instance)
+        """
+        return self.__params
 
     @property
     def basedir(self):
