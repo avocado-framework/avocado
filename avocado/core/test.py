@@ -171,11 +171,11 @@ class Test(unittest.TestCase):
         if name is not None:
             if not isinstance(name, TestName):
                 raise NameNotTestNameError(name)
-            self.name = name
+            self.__name = name
         else:
-            self.name = TestName(0, self.__class__.__name__)
+            self.__name = TestName(0, self.__class__.__name__)
 
-        self.job = job
+        self.__job = job
 
         if self.datadir is None:
             self._expected_stdout_file = None
@@ -194,24 +194,24 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail("Log dir already exists, this "
                                            "should never happen: %s"
                                            % logdir)
-        self.logdir = utils_path.init_dir(logdir)
+        self.__logdir = utils_path.init_dir(logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
         genio.set_log_file_dir(self.logdir)
-        self.logfile = os.path.join(self.logdir, 'debug.log')
+        self.__logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
         self._stderr_file = os.path.join(self.logdir, 'stderr')
         self._logging_handlers = {}
 
-        self.outputdir = utils_path.init_dir(self.logdir, 'data')
+        self.__outputdir = utils_path.init_dir(self.logdir, 'data')
         self.sysinfo_enabled = getattr(self.job, 'sysinfo', False)
         if self.sysinfo_enabled:
             self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
             self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
 
-        self.log = logging.getLogger("avocado.test")
+        self.__log = logging.getLogger("avocado.test")
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
@@ -244,13 +244,55 @@ class Test(unittest.TestCase):
         # Avoid sharing mutable default params
         self.default_params = self.default_params.copy()
 
-        self.running = False
+        self.__running = False
         self.paused = False
         self.paused_msg = ''
 
         self.runner_queue = runner_queue
 
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    @property
+    def name(self):
+        """
+        The test name (TestName instance)
+        """
+        return self.__name
+
+    @property
+    def job(self):
+        """
+        The job this test is associated with
+        """
+        return self.__job
+
+    @property
+    def log(self):
+        """
+        The enhanced test log
+        """
+        return self.__log
+
+    @property
+    def logdir(self):
+        """
+        Path to this test's logging dir
+        """
+        return self.__logdir
+
+    @property
+    def logfile(self):
+        """
+        Path to this test's main `debug.log` file
+        """
+        return self.__logfile
+
+    @property
+    def outputdir(self):
+        """
+        Directory available to test writers to attach files to the results
+        """
+        return self.__outputdir
 
     @property
     def basedir(self):
@@ -328,6 +370,13 @@ class Test(unittest.TestCase):
             cache_dirs.append(datadir_cache)
         return cache_dirs
 
+    @property
+    def running(self):
+        """
+        Whether this test is currently being executed
+        """
+        return self.__running
+
     def __str__(self):
         return str(self.name)
 
@@ -335,11 +384,11 @@ class Test(unittest.TestCase):
         return "Test(%r)" % self.name
 
     def _tag_start(self):
-        self.running = True
+        self.__running = True
         self.time_start = time.time()
 
     def _tag_end(self):
-        self.running = False
+        self.__running = False
         self.time_end = time.time()
         # for consistency sake, always use the same stupid method
         self._update_time_elapsed(self.time_end)
