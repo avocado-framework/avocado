@@ -38,9 +38,9 @@ Distribution
 
  * The non-local runner plugins are now distributed in separate RPM
    packages.  Users installing from RPM packages should also install
-   packages such as ``avocado-plugins-runners-remote``,
-   ``avocado-plugins-runners-vm`` and
-   ``avocado-plugins-runners-docker``.  Users upgrading from previous
+   packages such as ``avocado-plugins-runner-remote``,
+   ``avocado-plugins-runner-vm`` and
+   ``avocado-plugins-runner-docker``.  Users upgrading from previous
    Avocado versions should also install these packages manually or
    they will lose the corresponding functionality.
 
