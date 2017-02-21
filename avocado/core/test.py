@@ -230,6 +230,8 @@ class Test(unittest.TestCase):
         self.text_output = None
 
         self.whiteboard = ''
+        # Avoid sharing mutable default params
+        self.default_params = self.default_params.copy()
 
         self.running = False
         self.time_start = -1
