@@ -233,8 +233,6 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.name)
 
-        self.debugdir = None
-        self.resultsdir = None
         self.status = None
         self.fail_reason = None
         self.fail_class = None
