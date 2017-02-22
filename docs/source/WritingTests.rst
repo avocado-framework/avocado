@@ -54,8 +54,8 @@ Note that the test class provides you with a number of convenience attributes:
 * A ready to use log mechanism for your test, that can be accessed by means
   of ``self.log``. It lets you log debug, info, error and warning messages.
 * A parameter passing system (and fetching system) that can be accessed by
-  means of ``self.params``. This is hooked to the Multiplexer, about which
-  you can find that more information at :doc:`Mux`.
+  means of ``self.params``. This is hooked to the Varianter, about which
+  you can find that more information at :doc:`TestParameters`.
 * And many more (see :mod:`avocado.core.test.Test`)
 
 Test statuses
@@ -170,127 +170,174 @@ If you need to attach several output files, you can also use
 ``$RESULTS/test-results/$TEST_ID/data`` location and is reserved for
 arbitrary test result data.
 
+.. _accessing-test-parameters:
+
 Accessing test parameters
 =========================
 
 Each test has a set of parameters that can be accessed through
-``self.params.get($name, $path=None, $default=None)``.
-Avocado finds and populates ``self.params`` with all parameters you define on
-a Multiplex Config file (see :doc:`Mux`). As an example, consider
-the following multiplex file for sleeptest:
+``self.params.get($name, $path=None, $default=None)`` where:
+
+* name - name of the parameter (key)
+* path - where to look for this parameter (when not specified uses mux-path)
+* default - what to return when param not found
+
+The path is a bit tricky. Avocado uses tree to represent parameters. In simple
+scenarios you don't need to worry and you'll find all your values in default
+path, but eventually you might want to check-out :doc:`TestParameters` to understand
+the details.
+
+Let's say your test receives following params (you'll learn how to execute
+them in the following section)::
+
+    $ avocado multiplex -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --variants 2
+    ...
+    Variant 1:    /run/sleeptenmin/builtin, /run/variants/one_cycle
+        /run/sleeptenmin/builtin:sleep_method => builtin
+        /run/variants/one_cycle:sleep_cycles  => 1
+        /run/variants/one_cycle:sleep_length  => 600
+    ...
+
+In test you can access those params by::
+
+.. code-block:: python
+
+    self.params.get("sleep_method")    # returns "builtin"
+    self.params.get("sleep_cycles", '*', 10)    # returns 1
+    self.params.get("sleep_length", "/*/variants/*"  # returns 600
+
+.. note:: The path is important in complex scenarios where clashes might
+          occur, because when there are multiple values with the same
+          key matching the query avocado raises an exception. As mentioned
+          you can avoid those by using specific paths or by defining
+          custom mux-path which allows specifying resolving hierarchy.
+          More details can be found in :doc:`TestParameters`.
+
+
+Running multiple variants of tests
+==================================
+
+In previous section we describe the params handling so let's have a look on
+how to produce them and execute your tests with different params.
+
+The variants system is pluggable so you might use custom plugins to
+produce and feed avocado with your params, but let's start with the
+plugin called "yaml_to_mux", which is shipped with avocado by default.
+It accepts ``yaml`` or even ``json`` files where using ordered dicts
+to create a tree-like structure and storing the non-dict variables as
+parameters and using custom tags to mark locations as multiplex domains.
+Let's use ``examples/tests/sleeptenmin.py.data/sleeptenmin.yaml`` file as
+an example::
 
 .. code-block:: yaml
 
-    sleeptest:
-        type: "builtin"
-        length: !mux
-            short:
-                sleep_length: 0.5
-            medium:
-                sleep_length: 1
-            long:
-                sleep_length: 5
+   sleeptenmin: !mux
+       builtin:
+           sleep_method: builtin
+       shell:
+           sleep_method: shell
+   variants: !mux
+       one_cycle:
+           sleep_cycles: 1
+           sleep_length: 600
+       six_cycles:
+           sleep_cycles: 6
+           sleep_length: 100
+       one_hundred_cycles:
+           sleep_cycles: 100
+           sleep_length: 6
+       six_hundred_cycles:
+           sleep_cycles: 600
+           sleep_length: 1
 
-When running this example by ``avocado run $test --mux-yaml $file.yaml``
-three variants are executed and the content is injected into ``/run`` namespace
-(see :doc:`Mux` for details). Every variant contains variables
-"type" and "sleep_length". To obtain the current value, you need the name
-("sleep_length") and its path. The path differs for each variant so it's
-needed to use the most suitable portion of the path, in this example:
-`/run/sleeptest/length/*` or perhaps `sleeptest/*` might be enough. It depends
-on how your setup looks like.
+Which produces following structure and parameters::
 
-The default value is optional, but always keep in mind to handle them nicely.
-Someone might be executing your test with different params or without any
-params at all. It should work fine.
+      $ avocado multiplex -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
+      Multiplex tree representation:
+       ┗━━ run
+            ┣━━ sleeptenmin
+            ┃    ╠══ builtin
+            ┃    ║     → sleep_method: builtin
+            ┃    ╚══ shell
+            ┃          → sleep_method: shell
+            ┗━━ variants
+                 ╠══ one_cycle
+                 ║     → sleep_length: 600
+                 ║     → sleep_cycles: 1
+                 ╠══ six_cycles
+                 ║     → sleep_length: 100
+                 ║     → sleep_cycles: 6
+                 ╠══ one_hundred_cycles
+                 ║     → sleep_length: 6
+                 ║     → sleep_cycles: 100
+                 ╚══ six_hundred_cycles
+                       → sleep_length: 1
+                       → sleep_cycles: 600
 
-So the complete example on how to access the "sleep_length" would be::
+      Multiplex variants:
 
-    self.params.get("sleep_length", "/*/sleeptest/*", 1)
+      Variant 1:    /run/sleeptenmin/builtin, /run/variants/one_cycle
+          /run/sleeptenmin/builtin:sleep_method => builtin
+          /run/variants/one_cycle:sleep_cycles  => 1
+          /run/variants/one_cycle:sleep_length  => 600
 
-There is one way to make this even simpler. It's possible to define resolution
-order, then for simple queries you can simply omit the path::
+      Variant 2:    /run/sleeptenmin/builtin, /run/variants/six_cycles
+          /run/sleeptenmin/builtin:sleep_method => builtin
+          /run/variants/six_cycles:sleep_cycles => 6
+          /run/variants/six_cycles:sleep_length => 100
 
-    self.params.get("sleep_length", None, 1)
-    self.params.get("sleep_length", '*', 1)
-    self.params.get("sleep_length", default=1)
+      Variant 3:    /run/sleeptenmin/builtin, /run/variants/one_hundred_cycles
+          /run/sleeptenmin/builtin:sleep_method         => builtin
+          /run/variants/one_hundred_cycles:sleep_cycles => 100
+          /run/variants/one_hundred_cycles:sleep_length => 6
 
-One should always try to avoid param clashes (multiple matching keys for given
-path with different origin). If it's not possible (eg. when
-you use multiple yaml files) you can modify the default paths by modifying
-``--mux-path``. What it does is it slices the params and iterates through the
-paths one by one. When there is a match in the first slice it returns
-it without trying the other slices. Although relative queries only match
-from ``--mux-path`` slices.
+      Variant 4:    /run/sleeptenmin/builtin, /run/variants/six_hundred_cycles
+          /run/sleeptenmin/builtin:sleep_method         => builtin
+          /run/variants/six_hundred_cycles:sleep_cycles => 600
+          /run/variants/six_hundred_cycles:sleep_length => 1
 
-There are many ways to use paths to separate clashing params or just to make
-more clear what your query for. Usually in tests the usage of '*' is sufficient
-and the namespacing is not necessarily, but it helps make advanced usage
-clearer and easier to follow.
+      Variant 5:    /run/sleeptenmin/shell, /run/variants/one_cycle
+          /run/sleeptenmin/shell:sleep_method  => shell
+          /run/variants/one_cycle:sleep_cycles => 1
+          /run/variants/one_cycle:sleep_length => 600
 
-When thinking of the path always think about users. It's common to extend
-default config with additional variants or combine them with different
-ones to generate just the right scenarios they need. People might
-simply inject the values elsewhere (eg. `/run/sleeptest` =>
-`/upstream/sleeptest`) or they can merge other clashing file into the
-default path, which won't generate clash, but would return their values
-instead. Then you need to clarify the path (eg. `'*'` =>  `sleeptest/*`)
+      Variant 6:    /run/sleeptenmin/shell, /run/variants/six_cycles
+          /run/sleeptenmin/shell:sleep_method   => shell
+          /run/variants/six_cycles:sleep_cycles => 6
+          /run/variants/six_cycles:sleep_length => 100
 
-More details on that are in :doc:`Mux`
+      Variant 7:    /run/sleeptenmin/shell, /run/variants/one_hundred_cycles
+          /run/sleeptenmin/shell:sleep_method           => shell
+          /run/variants/one_hundred_cycles:sleep_cycles => 100
+          /run/variants/one_hundred_cycles:sleep_length => 6
 
-Using a multiplex file
-======================
+      Variant 8:    /run/sleeptenmin/shell, /run/variants/six_hundred_cycles
+          /run/sleeptenmin/shell:sleep_method           => shell
+          /run/variants/six_hundred_cycles:sleep_cycles => 600
+          /run/variants/six_hundred_cycles:sleep_length => 1
 
-You may use the Avocado runner with a multiplex file to provide params and matrix
-generation for sleeptest just like::
+You can see that it creates all possible variants of each ``multiplex domain``,
+which are defined by ``!mux`` tag in the yaml file and displayed as single
+lines in tree view (compare to double lines which are individual nodes with
+values). In total it'll produce 8 variants of each test::
 
-    $ avocado run sleeptest.py --mux-yaml examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID     : d565e8dec576d6040f894841f32a836c751f968f
-    JOB LOG    : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
-    TESTS      : 3
-     (1/3) sleeptest.py:SleepTest.test;1: PASS (0.50 s)
-     (2/3) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
-     (3/3) sleeptest.py:SleepTest.test;3: PASS (5.00 s)
-    RESULTS    : PASS 3 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 6.50 s
-    JOB HTML   : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/html/results.html
+      $ avocado run --mux-yaml examples/tests/sleeptenmin.py.data/sleeptenmin.yaml -- passtest.py
+      JOB ID     : cc7ef22654c683b73174af6f97bc385da5a0f02f
+      JOB LOG    : /home/medic/avocado/job-results/job-2017-01-22T11.26-cc7ef22/job.log
+      TESTS      : 1
+       (1/8) passtest.py:PassTest.test;1: PASS (0.01 s)
+       (2/8) passtest.py:PassTest.test;2: PASS (0.01 s)
+       (3/8) passtest.py:PassTest.test;3: PASS (0.01 s)
+       (4/8) passtest.py:PassTest.test;4: PASS (0.01 s)
+       (5/8) passtest.py:PassTest.test;5: PASS (0.01 s)
+       (6/8) passtest.py:PassTest.test;6: PASS (0.01 s)
+       (7/8) passtest.py:PassTest.test;7: PASS (0.01 s)
+       (8/8) passtest.py:PassTest.test;8: PASS (0.01 s)
+      RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+      TESTS TIME : 0.06 s
 
-The ``--mux-yaml`` accepts either only ``$FILE_LOCATION`` or ``$INJECT_TO:$FILE_LOCATION``.
-As explained in :doc:`Mux` without any path the content gets
-injected into ``/run`` in order to be in the default relative path location.
-The ``$INJECT_TO`` can be either relative path, then it's injected into
-``/run/$INJECT_TO`` location, or absolute path (starting with ``'/'``), then
-it's injected directly into the specified path and it's up to the test/framework
-developer to get the value from this location (using path or adding the path to
-``mux-path``). To understand the difference execute those commands::
-
-    $ avocado multiplex -t -m examples/tests/sleeptest.py.data/sleeptest.yaml
-    $ avocado multiplex -t -m duration:examples/tests/sleeptest.py.data/sleeptest.yaml
-    $ avocado multiplex -t -m /my/location:examples/tests/sleeptest.py.data/sleeptest.yaml
-
-Note that, as your multiplex file specifies all parameters for sleeptest, you
-can't leave the test ID empty::
-
-    $ scripts/avocado run --mux-yaml examples/tests/sleeptest/sleeptest.yaml
-    Empty test ID. A test path or alias must be provided
-
-You can also execute multiple tests with the same multiplex file::
-
-    $ avocado run sleeptest.py synctest.py --mux-yaml examples/tests/sleeptest.py.data/sleeptest.yaml
-    JOB ID     : cd20fc8d1714da6d4791c19322374686da68c45c
-    JOB LOG    : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/job.log
-    TESTS      : 8
-     (1/8) sleeptest.py:SleepTest.test;1: PASS (0.50 s)
-     (2/8) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
-     (3/8) sleeptest.py:SleepTest.test;3: PASS (5.01 s)
-     (4/8) sleeptest.py:SleepTest.test;4: PASS (10.00 s)
-     (5/8) synctest.py:SyncTest.test;1: PASS (2.38 s)
-     (6/8) synctest.py:SyncTest.test;2: PASS (2.47 s)
-     (7/8) synctest.py:SyncTest.test;3: PASS (2.46 s)
-     (8/8) synctest.py:SyncTest.test;4: PASS (2.45 s)
-    RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 26.26 s
-    JOB HTML   : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/html/results.html
+There are other options to influence the params so please check out
+``avocado run -h`` and for details use :doc:`TestParameters`.
 
 
 Advanced logging capabilities
