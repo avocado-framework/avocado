@@ -328,13 +328,15 @@ class Varianter(object):
         self.default_params = {}
         self.debug = debug
         self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
-        self.ignore_new_data = False    # Used to ignore new data when parsed
+        #: Ignore new data on parsed `Varianter` (otherwise it raises an
+        #: exception, can be used to replace `Varianter` by CLI plugin)
+        self.ignore_new_data = False
         self._variant_plugins = dispatcher.VarianterDispatcher()
         self._no_variants = None
 
     def parse(self, args):
         """
-        Apply options defined on the cmdline
+        Apply options defined on the cmdline and initialize the plugins.
 
         :param args: Parsed cmdline arguments
         """
@@ -362,7 +364,7 @@ class Varianter(object):
 
     def is_parsed(self):
         """
-        Reports whether the tree was already multiplexed
+        Reports whether the varianter was already parsed (stage1 vs. stage2)
         """
         return self._no_variants is not None
 
