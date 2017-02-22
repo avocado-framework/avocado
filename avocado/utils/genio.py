@@ -10,7 +10,7 @@
 #
 # This code was inspired in the autotest project,
 # client/shared/utils.py
-# Authors: Martin J Bligh <mbligh@google.com>, Andy Whitcroft <apw@shadowen.org>
+# Authors:Martin J Bligh <mbligh@google.com>, Andy Whitcroft<apw@shadowen.org>
 
 """
 Avocado generic IO related functions.
@@ -174,3 +174,22 @@ def write_one_line(filename, line):
     :type line: str
     """
     write_file(filename, line.rstrip('\n') + '\n')
+
+
+def safe_write_file(filename, data):
+    """
+    Write data to a file.
+
+    :param filename: Path to the file.
+    :type filename: str
+    :param data: data to be written.
+    :type data: str
+    """
+    try:
+        fd = os.open(filename, os.O_WRONLY)
+        ret = os.write(fd, data)
+    except Exception, error:
+        logging.error("Unable to write \"%s\" to file %si \n %s", data,
+                      filename, error)
+    finally:
+        os.close(fd)
