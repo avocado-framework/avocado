@@ -58,7 +58,7 @@ class Multiplex(CLICmd):
                             help="Verbosity of the list of variants. " +
                             verbosity_levels)
         parser.add_argument('--system-wide', action='store_false',
-                            default=True, dest="mux-skip-defaults",
+                            default=True, dest="variants-skip-defaults",
                             help="Combine the files with the default "
                             "tree.")
         parser.add_argument('-c', '--contents', action='store_true',
