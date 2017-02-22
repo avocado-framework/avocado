@@ -371,7 +371,7 @@ class Diff(CLICmd):
         results = []
         variants = jobdata.retrieve_variants(resultsdir)
         if variants is not None:
-            results.extend(variants.to_str(0, 2).splitlines())
+            results.extend(variants.to_str(variants=2).splitlines())
         else:
             results.append('Not found\n')
 

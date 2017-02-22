@@ -366,7 +366,8 @@ class Job(object):
         job_log.info('')
 
     def _log_variants(self, variants):
-        for line in variants.to_str(1, 1, use_utf8=False).splitlines():
+        lines = variants.to_str(summary=1, variants=1)
+        for line in lines.splitlines():
             _TEST_LOGGER.info(line)
 
     def _log_tmp_dir(self):
