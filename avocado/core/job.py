@@ -39,7 +39,6 @@ from . import exceptions
 from . import job_id
 from . import output
 from . import varianter
-from . import tree
 from . import test
 from . import jobdata
 from .output import STD_OUTPUT
@@ -366,30 +365,14 @@ class Job(object):
         job_log.info('logs     ' + self.logdir)
         job_log.info('')
 
-    def _log_variants_tree(self, variant):
-        job_log = _TEST_LOGGER
-        tree_repr = tree.tree_view(variant.variants.root, verbose=True,
-                                   use_utf8=False)
-        if tree_repr:
-            job_log.info('Multiplex tree representation:')
-            for line in tree_repr.splitlines():
-                job_log.info(line)
-            job_log.info('')
+    def _log_variants(self, variants):
+        for line in variants.to_str(1, 1, use_utf8=False).splitlines():
+            _TEST_LOGGER.info(line)
 
     def _log_tmp_dir(self):
         job_log = _TEST_LOGGER
         job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
         job_log.info('')
-
-    def _log_variants(self, variant):
-        job_log = _TEST_LOGGER
-
-        for (index, tpl) in enumerate(variant.variants):
-            paths = ', '.join([x.path for x in tpl])
-            job_log.info('Variant %s:    %s', index + 1, paths)
-
-        if variant.variants:
-            job_log.info('')
 
     def _log_job_debug_info(self, mux):
         """
@@ -399,9 +382,8 @@ class Job(object):
         self._log_avocado_version()
         self._log_avocado_config()
         self._log_avocado_datadir()
-        self._log_variants_tree(mux)
-        self._log_tmp_dir()
         self._log_variants(mux)
+        self._log_tmp_dir()
         self._log_job_id()
 
     def create_test_suite(self):

@@ -24,6 +24,7 @@ import itertools
 import logging
 import re
 
+from . import output
 from . import tree
 
 
@@ -458,6 +459,57 @@ class Varianter(object):
         if self._skip_new_data_check("data_merge", (tree,)):
             return
         self.data.merge(tree)
+
+    def to_str(self, summary=0, variants=0, **kwargs):
+        """
+        Return human readable representation
+
+        :param summary: How verbose summary to output
+        :param variants: How verbose list of variants to output
+        :param kwargs: Other custom arguments
+        :rtype: str
+        """
+        if not self.variants:
+            return ""
+        out = []
+        if summary:
+            # Log tree representation
+            out.append("Multiplex tree representation:")
+            # summary == 0 means disable, but in plugin it's brief
+            tree_repr = tree.tree_view(self.variants.root, verbose=summary - 1,
+                                       use_utf8=kwargs.get("use_utf8"))
+            out.append(tree_repr)
+            out.append("")
+
+        if variants:
+            # variants == 0 means disable, but in plugin it's brief
+            contents = variants - 1
+            out.append("Multiplex variants:")
+            for (index, tpl) in enumerate(self.variants):
+                if not self.debug:
+                    paths = ', '.join([x.path for x in tpl])
+                else:
+                    color = output.TERM_SUPPORT.LOWLIGHT
+                    cend = output.TERM_SUPPORT.ENDC
+                    paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                                      getattr(_, 'yaml',
+                                                              "Unknown"),
+                                                      cend)
+                                       for _ in tpl])
+                out.append('%sVariant %s:    %s' % ('\n' if contents else '',
+                                                    index + 1, paths))
+                if contents:
+                    env = set()
+                    for node in tpl:
+                        for key, value in node.environment.iteritems():
+                            origin = node.environment_origin[key].path
+                            env.add(("%s:%s" % (origin, key), str(value)))
+                    if not env:
+                        continue
+                    fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                    for record in sorted(env):
+                        out.append(fmt % record)
+        return "\n".join(out)
 
     def get_number_of_tests(self, test_suite):
         """

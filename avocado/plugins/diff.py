@@ -371,19 +371,7 @@ class Diff(CLICmd):
         results = []
         variants = jobdata.retrieve_variants(resultsdir)
         if variants is not None:
-            env = set()
-            for (index, tpl) in enumerate(variants.variants):
-                paths = ', '.join([x.path for x in tpl])
-                results.append('Variant %s: %s\n' % (index + 1, paths))
-                for node in tpl:
-                    for key, value in node.environment.iteritems():
-                        origin = node.environment_origin[key].path
-                        env.add(("%s:%s" % (origin, key), str(value)))
-                if not env:
-                    continue
-                fmt = '    %%-%ds => %%s\n' % max([len(_[0]) for _ in env])
-                for record in sorted(env):
-                    results.append(fmt % record)
+            results.extend(variants.to_str(0, 2).splitlines())
         else:
             results.append('Not found\n')
 
