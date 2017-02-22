@@ -174,3 +174,16 @@ def write_one_line(filename, line):
     :type line: str
     """
     write_file(filename, line.rstrip('\n') + '\n')
+
+
+class GenIOException(Exception):
+    pass
+
+
+def write_file_or_log(filename, data):
+    fd = os.open(filename, os.O_WRONLY)
+    try:
+        ret = os.write(fd, data)
+    except OSError as details:
+        raise GenIOException("The write to %s failed: %s" % (
+                             filename, details))
