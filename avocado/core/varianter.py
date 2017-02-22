@@ -333,7 +333,7 @@ class Varianter(object):
 
     def parse(self, args):
         """
-        Apply options defined on the cmdline
+        Apply options defined on the cmdline and initialize the plugins.
 
         :param args: Parsed cmdline arguments
         """
@@ -361,7 +361,7 @@ class Varianter(object):
 
     def is_parsed(self):
         """
-        Reports whether the tree was already multiplexed
+        Reports whether the varianter was already parsed
         """
         return self._no_variants is not None
 
