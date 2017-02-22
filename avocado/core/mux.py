@@ -116,7 +116,9 @@ class MuxPlugin(object):
         if self.root is None:
             return
         for i, variant in enumerate(self.variants, 1):
-            yield i, (variant, self.mux_path)
+            yield {"variant_id": i,
+                   "variant": variant,
+                   "mux_path": self.mux_path}
 
     def update_defaults(self, defaults):
         """
@@ -151,9 +153,9 @@ class MuxPlugin(object):
             # variants == 0 means disable, but in plugin it's brief
             contents = variants - 1
             out.append("Multiplex variants:")
-            for (index, tpl) in enumerate(self.variants):
+            for variant in self:
                 if not self.debug:
-                    paths = ', '.join([x.path for x in tpl])
+                    paths = ', '.join([x.path for x in variant["variant"]])
                 else:
                     color = output.TERM_SUPPORT.LOWLIGHT
                     cend = output.TERM_SUPPORT.ENDC
@@ -161,12 +163,13 @@ class MuxPlugin(object):
                                                       getattr(_, 'yaml',
                                                               "Unknown"),
                                                       cend)
-                                       for _ in tpl])
+                                       for _ in variant["variant"]])
                 out.append('%sVariant %s:    %s' % ('\n' if contents else '',
-                                                    index + 1, paths))
+                                                    variant["variant_id"],
+                                                    paths))
                 if contents:
                     env = set()
-                    for node in tpl:
+                    for node in variant["variant"]:
                         for key, value in node.environment.iteritems():
                             origin = node.environment_origin[key].path
                             env.add(("%s:%s" % (origin, key), str(value)))

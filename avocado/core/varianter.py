@@ -431,9 +431,16 @@ class Varianter(object):
 
     def itertests(self):
         """
-        Yield variant-id and test params
+        Yields all variants of all plugins
 
-        :yield (variant-id, (list of leaves, list of default paths))
+        The variant is defined as dictionary with at least:
+         * variant_id - name of the current variant
+         * variant - AvocadoParams-compatible variant (usually a list of
+                     TreeNodes but dict or simply None are also possible
+                     values)
+         * mux_path - default path(s)
+
+        :yield variant
         """
         if self._no_variants:  # Copy template and modify it's params
             pluginss_variants = self._variant_plugins.map_method("__iter__")
@@ -443,4 +450,6 @@ class Varianter(object):
             for variant in iter(iter_variants):
                 yield variant
         else:   # No variants, use template
-            yield None, (self.default_params.get_leaves(), "/run")  # self.default_params is TreeNode pylint: disable=E1101
+            yield {"variant": self.default_params.get_leaves(),  # self.default_params is TreeNode pylint: disable=E1101
+                   "variant_id": None,
+                   "mux_path": "/run"}

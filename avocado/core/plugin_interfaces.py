@@ -213,7 +213,14 @@ class VarianterPlugin(Plugin):
     @abc.abstractmethod
     def __iter__(self):
         """
-        Yield variant in form of (variant_id, (variant, mux_path))
+        Yields all variants
+
+        The variant is defined as dictionary with at least:
+         * variant_id - name of the current variant
+         * variant - AvocadoParams-compatible variant (usually a list)
+         * mux_path - default path(s)
+
+        :yield variant
         """
 
     @abc.abstractmethod
