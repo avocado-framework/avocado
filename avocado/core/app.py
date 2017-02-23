@@ -17,6 +17,7 @@ The core Avocado application.
 """
 
 import os
+import psutil
 import signal
 import sys
 
@@ -38,6 +39,17 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
+        def sigterm_handler(signum, frame):     # pylint: disable=W0613
+            main_process = psutil.Process()
+            children = main_process.children(recursive=True)
+            for child in children:
+                try:
+                    os.kill(child.pid, signal.SIGTERM)
+                except OSError:
+                    pass
+            raise SystemExit('Terminated')
+
+        signal.signal(signal.SIGTERM, sigterm_handler)
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
         output.early_start()
