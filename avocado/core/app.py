@@ -25,6 +25,7 @@ from .dispatcher import CLICmdDispatcher
 from .dispatcher import CLIDispatcher
 from .output import STD_OUTPUT
 from .parser import Parser
+from ..utils import process
 
 
 class AvocadoApp(object):
@@ -38,6 +39,16 @@ class AvocadoApp(object):
         # Catch all libc runtime errors to STDERR
         os.environ['LIBC_FATAL_STDERR_'] = '1'
 
+        def sigterm_handler(signum, frame):     # pylint: disable=W0613
+            children = process.get_children_pids(os.getpid(), recursive=True)
+            for child in children:
+                try:
+                    os.kill(int(child), signal.SIGTERM)
+                except OSError:
+                    pass
+            raise SystemExit('Terminated')
+
+        signal.signal(signal.SIGTERM, sigterm_handler)
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)   # ignore ctrl+z
         self.parser = Parser()
         output.early_start()
