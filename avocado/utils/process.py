@@ -203,13 +203,28 @@ def process_in_ptree_is_defunct(ppid):
     return defunct
 
 
-def get_children_pids(ppid):
+def get_children_pids(ppid, recursive=False):
     """
     Get all PIDs of children/threads of parent ppid
     param ppid: parent PID
+    param recursive: True to return all levels of subprocesses
     return: list of PIDs of all children/threads of ppid
     """
-    return system_output("ps -L --ppid=%d -o lwp" % ppid, verbose=False).split('\n')[1:]
+
+    cmd = "ps -L --ppid=%d -o lwp"
+
+    # Getting first level of subprocesses
+    children = system_output(cmd % ppid, verbose=False).split('\n')[1:]
+    if not recursive:
+        return children
+
+    # Recursion to get all levels of subprocesses
+    for child in children:
+        children.extend(system_output(cmd % int(child),
+                                      verbose=False,
+                                      ignore_status=True).split('\n')[1:])
+
+    return children
 
 
 def binary_from_shell_cmd(cmd):
