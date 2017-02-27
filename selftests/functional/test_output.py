@@ -328,9 +328,13 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         try:
             os.chdir(basedir)
-            cmd_line = ('./scripts/avocado run --job-results-dir %s '
+            config = os.path.join(self.tmpdir, "conf.ini")
+            content = ("[datadir.paths]\nlogs_dir = %s"
+                       % os.path.relpath(self.tmpdir, "."))
+            script.Script(config, content).save()
+            cmd_line = ('./scripts/avocado --config %s --show all run '
                         '--sysinfo=off whiteboard.py --json %s' %
-                        (self.tmpdir, tmpfile))
+                        (config, tmpfile))
             result = process.run(cmd_line, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,

@@ -60,7 +60,8 @@ def _get_settings_dir(dir_name):
     """
     Returns a given "datadir" directory as set by the configuration system
     """
-    return settings.settings.get_value('datadir.paths', dir_name, 'path')
+    path = settings.settings.get_value('datadir.paths', dir_name, 'path')
+    return os.path.abspath(path)
 
 
 def _get_rw_dir(settings_location, system_location, user_location):
