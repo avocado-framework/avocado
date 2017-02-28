@@ -174,7 +174,7 @@ class Partition(object):
 
         if self.mkfs_flags:
             args += ' ' + self.mkfs_flags
-        if fstype == 'xfs':
+        if fstype in ['xfs', 'btrfs']:
             args += ' -f'
 
         if self.loop:
