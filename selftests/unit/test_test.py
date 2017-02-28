@@ -98,6 +98,11 @@ class TestClassTestUnit(unittest.TestCase):
         self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
                           test.TestName(1, "name"), base_logdir=self.tmpdir)
 
+    def testTryOverrideTestVariable(self):
+        test = self.DummyTest(base_logdir=self.tmpdir)
+        self.assertRaises(AttributeError, setattr, test, "name", "whatever")
+        self.assertRaises(AttributeError, setattr, test, "status", "whatever")
+
 
 class TestClassTest(unittest.TestCase):
 

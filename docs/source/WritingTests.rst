@@ -58,6 +58,10 @@ Note that the test class provides you with a number of convenience attributes:
   you can find that more information at :doc:`Mux`.
 * And many more (see :mod:`avocado.core.test.Test`)
 
+To minimize the accidental clashes we define the public ones as properties
+so if you see something like ``AttributeError: can't set attribute`` double
+you are not overriding these.
+
 Test statuses
 =============
 

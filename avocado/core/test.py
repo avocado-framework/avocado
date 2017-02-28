@@ -130,6 +130,18 @@ class Test(unittest.TestCase):
     """
     #: `default_params` will be deprecated by the end of 2017.
     default_params = {}
+    #: Arbitrary string which will be stored in `$logdir/whiteboard` location
+    #: when the test finishes.
+    whiteboard = ''
+    #: (unix) time when the test started (could be forced from test)
+    time_start = -1
+    #: (unix) time when the test finished (could be forced from test)
+    time_end = -1
+    #: duration of the test execution (always recalculated from time_end -
+    #: time_start
+    time_elapsed = -1
+    #: Test timeout (the timeout from params takes precedence)
+    timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
                  base_logdir=None, job=None, runner_queue=None):
@@ -159,11 +171,11 @@ class Test(unittest.TestCase):
         if name is not None:
             if not isinstance(name, TestName):
                 raise NameNotTestNameError(name)
-            self.name = name
+            self.__name = name
         else:
-            self.name = TestName(0, self.__class__.__name__)
+            self.__name = TestName(0, self.__class__.__name__)
 
-        self.job = job
+        self.__job = job
 
         if self.datadir is None:
             self._expected_stdout_file = None
@@ -182,24 +194,24 @@ class Test(unittest.TestCase):
             raise exceptions.TestSetupFail("Log dir already exists, this "
                                            "should never happen: %s"
                                            % logdir)
-        self.logdir = utils_path.init_dir(logdir)
+        self.__logdir = utils_path.init_dir(logdir)
 
         # Replace '/' with '_' to avoid splitting name into multiple dirs
         genio.set_log_file_dir(self.logdir)
-        self.logfile = os.path.join(self.logdir, 'debug.log')
+        self.__logfile = os.path.join(self.logdir, 'debug.log')
         self._ssh_logfile = os.path.join(self.logdir, 'remote.log')
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
         self._stderr_file = os.path.join(self.logdir, 'stderr')
         self._logging_handlers = {}
 
-        self.outputdir = utils_path.init_dir(self.logdir, 'data')
-        self.sysinfo_enabled = getattr(self.job, 'sysinfo', False)
-        if self.sysinfo_enabled:
-            self.sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
-            self.sysinfo_logger = sysinfo.SysInfo(basedir=self.sysinfodir)
+        self.__outputdir = utils_path.init_dir(self.logdir, 'data')
+        self.__sysinfo_enabled = getattr(self.job, 'sysinfo', False)
+        if self.__sysinfo_enabled:
+            self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
+            self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)
 
-        self.log = logging.getLogger("avocado.test")
+        self.__log = logging.getLogger("avocado.test")
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
@@ -221,26 +233,61 @@ class Test(unittest.TestCase):
 
         self.log.info('START %s', self.name)
 
-        self.debugdir = None
-        self.resultsdir = None
-        self.status = None
-        self.fail_reason = None
-        self.fail_class = None
-        self.traceback = None
         self.text_output = None
+        self.__status = None
+        self.__fail_reason = None
+        self.__fail_class = None
+        self.__traceback = None
 
-        self.whiteboard = ''
-
-        self.running = False
-        self.time_start = -1
-        self.time_end = -1
+        self.__running = False
         self.paused = False
         self.paused_msg = ''
 
         self.runner_queue = runner_queue
 
-        self.time_elapsed = -1
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    @property
+    def name(self):
+        """
+        The test name (TestName instance)
+        """
+        return self.__name
+
+    @property
+    def job(self):
+        """
+        The job this test is associated with
+        """
+        return self.__job
+
+    @property
+    def log(self):
+        """
+        The enhanced test log
+        """
+        return self.__log
+
+    @property
+    def logdir(self):
+        """
+        Path to this test's logging dir
+        """
+        return self.__logdir
+
+    @property
+    def logfile(self):
+        """
+        Path to this test's main `debug.log` file
+        """
+        return self.__logfile
+
+    @property
+    def outputdir(self):
+        """
+        Directory available to test writers to attach files to the results
+        """
+        return self.__outputdir
 
     @property
     def basedir(self):
@@ -318,6 +365,32 @@ class Test(unittest.TestCase):
             cache_dirs.append(datadir_cache)
         return cache_dirs
 
+    @property
+    def status(self):
+        """
+        The result status of this test
+        """
+        return self.__status
+
+    @property
+    def running(self):
+        """
+        Whether this test is currently being executed
+        """
+        return self.__running
+
+    @property
+    def fail_reason(self):
+        return self.__fail_reason
+
+    @property
+    def fail_class(self):
+        return self.__fail_class
+
+    @property
+    def traceback(self):
+        return self.__traceback
+
     def __str__(self):
         return str(self.name)
 
@@ -325,11 +398,11 @@ class Test(unittest.TestCase):
         return "Test(%r)" % self.name
 
     def _tag_start(self):
-        self.running = True
+        self.__running = True
         self.time_start = time.time()
 
     def _tag_end(self):
-        self.running = False
+        self.__running = False
         self.time_end = time.time()
         # for consistency sake, always use the same stupid method
         self._update_time_elapsed(self.time_end)
@@ -357,11 +430,11 @@ class Test(unittest.TestCase):
             self._update_time_elapsed()
         preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_reason',
                          'logdir', 'logfile', 'name', 'resultsdir', 'srcdir',
-                         'status', 'sysinfodir', 'text_output', 'time_elapsed',
+                         'status', 'text_output', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
-        state = dict([(key, self.__dict__.get(key)) for key in preserve_attr])
+        state = {key: getattr(self, key, None) for (key) in preserve_attr}
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
         state['job_unique_id'] = self.job.unique_id
@@ -454,8 +527,8 @@ class Test(unittest.TestCase):
         """
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
-        if self.sysinfo_enabled:
-            self.sysinfo_logger.start_test_hook()
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.start_test_hook()
         test_exception = None
         cleanup_exception = None
         stdout_check_exception = None
@@ -563,9 +636,9 @@ class Test(unittest.TestCase):
                                       "during execution. Check the log for "
                                       "details.")
 
-        self.status = 'PASS'
-        if self.sysinfo_enabled:
-            self.sysinfo_logger.end_test_hook()
+        self.__status = 'PASS'
+        if self.__sysinfo_enabled:
+            self.__sysinfo_logger.end_test_hook()
 
     def _setup_environment_variables(self):
         os.environ['AVOCADO_VERSION'] = VERSION
@@ -578,8 +651,8 @@ class Test(unittest.TestCase):
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
-        if self.sysinfo_enabled:
-            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.sysinfodir
+        if self.__sysinfo_enabled:
+            os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
 
     def run_avocado(self):
         """
@@ -592,26 +665,26 @@ class Test(unittest.TestCase):
             self._tag_start()
             self._run_avocado()
         except exceptions.TestBaseException as detail:
-            self.status = detail.status
-            self.fail_class = detail.__class__.__name__
-            self.fail_reason = detail
-            self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            self.__status = detail.status
+            self.__fail_class = detail.__class__.__name__
+            self.__fail_reason = detail
+            self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except AssertionError as detail:
-            self.status = 'FAIL'
-            self.fail_class = detail.__class__.__name__
-            self.fail_reason = detail
-            self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            self.__status = 'FAIL'
+            self.__fail_class = detail.__class__.__name__
+            self.__fail_reason = detail
+            self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception as detail:
-            self.status = 'ERROR'
+            self.__status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
-            self.traceback = stacktrace.prepare_exc_info(sys.exc_info())
+            self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
-                self.fail_class = str(detail.__class__.__name__)
-                self.fail_reason = str(detail)
+                self.__fail_class = str(detail.__class__.__name__)
+                self.__fail_reason = str(detail)
             except TypeError:
-                self.fail_class = "Exception"
-                self.fail_reason = ("Unable to get exception, check the "
-                                    "traceback for details.")
+                self.__fail_class = "Exception"
+                self.__fail_reason = ("Unable to get exception, check the "
+                                      "traceback for details.")
             for e_line in tb_info:
                 self.log.error(e_line)
         finally:
@@ -634,7 +707,7 @@ class Test(unittest.TestCase):
 
         else:
             if self.status is None:
-                self.status = 'INTERRUPTED'
+                self.__status = 'INTERRUPTED'
             self.log.info("%s %s", self.status,
                           self.name)
 
