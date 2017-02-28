@@ -61,7 +61,12 @@ class XUnitResult(Result):
         traceback = document.createCDATASection(traceback_content)
         element.appendChild(traceback)
         system_out = Element('system-out')
-        system_out_cdata_content = self._escape_cdata(test.get('text_output', self.UNKNOWN))
+        try:
+            with open(test.get("logfile"), "r") as logfile_obj:
+                text_output = logfile_obj.read()
+        except (TypeError, IOError):
+            text_output = self.UNKNOWN
+        system_out_cdata_content = self._escape_cdata(text_output)
         system_out_cdata = document.createCDATASection(system_out_cdata_content)
         system_out.appendChild(system_out_cdata)
         element.appendChild(system_out)
