@@ -24,7 +24,6 @@ that is, the job and its test(s) results are constantly updated::
     $ avocado run sleeptest.py failtest.py synctest.py
     JOB ID    : 5ffe479262ea9025f2e4e84c4e92055b5c79bdc9
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/job.log
-    TESTS     : 3
      (1/3) sleeptest.py:SleepTest.test: PASS (1.01 s)
      (2/3) failtest.py:FailTest.test: FAIL (0.00 s)
      (3/3) synctest.py:SyncTest.test: PASS (1.98 s)

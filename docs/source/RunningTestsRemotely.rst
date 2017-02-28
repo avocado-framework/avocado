@@ -56,7 +56,6 @@ Once the remote machine is properly setup, you may run your test. Example::
     REMOTE LOGIN  : fedora@192.168.122.30:22
     JOB ID    : 60ddd718e7d7bb679f258920ce3c39ce73cb9779
     JOB LOG   : $HOME/avocado/job-results/job-2014-10-23T11.45-a329461/job.log
-    TESTS     : 2
      (1/2) examples/tests/sleeptest.py: PASS (1.00 s)
      (2/2) examples/tests/failtest.py: FAIL (0.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -134,7 +133,6 @@ Once the virtual machine is properly setup, you may run your test. Example::
     VM LOGIN  : autotest@192.168.122.30
     JOB ID    : 60ddd718e7d7bb679f258920ce3c39ce73cb9779
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-16T18.41-60ddd71/job.log
-    TESTS     : 2
      (1/2) examples/tests/sleeptest.py:SleepTest.test: PASS (1.00 s)
      (2/2) examples/tests/failtest.py:FailTest.test: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -208,7 +206,6 @@ command similar to::
     $ avocado run passtest.py warntest.py failtest.py --docker ldoktor/fedora-avocado --docker-cmd "sudo docker"
     JOB ID     : db309f5daba562235834f97cad5f4458e3fe6e32
     JOB LOG    : $HOME/avocado/job-results/job-2016-07-25T08.01-db309f5/job.log
-    TESTS      : 3
     DOCKER     : Container id '4bcbcd69801211501a0dde5926c0282a9630adbe29ecb17a21ef04f024366943'
     DOCKER     : Container name 'job-2016-07-25T08.01-db309f5.avocado'
      (1/3) /avocado_remote_test_dir/$HOME/passtest.py:PassTest.test: PASS (0.00 s)
