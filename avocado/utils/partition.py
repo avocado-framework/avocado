@@ -174,7 +174,7 @@ class Partition(object):
 
         if self.mkfs_flags:
             args += ' ' + self.mkfs_flags
-        if fstype == 'xfs':
+        if fstype in ['xfs', 'btrfs']:
             args += ' -f'
 
         if self.loop:
@@ -230,7 +230,7 @@ class Partition(object):
             if self.device in self.list_mount_devices():
                 raise PartitionError(self, "Attempted to mount mounted device")
             if mountpoint in self.list_mount_points():
-                raise PartitionError(self, "Attempted to mount busy mountpoint")
+                raise PartitionError(self, "Attempted to mount busy directory")
             if not os.path.isdir(mountpoint):
                 os.makedirs(mountpoint)
             try:
