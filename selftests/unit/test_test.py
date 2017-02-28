@@ -65,18 +65,19 @@ class TestClassTestUnit(unittest.TestCase):
 
         # Everything fits
         check(1, "a" * 253, None, "1-" + ("a" * 253))
-        check(2, "a" * 251, 1, "2-" + ("a" * 251) + ";1")
-        check(99, "a" * 249, 88, "99-" + ("a" * 249) + ";88")
+        check(2, "a" * 251, {"variant_id": 1}, "2-" + ("a" * 251) + ";1")
+        check(99, "a" * 249, {"variant_id": 88}, "99-" + ("a" * 249) + ";88")
         # Shrink name
-        check(3, "a" * 252, 1, "3-" + ('a' * 251) + ";1")
+        check(3, "a" * 252, {"variant_id": 1}, "3-" + ('a' * 251) + ";1")
         # Shrink variant
-        check("a" * 253, "whatever", 99, "a" * 253 + ";9")
-        check("a" * 254, "whatever", 99, "a" * 254 + ";")
+        check("a" * 253, "whatever", {"variant_id": 99}, "a" * 253 + ";9")
+        check("a" * 254, "whatever", {"variant_id": 99}, "a" * 254 + ";")
         # No variant
-        tst = check("a" * 255, "whatever", "whatever-else", "a" * 255)
+        tst = check("a" * 255, "whatever", {"variant_id": "whatever-else"},
+                    "a" * 255)
         # Impossible to store (uid does not fit
-        self.assertRaises(AssertionError, check, "a" * 256, "whatever", "else",
-                          None)
+        self.assertRaises(AssertionError, check, "a" * 256, "whatever",
+                          {"variant_id": "else"}, None)
 
         self.assertEqual(os.path.basename(tst.workdir),
                          os.path.basename(tst.logdir))

@@ -20,7 +20,7 @@ import re
 import sys
 
 from avocado.core import tree, exit_codes, mux
-from avocado.core.plugin_interfaces import CLI
+from avocado.core.plugin_interfaces import CLI, VarianterPlugin
 
 
 try:
@@ -236,10 +236,10 @@ def create_from_yaml(paths, debug=False):
     return data
 
 
-class YamlToMux(CLI):
+class YamlToMuxCLI(CLI):
 
     """
-    Registers callback to inject params from yaml file to the
+    Defines arguments for YamlToMux plugin
     """
 
     name = 'yaml_to_mux'
@@ -282,6 +282,18 @@ class YamlToMux(CLI):
                              help="DEPRECATED: Filter out path(s) from "
                              "multiplexing (use --mux-out instead)")
 
+    def run(self, args):
+        """
+        The YamlToMux varianter plugin handles these
+        """
+
+
+class YamlToMux(mux.MuxPlugin, VarianterPlugin):
+
+    """
+    Processes the mux options into varianter plugin
+    """
+
     @staticmethod
     def _log_deprecation_msg(deprecated, current):
         """
@@ -290,7 +302,7 @@ class YamlToMux(CLI):
         msg = "The use of '%s' is deprecated, please use '%s' instead"
         logging.getLogger("avocado.app").warning(msg, deprecated, current)
 
-    def run(self, args):
+    def initialize(self, args):
         # Deprecated filters
         only = getattr(args, "filter_only", None)
         if only:
@@ -313,10 +325,11 @@ class YamlToMux(CLI):
         else:
             data = mux.MuxTreeNode()
 
+        debug = getattr(args, "mux_debug", False)
+
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
         if multiplex_files:
-            debug = getattr(args, "mux_debug", False)
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
@@ -328,7 +341,6 @@ class YamlToMux(CLI):
         multiplex_files = getattr(args, "multiplex", None)
         if multiplex_files:
             self._log_deprecation_msg("--multiplex", "--mux-yaml")
-            debug = getattr(args, "mux_debug", False)
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
                 from_yaml = create_from_yaml(multiplex_files, debug)
@@ -352,4 +364,7 @@ class YamlToMux(CLI):
         mux_filter_out = getattr(args, 'mux_filter_out', None)
         data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
         if data != mux.MuxTreeNode():
-            args.avocado_variants.data_merge(data)
+            mux_path = getattr(args, "mux_path", ["/run/*"])
+            if mux_path is None:
+                mux_path = ["/run/*"]
+            self.initialize_mux(data, mux_path, debug)
