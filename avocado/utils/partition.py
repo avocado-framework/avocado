@@ -297,3 +297,22 @@ class Partition(object):
                 else:
                     raise PartitionError(self, "Unable to unmount gracefully",
                                          details)
+
+
+def run_dd(opf, count, ipf='/dev/zero', block_size='1M', args=''):
+    """
+    Run dd command for the specified arguments
+
+    :param opf: path to output file
+    :type opf: str
+    :param count: Number of loops i.e count value
+    :type count: int
+    :param ipf: path to input file
+    :type ipf: str
+    :param block_size: block size suffixed with memory unit
+    :type block_size: str
+    :param args: Other arguments to be passed to dd command
+    :type args: str
+    """
+    process.run('dd if=%s of=%s bs=%s count=%d %s'
+                % (ipf, opf, block_size, count, args))
