@@ -16,7 +16,6 @@ Let's see an example. First, running a simple job with two test references::
      $ avocado run /bin/true /bin/false
      JOB ID     : 825b860b0c2f6ec48953c638432e3e323f8d7cad
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/job.log
-     TESTS      : 2
       (1/2) /bin/true: PASS (0.01 s)
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -29,7 +28,6 @@ Now we can replay the job by running::
      JOB ID     : 55a0d10132c02b8cc87deb2b480bfd8abbd956c3
      SRC JOB ID : 825b860b0c2f6ec48953c638432e3e323f8d7cad
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/job.log
-     TESTS      : 2
       (1/2) /bin/true: PASS (0.01 s)
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -43,7 +41,6 @@ multiplex file::
      $ avocado run /bin/true /bin/false --mux-yaml mux-environment.yaml
      JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/job.log
-     TESTS      : 48
       (1/48) /bin/true;1: PASS (0.01 s)
       (2/48) /bin/true;2: PASS (0.01 s)
       (3/48) /bin/true;3: PASS (0.01 s)
@@ -104,7 +101,6 @@ or replay the job ignoring the multiplex file, as below::
      JOB ID     : d5a46186ee0fb4645e3f7758814003d76c980bf9
      SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/job.log
-     TESTS      : 2
       (1/2) /bin/true: PASS (0.01 s)
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -118,7 +114,6 @@ result, using the option ``--replay-test-status``. See the example below::
     JOB ID     : 2e1dc41af6ed64895f3bb45e3820c5cc62a9b6eb
     SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
     JOB LOG    : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/job.log
-    TESTS      : 48
      (1/48) /bin/true;1: SKIP
      (2/48) /bin/true;2: SKIP
      (3/48) /bin/true;3: SKIP
@@ -183,7 +178,6 @@ below::
      $ avocado run /bin/true --job-results-dir /tmp/avocado_results/
      JOB ID     : f1b1c870ad892eac6064a5332f1bbe38cda0aaf3
      JOB LOG    : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/job.log
-     TESTS      : 1
       (1/1) /bin/true: PASS (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.01 s
@@ -200,7 +194,6 @@ In this case, we have to inform where the job results directory is located::
      JOB ID     : 19c76abb29f29fe410a9a3f4f4b66387570edffa
      SRC JOB ID : f1b1c870ad892eac6064a5332f1bbe38cda0aaf3
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/job.log
-     TESTS      : 1
       (1/1) /bin/true: PASS (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.01 s

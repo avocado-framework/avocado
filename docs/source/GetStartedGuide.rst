@@ -159,7 +159,6 @@ recognizable name::
     $ avocado run /bin/true
     JOB ID    : 381b849a62784228d2fd208d929cc49f310412dc
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
-    TESTS     : 1
      (1/1) /bin/true: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.01 s
@@ -186,7 +185,6 @@ using the ``--dry-run`` argument::
     avocado run /bin/true --dry-run
     JOB ID     : 0000000000000000000000000000000000000000
     JOB LOG    : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/job.log
-    TESTS      : 1
      (1/1) /bin/true: SKIP
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.00 s
@@ -270,7 +268,6 @@ instrumented and simple tests::
     $ avocado run failtest.py sleeptest.py synctest.py failtest.py synctest.py /tmp/simple_test.sh
     JOB ID    : 86911e49b5f2c36caeea41307cee4fecdcdfa121
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/job.log
-    TESTS     : 6
      (1/6) failtest.py:FailTest.test: FAIL (0.00 s)
      (2/6) sleeptest.py:SleepTest.test: PASS (1.00 s)
      (3/6) synctest.py:SyncTest.test: PASS (2.43 s)
@@ -290,7 +287,6 @@ on first failed test::
     $ avocado run --failfast on /bin/true /bin/false /bin/true /bin/true
     JOB ID     : eaf51b8c7d6be966bdf5562c9611b1ec2db3f68a
     JOB LOG    : $HOME/avocado/job-results/job-2016-07-19T09.43-eaf51b8/job.log
-    TESTS      : 4
      (1/4) /bin/true: PASS (0.01 s)
      (2/4) /bin/false: FAIL (0.01 s)
     Interrupting job (failfast).
@@ -338,7 +334,6 @@ files with shell code could be considered tests::
     $ avocado run --external-runner=/bin/sh /tmp/pass /tmp/fail
     JOB ID     : 4a2a1d259690cc7b226e33facdde4f628ab30741
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS      : 2
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -356,7 +351,6 @@ But now consider the following example::
                                            http://remote-avocado-server:9405/jobs/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
     JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS      : 2
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0

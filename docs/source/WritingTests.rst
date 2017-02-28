@@ -251,7 +251,6 @@ generation for sleeptest just like::
     $ avocado run sleeptest.py --mux-yaml examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID     : d565e8dec576d6040f894841f32a836c751f968f
     JOB LOG    : $HOME/avocado/job-results/job-2014-08-12T15.44-d565e8de/job.log
-    TESTS      : 3
      (1/3) sleeptest.py:SleepTest.test;1: PASS (0.50 s)
      (2/3) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
      (3/3) sleeptest.py:SleepTest.test;3: PASS (5.00 s)
@@ -283,7 +282,6 @@ You can also execute multiple tests with the same multiplex file::
     $ avocado run sleeptest.py synctest.py --mux-yaml examples/tests/sleeptest.py.data/sleeptest.yaml
     JOB ID     : cd20fc8d1714da6d4791c19322374686da68c45c
     JOB LOG    : $HOME/avocado/job-results/job-2016-05-04T09.25-cd20fc8/job.log
-    TESTS      : 8
      (1/8) sleeptest.py:SleepTest.test;1: PASS (0.50 s)
      (2/8) sleeptest.py:SleepTest.test;2: PASS (1.00 s)
      (3/8) sleeptest.py:SleepTest.test;3: PASS (5.01 s)
@@ -354,7 +352,6 @@ The outcome should be similar to::
 
     JOB ID     : af786f86db530bff26cd6a92c36e99bedcdca95b
     JOB LOG    : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/job.log
-    TESTS      : 1
      (1/1) plant.py:Plant.test_plant_organic: progress: 1-plant.py:Plant.test_plant_organic: preparing soil on row 0
     progress: 1-plant.py:Plant.test_plant_organic: preparing soil on row 1
     progress: 1-plant.py:Plant.test_plant_organic: preparing soil on row 2
@@ -671,7 +668,6 @@ option --output-check-record all to the test runner::
     $ scripts/avocado run --output-check-record all synctest.py
     JOB ID    : bcd05e4fd33e068b159045652da9eb7448802be5
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.20-bcd05e4/job.log
-    TESTS     : 1
      (1/1) synctest.py:SyncTest.test: PASS (2.20 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 2.20 s
@@ -700,7 +696,6 @@ Let's record the output for this one::
     $ scripts/avocado run output_record.sh --output-check-record all
     JOB ID    : 25c4244dda71d0570b7f849319cd71fe1722be8b
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.49-25c4244/job.log
-    TESTS     : 1
      (1/1) output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.01 s
@@ -725,7 +720,6 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
     $ scripts/avocado run output_record.sh
     JOB ID    : f0521e524face93019d7cb99c5765aedd933cb2e
     JOB LOG   : $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
-    TESTS     : 1
      (1/1) output_record.sh: FAIL (0.02 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.02 s
@@ -855,7 +849,6 @@ the multiplex, as shown below.
     $ avocado run sleeptest.py --mux-yaml /tmp/sleeptest-example.yaml
     JOB ID     : c78464bde9072a0b5601157989a99f0ba32a288e
     JOB LOG    : $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/job.log
-    TESTS      : 1
      (1/1) sleeptest.py:SleepTest.test: INTERRUPTED (3.04 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 1
     TESTS TIME : 3.04 s
@@ -941,7 +934,6 @@ Will produce the following result::
     $ avocado run test_skip_method.py 
     JOB ID     : 1bd8642400e3b6c584979504cafc4318f7a5fb65
     JOB LOG    : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/job.log
-    TESTS      : 1
      (1/1) test_skip_method.py:MyTestClass.test: SKIP
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.00 s
@@ -983,7 +975,6 @@ Will produce the following result::
     $ avocado run  test_skip_decorators.py
     JOB ID     : 59c815f6a42269daeaf1e5b93e52269fb8a78119
     JOB LOG    : $HOME/avocado/job-results/job-2017-02-03T17.41-59c815f/job.log
-    TESTS      : 3
      (1/3) test_skip_decorators.py:MyTest.test1: SKIP
      (2/3) test_skip_decorators.py:MyTest.test2: SKIP
      (3/3) test_skip_decorators.py:MyTest.test3: PASS (0.02 s)
