@@ -5,4 +5,4 @@ PyYAML==3.11
 Pillow==2.6.1
 aexpect==1.0.0
 # stevedore for loading "new style" plugins
-stevedore==1.8.0
+stevedore==1.20.0
