@@ -355,7 +355,7 @@ class Varianter(object):
         self.default_params = default_params
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
-        if (not getattr(args, "mux_skip_defaults", False) and
+        if (not getattr(args, "variants_skip_defaults", False) and
                 hasattr(args, "default_avocado_params")):
             self.default_params.merge(args.default_avocado_params)  # self.default_params is TreeNode pylint: disable=E1101
         return self.default_params
