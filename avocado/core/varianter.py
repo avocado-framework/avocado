@@ -328,7 +328,6 @@ class Varianter(object):
         self.default_params = {}
         self.debug = debug
         self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
-        self.ignore_new_data = False    # Used to ignore new data when parsed
         self._variant_plugins = dispatcher.VarianterDispatcher()
         self._no_variants = None
 
@@ -366,21 +365,6 @@ class Varianter(object):
         """
         return self._no_variants is not None
 
-    def _skip_new_data_check(self, function, args):
-        """
-        Check whether we can inject the data
-
-        :param function: Name of the data-inject function
-        :param args: Arguments of the data-inject function
-        :raise RuntimeError: When data injection is restricted
-        :return: True if new data should be ignored
-        """
-        if self.is_parsed():
-            if self.ignore_new_data:
-                return
-            raise RuntimeError("Varianter already parsed, unable to execute "
-                               "%s%s" % (function, args))
-
     def add_default_param(self, name, key, value, path=None):   # pylint: disable=E0202
         """
         Stores the path/key/value into default params
@@ -395,8 +379,6 @@ class Varianter(object):
         :param path: Optional path to the node to which we assign the value,
                      by default '/'.
         """
-        if self._skip_new_data_check("add_default_param", (key, value, path)):
-            return
         if path is None:
             path = "/"
         if name not in self.default_params:
