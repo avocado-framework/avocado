@@ -326,6 +326,7 @@ class Varianter(object):
                in order to provide the right results.
         """
         self.default_params = {}
+        self._default_params = None
         self.debug = debug
         self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
         self._variant_plugins = dispatcher.VarianterDispatcher()
@@ -351,13 +352,14 @@ class Varianter(object):
         default_params = self.node_class()
         for default_param in self.default_params.itervalues():
             default_params.merge(default_param)
-        self.default_params = default_params
+        self._default_params = default_params
+        self.default_params.clear()     # we don't need these anymore
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
         if (not getattr(args, "variants_skip_defaults", False) and
                 hasattr(args, "default_avocado_params")):
-            self.default_params.merge(args.default_avocado_params)  # self.default_params is TreeNode pylint: disable=E1101
-        return self.default_params
+            self._default_params.merge(args.default_avocado_params)
+        return self._default_params
 
     def is_parsed(self):
         """
@@ -432,6 +434,6 @@ class Varianter(object):
             for variant in iter(iter_variants):
                 yield variant
         else:   # No variants, use template
-            yield {"variant": self.default_params.get_leaves(),  # self.default_params is TreeNode pylint: disable=E1101
+            yield {"variant": self._default_params.get_leaves(),
                    "variant_id": None,
                    "mux_path": "/run"}
