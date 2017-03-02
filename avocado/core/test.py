@@ -225,15 +225,14 @@ class Test(unittest.TestCase):
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.params = varianter.AvocadoParams(params, self.name,
-                                              mux_path,
-                                              self.default_params)
+        self.__params = varianter.AvocadoParams(params, self.name,
+                                                mux_path,
+                                                self.default_params)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 
         self.log.info('START %s', self.name)
 
-        self.text_output = None
         self.__status = None
         self.__fail_reason = None
         self.__fail_class = None
@@ -243,7 +242,7 @@ class Test(unittest.TestCase):
         self.paused = False
         self.paused_msg = ''
 
-        self.runner_queue = runner_queue
+        self.__runner_queue = runner_queue
 
         unittest.TestCase.__init__(self, methodName=methodName)
 
@@ -288,6 +287,13 @@ class Test(unittest.TestCase):
         Directory available to test writers to attach files to the results
         """
         return self.__outputdir
+
+    @property
+    def params(self):
+        """
+        Parameters of this test (AvocadoParam instance)
+        """
+        return self.__params
 
     @property
     def basedir(self):
@@ -366,6 +372,22 @@ class Test(unittest.TestCase):
         return cache_dirs
 
     @property
+    def runner_queue(self):
+        """
+        The communication channel between test and test runner
+        """
+        return self.__runner_queue
+
+    def set_runner_queue(self, runner_queue):
+        """
+        Override the runner_queue
+        """
+        self.assertTrue(self.__runner_queue is None, "Overriding of runner_"
+                        "queue multiple times is not allowed -> old=%s new=%s"
+                        % (self.__runner_queue, runner_queue))
+        self.__runner_queue = runner_queue
+
+    @property
     def status(self):
         """
         The result status of this test
@@ -428,9 +450,9 @@ class Test(unittest.TestCase):
         """
         if self.running and self.time_start:
             self._update_time_elapsed()
-        preserve_attr = ['basedir', 'debugdir', 'depsdir', 'fail_reason',
-                         'logdir', 'logfile', 'name', 'resultsdir', 'srcdir',
-                         'status', 'text_output', 'time_elapsed',
+        preserve_attr = ['basedir', 'fail_reason',
+                         'logdir', 'logfile', 'name', 'srcdir',
+                         'status', 'time_elapsed',
                          'traceback', 'workdir', 'whiteboard', 'time_start',
                          'time_end', 'running', 'paused', 'paused_msg',
                          'fail_class', 'params', "timeout"]
@@ -691,8 +713,6 @@ class Test(unittest.TestCase):
             self._tag_end()
             self._report()
             self.log.info("")
-            with open(self.logfile, 'r') as log_file_obj:
-                self.text_output = log_file_obj.read()
             self._stop_logging()
 
     def _report(self):
