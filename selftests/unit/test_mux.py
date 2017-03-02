@@ -213,16 +213,16 @@ class TestMultiplex(unittest.TestCase):
         self.mux_tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
                                                       'examples/mux-selftest.'
                                                       'yaml'])
-        self.mux_full = tuple(varianter.MuxTree(self.mux_tree))
+        self.mux_full = tuple(mux.MuxTree(self.mux_tree))
 
     def test_empty(self):
-        act = tuple(varianter.MuxTree(mux.MuxTreeNode()))
+        act = tuple(mux.MuxTree(mux.MuxTreeNode()))
         self.assertEqual(act, (['', ],))
 
     def test_partial(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'], ['amd', 'scsi'],
                ['amd', 'virtio'], ['arm', 'scsi'], ['arm', 'virtio'])
-        act = tuple(varianter.MuxTree(self.mux_tree.children[0]))
+        act = tuple(mux.MuxTree(self.mux_tree.children[0]))
         self.assertEqual(act, exp)
 
     def test_full(self):
@@ -231,7 +231,7 @@ class TestMultiplex(unittest.TestCase):
     def test_create_variants(self):
         from_file = yaml_to_mux.create_from_yaml(
             ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
-        from_file = varianter.MuxTree(from_file)
+        from_file = mux.MuxTree(from_file)
         self.assertEqual(self.mux_full, tuple(from_file))
 
     # Filters are tested in tree_unittests, only verify `multiplex_yamls` calls
@@ -241,7 +241,7 @@ class TestMultiplex(unittest.TestCase):
                                             'examples/mux-selftest.yaml'])
         act = mux.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
                                       '/hw'))
-        act = tuple(varianter.MuxTree(act))
+        act = tuple(mux.MuxTree(act))
         self.assertEqual(act, exp)
 
     def test_filter_out(self):
@@ -249,7 +249,7 @@ class TestMultiplex(unittest.TestCase):
                                             'examples/mux-selftest.yaml'])
         act = mux.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
                                             '/distro'))
-        act = tuple(varianter.MuxTree(act))
+        act = tuple(mux.MuxTree(act))
         self.assertEqual(len(act), 4)
         self.assertEqual(len(act[0]), 3)
         str_act = str(act)
@@ -264,7 +264,7 @@ class TestAvocadoParams(unittest.TestCase):
     def setUp(self):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                               'examples/mux-selftest-params.yaml'])
-        self.yamls = iter(varianter.MuxTree(yamls))
+        self.yamls = iter(mux.MuxTree(yamls))
         self.params1 = varianter.AvocadoParams(self.yamls.next(), 'Unittest1',
                                                ['/ch0/*', '/ch1/*'], {})
         self.yamls.next()    # Skip 2nd
