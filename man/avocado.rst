@@ -6,8 +6,8 @@
 SYNOPSIS
 ========
 
- avocado [-h] [-v] [--config CONFIG_FILE]
- {run,list,sysinfo,multiplex,plugins,datadir} ...
+ avocado [-h] [-v] [--config [CONFIG_FILE]] [--show [STREAM[:LVL]]] [-s]
+ {config,diff,distro,exec-path,list,multiplex,plugins,run,sysinfo} ...
 
 DESCRIPTION
 ===========
@@ -28,40 +28,86 @@ The following list of options are builtin, application level `avocado`
 options. Most other options are implemented via plugins and will depend
 on them being loaded::
 
- -h, --help             show this help message and exit
- -v, --version          show program's version number and exit
- --config CONFIG_FILE   Use custom configuration from a file
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  --config [CONFIG_FILE]
+                        Use custom configuration from a file
+  --show [STREAM[:LVL]]
+                        List of comma separated builtin logs, or logging
+                        streams optionally followed by LEVEL (DEBUG,INFO,...).
+                        Builtin streams are: "test": test output; "debug":
+                        tracebacks and other debugging info; "app":
+                        application output; "early": early logging of other
+                        streams, including test (very verbose); "remote":
+                        fabric/paramiko debug; "all": all builtin streams;
+                        "none": disables regular output (leaving only errors
+                        enabled). By default: 'app'
+  -s, --silent          disables regular output (leaving only errors enabled)
 
 Real use of avocado depends on running avocado subcommands. This a typical list
 of avocado subcommands::
 
- run         Run one or more tests (native test, test alias, binary or script)
- list        List available test modules
- sysinfo     Collect system information
- multiplex   Generate a list of dictionaries with params from multiplex file(s)
- plugins     List all plugins loaded
- distro      Shows detected Linux distribution
- datadir     List all relevant directories used by avocado
+    config              Shows avocado config keys
+    diff                Shows the difference between 2 jobs.
+    distro              Shows detected Linux distribution
+    exec-path           Returns path to avocado bash libraries and exits.
+    list                List available tests
+    multiplex           Tool to analyze and visualize test variants and params
+    plugins             Displays plugin information
+    run                 Runs one or more tests (native test, test alias,
+                        binary or script)
+    sysinfo             Collect system information
 
 To get usage instructions for a given subcommand, run it with `--help`. Example::
 
  $ avocado multiplex --help
- usage: avocado multiplex [-h] [--filter-only [FILTER_ONLY [FILTER_ONLY ...]]]
-                          [--filter-out [FILTER_OUT [FILTER_OUT ...]]] [-t]
-                          [-c]
-                          multiplex_files [multiplex_files ...]
-
- positional arguments:
-   multiplex_files       Path(s) to a multiplex file(s)
+ usage: avocado multiplex [-h] [--system-wide] [-c] [-d] [-t] [-i]
+                          [-m [FILE [FILE ...]]]
+                          [--mux-filter-only [MUX_FILTER_ONLY [MUX_FILTER_ONLY ...]]]
+                          [--mux-filter-out [MUX_FILTER_OUT [MUX_FILTER_OUT ...]]]
+                          [--mux-path [MUX_PATH [MUX_PATH ...]]]
+                          [--mux-inject [MUX_INJECT [MUX_INJECT ...]]]
+                          [--multiplex [FILE [FILE ...]]]
+                          [--filter-only [FILTER_ONLY [FILTER_ONLY ...]]]
+                          [--filter-out [FILTER_OUT [FILTER_OUT ...]]]
 
  optional arguments:
    -h, --help            show this help message and exit
-   --filter-only [FILTER_ONLY [FILTER_ONLY ...]]
-                         Filter only path(s) from multiplexing
-   --filter-out [FILTER_OUT [FILTER_OUT ...]]
-                         Filter out path(s) from multiplexing
+   --system-wide         Combine the files with the default tree.
+   -c, --contents        Shows the node content (variables)
+
+ environment view options:
+   -d, --debug           Debug the multiplex tree.
+
+ tree view options:
    -t, --tree            Shows the multiplex tree structure
-   -c, --contents        Shows the variant's content (variables)
+   -i, --inherit         Show the inherited values
+
+ yaml to mux options:
+   -m [FILE [FILE ...]], --mux-yaml [FILE [FILE ...]]
+                         Location of one or more Avocado multiplex (.yaml)
+                         FILE(s) (order dependent)
+   --mux-filter-only [MUX_FILTER_ONLY [MUX_FILTER_ONLY ...]]
+                         Filter only path(s) from multiplexing
+   --mux-filter-out [MUX_FILTER_OUT [MUX_FILTER_OUT ...]]
+                         Filter out path(s) from multiplexing
+   --mux-path [MUX_PATH [MUX_PATH ...]]
+                         List of default paths used to determine path priority
+                         when querying for parameters
+   --mux-inject [MUX_INJECT [MUX_INJECT ...]]
+                         Inject [path:]key:node values into the final multiplex
+                         tree.
+
+ yaml to mux options [deprecated]:
+   --multiplex [FILE [FILE ...]]
+                         DEPRECATED: Location of one or more Avocado multiplex
+                         (.yaml) FILE(s) (order dependent)
+   --filter-only [FILTER_ONLY [FILTER_ONLY ...]]
+                         DEPRECATED: Filter only path(s) from multiplexing (use
+                         --mux-only instead)
+   --filter-out [FILTER_OUT [FILTER_OUT ...]]
+                         DEPRECATED: Filter out path(s) from multiplexing (use
+                         --mux-out instead)
 
 
 RUNNING A TEST
@@ -69,21 +115,19 @@ RUNNING A TEST
 
 The most common use of the `avocado` command line tool is to run a test::
 
- $ avocado run sleeptest
+ $ avocado run sleeptest.py
 
-This command will run the `sleeptest` test, as found on the standard test
+This command will run the `sleeptest.py` test, as found on the standard test
 directories. The output should be similar to::
 
- JOB ID    : <id>
- JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
- TESTS     : 1
- (1/1) sleeptest.py: PASS (1.00 s)
+ JOB ID     : c7400105682334c100baeca3a1fa10d0f7d870de
+ JOB LOG    : /home/<user>/avocado/job-results/job-2017-03-03T09.33-c740010/job.log
+  (1/1) sleeptest.py:SleepTest.test: PASS (1.01 s)
  RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
- TESTS TIME : 1.00 s
+ TESTS TIME : 1.01 s
 
-The test directories will vary depending on you system and
-installation method used. Still, it's pretty easy to find that out as shown
-in the next section.
+The test directories will vary depending on you system and installation method
+used. Still, it's pretty easy to find that out as shown in the next section.
 
 DEBUGGING TESTS
 ===============
@@ -93,22 +137,14 @@ output of the job log in the stdout, without having to tail the job log.
 In order to do that, you can use --show-job-log to the avocado test runner::
 
     $ scripts/avocado run examples/tests/sleeptest.py --show-job-log
-    Not logging /proc/slabinfo (lack of permissions)
-    START examples/tests/sleeptest.py
-
-    Test instance parameters:
-        id = examples/tests/sleeptest.py
-
-    Default parameters:
-        sleep_length = 1.0
-
-    Test instance params override defaults whenever available
-
+    ...
+    PARAMS (key=timeout, path=*, default=None) => None
+    START 1-sleeptest.py:SleepTest.test
+    PARAMS (key=sleep_length, path=*, default=1) => 1
     Sleeping for 1.00 seconds
     Not logging /var/log/messages (lack of permissions)
-    PASS examples/tests/sleeptest.py
-
-    Not logging /proc/slabinfo (lack of permissions)
+    PASS 1-sleeptest.py:SleepTest.test
+    ...
 
 Let's say you are debugging a test particularly large, with lots of debug
 output and you want to reduce this output to only messages with level 'INFO'
@@ -122,8 +158,10 @@ Edit your `~/.config/avocado/avocado.conf` file and add::
 Running the same example with this option will give you::
 
     $ scripts/avocado run sleeptest --show-job-log
-    START sleeptest.py
-    PASS sleeptest.py
+    ...
+    START 1-sleeptest.py:SleepTest.test
+    PASS 1-sleeptest.py:SleepTest.test
+    ...
 
 The levels you can choose are the levels available in the python logging system
 `https://docs.python.org/2/library/logging.html#logging-levels`, translated
@@ -254,7 +292,7 @@ A command by the same name, `multiplex`, is available on the `avocado`
 command line tool, and enables you to see all the test scenarios that can
 be run::
 
- $ avocado multiplex -c examples/tests/sleeptest.py.data/sleeptest.yaml
+ $ avocado multiplex -m examples/tests/sleeptest.py.data/sleeptest.yaml -c
  Variants generated:
 
  Variant 1:    /run/short
@@ -286,24 +324,18 @@ file (multiplex file) that produced the output above is::
 
 You can execute `sleeptest` in all variations exposed above with:
 
- $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml
+ $ avocado run sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml
 
 And the output should look like::
 
- JOB ID     : <id>
- JOB LOG    : /home/<user>/avocado/job-results/job-<date-<shortid>/job.log
- TESTS      : 4
- (1/4) sleeptest.py: PASS (0.50 s)
- (2/4) sleeptest.py.1: PASS (1.00 s)
- (3/4) sleeptest.py.2: PASS (5.01 s)
- (4/4) sleeptest.py.3: PASS (10.01 s)
- PASS       : 4
- ERROR      : 0
- FAIL       : 0
- SKIP       : 0
- WARN       : 0
- INTERRUPT  : 0
- TESTS TIME : 16.52 s
+ JOB ID     : 745e1707e311e7bd7397fcbaae3a09733248e41a
+ JOB LOG    : /home/<user>/avocado/job-results/job-2017-03-03T09.56-745e170/job.log
+  (1/4) sleeptest.py:SleepTest.test;1: PASS (0.51 s)
+  (2/4) sleeptest.py:SleepTest.test;2: PASS (1.01 s)
+  (3/4) sleeptest.py:SleepTest.test;3: PASS (5.02 s)
+  (4/4) sleeptest.py:SleepTest.test;4: PASS (10.01 s)
+ RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+ TESTS TIME : 16.55 s
 
 The `multiplex` plugin and the test runner supports two kinds of global
 filters, through the command line options `--filter-only` and `--filter-out`.
@@ -313,16 +345,16 @@ the `filter-out` removes one or more paths from being processed.
 From the previous example, if we are interested to use the variants `/run/medium`
 and `/run/longest`, we do the following command line::
 
- $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml \
-       --filter-only /run/medium /run/longest
+ $ avocado run sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml \
+       --mux-filter-only /run/medium /run/longest
 
 And if you want to remove `/small` from the variants created,
 we do the following::
 
- $ avocado run sleeptest --multiplex examples/tests/sleeptest.py.data/sleeptest.yaml \
-       --filter-out /run/medium
+ $ avocado run sleeptest.py -m examples/tests/sleeptest.py.data/sleeptest.yaml \
+       --mux-filter-out /run/medium
 
-Note that both `--filter-only` and `--filter-out` filters can be arranged in
+Note that both `--mux-filter-only` and `--mux-filter-out` filters can be arranged in
 the same command line.
 
 The multiplexer also supports default paths. The base path is ``/run/*`` but it
@@ -362,7 +394,7 @@ including broken image files, and it fails at a given point. You wish
 you could connect to the debugger at that given source location while
 your test is running. This is how to do just that with avocado::
 
- $ avocado run --gdb-run-bin=convert:convert_ppm_to_raw converttest
+ $ avocado run --gdb-run-bin=convert:convert_ppm_to_raw converttest.py
 
 The job starts running just as usual, and so does your test::
 
@@ -404,7 +436,7 @@ If you are debugging a special application and need to setup GDB in custom
 ways by running GDB commands, you can do that with the `--gdb-prerun-commands`
 option::
 
- $ avocado run --gdb-run-bin=foo:bar --gdb-prerun-commands=/tmp/disable-signals footest
+ $ avocado run --gdb-run-bin=foo:bar --gdb-prerun-commands=/tmp/disable-signals footest.py
 
 In this example, `/tmp/disable-signals` is a simple text file containing two lines::
 
@@ -436,16 +468,16 @@ have multiples wrappers and patterns defined.
 
 Examples::
 
- $ avocado run datadir --wrapper examples/wrappers/strace.sh
+ $ avocado run datadir.py --wrapper examples/wrappers/strace.sh
 
 Any command created by the test datadir will be wrapped on ``strace.sh``. ::
 
- $ avocado run datadir --wrapper examples/wrappers/ltrace.sh:*make \
-                       --wrapper examples/wrappers/perf.sh:*datadir
+ $ avocado run datadir.py --wrapper examples/wrappers/ltrace.sh:*make \
+                          --wrapper examples/wrappers/perf.sh:*datadir
 
 Any command that matches the pattern `*make` will
 be wrapper on ``ltrace.sh`` and the pattern ``*datadir`` will trigger
-the execution of ``perf.sh``. ::
+the execution of ``perf.sh``.
 
 Note that it is not possible to use ``--gdb-run-bin`` together
 with ``--wrapper``, they are incompatible.
@@ -489,7 +521,6 @@ files with shell code could be considered tests::
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.01 s
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This example is pretty obvious, and could be achieved by giving
 `/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
@@ -499,15 +530,14 @@ them executable (`chmod +x /tmp/pass /tmp/fail)`, and running them as
 But now consider the following example::
 
     $ avocado run --external-runner=/bin/curl http://local-avocado-server:9405/jobs/ \
-                                           http://remote-avocado-server:9405/jobs/
+                                              http://remote-avocado-server:9405/jobs/
     JOB ID     : 56016a1ffffaba02492fdbd5662ac0b958f51e11
-    JOB LOG    : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB LOG    : /home/<user>/avocado/job-results/job-2017-03-03T9.22-56016a1/job.log
     TESTS      : 2
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 3.04 s
-    JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
 This effectively makes `/bin/curl` an "external test runner", responsible for
 trying to fetch those URLs, and reporting PASS or FAIL for each of them.
@@ -540,12 +570,11 @@ The output files were originally obtained using the test runner and passing the
 option --output-check-record all to the test runner::
 
     $ avocado run --output-check-record all examples/tests/synctest.py
-    JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
-    TESTS     : 1
-    (1/1) examples/tests/synctest.py: PASS (2.20 s)
+    JOB ID     : 350c80addc55b1c463fd5d4e2c66d02a2eb25cbb
+    JOB LOG    : /home/<apahim>/avocado/job-results/job-2017-03-03T10.22-350c80a/job.log
+     (1/1) examples/tests/synctest.py:SyncTest.test: PASS (4.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 2.20 s
+    TESTS TIME : 4.00 s
 
 After the reference files are added, the check process is transparent, in the
 sense that you do not need to provide special flags to the test runner.
@@ -571,8 +600,8 @@ return 0 (PASSed) or != 0 (FAILed). Let's consider our bogus example::
 Let's record the output (both stdout and stderr) for this one::
 
     $ avocado run output_record.sh --output-check-record all
-    JOB ID    : <id>
-    JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
+    JOB ID     : a34fa15d37a3e358c9103a5a6d760d633dda24cb
+    JOB LOG    : /home/<user>/avocado/job-results/job-2017-03-03T10.25-a34fa15/job.log
     TESTS     : 1
     (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
@@ -610,17 +639,16 @@ Here is how to run the sleeptest example test in a remote machine with IP
 address 192.168.0.123 (standard port 22), remote user name `fedora` and
 remote user password `123456`::
 
- $ avocado run --remote-hostname 192.168.0.123 --remote-username fedora --remote-password 123456
+    $ avocado run sleeptest.py --remote-hostname 192.168.0.123 --remote-username fedora --remote-password 123456
 
 The output should look like::
 
- REMOTE LOGIN  : fedora@192.168.0.123:22
- JOB ID    : <JOBID>
- JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
- TESTS     : 1
- (1/1) sleeptest.py:  PASS (1.01 s)
- RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
- TESTS TIME : 1.01 s
+    JOB ID     : 4733dc1638b78c9af90187ca91f547058edf8c14
+    JOB LOG    : /home/<user>/avocado/job-results/job-2017-03-03T10.33-4733dc1/job.log
+    LOGIN      : fedora@localhost:22 (TIMEOUT: 60 seconds)
+     (1/1) sleeptest.py:SleepTest.test: PASS (1.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
+    TESTS TIME : 1.02 s
 
 For more information, please consult the topic Remote Machine Plugin
 on Avocado's online documentation.
