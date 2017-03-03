@@ -500,6 +500,8 @@ class RemoteTestRunner(TestRunner):
             for tst in results['tests']:
                 name = tst['test'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
+                if len(name) == 3:
+                    name[2] = {"variant_id": name[2]}
                 name = TestName(*name, no_digits=-1)
                 state = dict(name=name,
                              time_elapsed=tst['time'],

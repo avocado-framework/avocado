@@ -15,7 +15,7 @@ Contents:
    Loaders
    LoggingSystem
    Sysinfo
-   Mux
+   TestParameters
    Replay
    Diff
    RunningTestsRemotely

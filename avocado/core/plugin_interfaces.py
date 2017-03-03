@@ -201,3 +201,52 @@ class ResultEvents(JobPreTests, JobPostTests):
         """
         Event triggered when a test finishes running
         """
+
+
+class VarianterPlugin(Plugin):
+
+    """
+    Base plugin interface for producing test variants usually from cmd line
+    options
+    """
+
+    @abc.abstractmethod
+    def __iter__(self):
+        """
+        Yields all variants
+
+        The variant is defined as dictionary with at least:
+         * variant_id - name of the current variant
+         * variant - AvocadoParams-compatible variant (usually a list)
+         * mux_path - default path(s)
+
+        :yield variant
+        """
+
+    @abc.abstractmethod
+    def __len__(self):
+        """
+        Report number of variants
+        """
+
+    @abc.abstractmethod
+    def update_defaults(self, defaults):
+        """
+        Add default values
+
+        :note: Those values should not be part of the variant_id
+        """
+
+    @abc.abstractmethod
+    def to_str(self, summary, variants, **kwargs):
+        """
+        Return human readable representation
+
+        The summary/variants accepts verbosity where 0 means silent and
+        maximum is up to the plugin.
+
+        :param summary: How verbose summary to output (int)
+        :param variants: How verbose list of variants to output (int)
+        :param kwargs: Other free-form arguments
+        :rtype: str
+        """
