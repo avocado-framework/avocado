@@ -213,7 +213,6 @@ class Replay(CLI):
                     log.warning("Using src job Mux data only, use `--replay-"
                                 "ignore variants` to override them.")
                 setattr(args, "avocado_variants", variants)
-                variants.ignore_new_data = True
 
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,

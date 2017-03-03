@@ -197,6 +197,16 @@ class ReplayTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
+    def test_run_replay_and_mux(self):
+        """
+        Runs a replay job and specifies multiplex file (which should be
+        ignored)
+        """
+        cmdline = ("./scripts/avocado run --replay %s --job-results-dir %s "
+                   "--sysinfo=off -m examples/mux-selftest.yaml"
+                   % (self.jobid, self.tmpdir))
+        self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
