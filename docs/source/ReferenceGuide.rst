@@ -363,8 +363,27 @@ The instances should have:
 
 .. [#f1] Avocado plugins can introduce additional test types.
 
-Job Pre and Post Scripts
-========================
+Pre and post tests plugins
+==========================
+
+Avocado supports plug-ins which are (guaranteed to be) executed before the
+first test and after all tests finished. The interfaces are
+:class:`avocado.core.plugin_interfaces.JobPre`, resp.
+:class:`avocado.core.plugin_interfaces.JobPost`.
+
+Note the ``pre_tests`` might not be executed due to earlier failure which
+prevents the tests from being executed.
+
+The same applies for ``post_tests``, but it is possible to have ``post_tests``
+executed even when ``pre_tests`` were not. Additionally the ``post_tests``
+are (obviously) not executed on ``SIGKILL``. On the other hand they are
+executed on ``SIGTERM`` and ``KeyboardInterrupt`` while running
+the tests, but once the ``post_tests`` are executed the ``KeyboardInterrupt``
+or ``SystemExit`` interrupts their processing (to avoid hangs) and remaining
+plug-ins will **NOT** be executed.
+
+Jobscripts plugin
+-----------------
 
 Avocado ships with a plugin (installed by default) that allows running
 scripts before and after the actual execution of Jobs.  A user can be
@@ -373,7 +392,7 @@ been run, and when the "post" scripts are run, all the tests in a
 given job have already finished running.
 
 Configuration
--------------
+^^^^^^^^^^^^^
 
 By default, the script directory location is::
 
@@ -410,7 +429,7 @@ section:
   pre or post) exits with non-zero status
 
 Script Execution Environment
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All scripts are run in separate process with some environment
 variables set.  These can be used in your scripts in any way you wish:
