@@ -45,7 +45,3 @@ class TestsTmpDir(JobPre, JobPost):
                 del os.environ[self._varname]
             except:
                 pass
-
-    def __del__(self):
-        # Make sure we will cleanup if something bad happens
-        self.post(None)
