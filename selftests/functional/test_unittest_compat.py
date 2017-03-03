@@ -110,6 +110,9 @@ class UnittestCompat(unittest.TestCase):
         self.assertIn('FAILED (errors=1)', result.stderr)
 
     def tearDown(self):
+        self.unittest_script_error.remove()
+        self.unittest_script_fail.remove()
+        self.unittest_script_good.remove()
         shutil.rmtree(self.tmpdir)
 
 
