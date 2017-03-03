@@ -26,8 +26,8 @@ AVOCADO_ALL_OK = 0x0000
 #: Job went fine, but some tests FAILed or ERRORed
 AVOCADO_TESTS_FAIL = 0x0001
 
-#: Something went wrong with the Job itself, by explicit
-#: :class:`avocado.core.exceptions.JobError` exception.
+#: Something went wrong with an Avocado Job execution, usually by
+#: an explicit :class:`avocado.core.exceptions.JobError` exception.
 AVOCADO_JOB_FAIL = 0x0002
 
 #: Something else went wrong and avocado failed (or crashed). Commonly

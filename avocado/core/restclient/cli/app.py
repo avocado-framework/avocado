@@ -62,13 +62,13 @@ class App(object):
                 password=self.args.password)
         except connection.InvalidConnectionError:
             self.log.error("Error: could not connect to the server")
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            sys.exit(exit_codes.AVOCADO_FAIL)
         except connection.InvalidServerVersionError:
             self.log.error("REST server version is higher than "
                            "than this client can support.")
             self.log.error("Please use a more recent version "
                            "of the REST client application.")
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            sys.exit(exit_codes.AVOCADO_FAIL)
 
     def dispatch_action(self):
         """

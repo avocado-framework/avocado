@@ -44,7 +44,7 @@ class ReplayTests(unittest.TestCase):
         cmd_line = ('./scripts/avocado run --replay %s '
                     '--job-results-dir %s --sysinfo=off' %
                     ('foo', self.tmpdir))
-        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        expected_rc = exit_codes.AVOCADO_FAIL
         self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_latest(self):
