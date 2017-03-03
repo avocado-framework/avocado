@@ -144,7 +144,8 @@ class Test(unittest.TestCase):
     timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None):
+                 base_logdir=None, job=None, runner_queue=None,
+                 recovery_required=False, previous_run=None):
         """
         Initializes the test.
 
@@ -244,6 +245,9 @@ class Test(unittest.TestCase):
         self.paused_msg = ''
 
         self.runner_queue = runner_queue
+
+        self.__recovery_required = recovery_required
+        self.previous_run = previous_run
 
         unittest.TestCase.__init__(self, methodName=methodName)
 
@@ -533,6 +537,21 @@ class Test(unittest.TestCase):
         cleanup_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
+
+        if self.__recovery_required:
+            try:
+                self.recover_failure(self.previous_run)
+            except (exceptions.TestSetupSkip,
+                    exceptions.TestDecoratorSkip,
+                    exceptions.TestTimeoutSkip,
+                    exceptions.TestSkipError) as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                raise exceptions.TestSkipError(details)
+            except:  # Old-style exceptions are not inherited from Exception()
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                details = sys.exc_info()[1]
+                raise exceptions.TestSetupFail(details)
+
         try:
             self.setUp()
         except (exceptions.TestSetupSkip,
@@ -770,6 +789,19 @@ class Test(unittest.TestCase):
         return asset.Asset(name, asset_hash, algorithm, locations,
                            self.cache_dirs, expire).fetch()
 
+    def recover_failure(self, previous_run):
+        """
+        Method which is called before setUp and other functions to recover if
+        the previous run was interrupted. Avocado does not know about the tests
+        state, for recovery only the incomplete result object is provided
+        which may allow recovering some data from the tests log directory.
+
+        :param previous_run: Stored test status from previous run
+        """
+
+        raise exceptions.TestError("Previous run of avocado failed during the "
+                "test and we cannot recover!")
+
 
 class SimpleTest(Test):
 
@@ -977,6 +1009,52 @@ class ReplaySkipTest(SkipTest):
 
     _skip_reason = "Test skipped due to a job replay filter!"
 
+
+class ReplayResultCopier(Test):
+
+    """
+    Skip test due to job replay filter but copy results of the previous run.
+    The test is basically skipped, but the results from the old run are copied
+    over so it looks like it actually ran.
+    """
+
+    def __init__(self, *args, **kwargs):
+        Test.__init__(self, *args, **kwargs)
+
+    def run_avocado(self):
+        # Instead of running, remove the logdir as it was created and copy the
+        # old one over. But only do so if the old one exists
+        if os.path.isdir(self.previous_run['logdir']):
+            shutil.rmtree(self.logdir)
+            shutil.copytree(self.previous_run['logdir'],
+                            self.logdir,
+                            symlinks=True)
+
+    def get_state(self):
+        restore_attr = ['text_output', 'traceback', 'whiteboard', 'status',
+                        'fail_class', 'fail_reason']
+
+        state = super(ReplayResultCopier, self).get_state()
+        for attr in restore_attr:
+            if not attr in self.previous_run:
+                if attr in state:
+                    del state[attr]
+            else:
+                state[attr] = self.previous_run[attr]
+
+        if ('time' in self.previous_run and
+                'start' in self.previous_run):
+            time_start = self.previous_run['start']
+            time_elapsed = self.previous_run['time']
+            state['time_start'] = time_start
+            state['time_elapsed'] = time_elapsed
+            state['time_end'] = time_start + time_elapsed
+
+        return state
+
+    def test(self):
+        raise AssertionError("Should not run any test method if the result is "
+                             "copied from a previous run!")
 
 class TestError(Test):
     """
