@@ -277,10 +277,10 @@ class YamlToMux(CLI):
                              " multiplex (.yaml) FILE(s) (order dependent)")
             mux.add_argument("--filter-only", nargs='*', default=[],
                              help="DEPRECATED: Filter only path(s) from "
-                             "multiplexing (use --mux-only instead)")
+                             "multiplexing (use --mux-filter-only instead)")
             mux.add_argument("--filter-out", nargs='*', default=[],
                              help="DEPRECATED: Filter out path(s) from "
-                             "multiplexing (use --mux-out instead)")
+                             "multiplexing (use --mux-filter-out instead)")
 
     @staticmethod
     def _log_deprecation_msg(deprecated, current):
@@ -294,7 +294,7 @@ class YamlToMux(CLI):
         # Deprecated filters
         only = getattr(args, "filter_only", None)
         if only:
-            self._log_deprecation_msg("--filter-only", "--mux-only")
+            self._log_deprecation_msg("--filter-only", "--mux-filter-only")
             mux_filter_only = getattr(args, "mux_filter_only")
             if mux_filter_only:
                 args.mux_filter_only = mux_filter_only + only
@@ -302,7 +302,7 @@ class YamlToMux(CLI):
                 args.mux_filter_only = only
         out = getattr(args, "filter_out", None)
         if out:
-            self._log_deprecation_msg("--filter-out", "--mux-out")
+            self._log_deprecation_msg("--filter-out", "--mux-filter-out")
             mux_filter_out = getattr(args, "mux_filter_out")
             if mux_filter_out:
                 args.mux_filter_out = mux_filter_out + out
