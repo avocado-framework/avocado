@@ -357,7 +357,7 @@ class Varianter(object):
         self.default_params.clear()     # We don't need these anymore
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
-        if (not getattr(args, "mux_skip_defaults", False) and
+        if (not getattr(args, "variants_skip_defaults", False) and
                 hasattr(args, "default_avocado_params")):
             self._default_params.merge(args.default_avocado_params)
         return self._default_params
