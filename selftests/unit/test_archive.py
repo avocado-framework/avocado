@@ -2,6 +2,7 @@ import unittest
 import tempfile
 import os
 import shutil
+import sys
 import random
 
 from avocado.utils import archive
@@ -93,6 +94,8 @@ class ArchiveTest(unittest.TestCase):
     def test_tbz2_2_file(self):
         self.compress_and_check_file('.tbz2')
 
+    @unittest.skipIf(sys.platform.startswith('darwin'),
+                     'macOS does not support archive extra attributes')
     def test_zip_extra_attrs(self):
         """
         Check that utils.archive reflects extra attrs of file like symlinks

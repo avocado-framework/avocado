@@ -1,7 +1,11 @@
 language: python
 
-python:
-    - "2.7_with_system_site_packages"
+matrix:
+    include:
+        - os: linux
+          python: 2.7_with_system_site_packages
+        - os: osx
+          python: 2.7
 
 branches:
     only:
@@ -20,6 +24,13 @@ addons:
     - python-libvirt
 
 install:
+    - |
+        if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+            brew update
+            brew install libvirt
+            brew install graphviz
+            brew install libxml2
+        fi
     - pip install -r requirements-travis.txt
 
 script:
