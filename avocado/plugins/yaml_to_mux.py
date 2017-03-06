@@ -20,7 +20,7 @@ import re
 import sys
 
 from avocado.core import tree, exit_codes, mux
-from avocado.core.plugin_interfaces import CLI, VarianterPlugin
+from avocado.core.plugin_interfaces import CLI, Varianter
 
 
 try:
@@ -288,7 +288,7 @@ class YamlToMuxCLI(CLI):
         """
 
 
-class YamlToMux(mux.MuxPlugin, VarianterPlugin):
+class YamlToMux(mux.MuxPlugin, Varianter):
 
     """
     Processes the mux options into varianter plugin

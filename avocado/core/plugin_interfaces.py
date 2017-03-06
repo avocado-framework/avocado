@@ -203,7 +203,7 @@ class ResultEvents(JobPreTests, JobPostTests):
         """
 
 
-class VarianterPlugin(Plugin):
+class Varianter(Plugin):
 
     """
     Base plugin interface for producing test variants usually from cmd line
