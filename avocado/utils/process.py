@@ -207,18 +207,18 @@ def get_children_pids(ppid, recursive=False):
     """
     Get all PIDs of children/threads of parent ppid
     param ppid: parent PID
-    param recursive: True to return all levels of subprocesses
+    param recursive: True to return all levels of sub-processes
     return: list of PIDs of all children/threads of ppid
     """
 
     cmd = "ps -L --ppid=%d -o lwp"
 
-    # Getting first level of subprocesses
+    # Getting first level of sub-processes
     children = system_output(cmd % ppid, verbose=False).split('\n')[1:]
     if not recursive:
         return children
 
-    # Recursion to get all levels of subprocesses
+    # Recursion to get all levels of sub-processes
     for child in children:
         children.extend(system_output(cmd % int(child),
                                       verbose=False,
