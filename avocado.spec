@@ -1,13 +1,13 @@
 %global modulename avocado
 %if ! 0%{?commit:1}
- %define commit 337b333e1b58f18f876c993121454f2f6cb599db
+ %define commit f12f277434096dc628f5b0b731d7c37e0789427d
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: avocado
-Version: 46.0
-Release: 2%{?dist}
+Version: 47.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -194,6 +194,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Mar  6 2017 Cleber Rosa <cleber@redhat.com> - 47.0-0
+- New upstream release
+
 * Wed Feb 15 2017 Cleber Rosa <cleber@redhat.com> - 46.0-2
 - Removed python-crypto dependency from base avocado package
 

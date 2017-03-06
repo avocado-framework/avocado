@@ -1,0 +1,80 @@
+==================
+47.0 The Lost Wife
+==================
+
+The Avocado team is proud to present another release: Avocado version
+47.0, aka, "The Lost Wife" now available!
+
+Release documentation: `Avocado 47.0
+<http://avocado-framework.readthedocs.io/en/47.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+ * The :class:`avocado.Test` class now better exports (and protects)
+   the core class attributes members (such as ``params`` and
+   ``runner_queue``).  These were turned into properties so that
+   they're better highlighted in the docs and somehow protected when
+   users would try to replace them.
+
+ * Users sending ``SIGTERM`` to Avocado can now expect it to be
+   properly handled.  The handling done by Avocado includes sending
+   the same ``SIGTERM`` to all children processes.
+
+Internal improvements
+=====================
+
+ * The multiplexer has just become a proper plugin, implementing the
+   also new :class:`avocado.core.plugin_interfaces.Varianter` interface.
+
+ * The selftests wouldn't check for the proper location of the avocado
+   job results directory, and always assumed that
+   ``~/avocado/job-results`` exists.  This is now properly verified
+   and fixed.
+
+Bug fixes
+=========
+
+ * The UI used to show the number of tests in a ``TESTS:
+   <no_of_tests>`` line, but that would not take into account the
+   number of variants.  Since the following line also shows the
+   current test and the total number of tests (including the variants)
+   the ``TESTS: <no_of_tests>`` was removed.
+
+ * The Journal plugin would crash when used with the remote (and
+   derivative) runners.
+
+ * The whiteboard would not be created when the current working
+   directory would change inside the test.  This was related to the
+   ``datadir`` not being returned as an absolute path.
+
+Documentation / Contrib
+=======================
+
+ * The ``avocado`` man page (``man 1 avocado``) is now update and
+   lists all currently available commands and options.  Since some
+   command and options depend on installed plugins, the man page
+   includes all "optional" plugins (remote runner, vm runner, docker
+   runner and html).
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/46.0...47.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=NdTmgl1Fl20>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/HaFLiXyD/928-sprint-theme-the-lost-wife
