@@ -478,7 +478,7 @@ class TestRunner(object):
         :raises ValueError: When variant and template declare params.
         """
         for variant in variants.itertests():
-            params = variant.get("variant")
+            params = (variant.get("variant"), variant.get("mux_path"))
             if params:
                 if "params" in template[1]:
                     msg = ("Unable to use test variants %s, params are already"
