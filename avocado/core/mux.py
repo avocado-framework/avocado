@@ -90,7 +90,7 @@ class MuxPlugin(object):
     """
     Base implementation of Mux-like Varianter plugin. It should be used as
     a base class in conjunction with
-    :class:`avocado.core.plugin_interfaces.VarianterPlugin`.
+    :class:`avocado.core.plugin_interfaces.Varianter`.
     """
     root = None
     variants = None
@@ -111,7 +111,7 @@ class MuxPlugin(object):
 
     def __iter__(self):
         """
-        See :meth:`avocado.core.plugin_interfaces.VarianterPlugin.__iter__`
+        See :meth:`avocado.core.plugin_interfaces.Varianter.__iter__`
         """
         if self.root is None:
             return
@@ -123,7 +123,7 @@ class MuxPlugin(object):
     def update_defaults(self, defaults):
         """
         See
-        :meth:`avocado.core.plugin_interfaces.VarianterPlugin.update_defaults`
+        :meth:`avocado.core.plugin_interfaces.Varianter.update_defaults`
         """
         if self.root is None:
             return
@@ -136,7 +136,7 @@ class MuxPlugin(object):
 
     def to_str(self, summary, variants, **kwargs):
         """
-        See :meth:`avocado.core.plugin_interfaces.VarianterPlugin.to_str`
+        See :meth:`avocado.core.plugin_interfaces.Varianter.to_str`
         """
         if not self.variants:
             return ""
@@ -183,7 +183,7 @@ class MuxPlugin(object):
 
     def __len__(self):
         """
-        See :meth:`avocado.core.plugin_interfaces.VarianterPlugin.__len__`
+        See :meth:`avocado.core.plugin_interfaces.Varianter.__len__`
         """
         if self.root is None:
             return 0

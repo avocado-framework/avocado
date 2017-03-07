@@ -146,7 +146,7 @@ More practical overview of mux path is in `yaml_to_mux plugin`_ in
 Variant
 ~~~~~~~
 
-Variant is a set of params produced by `VarianterPlugin`_s and passed to
+Variant is a set of params produced by `Varianter`_s and passed to
 the test by the test runner as ``params`` argument. The simplest variant
 is ``None``, which still produces `AvocadoParams`_ with only the
 `Test's default params`_. If dict is used as a `Variant`_, it (safely)
@@ -245,7 +245,7 @@ Where:
 Varianter plugins
 ~~~~~~~~~~~~~~~~~
 
-:class:`avocado.core.plugin_interfaces.VarianterPlugin`
+:class:`avocado.core.plugin_interfaces.Varianter`
 
 A plugin interface that can be used to build custom plugins which
 are used by `Varianter`_ to get test variants. For inspiration see
@@ -413,8 +413,8 @@ MuxPlugin
 :class:`avocado.core.mux.MuxPlugin`
 
 Defines the full interface required by
-:class:`avocado.core.plugin_interfaces.VarianterPlugin`. The plugin writer
-should inherit from this ``MuxPlugin``, then from the ``VarianterPlugin``
+:class:`avocado.core.plugin_interfaces.Varianter`. The plugin writer
+should inherit from this ``MuxPlugin``, then from the ``Varianter``
 and call the::
 
    self.initialize_mux(root, mux_path, debug)
