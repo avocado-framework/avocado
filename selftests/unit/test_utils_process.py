@@ -6,6 +6,8 @@ from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path
 
+TRUE_CMD = path.find_command('true')
+
 
 class TestGDBProcess(unittest.TestCase):
 
@@ -40,7 +42,7 @@ class TestGDBProcess(unittest.TestCase):
 
     def test_get_sub_process_klass(self):
         gdb.GDB_RUN_BINARY_NAMES_EXPR = []
-        self.assertIs(process.get_sub_process_klass('/bin/true'),
+        self.assertIs(process.get_sub_process_klass(TRUE_CMD),
                       process.SubProcess)
 
         gdb.GDB_RUN_BINARY_NAMES_EXPR.append('/bin/false')
@@ -74,7 +76,7 @@ def mock_fail_find_cmd(cmd, default=None):
 class TestProcessRun(unittest.TestCase):
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_subprocess_nosudo(self):
         expected_command = 'ls -l'
@@ -82,7 +84,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_subprocess_nosudo_uid_0(self):
         expected_command = 'ls -l'
@@ -90,10 +92,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_subprocess_sudo(self):
-        expected_command = '/bin/true -n ls -l'
+        expected_command = '%s -n ls -l' % TRUE_CMD
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
@@ -105,7 +107,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_subprocess_sudo_uid_0(self):
         expected_command = 'ls -l'
@@ -113,10 +115,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_subprocess_sudo_shell(self):
-        expected_command = '/bin/true -n -s ls -l'
+        expected_command = '%s -n -s ls -l' % TRUE_CMD
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
@@ -128,7 +130,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_subprocess_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
@@ -136,7 +138,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.cmd, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_run_nosudo(self):
         expected_command = 'ls -l'
@@ -144,7 +146,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_run_nosudo_uid_0(self):
         expected_command = 'ls -l'
@@ -152,10 +154,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_run_sudo(self):
-        expected_command = '/bin/true -n ls -l'
+        expected_command = '%s -n ls -l' % TRUE_CMD
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
@@ -167,7 +169,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_run_sudo_uid_0(self):
         expected_command = 'ls -l'
@@ -175,10 +177,10 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=1000))
     def test_run_sudo_shell(self):
-        expected_command = '/bin/true -n -s ls -l'
+        expected_command = '%s -n -s ls -l' % TRUE_CMD
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
@@ -190,7 +192,7 @@ class TestProcessRun(unittest.TestCase):
         self.assertEqual(p.command, expected_command)
 
     @patch.object(path, 'find_command',
-                  MagicMock(return_value='/bin/true'))
+                  MagicMock(return_value=TRUE_CMD))
     @patch.object(os, 'getuid', MagicMock(return_value=0))
     def test_run_sudo_shell_uid_0(self):
         expected_command = 'ls -l'

@@ -155,6 +155,7 @@ def kill_process_tree(pid, sig=signal.SIGKILL, send_sigcont=True):
     :param pid: The pid of the process to signal.
     :param sig: The signal to send to the processes.
     """
+    # TODO: This relies on the GNU version of ps (need to fix MacOS support)
     if not safe_kill(pid, signal.SIGSTOP):
         return
     children = system_output("ps --ppid=%d -o pid=" % pid, ignore_status=True,
@@ -189,6 +190,7 @@ def process_in_ptree_is_defunct(ppid):
 
     :param ppid: The parent PID of the process to verify.
     """
+    # TODO: This relies on the GNU version of ps (need to fix MacOS support)
     defunct = False
     try:
         pids = get_children_pids(ppid)
@@ -210,6 +212,7 @@ def get_children_pids(ppid, recursive=False):
     param recursive: True to return all levels of sub-processes
     return: list of PIDs of all children/threads of ppid
     """
+    # TODO: This relies on the GNU version of ps (need to fix MacOS support)
 
     cmd = "ps -L --ppid=%d -o lwp"
 
