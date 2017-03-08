@@ -79,7 +79,7 @@ class Dispatcher(EnabledExtensionManager):
 
         This differs from :func:`stevedore.extension.ExtensionManager.names`
         in that it returns names in a predictable order, by using standard
-        :func:`order`.
+        :func:`sorted`.
         """
         return sorted(super(Dispatcher, self).names())
 
