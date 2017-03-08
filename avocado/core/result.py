@@ -41,6 +41,7 @@ class Result(object):
         self.skipped = 0
         self.warned = 0
         self.interrupted = 0
+        self.cancelled = 0
         self.tests = []
 
     def _reconcile(self):
@@ -53,7 +54,8 @@ class Result(object):
         """
         valid_results_count = (self.passed + self.errors +
                                self.failed + self.warned +
-                               self.skipped + self.interrupted)
+                               self.skipped + self.interrupted +
+                               self.cancelled)
         other_skipped_count = self.tests_total - valid_results_count
         if other_skipped_count > 0:
             self.skipped += other_skipped_count
@@ -103,6 +105,8 @@ class Result(object):
             self.warned += 1
         elif status == "INTERRUPTED":
             self.interrupted += 1
+        elif status == "CANCEL":
+            self.cancelled += 1
         else:
             self.errors += 1
         self.end_test(state)

@@ -79,7 +79,7 @@ class XUnitResult(Result):
         testsuite.setAttribute('tests', self._escape_attr(result.tests_total))
         testsuite.setAttribute('errors', self._escape_attr(result.errors + result.interrupted))
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
-        testsuite.setAttribute('skipped', self._escape_attr(result.skipped))
+        testsuite.setAttribute('skipped', self._escape_attr(result.skipped + result.cancelled))
         testsuite.setAttribute('time', self._escape_attr(result.tests_total_time))
         testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now()))
         document.appendChild(testsuite)
@@ -90,6 +90,8 @@ class XUnitResult(Result):
                 pass
             elif status == 'SKIP':
                 testcase.appendChild(Element('skipped'))
+            elif status == 'CANCEL':
+                testcase.appendChild(Element('cancelled'))
             elif status == 'FAIL':
                 element = self._create_failure_or_error(document, test, 'failure')
                 testcase.appendChild(element)

@@ -35,7 +35,8 @@ class Human(ResultEvents):
                       'FAIL': output.TERM_SUPPORT.FAIL,
                       'SKIP': output.TERM_SUPPORT.SKIP,
                       'WARN': output.TERM_SUPPORT.WARN,
-                      'INTERRUPTED': output.TERM_SUPPORT.INTERRUPT}
+                      'INTERRUPTED': output.TERM_SUPPORT.INTERRUPT,
+                      'CANCEL': output.TERM_SUPPORT.CANCEL}
 
     def __init__(self, args):
         self.log = logging.getLogger("avocado.app")
@@ -93,7 +94,8 @@ class Human(ResultEvents):
         if not self.owns_stdout:
             return
         self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                      "WARN %d | INTERRUPT %s", job.result.passed,
+                      "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,
                       job.result.errors, job.result.failed, job.result.skipped,
-                      job.result.warned, job.result.interrupted)
+                      job.result.warned, job.result.interrupted,
+                      job.result.cancelled)
         self.log.info("TESTS TIME : %.2f s", job.result.tests_total_time)

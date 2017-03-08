@@ -62,6 +62,7 @@ class JSONResult(Result):
                    'errors': result.errors,
                    'failures': result.failed,
                    'skip': result.skipped,
+                   'cancel': result.cancelled,
                    'time': result.tests_total_time}
         return json.dumps(content,
                           sort_keys=True,
