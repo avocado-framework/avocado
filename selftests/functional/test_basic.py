@@ -12,6 +12,7 @@ import time
 import xml.dom.minidom
 import zipfile
 import unittest
+import psutil
 
 import pkg_resources
 
@@ -23,7 +24,6 @@ from avocado.utils import path as utils_path
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
-
 
 PASS_SCRIPT_CONTENTS = """#!/bin/sh
 true
@@ -105,8 +105,18 @@ def probe_binary(binary):
         return None
 
 
+TRUE_CMD = probe_binary('true')
 CC_BINARY = probe_binary('cc')
-ECHO_BINARY = probe_binary('echo')
+
+# On macOS, the default GNU coreutils installation (brew)
+# installs the gnu utility versions with a g prefix. It still has the
+# BSD versions of the core utilities installed on their expected paths
+# but their behavior and flags are in most cases different.
+GNU_ECHO_BINARY = probe_binary('echo')
+if GNU_ECHO_BINARY is not None:
+    echo_manpage = process.run('man %s' % os.path.basename(GNU_ECHO_BINARY)).stdout
+    if '-e' not in echo_manpage:
+        GNU_ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
 
@@ -470,7 +480,7 @@ class RunnerOperationTest(unittest.TestCase):
         log = open(debuglog, 'r').read()
         # Remove the result dir
         shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
-        self.assertIn('/tmp', debuglog)   # Use tmp dir, not default location
+        self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
         self.assertEqual(result['job_id'], u'0' * 40)
         # Check if all tests were skipped
         self.assertEqual(result['skip'], 4)
@@ -564,13 +574,14 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
                       '  SKIP', result.stdout)
 
-    @unittest.skipIf(not ECHO_BINARY, 'echo binary not available')
+    @unittest.skipIf(not GNU_ECHO_BINARY,
+                     'GNU style echo binary not available')
     def test_ugly_echo_cmd(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --external-runner "%s -ne" '
                     '"foo\\\\\\n\\\'\\\\\\"\\\\\\nbar/baz" --job-results-dir %s'
                     ' --sysinfo=off  --show-job-log' %
-                    (ECHO_BINARY, self.tmpdir))
+                    (GNU_ECHO_BINARY, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -716,8 +727,10 @@ class RunnerSimpleTest(unittest.TestCase):
                               % (self.tmpdir, SLEEP_BINARY))
         proc.read_until_output_matches(["\(1/1\)"], timeout=3,
                                        internal_timeout=0.01)
-        # We need pid of the avocado, not the shell executing it
-        pid = int(process.get_children_pids(proc.get_pid())[0])
+        # We need pid of the avocado process, not the shell executing it
+        avocado_shell = psutil.Process(proc.get_pid())
+        avocado_proc = avocado_shell.children()[0]
+        pid = avocado_proc.pid
         os.kill(pid, signal.SIGTSTP)   # This freezes the process
         deadline = time.time() + 9
         while time.time() < deadline:
@@ -807,7 +820,7 @@ class ExternalRunnerTest(unittest.TestCase):
     def test_externalrunner_no_url(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--external-runner=/bin/true' % self.tmpdir)
+                    '--external-runner=%s' % (self.tmpdir, TRUE_CMD))
         result = process.run(cmd_line, ignore_status=True)
         expected_output = ('No test references provided nor any other '
                            'arguments resolved into tests')
@@ -1137,11 +1150,11 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
                            1, 1, 0, 0)
 
-    @unittest.skipIf(not ECHO_BINARY, 'echo binary not available')
+    @unittest.skipIf(not GNU_ECHO_BINARY, 'echo binary not available')
     def test_ugly_echo_cmd(self):
         data = self.run_and_check('"-ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
                                   'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
-                                  0, 0, ECHO_BINARY)
+                                  0, 0, GNU_ECHO_BINARY)
         # The executed test should be this
         self.assertEqual(data['tests'][0]['url'],
                          '1--ne foo\\\\n\\\'\\"\\\\nbar/baz')

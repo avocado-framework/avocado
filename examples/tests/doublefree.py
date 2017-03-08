@@ -3,6 +3,7 @@
 import os
 import shutil
 import signal
+import sys
 
 from avocado import Test
 from avocado import main
@@ -43,7 +44,13 @@ class DoubleFreeTest(Test):
         expected_exit_status = -signal.SIGABRT
         output = cmd_result.stdout + cmd_result.stderr
         self.assertEqual(cmd_result.exit_status, expected_exit_status)
-        self.assertIn('double free or corruption', output)
+        if sys.platform.startswith('darwin'):
+            pattern = 'pointer being freed was not allocated'
+        else:
+            pattern = 'double free or corruption'
+        self.assertTrue(pattern in output,
+                        msg='Could not find pattern %s in output %s' %
+                            (pattern, output))
 
 
 if __name__ == "__main__":

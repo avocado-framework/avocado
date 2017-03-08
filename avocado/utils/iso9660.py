@@ -27,6 +27,7 @@ import os
 import logging
 import tempfile
 import shutil
+import sys
 import re
 
 from . import process
@@ -311,8 +312,12 @@ class Iso9660Mount(BaseIso9660):
         """
         super(Iso9660Mount, self).__init__(path)
         self._mnt_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        process.run('mount -t iso9660 -v -o loop,ro %s %s' %
-                    (path, self.mnt_dir), sudo=True)
+        if sys.platform.startswith('darwin'):
+            fs_type = 'cd9660'
+        else:
+            fs_type = 'iso9660'
+        process.run('mount -t %s -v -o loop,ro %s %s' %
+                    (fs_type, path, self.mnt_dir), sudo=True)
 
     def read(self, path):
         """

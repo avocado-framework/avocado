@@ -104,7 +104,10 @@ class InterruptTest(unittest.TestCase):
                         if old_psutil:
                             cmdline_list = psutil.Process(p).cmdline
                         else:
-                            cmdline_list = psutil.Process(p).cmdline()
+                            try:
+                                cmdline_list = psutil.Process(p).cmdline()
+                            except psutil.AccessDenied:
+                                cmdline_list = []
                         if bad_test.path in " ".join(cmdline_list):
                             bad_test_processes.append(p_obj)
                 # psutil.NoSuchProcess happens when the original
@@ -159,7 +162,10 @@ class InterruptTest(unittest.TestCase):
                         if old_psutil:
                             cmdline_list = psutil.Process(p).cmdline
                         else:
-                            cmdline_list = psutil.Process(p).cmdline()
+                            try:
+                                cmdline_list = psutil.Process(p).cmdline()
+                            except psutil.AccessDenied:
+                                cmdline_list = []
                         if good_test.path in " ".join(cmdline_list):
                             good_test_processes.append(p_obj)
                 # psutil.NoSuchProcess happens when the original
