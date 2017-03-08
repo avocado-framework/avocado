@@ -567,6 +567,13 @@ class Test(unittest.TestCase):
                 exceptions.TestSkipError) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestCancel as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            skip_illegal_msg = ('Calling cancel() in setUp() '
+                                'is not allowed in avocado, you '
+                                'must fix your test. Original cancel exception: '
+                                '%s' % details)
+            raise exceptions.TestError(skip_illegal_msg)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
@@ -583,6 +590,9 @@ class Test(unittest.TestCase):
         except exceptions.TestDecoratorSkip as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestCancel as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
@@ -773,6 +783,21 @@ class Test(unittest.TestCase):
         :type message: str
         """
         raise exceptions.TestSetupSkip(message)
+
+    def cancel(self, message=None):
+        """
+        Cancels the test.
+
+        This method is expected to be called from the test method, not
+        anywhere else, since by definition, we can only cancel a test that
+        is currently under execution. If you call this method outside the
+        test method, avocado will mark your test status as ERROR, and
+        instruct you to fix your test in the error message.
+
+        :param message: an optional message that will be recorded in the logs
+        :type message: str
+        """
+        raise exceptions.TestCancel(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
                     locations=None, expire=None):

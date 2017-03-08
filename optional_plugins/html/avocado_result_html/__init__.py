@@ -113,7 +113,8 @@ class ReportModel(object):
                    "ALERT": "danger",
                    "RUNNING": "info",
                    "NOSTATUS": "info",
-                   "INTERRUPTED": "danger"}
+                   "INTERRUPTED": "danger",
+                   "CANCEL": "warning"}
         test_info = []
         results_dir = self.results_dir(False)
         for tst in self.result.tests:
