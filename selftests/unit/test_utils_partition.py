@@ -30,6 +30,8 @@ class TestPartition(unittest.TestCase):
     Unit tests for avocado.utils.partition
     """
 
+    @unittest.skipIf(not os.path.isdir('/proc/mounts'),
+                     'system does not have /proc/mounts')
     @unittest.skipIf(not process.can_sudo('mount'),
                      'current user must be allowed to run "mount" under sudo')
     @unittest.skipIf(not process.can_sudo('mkfs.ext2 -V'),
@@ -96,6 +98,8 @@ class TestPartition(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
+@unittest.skipIf(not os.path.isfile('/etc/mtab'),
+                 'macOS does not have /etc/mtab')
 class TestMtabLock(unittest.TestCase):
 
     """
