@@ -335,7 +335,10 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             except IOError as details:
                 error_msg = "%s : %s" % (details.strerror, details.filename)
                 logging.getLogger("avocado.app").error(error_msg)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                if args.subcommand == 'run':
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                else:
+                    sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Deprecated --multiplex option
         multiplex_files = getattr(args, "multiplex", None)
@@ -348,7 +351,10 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             except IOError as details:
                 error_msg = "%s : %s" % (details.strerror, details.filename)
                 logging.getLogger("avocado.app").error(error_msg)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                if args.subcommand == 'run':
+                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                else:
+                    sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Extend default multiplex tree of --mux-inject values
         for inject in getattr(args, "mux_inject", []):

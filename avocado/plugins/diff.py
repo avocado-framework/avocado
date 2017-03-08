@@ -343,7 +343,7 @@ class Diff(CLICmd):
                 resultsdir = jobdata.get_resultsdir(logdir, job_id)
             except ValueError as exception:
                 LOG.error(exception.message)
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                sys.exit(exit_codes.AVOCADO_FAIL)
 
         if resultsdir is None:
             LOG.error("Can't find job results directory for '%s' in '%s'",

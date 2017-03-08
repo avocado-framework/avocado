@@ -142,11 +142,11 @@ class Replay(CLI):
             resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
         except ValueError as exception:
             log.error(exception.message)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            sys.exit(exit_codes.AVOCADO_FAIL)
 
         if resultsdir is None:
             log.error("Can't find job results directory in '%s'", logdir)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            sys.exit(exit_codes.AVOCADO_FAIL)
 
         sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'),
                                    args.replay_jobid)
@@ -154,7 +154,7 @@ class Replay(CLI):
             msg = ("Can't find matching job id '%s' in '%s' directory."
                    % (args.replay_jobid, resultsdir))
             log.error(msg)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            sys.exit(exit_codes.AVOCADO_FAIL)
         setattr(args, 'replay_sourcejob', sourcejob)
 
         replay_args = jobdata.retrieve_args(resultsdir)
@@ -186,7 +186,7 @@ class Replay(CLI):
             references = jobdata.retrieve_references(resultsdir)
             if references is None:
                 log.error('Source job test references data not found. Aborting.')
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                sys.exit(exit_codes.AVOCADO_FAIL)
             else:
                 setattr(args, 'reference', references)
 
@@ -203,7 +203,7 @@ class Replay(CLI):
             variants = jobdata.retrieve_variants(resultsdir)
             if variants is None:
                 log.error('Source job variants data not found. Aborting.')
-                sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+                sys.exit(exit_codes.AVOCADO_FAIL)
             else:
                 # Ignore data manipulation. This is necessary, because
                 # we replaced the unparsed object with parsed one. There

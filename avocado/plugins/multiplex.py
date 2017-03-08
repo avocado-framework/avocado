@@ -91,7 +91,7 @@ class Multiplex(CLICmd):
             varianter.parse(args)
         except (IOError, ValueError) as details:
             log.error("Unable to parse varianter: %s", details)
-            sys.exit(exit_codes.AVOCADO_JOB_FAIL)
+            sys.exit(exit_codes.AVOCADO_FAIL)
         use_utf8 = settings.get_value("runner.output", "utf8",
                                       key_type=bool, default=None)
         summary = args.summary or 0
