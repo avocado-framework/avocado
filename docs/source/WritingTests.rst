@@ -202,7 +202,7 @@ them in the following section)::
         /run/variants/one_cycle:sleep_length  => 600
     ...
 
-In test you can access those params by::
+In test you can access those params by:
 
 .. code-block:: python
 
