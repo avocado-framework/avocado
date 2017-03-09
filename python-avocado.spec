@@ -1,17 +1,17 @@
-%global modulename avocado
+%global srcname avocado
 %if ! 0%{?commit:1}
  %define commit f12f277434096dc628f5b0b731d7c37e0789427d
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Summary: Framework with tools and libraries for Automated Testing
-Name: avocado
+Name: python-%{srcname}
 Version: 47.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
-Source0: https://github.com/avocado-framework/%{name}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
+Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}/%{srcname}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
 Requires: python, python-requests, python-setuptools, pyliblzma, gdb, gdb-gdbserver, python-stevedore, python-yaml, procps-ng
 BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock, libvirt-python, python-yaml, procps-ng
@@ -20,6 +20,15 @@ BuildRequires: python-aexpect
 %else
 BuildRequires: aexpect
 %endif
+
+# For compatibility reasons, let's mark this package as one that
+# provides the same functionality as the old package name and also
+# one that obsoletes the old package name, so that the new name is
+# favored.  These could (and should) be removed in the future.
+# These changes are backed by the following guidelines:
+# https://fedoraproject.org/wiki/Upgrade_paths_%E2%80%94_renaming_or_splitting_packages
+Obsoletes: %{srcname} < 47.0-1
+Provides: %{srcname} = %{version}-%{release}
 
 # For some strange reason, fabric on Fedora 24 does not require the
 # python-crypto package, but the fabric code always imports it.  Newer
@@ -42,7 +51,7 @@ Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
 %prep
-%setup -q -n %{name}-%{commit}
+%setup -q -n %{srcname}-%{commit}
 # package plugins-runner-vm requires libvirt-python, but the RPM
 # version of libvirt-python does not publish the egg info and this
 # causes that dep to be attempted to be installed by pip
@@ -124,7 +133,9 @@ selftests/run
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
-Requires: avocado == %{version}, pystache
+Requires: %{name} == %{version}, pystache
+Obsoletes: %{srcname}-plugins-output-html < 47.0-1
+Provides: %{srcname}-plugins-output-html = %{version}-%{release}
 
 %description plugins-output-html
 Adds to avocado the ability to generate an HTML report at every job results
@@ -136,11 +147,13 @@ arbitrary filesystem location.
 
 %package plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
-Requires: avocado == %{version}, fabric
+Requires: %{name} == %{version}, fabric
 %if 0%{?fedora} == 24
 Requires: python-crypto
 BuildRequires: python-crypto
 %endif
+Obsoletes: %{srcname}-plugins-runner-remote < 47.0-1
+Provides: %{srcname}-plugins-runner-remote = %{version}-%{release}
 
 %description plugins-runner-remote
 Allows Avocado to run jobs on a remote machine, by means of an SSH
@@ -151,8 +164,10 @@ connection.  Avocado must be previously installed on the remote machine.
 
 %package plugins-runner-vm
 Summary: Avocado Runner for libvirt VM Execution
-Requires: avocado == %{version}, avocado-plugins-runner-remote == %{version}
+Requires: %{name} == %{version}, %{name}-plugins-runner-remote == %{version}
 Requires: libvirt-python
+Obsoletes: %{srcname}-plugins-runner-vm < 47.0-1
+Provides: %{srcname}-plugins-runner-vm = %{version}-%{release}
 
 %description plugins-runner-vm
 Allows Avocado to run jobs on a libvirt based VM, by means of
@@ -164,12 +179,14 @@ itself.  Avocado must be previously installed on the VM.
 
 %package plugins-runner-docker
 Summary: Avocado Runner for Execution on Docker Containers
-Requires: avocado == %{version}, avocado-plugins-runner-remote == %{version}
+Requires: %{name} == %{version}, %{name}-plugins-runner-remote == %{version}
 %if 0%{?fedora}
 Requires: python-aexpect
 %else
 Requires: aexpect
 %endif
+Obsoletes: %{srcname}-plugins-runner-docker < 47.0-1
+Provides: %{srcname}-plugins-runner-docker = %{version}-%{release}
 
 %description plugins-runner-docker
 Allows Avocado to run jobs on a Docker container by interacting with a
@@ -182,7 +199,7 @@ be previously installed on the container.
 
 %package examples
 Summary: Avocado Test Framework Example Tests
-Requires: avocado == %{version}
+Requires: %{name} == %{version}
 
 %description examples
 The set of example tests present in the upstream tree of the Avocado framework.
@@ -194,6 +211,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Mar  8 2017 Cleber Rosa <cleber@redhat.com> - 47.0-1
+- Rename package to python-avocado and subpackges accordingly
+
 * Mon Mar  6 2017 Cleber Rosa <cleber@redhat.com> - 47.0-0
 - New upstream release
 

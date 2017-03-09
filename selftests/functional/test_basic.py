@@ -114,9 +114,10 @@ CC_BINARY = probe_binary('cc')
 # but their behavior and flags are in most cases different.
 GNU_ECHO_BINARY = probe_binary('echo')
 if GNU_ECHO_BINARY is not None:
-    echo_manpage = process.run('man %s' % os.path.basename(GNU_ECHO_BINARY)).stdout
-    if '-e' not in echo_manpage:
-        GNU_ECHO_BINARY = probe_binary('gecho')
+    if probe_binary('man') is not None:
+        echo_manpage = process.run('man %s' % os.path.basename(GNU_ECHO_BINARY)).stdout
+        if '-e' not in echo_manpage:
+            GNU_ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
 
