@@ -18,7 +18,6 @@ Job module - describes a sequence of automated test operations.
 """
 
 import argparse
-import commands
 import logging
 import os
 import re
@@ -48,6 +47,7 @@ from ..utils import path
 from ..utils import runtime
 from ..utils import stacktrace
 from ..utils import data_structures
+from ..utils import process
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
@@ -319,10 +319,14 @@ class Job(object):
         job_log = _TEST_LOGGER
         job_log.info('Avocado version: %s', version.VERSION)
         if os.path.exists('.git') and os.path.exists('avocado.spec'):
-            cmd = "git show --summary --pretty='%H' | head -1"
-            status, top_commit = commands.getstatusoutput(cmd)
+            cmd = "git show --summary --pretty='%H'"
+            result = process.run(cmd, ignore_status=True)
+            status = result.exit_status
+            top_commit = result.stdout.splitlines()[0]
             cmd2 = "git rev-parse --abbrev-ref HEAD"
-            status2, branch = commands.getstatusoutput(cmd2)
+            result2 = process.run(cmd2)
+            status2 = result2.exit_status
+            branch = result2.stdout
             # Let's display information only if git is installed
             # (commands succeed).
             if status == 0 and status2 == 0:
