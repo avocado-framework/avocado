@@ -186,6 +186,6 @@ is the final "documentation" source.
 
 .. _Stevedore: https://github.com/openstack/stevedore
 .. _Stevedore documentation: http://docs.openstack.org/developer/stevedore/index.html
-.. _setuptools: https://pythonhosted.org/setuptools/
-.. _entry points: https://pythonhosted.org/setuptools/pkg_resources.html#entry-points
+.. _setuptools: https://setuptools.readthedocs.io/en/latest/
+.. _entry points: https://setuptools.readthedocs.io/en/latest/pkg_resources.html#entry-points
 .. _Avocado source tree: https://github.com/avocado-framework/avocado/tree/master/examples/plugins
