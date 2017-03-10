@@ -21,7 +21,11 @@ import logging
 import os
 import socket
 import shutil
-import urllib2
+
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 from . import aurl
 from . import output
@@ -44,7 +48,7 @@ def url_open(url, data=None, timeout=5):
     old_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(timeout)
     try:
-        return urllib2.urlopen(url, data=data)
+        return urlopen(url, data=data)
     finally:
         socket.setdefaulttimeout(old_timeout)
 
@@ -87,7 +91,7 @@ def url_download_interactive(url, output_file, title='', chunk_size=102400):
     """
     output_dir = os.path.dirname(output_file)
     output_file = open(output_file, 'w+b')
-    input_file = urllib2.urlopen(url)
+    input_file = urlopen(url)
 
     try:
         file_size = int(input_file.headers['Content-Length'])

@@ -1,6 +1,10 @@
 import json
 import unittest
-import urllib2
+
+try:
+    from urllib2 import URLError
+except ImportError:
+    from urllib.error import URLError
 
 from avocado.utils import download
 
@@ -22,7 +26,7 @@ class TestThirdPartyBugs(unittest.TestCase):
                              'change the avocado.conf option '
                              '"reject_unknown_hosts" defaults to True.' %
                              'https://github.com/paramiko/paramiko/issues/243')
-        except urllib2.URLError as details:
+        except URLError as details:
             raise unittest.SkipTest(details)
 
 

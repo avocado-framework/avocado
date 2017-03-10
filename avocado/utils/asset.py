@@ -25,7 +25,11 @@ import stat
 import sys
 import time
 import tempfile
-import urlparse
+
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 from . import crypto
 from . import path as utils_path
