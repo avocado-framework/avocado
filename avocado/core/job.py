@@ -196,7 +196,7 @@ class Job(object):
                                        logging.getLevelName(level))
                 handler = output.add_log_handler(name, logging.FileHandler,
                                                  logfile, level, formatter)
-            except ValueError, details:
+            except ValueError as details:
                 self.log.error("Failed to set log for --store-logging-stream "
                                "%s:%s: %s.", name, level, details)
             else:
@@ -243,14 +243,14 @@ class Job(object):
         if os.path.exists(proc_latest):
             try:
                 os.unlink(proc_latest)
-            except OSError, details:
+            except OSError as details:
                 soft_abort("Unable to remove %s: %s" % (proc_latest, details))
                 return
 
         try:
             os.symlink(basename, proc_latest)
             os.rename(proc_latest, latest)
-        except OSError, details:
+        except OSError as details:
             soft_abort("Unable to create create latest symlink: %s" % details)
             return
         finally:
