@@ -294,6 +294,9 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     Processes the mux options into varianter plugin
     """
 
+    name = 'yaml_to_mux'
+    description = 'Multiplexer plugin to parse yaml files to params'
+
     @staticmethod
     def _log_deprecation_msg(deprecated, current):
         """
