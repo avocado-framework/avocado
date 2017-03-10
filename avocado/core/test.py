@@ -567,6 +567,13 @@ class Test(unittest.TestCase):
                 exceptions.TestSkipError) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestCancel as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            skip_illegal_msg = ('Calling cancel() in setUp() '
+                                'is not allowed in avocado, you '
+                                'must fix your test. Original cancel exception: '
+                                '%s' % details)
+            raise exceptions.TestError(skip_illegal_msg)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
@@ -583,6 +590,9 @@ class Test(unittest.TestCase):
         except exceptions.TestDecoratorSkip as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestCancel as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            raise exceptions.TestCancel(details)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
@@ -773,6 +783,9 @@ class Test(unittest.TestCase):
         :type message: str
         """
         raise exceptions.TestSetupSkip(message)
+
+    def cancel(self, message=None):
+        raise exceptions.TestCancel(message)
 
     def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
                     locations=None, expire=None):

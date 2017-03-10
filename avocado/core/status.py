@@ -26,14 +26,16 @@ mapping = {"SKIP": True,
            "ALERT": False,
            "RUNNING": False,
            "NOSTATUS": False,
-           "INTERRUPTED": False}
+           "INTERRUPTED": False,
+           "CANCEL": True}
 
 user_facing_status = ["SKIP",
                       "ERROR",
                       "FAIL",
                       "WARN",
                       "PASS",
-                      "INTERRUPTED"]
+                      "INTERRUPTED",
+                      "CANCEL"]
 
 feedback = {
     # Test did not advertise current status, but process running the test is

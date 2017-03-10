@@ -1034,6 +1034,48 @@ Notice the ``test3`` was not skipped because the provided condition was
 not ``False``.
 
 
+Cancelling Tests
+================
+
+The only supported way to cancel a test and not negatively impact the
+job exit status (unlike using `self.fail` or `self.error`) is by using
+the `self.cancel()` method. The `self.cancel()` can be called only
+from your test methods. Example::
+
+    #!/usr/bin/env python
+
+    from avocado import Test
+    from avocado import main
+
+
+    class CancelTest(Test):
+
+        """
+        Example test that cancels the current test from inside the test.
+        """
+
+        def test(self):
+            self.cancel("This should end with CANCEL.")
+
+    if __name__ == "__main__":
+        main()
+
+The test above will result in::
+
+    $ avocado run canceltest.py
+    JOB ID     : e6e17fdbe3ced70a63ae1f2bdc1242b7339d1347
+    JOB LOG    : $HOME/avocado/job-results/job-2017-03-08T16.56-e6e17fd/job.log
+     (1/1) canceltest.py:CancelTest.test: CANCEL (0.00 s)
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
+    TESTS TIME : 0.00 s
+
+    $ echo $?
+    0
+
+Notice that, since the `setUp()` was already executed, calling the
+`self.cancel()` will cancel the rest of the test from that point on, but
+the `tearDown()` will still be executed.
+
 Docstring Directives
 ====================
 

@@ -177,3 +177,12 @@ class TestWarn(TestBaseException):
     failure.
     """
     status = "WARN"
+
+
+class TestCancel(TestBaseException):
+    """
+    Indicates that a test was cancelled.
+
+    Should be thrown when cancel() is used in the test method.
+    """
+    status = "CANCEL"

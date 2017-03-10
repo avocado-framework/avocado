@@ -114,6 +114,9 @@ class TAPResult(ResultEvents):
             self.__write("ok %s %s", result.tests_run, name)
         elif status == "SKIP":
             self.__write("ok %s %s  # SKIP %s", result.tests_run, name, state.get("fail_reason"))
+        elif status == "CANCEL":
+            self.__write("ok %s %s  # CANCEL %s",
+                         result.tests_run, name, state.get("fail_reason"))
         else:
             self.__write("not ok %s %s", result.tests_run, name)
 
