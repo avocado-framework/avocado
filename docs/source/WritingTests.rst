@@ -1034,6 +1034,79 @@ Notice the ``test3`` was not skipped because the provided condition was
 not ``False``.
 
 
+Cancelling Tests
+================
+
+The only supported way to cancel a test and not negatively impact the
+job exit status (unlike using `self.fail` or `self.error`) is by using
+the `self.cancel()` method. The `self.cancel()` can be called only
+from your test methods. Example::
+
+    #!/usr/bin/env python
+
+    from avocado import Test
+    from avocado import main
+
+    from avocado.utils.process import run
+    from avocado.utils.software_manager import SoftwareManager
+
+
+    class CancelTest(Test):
+
+        """
+        Example tests that cancel the current test from inside the test.
+        """
+
+        def setUp(self):
+            sm = SoftwareManager()
+            self.pkgs = sm.list_all(software_components=False)
+
+        def test_iperf(self):
+            if 'iperf-2.0.8-6.fc25.x86_64' not in self.pkgs:
+                self.cancel('iperf is not installed or wrong version')
+            self.assertIn('pthreads',
+                          run('iperf -v', ignore_status=True).stderr)
+
+        def test_gcc(self):
+            if 'gcc-6.3.1-1.fc25.x86_64' not in self.pkgs:
+                self.cancel('gcc is not installed or wrong version')
+            self.assertIn('enable-gnu-indirect-function',
+                          run('gcc -v', ignore_status=True).stderr)
+
+    if __name__ == "__main__":
+        main()
+
+In a system missing the `iperf` package but with `gcc` installed in
+the correct version, the result will be::
+
+    JOB ID     : 39c1f120830b9769b42f5f70b6b7bad0b1b1f09f
+    JOB LOG    : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/job.log
+     (1/2) /home/apahim/avocado/tests/test_cancel.py:CancelTest.test_iperf: CANCEL (1.15 s)
+     (2/2) /home/apahim/avocado/tests/test_cancel.py:CancelTest.test_gcc: PASS (1.13 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
+    TESTS TIME : 2.28 s
+    JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html
+
+Notice that, since the `setUp()` was already executed, calling the
+`self.cancel()` will cancel the rest of the test from that point on, but
+the `tearDown()` will still be executed.
+
+Depending on the result format you're refering to, the `CANCEL` status
+is mapped to a corresponding valid status in that format. See the table
+below:
+
++--------+----------------------+
+| Format | Corresponding Status |
++========+======================+
+| json   | cancel               |
++--------+----------------------+
+| xunit  | skipped              |
++--------+----------------------+
+| tap    | ok                   |
++--------+----------------------+
+| html   | CANCEL (warning)     |
++--------+----------------------+
+
 Docstring Directives
 ====================
 

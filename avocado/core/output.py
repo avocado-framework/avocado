@@ -78,6 +78,7 @@ class TermSupport(object):
         self.INTERRUPT = self.COLOR_RED
         self.ERROR = self.COLOR_RED
         self.WARN = self.COLOR_YELLOW
+        self.CANCEL = self.COLOR_YELLOW
         self.PARTIAL = self.COLOR_YELLOW
         self.ENDC = self.CONTROL_END
         self.LOWLIGHT = self.COLOR_DARKGREY
