@@ -441,7 +441,7 @@ def reconfigure(args):
         try:
             add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout,
                             level)
-        except ValueError, details:
+        except ValueError as details:
             app_logger.error("Failed to set logger for --show %s:%s: %s.",
                              name, level, details)
             sys.exit(exit_codes.AVOCADO_FAIL)

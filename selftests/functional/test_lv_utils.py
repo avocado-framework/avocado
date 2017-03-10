@@ -129,7 +129,7 @@ class LVUtilsTest(unittest.TestCase):
                 print "Fail to unmount LV: %s" % details
             try:
                 lv_utils.lv_remove(vg_name, lv_name)
-            except BaseException, details:
+            except BaseException as details:
                 print "Fail to cleanup LV: %s" % details
             try:
                 lv_utils.vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,

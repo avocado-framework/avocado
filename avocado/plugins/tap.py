@@ -35,7 +35,7 @@ def file_log_factory(log_file):
         if writeargs:
             try:
                 msg %= writeargs
-            except TypeError, details:
+            except TypeError as details:
                 raise TypeError("%s: msg='%s' args='%s'" %
                                 (details, msg, writeargs))
         return log_file.write(msg + "\n")

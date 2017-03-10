@@ -101,7 +101,7 @@ class OutputPluginTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(json_output))
         try:
             minidom.parse(xunit_output)
-        except Exception, details:
+        except Exception as details:
             raise AssertionError("Unable to parse xunit output: %s\n\n%s"
                                  % (details, open(xunit_output).read()))
         tap_output = os.path.join(base_dir, "results.tap")

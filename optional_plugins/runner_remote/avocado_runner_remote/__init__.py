@@ -100,7 +100,7 @@ def run(command, ignore_status=False, quiet=True, timeout=60):
                                                   pty=False,
                                                   combine_stderr=False)
             break
-        except fabric.network.NetworkError, details:
+        except fabric.network.NetworkError as details:
             fabric_exception = details
             timeout = end_time - time.time()
         if time.time() < end_time:
