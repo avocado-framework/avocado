@@ -1,18 +1,33 @@
-Avocado Test Framework
-======================
+========================
+ Avocado Test Framework
+========================
 
-Avocado is a test framework that is built on the experience accumulated with
-`autotest <http://autotest.github.io/>`__, while improving on its weaknesses
-and shortcomings.
+Avocado is a set of tools and libraries to help with automated testing.
 
-The main goal of the Avocado project is to provide a set of smart tools for
-automated testing and continuous integration. Among them, we can highlight:
+One can call it a test framework with benefits.  Native tests are
+written in Python and they follow the unittest
+(https://docs.python.org/2.7/library/unittest.html) pattern, but any
+executable can serve as a test.
 
-- A powerful test runner;
-- A multiplexer that allows tests to be run with different sets of variables;
-- Test APIs for test writers;
-- A database for results, with a web interface;
-- A scheduler for setting up a test grid.
+Avocado is composed of:
+
+* A test runner that lets you execute tests. Those tests can be either
+  written in your language of choice, or be written in Python and use
+  the available libraries. In both cases, you get facilities such as
+  automated log and system information collection.
+
+* Libraries that help you write tests in a concise, yet expressive and
+  powerful way.  You can find more information about what libraries
+  are intended for test writers at:
+  http://avocado-framework.readthedocs.io/en/latest/api/utils/avocado.utils.html
+
+* Plugins that can extend and add new functionality to the Avocado
+  Framework.  More info at:
+  http://avocado-framework.readthedocs.io/en/latest/Plugins.html
+
+Avocado is built on the experience accumulated with Autotest
+(http://autotest.github.io), while improving on its weaknesses and
+shortcomings.
 
 Using avocado
 -------------
