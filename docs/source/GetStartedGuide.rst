@@ -6,26 +6,41 @@ Getting Started
 
 The first step towards using Avocado is, quite obviously, installing it.
 
+.. Note: this section section shares content with the project README
+         file.  When editing this section, also sync the content with
+         the README file.  Also notice that this file uses a larger
+         set of ReST/sphinx statements, which do not look as good on a
+         plain README file.
+
 Installing Avocado
 ==================
 
 Installing from Packages
 ------------------------
 
-Avocado is officially available in RPM packages for Fedora and
-Enterprise Linux.  Other RPM based distributions may package and ship
-Avocado themselves.  DEB package support is available in the source
-tree (look at the ``contrib/packages/debian`` directory).
-
-.. Note: the following text should instead reference the distro tiers levels
-
-Avocado is primarily being developed on Fedora, but reasonable efforts
-are being made to support other GNU/Linux based platforms.
-
 Fedora
 ~~~~~~
 
-First, get the package repositories configuration file by running the following command::
+Avocado is available in stock Fedora 24 and later.  The main package
+name is ``python-avocado``, and can be installed with::
+
+    dnf install python-avocado
+
+Other available packages (depending on the Avocado version) may include:
+
+* ``python-avocado-examples``: contains example tests and other example files
+* ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
+* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+
+Fedora from Avocado's own Repo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Avocado project also makes the latest release, and the LTS (Long
+Term Stability) releases available from its own package repository.
+To use it, first get the package repositories configuration file by
+running the following command::
 
     sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo -o /etc/yum.repos.d/avocado.repo
 
@@ -46,36 +61,41 @@ how to switch to the ``avocado-lts`` repo.
 Finally, after deciding between regular Avocado releases or LTS, you
 can install the RPM packages by running the following commands::
 
-    sudo dnf install avocado
+    dnf install python-avocado
 
 Additionally, other Avocado packages are available for Fedora:
 
- * ``avocado-examples``: contains example tests and other example files
- * ``avocado-plugins-output-html``: HTML job report plugin
- * ``avocado-plugins-runner-remote``: execution of jobs on a remote machine
- * ``avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
- * ``avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-examples``: contains example tests and other example files
+* ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
+* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
 
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
 
-If you're running either Red Hat Enterprise Linux or one of the derivatives
-such as CentOS, just adapt to the following URL and commands::
+Avocado packages for Enterprise Linux are available from the Avocado
+project RPM repository.  Additionally, some packages from the EPEL repo are
+necessary, so you need to enable it first.  For EL7, running the
+following command should do it::
 
-    # If not already, enable epel (for RHEL7 it's following cmd)
-    sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    # Add avocado repository and install avocado
-    sudo curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
-    sudo yum install avocado
+    yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-As with Fedora, other Avocado packages are available for Enterprise
-Linux:
+Then you must use the Avocado project RHEL repo
+(https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo).
+Running the following command should give you the basic Avocado
+installation ready::
 
- * ``avocado-examples``: contains example tests and other example files
- * ``avocado-plugins-output-html``: HTML job report plugin
- * ``avocado-plugins-runner-remote``: execution of jobs on a remote machine
- * ``avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
- * ``avocado-plugins-runner-docker``: execution of jobs on a Docker container
+    curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
+    yum install python-avocado
+
+Other available packages (depending on the Avocado version) may include:
+
+* ``python-avocado-examples``: contains example tests and other example files
+* ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
+* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  Please refer to the `Avocado Long Term
@@ -89,6 +109,13 @@ The `OpenSUSE`_ project packages LTS versions of Avocado.  You can
 install packages by running the following commands::
 
   sudo zypper install avocado
+
+Debian
+~~~~~~
+
+DEB package support is available in the source tree (look at the
+``contrib/packages/debian`` directory.  No actual packages are
+provided by the Avocado project or the Debian repos.
 
 Generic installation from a GIT repository
 ------------------------------------------
