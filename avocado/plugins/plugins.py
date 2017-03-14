@@ -51,7 +51,9 @@ class Plugins(CLICmd):
              'Plugins that generate job result in different formats (result):'),
             (dispatcher.ResultEventsDispatcher(args),
              ('Plugins that generate job result based on job/test events '
-              '(result_events):'))
+              '(result_events):')),
+            (dispatcher.VarianterDispatcher(),
+             'Plugins that generate test variants (varianter): ')
         ]
         for plugins_active, msg in plugin_types:
             log.info(msg)
