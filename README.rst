@@ -29,45 +29,104 @@ Avocado is built on the experience accumulated with Autotest
 (http://autotest.github.io), while improving on its weaknesses and
 shortcomings.
 
-Using avocado
--------------
+Installing Avocado
+==================
 
-The most straightforward way of `using` avocado is to install packages
-available for your distro:
+Installing from Packages
+------------------------
 
-1) Fedora/RHEL
+Fedora
+~~~~~~
 
-   Avocado is not yet officially packed in Fedora/RHEL, but you can use avocado
-   yum repositories by putting corresponding file into ``/etc/yum.repos.d``.
+Avocado is available in Fedora versions 24 and later.  The main
+package name is ``python-avocado``, and can be installed with::
 
-   *  `Fedora repo <https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo>`__
-   *  `RHEL repo <https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo>`__
+    dnf install python-avocado
 
-   and install it by ``yum install avocado`` (or using ``dnf``)
+Keep in mind that the Avocado version available on the distribution
+official packages will vary.  To have access to the latest released
+version, you must use the Avocado project Fedora repo, available at
+https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo
+instead.
 
-Once you install it, you can start exploring it by checking the output of
-``avocado --help`` and the test runner man-page, accessible via ``man avocado``.
+Other available packages (depending on the Avocado version) may include:
 
-If you want to `develop` avocado, or run it directly from the git repository,
-you have a couple of options:
+* ``python-avocado-examples``: contains example tests and other example files
+* ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
+* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
 
-1) The avocado test runner was designed to run in tree, for rapid development
-   prototypes. After running::
+Enterprise Linux
+~~~~~~~~~~~~~~~~
 
-    $ make develop
+For EL (Red Hat Enterprise Linux and derivatives), some packages from
+the EPEL repo are necessary, so you need to enable it first.  For EL7,
+running the following command should do it::
 
-   Just use::
+    yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-    $ scripts/avocado --help
+Then you must use the Avocado project RHEL repo
+(https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo).
+Running the following command should give you the basic Avocado
+installation ready::
 
-2) Installing avocado in the system is also an option, although remember that
-   distutils has no ``uninstall`` functionality::
+    curl https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
+    yum install python-avocado
 
-    $ sudo python setup.py install
-    $ avocado --help
+Other available packages (depending on the Avocado version) may include:
+
+* ``python-avocado-examples``: contains example tests and other example files
+* ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
+* ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
+* ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+
+OpenSUSE
+~~~~~~~~
+
+The OpenSUSE project packages LTS versions of Avocado.  You can
+install packages by running the following commands::
+
+  zypper install avocado
+
+Setting up a Development Environment
+====================================
+
+If you want to develop Avocado, or just run it directly from the GIT
+repository, fetch the source code and run::
+
+  make develop
+
+From this point on, running ``avocado`` should load everything from
+your current source code checkout.
+
+Brief Usage Instructions
+========================
+
+To list available tests, call the ``list`` subcommand.  For example::
+
+  avocado list
+
+  INSTRUMENTED <examples_path>/tests/abort.py:AbortTest.test
+  INSTRUMENTED <examples_path>/tests/canceltest.py:CancelTest.test
+  ...
+  SIMPLE       <examples_path>/tests/passtest.sh
+
+To run a test, call the ``run`` command::
+
+  avocado run <examples_path>/tests/passtest.sh
+  JOB ID     : <id>
+  JOB LOG    : <job-results>/job-<date>-<shortid>/job.log
+  (1/1) <examples_path>/tests/passtest.sh: PASS (0.04 s)
+  RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+  TESTS TIME : 0.04 s
+
+To continue exploring Avocado, check out the output of ``avocado --help``
+and the test runner man-page, accessible via ``man avocado``.
 
 Documentation
--------------
+=============
 
 Avocado comes with in tree documentation about the most advanced features and
 its API. It can be built with ``sphinx``, but a publicly available build of
