@@ -40,6 +40,3 @@ added. The test runner is designed to help people to run their tests while
 providing an assortment of system and logging facilities, with no effort,
 and if you want more features, then you can start using the API features
 progressively.
-
-Mindmap from workshop (2015) demonstrating features on examples
-available `here <https://www.mindmeister.com/504616310>`__.

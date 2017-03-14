@@ -34,6 +34,7 @@ Advanced Topics and Maintenance
    ContributionGuide
    DevelopmentTips
    MaintenanceGuide
+   OtherResources
 
 .. _api-reference:
 
