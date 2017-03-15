@@ -110,7 +110,7 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
         if not disk:
             LOGGER.debug("Finding free loop device")
             result = process.run("losetup --find", sudo=True)
-    except process.CmdError, ex:
+    except process.CmdError as ex:
         LOGGER.error(ex)
         vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir, vg_name)
         raise LVException("Fail to create vg_ramdisk: %s" % ex)
@@ -129,7 +129,7 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
         LOGGER.debug("Creating volume group %s", vg_name)
         process.run("vgcreate %s %s" %
                     (vg_name, loop_device), sudo=True)
-    except process.CmdError, ex:
+    except process.CmdError as ex:
         LOGGER.error(ex)
         vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
                            vg_name, loop_device)
@@ -227,7 +227,7 @@ def vg_check(vg_name):
         process.run(cmd, sudo=True)
         LOGGER.debug("Provided volume group exists: %s", vg_name)
         return True
-    except process.CmdError, exception:
+    except process.CmdError as exception:
         LOGGER.error(exception)
         return False
 
@@ -401,7 +401,7 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
                                                          vg_name)
     try:
         process.run(tp_cmd, sudo=True)
-    except process.CmdError, detail:
+    except process.CmdError as detail:
         LOGGER.debug(detail)
         raise LVException("Create thin volume pool failed.")
     LOGGER.debug("Created thin volume pool: %s", thinpool_name)
@@ -410,7 +410,7 @@ def thin_lv_create(vg_name, thinpool_name="lvthinpool", thinpool_size="1.5G",
                                    vg_name, thinpool_name))
     try:
         process.run(lv_cmd, sudo=True)
-    except process.CmdError, detail:
+    except process.CmdError as detail:
         LOGGER.error(detail)
         raise LVException("Create thin volume failed.")
     LOGGER.debug("Created thin volume:%s", thinlv_name)
@@ -439,7 +439,7 @@ def lv_take_snapshot(vg_name, lv_name,
            (lv_snapshot_size, lv_snapshot_name, vg_name, lv_name))
     try:
         process.run(cmd, sudo=True)
-    except process.CmdError, ex:
+    except process.CmdError as ex:
         if ('Logical volume "%s" already exists in volume group "%s"'
             % (lv_snapshot_name, vg_name) in ex.result_obj.stderr and
             re.search(re.escape(lv_snapshot_name + " [active]"),
@@ -480,7 +480,7 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
             raise LVException("The Logical volume %s is still active" %
                               lv_name)
 
-    except process.CmdError, ex:
+    except process.CmdError as ex:
         # detect if merge of snapshot was postponed
         # and attempt to reactivate the volume.
         active_lv_pattern = re.escape("%s [active]" % lv_snapshot_name)
@@ -554,7 +554,7 @@ def lv_mount(vg_name, lv_name, mount_loc, create_filesystem=""):
                         sudo=True)
         process.run("mount /dev/%s/%s %s" %
                     (vg_name, lv_name, mount_loc), sudo=True)
-    except process.CmdError, ex:
+    except process.CmdError as ex:
         raise LVException("Fail to mount lv: %s" % ex)
 
 
@@ -568,5 +568,5 @@ def lv_umount(vg_name, lv_name):
 
     try:
         process.run("umount /dev/%s/%s" % (vg_name, lv_name), sudo=True)
-    except process.CmdError, ex:
+    except process.CmdError as ex:
         raise LVException("Fail to unmount lv: %s" % ex)
