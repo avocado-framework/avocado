@@ -231,7 +231,7 @@ It accepts ``yaml`` or even ``json`` files where using ordered dicts
 to create a tree-like structure and storing the non-dict variables as
 parameters and using custom tags to mark locations as multiplex domains.
 Let's use ``examples/tests/sleeptenmin.py.data/sleeptenmin.yaml`` file as
-an example::
+an example:
 
 .. code-block:: yaml
 
