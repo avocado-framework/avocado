@@ -560,7 +560,8 @@ class Test(unittest.TestCase):
         stdout_check_exception = None
         stderr_check_exception = None
         try:
-            self.setUp()
+            if not getattr(testMethod, "__skip__", False):
+                self.setUp()
         except (exceptions.TestSetupSkip,
                 exceptions.TestDecoratorSkip,
                 exceptions.TestTimeoutSkip,
@@ -605,7 +606,8 @@ class Test(unittest.TestCase):
                 self.log.debug(' -> %s %s: %s', key, type(value), value)
         finally:
             try:
-                self.tearDown()
+                if not getattr(testMethod, "__skip__", False):
+                    self.tearDown()
             except exceptions.TestSetupSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Calling skip() in places other than '
