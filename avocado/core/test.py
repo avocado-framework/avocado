@@ -798,7 +798,9 @@ class Test(unittest.TestCase):
         :param message: an optional message that will be recorded in the logs
         :type message: str
         """
-        raise exceptions.TestSetupSkip(message)
+        dep_msg = "WARNING: self.skip() will be deprecated. " \
+                  "Use 'self.cancel()' or the skip decorators"
+        raise exceptions.TestSetupSkip("[%s] %s" % (dep_msg, message))
 
     def cancel(self, message=None):
         """
