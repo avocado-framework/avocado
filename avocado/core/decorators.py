@@ -65,6 +65,7 @@ def skip(message=None):
             def wrapper(*args, **kwargs):
                 raise core_exceptions.TestDecoratorSkip(message)
             function = wrapper
+        function.__skip__ = True
         return function
     return decorator
 
