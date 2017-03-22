@@ -1005,8 +1005,9 @@ Another way to skip tests is by using the Avocado skip decorators:
 - ``@avocado.skipUnless(condition, reason)``: Skips a test if the condition is
   ``False``
 
-Those decorators can be used with both ``setUp()`` method and/or and in the
-``test*()`` methods. The test below::
+Those decorators can be used only in the ``test*()`` methods. Decorating
+`setUp()` or `tearDown()` will make the test to finish with `ERROR`.
+The test below::
 
     import avocado
 
