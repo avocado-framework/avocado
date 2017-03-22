@@ -993,9 +993,10 @@ Will produce the following result::
     TESTS TIME : 0.00 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
 
-Notice that the `tearDown()` will not be executed when `skip()` is used.
-Any cleanup treatment has to be handled by the `setUp()`, before the
-call to `skip()`.
+Calling `self.skip()`, nothing else will be executed after the call.
+We will skip the rest of the `setUp()` method, the test method and the
+`tearDown()` method. Any cleanup treatment has to be handled by the
+`setUp()`, before the call to `self.skip()`.
 
 Avocado Skip Decorators
 -----------------------
