@@ -442,17 +442,6 @@ class RunnerOperationTest(unittest.TestCase):
         int(r['job_id'], 16)  # it's an hex number
         self.assertEqual(len(r['job_id']), 40)
 
-    def test_skip_outside_setup(self):
-        os.chdir(basedir)
-        cmd_line = ("./scripts/avocado run --sysinfo=off --job-results-dir %s "
-                    "--json - skip_outside_setup.py" % self.tmpdir)
-        result = process.run(cmd_line, ignore_status=True)
-        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
-        self.assertEqual(result.exit_status, expected_rc,
-                         "Avocado did not return rc %d:\n%s" % (expected_rc,
-                                                                result))
-        self.assertIn('"status": "ERROR"', result.stdout)
-
     def test_early_latest_result(self):
         """
         Tests that the `latest` link to the latest job results is created early
@@ -563,17 +552,17 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn('errortest.py:ErrorTest.test:  ERROR', result.stdout)
 
-    def test_output_skip(self):
+    def test_output_cancel(self):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
-                    'skiponsetup.py' % self.tmpdir)
+                    'cancelonsetup.py' % self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('skiponsetup.py:SkipOnSetupTest.test_wont_be_executed:'
-                      '  SKIP', result.stdout)
+        self.assertIn('PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1',
+                      result.stdout)
 
     @unittest.skipIf(not GNU_ECHO_BINARY,
                      'GNU style echo binary not available')
@@ -604,7 +593,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
 
     def test_replay_skip_skipped(self):
         cmd = ("./scripts/avocado run --job-results-dir %s --json - "
-               "skiponsetup.py" % self.tmpdir)
+               "cancelonsetup.py" % self.tmpdir)
         result = process.run(cmd)
         result = json.loads(result.stdout)
         jobid = str(result["job_id"])
@@ -1079,7 +1068,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                            1, 0, 0, 1, 0)
 
     def test_xunit_plugin_skiponsetuptest(self):
-        self.run_and_check('skiponsetup.py', exit_codes.AVOCADO_ALL_OK,
+        self.run_and_check('cancelonsetup.py', exit_codes.AVOCADO_ALL_OK,
                            1, 0, 0, 0, 1)
 
     def test_xunit_plugin_errortest(self):
@@ -1144,8 +1133,8 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                            1, 0, 1, 0)
 
     def test_json_plugin_skiponsetuptest(self):
-        self.run_and_check('skiponsetup.py', exit_codes.AVOCADO_ALL_OK,
-                           1, 0, 0, 1)
+        self.run_and_check('cancelonsetup.py', exit_codes.AVOCADO_ALL_OK,
+                           1, 0, 0, 0)
 
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
