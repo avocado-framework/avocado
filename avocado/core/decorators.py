@@ -53,39 +53,3 @@ def fail_on(exceptions=None):
     if func:
         return decorate(func)
     return decorate
-
-
-def skip(message=None):
-    """
-    Decorator to skip a test.
-    """
-    def decorator(function):
-        if not isinstance(function, type):
-            @wraps(function)
-            def wrapper(*args, **kwargs):
-                raise core_exceptions.TestDecoratorSkip(message)
-            function = wrapper
-        return function
-    return decorator
-
-
-def skipIf(condition, message=None):
-    """
-    Decorator to skip a test if a condition is True.
-    """
-    if condition:
-        return skip(message)
-    return _itself
-
-
-def skipUnless(condition, message=None):
-    """
-    Decorator to skip a test if a condition is False.
-    """
-    if not condition:
-        return skip(message)
-    return _itself
-
-
-def _itself(obj):
-    return obj

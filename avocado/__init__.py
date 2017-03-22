@@ -21,11 +21,12 @@ __all__ = ['main',
            'skipIf',
            'skipUnless']
 
+# re-import some useful unittest decorators
+from unittest import skip
+from unittest import skipIf
+from unittest import skipUnless
 
 from avocado.core.job import main
 from avocado.core.test import Test
 from avocado.core.version import VERSION
 from avocado.core.decorators import fail_on
-from avocado.core.decorators import skip
-from avocado.core.decorators import skipIf
-from avocado.core.decorators import skipUnless
