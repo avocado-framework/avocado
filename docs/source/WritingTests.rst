@@ -960,6 +960,10 @@ Avocado offers some options for the test writers to skip a test:
 Test ``skip()`` Method
 ----------------------
 
+.. warning:: `self.skip()` will be deprecated by the end of 2017.
+   Please adjust your tests to use the `self.cancel()` or the skip
+   decorators instead.
+
 Using the ``skip()`` method available in the Test API is only allowed
 inside the ``setUp()`` method. Calling ``skip()`` from inside the test is not
 allowed as, by concept, you cannot skip a test after it's already initiated.
