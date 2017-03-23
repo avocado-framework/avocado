@@ -14,6 +14,8 @@ from avocado.utils import script
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 INSTRUMENTED_SCRIPT = """import os
 import tempfile
 from avocado import Test
@@ -67,9 +69,10 @@ class TestsTmpDirTests(unittest.TestCase):
         Tests whether automatically created teststmpdir is shared across
         all tests.
         """
-        cmd_line = ("./scripts/avocado run --sysinfo=off "
-                    "--job-results-dir %s %s %s" %
-                    (self.tmpdir, self.simple_test, self.instrumented_test))
+        cmd_line = ("%s run --sysinfo=off "
+                    "--job-results-dir %s %s %s"
+                    % (AVOCADO, self.tmpdir, self.simple_test,
+                       self.instrumented_test))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK)
 
     def test_manualy_created(self):
@@ -78,8 +81,8 @@ class TestsTmpDirTests(unittest.TestCase):
         avocado
         """
         shared_tmp = tempfile.mkdtemp(dir=self.tmpdir)
-        cmd = ("./scripts/avocado run --sysinfo=off "
-               "--job-results-dir %s %%s" % self.tmpdir)
+        cmd = ("%s run --sysinfo=off --job-results-dir %s %%s"
+               % (AVOCADO, self.tmpdir))
         self.run_and_check(cmd % self.simple_test, exit_codes.AVOCADO_ALL_OK,
                            {test.COMMON_TMPDIR_NAME: shared_tmp})
         self.run_and_check(cmd % self.instrumented_test,

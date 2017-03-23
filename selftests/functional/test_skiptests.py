@@ -11,6 +11,7 @@ from avocado.utils import script
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 AVOCADO_TEST_SKIP_DECORATORS = """
 import avocado
@@ -105,7 +106,7 @@ class TestSkipDecorators(unittest.TestCase):
 
     def test_skip_decorators(self):
         os.chdir(basedir)
-        cmd_line = ['./scripts/avocado',
+        cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',

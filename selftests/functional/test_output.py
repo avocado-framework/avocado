@@ -17,11 +17,13 @@ from avocado.utils import path as utils_path
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 
 PERL_TAP_PARSER_SNIPPET = """#!/bin/env perl
 use TAP::Parser;
 
-my $parser = TAP::Parser->new( { exec => ['./scripts/avocado', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%s'] } );
+my $parser = TAP::Parser->new( { exec => ['%s', 'run', 'passtest.py', 'errortest.py', 'warntest.py', '--tap', '-', '--sysinfo', 'off', '--job-results-dir', '%%s'] } );
 
 while ( my $result = $parser->next ) {
         $result->is_unknown && die "Unknown line \\"" . $result->as_string . "\\" in the TAP output!\n";
@@ -29,7 +31,7 @@ while ( my $result = $parser->next ) {
 $parser->parse_errors == 0 || die "Parser errors!\n";
 $parser->is_good_plan || die "Plan is not a good plan!\n";
 $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
-"""
+""" % AVOCADO
 
 
 def image_output_uncapable():
@@ -69,8 +71,8 @@ class OutputTest(unittest.TestCase):
                      "C compiler is required by the underlying doublefree.py test")
     def test_output_doublefree(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    'doublefree.py' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    'doublefree.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         output = result.stdout + result.stderr
@@ -112,8 +114,8 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_incompatible_setup(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--xunit - --json - passtest.py' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    '--xunit - --json - passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -131,8 +133,8 @@ class OutputPluginTest(unittest.TestCase):
                      "Uncapable of Avocado Result HTML plugin")
     def test_output_incompatible_setup_2(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--html - passtest.py' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    '--html - passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         output = result.stdout + result.stderr
@@ -146,9 +148,9 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--journal --xunit %s --json - passtest.py' %
-                    (self.tmpdir, tmpfile))
+                    (AVOCADO, self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -168,9 +170,9 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--xunit - --json %s passtest.py' %
-                    (self.tmpdir, tmpfile))
+                    (AVOCADO, self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -198,9 +200,9 @@ class OutputPluginTest(unittest.TestCase):
         tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         tmpfile3 = tempfile.mktemp(dir=tmpdir)
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    '--xunit %s --json %s --html %s passtest.py' %
-                    (self.tmpdir, tmpfile, tmpfile2, tmpfile3))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    '--xunit %s --json %s --html %s passtest.py'
+                    % (AVOCADO, self.tmpdir, tmpfile, tmpfile2, tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -231,9 +233,9 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile2 = tempfile.mktemp()
         os.chdir(basedir)
         # Verify --silent can be supplied as app argument
-        cmd_line = ('./scripts/avocado --silent run --job-results-dir %s '
-                    '--sysinfo=off --xunit %s --json %s passtest.py' %
-                    (self.tmpdir, tmpfile, tmpfile2))
+        cmd_line = ('%s --silent run --job-results-dir %s '
+                    '--sysinfo=off --xunit %s --json %s passtest.py'
+                    % (AVOCADO, self.tmpdir, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -256,9 +258,10 @@ class OutputPluginTest(unittest.TestCase):
                 pass
 
     def test_nonprintable_chars(self):
-        cmd_line = ("./scripts/avocado run --external-runner /bin/ls "
+        cmd_line = ("%s run --external-runner /bin/ls "
                     "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
-                    "--job-results-dir %s --sysinfo=off" % self.tmpdir)
+                    "--job-results-dir %s --sysinfo=off"
+                    % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
@@ -276,8 +279,8 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_show_job_log(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    'passtest.py --show-job-log' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    'passtest.py --show-job-log' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -293,9 +296,9 @@ class OutputPluginTest(unittest.TestCase):
     def test_silent_trumps_show_job_log(self):
         os.chdir(basedir)
         # Also verify --silent can be supplied as run option
-        cmd_line = ('./scripts/avocado run --silent --job-results-dir %s '
-                    '--sysinfo=off passtest.py --show-job-log' %
-                    self.tmpdir)
+        cmd_line = ('%s run --silent --job-results-dir %s '
+                    '--sysinfo=off passtest.py --show-job-log'
+                    % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -306,8 +309,8 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_default_enabled_plugins(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    'passtest.py' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -332,9 +335,9 @@ class OutputPluginTest(unittest.TestCase):
             content = ("[datadir.paths]\nlogs_dir = %s"
                        % os.path.relpath(self.tmpdir, "."))
             script.Script(config, content).save()
-            cmd_line = ('./scripts/avocado --config %s --show all run '
-                        '--sysinfo=off whiteboard.py --json %s' %
-                        (config, tmpfile))
+            cmd_line = ('%s --config %s --show all run '
+                        '--sysinfo=off whiteboard.py --json %s'
+                        % (AVOCADO, config, tmpfile))
             result = process.run(cmd_line, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
@@ -359,9 +362,9 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile = tempfile.mktemp()
         try:
             os.chdir(basedir)
-            cmd_line = ("./scripts/avocado run --job-results-dir %s "
+            cmd_line = ("%s run --job-results-dir %s "
                         "--sysinfo=off gendata.py --json %s" %
-                        (self.tmpdir, tmpfile))
+                        (AVOCADO, self.tmpdir, tmpfile))
             result = process.run(cmd_line, ignore_status=True)
             expected_rc = exit_codes.AVOCADO_ALL_OK
             self.assertEqual(result.exit_status, expected_rc,
@@ -398,9 +401,9 @@ class OutputPluginTest(unittest.TestCase):
         redirected_output_path = tempfile.mktemp()
         try:
             os.chdir(basedir)
-            cmd_line = ('./scripts/avocado run --job-results-dir %s '
-                        '--sysinfo=off passtest.py > %s' %
-                        (self.tmpdir, redirected_output_path))
+            cmd_line = ('%s run --job-results-dir %s '
+                        '--sysinfo=off passtest.py > %s'
+                        % (AVOCADO, self.tmpdir, redirected_output_path))
             result = process.run(cmd_line, ignore_status=True, shell=True)
             output = result.stdout + result.stderr
             expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -433,10 +436,10 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_tap_totaltests(self):
         os.chdir(basedir)
-        cmd_line = ("./scripts/avocado run passtest.py "
+        cmd_line = ("%s run passtest.py "
                     "-m examples/tests/sleeptest.py.data/sleeptest.yaml "
                     "--job-results-dir %s "
-                    "--tap -" % self.tmpdir)
+                    "--tap -" % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line)
         expr = '1..4'
         self.assertIn(expr, result.stdout, "'%s' not found in:\n%s"
@@ -444,7 +447,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_broken_pipe(self):
         os.chdir(basedir)
-        cmd_line = "(./scripts/avocado run --help | whacky-unknown-command)"
+        cmd_line = "(%s run --help | whacky-unknown-command)" % AVOCADO
         result = process.run(cmd_line, shell=True, ignore_status=True,
                              env={"LC_ALL": "C"})
         expected_rc = 127
