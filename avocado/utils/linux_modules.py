@@ -40,7 +40,12 @@ BUILTIN = 2
 
 
 def load_module(module_name):
-    # Checks if a module has already been loaded
+    """
+    Checks if a module has already been loaded.
+    :param module_name: Name of module to check
+    :return: True if module is loaded, False otherwise
+    :rtype: Bool
+    """
     if module_is_loaded(module_name):
         return False
 
@@ -96,7 +101,22 @@ def loaded_module_info(module_name):
     :rtype: dict
     """
     l_raw = process.system_output('/sbin/lsmod')
-    return parse_lsmod_for_module(l_raw, module_name)
+    modinfo_dic = parse_lsmod_for_module(l_raw, module_name)
+    output = process.system_output("/sbin/modinfo %s" % module_name)
+    if output:
+        param_list = []
+        for line in output.splitlines():
+            if line.split()[0] == 'filename:':
+                modinfo_dic['filename'] = line.split()[-1]
+            if line.split()[0] == 'version:':
+                modinfo_dic['version'] = str(line.split()[-1])
+            if line.split()[0] == 'depends:':
+                if len(line.split()) > 1:
+                    modinfo_dic['depends'] = line.split()[1].split(',')
+            if line.split()[0] == 'parm:':
+                param_list.append(line.split()[1].split(':')[0])
+        modinfo_dic['params'] = param_list
+    return modinfo_dic
 
 
 def get_submodules(module_name):
@@ -164,6 +184,11 @@ def module_is_loaded(module_name):
 
 
 def get_loaded_modules():
+    """
+    Gets list of loaded modules.
+
+    :return: List of loaded modules.
+    """
     lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
     return [line.split(None, 1)[0] for line in lsmod_output]
 
