@@ -560,6 +560,7 @@ class Test(unittest.TestCase):
         stdout_check_exception = None
         stderr_check_exception = None
         skip_test = getattr(testMethod, '__skip_test_decorator__', False)
+        cancel_test = False
         try:
             if skip_test is False:
                 self.setUp()
@@ -572,17 +573,15 @@ class Test(unittest.TestCase):
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            skip_illegal_msg = ('Calling cancel() in setUp() '
-                                'is not allowed in avocado, you '
-                                'must fix your test. Original cancel exception: '
-                                '%s' % details)
-            raise exceptions.TestError(skip_illegal_msg)
+            cancel_test = details
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
         try:
+            if cancel_test:
+                raise exceptions.TestCancel(cancel_test)
+
             testMethod()
         except exceptions.TestSetupSkip as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
@@ -626,6 +625,9 @@ class Test(unittest.TestCase):
                                     'test. Original skip exception: %s' %
                                     details)
                 raise exceptions.TestError(skip_illegal_msg)
+            except exceptions.TestCancel as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                raise
             except:  # avoid old-style exception failures
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 details = sys.exc_info()[1]
