@@ -76,7 +76,7 @@ Avocado supports the most common exit statuses:
   be nice to review. (some result plugins does not support this and report
   ``PASS`` instead)
 * ``SKIP`` - the test's pre-requisites were not satisfied and the test's
-  body was not executed (nor its ``tearDown``)
+  body was not executed (nor its ``setUp()`` and ``tearDown``).
 * ``FAIL`` - test did not result in the expected outcome. A failure points
   at a (possible) bug in the tested subject, and not in the test itself.
   When the test (and its) execution breaks, an ``ERROR`` and not a ``FAIL``
@@ -1036,9 +1036,8 @@ Will produce the following result::
 Notice the ``test3`` was not skipped because the provided condition was
 not ``False``.
 
-Using the skip decorators, since the `setUp()` was already executed, the
-`tearDown()` will be also executed.
-
+Using the skip decorators, nothing is actually executed. We will skip
+the  `setUp()` method, the test method and the `tearDown()` method.
 
 Cancelling Tests
 ================
