@@ -559,14 +559,23 @@ class Test(unittest.TestCase):
         cleanup_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
+        skip_test = getattr(testMethod, '__skip_test_decorator__', False)
         try:
-            self.setUp()
+            if skip_test is False:
+                self.setUp()
         except (exceptions.TestSetupSkip,
-                exceptions.TestDecoratorSkip,
                 exceptions.TestTimeoutSkip,
                 exceptions.TestSkipError) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
+        except exceptions.TestDecoratorSkip as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            skip_illegal_msg = ('Using skip decorators in places other '
+                                'than the test method is not allowed in '
+                                'avocado, you must fix your '
+                                'test. Original skip exception: %s' %
+                                details)
+            raise exceptions.TestError(skip_illegal_msg)
         except exceptions.TestCancel as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             skip_illegal_msg = ('Calling cancel() in setUp() '
@@ -605,7 +614,8 @@ class Test(unittest.TestCase):
                 self.log.debug(' -> %s %s: %s', key, type(value), value)
         finally:
             try:
-                self.tearDown()
+                if skip_test is False:
+                    self.tearDown()
             except exceptions.TestSetupSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Calling skip() in places other than '
@@ -615,8 +625,9 @@ class Test(unittest.TestCase):
                 raise exceptions.TestError(skip_illegal_msg)
             except exceptions.TestDecoratorSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-                skip_illegal_msg = ('Using skip decorators after the test '
-                                    'will have no effect, you must fix your '
+                skip_illegal_msg = ('Using skip decorators in places other '
+                                    'than the test method is not allowed in '
+                                    'avocado, you must fix your '
                                     'test. Original skip exception: %s' %
                                     details)
                 raise exceptions.TestError(skip_illegal_msg)
