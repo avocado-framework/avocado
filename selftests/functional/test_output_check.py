@@ -12,6 +12,7 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 OUTPUT_SCRIPT_CONTENTS = """#!/bin/sh
 echo "Hello, avocado!"
 """
@@ -29,8 +30,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_none(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record none' %
-                    (self.tmpdir, self.output_script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record none'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -43,8 +45,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_stdout(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record stdout' %
-                    (self.tmpdir, self.output_script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record stdout'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -57,8 +60,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_all(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check-record all' %
-                    (self.tmpdir, self.output_script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record all'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -71,8 +75,8 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_record_and_check(self):
         self.test_output_record_all()
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s' %
-                    (self.tmpdir, self.output_script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -85,8 +89,8 @@ class RunnerSimpleTest(unittest.TestCase):
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --xunit -' %
-                    (self.tmpdir, self.output_script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -100,8 +104,9 @@ class RunnerSimpleTest(unittest.TestCase):
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off %s --output-check=off --xunit -' %
-                    (self.tmpdir, self.output_script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check=off --xunit -'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

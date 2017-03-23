@@ -15,6 +15,8 @@ from avocado.utils import process
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 
 AVOCADO_TEST_OK = """#!/usr/bin/env python
 from avocado import Test
@@ -152,7 +154,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                              'avocado_loader_test',
                                              mode=mode)
         test_script.save()
-        cmd_line = ('./scripts/avocado list -V %s' % test_script.path)
+        cmd_line = ('%s list -V %s' % (AVOCADO, test_script.path))
         result = process.run(cmd_line)
         self.assertIn('%s: %s' % (exp_str, count), result.stdout)
         test_script.remove()
@@ -161,7 +163,7 @@ class LoaderTestFunctional(unittest.TestCase):
         current_time = time.time()
         deadline = current_time + timeout
         test_process = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                        preexec_fn=os.setsid)
+                                        preexec_fn=os.setsid, shell=True)
         while not test_process.poll():
             if time.time() > deadline:
                 os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
@@ -188,7 +190,7 @@ class LoaderTestFunctional(unittest.TestCase):
                                              'avocado_loader_test',
                                              mode=self.MODE_0664)
         test_script.save()
-        cmd_line = ('./scripts/avocado list -V %s' % test_script.path)
+        cmd_line = ('%s list -V %s' % (AVOCADO, test_script.path))
         initial_time = time.time()
         result = process.run(cmd_line, ignore_status=True)
         test_script.remove()
@@ -225,17 +227,13 @@ class LoaderTestFunctional(unittest.TestCase):
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES)
         os.chdir(basedir)
         mytest.save()
-        cmd_line = "./scripts/avocado list -V %s" % mytest
+        cmd_line = "%s list -V %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
         self.assertIn('SIMPLE: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ['./scripts/avocado',
-                    'run',
-                    '--sysinfo=off',
-                    '--job-results-dir',
-                    "%s" % self.tmpdir,
-                    "%s" % mytest]
+        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
+                    % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     def test_simple_using_main(self):
@@ -246,12 +244,8 @@ class LoaderTestFunctional(unittest.TestCase):
         os.chdir(basedir)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
-        cmd_line = ['./scripts/avocado',
-                    'run',
-                    '--sysinfo=off',
-                    '--job-results-dir',
-                    "%s" % self.tmpdir,
-                    "%s" % mytest]
+        cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
+                    % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
     def tearDown(self):

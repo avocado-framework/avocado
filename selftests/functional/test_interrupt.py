@@ -16,6 +16,8 @@ from avocado.utils import data_factory
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 
 # What is commonly known as "0755" or "u=rwx,g=rx,o=rx"
 DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
@@ -69,11 +71,9 @@ class InterruptTest(unittest.TestCase):
         bad_test.save()
 
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
-                    '%s %s %s' % (self.tmpdir,
-                                  bad_test.path,
-                                  bad_test.path,
-                                  bad_test.path))
+        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                    '%s %s %s' % (AVOCADO, self.tmpdir, bad_test.path,
+                                  bad_test.path, bad_test.path))
         proc = aexpect.Expect(command=cmd_line, linesep='')
         proc.read_until_last_line_matches(os.path.basename(bad_test.path))
         proc.sendline('\x03')
@@ -133,11 +133,9 @@ class InterruptTest(unittest.TestCase):
         good_test.save()
 
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --sysinfo=off --job-results-dir %s '
-                    '%s %s %s' % (self.tmpdir,
-                                  good_test.path,
-                                  good_test.path,
-                                  good_test.path))
+        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                    '%s %s %s' % (AVOCADO, self.tmpdir, good_test.path,
+                                  good_test.path, good_test.path))
         proc = aexpect.Expect(command=cmd_line, linesep='')
         proc.read_until_last_line_matches(os.path.basename(good_test.path))
         proc.sendline('\x03')

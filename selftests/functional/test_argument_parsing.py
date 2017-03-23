@@ -11,12 +11,14 @@ from avocado.utils import process
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 
 class ArgumentParsingTest(unittest.TestCase):
 
     def test_unknown_command(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado whacky-command-that-doesnt-exist'
+        cmd_line = '%s whacky-command-that-doesnt-exist' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -24,7 +26,7 @@ class ArgumentParsingTest(unittest.TestCase):
 
     def test_known_command_bad_choice(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=foo passtest'
+        cmd_line = '%s run --sysinfo=foo passtest' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -32,7 +34,7 @@ class ArgumentParsingTest(unittest.TestCase):
 
     def test_known_command_bad_argument(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --sysinfo=off --whacky-argument passtest'
+        cmd_line = '%s run --sysinfo=off --whacky-argument passtest' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -55,7 +57,7 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         log_dir = data_dir.get_logs_dir()
         self.assertIsNotNone(log_dir)
         job = job_id.create_unique_job_id()
-        cmd_line = './scripts/avocado run --sysinfo=off --force-job-id=%s %s'
+        cmd_line = '%s run --sysinfo=off --force-job-id=%%s %%s' % AVOCADO
         cmd_line %= (job, complement_args)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, expected_rc,

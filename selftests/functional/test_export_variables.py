@@ -11,6 +11,8 @@ from avocado.utils import script
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 
 SCRIPT_CONTENT = """#!/bin/sh
 echo "Avocado Version: $AVOCADO_VERSION"
@@ -46,7 +48,8 @@ class EnvironmentVariablesTest(unittest.TestCase):
 
     def test_environment_vars(self):
         os.chdir(basedir)
-        cmd_line = './scripts/avocado run --job-results-dir %s --sysinfo=on %s' % (self.tmpdir, self.script.path)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=on %s'
+                    % (AVOCADO, self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
