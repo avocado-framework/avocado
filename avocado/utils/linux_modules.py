@@ -92,11 +92,34 @@ def loaded_module_info(module_name):
 
     :param module_name: Name of module to search for
     :type module_name: str
-    :return: Dictionary of module info, name, size, submodules if present
+    :return: Dictionary of module name, size, submodules if present, filename,
+             version, number of modules using it, list of modules it is
+             dependent on, list of params
     :rtype: dict
     """
     l_raw = process.system_output('/sbin/lsmod')
-    return parse_lsmod_for_module(l_raw, module_name)
+    modinfo_dic = parse_lsmod_for_module(l_raw, module_name)
+    output = process.system_output("/sbin/modinfo %s" % module_name)
+    if output:
+        param_list = []
+        for line in output.splitlines():
+            items = line.split()
+            if not items:
+                continue
+            key = items[0].rstrip(':')
+            value = None
+            if len(items) > 1:
+                if key == 'filename' or key == 'version':
+                    value = str(items[-1])
+                elif key == 'depends':
+                    value = items[1].split(',')
+                elif key == 'parm':
+                    param_list.append(items[1].split(':')[0])
+            if value:
+                modinfo_dic[key] = value
+        if param_list:
+            modinfo_dic['params'] = param_list
+    return modinfo_dic
 
 
 def get_submodules(module_name):
