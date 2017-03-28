@@ -560,19 +560,22 @@ class Test(unittest.TestCase):
         stdout_check_exception = None
         stderr_check_exception = None
         try:
-            self.setUp()
+            if not getattr(testMethod, "__skip__", False):
+                self.setUp()
         except (exceptions.TestSetupSkip,
-                exceptions.TestDecoratorSkip,
                 exceptions.TestTimeoutSkip,
                 exceptions.TestSkipError) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            skip_illegal_msg = ('Calling cancel() in setUp() '
-                                'is not allowed in avocado, you '
-                                'must fix your test. Original cancel exception: '
-                                '%s' % details)
+            raise
+        except exceptions.TestDecoratorSkip as details:
+            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            skip_illegal_msg = ('Using skip decorators in places other than '
+                                'the test method is not allowed in avocado, '
+                                'you must fix your test. Original skip '
+                                'exception: %s' % details)
             raise exceptions.TestError(skip_illegal_msg)
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
@@ -605,7 +608,8 @@ class Test(unittest.TestCase):
                 self.log.debug(' -> %s %s: %s', key, type(value), value)
         finally:
             try:
-                self.tearDown()
+                if not getattr(testMethod, "__skip__", False):
+                    self.tearDown()
             except exceptions.TestSetupSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Calling skip() in places other than '
@@ -615,11 +619,14 @@ class Test(unittest.TestCase):
                 raise exceptions.TestError(skip_illegal_msg)
             except exceptions.TestDecoratorSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-                skip_illegal_msg = ('Using skip decorators after the test '
-                                    'will have no effect, you must fix your '
-                                    'test. Original skip exception: %s' %
-                                    details)
+                skip_illegal_msg = ('Using skip decorators in places other than '
+                                    'the test method is not allowed in avocado, '
+                                    'you must fix your test. Original skip '
+                                    'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
+            except exceptions.TestCancel as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                raise
             except:  # avoid old-style exception failures
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 details = sys.exc_info()[1]
@@ -782,7 +789,11 @@ class Test(unittest.TestCase):
         :param message: an optional message that will be recorded in the logs
         :type message: str
         """
-        raise exceptions.TestSetupSkip(message)
+        dep_msg = '[WARNING: self.skip() will be deprecated, please ' \
+                  'use self.cancel()] '
+        if message is not None:
+            dep_msg += message
+        raise exceptions.TestSetupSkip(dep_msg)
 
     def cancel(self, message=None):
         """

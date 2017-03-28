@@ -74,9 +74,8 @@ class TestCancel(unittest.TestCase):
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-        self.assertEqual(json_results['cancel'], 0)
-        self.assertEqual(json_results['errors'], 1)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(json_results['cancel'], 1)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

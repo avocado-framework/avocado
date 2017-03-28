@@ -76,7 +76,10 @@ Avocado supports the most common exit statuses:
   be nice to review. (some result plugins does not support this and report
   ``PASS`` instead)
 * ``SKIP`` - the test's pre-requisites were not satisfied and the test's
-  body was not executed (nor its ``tearDown``)
+  body was not executed (nor its ``setUp()`` and ``tearDown``).
+* ``CANCEL`` - the test was canceled somewhere during the `setUp()`, the
+  test method or the `tearDown()`. The ``setUp()`` and ``tearDown``
+  methods are executed.
 * ``FAIL`` - test did not result in the expected outcome. A failure points
   at a (possible) bug in the tested subject, and not in the test itself.
   When the test (and its) execution breaks, an ``ERROR`` and not a ``FAIL``
@@ -957,6 +960,9 @@ Avocado offers some options for the test writers to skip a test:
 Test ``skip()`` Method
 ----------------------
 
+.. warning:: `self.skip()` is under deprecation process. Please adjust
+   your tests to use the `self.cancel()` or the skip decorators instead.
+
 Using the ``skip()`` method available in the Test API is only allowed
 inside the ``setUp()`` method. Calling ``skip()`` from inside the test is not
 allowed as, by concept, you cannot skip a test after it's already initiated.
@@ -987,9 +993,10 @@ Will produce the following result::
     TESTS TIME : 0.00 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
 
-Notice that the `tearDown()` will not be executed when `skip()` is used.
-Any cleanup treatment has to be handled by the `setUp()`, before the
-call to `skip()`.
+Calling `self.skip()`, nothing else will be executed after the call.
+We will skip the rest of the `setUp()` method, the test method and the
+`tearDown()` method. Any cleanup treatment has to be handled by the
+`setUp()`, before the call to `self.skip()`.
 
 Avocado Skip Decorators
 -----------------------
@@ -1002,8 +1009,9 @@ Another way to skip tests is by using the Avocado skip decorators:
 - ``@avocado.skipUnless(condition, reason)``: Skips a test if the condition is
   ``False``
 
-Those decorators can be used with both ``setUp()`` method and/or and in the
-``test*()`` methods. The test below::
+Those decorators can be used only in the ``test*()`` methods. Decorating
+`setUp()` or `tearDown()` will make the test to finish with `ERROR`.
+The test below::
 
     import avocado
 
@@ -1036,17 +1044,15 @@ Will produce the following result::
 Notice the ``test3`` was not skipped because the provided condition was
 not ``False``.
 
-Using the skip decorators, since the `setUp()` was already executed, the
-`tearDown()` will be also executed.
-
+Using the skip decorators, nothing is actually executed. We will skip
+the  `setUp()` method, the test method and the `tearDown()` method.
 
 Cancelling Tests
 ================
 
-The only supported way to cancel a test and not negatively impact the
-job exit status (unlike using `self.fail` or `self.error`) is by using
-the `self.cancel()` method. The `self.cancel()` can be called only
-from your test methods. Example::
+You can cancel a test calling `self.cancel()` at any phase of the test
+(`setUp()`, test method or `tearDown()`). Test will finish with `CANCEL`
+status and will not make the Job to exit with a non-0 status. Example::
 
     #!/usr/bin/env python
 
@@ -1093,11 +1099,10 @@ the correct version, the result will be::
     TESTS TIME : 2.28 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html
 
-Notice that, since the `setUp()` was already executed, calling the
-`self.cancel()` will cancel the rest of the test from that point on, but
-the `tearDown()` will still be executed.
+Notice that using the `self.cancel()` will cancel the rest of the test
+from that point on, but the `tearDown()` will still be executed.
 
-Depending on the result format you're refering to, the `CANCEL` status
+Depending on the result format you're referring to, the `CANCEL` status
 is mapped to a corresponding valid status in that format. See the table
 below:
 
