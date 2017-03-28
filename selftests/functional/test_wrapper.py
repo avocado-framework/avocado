@@ -12,6 +12,7 @@ from avocado.utils import path as utils_path
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 SCRIPT_CONTENT = """#!/bin/bash
 touch %s
@@ -51,8 +52,9 @@ class WrapperTest(unittest.TestCase):
                      "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s '
-                    'examples/tests/datadir.py' % (self.tmpdir, self.script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
+                    'examples/tests/datadir.py'
+                    % (AVOCADO, self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -67,8 +69,9 @@ class WrapperTest(unittest.TestCase):
                      "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s:*/datadir '
-                    'examples/tests/datadir.py' % (self.tmpdir, self.script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+                    '--wrapper %s:*/datadir examples/tests/datadir.py'
+                    % (AVOCADO, self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -83,9 +86,10 @@ class WrapperTest(unittest.TestCase):
                      "C compiler is required by the underlying datadir.py test")
     def test_both_wrappers(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --wrapper %s --wrapper %s:*/datadir '
-                    'examples/tests/datadir.py' % (self.tmpdir, self.dummy.path,
-                                                   self.script.path))
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
+                    '--wrapper %s:*/datadir examples/tests/datadir.py'
+                    % (AVOCADO, self.tmpdir, self.dummy.path,
+                       self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,

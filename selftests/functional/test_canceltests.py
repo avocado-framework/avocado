@@ -11,7 +11,9 @@ from avocado.utils import script
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
-AVOCADO_TEST_CANCEL = """
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
+TEST_CANCEL = """
 import avocado
 
 class AvocadoCancelTest(avocado.Test):
@@ -20,7 +22,7 @@ class AvocadoCancelTest(avocado.Test):
         self.cancel()
 """
 
-AVOCADO_TEST_CANCEL_ON_SETUP = """
+TEST_CANCEL_ON_SETUP = """
 import avocado
 
 class AvocadoCancelTest(avocado.Test):
@@ -40,23 +42,23 @@ class TestCancel(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
         test_path = os.path.join(self.tmpdir, 'test_cancel.py')
-        self.test_cancel = script.Script(test_path,
-                                         AVOCADO_TEST_CANCEL)
-        self.test_cancel.save()
+        self._test_cancel = script.Script(test_path,
+                                          TEST_CANCEL)
+        self._test_cancel.save()
 
         test_path = os.path.join(self.tmpdir, 'test_cancel_on_setup.py')
-        self.test_cancel_on_setup = script.Script(test_path,
-                                                  AVOCADO_TEST_CANCEL_ON_SETUP)
-        self.test_cancel_on_setup.save()
+        self._test_cancel_on_setup = script.Script(test_path,
+                                                   TEST_CANCEL_ON_SETUP)
+        self._test_cancel_on_setup.save()
 
     def test_cancel(self):
         os.chdir(basedir)
-        cmd_line = ['./scripts/avocado',
+        cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
                     '%s' % self.tmpdir,
-                    '%s' % self.test_cancel,
+                    '%s' % self._test_cancel,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
@@ -65,12 +67,12 @@ class TestCancel(unittest.TestCase):
 
     def test_cancel_on_setup(self):
         os.chdir(basedir)
-        cmd_line = ['./scripts/avocado',
+        cmd_line = [AVOCADO,
                     'run',
                     '--sysinfo=off',
                     '--job-results-dir',
                     '%s' % self.tmpdir,
-                    '%s' % self.test_cancel_on_setup,
+                    '%s' % self._test_cancel_on_setup,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
