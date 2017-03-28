@@ -172,7 +172,7 @@ class MuxPlugin(object):
                     env = set()
                     for node in variant["variant"]:
                         for key, value in node.environment.iteritems():
-                            origin = node.environment_origin[key].path
+                            origin = node.environment.origin[key].path
                             env.add(("%s:%s" % (origin, key), str(value)))
                     if not env:
                         continue

@@ -41,6 +41,21 @@ import os
 from . import output
 
 
+class TreeEnvironment(dict):
+
+    """ TreeNode environment with values, origins and filters """
+
+    def __init__(self):
+        super(TreeEnvironment, self).__init__()     # values
+        self.origin = {}    # origins of the values
+
+    def copy(self):
+        cpy = TreeEnvironment()
+        cpy.update(self)
+        cpy.origin = self.origin.copy()
+        return cpy
+
+
 class TreeNode(object):
 
     """
@@ -57,7 +72,6 @@ class TreeNode(object):
         self.parent = parent
         self.children = []
         self._environment = None
-        self.environment_origin = {}
         for child in children:
             self.add_child(child)
 
@@ -175,9 +189,7 @@ class TreeNode(object):
         """ Get node environment (values + preceding envs) """
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
-                                 if self.parent else {})
-            self.environment_origin = (self.parent.environment_origin.copy()
-                                       if self.parent else {})
+                                 if self.parent else TreeEnvironment())
             for key, value in self.value.iteritems():
                 if isinstance(value, list):
                     if (key in self._environment and
@@ -187,7 +199,7 @@ class TreeNode(object):
                         self._environment[key] = value
                 else:
                     self._environment[key] = value
-                self.environment_origin[key] = self
+                self._environment.origin[key] = self
         return self._environment
 
     def set_environment_dirty(self):
