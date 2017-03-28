@@ -1091,7 +1091,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         super(PluginsJSONTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
-                      e_nfailures, e_nskip, external_runner=None):
+                      e_nfailures, e_nskip, e_ncancel=0, external_runner=None):
         os.chdir(basedir)
         cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --json - --archive %s' %
                     (self.tmpdir, testname))
@@ -1122,6 +1122,8 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         n_skip = json_data['skip']
         self.assertEqual(n_skip, e_nskip,
                          "Different number of skipped tests")
+        n_cancel = json_data['cancel']
+        self.assertEqual(n_cancel, e_ncancel)
         return json_data
 
     def test_json_plugin_passtest(self):
@@ -1134,7 +1136,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
 
     def test_json_plugin_skiponsetuptest(self):
         self.run_and_check('cancelonsetup.py', exit_codes.AVOCADO_ALL_OK,
-                           1, 0, 0, 0)
+                           1, 0, 0, 0, 1)
 
     def test_json_plugin_errortest(self):
         self.run_and_check('errortest.py', exit_codes.AVOCADO_TESTS_FAIL,
@@ -1144,7 +1146,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
     def test_ugly_echo_cmd(self):
         data = self.run_and_check('"-ne foo\\\\\\n\\\'\\\\\\"\\\\\\'
                                   'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
-                                  0, 0, GNU_ECHO_BINARY)
+                                  0, 0, external_runner=GNU_ECHO_BINARY)
         # The executed test should be this
         self.assertEqual(data['tests'][0]['url'],
                          '1--ne foo\\\\n\\\'\\"\\\\nbar/baz')
