@@ -16,8 +16,16 @@ import avocado
 
 class AvocadoCancelTest(avocado.Test):
 
+    def setUp(self):
+        self.log.info('setup code cancel')
+
     def test(self):
+        self.log.info('test code before cancel')
         self.cancel()
+        self.log.info('test code after cancel')
+
+    def tearDown(self):
+        self.log.info('teardown code')
 """
 
 AVOCADO_TEST_CANCEL_ON_SETUP = """
@@ -26,10 +34,15 @@ import avocado
 class AvocadoCancelTest(avocado.Test):
 
     def setUp(self):
+        self.log.info('setup code before cancel')
         self.cancel()
+        self.log.info('setup code after cancel')
 
     def test(self):
-        pass
+        self.log.info('test code')
+
+    def tearDown(self):
+        self.log.info('teardown code')
 """
 
 
@@ -60,8 +73,13 @@ class TestCancel(unittest.TestCase):
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
+        debuglog = json_results['debuglog']
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(json_results['cancel'], 1)
+        self.assertIn('setup code', open(debuglog, 'r').read())
+        self.assertIn('test code before cancel', open(debuglog, 'r').read())
+        self.assertNotIn('test code after cancel', open(debuglog, 'r').read())
+        self.assertIn('teardown code', open(debuglog, 'r').read())
 
     def test_cancel_on_setup(self):
         os.chdir(basedir)
@@ -74,9 +92,13 @@ class TestCancel(unittest.TestCase):
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
-        self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-        self.assertEqual(json_results['cancel'], 0)
-        self.assertEqual(json_results['errors'], 1)
+        debuglog = json_results['debuglog']
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(json_results['cancel'], 1)
+        self.assertIn('setup code before cancel', open(debuglog, 'r').read())
+        self.assertNotIn('setup code after cancel', open(debuglog, 'r').read())
+        self.assertNotIn('test code', open(debuglog, 'r').read())
+        self.assertIn('teardown code', open(debuglog, 'r').read())
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
