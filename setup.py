@@ -163,6 +163,7 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:Human',
                   'tap = avocado.plugins.tap:TAPResult',
                   'journal = avocado.plugins.journal:JournalResult',
+                  'checkpoint = avocado.plugins.checkpoint:Checkpoint',
                   ],
               "avocado.plugins.varianter": [
                   "yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMux",

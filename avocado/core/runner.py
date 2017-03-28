@@ -485,10 +485,10 @@ class TestRunner(object):
                            " present in test factory: %s"
                            % (template[0], template[1]))
                     raise ValueError(msg)
-                factory = [template[0], template[1].copy()]
+                factory = [template[0], template[1].copy(), None]
                 factory[1]["params"] = params
             else:
-                factory = template
+                factory = tuple(template[0], template[1].copy(), None)
             yield factory, variant
 
     def run_suite(self, test_suite, variants, timeout=0, replay_map=None):
@@ -531,16 +531,16 @@ class TestRunner(object):
                         summary.add('INTERRUPTED')
                         if 'methodName' in test_parameters:
                             del test_parameters['methodName']
-                        test_factory = (test.TimeOutSkipTest, test_parameters)
+                        test_factory = (test.TimeOutSkipTest, test_parameters,
+                                        None)
                         break_loop = not self.run_test(test_factory, queue,
                                                        summary)
                         if break_loop:
                             break
                     else:
-                        if (replay_map is not None and
-                                replay_map[index] is not None):
-                            test_parameters["methodName"] = "test"
-                            test_factory = (replay_map[index], test_parameters)
+                        if (replay_map is not None and index < len(replay_map)):
+                            test_factory = (test_factory[0], test_factory[1],
+                                            replay_map[index])
 
                         break_loop = not self.run_test(test_factory, queue,
                                                        summary, deadline)

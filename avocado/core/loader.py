@@ -275,7 +275,7 @@ class TestLoaderProxy(object):
         :type test_factory: tuple
         :return: an instance of :class:`avocado.core.test.Test`.
         """
-        test_class, test_parameters = test_factory
+        test_class, test_parameters, test_decorator = test_factory
         # discard tags, as they are *not* intended to be parameters
         # for the test, but used previously during filtering
         if 'tags' in test_parameters:
@@ -308,7 +308,14 @@ class TestLoaderProxy(object):
                     if issubclass(obj, test.Test):
                         test_class = obj
                         break
-        test_instance = test_class(**test_parameters)
+        if test_decorator is not None:
+            if isinstance(test_decorator, tuple):
+                test_instance = test_decorator[0](test_class, test_parameters,
+                                                  test_decorator[1])
+            else:
+                test_instance = test_decorator(test_class, test_parameters)
+        else:
+            test_instance = test_class(**test_parameters)
 
         return test_instance
 

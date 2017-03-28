@@ -24,7 +24,24 @@ from avocado.core import status
 
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
-from avocado.core.test import ReplaySkipTest
+from avocado.core.test import ReplaySkipTest, TestError, ReplayResultCopier
+
+def _require_recover(test_cls, args, previous):
+    args['recovery_required'] = True
+    return test_cls(previous_run=previous, **args)
+
+def _replay_skip(test_cls, args):
+    args["methodName"] = "test"
+    return ReplaySkipTest(**args)
+
+def _replay_copy(test_cls, args, previous):
+    args["methodName"] = "test"
+    return ReplayResultCopier(previous_run=previous, **args)
+
+def _fail_interrupted(test_cls, args):
+    args["methodName"] = "test"
+    args['exception'] = 'Test was interrupted on last run!'
+    return TestError(**args)
 
 
 class Replay(CLI):
@@ -54,6 +71,26 @@ class Replay(CLI):
                                    default=None,
                                    help='Filter tests to replay by '
                                    'test status')
+        replay_parser.add_argument('--resume',
+                                   dest='resume',
+                                   action='store_true',
+                                   default=False,
+                                   help='Replay all tests that were '
+                                   'interrupted or do not have a result set '
+                                   'yet.')
+        replay_parser.add_argument('--replay-results',
+                                   dest='replay_results',
+                                   action='store_true',
+                                   default=False,
+                                   help='During replay copy result sets from '
+                                   'the previous run instead of marking the '
+                                   'tests as skipped.')
+        replay_parser.add_argument('--fail-interrupted',
+                                   dest='fail_interrupted',
+                                   action='store_true',
+                                   default=False,
+                                   help='Do not try to rerun an interrupted '
+                                   'test.')
         replay_parser.add_argument('--replay-ignore',
                                    dest='replay_ignore',
                                    type=self._valid_ignore,
@@ -90,7 +127,8 @@ class Replay(CLI):
         if config is not None:
             settings.process_config_path(config)
 
-    def _create_replay_map(self, resultsdir, replay_filter):
+    def _create_replay_map(self, resultsdir, replay_filter, fail_interrupted,
+                           replay_results):
         """
         Creates a mapping to be used as filter for the replay. Given
         the replay_filter, tests that should be filtered out will have a
@@ -106,8 +144,16 @@ class Replay(CLI):
 
         replay_map = []
         for test in results['tests']:
-            if test['status'] not in replay_filter:
-                replay_map.append(ReplaySkipTest)
+            if test['status'] == 'INTERRUPTED':
+                if fail_interrupted:
+                    replay_map.append(_fail_interrupted)
+                else:
+                    replay_map.append((_require_recover, test))
+            elif test['status'] not in replay_filter:
+                if replay_results:
+                    replay_map.append((_replay_copy, test))
+                else:
+                    replay_map.append(_replay_skip)
             else:
                 replay_map.append(None)
 
@@ -120,13 +166,16 @@ class Replay(CLI):
         log = logging.getLogger("avocado.app")
 
         err = None
-        if args.replay_teststatus and 'variants' in args.replay_ignore:
+        if args.resume and args.replay_teststatus:
+            err = ("Option `--replay-test-status` is mutually exclusive with "
+                   "`--resume`.")
+        elif args.replay_teststatus and 'variants' in args.replay_ignore:
             err = ("Option `--replay-test-status` is incompatible with "
                    "`--replay-ignore variants`.")
         elif args.replay_teststatus and args.reference:
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
-        elif args.remote_hostname:
+        elif hasattr(args, 'remote_hostname') and args.remote_hostname:
             err = "Currently we don't replay jobs in remote hosts."
         if err is not None:
             log.error(err)
@@ -214,9 +263,14 @@ class Replay(CLI):
                                 "ignore variants` to override them.")
                 setattr(args, "avocado_variants", variants)
 
-        if args.replay_teststatus:
+        if args.resume:
+            args.replay_teststatus = []
+
+        if args.replay_teststatus is not None:
             replay_map = self._create_replay_map(resultsdir,
-                                                 args.replay_teststatus)
+                                                 args.replay_teststatus,
+                                                 args.fail_interrupted,
+                                                 args.replay_results)
             setattr(args, 'replay_map', replay_map)
 
         # Use the original directory to resolve test references properly
