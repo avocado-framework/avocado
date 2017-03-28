@@ -41,6 +41,24 @@ import os
 from . import output
 
 
+class FilterSet(set):
+
+    """ Set of filters in standardized form """
+
+    @staticmethod
+    def __normalize(item):
+        if not item.endswith("/"):
+            item = item + "/"
+        return item
+
+    def add(self, item):
+        return super(FilterSet, self).add(self.__normalize(item))
+
+    def update(self, items):
+        return super(FilterSet, self).update([self.__normalize(item)
+                                              for item in items])
+
+
 class TreeEnvironment(dict):
 
     """ TreeNode environment with values, origins and filters """
@@ -48,12 +66,21 @@ class TreeEnvironment(dict):
     def __init__(self):
         super(TreeEnvironment, self).__init__()     # values
         self.origin = {}    # origins of the values
+        self.filter_only = FilterSet()   # list of filter_only
+        self.filter_out = FilterSet()    # list of filter_out
 
     def copy(self):
         cpy = TreeEnvironment()
         cpy.update(self)
         cpy.origin = self.origin.copy()
+        cpy.filter_only = self.filter_only.copy()
+        cpy.filter_out = self.filter_out.copy()
         return cpy
+
+    def __str__(self):
+        return ",".join((super(TreeEnvironment, self).__str__(),
+                         str(self.origin), str(self.filter_only),
+                         str(self.filter_out)))
 
 
 class TreeNode(object):
@@ -69,6 +96,7 @@ class TreeNode(object):
             children = []
         self.name = name
         self.value = value
+        self.filters = [], []  # This node filters, full filters in environ..
         self.parent = parent
         self.children = []
         self._environment = None
@@ -128,6 +156,8 @@ class TreeNode(object):
         or merged into existing node in the previous position.
         """
         self.value.update(other.value)
+        self.filters[0].extend(other.filters[0])
+        self.filters[1].extend(other.filters[1])
         for child in other.children:
             self.add_child(child)
 
@@ -200,6 +230,8 @@ class TreeNode(object):
                 else:
                     self._environment[key] = value
                 self._environment.origin[key] = self
+            self._environment.filter_only.update(self.filters[0])
+            self._environment.filter_out.update(self.filters[1])
         return self._environment
 
     def set_environment_dirty(self):
@@ -437,9 +469,17 @@ def tree_view(root, verbose=None, use_utf8=None):
             right = charset['Right']
         out = [node.name]
         if verbose >= 2 and node.is_leaf:
-            values = node.environment.iteritems()
+            values = itertools.chain(node.environment.iteritems(),
+                                     [("filter-only", _)
+                                      for _ in node.environment.filter_only],
+                                     [("filter-out", _)
+                                      for _ in node.environment.filter_out])
         elif verbose in (1, 3):
-            values = node.value.iteritems()
+            values = itertools.chain(node.value.iteritems(),
+                                     [("filter-only", _)
+                                      for _ in node.filters[0]],
+                                     [("filter-out", _)
+                                      for _ in node.filters[1]])
         else:
             values = None
         if values:
