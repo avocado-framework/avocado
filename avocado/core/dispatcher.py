@@ -21,6 +21,7 @@ import sys
 from stevedore import EnabledExtensionManager
 
 from .settings import settings
+from ..utils import stacktrace
 
 
 class Dispatcher(EnabledExtensionManager):
@@ -242,6 +243,7 @@ class VarianterDispatcher(Dispatcher):
             except KeyboardInterrupt:
                 raise
             except:     # catch any exception pylint: disable=W0702
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
                 log = logging.getLogger("avocado.app")
                 log.error('Error running method "%s" of plugin "%s": %s',
                           method_name, ext.name, sys.exc_info()[1])
