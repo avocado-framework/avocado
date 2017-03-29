@@ -57,7 +57,11 @@ def generate_dot_file(path):
 
 
 def cyclical_deps(path_dot):
-    graph = nx.DiGraph(nx.read_dot(path_dot))
+    if hasattr(nx, 'read_dot'):
+        graph = nx.DiGraph(nx.read_dot(path_dot))
+    else:
+        graph = nx.DiGraph(nx.nx_agraph.read_dot(path_dot))
+
     cycles = list(nx.simple_cycles(graph))
     if cycles:
         print('Found cyclical dependencies in module(s):')
