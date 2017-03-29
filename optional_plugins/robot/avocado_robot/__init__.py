@@ -27,6 +27,7 @@ from avocado.core.plugin_interfaces import CLI
 from avocado.core.runner import TestRunner
 from avocado.utils import path as utils_path
 from robot import run
+from robot.errors import DataError
 from robot.parsing.model import TestData
 from robot.model import SuiteNamePatterns
 
@@ -89,10 +90,14 @@ class RobotLoader(loader.TestLoader):
         if ':' in url:
             url, _subtests_filter = url.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
-        robot_suite = self._find_tests(TestData(parent=None,
-                                                source=url,
-                                                include_suites=SuiteNamePatterns()),
-                                       test_suite={})
+        try:
+            robot_suite = self._find_tests(TestData(parent=None,
+                                           source=url,
+                                           include_suites=SuiteNamePatterns()),
+                                           test_suite={})
+        except DataError:
+            return []
+
         for item in robot_suite:
             for robot_test in robot_suite[item]:
                 test_name = "%s:%s.%s" % (robot_test['test_source'],
