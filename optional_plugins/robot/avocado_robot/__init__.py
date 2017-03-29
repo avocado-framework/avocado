@@ -82,6 +82,10 @@ class RobotLoader(loader.TestLoader):
     def discover(self, url, which_tests=False):
         avocado_suite = []
         subtests_filter = None
+
+        if url is None:
+            return []
+
         if ':' in url:
             url, _subtests_filter = url.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
