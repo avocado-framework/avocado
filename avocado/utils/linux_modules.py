@@ -40,7 +40,12 @@ BUILTIN = 2
 
 
 def load_module(module_name):
-    # Checks if a module has already been loaded
+    """
+    Checks if a module has already been loaded.
+    :param module_name: Name of module to check
+    :return: True if module is loaded, False otherwise
+    :rtype: Bool
+    """
     if module_is_loaded(module_name):
         return False
 
@@ -92,11 +97,34 @@ def loaded_module_info(module_name):
 
     :param module_name: Name of module to search for
     :type module_name: str
-    :return: Dictionary of module info, name, size, submodules if present
+    :return: Dictionary of module name, size, submodules if present, filename,
+             version, number of modules using it, list of modules it is
+             dependent on, list of params
     :rtype: dict
     """
     l_raw = process.system_output('/sbin/lsmod')
-    return parse_lsmod_for_module(l_raw, module_name)
+    modinfo_dic = parse_lsmod_for_module(l_raw, module_name)
+    output = process.system_output("/sbin/modinfo %s" % module_name)
+    if output:
+        param_list = []
+        for line in output.splitlines():
+            items = line.split()
+            if not items:
+                continue
+            key = items[0].rstrip(':')
+            value = None
+            if len(items) > 1:
+                if key == 'filename' or key == 'version':
+                    value = str(items[-1])
+                elif key == 'depends':
+                    value = items[1].split(',')
+                elif key == 'parm':
+                    param_list.append(items[1].split(':')[0])
+            if value:
+                modinfo_dic[key] = value
+        if param_list:
+            modinfo_dic['params'] = param_list
+    return modinfo_dic
 
 
 def get_submodules(module_name):
@@ -113,7 +141,7 @@ def get_submodules(module_name):
     try:
         submodules = module_info["submodules"]
     except KeyError:
-        LOG.info("Module %s is not loaded" % module_name)
+        LOG.info("Module %s is not loaded", module_name)
     else:
         module_list = submodules
         for module in submodules:
@@ -133,7 +161,7 @@ def unload_module(module_name):
     try:
         submodules = module_info['submodules']
     except KeyError:
-        LOG.info("Module %s is already unloaded" % module_name)
+        LOG.info("Module %s is already unloaded", module_name)
     else:
         for module in submodules:
             unload_module(module)
@@ -141,13 +169,13 @@ def unload_module(module_name):
         try:
             module_used = module_info['used']
         except KeyError:
-            LOG.info("Module %s is already unloaded" % module_name)
+            LOG.info("Module %s is already unloaded", module_name)
             return
         if module_used != 0:
             raise RuntimeError("Module %s is still in use. "
                                "Can not unload it." % module_name)
         process.system("/sbin/modprobe -r %s" % module_name)
-        LOG.info("Module %s unloaded" % module_name)
+        LOG.info("Module %s unloaded", module_name)
 
 
 def module_is_loaded(module_name):
@@ -164,6 +192,10 @@ def module_is_loaded(module_name):
 
 
 def get_loaded_modules():
+    """
+    Gets list of loaded modules.
+    :return: List of loaded modules.
+    """
     lsmod_output = process.system_output('/sbin/lsmod').splitlines()[1:]
     return [line.split(None, 1)[0] for line in lsmod_output]
 
