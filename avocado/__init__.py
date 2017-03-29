@@ -19,7 +19,10 @@ __all__ = ['main',
            'fail_on',
            'skip',
            'skipIf',
-           'skipUnless']
+           'skipUnless',
+           'TestError',
+           'TestFail',
+           'TestCancel']
 
 
 from avocado.core.job import main
@@ -29,3 +32,6 @@ from avocado.core.decorators import fail_on
 from avocado.core.decorators import skip
 from avocado.core.decorators import skipIf
 from avocado.core.decorators import skipUnless
+from avocado.core.exceptions import TestError
+from avocado.core.exceptions import TestFail
+from avocado.core.exceptions import TestCancel
