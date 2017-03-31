@@ -12,21 +12,19 @@
 # Copyright: Red Hat Inc. 2017
 # Authors: Amador Pahim <apahim@redhat.com>
 
-import collections
+"""
+Plugin to run Robot Framework tests in Avocado
+"""
+
 import logging
 import re
-import subprocess
 
-from StringIO import StringIO
-
-from avocado.core import exceptions
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
 from avocado.core.plugin_interfaces import CLI
-from avocado.core.runner import TestRunner
-from avocado.utils import path as utils_path
 from robot import run
+from robot.errors import DataError
 from robot.parsing.model import TestData
 from robot.model import SuiteNamePatterns
 
@@ -41,8 +39,7 @@ class RobotTest(test.SimpleTest):
                  name,
                  params=None,
                  base_logdir=None,
-                 job=None,
-                 external_runner=None):
+                 job=None):
         super(RobotTest, self).__init__(name, params, base_logdir, job)
 
     @property
@@ -89,10 +86,14 @@ class RobotLoader(loader.TestLoader):
         if ':' in url:
             url, _subtests_filter = url.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
-        robot_suite = self._find_tests(TestData(parent=None,
-                                                source=url,
-                                                include_suites=SuiteNamePatterns()),
-                                       test_suite={})
+        try:
+            test_data = TestData(parent=None,
+                                 source=url,
+                                 include_suites=SuiteNamePatterns())
+            robot_suite = self._find_tests(test_data, test_suite={})
+        except DataError:
+            return []
+
         for item in robot_suite:
             for robot_test in robot_suite[item]:
                 test_name = "%s:%s.%s" % (robot_test['test_source'],
@@ -105,9 +106,9 @@ class RobotLoader(loader.TestLoader):
 
     def _find_tests(self, data, test_suite):
         test_suite[data.name] = []
-        for test in data.testcase_table:
-            test_suite[data.name].append({'test_name': test.name,
-                                          'test_source': test.source})
+        for test_case in data.testcase_table:
+            test_suite[data.name].append({'test_name': test_case.name,
+                                          'test_source': test_case.source})
         for child_data in data.children:
             self._find_tests(child_data, test_suite)
         return test_suite
