@@ -111,11 +111,14 @@ def can_sudo(cmd=None):
     except path.CmdNotFoundError:
         return False
 
-    if cmd:     # Am I able to run the cmd or plain sudo id?
-        return not system(cmd, ignore_status=True, sudo=True)
-    elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
-        return True
-    else:
+    try:
+        if cmd:     # Am I able to run the cmd or plain sudo id?
+            return not system(cmd, ignore_status=True, sudo=True)
+        elif system_output("id -u", ignore_status=True, sudo=True).strip() == "0":
+            return True
+        else:
+            return False
+    except OSError:     # Broken sudo binary
         return False
 
 
