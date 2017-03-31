@@ -41,6 +41,8 @@ YAML_USING = 101
 YAML_REMOVE_NODE = mux.REMOVE_NODE
 YAML_REMOVE_VALUE = mux.REMOVE_VALUE
 YAML_MUX = 102
+YAML_FILTER_ONLY = 103
+YAML_FILTER_OUT = 104
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
@@ -50,14 +52,18 @@ class _BaseLoader(Loader):
     """
     YAML loader with additional features related to mux
     """
-    Loader.add_constructor(u'!include', lambda loader,
-                           node: mux.Control(YAML_INCLUDE))
+    Loader.add_constructor(u'!include',
+                           lambda loader, node: mux.Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
                            lambda loader, node: mux.Control(YAML_USING))
     Loader.add_constructor(u'!remove_node',
                            lambda loader, node: mux.Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
                            lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
+    Loader.add_constructor(u'!filter-only',
+                           lambda loader, node: mux.Control(YAML_FILTER_ONLY))
+    Loader.add_constructor(u'!filter-out',
+                           lambda loader, node: mux.Control(YAML_FILTER_OUT))
 
 
 class Value(tuple):     # Few methods pylint: disable=R0903
@@ -80,6 +86,14 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
         """ Create `name` node and add values  """
         def handle_control_tag(node, value):
             """ Handling of YAML tags (except of !using) """
+            def normalize_path(path):
+                """ End the path with single '/', None when empty path """
+                if not path:
+                    return
+                if path[-1] != '/':
+                    path += '/'
+                return path
+
             if value[0].code == YAML_INCLUDE:
                 # Include file
                 ypath = value[1]
@@ -97,6 +111,14 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                 node.ctrl.append(value[0])
             elif value[0].code == YAML_MUX:
                 node.multiplex = True
+            elif value[0].code == YAML_FILTER_ONLY:
+                new_value = normalize_path(value[1])
+                if new_value:
+                    node.filters[0].append(new_value)
+            elif value[0].code == YAML_FILTER_OUT:
+                new_value = normalize_path(value[1])
+                if new_value:
+                    node.filters[1].append(new_value)
 
         def handle_control_tag_using(name, using, value):
             """ Handling of the !using tag """
