@@ -4,6 +4,12 @@
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
+# selftests are provided but may need to skipped because many of
+# functional tests are time and resource sensitive and can
+# cause race conditions and random build failures.  they are
+# enabled by default.
+%global with_tests 1
+
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 47.0
@@ -14,8 +20,6 @@ URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}/%{srcname}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
 BuildRequires: fabric
-BuildRequires: libvirt-python
-BuildRequires: perl-Test-Harness
 BuildRequires: procps-ng
 BuildRequires: pystache
 BuildRequires: python-docutils
@@ -30,6 +34,12 @@ BuildRequires: python-stevedore
 BuildRequires: python-yaml
 BuildRequires: python2-devel
 BuildRequires: yum
+
+%if %{with_tests}
+BuildRequires: libvirt-python
+BuildRequires: perl-Test-Harness
+%endif
+
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
@@ -116,6 +126,7 @@ popd
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
 %check
+%if %{with_tests}
 %{__python} setup.py develop --user
 pushd optional_plugins/html
 %{__python} setup.py develop --user
@@ -130,6 +141,7 @@ pushd optional_plugins/runner_docker
 %{__python} setup.py develop --user
 popd
 selftests/run
+%endif
 
 %files
 %defattr(-,root,root,-)
@@ -250,6 +262,7 @@ examples of how to write tests on your own.
 * Fri Mar 31 2017 Cleber Rosa <cleber@redhat.com> - 47.0-2
 - Switch directory change statements to match downstream
 - Change requirements style to one per line
+- Add conditional execution of selftests
 
 * Wed Mar  8 2017 Cleber Rosa <cleber@redhat.com> - 47.0-1
 - Rename package to python-avocado and subpackges accordingly
