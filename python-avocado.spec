@@ -7,7 +7,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 47.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -59,43 +59,52 @@ sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
 %{__python} setup.py build
-cd optional_plugins/html
+pushd optional_plugins/html
 %{__python} setup.py build
-cd ../runner_remote
+popd
+pushd optional_plugins/runner_remote
 %{__python} setup.py build
-cd ../runner_vm
+popd
+pushd optional_plugins/runner_vm
 %{__python} setup.py build
-cd ../runner_docker
+popd
+pushd optional_plugins/runner_docker
 %{__python} setup.py build
-cd ../../
+popd
 %{__make} man
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd optional_plugins/html
+pushd optional_plugins/html
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../runner_remote
+popd
+pushd optional_plugins/runner_remote
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../runner_vm
+popd
+pushd optional_plugins/runner_vm
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../runner_docker
+popd
+pushd optional_plugins/runner_docker
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../../
+popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
 %check
 %{__python} setup.py develop --user
-cd optional_plugins/html
+pushd optional_plugins/html
 %{__python} setup.py develop --user
-cd ../runner_remote
+popd
+pushd optional_plugins/runner_remote
 %{__python} setup.py develop --user
-cd ../runner_vm
+popd
+pushd optional_plugins/runner_vm
 %{__python} setup.py develop --user
-cd ../runner_docker
+popd
+pushd optional_plugins/runner_docker
 %{__python} setup.py develop --user
-cd ../../
+popd
 selftests/run
 
 %files
@@ -211,6 +220,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Fri Mar 31 2017 Cleber Rosa <cleber@redhat.com> - 47.0-2
+- Switch directory change statements to match downstream
+
 * Wed Mar  8 2017 Cleber Rosa <cleber@redhat.com> - 47.0-1
 - Rename package to python-avocado and subpackges accordingly
 
