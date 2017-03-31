@@ -23,6 +23,7 @@ Module for all PCI devices related functions.
 
 import re
 import os
+import logging
 from .genio import read_file
 from . import process
 
@@ -97,20 +98,25 @@ def get_disks_in_pci_address(pci_address):
     return disk_list
 
 
-def get_nics_in_pci_address(pci_address):
+def get_interface_in_pci_address(pci_address, pci_class):
     """
-    Gets network interface(nic) in a PCI address.
+    Gets interface in a PCI address.
 
     :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
-    :return: list of network interfaces in a PCI address.
+    :param clas: Adapter type (FC(fc_host), FCoE(net), NIC(net), SCSI(scsi)..)
+
+    :return: list of generic interfaces in a PCI address.
     """
-    iface_path = "/sys/class/net/"
-    net_interfaces_list = []
-    for iface in os.listdir(iface_path):
-        if pci_address in os.readlink("%s%s" % (iface_path, iface)):
-            net_interfaces_list.append(iface)
-    return net_interfaces_list
+    pci_class_path = "/sys/class/%s/" % pci_class
+    if not os.path.isdir(pci_class_path):
+        logging.debug("please pass valid class name")
+        return []
+    device_interface_list = []
+    for interface in os.listdir(pci_class_path):
+        if pci_address in os.readlink("%s/%s" % (pci_class_path, interface)):
+            device_interface_list.append(interface)
+    return device_interface_list
 
 
 def get_pci_fun_list(pci_address):
@@ -135,7 +141,8 @@ def get_slot_from_sysfs(full_pci_address):
 
     :return: slot of PCI address from sysfs.
     """
-    if not os.path.isfile('/sys/bus/pci/devices/%s/devspec' % full_pci_address):
+    if not os.path.isfile('/sys/bus/pci/devices/%s/devspec' %
+                          full_pci_address):
         return
     devspec = read_file("/sys/bus/pci/devices/%s/devspec" % full_pci_address)
     if not os.path.isfile("/proc/device-tree/%s/ibm,loc-code" % devspec):
