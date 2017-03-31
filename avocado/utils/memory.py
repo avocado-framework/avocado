@@ -147,8 +147,8 @@ def drop_caches():
     """
     process.run("sync", verbose=False)
     # We ignore failures here as this will fail on 2.6.11 kernels.
-    process.run("echo 3 > /proc/sys/vm/drop_caches", ignore_status=True,
-                verbose=False)
+    process.run("/bin/sh -c 'echo 3 > /proc/sys/vm/drop_caches'",
+                ignore_status=True, verbose=False, sudo=True)
 
 
 def read_from_vmstat(key):
