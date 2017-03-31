@@ -125,7 +125,7 @@ def vg_ramdisk(disk, vg_name, ramdisk_vg_size,
             process.run("losetup %s %s" %
                         (loop_device, ramdisk_filename), sudo=True)
         LOGGER.debug("Creating physical volume %s", loop_device)
-        process.run("pvcreate %s" % loop_device, sudo=True)
+        process.run("pvcreate -y %s" % loop_device, sudo=True)
         LOGGER.debug("Creating volume group %s", vg_name)
         process.run("vgcreate %s %s" %
                     (vg_name, loop_device), sudo=True)
