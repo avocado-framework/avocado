@@ -117,6 +117,7 @@ def get_interface_in_pci_address(pci_address, pci_class):
             device_host_list.append(host)
     return device_host_list
 
+
 def get_pci_fun_list(pci_address):
     """
     Gets list of functions in the given PCI address.
