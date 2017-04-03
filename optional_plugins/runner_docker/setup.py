@@ -13,23 +13,18 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Cleber Rosa <crosa@redhat.com>
 
-import os
 from setuptools import setup, find_packages
 
 
-root_path = os.path.abspath(os.path.join("..", ".."))
-version_file = os.path.join(root_path, 'VERSION')
-VERSION = open(version_file, 'r').read().strip()
-
-setup(name='avocado-runner-docker',
+setup(name='avocado-framework-plugin-runner-docker',
       description='Avocado Runner for Execution on Docker Containers',
-      version=VERSION,
+      version='47.0',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-runner-remote', 'aexpect'],
+      install_requires=['avocado-framework-plugin-runner-remote', 'aexpect'],
       entry_points={
           'avocado.plugins.cli': [
               'docker = avocado_runner_docker:DockerCLI',

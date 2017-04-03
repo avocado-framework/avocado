@@ -72,7 +72,15 @@ source-release: clean
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	git archive --format="tar" --prefix="avocado-framework/" -o "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" $(VERSION)
+	git archive --format="tar" --prefix="avocado-framework/" $(VERSION) | tar --file - --delete 'avocado-framework/optional_plugins' > "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f $$PLUGIN/setup.py; then\
+			echo ">> Creating source distribution for $$PLUGIN";\
+			cd $$PLUGIN;\
+			$(PYTHON) setup.py sdist -d ../../PYPI_UPLOAD;\
+			cd -;\
+                fi;\
+	done
 
 pypi: source-pypi develop
 	mkdir PYPI_UPLOAD/avocado-framework
@@ -86,7 +94,7 @@ pypi: source-pypi develop
 	@echo "The URL to do that may be a bit tricky to find, so here it is:"
 	@echo " https://pypi.python.org/pypi?%3Aaction=submit_form"
 	@echo
-	@echo "Alternatively, you can also run: "
+	@echo "Alternatively, you can also run a command like: "
 	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/avocado-framework-$(VERSION).tar.gz"
 	@echo
 
