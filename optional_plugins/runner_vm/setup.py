@@ -13,17 +13,12 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Cleber Rosa <crosa@redhat.com>
 
-import os
 from setuptools import setup, find_packages
 
 
-root_path = os.path.abspath(os.path.join("..", ".."))
-version_file = os.path.join(root_path, 'VERSION')
-VERSION = open(version_file, 'r').read().strip()
-
 setup(name='avocado-framework-plugin-runner-vm',
       description='Avocado Runner for libvirt VM Execution',
-      version=VERSION,
+      version='47.0',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
