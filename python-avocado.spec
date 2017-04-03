@@ -1,6 +1,6 @@
 %global srcname avocado
 %if ! 0%{?commit:1}
- %define commit f12f277434096dc628f5b0b731d7c37e0789427d
+ %define commit 1d717446d28ff852fe5de895f14c7985c63ada3e
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
@@ -12,8 +12,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 47.0
-Release: 2%{?dist}
+Version: 48.0
+Release: 0%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -259,6 +259,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Apr  3 2017 Cleber Rosa <cleber@redhat.com> - 48.0-0
+- New upstream release
+
 * Fri Mar 31 2017 Cleber Rosa <cleber@redhat.com> - 47.0-2
 - Switch directory change statements to match downstream
 - Change requirements style to one per line

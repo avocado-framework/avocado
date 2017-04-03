@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(name='avocado-framework-plugin-runner-vm',
       description='Avocado Runner for libvirt VM Execution',
-      version='47.0',
+      version='48.0',
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',

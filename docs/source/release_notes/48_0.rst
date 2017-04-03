@@ -1,0 +1,87 @@
+====================
+48.0 Lost Boundaries
+====================
+
+The Avocado team is proud to present another release: Avocado version
+48.0, aka, "Lost Boundaries" now available!
+
+Release documentation: `Avocado 48.0
+<http://avocado-framework.readthedocs.io/en/48.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* Users of :mod:`avocado.utils.linux_modules` functions will find that
+  a richer set of information is provided in their return values.  It
+  now includes module name, size, submodules if present, filename,
+  version, number of modules using it, list of modules it is dependent
+  on and finally a list of params.
+
+* :class:`avocado.TestFail`, :class:`avocado.TestError` and
+  :class:`avocado.TestCancel` are now public Avocado Test APIs, available
+  from the main ``avocado`` namespace.  The reason is that test suites
+  may want to define their own exceptions that, while have some custom
+  meaning, also act as a way to fail (or error or cancel) a test.
+
+* Support for new type of test status, CANCEL, and of course the
+  mechanisms to set a test with this status.  CANCEL is a lot like
+  what many people think of SKIP, but, to keep solid definitions and
+  predictable behavior, a SKIP(ped) test is one that was **never**
+  executed, and a CANCEL(ed) test is one that was partially executed,
+  and then canceled.  Calling ``self.skip()`` from within a test is
+  now deprecated to adhere even closer to these definitions.  Using
+  the ``skip*`` decorators (which are outside of the test execution)
+  is still permitted and won't be deprecated.
+
+* Introduction of the ``robot`` plugin, which allows `Robot Framework
+  <http://robotframework.org/>`_ tests to be listed and executed
+  natively within Avocado.  Just think of a super complete Avocado job
+  that runs build tests, unit tests, functional and integration
+  tests... and, on top of it, interactive UI tests for your
+  application!
+
+* Adjustments to the use of ``AVOCADO_JOB_FAIL`` and ``AVOCADO_FAIL``
+  exit status code by Avocado.  This matters if you're checking the
+  exact exit status code that Avocado may return on error condtitions.
+
+Documentation / Contrib
+=======================
+
+* Updates to the ``README`` and Getting Started documentation
+  section, which now mention the updated package names and are
+  pretty much aligned with each other.
+
+Distribution
+============
+
+* Avocado optional plugins are now also available on PyPI, that is,
+  can be installed via ``pip``.  Here's a list of the current package
+  pages:
+
+ * https://pypi.python.org/pypi/avocado-framework-plugin-result-html
+ * https://pypi.python.org/pypi/avocado-framework-plugin-runner-remote
+ * https://pypi.python.org/pypi/avocado-framework-plugin-runner-vm
+ * https://pypi.python.org/pypi/avocado-framework-plugin-runner-docker
+ * https://pypi.python.org/pypi/avocado-framework-plugin-robot
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/47.0...48.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=Wnh3odoph1M>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/Y02Koizf/952-sprint-theme-lost-boundaries
