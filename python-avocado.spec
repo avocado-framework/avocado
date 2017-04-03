@@ -4,17 +4,51 @@
 %endif
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
+# selftests are provided but may need to skipped because many of
+# functional tests are time and resource sensitive and can
+# cause race conditions and random build failures.  they are
+# enabled by default.
+%global with_tests 1
+
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 47.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
 Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}/%{srcname}-%{version}-%{shortcommit}.tar.gz
 BuildArch: noarch
-Requires: python, python-requests, python-setuptools, pyliblzma, gdb, gdb-gdbserver, python-stevedore, python-yaml, procps-ng
-BuildRequires: python2-devel, python-setuptools, python-docutils, python-mock, python-psutil, python-sphinx, python-requests, pystache, yum, python-stevedore, python-lxml, perl-Test-Harness, fabric, python-flexmock, libvirt-python, python-yaml, procps-ng
+BuildRequires: fabric
+BuildRequires: procps-ng
+BuildRequires: pystache
+BuildRequires: python-docutils
+BuildRequires: python-flexmock
+BuildRequires: python-lxml
+BuildRequires: python-mock
+BuildRequires: python-psutil
+BuildRequires: python-requests
+BuildRequires: python-setuptools
+BuildRequires: python-sphinx
+BuildRequires: python-stevedore
+BuildRequires: python-yaml
+BuildRequires: python2-devel
+BuildRequires: yum
+
+%if %{with_tests}
+BuildRequires: libvirt-python
+BuildRequires: perl-Test-Harness
+%endif
+
+Requires: gdb
+Requires: gdb-gdbserver
+Requires: procps-ng
+Requires: pyliblzma
+Requires: python
+Requires: python-requests
+Requires: python-setuptools
+Requires: python-stevedore
+Requires: python-yaml
 %if 0%{?fedora}
 BuildRequires: python-aexpect
 %else
@@ -59,44 +93,55 @@ sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
 %{__python} setup.py build
-cd optional_plugins/html
+pushd optional_plugins/html
 %{__python} setup.py build
-cd ../runner_remote
+popd
+pushd optional_plugins/runner_remote
 %{__python} setup.py build
-cd ../runner_vm
+popd
+pushd optional_plugins/runner_vm
 %{__python} setup.py build
-cd ../runner_docker
+popd
+pushd optional_plugins/runner_docker
 %{__python} setup.py build
-cd ../../
+popd
 %{__make} man
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd optional_plugins/html
+pushd optional_plugins/html
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../runner_remote
+popd
+pushd optional_plugins/runner_remote
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../runner_vm
+popd
+pushd optional_plugins/runner_vm
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../runner_docker
+popd
+pushd optional_plugins/runner_docker
 %{__python} setup.py install --root %{buildroot} --skip-build
-cd ../../
+popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
 %check
+%if %{with_tests}
 %{__python} setup.py develop --user
-cd optional_plugins/html
+pushd optional_plugins/html
 %{__python} setup.py develop --user
-cd ../runner_remote
+popd
+pushd optional_plugins/runner_remote
 %{__python} setup.py develop --user
-cd ../runner_vm
+popd
+pushd optional_plugins/runner_vm
 %{__python} setup.py develop --user
-cd ../runner_docker
+popd
+pushd optional_plugins/runner_docker
 %{__python} setup.py develop --user
-cd ../../
+popd
 selftests/run
+%endif
 
 %files
 %defattr(-,root,root,-)
@@ -147,7 +192,8 @@ arbitrary filesystem location.
 
 %package plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
-Requires: %{name} == %{version}, fabric
+Requires: %{name} == %{version}
+Requires: fabric
 %if 0%{?fedora} == 24
 Requires: python-crypto
 BuildRequires: python-crypto
@@ -164,7 +210,8 @@ connection.  Avocado must be previously installed on the remote machine.
 
 %package plugins-runner-vm
 Summary: Avocado Runner for libvirt VM Execution
-Requires: %{name} == %{version}, %{name}-plugins-runner-remote == %{version}
+Requires: %{name} == %{version}
+Requires: %{name}-plugins-runner-remote == %{version}
 Requires: libvirt-python
 Obsoletes: %{srcname}-plugins-runner-vm < 47.0-1
 Provides: %{srcname}-plugins-runner-vm = %{version}-%{release}
@@ -179,7 +226,8 @@ itself.  Avocado must be previously installed on the VM.
 
 %package plugins-runner-docker
 Summary: Avocado Runner for Execution on Docker Containers
-Requires: %{name} == %{version}, %{name}-plugins-runner-remote == %{version}
+Requires: %{name} == %{version}
+Requires: %{name}-plugins-runner-remote == %{version}
 %if 0%{?fedora}
 Requires: python-aexpect
 %else
@@ -211,6 +259,11 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Fri Mar 31 2017 Cleber Rosa <cleber@redhat.com> - 47.0-2
+- Switch directory change statements to match downstream
+- Change requirements style to one per line
+- Add conditional execution of selftests
+
 * Wed Mar  8 2017 Cleber Rosa <cleber@redhat.com> - 47.0-1
 - Rename package to python-avocado and subpackges accordingly
 
