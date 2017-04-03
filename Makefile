@@ -72,7 +72,7 @@ source-release: clean
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
-	git archive --format="tar" --prefix="avocado-framework/" -o "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" $(VERSION)
+	git archive --format="tar" --prefix="avocado-framework/" $(VERSION) | tar --file - --delete 'avocado-framework/optional_plugins' > "PYPI_UPLOAD/avocado-framework-$(VERSION).tar"
 
 pypi: source-pypi develop
 	mkdir PYPI_UPLOAD/avocado-framework
