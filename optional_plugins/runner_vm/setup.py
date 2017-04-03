@@ -21,7 +21,7 @@ root_path = os.path.abspath(os.path.join("..", ".."))
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = open(version_file, 'r').read().strip()
 
-setup(name='avocado-runner-vm',
+setup(name='avocado-framework-plugin-runner-vm',
       description='Avocado Runner for libvirt VM Execution',
       version=VERSION,
       author='Avocado Developers',
@@ -29,7 +29,7 @@ setup(name='avocado-runner-vm',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-runner-remote', 'libvirt-python'],
+      install_requires=['avocado-framework-plugin-runner-remote', 'libvirt-python'],
       entry_points={
           'avocado.plugins.cli': [
               'vm = avocado_runner_vm:VMCLI',

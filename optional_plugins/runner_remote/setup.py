@@ -21,7 +21,7 @@ root_path = os.path.abspath(os.path.join("..", ".."))
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = open(version_file, 'r').read().strip()
 
-setup(name='avocado-runner-remote',
+setup(name='avocado-framework-plugin-runner-remote',
       description='Avocado Runner for Remote Execution',
       version=VERSION,
       author='Avocado Developers',

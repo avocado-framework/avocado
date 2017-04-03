@@ -21,7 +21,7 @@ root_path = os.path.abspath(os.path.join("..", ".."))
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = open(version_file, 'r').read().strip()
 
-setup(name='avocado-runner-docker',
+setup(name='avocado-framework-plugin-runner-docker',
       description='Avocado Runner for Execution on Docker Containers',
       version=VERSION,
       author='Avocado Developers',
@@ -29,7 +29,7 @@ setup(name='avocado-runner-docker',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-runner-remote', 'aexpect'],
+      install_requires=['avocado-framework-plugin-runner-remote', 'aexpect'],
       entry_points={
           'avocado.plugins.cli': [
               'docker = avocado_runner_docker:DockerCLI',

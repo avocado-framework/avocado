@@ -21,7 +21,7 @@ root_path = os.path.abspath(os.path.join("..", ".."))
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = open(version_file, 'r').read().strip()
 
-setup(name='avocado_result_html',
+setup(name='avocado-framework-plugin-result-html',
       description='Avocado HTML Report for Jobs',
       version=VERSION,
       author='Avocado Developers',

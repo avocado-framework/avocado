@@ -21,7 +21,7 @@ root_path = os.path.abspath(os.path.join("..", ".."))
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = open(version_file, 'r').read().strip()
 
-setup(name='avocado-robot',
+setup(name='avocado-framework-plugin-robot',
       description='Avocado Plugin for Execution of Robot Framework tests',
       version=VERSION,
       author='Avocado Developers',
