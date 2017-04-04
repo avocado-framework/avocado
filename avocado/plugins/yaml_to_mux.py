@@ -41,6 +41,8 @@ YAML_USING = 101
 YAML_REMOVE_NODE = mux.REMOVE_NODE
 YAML_REMOVE_VALUE = mux.REMOVE_VALUE
 YAML_MUX = 102
+YAML_FILTER_ONLY = 103
+YAML_FILTER_OUT = 104
 
 __RE_FILE_SPLIT = re.compile(r'(?<!\\):')   # split by ':' but not '\\:'
 __RE_FILE_SUBS = re.compile(r'(?<!\\)\\:')  # substitute '\\:' but not '\\\\:'
@@ -50,14 +52,18 @@ class _BaseLoader(Loader):
     """
     YAML loader with additional features related to mux
     """
-    Loader.add_constructor(u'!include', lambda loader,
-                           node: mux.Control(YAML_INCLUDE))
+    Loader.add_constructor(u'!include',
+                           lambda loader, node: mux.Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
                            lambda loader, node: mux.Control(YAML_USING))
     Loader.add_constructor(u'!remove_node',
                            lambda loader, node: mux.Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
                            lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
+    Loader.add_constructor(u'!filter-only',
+                           lambda loader, node: mux.Control(YAML_FILTER_ONLY))
+    Loader.add_constructor(u'!filter-out',
+                           lambda loader, node: mux.Control(YAML_FILTER_OUT))
 
 
 class Value(tuple):     # Few methods pylint: disable=R0903
@@ -78,38 +84,64 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
         """ Create `name` node and add values  """
+        def handle_control_tag(node, value):
+            """ Handling of YAML tags (except of !using) """
+            def normalize_path(path):
+                """ End the path with single '/', None when empty path """
+                if not path:
+                    return
+                if path[-1] != '/':
+                    path += '/'
+                return path
+
+            if value[0].code == YAML_INCLUDE:
+                # Include file
+                ypath = value[1]
+                if not os.path.isabs(ypath):
+                    ypath = os.path.join(os.path.dirname(path), ypath)
+                if not os.path.exists(ypath):
+                    raise ValueError("File '%s' included from '%s' does not "
+                                     "exist." % (ypath, path))
+                node.merge(_create_from_yaml('/:' + ypath, cls_node))
+            elif value[0].code == YAML_REMOVE_NODE:
+                value[0].value = value[1]   # set the name
+                node.ctrl.append(value[0])    # add "blue pill" of death
+            elif value[0].code == YAML_REMOVE_VALUE:
+                value[0].value = value[1]   # set the name
+                node.ctrl.append(value[0])
+            elif value[0].code == YAML_MUX:
+                node.multiplex = True
+            elif value[0].code == YAML_FILTER_ONLY:
+                new_value = normalize_path(value[1])
+                if new_value:
+                    node.filters[0].append(new_value)
+            elif value[0].code == YAML_FILTER_OUT:
+                new_value = normalize_path(value[1])
+                if new_value:
+                    node.filters[1].append(new_value)
+
+        def handle_control_tag_using(name, using, value):
+            """ Handling of the !using tag """
+            if using:
+                raise ValueError("!using can be used only once per "
+                                 "node! (%s:%s)" % (path, name))
+            using = value[1]
+            if using[0] == '/':
+                using = using[1:]
+            if using[-1] == '/':
+                using = using[:-1]
+            return using
+
         node = cls_node(str(name))
         using = ''
         for value in values:
             if isinstance(value, cls_node):
                 node.add_child(value)
             elif isinstance(value[0], mux.Control):
-                if value[0].code == YAML_INCLUDE:
-                    # Include file
-                    ypath = value[1]
-                    if not os.path.isabs(ypath):
-                        ypath = os.path.join(os.path.dirname(path), ypath)
-                    if not os.path.exists(ypath):
-                        raise ValueError("File '%s' included from '%s' does not "
-                                         "exist." % (ypath, path))
-                    node.merge(_create_from_yaml('/:' + ypath, cls_node))
-                elif value[0].code == YAML_USING:
-                    if using:
-                        raise ValueError("!using can be used only once per "
-                                         "node! (%s:%s)" % (path, name))
-                    using = value[1]
-                    if using[0] == '/':
-                        using = using[1:]
-                    if using[-1] == '/':
-                        using = using[:-1]
-                elif value[0].code == YAML_REMOVE_NODE:
-                    value[0].value = value[1]   # set the name
-                    node.ctrl.append(value[0])    # add "blue pill" of death
-                elif value[0].code == YAML_REMOVE_VALUE:
-                    value[0].value = value[1]   # set the name
-                    node.ctrl.append(value[0])
-                elif value[0].code == YAML_MUX:
-                    node.multiplex = True
+                if value[0].code == YAML_USING:
+                    using = handle_control_tag_using(name, using, value)
+                else:
+                    handle_control_tag(node, value)
             else:
                 node.value[value[0]] = value[1]
         if using:

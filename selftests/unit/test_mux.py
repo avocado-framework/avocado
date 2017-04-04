@@ -9,7 +9,7 @@ from avocado.plugins import yaml_to_mux
 
 
 if __name__ == "__main__":
-    PATH_PREFIX = "../../../../"
+    PATH_PREFIX = "../../"
 else:
     PATH_PREFIX = ""
 
@@ -404,6 +404,78 @@ class TestMultipleLoaders(unittest.TestCase):
                          str(type(debug.children[0])))
         plain = yaml.load("foo: bar")
         self.assertEqual(type(plain), dict)
+
+
+class TestInternalFilters(unittest.TestCase):
+
+    def check_scenario(self, *args):
+        """
+        Turn args into scenario.
+
+        :param *args: Definitions of variant's nodes. Each arg has to be of
+                      length 3, where on index:
+                        [0] is path
+                        [1] is filter-only
+                        [2] is filter-out
+        """
+        variant = []
+        # Turn scenario into variant
+        for arg in args:
+            variant.append(tree.TreeNode().get_node(arg[0], True))
+            variant[-1].filters = [arg[1], arg[2]]
+        # Check directly the MuxTree._valid_variant function
+        return mux.MuxTree._valid_variant(variant)  # pylint: disable=W0212
+
+    def test_basic(self):
+        """
+        Check basic internal filters
+        """
+        self.assertTrue(self.check_scenario())
+        self.assertTrue(self.check_scenario(("foo", [], []),))
+        self.assertTrue(self.check_scenario(("foo", ["/foo"], []),))
+        self.assertFalse(self.check_scenario(("foo", [], ["/foo"]),))
+        # Filter should be normalized automatically (tailing '/')
+        self.assertTrue(self.check_scenario(("foo", ["/foo/"], []),))
+        self.assertFalse(self.check_scenario(("foo", [], ["/foo/"]),))
+        # Filter-out nonexistings
+        self.assertTrue(self.check_scenario(("foo", [], ["/nonexist"]),))
+        self.assertTrue(self.check_scenario(("foo", [], []),
+                                            ("bar", [], ["/nonexists"])))
+        self.assertTrue(self.check_scenario(("1/foo", [], []),
+                                            ("1/bar", ["/1"], [])))
+        # The /1/foo is not the same parent as /2/bar filter
+        self.assertTrue(self.check_scenario(("1/foo", [], []),
+                                            ("2/bar", ["/2/bar"], [])))
+        self.assertFalse(self.check_scenario(("/1/foo", ["/1/bar"], []),))
+        # Even though it matches one of the leaves the other is banned
+        self.assertFalse(self.check_scenario(("1/foo", ["/1/foo"], []),
+                                             ("1/bar", ["/1"], [])))
+        # ... unless you allow both of them
+        self.assertTrue(self.check_scenario(("1/foo", ["/1/foo", "/1/bar"],
+                                             []),
+                                            ("1/bar", ["/1"], [])))
+        # In current python the set of following filters produces
+        # ['/1/1', '/1/1/foo', '/1'] which verifies the `/1` is skipped as
+        # higher level of filter already decided to include it.
+        self.assertTrue(self.check_scenario(("/1/1/foo", ["/1/1/foo", "/1",
+                                                          "/1/1"], [])))
+        # Three levels
+        self.assertTrue(self.check_scenario(("/1/1/foo", ["/1/1/foo"], [],
+                                             "/1/2/bar", ["/1/2/bar"], [],
+                                             "/2/baz", ["/2/baz"], [])))
+
+    def test_bad_filter(self):
+        # "bar" is missing the "/", therefor it's parent is not / but ""
+        self.assertTrue(self.check_scenario(("foo", ["bar"], []),))
+        # Filter-out "foo" won't filter-out /foo as it's not parent of /
+        self.assertTrue(self.check_scenario(("foo", [], ["foo"]),))
+        # Similar cases with double "//"
+        self.assertTrue(self.check_scenario(("foo", [], ["//foo"]),))
+        self.assertTrue(self.check_scenario(("foo", ["//foo"], []),))
+
+    def test_filter_order(self):
+        # First we evaluate filter-out and then filter-only
+        self.assertFalse(self.check_scenario(("foo", ["/foo"], ["/foo"])))
 
 
 class TestPathParent(unittest.TestCase):
