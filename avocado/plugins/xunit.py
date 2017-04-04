@@ -69,8 +69,7 @@ class XUnitResult(Result):
         system_out_cdata_content = self._escape_cdata(text_output)
         system_out_cdata = document.createCDATASection(system_out_cdata_content)
         system_out.appendChild(system_out_cdata)
-        element.appendChild(system_out)
-        return element
+        return element, system_out
 
     def _render(self, result):
         document = Document()
@@ -91,13 +90,19 @@ class XUnitResult(Result):
             elif status == 'SKIP':
                 testcase.appendChild(Element('skipped'))
             elif status == 'FAIL':
-                element = self._create_failure_or_error(document, test, 'failure')
+                element, system_out = self._create_failure_or_error(document,
+                                                                    test,
+                                                                    'failure')
                 testcase.appendChild(element)
+                testcase.appendChild(system_out)
             elif status == 'CANCEL':
                 testcase.appendChild(Element('skipped'))
             else:
-                element = self._create_failure_or_error(document, test, 'error')
+                element, system_out = self._create_failure_or_error(document,
+                                                                    test,
+                                                                    'error')
                 testcase.appendChild(element)
+                testcase.appendChild(system_out)
             testsuite.appendChild(testcase)
         return document.toprettyxml(encoding='UTF-8')
 

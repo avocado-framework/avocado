@@ -13,8 +13,10 @@ import xml.dom.minidom
 import zipfile
 import unittest
 import psutil
-
 import pkg_resources
+
+from lxml import etree
+from StringIO import StringIO
 
 from avocado.core import exit_codes
 from avocado.utils import astring
@@ -1013,6 +1015,8 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        self.junit = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                     os.path.pardir, ".data", 'junit-4.xsd'))
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,
@@ -1030,6 +1034,14 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         except Exception as detail:
             raise ParseXMLError("Failed to parse content: %s\n%s" %
                                 (detail, xml_output))
+
+        with open(self.junit, 'r') as f:
+            xmlschema = etree.XMLSchema(etree.parse(f))
+
+        self.assertTrue(xmlschema.validate(etree.parse(StringIO(xml_output))),
+                        "Failed to validate against %s, message:\n%s" %
+                        (self.junit,
+                         xmlschema.error_log.filter_from_errors()))
 
         testsuite_list = xunit_doc.getElementsByTagName('testsuite')
         self.assertEqual(len(testsuite_list), 1, 'More than one testsuite tag')
