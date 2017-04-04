@@ -867,6 +867,45 @@ Children of this node will be multiplexed. This means that in first variant
 it'll return leaves of the first child, in second the leaves of the second
 child, etc. Example is in section `Variants`_
 
+!filter-only
+------------
+
+Defines internal filters. They are inherited by children and evaluated
+during multiplexation. It allows one to specify the only compatible branch
+of the tree with the current variant, for example::
+
+    cpu:
+        arm:
+            !filter-only : /disk/virtio
+    disk:
+        virtio:
+        scsi:
+
+will skip the ``[arm, scsi]`` variant and result only in ``[arm, virtio]``
+
+_Note: It's possible to use ``!filter-only`` multiple times with the same
+parent and all allowed variants will be included (unless they are
+filtered-out by ``!filter-out``)_
+
+_Note2: The evaluation order is 1. filter-out, 2. filter-only. This means when
+you booth filter-out and filter-only a branch it won't take part in the
+multiplexed variants._
+
+!filter-out
+-----------
+
+Similarly to `!filter-only`_ only it skips the specified branches and leaves
+the remaining ones. (in the same example the use of
+``!filter-out : /disk/scsi`` results in the same behavior). The difference
+is when a new disk type is introduced, ``!filter-only`` still allows just
+the specified variants, while ``!filter-out`` only removes the specified
+ones.
+
+As for the speed optimization, currently Avocado is strongly optimized
+towards fast ``!filter-out`` so it's highly recommended using them
+rather than ``!filter-only``, which takes significantly longer to
+process.
+
 Complete example
 ----------------
 

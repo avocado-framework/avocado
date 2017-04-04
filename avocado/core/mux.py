@@ -71,19 +71,74 @@ class MuxTree(object):
 
     def __iter__(self):
         """
-        Iterates through variants
+        Iterates through variants and process the internal filters
+
+        :yield valid variants
+        """
+        for variant in self.iter_variants():
+            if self._valid_variant(variant):
+                yield variant
+
+    def iter_variants(self):
+        """
+        Iterates through variants without verifying the internal filters
+
+        :yield all existing variants
         """
         pools = []
         for pool in self.pools:
             if isinstance(pool, list):
-                pools.append(itertools.chain(*pool))
+                # Don't process 2nd level filters in non-root pools
+                pools.append(itertools.chain(*(_.iter_variants()
+                                               for _ in pool)))
             else:
-                pools.append(pool)
-        pools = itertools.product(*pools)
+                pools.append([pool])
+        variants = itertools.product(*pools)
         while True:
-            # TODO: Implement 2nd level filters here
-            # TODO: This part takes most of the time, optimize it
-            yield list(itertools.chain(*pools.next()))
+            yield list(itertools.chain(*variants.next()))
+
+    @staticmethod
+    def _valid_variant(variant):
+        """
+        Check the variant for validity of internal filters
+
+        :return: whether the variant is valid or should be ignored/filtered
+        """
+        _filter_out = set()
+        _filter_only = set()
+        for node in variant:
+            _filter_only.update(node.environment.filter_only)
+            _filter_out.update(node.environment.filter_out)
+        if not (_filter_only or _filter_out):
+            return True
+        filter_only = tuple(_filter_only)
+        filter_out = tuple(_filter_out)
+        filter_only_parents = [str(_).rsplit('/', 2)[0] + '/'
+                               for _ in filter_only
+                               if _]
+
+        for out in filter_out:
+            for node in variant:
+                path = node.path + '/'
+                if path.startswith(out):
+                    return False
+        for node in variant:
+            keep = 0
+            remove = 0
+            path = node.path + '/'
+            ppath = path.rsplit('/', 2)[0] + '/'
+            for i in xrange(len(filter_only)):
+                level = filter_only[i].count('/')
+                if level < max(keep, remove):
+                    continue
+                if ppath.startswith(filter_only_parents[i]):
+                    if path.startswith(filter_only[i]):
+                        keep = level
+                    else:
+                        remove = level
+            if remove > keep:
+                return False
+        return True
 
 
 class MuxPlugin(object):
@@ -172,7 +227,7 @@ class MuxPlugin(object):
                     env = set()
                     for node in variant["variant"]:
                         for key, value in node.environment.iteritems():
-                            origin = node.environment_origin[key].path
+                            origin = node.environment.origin[key].path
                             env.add(("%s:%s" % (origin, key), str(value)))
                     if not env:
                         continue

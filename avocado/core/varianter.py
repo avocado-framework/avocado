@@ -289,7 +289,7 @@ class AvocadoParam(object):
         :raise KeyError: When value is not certain (multiple matches)
         """
         leaves = self._get_leaves(path)
-        ret = [(leaf.environment[key], leaf.environment_origin[key])
+        ret = [(leaf.environment[key], leaf.environment.origin[key])
                for leaf in leaves
                if key in leaf.environment]
         if not ret:
@@ -310,7 +310,7 @@ class AvocadoParam(object):
         """
         for leaf in self._leaves:
             for key, value in leaf.environment.iteritems():
-                yield (leaf.environment_origin[key].path, key, value)
+                yield (leaf.environment.origin[key].path, key, value)
 
 
 class Varianter(object):
