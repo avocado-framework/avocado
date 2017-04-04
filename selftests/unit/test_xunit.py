@@ -43,8 +43,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
-        unittests_path = os.path.dirname(os.path.abspath(__file__))
-        self.junit_schema_path = os.path.join(unittests_path, 'junit-4.xsd')
+        self.junit = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                     os.path.pardir, ".data", 'junit-4.xsd'))
 
     def tearDown(self):
         os.close(self.tmpfile[0])
@@ -67,11 +67,11 @@ class xUnitSucceedTest(unittest.TestCase):
         els = dom.getElementsByTagName('testcase')
         self.assertEqual(len(els), 1)
 
-        with open(self.junit_schema_path, 'r') as f:
+        with open(self.junit, 'r') as f:
             xmlschema = etree.XMLSchema(etree.parse(f))
         self.assertTrue(xmlschema.validate(etree.parse(StringIO(xml))),
                         "Failed to validate against %s, content:\n%s" %
-                        (self.junit_schema_path, xml))
+                        (self.junit, xml))
 
 
 if __name__ == '__main__':
