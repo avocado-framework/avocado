@@ -13,7 +13,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 48.0
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -166,10 +166,10 @@ selftests/run
 %{_mandir}/man1/avocado-rest-client.1.gz
 %{_docdir}/avocado/avocado.rst
 %{_docdir}/avocado/avocado-rest-client.rst
-%exclude %{python_sitelib}/avocado_result_html*
-%exclude %{python_sitelib}/avocado_runner_remote*
-%exclude %{python_sitelib}/avocado_runner_vm*
-%exclude %{python_sitelib}/avocado_runner_docker*
+%exclude %{python_sitelib}/avocado_framework_plugin_result_html*
+%exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
+%exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
+%exclude %{python_sitelib}/avocado_framework_plugin_runner_docker*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -188,7 +188,7 @@ directory. It also gives the user the ability to write a report on an
 arbitrary filesystem location.
 
 %files plugins-output-html
-%{python_sitelib}/avocado_result_html*
+%{python_sitelib}/avocado_framework_plugin_result_html*
 
 %package plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
@@ -206,7 +206,7 @@ Allows Avocado to run jobs on a remote machine, by means of an SSH
 connection.  Avocado must be previously installed on the remote machine.
 
 %files plugins-runner-remote
-%{python_sitelib}/avocado_runner_remote*
+%{python_sitelib}/avocado_framework_plugin_runner_remote*
 
 %package plugins-runner-vm
 Summary: Avocado Runner for libvirt VM Execution
@@ -222,7 +222,7 @@ interaction with a libvirt daemon and an SSH connection to the VM
 itself.  Avocado must be previously installed on the VM.
 
 %files plugins-runner-vm
-%{python_sitelib}/avocado_runner_vm*
+%{python_sitelib}/avocado_framework_plugin_runner_vm*
 
 %package plugins-runner-docker
 Summary: Avocado Runner for Execution on Docker Containers
@@ -242,7 +242,7 @@ Docker daemon and attaching to the container itself.  Avocado must
 be previously installed on the container.
 
 %files plugins-runner-docker
-%{python_sitelib}/avocado_runner_docker*
+%{python_sitelib}/avocado_framework_plugin_runner_docker*
 
 
 %package examples
@@ -259,6 +259,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Apr  3 2017 Cleber Rosa <cleber@localhost.localdomain> - 48.0-1
+- Updated exclude directives and files for optional plugins
+
 * Mon Apr  3 2017 Cleber Rosa <cleber@redhat.com> - 48.0-0
 - New upstream release
 
