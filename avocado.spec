@@ -7,7 +7,7 @@
 Summary: Avocado Test Framework
 Name: avocado
 Version: 36.4
-Release: 0%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -47,11 +47,12 @@ these days a framework) to perform automated testing.
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 
-# Running the unittests is currently disabled on EL6 because fabric is
-# missing on EPEL 6 and also on EL7 because python-flexmock is missing
-# on EPEL7.
-%if !0%{?rhel}
+# Running the unittests is currently disabled on all platforms but
+# Fedora 25.  EL6 because fabric is missing on EPEL 6, on EL7 because
+# python-flexmock is missing on EPEL7 and on Fedora 24 because of
+# errors related to the fabric version shipped there.
 %check
+%if 0%{?fedora} == 25
 selftests/run
 %endif
 
@@ -113,6 +114,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Apr  5 2017 Cleber Rosa <cleber@redhat.com> - 36.4-1
+- Skip tests also on Fedora 24
+
 * Wed Mar 29 2017 Cleber Rosa <cleber@redhat.com> - 36.4-0
 - New upstream release 36.4 (lts)
 
