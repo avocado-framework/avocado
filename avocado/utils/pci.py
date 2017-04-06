@@ -105,12 +105,28 @@ def get_nics_in_pci_address(pci_address):
 
     :return: list of network interfaces in a PCI address.
     """
-    iface_path = "/sys/class/net/"
-    net_interfaces_list = []
-    for iface in os.listdir(iface_path):
-        if pci_address in os.readlink("%s%s" % (iface_path, iface)):
-            net_interfaces_list.append(iface)
-    return net_interfaces_list
+    return get_interfaces_in_pci_address(pci_address, "net")
+
+
+def get_interfaces_in_pci_address(pci_address, pci_class):
+    """
+    Gets interface in a PCI address.
+
+    e.g: host = pci.get_interfaces_in_pci_address("0001:01:00.0", "net")
+         ['enP1p1s0f0']
+         host = pci.get_interfaces_in_pci_address("0004:01:00.0", "fc_host")
+         ['host6']
+
+    :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
+    :param class: Adapter type (FC(fc_host), FCoE(net), NIC(net), SCSI(scsi)..)
+    :return: list of generic interfaces in a PCI address.
+    """
+    pci_class_path = "/sys/class/%s/" % pci_class
+    if not os.path.isdir(pci_class_path):
+        raise ValueError("Please provide valid class name")
+    return [interface for interface in os.listdir(pci_class_path)
+            if pci_address in os.readlink(os.path.join(pci_class_path,
+                                                       interface))]
 
 
 def get_pci_fun_list(pci_address):
