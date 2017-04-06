@@ -11,6 +11,7 @@ from avocado.utils import script
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 COMMANDS_TIMEOUT_CONF = """
 [sysinfo.collect]
@@ -28,8 +29,8 @@ class SysInfoTest(unittest.TestCase):
 
     def test_sysinfo_enabled(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=on '
-                    'passtest.py' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=on '
+                    'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -54,8 +55,8 @@ class SysInfoTest(unittest.TestCase):
 
     def test_sysinfo_disabled(self):
         os.chdir(basedir)
-        cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off '
-                    'passtest.py' % self.tmpdir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off passtest.py'
+                    % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -82,9 +83,9 @@ class SysInfoTest(unittest.TestCase):
         config_path = os.path.join(self.tmpdir, "config.conf")
         script.make_script(config_path,
                            COMMANDS_TIMEOUT_CONF % (timeout, commands_path))
-        cmd_line = ("./scripts/avocado --show all --config %s run "
-                    "--job-results-dir %s --sysinfo=on passtest.py"
-                    % (config_path, self.tmpdir))
+        cmd_line = ("%s --show all --config %s run --job-results-dir %s "
+                    "--sysinfo=on passtest.py"
+                    % (AVOCADO, config_path, self.tmpdir))
         result = process.run(cmd_line)
         if timeout > 0:
             self.assertLess(result.duration, exp_duration, "Execution took "

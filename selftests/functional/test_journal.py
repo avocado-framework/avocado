@@ -11,14 +11,17 @@ from avocado.utils import process
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
 
 class JournalPluginTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(basedir)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        self.cmd_line = ('./scripts/avocado run --job-results-dir %s --sysinfo=off --json - '
-                         '--journal examples/tests/passtest.py' % self.tmpdir)
+        self.cmd_line = ('%s run --job-results-dir %s --sysinfo=off --json - '
+                         '--journal examples/tests/passtest.py'
+                         % (AVOCADO, self.tmpdir))
         self.result = process.run(self.cmd_line, ignore_status=True)
         data = json.loads(self.result.stdout)
         self.job_id = data['job_id']

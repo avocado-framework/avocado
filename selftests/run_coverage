@@ -6,7 +6,9 @@
 # Author: Lukas Doktor <ldoktor@redhat.com>
 
 coverage erase
-coverage run --include "avocado/*" ./selftests/run
+rm .coverage.*
+AVOCADO_CHECK_FULL=1 UNITTEST_AVOCADO_CMD="coverage run -p --include 'avocado/*' ./scripts/avocado" coverage run -p --include "avocado/*" ./selftests/run
+coverage combine .coverage*
 echo
 coverage report -m --include "avocado/core/*"
 echo
