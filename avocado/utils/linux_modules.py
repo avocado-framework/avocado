@@ -26,6 +26,7 @@ import logging
 import platform
 
 from . import process
+from . import genio
 
 LOG = logging.getLogger('avocado.test')
 
@@ -189,11 +190,14 @@ def module_is_loaded(module_name):
 
     :param module_name: Name of module to search for
     :type module_name: str
-    :return: True is module is loaded
+    :return: True if module is loaded
     :rtype: bool
     """
     module_name = module_name.replace('-', '_')
-    return bool(loaded_module_info(module_name))
+    for line in genio.read_file("/proc/modules").splitlines():
+        if line.split(None, 1)[0] == module_name:
+            return True
+    return False
 
 
 def get_loaded_modules():
