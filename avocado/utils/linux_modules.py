@@ -99,7 +99,7 @@ def loaded_module_info(module_name):
     :type module_name: str
     :return: Dictionary of module name, size, submodules if present, filename,
              version, number of modules using it, list of modules it is
-             dependent on, list of params
+             dependent on, list of dictionary of param name and type
     :rtype: dict
     """
     l_raw = process.system_output('/sbin/lsmod')
@@ -119,7 +119,12 @@ def loaded_module_info(module_name):
                 elif key == 'depends':
                     value = items[1].split(',')
                 elif key == 'parm':
-                    param_list.append(items[1].split(':')[0])
+                    param_dic = {'type': None}
+                    param_dic['name'] = items[1].split(':')[0]
+                    param_type = re.search(r"\((\w+)\)", items[-1])
+                    if param_type is not None:
+                        param_dic['type'] = param_type.group(1)
+                    param_list.append(param_dic)
             if value:
                 modinfo_dic[key] = value
         if param_list:
