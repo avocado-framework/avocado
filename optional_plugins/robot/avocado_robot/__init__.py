@@ -76,7 +76,7 @@ class RobotLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(RobotLoader, self).__init__(args, extra_params)
 
-    def discover(self, url, which_tests=False):
+    def discover(self, url, which_tests=loader.DEFAULT):
         avocado_suite = []
         subtests_filter = None
 
