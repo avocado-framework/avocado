@@ -61,7 +61,9 @@ class DocstringDirectives(unittest.TestCase):
                   ":avocado: tags=SLOW,disk, invalid": set(["SLOW", "disk"]),
                   ":avocado: tags=SLOW,disk , invalid": set(["SLOW", "disk"]),
                   ":avocado:\ttags=FAST": set(["FAST"]),
-                  ":avocado: tags=": set([])}
+                  ":avocado: tags=": set([]),
+                  ":avocado: enable\n:avocado: tags=fast": set(["fast"]),
+                  ":avocado: tags=fast,slow\n:avocado: enable": set(["fast", "slow"])}
 
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
@@ -80,6 +82,7 @@ class DocstringDirectives(unittest.TestCase):
     def test_enabled(self):
         self.assertTrue(safeloader.is_docstring_directive_enable(":avocado: enable"))
         self.assertTrue(safeloader.is_docstring_directive_enable(":avocado:\tenable"))
+        self.assertTrue(safeloader.is_docstring_directive_enable(":avocado: enable\n:avocado: tags=fast"))
         self.assertFalse(safeloader.is_docstring_directive_enable(":AVOCADO: ENABLE"))
         self.assertFalse(safeloader.is_docstring_directive_enable(":avocado: enabled"))
 
