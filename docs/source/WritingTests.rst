@@ -1238,6 +1238,10 @@ You can also use the ``:avocado: disable`` docstring directive, that
 works the opposite way: something that would be considered an Avocado
 test, but we force it to not be listed as one.
 
+The docstring ``:avocado: disable`` is evaluated first by Avocado,
+meaning that if both ``:avocado: disable`` and ``:avocado: enable`` are
+present in the same docstring, the test will not be listed.
+
 .. _categorizing-tests:
 
 Categorizing tests

@@ -61,7 +61,9 @@ class DocstringDirectives(unittest.TestCase):
                   ":avocado: tags=SLOW,disk, invalid": set(["SLOW", "disk"]),
                   ":avocado: tags=SLOW,disk , invalid": set(["SLOW", "disk"]),
                   ":avocado:\ttags=FAST": set(["FAST"]),
-                  ":avocado: tags=": set([])}
+                  ":avocado: tags=": set([]),
+                  ":avocado: enable\n:avocado: tags=fast": set(["fast"]),
+                  ":avocado: tags=fast,slow\n:avocado: enable": set(["fast", "slow"])}
 
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
@@ -69,39 +71,34 @@ class DocstringDirectives(unittest.TestCase):
                      "mention avocado: it's awesome, but that was not a "
                      "directive. a tag would be something line this: "
                      ":avocado: enable")
-        self.assertIsNotNone(safeloader.get_docstring_directive(docstring))
+        self.assertIsNotNone(safeloader.get_docstring_directives(docstring))
 
     def test_newlines(self):
         docstring = ("\n\n\nThis is a docstring with many new\n\nlines "
                      "followed by an avocado tag\n"
                      "\n\n:avocado: enable\n\n")
-        self.assertIsNotNone(safeloader.get_docstring_directive(docstring))
+        self.assertIsNotNone(safeloader.get_docstring_directives(docstring))
 
     def test_enabled(self):
-        self.assertTrue(safeloader.is_docstring_directive_enable(":avocado: enable"))
-        self.assertTrue(safeloader.is_docstring_directive_enable(":avocado:\tenable"))
-        self.assertFalse(safeloader.is_docstring_directive_enable(":AVOCADO: ENABLE"))
-        self.assertFalse(safeloader.is_docstring_directive_enable(":avocado: enabled"))
+        self.assertTrue(safeloader.check_docstring_directive(":avocado: enable", 'enable'))
+        self.assertTrue(safeloader.check_docstring_directive(":avocado:\tenable", 'enable'))
+        self.assertTrue(safeloader.check_docstring_directive(":avocado: enable\n:avocado: tags=fast", 'enable'))
+        self.assertFalse(safeloader.check_docstring_directive(":AVOCADO: ENABLE", 'enable'))
+        self.assertFalse(safeloader.check_docstring_directive(":avocado: enabled", 'enable'))
 
     def test_disabled(self):
-        self.assertTrue(safeloader.is_docstring_directive_disable(":avocado: disable"))
-        self.assertTrue(safeloader.is_docstring_directive_disable(":avocado:\tdisable"))
-        self.assertFalse(safeloader.is_docstring_directive_disable(":AVOCADO: DISABLE"))
-        self.assertFalse(safeloader.is_docstring_directive_disable(":avocado: disabled"))
-
-    def test_is_tags(self):
-        for tag in self.VALID_TAGS:
-            self.assertTrue(safeloader.is_docstring_directive_tags(tag))
-        for tag in self.NO_TAGS:
-            self.assertFalse(safeloader.is_docstring_directive_tags(tag))
+        self.assertTrue(safeloader.check_docstring_directive(":avocado: disable", 'disable'))
+        self.assertTrue(safeloader.check_docstring_directive(":avocado:\tdisable", 'disable'))
+        self.assertFalse(safeloader.check_docstring_directive(":AVOCADO: DISABLE", 'disable'))
+        self.assertFalse(safeloader.check_docstring_directive(":avocado: disabled", 'disable'))
 
     def test_get_tags_empty(self):
         for tag in self.NO_TAGS:
-            self.assertEqual([], safeloader.get_docstring_directive_tags(tag))
+            self.assertEqual(set([]), safeloader.get_docstring_directives_tags(tag))
 
     def test_get_tags(self):
         for raw, tags in self.VALID_TAGS.items():
-            self.assertEqual(safeloader.get_docstring_directive_tags(raw), tags)
+            self.assertEqual(safeloader.get_docstring_directives_tags(raw), tags)
 
 
 class UnlimitedDiff(unittest.TestCase):
@@ -128,7 +125,6 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_newlines',
                                     'test_enabled',
                                     'test_disabled',
-                                    'test_is_tags',
                                     'test_get_tags_empty',
                                     'test_get_tags'],
             'FindClassAndMethods': ['test_self',
@@ -150,7 +146,6 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_newlines',
                                     'test_enabled',
                                     'test_disabled',
-                                    'test_is_tags',
                                     'test_get_tags_empty',
                                     'test_get_tags'],
             'FindClassAndMethods': ['test_self',

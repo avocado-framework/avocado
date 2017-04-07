@@ -611,14 +611,14 @@ class FileLoader(TestLoader):
                 docstring = ast.get_docstring(statement)
                 # Looking for a class that has in the docstring either
                 # ":avocado: enable" or ":avocado: disable
-                if safeloader.is_docstring_directive_disable(docstring):
+                if safeloader.check_docstring_directive(docstring, 'disable'):
                     continue
-                elif safeloader.is_docstring_directive_enable(docstring):
+                elif safeloader.check_docstring_directive(docstring, 'enable'):
                     methods = [st.name for st in statement.body if
                                isinstance(st, ast.FunctionDef) and
                                st.name.startswith('test')]
                     methods = data_structures.ordered_list_unique(methods)
-                    tags = safeloader.get_docstring_directive_tags(docstring)
+                    tags = safeloader.get_docstring_directives_tags(docstring)
                     result[statement.name] = {'methods': methods,
                                               'tags': tags}
                     continue
@@ -632,7 +632,7 @@ class FileLoader(TestLoader):
                                    isinstance(st, ast.FunctionDef) and
                                    st.name.startswith('test')]
                         methods = data_structures.ordered_list_unique(methods)
-                        tags = safeloader.get_docstring_directive_tags(docstring)
+                        tags = safeloader.get_docstring_directives_tags(docstring)
                         result[statement.name] = {'methods': methods,
                                                   'tags': tags}
                         continue
@@ -647,7 +647,7 @@ class FileLoader(TestLoader):
                                        isinstance(st, ast.FunctionDef) and
                                        st.name.startswith('test')]
                             methods = data_structures.ordered_list_unique(methods)
-                            tags = safeloader.get_docstring_directive_tags(docstring)
+                            tags = safeloader.get_docstring_directives_tags(docstring)
                             result[statement.name] = {'methods': methods,
                                                       'tags': tags}
 
