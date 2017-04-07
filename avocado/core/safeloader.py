@@ -68,65 +68,44 @@ def modules_imported_as(module):
 AVOCADO_DOCSTRING_DIRECTIVE_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
 
 
-def get_docstring_directive(docstring):
+def get_docstring_directives(docstring):
     """
-    Returns the value of the avocado docstring directive
+    Returns the values of the avocado docstring directives
 
     :param docstring: the complete text used as documentation
     :type docstring: str
+
+    :rtype: builtin.list
     """
-    if docstring is None:
-        return None
-    result = AVOCADO_DOCSTRING_DIRECTIVE_RE.search(docstring)
-    if result is not None:
-        return result.groups()[0]
+    try:
+        return AVOCADO_DOCSTRING_DIRECTIVE_RE.findall(docstring)
+    except TypeError:
+        return []
 
 
-def is_docstring_directive_enable(docstring):
+def check_docstring_directive(docstring, directive):
     """
-    Checks if there's a docstring directive that enables a Test class
+    Checks if there's a given directive in a given docstring
 
     :rtype: bool
     """
-    result = get_docstring_directive(docstring)
-    return result == 'enable'
+    return directive in get_docstring_directives(docstring)
 
 
-def is_docstring_directive_disable(docstring):
+def get_docstring_directives_tags(docstring):
     """
-    Checks if there's a docstring directive that disables a Test class
-
-    :rtype: bool
-    """
-    result = get_docstring_directive(docstring)
-    return result == 'disable'
-
-
-def is_docstring_directive_tags(docstring):
-    """
-    Checks if there's a docstring directive that tags a test
-
-    :rtype: bool
-    """
-    result = get_docstring_directive(docstring)
-    if result is not None:
-        return result.startswith('tags=')
-    return False
-
-
-def get_docstring_directive_tags(docstring):
-    """
-    Returns the test categories based on a `:avocado: tags=category` docstring
+    Returns the test categories based on a `:avocado: tags=category`
+    docstring
 
     :rtype: set
     """
-    if not is_docstring_directive_tags(docstring):
-        return []
+    tags = []
+    for item in get_docstring_directives(docstring):
+        if item.startswith('tags='):
+            _, comma_tags = item.split('tags=', 1)
+            tags.extend([tag for tag in comma_tags.split(',') if tag])
 
-    raw_tag = get_docstring_directive(docstring)
-    if raw_tag is not None:
-        _, comma_tags = raw_tag.split('tags=', 1)
-        return set([tag for tag in comma_tags.split(',') if tag])
+    return set(tags)
 
 
 def find_class_and_methods(path, method_pattern=None, base_class=None):
