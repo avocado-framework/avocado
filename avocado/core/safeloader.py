@@ -76,10 +76,10 @@ def get_docstring_directive(docstring):
     :type docstring: str
     """
     if docstring is None:
-        return None
-    result = AVOCADO_DOCSTRING_DIRECTIVE_RE.search(docstring)
+        return []
+    result = AVOCADO_DOCSTRING_DIRECTIVE_RE.findall(docstring)
     if result is not None:
-        return result.groups()[0]
+        return result
 
 
 def is_docstring_directive_enable(docstring):
@@ -89,7 +89,10 @@ def is_docstring_directive_enable(docstring):
     :rtype: bool
     """
     result = get_docstring_directive(docstring)
-    return result == 'enable'
+    if 'enable' in result:
+        return True
+
+    return False
 
 
 def is_docstring_directive_disable(docstring):
@@ -99,7 +102,10 @@ def is_docstring_directive_disable(docstring):
     :rtype: bool
     """
     result = get_docstring_directive(docstring)
-    return result == 'disable'
+    if 'disable' in result:
+        return True
+
+    return False
 
 
 def is_docstring_directive_tags(docstring):
@@ -109,8 +115,11 @@ def is_docstring_directive_tags(docstring):
     :rtype: bool
     """
     result = get_docstring_directive(docstring)
-    if result is not None:
-        return result.startswith('tags=')
+
+    for item in result:
+        if item.startswith('tags='):
+            return True
+
     return False
 
 
@@ -123,10 +132,11 @@ def get_docstring_directive_tags(docstring):
     if not is_docstring_directive_tags(docstring):
         return []
 
-    raw_tag = get_docstring_directive(docstring)
-    if raw_tag is not None:
-        _, comma_tags = raw_tag.split('tags=', 1)
-        return set([tag for tag in comma_tags.split(',') if tag])
+    result = get_docstring_directive(docstring)
+    for item in result:
+        if item.startswith('tags='):
+            _, comma_tags = item.split('tags=', 1)
+            return set([tag for tag in comma_tags.split(',') if tag])
 
 
 def find_class_and_methods(path, method_pattern=None, base_class=None):
