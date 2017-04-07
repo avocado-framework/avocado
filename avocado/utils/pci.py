@@ -97,20 +97,25 @@ def get_disks_in_pci_address(pci_address):
     return disk_list
 
 
-def get_nics_in_pci_address(pci_address):
+def get_interface_in_pci_address(pci_address, pci_class):
     """
-    Gets network interface(nic) in a PCI address.
+    Gets interface() in a PCI address.
 
     :param pci_address: Any segment of a PCI address (1f, 0000:00:1f, ...)
 
+    :param clas: Adapter type (FC(fc_host), FCoE(net), NIC(net), SCSI(scsi)..)
+
     :return: list of network interfaces in a PCI address.
     """
-    iface_path = "/sys/class/net/"
-    net_interfaces_list = []
-    for iface in os.listdir(iface_path):
-        if pci_address in os.readlink("%s%s" % (iface_path, iface)):
-            net_interfaces_list.append(iface)
-    return net_interfaces_list
+    device_path = "/sys/class/%s/" % pci_class
+    if not os.path.isdir(device_path):
+        print "please pass valid class name"
+        return
+    device_host_list = []
+    for host in os.listdir(device_path):
+        if pci_address in os.readlink("%s/%s" % (device_path, host)):
+            device_host_list.append(host)
+    return device_host_list
 
 
 def get_pci_fun_list(pci_address):
