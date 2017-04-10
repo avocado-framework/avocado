@@ -28,6 +28,7 @@ AVOCADO_PLUGINS=$(AVOCADO_OPTIONAL_PLUGINS) $(AVOCADO_EXTERNAL_PLUGINS)
 RELEASE_COMMIT=$(shell git log --pretty=format:'%H' -n 1 $(VERSION))
 RELEASE_SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1 $(VERSION))
 COMMIT=$(shell git log --pretty=format:'%H' -n 1)
+COMMIT_DATE=$(shell git log --pretty='format:%cd' --date='format:%Y%m%d' -n 1)
 SHORT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 MOCK_CONFIG=default
 
@@ -64,11 +65,11 @@ all:
 
 source: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(COMMIT)/" -o "SOURCES/avocado-$(VERSION)-$(SHORT_COMMIT).tar.gz" HEAD
+	git archive --prefix="avocado-$(COMMIT)/" -o "SOURCES/avocado-$(SHORT_COMMIT).tar.gz" HEAD
 
 source-release: clean
 	if test ! -d SOURCES; then mkdir SOURCES; fi
-	git archive --prefix="avocado-$(RELEASE_COMMIT)/" -o "SOURCES/avocado-$(VERSION)-$(RELEASE_SHORT_COMMIT).tar.gz" $(VERSION)
+	git archive --prefix="avocado-$(VERSION)/" -o "SOURCES/avocado-$(VERSION).tar.gz" $(VERSION)
 
 source-pypi: clean
 	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
@@ -103,19 +104,19 @@ install:
 
 srpm: source
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "commit $(COMMIT)" --buildsrpm --spec python-avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --buildsrpm --spec python-avocado.spec --sources SOURCES
 
 rpm: srpm
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "commit $(COMMIT)" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 0" -D "commit $(COMMIT)" -D "commit_date $(COMMIT_DATE)" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
 
 srpm-release: source-release
 	if test ! -d BUILD/SRPM; then mkdir -p BUILD/SRPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "commit $(RELEASE_COMMIT)" --buildsrpm --spec python-avocado.spec --sources SOURCES
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/SRPM -D "rel_build 1" --buildsrpm --spec python-avocado.spec --sources SOURCES
 
 rpm-release: srpm-release
 	if test ! -d BUILD/RPM; then mkdir -p BUILD/RPM; fi
-	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "commit $(RELEASE_COMMIT)" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
+	mock -r $(MOCK_CONFIG) --resultdir BUILD/RPM -D "rel_build 1" --rebuild BUILD/SRPM/python-avocado-$(VERSION)-*.src.rpm
 
 clean:
 	$(PYTHON) setup.py clean
@@ -204,6 +205,7 @@ variables:
 	@echo "RELEASE_COMMIT: $(RELEASE_COMMIT)"
 	@echo "RELEASE_SHORT_COMMIT: $(RELEASE_SHORT_COMMIT)"
 	@echo "COMMIT: $(COMMIT)"
+	@echo "COMMIT_DATE: $(COMMIT_DATE)"
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
 	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"

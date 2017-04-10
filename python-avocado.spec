@@ -1,8 +1,24 @@
 %global srcname avocado
-%if ! 0%{?commit:1}
- %define commit 1d717446d28ff852fe5de895f14c7985c63ada3e
+
+# Conditional for release vs. snapshot builds. Set to 1 for release build.
+%if ! 0%{?rel_build:1}
+%global rel_build 1
 %endif
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
+
+# Settings used for build from snapshots.
+%if 0%{?rel_build}
+%global gittar		%{srcname}-%{version}.tar.gz
+%else
+%if ! 0%{?commit:1}
+%global commit		817c25c2bbedb6d43e5fa2ad0a78698f1416ab49
+%endif
+%if ! 0%{?commit_date:1}
+%global commit_date	20170407
+%endif
+%global shortcommit	%(c=%{commit};echo ${c:0:7})
+%global gitrel		.%{commit_date}git%{shortcommit}
+%global gittar		%{srcname}-%{shortcommit}.tar.gz
+%endif
 
 # selftests are provided but may need to skipped because many of
 # functional tests are time and resource sensitive and can
@@ -13,11 +29,15 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 48.0
-Release: 1%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
-Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}/%{srcname}-%{version}-%{shortcommit}.tar.gz
+%if 0%{?rel_build}
+Source0: https://github.com/avocado-framework/%{srcname}/archive/%{version}.tar.gz#/%{gittar}
+%else
+Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.gz#/%{gittar}
+%endif
 BuildArch: noarch
 BuildRequires: fabric
 BuildRequires: procps-ng
@@ -85,7 +105,11 @@ Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
 %prep
+%if 0%{?rel_build}
+%setup -q -n %{srcname}-%{version}
+%else
 %setup -q -n %{srcname}-%{commit}
+%endif
 # package plugins-runner-vm requires libvirt-python, but the RPM
 # version of libvirt-python does not publish the egg info and this
 # causes that dep to be attempted to be installed by pip
@@ -259,7 +283,10 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
-* Mon Apr  3 2017 Cleber Rosa <cleber@localhost.localdomain> - 48.0-1
+* Mon Apr 10 2017 Cleber Rosa <cleber@redhat.com> - 48.0-2
+- Update how release and snapshot packages are built
+
+* Mon Apr  3 2017 Cleber Rosa <cleber@redhat.com> - 48.0-1
 - Updated exclude directives and files for optional plugins
 
 * Mon Apr  3 2017 Cleber Rosa <cleber@redhat.com> - 48.0-0
