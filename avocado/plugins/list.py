@@ -54,13 +54,6 @@ class TestLister(object):
     def _get_test_matrix(self, test_suite):
         test_matrix = []
 
-        type_label_mapping = loader.loader.get_type_label_mapping()
-        decorator_mapping = loader.loader.get_decorator_mapping()
-
-        stats = {}
-        for value in type_label_mapping.values():
-            stats[value.lower()] = 0
-
         for cls, params in test_suite:
             id_label = ''
             if 'params' in params:
@@ -74,28 +67,23 @@ class TestLister(object):
             if isinstance(cls, basestring):
                 cls = test.Test
                 id_label = params['name']
-            type_label = type_label_mapping[cls]
-            decorator = decorator_mapping[cls]
-            stats[type_label.lower()] += 1
+            type_label = cls.label
+            decorator = cls.decorator
             type_label = decorator(type_label)
 
-            test_matrix.append((type_label, id_label))
+            test_matrix.append((params['loader'], type_label, id_label))
 
-        return test_matrix, stats
+        return test_matrix
 
-    def _display(self, test_matrix, stats):
+    def _display(self, test_matrix):
         header = None
         if self.args.verbose:
-            header = (output.TERM_SUPPORT.header_str('Type'),
+            header = (output.TERM_SUPPORT.header_str('Plugin'),
+                      output.TERM_SUPPORT.header_str('Type'),
                       output.TERM_SUPPORT.header_str('Test'))
 
         for line in astring.iter_tabular_output(test_matrix, header=header):
             self.log.debug(line)
-
-        if self.args.verbose:
-            self.log.debug("")
-            for key in sorted(stats):
-                self.log.info("%s: %s", key.upper(), stats[key])
 
     def _list(self):
         self._extra_listing()
@@ -105,8 +93,8 @@ class TestLister(object):
                 test_suite,
                 self.args.filter_by_tags,
                 self.args.filter_by_tags_include_empty)
-        test_matrix, stats = self._get_test_matrix(test_suite)
-        self._display(test_matrix, stats)
+        test_matrix = self._get_test_matrix(test_suite)
+        self._display(test_matrix)
 
     def list(self):
         try:

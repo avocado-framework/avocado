@@ -140,12 +140,10 @@ class TestLoaderProxy(object):
             List all supported test types (excluding incorrect ones)
             """
             name = plugin.name
-            mapping = plugin.get_type_label_mapping()
-            # Using __func__ to avoid problem with different term_supp instances
             healthy_func = getattr(output.TERM_SUPPORT.healthy_str, '__func__')
-            types = [mapping[_[0]]
-                     for _ in plugin.get_decorator_mapping().iteritems()
-                     if _[1].__func__ is healthy_func]
+            types = [_.label
+                     for _ in plugin.supported_tests()
+                     if _.decorator.__func__ is healthy_func]
             return [name + '.' + _ for _ in types]
 
         def _str_loaders():
@@ -206,17 +204,12 @@ class TestLoaderProxy(object):
             base_path += loader_plugin.get_base_keywords()
         return base_path
 
-    def get_type_label_mapping(self):
-        mapping = {}
+    def supported_tests(self):
+        supported_list = []
         for loader_plugin in self._initialized_plugins:
-            mapping.update(loader_plugin.get_type_label_mapping())
-        return mapping
+            supported_list.extend(loader_plugin.supported_tests())
 
-    def get_decorator_mapping(self):
-        mapping = {}
-        for loader_plugin in self._initialized_plugins:
-            mapping.update(loader_plugin.get_decorator_mapping())
-        return mapping
+        return supported_list
 
     def discover(self, references, which_tests=DEFAULT):
         """
@@ -228,19 +221,15 @@ class TestLoaderProxy(object):
                             DEFAULT)
         :return: A list of test factories (tuples (TestClass, test_params))
         """
-        def handle_exception(plugin, details):
-            # FIXME: Introduce avocado.exceptions logger and use here
-            stacktrace.log_message("Test discovery plugin %s failed: "
-                                   "%s" % (plugin, details),
-                                   'avocado.app.exceptions')
-            # FIXME: Introduce avocado.traceback logger and use here
-            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
         tests = []
         unhandled_references = []
         if not references:
             for loader_plugin in self._initialized_plugins:
                 try:
-                    tests.extend(loader_plugin.discover(None, which_tests))
+                    _tests = loader_plugin.discover(None, which_tests)
+                    for item in _tests:
+                        item[1]['loader'] = loader_plugin.name.upper()
+                    tests.extend(_tests)
                 except Exception as details:
                     handle_exception(loader_plugin, details)
         else:
@@ -250,19 +239,29 @@ class TestLoaderProxy(object):
                     try:
                         _test = loader_plugin.discover(reference, which_tests)
                         if _test:
+                            for item in _test:
+                                item[1]['loader'] = loader_plugin.name.upper()
                             tests.extend(_test)
                             handled = True
                             if not which_tests:
                                 break  # Don't process other plugins
+                        else:
+                            if which_tests:
+                                tests.append((test.MissingTest,
+                                             {'loader': loader_plugin.name.upper(),
+                                              'name': reference}))
                     except Exception as details:
-                        handle_exception(loader_plugin, details)
+                        if which_tests:
+                            tests.append((test.MissingTest,
+                                         {'loader': loader_plugin.name.upper(),
+                                          'name': '%s (Exception: %s)' %
+                                          (reference, details)}))
+
                 if not handled:
                     unhandled_references.append(reference)
+
         if unhandled_references:
-            if which_tests:
-                tests.extend([(test.MissingTest, {'name': reference})
-                              for reference in unhandled_references])
-            else:
+            if not which_tests:
                 raise LoaderUnhandledReferenceError(unhandled_references,
                                                     self._initialized_plugins)
         return tests
@@ -326,20 +325,20 @@ class TestLoader(object):
 
     def __init__(self, args, extra_params):  # pylint: disable=W0613
         if "allowed_test_types" in extra_params:
-            mapping = self.get_type_label_mapping()
+            supported_types = self.supported_tests()
             types = extra_params.pop("allowed_test_types")
-            if len(mapping) != 1:
+            if len(supported_types) != 1:
                 msg = ("Loader '%s' supports multiple test types but does not "
                        "handle the 'allowed_test_types'. Either don't use "
                        "'%s' instead of '%s.%s' or take care of the "
                        "'allowed_test_types' in the plugin."
                        % (self.name, self.name, self.name, types))
                 raise LoaderError(msg)
-            elif mapping.itervalues().next() != types:
+            elif supported_types[0].label != types:
                 raise LoaderError("Loader '%s' doesn't support test type '%s',"
                                   " it supports only '%s'"
                                   % (self.name, types,
-                                     mapping.itervalues().next()))
+                                     supported_types[0].label))
         if "loader_options" in extra_params:
             raise LoaderError("Loader '%s' doesn't support 'loader_options', "
                               "please don't use --loader %s:%s"
@@ -355,20 +354,11 @@ class TestLoader(object):
         pass
 
     @staticmethod
-    def get_type_label_mapping():
+    def supported_tests():
         """
-        Get label mapping for display in test listing.
+        Get supported tests listing.
 
-        :return: Dict {TestClass: 'TEST_LABEL_STRING'}
-        """
-        raise NotImplementedError
-
-    @staticmethod
-    def get_decorator_mapping():
-        """
-        Get label mapping for display in test listing.
-
-        :return: Dict {TestClass: decorator function}
+        :return: List [TestClass]
         """
         raise NotImplementedError
 
@@ -389,12 +379,18 @@ class BrokenSymlink(object):
 
     """ Dummy object to represent reference pointing to a BrokenSymlink path """
 
+    label = 'BROKEN_SYMLINK'
+    decorator = output.TERM_SUPPORT.fail_header_str
+
     pass
 
 
 class AccessDeniedPath(object):
 
     """ Dummy object to represent reference pointing to a inaccessible path """
+
+    label = 'ACCESS_DENIED'
+    decorator = output.TERM_SUPPORT.fail_header_str
 
     pass
 
@@ -452,22 +448,13 @@ class FileLoader(TestLoader):
         self.test_type = test_type
 
     @staticmethod
-    def get_type_label_mapping():
-        return {test.SimpleTest: 'SIMPLE',
-                test.NotATest: 'NOT_A_TEST',
-                test.MissingTest: 'MISSING',
-                BrokenSymlink: 'BROKEN_SYMLINK',
-                AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED'}
-
-    @staticmethod
-    def get_decorator_mapping():
-        return {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
-                test.NotATest: output.TERM_SUPPORT.warn_header_str,
-                test.MissingTest: output.TERM_SUPPORT.fail_header_str,
-                BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
-                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str}
+    def supported_tests():
+        return [test.SimpleTest,
+                test.NotATest,
+                test.MissingTest,
+                BrokenSymlink,
+                AccessDeniedPath,
+                test.Test]
 
     def discover(self, reference, which_tests=DEFAULT):
         """
@@ -487,7 +474,7 @@ class FileLoader(TestLoader):
         """
         tests = self._discover(reference, which_tests)
         if self.test_type:
-            mapping = self.get_type_label_mapping()
+            supported_types = self.supported_types()
             if self.test_type == 'INSTRUMENTED':
                 # Instrumented tests are defined as string and loaded at the
                 # execution time.
@@ -495,8 +482,8 @@ class FileLoader(TestLoader):
                     if not isinstance(tst[0], str):
                         return None
             else:
-                test_class = (key for key, value in mapping.iteritems()
-                              if value == self.test_type).next()
+                test_class = (item for item in supported_types
+                              if item.label == self.test_type)
                 for tst in tests:
                     if (isinstance(tst[0], str) or
                             not issubclass(tst[0], test_class)):
@@ -829,12 +816,8 @@ class ExternalLoader(TestLoader):
                                            self._external_runner})]
 
     @staticmethod
-    def get_type_label_mapping():
-        return {test.ExternalRunnerTest: 'EXTERNAL'}
-
-    @staticmethod
-    def get_decorator_mapping():
-        return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
+    def supported_tests():
+        return [test.ExternalRunnerTest]
 
 
 class DummyLoader(TestLoader):
@@ -849,14 +832,6 @@ class DummyLoader(TestLoader):
 
     def discover(self, url, which_tests=DEFAULT):
         return [(test.SkipTest, {'name': url})]
-
-    @staticmethod
-    def get_type_label_mapping():
-        return {test.SkipTest: 'DUMMY'}
-
-    @staticmethod
-    def get_decorator_mapping():
-        return {test.SkipTest: output.TERM_SUPPORT.healthy_str}
 
 
 loader = TestLoaderProxy()

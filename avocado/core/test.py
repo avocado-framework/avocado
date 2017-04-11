@@ -132,6 +132,10 @@ class Test(unittest.TestCase):
     You'll inherit from this to write your own tests. Typically you'll want
     to implement setUp(), test*() and tearDown() methods on your own tests.
     """
+
+    label = 'INSTRUMENTED'
+    decorator = output.TERM_SUPPORT.healthy_str
+
     #: `default_params` will be deprecated by the end of 2017.
     default_params = {}
     #: Arbitrary string which will be stored in `$logdir/whiteboard` location
@@ -148,7 +152,7 @@ class Test(unittest.TestCase):
     timeout = None
 
     def __init__(self, methodName='test', name=None, params=None,
-                 base_logdir=None, job=None, runner_queue=None):
+                 base_logdir=None, job=None, runner_queue=None, loader=None):
         """
         Initializes the test.
 
@@ -836,12 +840,17 @@ class SimpleTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
+    label = 'SIMPLE'
+    decorator = output.TERM_SUPPORT.healthy_str
+
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
-    def __init__(self, name, params=None, base_logdir=None, job=None):
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 loader=None):
         super(SimpleTest, self).__init__(name=name, params=params,
-                                         base_logdir=base_logdir, job=job)
+                                         base_logdir=base_logdir, job=job,
+                                         loader=None)
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
@@ -893,8 +902,11 @@ class SimpleTest(Test):
 
 class ExternalRunnerTest(SimpleTest):
 
+    label = 'EXTERNAL'
+    decorator = output.TERM_SUPPORT.healthy_str
+
     def __init__(self, name, params=None, base_logdir=None, job=None,
-                 external_runner=None):
+                 external_runner=None, loader=None):
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
@@ -939,6 +951,9 @@ class MissingTest(Test):
     Handle when there is no such test module in the test directory.
     """
 
+    label = 'MISSING'
+    decorator = output.TERM_SUPPORT.fail_header_str
+
     def test(self):
         e_msg = ('Test %s could not be found in the test dir %s '
                  '(or test path does not exist)' %
@@ -954,6 +969,9 @@ class NotATest(Test):
     Either a non executable python module with no avocado test class in it,
     or a regular, non executable file.
     """
+
+    label = 'NOT_A_TEST'
+    decorator = output.TERM_SUPPORT.warn_header_str
 
     def test(self):
         e_msg = ('File %s is not executable and does not contain an avocado '
@@ -978,7 +996,7 @@ class SkipTest(Test):
         super_kwargs = dict()
         args = list(reversed(args))
         for arg in ["methodName", "name", "params", "base_logdir", "job",
-                    "runner_queue"]:
+                    "runner_queue", "loader"]:
             if arg in kwargs:
                 super_kwargs[arg] = kwargs[arg]
             elif args:

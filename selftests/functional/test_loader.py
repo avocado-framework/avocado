@@ -149,14 +149,14 @@ class LoaderTestFunctional(unittest.TestCase):
         os.chdir(basedir)
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    def _test(self, name, content, exp_str, mode=MODE_0664, count=1):
+    def _test(self, name, content, exp_str, mode=MODE_0664):
         test_script = script.TemporaryScript(name, content,
                                              'avocado_loader_test',
                                              mode=mode)
         test_script.save()
         cmd_line = ('%s list -V %s' % (AVOCADO, test_script.path))
         result = process.run(cmd_line)
-        self.assertIn('%s: %s' % (exp_str, count), result.stdout)
+        self.assertIn('%s' % exp_str, result.stdout)
         test_script.remove()
 
     def _run_with_timeout(self, cmd_line, timeout):
@@ -199,15 +199,15 @@ class LoaderTestFunctional(unittest.TestCase):
                         ("Took more than 3 seconds to list tests. Loader "
                          "probably loaded/executed Python code and slept for "
                          "eleven seconds."))
-        self.assertIn('INSTRUMENTED: 2', result.stdout)
+        self.assertIn('INSTRUMENTED', result.stdout)
 
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
-                   'INSTRUMENTED', self.MODE_0664, 2)
+                   'INSTRUMENTED', self.MODE_0664)
 
     def test_multiple_methods_same_name(self):
         self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
-                   'INSTRUMENTED', 0664, 1)
+                   'INSTRUMENTED', 0664)
 
     def test_load_not_a_test(self):
         self._test('notatest.py', NOT_A_TEST, 'SIMPLE', self.MODE_0775)
@@ -229,7 +229,7 @@ class LoaderTestFunctional(unittest.TestCase):
         mytest.save()
         cmd_line = "%s list -V %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
-        self.assertIn('SIMPLE: 1', result.stdout)
+        self.assertIn('SIMPLE', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
