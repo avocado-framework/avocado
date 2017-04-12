@@ -1,1 +1,2 @@
 recursive-include avocado_result_html/resources *
+include VERSION
