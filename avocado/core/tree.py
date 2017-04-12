@@ -78,8 +78,17 @@ class TreeEnvironment(dict):
         return cpy
 
     def __str__(self):
-        return ",".join((super(TreeEnvironment, self).__str__(),
-                         str(self.origin), str(self.filter_only),
+        # Use __str__ instead of __repr__ to improve readability
+        if self:
+            _values = ["%s: %s" % _ for _ in self.iteritems()]
+            values = "{%s}" % ", ".join(_values)
+            _origin = ["%s: %s" % (key, node.path)
+                       for key, node in self.origin.iteritems()]
+            origin = "{%s}" % ", ".join(_origin)
+        else:
+            values = "{}"
+            origin = "{}"
+        return ",".join((values, origin, str(self.filter_only),
                          str(self.filter_out)))
 
 
