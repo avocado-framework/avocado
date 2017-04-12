@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(name='avocado-framework-plugin-robot',
       description='Avocado Plugin for Execution of Robot Framework tests',
-      version='48.0',
+      version=open("VERSION", "r").read().strip(),
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
       url='http://avocado-framework.github.io/',
