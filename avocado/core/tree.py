@@ -133,6 +133,12 @@ class TreeNode(object):
         """ Inverted eq """
         return not self == other
 
+    def fingerprint(self):
+        """
+        Reports string which represents the value of this node.
+        """
+        return "%s%s" % (self.path, self.environment)
+
     def add_child(self, node):
         """
         Append node as child. Nodes with the same name gets merged into the

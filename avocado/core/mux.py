@@ -269,6 +269,9 @@ class MuxTreeNode(tree.TreeNode):
     def __repr__(self):
         return '%s(name=%r)' % (self.__class__.__name__, self.name)
 
+    def fingerprint(self):
+        return "%s%s" % (super(MuxTreeNode, self).fingerprint(), self.ctrl)
+
     def merge(self, other):
         """
         Merges `other` node into this one without checking the name of the

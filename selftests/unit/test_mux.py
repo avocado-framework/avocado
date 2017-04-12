@@ -493,5 +493,45 @@ class TestPathParent(unittest.TestCase):
         self.assertNotEqual(mux.path_parent('/os/linux'), '/')
 
 
+class TestFingerprint(unittest.TestCase):
+
+    def test_fingerprint(self):
+        """
+        Verifies the fingerprint is correctly evaluated
+        """
+        node1 = tree.TreeNode("node1", {"foo": "bar"})
+        node1_fingerprint = node1.fingerprint()
+        node1duplicate = tree.TreeNode("node1", {"foo": "bar"})
+        self.assertEqual(node1_fingerprint, node1duplicate.fingerprint())
+        node1b_value = tree.TreeNode("node1", {"foo": "baz"})
+        self.assertNotEqual(node1_fingerprint, node1b_value.fingerprint())
+        node1b_name = tree.TreeNode("node2", {"foo": "bar"})
+        self.assertNotEqual(node1_fingerprint, node1b_name)
+        node1b_path = tree.TreeNode("node1", {"foo": "bar"})
+        tree.TreeNode("root", children=(node1b_path,))
+        self.assertNotEqual(node1_fingerprint, node1b_path.fingerprint())
+        node1b_env_orig = tree.TreeNode("node1", {"foo": "bar"})
+        tree.TreeNode("root", {"bar": "baz"}, children=(node1b_env_orig))
+        node1b_env_origb = tree.TreeNode("node1",
+                                         {"foo": "bar", "bar": "baz"})
+        tree.TreeNode("root", children=(node1b_env_origb,))
+        self.assertNotEqual(node1b_env_orig.fingerprint(),
+                            node1b_env_origb.fingerprint())
+
+    def test_tree_mux_node(self):
+        """
+        Check the extension of fingerprint in MuxTreeNode
+        """
+        node1 = tree.TreeNode("node1", {"foo": "bar"})
+        node1m = mux.MuxTreeNode("node1", {"foo": "bar"})
+        node1m_fingerprint = node1m.fingerprint()
+        self.assertNotEqual(node1.fingerprint(), node1m_fingerprint)
+        node1mduplicate = mux.MuxTreeNode("node1", {"foo": "bar"})
+        self.assertEqual(node1m_fingerprint, node1mduplicate.fingerprint())
+        node1mb_ctrl = mux.MuxTreeNode("node1", {"foo": "bar"})
+        node1mb_ctrl.ctrl = [mux.Control(0, 0)]
+        self.assertNotEqual(node1m_fingerprint, node1mb_ctrl.fingerprint())
+
+
 if __name__ == '__main__':
     unittest.main()
