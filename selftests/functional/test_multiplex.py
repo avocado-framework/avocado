@@ -15,7 +15,7 @@ basedir = os.path.abspath(basedir)
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 
-DEBUG_OUT = """Variant 16:    amd@examples/mux-environment.yaml, virtio@examples/mux-environment.yaml, mint@examples/mux-environment.yaml, debug@examples/mux-environment.yaml
+DEBUG_OUT = """Variant mint-debug-amd-virtio-5e02:    amd@examples/mux-environment.yaml, virtio@examples/mux-environment.yaml, mint@examples/mux-environment.yaml, debug@examples/mux-environment.yaml
     /distro/mint:init         => systemv@examples/mux-environment.yaml:/distro/mint
     /env/debug:opt_CFLAGS     => -O0 -g@examples/mux-environment.yaml:/env/debug
     /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@examples/mux-environment.yaml:/hw/cpu/amd

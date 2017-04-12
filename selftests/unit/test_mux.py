@@ -204,6 +204,27 @@ class TestMuxTree(unittest.TestCase):
         self.assertRaises(ValueError,
                           self.tree.get_node, '/non-existing-node')
 
+    def test_fingerprint_order(self):
+        """
+        Checks whether different order changes the fingerprint
+        """
+        children1 = (tree.TreeNode("child1"), tree.TreeNode("child2"))
+        tree1 = tree.TreeNode("root", children=children1)
+        children2 = (tree.TreeNode("child2"), tree.TreeNode("child1"))
+        tree2 = tree.TreeNode("root", children=children2)
+        mux1 = mux.MuxPlugin()
+        mux2 = mux.MuxPlugin()
+        mux1.initialize_mux(tree1, "", False)
+        mux2.initialize_mux(tree2, "", False)
+        mux1.update_defaults(tree.TreeNode())
+        mux2.update_defaults(tree.TreeNode())
+        variant1 = iter(mux1).next()
+        variant2 = iter(mux2).next()
+        self.assertNotEqual(variant1, variant2)
+        self.assertEqual(str(variant1), "{'mux_path': '', 'variant': "
+                         "[TreeNode(name='child1'), TreeNode(name="
+                         "'child2')], 'variant_id': 'child1-child2-9154'}")
+
 
 class TestMultiplex(unittest.TestCase):
 
