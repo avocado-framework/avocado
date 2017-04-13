@@ -459,6 +459,15 @@ class OutputPluginTest(unittest.TestCase):
         self.assertIn("not found", result.stderr)
         self.assertNotIn("Avocado crashed", result.stderr)
 
+    def test_results_plugins_no_tests(self):
+        os.chdir(basedir)
+        for output in ['json', 'xunit', 'tap']:
+            cmd_line = ("%s run UNEXISTING --job-results-dir %s --%s -"
+                        % (AVOCADO, self.tmpdir, output))
+            result = process.run(cmd_line, ignore_status=True)
+            self.assertIs('', result.stdout)
+            self.assertEqual(exit_codes.AVOCADO_JOB_FAIL, result.exit_status)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
