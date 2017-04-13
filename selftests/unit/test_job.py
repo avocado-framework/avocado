@@ -70,7 +70,10 @@ class JobTest(unittest.TestCase):
                                   logdir=self.tmpdir)
         myjob = JobFilterTime(args)
         myjob.create_test_suite()
-        myjob.pre_tests()
+        try:
+            myjob.pre_tests()
+        finally:
+            myjob.post_tests()
         self.assertLessEqual(len(myjob.test_suite), 1)
 
     def test_job_run_tests(self):
@@ -93,9 +96,11 @@ class JobTest(unittest.TestCase):
                                   logdir=self.tmpdir)
         myjob = JobLogPost(args)
         myjob.create_test_suite()
-        myjob.pre_tests()
-        myjob.run_tests()
-        myjob.post_tests()
+        try:
+            myjob.pre_tests()
+            myjob.run_tests()
+        finally:
+            myjob.post_tests()
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
 
