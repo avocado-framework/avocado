@@ -94,6 +94,8 @@ class TestsTmpDirTests(unittest.TestCase):
                          % (len(content), content))
 
     def tearDown(self):
+        self.instrumented_test.remove()
+        self.simple_test.remove()
         shutil.rmtree(self.tmpdir)
 
 
