@@ -24,7 +24,7 @@ def check_tmp_dirs():
                   dir_to_check)
         except AssertionError:
             print('There are temporary avocado dirs lying around after test: %s',
-                  avocado_tmp_dirs)
+                  [os.path.join(dir_to_check, _) for _ in avocado_tmp_dirs])
             fail = True
     if fail:
         sys.exit(1)

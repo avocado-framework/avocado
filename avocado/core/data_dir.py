@@ -210,6 +210,14 @@ class _TmpDirTracker(Borg):
                       "you're trying to provide will have no effect.")
         return self.tmp_dir
 
+    def unittest_refresh_dir_tracker(self):
+        """
+        This force-removes the tmpdir and refreshes the tracker to create new
+        """
+        if not hasattr(self, "tmp_dir"):
+            return
+        shutil.rmtree(self.__dict__.pop("tmp_dir"))
+
     def __del__(self):
         tmp_dir = getattr(self, 'tmp_dir', None)
 
