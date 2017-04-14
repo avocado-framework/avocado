@@ -122,6 +122,8 @@ class TestLoaderProxy(object):
         self._initialized_plugins = []
         self.registered_plugins = []
         self.reference_plugin_mapping = {}
+        self._label_mapping = None
+        self._decorator_mapping = None
 
     def register_plugin(self, plugin):
         try:
@@ -155,6 +157,8 @@ class TestLoaderProxy(object):
             return ", ".join(sorted(supported_types + supported_loaders))
 
         self._initialized_plugins = []
+        self._label_mapping = None
+        self._decorator_mapping = None
         # Add (default) file loader if not already registered
         if FileLoader not in self.registered_plugins:
             self.register_plugin(FileLoader)
@@ -207,13 +211,17 @@ class TestLoaderProxy(object):
         return base_path
 
     def get_type_label_mapping(self):
-        mapping = {}
+        if self._label_mapping is not None:
+            return self._label_mapping
+        mapping = {test.MissingTest: "MISSING"}
         for loader_plugin in self._initialized_plugins:
             mapping.update(loader_plugin.get_type_label_mapping())
         return mapping
 
     def get_decorator_mapping(self):
-        mapping = {}
+        if self._decorator_mapping is not None:
+            return self._decorator_mapping
+        mapping = {test.MissingTest: output.TERM_SUPPORT.fail_header_str}
         for loader_plugin in self._initialized_plugins:
             mapping.update(loader_plugin.get_decorator_mapping())
         return mapping
