@@ -74,6 +74,9 @@ class JSONResult(Result):
                 hasattr(job.args, 'json_output')):
             return
 
+        if not result.tests_total:
+            return
+
         content = self._render(result)
         if getattr(job.args, 'json_job_result', 'off') == 'on':
             json_path = os.path.join(job.logdir, 'results.json')

@@ -111,6 +111,9 @@ class XUnitResult(Result):
                 hasattr(job.args, 'xunit_output')):
             return
 
+        if not result.tests_total:
+            return
+
         content = self._render(result)
         if getattr(job.args, 'xunit_job_result', 'off') == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
