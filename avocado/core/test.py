@@ -1006,6 +1006,21 @@ class TimeOutSkipTest(SkipTest):
 
     _skip_reason = "Test skipped due a job timeout!"
 
+    def __init__(self, *args, **kwargs):
+        """
+        This class substitutes other classes. Let's just ignore the remaining
+        arguments and only set the ones supported by avocado.Test
+        """
+        super_kwargs = dict()
+        args = list(reversed(args))
+        for arg in ["methodName", "name", "params", "base_logdir", "tag",
+                    "job", "runner_queue"]:
+            if args:
+                super_kwargs[arg] = args.pop()
+            elif arg in kwargs:
+                super_kwargs[arg] = kwargs[arg]
+        super(TimeOutSkipTest, self).__init__(**super_kwargs)
+
     def setUp(self):
         raise exceptions.TestTimeoutSkip(self._skip_reason)
 
