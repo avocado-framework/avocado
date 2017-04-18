@@ -646,6 +646,9 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
+    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_runner_onehundred_fail_timing(self):
         """
         We can be pretty sure that a failtest should return immediately. Let's

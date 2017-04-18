@@ -215,6 +215,9 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_load_not_a_test_not_exec(self):
         self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')
 
+    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_runner_simple_python_like_multiple_files(self):
         mylib = script.TemporaryScript(
             'test2.py',
