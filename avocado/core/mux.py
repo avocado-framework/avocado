@@ -24,6 +24,7 @@ a custom Varianter plugin.
 import collections
 import itertools
 import re
+import sha
 
 from . import output
 from . import tree
@@ -163,6 +164,16 @@ class MuxPlugin(object):
         self.root = root
         self.mux_path = mux_path
         self.debug = debug
+        self.variant_ids = self._get_variant_ids()
+
+    def _get_variant_ids(self):
+        variant_ids = []
+        for variant in MuxTree(self.root):
+            variant.sort(key=lambda x: x.path)
+            fingerprint = "-".join(_.fingerprint() for _ in variant)
+            variant_ids.append("-".join(node.name for node in variant) + '-' +
+                               sha.sha(fingerprint).hexdigest()[:4])
+        return variant_ids
 
     def __iter__(self):
         """
@@ -170,8 +181,8 @@ class MuxPlugin(object):
         """
         if self.root is None:
             return
-        for i, variant in enumerate(self.variants, 1):
-            yield {"variant_id": i,
+        for vid, variant in itertools.izip(self.variant_ids, self.variants):
+            yield {"variant_id": vid,
                    "variant": variant,
                    "mux_path": self.mux_path}
 
@@ -268,6 +279,9 @@ class MuxTreeNode(tree.TreeNode):
 
     def __repr__(self):
         return '%s(name=%r)' % (self.__class__.__name__, self.name)
+
+    def fingerprint(self):
+        return "%s%s" % (super(MuxTreeNode, self).fingerprint(), self.ctrl)
 
     def merge(self, other):
         """

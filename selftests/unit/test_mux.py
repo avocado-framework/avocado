@@ -204,6 +204,27 @@ class TestMuxTree(unittest.TestCase):
         self.assertRaises(ValueError,
                           self.tree.get_node, '/non-existing-node')
 
+    def test_fingerprint_order(self):
+        """
+        Checks whether different order changes the fingerprint
+        """
+        children1 = (tree.TreeNode("child1"), tree.TreeNode("child2"))
+        tree1 = tree.TreeNode("root", children=children1)
+        children2 = (tree.TreeNode("child2"), tree.TreeNode("child1"))
+        tree2 = tree.TreeNode("root", children=children2)
+        mux1 = mux.MuxPlugin()
+        mux2 = mux.MuxPlugin()
+        mux1.initialize_mux(tree1, "", False)
+        mux2.initialize_mux(tree2, "", False)
+        mux1.update_defaults(tree.TreeNode())
+        mux2.update_defaults(tree.TreeNode())
+        variant1 = iter(mux1).next()
+        variant2 = iter(mux2).next()
+        self.assertNotEqual(variant1, variant2)
+        self.assertEqual(str(variant1), "{'mux_path': '', 'variant': "
+                         "[TreeNode(name='child1'), TreeNode(name="
+                         "'child2')], 'variant_id': 'child1-child2-9154'}")
+
 
 class TestMultiplex(unittest.TestCase):
 
@@ -491,6 +512,46 @@ class TestPathParent(unittest.TestCase):
 
     def test_false_direct_parent(self):
         self.assertNotEqual(mux.path_parent('/os/linux'), '/')
+
+
+class TestFingerprint(unittest.TestCase):
+
+    def test_fingerprint(self):
+        """
+        Verifies the fingerprint is correctly evaluated
+        """
+        node1 = tree.TreeNode("node1", {"foo": "bar"})
+        node1_fingerprint = node1.fingerprint()
+        node1duplicate = tree.TreeNode("node1", {"foo": "bar"})
+        self.assertEqual(node1_fingerprint, node1duplicate.fingerprint())
+        node1b_value = tree.TreeNode("node1", {"foo": "baz"})
+        self.assertNotEqual(node1_fingerprint, node1b_value.fingerprint())
+        node1b_name = tree.TreeNode("node2", {"foo": "bar"})
+        self.assertNotEqual(node1_fingerprint, node1b_name)
+        node1b_path = tree.TreeNode("node1", {"foo": "bar"})
+        tree.TreeNode("root", children=(node1b_path,))
+        self.assertNotEqual(node1_fingerprint, node1b_path.fingerprint())
+        node1b_env_orig = tree.TreeNode("node1", {"foo": "bar"})
+        tree.TreeNode("root", {"bar": "baz"}, children=(node1b_env_orig))
+        node1b_env_origb = tree.TreeNode("node1",
+                                         {"foo": "bar", "bar": "baz"})
+        tree.TreeNode("root", children=(node1b_env_origb,))
+        self.assertNotEqual(node1b_env_orig.fingerprint(),
+                            node1b_env_origb.fingerprint())
+
+    def test_tree_mux_node(self):
+        """
+        Check the extension of fingerprint in MuxTreeNode
+        """
+        node1 = tree.TreeNode("node1", {"foo": "bar"})
+        node1m = mux.MuxTreeNode("node1", {"foo": "bar"})
+        node1m_fingerprint = node1m.fingerprint()
+        self.assertNotEqual(node1.fingerprint(), node1m_fingerprint)
+        node1mduplicate = mux.MuxTreeNode("node1", {"foo": "bar"})
+        self.assertEqual(node1m_fingerprint, node1mduplicate.fingerprint())
+        node1mb_ctrl = mux.MuxTreeNode("node1", {"foo": "bar"})
+        node1mb_ctrl.ctrl = [mux.Control(0, 0)]
+        self.assertNotEqual(node1m_fingerprint, node1mb_ctrl.fingerprint())
 
 
 if __name__ == '__main__':
