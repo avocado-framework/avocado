@@ -769,8 +769,7 @@ class FileLoader(TestLoader):
                         return self._make_avocado_tests(test_path, make_broken,
                                                         subtests_filter,
                                                         test_name)
-                    else:
-                        return make_broken(test.MissingTest, test_name)
+        return make_broken(test.MissingTest, test_name)
 
 
 class ExternalLoader(TestLoader):
