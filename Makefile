@@ -58,9 +58,10 @@ all:
 	@echo "rpm:   Generate binary RPMs"
 	@echo
 	@echo "Release related targets:"
-	@echo "source-release:  Create source package for the latest tagged release"
-	@echo "srpm-release:    Generate a source RPM package (.srpm) for the latest tagged release"
-	@echo "rpm-release:     Generate binary RPMs for the latest tagged release"
+	@echo "source-release:     Create source package for the latest tagged release"
+	@echo "srpm-release:       Generate a source RPM package (.srpm) for the latest tagged release"
+	@echo "rpm-release:        Generate binary RPMs for the latest tagged release"
+	@echo "propagate-version:  Propagate './VERSION' to all plugins/modules"
 	@echo
 
 source: clean
@@ -209,6 +210,13 @@ variables:
 	@echo "SHORT_COMMIT: $(SHORT_COMMIT)"
 	@echo "MOCK_CONFIG: $(MOCK_CONFIG)"
 	@echo "PYTHON_DEVELOP_ARGS: $(PYTHON_DEVELOP_ARGS)"
+
+propagate-version:
+	for DIR in $(AVOCADO_PLUGINS); do\
+		if test -f "$$DIR/VERSION"; then\
+			echo ">> Updating $$DIR"; echo "$(VERSION)" > "$$DIR/VERSION";\
+		else echo ">> Skipping $$DIR"; fi;\
+	done
 
 .PHONY: source install clean check link variables
 
