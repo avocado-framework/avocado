@@ -154,7 +154,11 @@ class TestLoaderProxy(object):
             """
             :return: string of sorted loaders and types
             """
-            return ", ".join(sorted(supported_types + supported_loaders))
+            out = ""
+            for plugin in self.registered_plugins:
+                out += "  %s: %s\n" % (plugin.name,
+                                       ", ".join(_good_test_types(plugin)))
+            return out.rstrip('\n')
 
         self._initialized_plugins = []
         # Add (default) file loader if not already registered
@@ -175,7 +179,7 @@ class TestLoaderProxy(object):
         if not loaders:
             loaders = settings.get_value("plugins", "loaders", list, [])
         if '?' in loaders:
-            raise LoaderError("Available loader plugins: %s" % _str_loaders())
+            raise LoaderError("Available loader plugins:\n%s" % _str_loaders())
         if "@DEFAULT" in loaders:  # Replace @DEFAULT with unused loaders
             idx = loaders.index("@DEFAULT")
             loaders = (loaders[:idx] + [plugin for plugin in supported_loaders
@@ -191,7 +195,8 @@ class TestLoaderProxy(object):
             if name in supported_types:
                 name, extra_params['allowed_test_types'] = name.split('.', 1)
             elif name not in supported_loaders:
-                raise InvalidLoaderPlugin("Loader '%s' not available (%s)"
+                raise InvalidLoaderPlugin("Unknown loader '%s'. Available "
+                                          "plugins are:\n%s"
                                           % (name, _str_loaders()))
             if len(loaders[i]) == 2:
                 extra_params['loader_options'] = loaders[i][1]
