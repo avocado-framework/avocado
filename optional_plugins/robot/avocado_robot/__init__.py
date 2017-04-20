@@ -17,6 +17,7 @@ Plugin to run Robot Framework tests in Avocado
 """
 
 import logging
+import os
 import re
 
 from avocado.core import loader
@@ -34,6 +35,9 @@ class RobotTest(test.SimpleTest):
     """
     Run a Robot command as a SIMPLE test.
     """
+
+    label = 'ROBOT'
+    decorator = output.TERM_SUPPORT.healthy_str
 
     def __init__(self,
                  name,
@@ -86,13 +90,20 @@ class RobotLoader(loader.TestLoader):
         if ':' in url:
             url, _subtests_filter = url.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
+
+        if not os.path.exists(url):
+            if which_tests:
+                return [(test.MissingTest, {'name': url, 'loader': self.name})]
+            else:
+                return []
+
         try:
             test_data = TestData(parent=None,
                                  source=url,
                                  include_suites=SuiteNamePatterns())
             robot_suite = self._find_tests(test_data, test_suite={})
         except DataError:
-            return []
+            return [(test.NotATest, {'name': url, 'loader': self.name})]
 
         for item in robot_suite:
             for robot_test in robot_suite[item]:
@@ -101,7 +112,10 @@ class RobotLoader(loader.TestLoader):
                                           robot_test['test_name'])
                 if subtests_filter and not subtests_filter.search(test_name):
                     continue
-                avocado_suite.append((RobotTest, {'name': test_name}))
+
+                avocado_suite.append((RobotTest,
+                                      {'name': test_name,
+                                       'loader': self.name}))
         return avocado_suite
 
     def _find_tests(self, data, test_suite):
@@ -114,12 +128,8 @@ class RobotLoader(loader.TestLoader):
         return test_suite
 
     @staticmethod
-    def get_type_label_mapping():
-        return {RobotTest: 'ROBOT'}
-
-    @staticmethod
-    def get_decorator_mapping():
-        return {RobotTest: output.TERM_SUPPORT.healthy_str}
+    def supported_tests():
+        return [RobotTest]
 
 
 class RobotCLI(CLI):
