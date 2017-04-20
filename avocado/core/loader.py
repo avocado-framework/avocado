@@ -122,6 +122,8 @@ class TestLoaderProxy(object):
         self._initialized_plugins = []
         self.registered_plugins = []
         self.reference_plugin_mapping = {}
+        self._label_mapping = None
+        self._decorator_mapping = None
 
     def register_plugin(self, plugin):
         try:
@@ -195,6 +197,20 @@ class TestLoaderProxy(object):
                 extra_params['loader_options'] = loaders[i][1]
             plugin = self.registered_plugins[supported_loaders.index(name)]
             self._initialized_plugins.append(plugin(args, extra_params))
+        self._update_mappings()
+
+    def _update_mappings(self):
+        """
+        Update the mappings according the current initialized plugins
+        """
+        # Plugins are initialized, let's update mappings
+        self._label_mapping = {test.MissingTest: "MISSING"}
+        for plugin in self._initialized_plugins:
+            self._label_mapping.update(plugin.get_type_label_mapping())
+        self._decorator_mapping = {test.MissingTest:
+                                   output.TERM_SUPPORT.fail_header_str}
+        for plugin in self._initialized_plugins:
+            self._decorator_mapping.update(plugin.get_decorator_mapping())
 
     def get_extra_listing(self):
         for loader_plugin in self._initialized_plugins:
@@ -207,16 +223,10 @@ class TestLoaderProxy(object):
         return base_path
 
     def get_type_label_mapping(self):
-        mapping = {}
-        for loader_plugin in self._initialized_plugins:
-            mapping.update(loader_plugin.get_type_label_mapping())
-        return mapping
+        return self._label_mapping
 
     def get_decorator_mapping(self):
-        mapping = {}
-        for loader_plugin in self._initialized_plugins:
-            mapping.update(loader_plugin.get_decorator_mapping())
-        return mapping
+        return self._decorator_mapping
 
     def discover(self, references, which_tests=DEFAULT):
         """
@@ -759,8 +769,7 @@ class FileLoader(TestLoader):
                         return self._make_avocado_tests(test_path, make_broken,
                                                         subtests_filter,
                                                         test_name)
-                    else:
-                        return make_broken(test.MissingTest, test_name)
+        return make_broken(test.MissingTest, test_name)
 
 
 class ExternalLoader(TestLoader):
