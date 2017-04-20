@@ -53,7 +53,6 @@ class TestLister(object):
 
     def _get_test_matrix(self, test_suite):
         test_matrix = []
-
         type_label_mapping = loader.loader.get_type_label_mapping()
         decorator_mapping = loader.loader.get_decorator_mapping()
 

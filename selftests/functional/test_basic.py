@@ -880,6 +880,19 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          (expected_rc, result))
         self.assertIn("Unable to resolve reference", output)
 
+    def test_list_no_file_loader(self):
+        os.chdir(basedir)
+        cmd_line = ("%s list --loaders external --verbose -- "
+                    "this-wont-be-matched" % AVOCADO)
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
+                         "Avocado did not return rc %d:\n%s"
+                         % (exit_codes.AVOCADO_ALL_OK, result))
+        exp = ("Type    Test\nMISSING this-wont-be-matched\n\nEXTERNAL: 0\n"
+               "MISSING: 1\n")
+        self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
+                         % (exp, result))
+
     def test_plugin_list(self):
         os.chdir(basedir)
         cmd_line = '%s plugins' % AVOCADO
