@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 48.0
-Release: 3%{?gitrel}%{?dist}
+Release: 4%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -148,6 +148,7 @@ popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
+%{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
 
 %check
 %if %{with_tests}
@@ -175,6 +176,7 @@ selftests/run
 %dir /etc/avocado/sysinfo
 %dir /etc/avocado/scripts/job/pre.d
 %dir /etc/avocado/scripts/job/post.d
+%dir %{_sharedstatedir}/avocado/data
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %config(noreplace)/etc/avocado/conf.d/gdb.conf
@@ -291,6 +293,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Wed Apr 19 2017 Cleber Rosa <cleber@redhat.com> - 48.0-4
+- Added "/var/lib/avocado" directory for writable content
+
 * Wed Apr 19 2017 Cleber Rosa <cleber@redhat.com> - 48.0-3
 - Fix exclusion of optional plugins files done on 48.0-1
 
