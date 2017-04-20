@@ -23,6 +23,15 @@ Contents:
    WrapProcess
    Plugins
 
+================
+Optional Plugins
+================
+
+.. toctree::
+   :maxdepth: 1
+
+   optional_plugins/index
+
 ===============================
 Advanced Topics and Maintenance
 ===============================
