@@ -184,7 +184,13 @@ class ArchiveFile(object):
             attr = info.external_attr >> 16
             if attr & stat.S_IFLNK == stat.S_IFLNK:
                 dst = os.path.join(dst_dir, path)
-                src = open(dst, 'r').read()
+                if not os.path.islink(dst):
+                    # Link created as an ordinary file containing the dst path
+                    src = open(dst, 'r').read()
+                else:
+                    # Link is already there and could be outdated. Let's read
+                    # the original destination from the zip file.
+                    src = self._engine.read(path)
                 os.remove(dst)
                 os.symlink(src, dst)
                 continue    # Don't override any other attributes on links
