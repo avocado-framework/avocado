@@ -364,9 +364,6 @@ class RunnerOperationTest(unittest.TestCase):
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
 
-    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
     def test_runner_abort(self):
         os.chdir(basedir)
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '

@@ -640,6 +640,8 @@ class LoggingFile(object):
         Passes lines of output to the logging module.
         """
         for lg in self._logger:
+            if not lg.handlers:
+                continue
             lg.log(self._level, self._prefix + line)
 
     def _flush_buffer(self):
