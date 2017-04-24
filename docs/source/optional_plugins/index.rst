@@ -10,3 +10,4 @@ The following pages are the documentation for the optical plugins:
    :maxdepth: 1
 
    resultsdb
+   robot
