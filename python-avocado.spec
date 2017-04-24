@@ -10,10 +10,10 @@
 %global gittar		%{srcname}-%{version}.tar.gz
 %else
 %if ! 0%{?commit:1}
-%global commit		817c25c2bbedb6d43e5fa2ad0a78698f1416ab49
+%global commit		0baf8a1665941d3e8eec88e56cda414e9d937970
 %endif
 %if ! 0%{?commit_date:1}
-%global commit_date	20170407
+%global commit_date	20170425
 %endif
 %global shortcommit	%(c=%{commit};echo ${c:0:7})
 %global gitrel		.%{commit_date}git%{shortcommit}
@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 48.0
-Release: 5%{?gitrel}%{?dist}
+Version: 49.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -314,6 +314,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Apr 25 2017 Cleber Rosa <cleber@redhat.com> - 49.0-0
+- New upstream release
+
 * Mon Apr 24 2017 Cleber Rosa <cleber@redhat.com> - 48.0-5
 - Add subpackage for resultsdb plugin
 

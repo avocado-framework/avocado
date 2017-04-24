@@ -1,0 +1,79 @@
+==================
+49.0 The Physician
+==================
+
+The Avocado team is proud to present another release: Avocado version
+49.0, aka, "The Physician" now available!
+
+Release documentation: `Avocado 49.0
+<http://avocado-framework.readthedocs.io/en/49.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* A brand new `ResultsDB <https://pagure.io/taskotron/resultsdb>`_
+  plugin.  This allows Avocado jobs to send results directly to any
+  ResultsDB server.
+
+* Avocado's `data_dir` is now set by default to
+  ``/var/lib/avocado/data`` instead of ``/usr/share/avocado/data``.
+  This was a problem because ``/usr`` must support read only mounts,
+  and is not intended for that purpose at all.
+
+* When users run ``avocado list --loaders ?`` they used to receive a
+  single list containing loader plugins **and** test types, all mixed
+  together.  Now users will get one loader listed per line, along with
+  the test types that each loader supports.
+
+* Variant-IDs created by the multiplexer are now much more meaningful.
+  Previously, the Variant-ID would be a simple sequential integer, it
+  now combines information about the leaf names in the multiplexer
+  tree and a 4 digit fingerprint.  As a quick example, users will now
+  get ``sleeptest.py:SleepTest.test;short-beaf``
+  instead of ``sleeptest.py:SleepTest.test;1`` as test IDs when using
+  the multiplexer.
+
+* The multiplexer now supports the use filters defined inside the YAML
+  files, and greatly expand its filtering capabilities.
+
+* [BUGFIX] Instrumented tests support docstring directives, but only
+  one of the supported directives (either enable/disable or tags)
+  at once.  It's now possible to use both in a single docstring.
+
+* [BUGFIX] Some result plugins would generate some output even when
+  the job did not contain a valid test suite.
+
+* [BUGFIX] Avocado would crash when listing tests with the ``file``
+  loader disabled.  ``MissingTests`` used to be initialized by the
+  file loader, but are now registered as a part of the loader proxy
+  (similar to a plugin manager) so this is not an issue anymore.
+
+Distribution
+============
+
+* The packages on Avocado's own RPM repository are now a lot more similar
+  to the ones in the Fedora and EPEL repositories.  This will make future
+  maintenance easier, and also allows users to switch between versions
+  with greater ease.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/48.0...49.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=btrGGCInnD4>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/CuQX9Mew/991-sprint-theme-the-physician-2013
