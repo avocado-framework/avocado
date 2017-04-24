@@ -6,6 +6,9 @@ Result Formats
 A test runner must provide an assortment of ways to clearly communicate results
 to interested parties, be them humans or machines.
 
+.. note:: There are several optional result plugins, you can find them in
+   :ref:`result-plugins`.
+
 Results for human beings
 ------------------------
 
@@ -33,32 +36,6 @@ that is, the job and its test(s) results are constantly updated::
 
 The most important thing is to remember that programs should never need to parse
 human output to figure out what happened to a test job run.
-
-HTML report
-~~~~~~~~~~~
-
-As can be seen in the previous example, Avocado shows the path to an HTML
-report that will be generated as soon as the job finishes running::
-
-    $ avocado run sleeptest.py failtest.py synctest.py
-    ...
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
-    ...
-
-You can also request that the report be opened automatically by using the
-``--open-browser`` option. For example::
-
-    $ avocado run sleeptest --open-browser
-
-Will show you the nice looking HTML results report right after ``sleeptest``
-finishes running.
-
-.. warning:: The HTML output is an optional plugin and has to be installed
-             separately as ``avocado-plugins-output-html`` RPM or by executing
-             ``cd optional_plugins/html && python setup.py install``
-             from avocado sources. Note it's enabled by default when using
-             avocado from sorces by ``make develop`` or ``make link``.
-
 
 Machine readable results
 ------------------------
@@ -121,6 +98,7 @@ plugin::
 
     $ avocado run sleeptest.py failtest.py synctest.py --json -
     {
+        "cancel": 0,
         "debuglog": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/job.log",
         "errors": 0,
         "failures": 1,
@@ -197,8 +175,9 @@ Provides the basic `TAP <http://testanything.org/>`__ (Test Anything Protocol) r
 Silent result
 ~~~~~~~~~~~~~
 
-While not a very fancy result format, an application may want nothing but
-the exit status code from an Avocado test job run. Example::
+This result disables all stdout logging (while keeping the error messages
+being printed to stderr). One can then use the return code to learn about
+the result::
 
     $ avocado --silent run failtest.py
     $ echo $?

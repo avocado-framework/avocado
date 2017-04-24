@@ -50,7 +50,7 @@ Optionally, you may have password less SSH login on your remote machine enabled.
 Running your test
 -----------------
 
-Once the remote machine is properly setup, you may run your test. Example::
+Once the remote machine is properly set, you may run your test. Example::
 
     $ scripts/avocado run --remote-hostname 192.168.122.30 --remote-username fedora examples/tests/sleeptest.py examples/tests/failtest.py
     REMOTE LOGIN  : fedora@192.168.122.30:22
@@ -63,7 +63,7 @@ Once the remote machine is properly setup, you may run your test. Example::
 
 A bit of extra logging information is added to your job summary, mainly
 to distinguish the regular execution from the remote one. Note here that
-we did not need `--remote-password` because an SSH key was already setup.
+we did not need `--remote-password` because an SSH key was already set.
 
 Running Tests on a Virtual Machine
 ==================================
@@ -126,7 +126,7 @@ Optionally, you may have password less SSH login on your VM enabled.
 Running your test
 -----------------
 
-Once the virtual machine is properly setup, you may run your test. Example::
+Once the virtual machine is properly set, you may run your test. Example::
 
     $ scripts/avocado run --vm-domain fedora20 --vm-username autotest --vm examples/tests/sleeptest.py examples/tests/failtest.py
     VM DOMAIN : fedora20
@@ -140,7 +140,7 @@ Once the virtual machine is properly setup, you may run your test. Example::
 
 A bit of extra logging information is added to your job summary, mainly
 to distinguish the regular execution from the remote one. Note here that
-we did not need `--vm-password` because the SSH key is already setup.
+we did not need `--vm-password` because the SSH key is already set.
 
 Running Tests on a Docker container
 ===================================
@@ -199,7 +199,7 @@ container::
 Running your test
 -----------------
 
-Assuming your system is properly setup to run Docker, including having
+Assuming your system is properly set to run Docker, including having
 an image with Avocado, you can run a test inside the container with a
 command similar to::
 
