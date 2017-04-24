@@ -121,6 +121,7 @@ plugin::
 
     $ avocado run sleeptest.py failtest.py synctest.py --json -
     {
+        "cancel": 0,
         "debuglog": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/job.log",
         "errors": 0,
         "failures": 1,
@@ -197,8 +198,9 @@ Provides the basic `TAP <http://testanything.org/>`__ (Test Anything Protocol) r
 Silent result
 ~~~~~~~~~~~~~
 
-While not a very fancy result format, an application may want nothing but
-the exit status code from an Avocado test job run. Example::
+This result disables all stdout logging (while keeping the error messages
+being printed to stderr). One can then use the return code to learn about
+the result::
 
     $ avocado --silent run failtest.py
     $ echo $?

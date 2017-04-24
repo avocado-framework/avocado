@@ -151,7 +151,7 @@ provided, it will fall back to (we hope) reasonable defaults, and we
 notify the user about that in the output of the command.
 
 The relevant API documentation and meaning of each of those data directories
-is in :mod:`avocado.data_dir`, so it's highly recommended you take a look.
+is in :mod:`avocado.core.data_dir`, so it's highly recommended you take a look.
 
 You may set your preferred data dirs by setting them in the Avocado config files.
 The only exception for important data dirs here is the Avocado tmp dir, used to

@@ -7,11 +7,6 @@ Test parameters
    basics, see :ref:`accessing-test-parameters` or practical view by examples
    in `Yaml_to_mux plugin`_.
 
-.. warning:: The multiplexer is under heavy refactor and some of the APIs
-   might still change in the following months (written on 2016-01-22),
-   then we'll do our best to keep the public interfaces as stable as
-   possible.
-
 Avocado allows passing parameters to tests, which effectively results in
 several different variants of each test. These parameters are available in
 (test's) ``self.params`` and are of
