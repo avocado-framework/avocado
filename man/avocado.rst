@@ -237,6 +237,12 @@ Options for subcommand `run` (`avocado run --help`)::
                             Ignore variants (variants) and/or configuration
                             (config) from the source job
 
+    resultsdb options:
+      --resultsdb-api RESULTSDB_API
+                            Specify the resultsdb API url
+      --resultsdb-logs RESULTSDB_LOGS
+                            Specify the URL where the logs are published
+
     test execution on a Virtual Machine:
       --vm-domain VM_DOMAIN
                             Specify Libvirt Domain Name
