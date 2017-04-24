@@ -14,9 +14,9 @@ that contain a number of `keys` and `values`. Take for example a basic Avocado c
 .. code-block:: ini
 
     [datadir.paths]
-    base_dir = ~/avocado
-    test_dir = /$HOME/Code/avocado/examples/tests
-    data_dir = /usr/share/avocado/data
+    base_dir = /var/lib/avocado
+    test_dir = /usr/share/avocado/tests
+    data_dir = /var/lib/avocado/data
     logs_dir = ~/avocado/job-results
 
 The ``datadir.paths`` section contains a number of keys, all of them related to directories used by
@@ -105,9 +105,9 @@ configuration, after all the files are parsed in their correct resolution order.
         $HOME/.config/avocado/avocado.conf
 
         Section.Key     Value
-        runner.base_dir /usr/share/avocado
-        runner.test_dir $HOME/Code/avocado/examples/tests
-        runner.data_dir /usr/share/avocado/data
+        runner.base_dir /var/lib/avocado
+        runner.test_dir /usr/share/avocado/tests
+        runner.data_dir /var/lib/avocado/data
         runner.logs_dir ~/avocado/job-results
 
 The command also shows the order in which your config files were parsed, giving you a better understanding of
@@ -151,7 +151,7 @@ provided, it will fall back to (we hope) reasonable defaults, and we
 notify the user about that in the output of the command.
 
 The relevant API documentation and meaning of each of those data directories
-is in :mod:`avocado.data_dir`, so it's highly recommended you take a look.
+is in :mod:`avocado.core.data_dir`, so it's highly recommended you take a look.
 
 You may set your preferred data dirs by setting them in the Avocado config files.
 The only exception for important data dirs here is the Avocado tmp dir, used to

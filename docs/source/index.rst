@@ -28,7 +28,7 @@ Optional Plugins
 ================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    optional_plugins/index
 
