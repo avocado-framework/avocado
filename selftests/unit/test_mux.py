@@ -458,7 +458,7 @@ class TestInternalFilters(unittest.TestCase):
         # Filter should be normalized automatically (tailing '/')
         self.assertTrue(self.check_scenario(("foo", ["/foo/"], []),))
         self.assertFalse(self.check_scenario(("foo", [], ["/foo/"]),))
-        # Filter-out nonexistings
+        # Filter-out non-existing
         self.assertTrue(self.check_scenario(("foo", [], ["/nonexist"]),))
         self.assertTrue(self.check_scenario(("foo", [], []),
                                             ("bar", [], ["/nonexists"])))

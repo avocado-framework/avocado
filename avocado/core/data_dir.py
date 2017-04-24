@@ -212,7 +212,7 @@ class _TmpDirTracker(Borg):
 
     def unittest_refresh_dir_tracker(self):
         """
-        This force-removes the tmpdir and refreshes the tracker to create new
+        This force-removes the tmp_dir and refreshes the tracker to create new
         """
         if not hasattr(self, "tmp_dir"):
             return

@@ -112,7 +112,7 @@ def probe_binary(binary):
 TRUE_CMD = probe_binary('true')
 CC_BINARY = probe_binary('cc')
 
-# On macOS, the default GNU coreutils installation (brew)
+# On macOS, the default GNU core-utils installation (brew)
 # installs the gnu utility versions with a g prefix. It still has the
 # BSD versions of the core utilities installed on their expected paths
 # but their behavior and flags are in most cases different.
