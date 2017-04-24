@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 48.0
-Release: 4%{?gitrel}%{?dist}
+Release: 5%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -48,6 +48,7 @@ BuildRequires: python-lxml
 BuildRequires: python-mock
 BuildRequires: python-psutil
 BuildRequires: python-requests
+BuildRequires: python-resultsdb_api
 BuildRequires: python-setuptools
 BuildRequires: python-sphinx
 BuildRequires: python-stevedore
@@ -129,6 +130,9 @@ popd
 pushd optional_plugins/runner_docker
 %{__python} setup.py build
 popd
+pushd optional_plugins/resultsdb
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -143,6 +147,9 @@ pushd optional_plugins/runner_vm
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/runner_docker
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/resultsdb
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -196,10 +203,12 @@ selftests/run
 %exclude %{python_sitelib}/avocado_runner_remote*
 %exclude %{python_sitelib}/avocado_runner_vm*
 %exclude %{python_sitelib}/avocado_runner_docker*
+%exclude %{python_sitelib}/avocado_resultsdb*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_docker*
+%exclude %{python_sitelib}/avocado_framework_plugin_resultsdb*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -275,8 +284,20 @@ Docker daemon and attaching to the container itself.  Avocado must
 be previously installed on the container.
 
 %files plugins-runner-docker
-%{python_sitelib}/avocado_runner_docker*
 %{python_sitelib}/avocado_framework_plugin_runner_docker*
+
+%package plugins-resultsdb
+Summary: Avocado plugin to propagate job results to ResultsDB
+Requires: %{name} == %{version}
+Requires: python-resultsdb_api
+
+%description plugins-resultsdb
+Allows Avocado to send job results directly to a ResultsDB
+server.
+
+%files plugins-resultsdb
+%{python_sitelib}/avocado_resultsdb*
+%{python_sitelib}/avocado_framework_plugin_resultsdb*
 
 
 %package examples
@@ -293,6 +314,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Apr 24 2017 Cleber Rosa <cleber@redhat.com> - 48.0-5
+- Add subpackage for resultsdb plugin
+
 * Wed Apr 19 2017 Cleber Rosa <cleber@redhat.com> - 48.0-4
 - Added "/var/lib/avocado" directory for writable content
 
