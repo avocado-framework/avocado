@@ -31,7 +31,7 @@
 	 "description": "On a web browser, open the previously generated  HTML report at `/tmp/report.html`. Verify that all the links such as `job-YYYY-MM-DD...` (under `Results Dir`), `1-/**/avocado/tests/**/examples/tests/passtest.py:PassTest.test` (under `Test ID`) and `debug.log` point to valid locations."},
 
 	{"name": "Avocado Server Source Checkout and Unittests",
-	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt`. Then finally run the unittests with `$ make check`. Expected result: `OK`"},
+	 "description": "On the same virtual machine used during 'Avocado RPM install', checkout a copy of the avocado-server repository with `$ git clone git://github.com/avocado-framework/avocado-server.git`. Then install dependencies with `$ pip install -r requirements.txt -r requirements-selftests.txt`. Then finally run the unittests with `$ make check`. Expected result: `OK`"},
 
 	{"name": "Avocado Server Run",
 	 "description": "On the same machine used during 'Avocado Server Source Checkout and Unittests', run the quick and dirty script to get it running `$ ./reset-and-run.sh`. Expected result: `Starting development server at http://0.0.0.0:9405`"},
