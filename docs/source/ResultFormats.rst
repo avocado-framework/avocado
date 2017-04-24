@@ -6,6 +6,9 @@ Result Formats
 A test runner must provide an assortment of ways to clearly communicate results
 to interested parties, be them humans or machines.
 
+.. note:: There are several optional result plugins, you can find them in
+   :ref:`result-plugins`.
+
 Results for human beings
 ------------------------
 
@@ -33,32 +36,6 @@ that is, the job and its test(s) results are constantly updated::
 
 The most important thing is to remember that programs should never need to parse
 human output to figure out what happened to a test job run.
-
-HTML report
-~~~~~~~~~~~
-
-As can be seen in the previous example, Avocado shows the path to an HTML
-report that will be generated as soon as the job finishes running::
-
-    $ avocado run sleeptest.py failtest.py synctest.py
-    ...
-    JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
-    ...
-
-You can also request that the report be opened automatically by using the
-``--open-browser`` option. For example::
-
-    $ avocado run sleeptest --open-browser
-
-Will show you the nice looking HTML results report right after ``sleeptest``
-finishes running.
-
-.. warning:: The HTML output is an optional plugin and has to be installed
-             separately as ``avocado-plugins-output-html`` RPM or by executing
-             ``cd optional_plugins/html && python setup.py install``
-             from avocado sources. Note it's enabled by default when using
-             avocado from sorces by ``make develop`` or ``make link``.
-
 
 Machine readable results
 ------------------------
