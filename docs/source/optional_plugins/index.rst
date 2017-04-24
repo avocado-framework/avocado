@@ -9,4 +9,5 @@ The following pages are the documentation for the optical plugins:
 .. toctree::
    :maxdepth: 1
 
-   results.rst
+   results
+   robot
