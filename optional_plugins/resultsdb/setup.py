@@ -24,7 +24,7 @@ setup(name='avocado-framework-plugin-resultsdb',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['resultsdb-api'],
+      install_requires=['avocado-framework', 'resultsdb-api'],
       entry_points={
           'avocado.plugins.cli': [
               'resultsdb = avocado_resultsdb:ResultsdbCLI',
