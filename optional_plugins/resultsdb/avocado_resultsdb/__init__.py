@@ -77,6 +77,8 @@ class ResultsdbResult(ResultEvents):
 
         outcome = self._status_map(state['status'])
         name = state['name'].name
+        if state['name'].variant is not None:
+            name += ';%s' % state['name'].variant
         group = [self.job_id]
 
         note = None
@@ -101,6 +103,12 @@ class ResultsdbResult(ResultEvents):
                 'logfile': state['logfile'],
                 'whiteboard': state['whiteboard'],
                 'status': state['status']}
+
+        params = {}
+        for param in state['params'].iteritems():
+            params['param %s' % param[1]] = '%s (path: %s)' % (param[2],
+                                                               param[0])
+        data.update(params)
 
         self.rdbapi.create_result(outcome, name, group, note, ref_url, **data)
 
