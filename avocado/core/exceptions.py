@@ -181,7 +181,7 @@ class TestWarn(TestBaseException):
 
 class TestCancel(TestBaseException):
     """
-    Indicates that a test was cancelled.
+    Indicates that a test was canceled.
 
     Should be thrown when the cancel() test method is used.
     """

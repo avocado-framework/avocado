@@ -291,8 +291,9 @@ class HTMLResult(Result):
 
         html_path = getattr(job.args, 'html_output', 'None')
         if html_path is not None:
-            if os.path.exists(html_dir):    # update the html result if exists
-                shutil.rmtree(html_dir)
+            # Avoid removing static content in user-provided path as it might
+            # also contain other user file/dirs (eg. "/tmp/report.html" would
+            # otherwise delete "/tmp"
             self._render(result, html_path)
             if open_browser:
                 self._open_browser(html_path)

@@ -105,7 +105,7 @@ class TreeNode(object):
             children = []
         self.name = name
         self.value = value
-        self.filters = [], []  # This node filters, full filters in environ..
+        self.filters = [], []  # This node's filters, full filters are in env
         self.parent = parent
         self.children = []
         self._environment = None
