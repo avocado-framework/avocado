@@ -26,7 +26,7 @@ from avocado import Test
 
 class Dummy(Test):
     def test00sleep(self):
-        time.sleep(2)
+        time.sleep(10)
     def test01pass(self):
         pass
     def test02pass(self):
