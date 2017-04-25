@@ -103,9 +103,12 @@ class Replay(CLI):
 
         with open(json_results, 'r') as json_file:
             results = json.loads(json_file.read())
+        tests = results["tests"]
+        for _ in xrange(results["total"] + 1 - len(tests)):
+            tests.append({"test": "UNKNOWN", "status": "INTERRUPTED"})
 
         replay_map = []
-        for test in results['tests']:
+        for test in tests:
             if test['status'] not in replay_filter:
                 replay_map.append(ReplaySkipTest)
             else:
