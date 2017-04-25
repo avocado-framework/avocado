@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 49.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -284,6 +284,7 @@ Docker daemon and attaching to the container itself.  Avocado must
 be previously installed on the container.
 
 %files plugins-runner-docker
+%{python_sitelib}/avocado_runner_docker*
 %{python_sitelib}/avocado_framework_plugin_runner_docker*
 
 %package plugins-resultsdb
@@ -314,6 +315,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Apr 25 2017 Cleber Rosa <cleber@redhat.com> - 49.0-1
+- Added missing runner-docker directory
+
 * Tue Apr 25 2017 Cleber Rosa <cleber@redhat.com> - 49.0-0
 - New upstream release
 
