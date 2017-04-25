@@ -53,22 +53,34 @@ def record(args, logdir, mux, references=None, cmdline=None):
     if references:
         with open(path_references, 'w') as references_file:
             references_file.write('%s' % references)
+            references_file.flush()
+            os.fsync(references_file)
         os.symlink(TEST_REFERENCES_FILENAME, path_references_legacy)
 
     with open(path_cfg, 'w') as config_file:
         settings.config.write(config_file)
+        config_file.flush()
+        os.fsync(config_file)
 
     with open(path_mux, 'w') as mux_file:
         pickle.dump(mux, mux_file, pickle.HIGHEST_PROTOCOL)
+        mux_file.flush()
+        os.fsync(mux_file)
 
     with open(path_pwd, 'w') as pwd_file:
         pwd_file.write('%s' % os.getcwd())
+        pwd_file.flush()
+        os.fsync(pwd_file)
 
     with open(path_args, 'w') as args_file:
         pickle.dump(args.__dict__, args_file, pickle.HIGHEST_PROTOCOL)
+        args_file.flush()
+        os.fsync(args_file)
 
     with open(path_cmdline, 'w') as cmdline_file:
         cmdline_file.write('%s' % cmdline)
+        cmdline_file.flush()
+        os.fsync(cmdline_file)
 
 
 def _retrieve(resultsdir, resource):

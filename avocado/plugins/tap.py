@@ -38,7 +38,10 @@ def file_log_factory(log_file):
             except TypeError as details:
                 raise TypeError("%s: msg='%s' args='%s'" %
                                 (details, msg, writeargs))
-        return log_file.write(msg + "\n")
+        ret = log_file.write(msg + "\n")
+        log_file.flush()
+        os.fsync(log_file)
+        return ret
     return writeln
 
 
