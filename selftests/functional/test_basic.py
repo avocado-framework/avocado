@@ -87,7 +87,7 @@ import time
 class MyTest(Test):
     def test(self):
          self.runner_queue.put({"running": False})
-         time.sleep(60)
+         time.sleep(70)
 '''
 
 
@@ -257,7 +257,7 @@ class RunnerOperationTest(unittest.TestCase):
                                     REPORTS_STATUS_AND_HANG,
                                     "hanged_test_with_status") as tst:
             res = process.run("%s run --sysinfo=off --job-results-dir %s %s "
-                              "--json -" % (AVOCADO, self.tmpdir, tst),
+                              "--json - --job-timeout 1" % (AVOCADO, self.tmpdir, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
             results = json.loads(res.stdout)
@@ -266,7 +266,11 @@ class RunnerOperationTest(unittest.TestCase):
                                                "ERROR", res))
             self.assertIn("Test reported status but did not finish",
                           results["tests"][0]["fail_reason"])
-            self.assertLess(res.duration, 40, "Test execution took too long, "
+            # Currently it should finish up to 1s after the job-timeout
+            # but the prep and postprocess could take a bit longer on
+            # some environments, so let's just check it does not take
+            # > 60s, which is the deadline for force-finishing the test.
+            self.assertLess(res.duration, 55, "Test execution took too long, "
                             "which is likely because the hanged test was not "
                             "interrupted. Results:\n%s" % res)
 
