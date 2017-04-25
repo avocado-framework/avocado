@@ -166,6 +166,12 @@ result, using the option ``--replay-test-status``. See the example below::
     TESTS TIME : 0.19 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html
 
+Of which one special example is ``--replay-test-status INTERRUPTED``
+or simply ``--replay-resume``, which SKIPs the executed
+tests and only executes the ones which were CANCELED or not executed
+after a CANCELED test. This feature should work even on hard interruptions
+like system crash.
+
 When replaying jobs that were executed with the ``--failfast on`` option, you
 can disable the ``failfast`` option using ``--failfast off`` in the replay job.
 
