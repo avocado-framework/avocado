@@ -129,6 +129,26 @@ def get_interfaces_in_pci_address(pci_address, pci_class):
                                                        interface))]
 
 
+def get_pci_class_name(pci_address):
+    """
+    Gets pci class name for given pci bus address
+
+    e.g: >>> pci.get_pci_class_name("0000:01:00.0")
+             'scsi_host'
+
+    :param pci_address: Any segment of a PCI address(1f, 0000:00:if, ...)
+
+    :return: class name for corresponding pci bus address
+    """
+    pci_class_dic = {'0104': 'scsi_host', '0c04': 'fc_host',
+                     '0200': 'net', '0108': 'nvme', '0280': 'net'}
+    pci_class_id = get_pci_prop(pci_address, "Class")
+    if pci_class_id not in pci_class_dic:
+        raise ValueError("Class ID %s is not defined in this library"
+                         "please send an update" % pci_class_id)
+    return pci_class_dic.get(pci_class_id)
+
+
 def get_pci_fun_list(pci_address):
     """
     Gets list of functions in the given PCI address.
