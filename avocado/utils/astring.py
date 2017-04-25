@@ -219,7 +219,7 @@ def string_safe_encode(string):
     try:
         return string.encode("utf-8")
     except UnicodeDecodeError:
-        return string.decode("utf-8").encode("utf-8")
+        return string.decode("utf-8", "ignore").encode("utf-8")
 
 
 def string_to_safe_path(string):
