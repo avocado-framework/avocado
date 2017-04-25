@@ -58,6 +58,7 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     # multipath.conf file to take effect.
     time.sleep(5)
     service.SpecificServiceManager(get_svc_name()).restart()
+    time.sleep(4)
 
 
 def device_exists(path):
