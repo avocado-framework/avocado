@@ -68,6 +68,15 @@ Avocado Release Notes
 
    release_notes/index
 
+===========================
+Request For Comments (RFCs)
+===========================
+
+.. toctree::
+   :maxdepth: 1
+
+   rfcs/index
+
 Indices and tables
 ==================
 
