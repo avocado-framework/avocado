@@ -144,8 +144,12 @@ def get_pci_class_name(pci_address):
                      '0200': 'net', '0108': 'nvme', '0280': 'net'}
     pci_class_id = get_pci_prop(pci_address, "Class")
     if pci_class_id not in pci_class_dic:
-        raise ValueError("Class ID %s is not defined in this library"
-                         "please send an update" % pci_class_id)
+        if pci_class_id is None:
+            raise ValueError("Unable to get 'Class' property of given pci "
+                             "address %s" % pci_address)
+        else:
+            raise ValueError("Class ID %s is not defined in this library"
+                             "please send an update" % pci_class_id)
     return pci_class_dic.get(pci_class_id)
 
 
