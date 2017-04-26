@@ -19,11 +19,33 @@
 
 # Parse arguments
 WILDCARD="*"
+ENDIAN=""
+ARCH=""
+PROCESSOR=""
+CC=""
+PREFIX=""
+
 while [ true ]; do
     case $1 in
         "--endian")
             shift
-            ENDIAN="--endian $1"
+            ENDIAN="--endian=$1"
+            ;;
+        "--arch")
+            shift
+            ARCH="--arch=$1"
+            ;;
+        "--processor")
+            shift
+            PROCESSOR="--processor=$1"
+            ;;
+        "--cc")
+            shift
+            CC="--cc=$1"
+            ;;
+        "--prefix")
+            shift
+            PREFIX="--prefix=$1"
             ;;
         "--path")
             shift
@@ -38,6 +60,10 @@ while [ true ]; do
             echo
             echo "  -h          Show this help"
             echo "  --endian    Endian flag to kvm-unit-test configure"
+            echo "  --arch      architecture flag to kvm-unit-test configure"
+            echo "  --processor processor flag to kvm-unit-test configure"
+            echo "  --cc        compiler flag to kvm-unit-test configure"
+            echo "  --prefix    prefix flag to kvm-unit-test configure"
             echo "  --path      Path to kvm-unit-test suite (default is tmp)"
             echo "  --wildcard  BASH Wildcard to select tests (by default all)"
             echo
@@ -57,7 +83,7 @@ cd "$KVM_UNIT_TEST"
 [ -f "configure" ] || git clone --depth 1 -q git://git.kernel.org/pub/scm/virt/kvm/kvm-unit-tests.git .
 
 # Compile kvm-unit-test as standalone to get tests as separate files
-./configure $ENDIAN || { echo Fail to configure kvm-unit-test; exit -1; }
+./configure $ENDIAN $ARCH $PROCESSOR $CC $PREFIX || { echo Fail to configure kvm-unit-test; exit -1; }
 make standalone >/dev/null || { echo Fail to "make standalone" kvm-unit-test; exit -1; }
 
 # Execute individual tests
