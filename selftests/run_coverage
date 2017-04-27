@@ -7,7 +7,7 @@
 
 coverage erase
 rm .coverage.*
-AVOCADO_CHECK_FULL=1 UNITTEST_AVOCADO_CMD="coverage run -p --include 'avocado/*' ./scripts/avocado" coverage run -p --include "avocado/*" ./selftests/run
+AVOCADO_CHECK_LEVEL=2 UNITTEST_AVOCADO_CMD="coverage run -p --include 'avocado/*' ./scripts/avocado" coverage run -p --include "avocado/*" ./selftests/run
 coverage combine .coverage*
 echo
 coverage report -m --include "avocado/core/*"
