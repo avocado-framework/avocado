@@ -120,6 +120,10 @@ class ReportModel(object):
         for tst in self.result.tests:
             formatted = {}
             formatted['name'] = tst['name']
+            params = 'Params:\n'
+            for path, key, value in tst['params'].iteritems():
+                params += '  %s:%s => %s\n' % (path, key, value)
+            formatted['params'] = params
             formatted['status'] = tst['status']
             logdir = os.path.join(results_dir, 'test-results', tst['logdir'])
             formatted['logdir'] = os.path.relpath(logdir, self.html_output_dir)
