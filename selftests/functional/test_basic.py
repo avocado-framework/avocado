@@ -364,7 +364,7 @@ class RunnerOperationTest(unittest.TestCase):
         # Ensure no test aborted error messages show up
         self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
 
-    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_runner_abort(self):
@@ -646,7 +646,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_runner_onehundred_fail_timing(self):
