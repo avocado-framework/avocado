@@ -479,11 +479,11 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
         self.assertEqual(result['job_id'], u'0' * 40)
         # Check if all tests were skipped
-        self.assertEqual(result['skip'], 4)
+        self.assertEqual(result['cancel'], 4)
         for i in xrange(4):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
-                             u'Test skipped due to --dry-run')
+                             u'Test cancelled due to --dry-run')
         # Check if all params are listed
         # The "/:bar ==> 2 is in the tree, but not in any leave so inaccessible
         # from test.

@@ -63,7 +63,7 @@ def skip(message=None):
         if not isinstance(function, type):
             @wraps(function)
             def wrapper(*args, **kwargs):
-                raise core_exceptions.TestDecoratorSkip(message)
+                raise core_exceptions.TestSkipError(message)
             function = wrapper
         function.__skip_test_decorator__ = True
         return function
