@@ -189,7 +189,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %dir /etc/avocado/sysinfo
 %dir /etc/avocado/scripts/job/pre.d
 %dir /etc/avocado/scripts/job/post.d
-%dir %{_sharedstatedir}/avocado/data
+%dir %{_sharedstatedir}/avocado*
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %config(noreplace)/etc/avocado/conf.d/gdb.conf
@@ -324,6 +324,7 @@ examples of how to write tests on your own.
 * Thu Apr 27 2017 Cleber Rosa <cleber@redhat.com> - 49.0-2
 - Also setup resultsdb plugin on check
 - Be explicit about selftest level run on check
+- Take ownership of base avocado data dir (/var/lib/avocado)
 
 * Tue Apr 25 2017 Cleber Rosa <cleber@redhat.com> - 49.0-1
 - Added missing runner-docker directory
