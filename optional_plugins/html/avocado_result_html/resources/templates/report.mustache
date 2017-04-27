@@ -58,7 +58,9 @@
             <table id="results" class="display" cellspacing="0" width="100%"><thead>
             <tr>
                 <th>Start Time</th>
-                <th>Test ID</th>
+                <th>UID</th>
+                <th>Test Name</th>
+                <th>Variant</th>
                 <th>Status</th>
                 <th>Time (sec)</th>
                 <th>Info</th>
@@ -68,7 +70,9 @@
             {{#tests}}
                 <tr class="{{row_class}}">
                     <td>{{time_start}}</td>
+                    <td>{{uid}}</td>
                     <td><a href="{{logdir}}" title="{{params}}">{{name}}</a></td>
+                    <td>{{variant}}</td>
                     <td>{{status}}</td>
                     <td>{{time}}</td>
                     <td>{{& fail_reason}}</td>
