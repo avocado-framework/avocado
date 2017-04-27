@@ -40,6 +40,7 @@ from ..utils import genio
 from ..utils import path as utils_path
 from ..utils import process
 from ..utils import stacktrace
+from .decorators import skip
 from .settings import settings
 from .version import VERSION
 
@@ -564,14 +565,9 @@ class Test(unittest.TestCase):
         try:
             if skip_test is False:
                 self.setUp()
-        except (exceptions.TestSetupSkip,
-                exceptions.TestTimeoutSkip,
-                exceptions.TestSkipError) as details:
+        except (exceptions.TestSetupSkip, exceptions.TestSkip) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.TestSkipError(details)
-        except exceptions.TestDecoratorSkip as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.TestSkipError(details)
+            raise exceptions.TestSkip(details)
         except exceptions.TestCancel as details:
             cancel_test = details
         except:  # Old-style exceptions are not inherited from Exception()
@@ -590,9 +586,9 @@ class Test(unittest.TestCase):
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
-        except exceptions.TestDecoratorSkip as details:
+        except exceptions.TestSkip as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.TestSkipError(details)
+            raise
         except exceptions.TestCancel as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise
@@ -617,7 +613,7 @@ class Test(unittest.TestCase):
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
-            except exceptions.TestDecoratorSkip as details:
+            except exceptions.TestSkip as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Using skip decorators in tearDown() '
                                     'is not allowed in '
@@ -961,14 +957,13 @@ class NotATest(Test):
         raise exceptions.NotATestError(e_msg)
 
 
-class SkipTest(Test):
+class FakeTest(Test):
 
     """
-    Class intended as generic substitute for avocado tests which fails during
-    setUp phase using "self._skip_reason" message.
+    Class intended as generic substitute for avocado tests which fails
+    for some reason. This class is expected to be overridden by specific
+    reason-oriented sub-classes.
     """
-
-    _skip_reason = "Generic skip test reason"
 
     def __init__(self, *args, **kwargs):
         """
@@ -983,19 +978,15 @@ class SkipTest(Test):
                 super_kwargs[arg] = kwargs[arg]
             elif args:
                 super_kwargs[arg] = args.pop()
-        # The methodName might not exist in SkipTest, make sure it's self.test
+        # The methodName might not exist, make sure it's self.test
         super_kwargs["methodName"] = "test"
-        super(SkipTest, self).__init__(**super_kwargs)
-
-    def setUp(self):
-        raise exceptions.TestSkipError(self._skip_reason)
+        super(FakeTest, self).__init__(**super_kwargs)
 
     def test(self):
-        """ Should not be executed """
-        raise RuntimeError("This should never be executed!")
+        pass
 
 
-class TimeOutSkipTest(SkipTest):
+class TimeOutSkipTest(FakeTest):
 
     """
     Skip test due job timeout.
@@ -1004,28 +995,25 @@ class TimeOutSkipTest(SkipTest):
     It will never have a chance to execute.
     """
 
-    _skip_reason = "Test skipped due a job timeout!"
+    @skip('Test skipped due a job timeout!')
+    def test(self):
+        pass
 
-    def setUp(self):
-        raise exceptions.TestTimeoutSkip(self._skip_reason)
 
-
-class DryRunTest(SkipTest):
+class DryRunTest(FakeTest):
 
     """
-    Fake test which logs itself and reports as SKIP
+    Fake test which logs itself and reports as CANCEL
     """
-
-    _skip_reason = "Test skipped due to --dry-run"
 
     def setUp(self):
         self.log.info("Test params:")
         for path, key, value in self.params.iteritems():
             self.log.info("%s:%s ==> %s", path, key, value)
-        super(DryRunTest, self).setUp()
+        self.cancel('Test cancelled due to --dry-run')
 
 
-class ReplaySkipTest(SkipTest):
+class ReplaySkipTest(FakeTest):
 
     """
     Skip test due to job replay filter.
@@ -1034,7 +1022,9 @@ class ReplaySkipTest(SkipTest):
     It will never have a chance to execute.
     """
 
-    _skip_reason = "Test skipped due to a job replay filter!"
+    @skip('Test skipped due to a job replay filter!')
+    def test(self):
+        pass
 
 
 class TestError(Test):

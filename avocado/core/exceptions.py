@@ -102,14 +102,6 @@ class TestTimeoutInterrupted(TestBaseException):
     status = "INTERRUPTED"
 
 
-class TestTimeoutSkip(TestBaseException):
-
-    """
-    Indicates that the test is skipped due to a job timeout.
-    """
-    status = "SKIP"
-
-
 class TestInterruptedError(TestBaseException):
 
     """
@@ -126,7 +118,7 @@ class TestAbortError(TestBaseException):
     status = "ERROR"
 
 
-class TestSkipError(TestBaseException):
+class TestSkip(TestBaseException):
 
     """
     Indictates that the test is skipped.
@@ -144,16 +136,6 @@ class TestSetupSkip(TestBaseException):
     Indictates that the test is skipped in setUp().
 
     Should be thrown when skip() is used in setUp().
-    """
-    status = "SKIP"
-
-
-class TestDecoratorSkip(TestBaseException):
-
-    """
-    Indictates that the test is skipped by a decorator.
-
-    Should be thrown when the skip decorators are used.
     """
     status = "SKIP"
 
