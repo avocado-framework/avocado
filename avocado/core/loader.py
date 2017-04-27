@@ -862,15 +862,15 @@ class DummyLoader(TestLoader):
         super(DummyLoader, self).__init__(args, extra_params)
 
     def discover(self, url, which_tests=DEFAULT):
-        return [(test.SkipTest, {'name': url})]
+        return [(test.MockingTest, {'name': url})]
 
     @staticmethod
     def get_type_label_mapping():
-        return {test.SkipTest: 'DUMMY'}
+        return {test.MockingTest: 'DUMMY'}
 
     @staticmethod
     def get_decorator_mapping():
-        return {test.SkipTest: output.TERM_SUPPORT.healthy_str}
+        return {test.MockingTest: output.TERM_SUPPORT.healthy_str}
 
 
 loader = TestLoaderProxy()

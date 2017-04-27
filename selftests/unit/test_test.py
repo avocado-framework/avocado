@@ -191,46 +191,44 @@ class SimpleTestClassTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
-class SkipTest(unittest.TestCase):
+class MockingTest(unittest.TestCase):
 
     def setUp(self):
         self.tests = []
 
     def test_init(self):
         # No params
-        self.tests.append(test.SkipTest())
-        self.assertRaises(exceptions.TestSkipError, self.tests[-1].setUp)
-        self.assertRaises(RuntimeError, self.tests[-1].test)
+        self.tests.append(test.MockingTest())
         # Positional
-        self.tests.append(test.SkipTest("test", test.TestName(1, "my_name"),
-                                        {}, None, "1",
-                                        None, None, "extra_param1",
-                                        "extra_param2"))
+        self.tests.append(test.MockingTest("test", test.TestName(1, "my_name"),
+                                           {}, None, "1",
+                                           None, None, "extra_param1",
+                                           "extra_param2"))
         self.assertEqual(self.tests[-1].name, "1-my_name")
         # Kwargs
-        self.tests.append(test.SkipTest(methodName="test",
-                                        name=test.TestName(1, "my_name2"),
-                                        params={}, base_logdir=None,
-                                        tag="a", job=None, runner_queue=None,
-                                        extra1="extra_param1",
-                                        extra2="extra_param2"))
+        self.tests.append(test.MockingTest(methodName="test",
+                                           name=test.TestName(1, "my_name2"),
+                                           params={}, base_logdir=None,
+                                           tag="a", job=None, runner_queue=None,
+                                           extra1="extra_param1",
+                                           extra2="extra_param2"))
         self.assertEqual(self.tests[-1].name, "1-my_name2")
         # both (theoretically impossible in python, but valid for nasty tests)
         # keyword args are used as they explicitly represent what they mean
-        self.tests.append(test.SkipTest("not used", "who cares", {}, None, "0",
-                                        None, None, "extra_param1",
-                                        "extra_param2",
-                                        methodName="test",
-                                        name=test.TestName(1, "my_name3"),
-                                        params={}, base_logdir=None,
-                                        tag="3", job=None, runner_queue=None,
-                                        extra1="extra_param3",
-                                        extra2="extra_param4"))
+        self.tests.append(test.MockingTest("not used", "who cares", {}, None, "0",
+                                           None, None, "extra_param1",
+                                           "extra_param2",
+                                           methodName="test",
+                                           name=test.TestName(1, "my_name3"),
+                                           params={}, base_logdir=None,
+                                           tag="3", job=None, runner_queue=None,
+                                           extra1="extra_param3",
+                                           extra2="extra_param4"))
         self.assertEqual(self.tests[-1].name, "1-my_name3")
         # combination
-        self.tests.append(test.SkipTest("test", test.TestName(1, "my_name4"),
-                                        tag="321",
-                                        other_param="Whatever"))
+        self.tests.append(test.MockingTest("test", test.TestName(1, "my_name4"),
+                                           tag="321",
+                                           other_param="Whatever"))
         self.assertEqual(self.tests[-1].name, "1-my_name4")
         # ugly combination (positional argument overrides kwargs, this only
         # happens when the substituted class reorders the positional arguments.
@@ -238,9 +236,9 @@ class SkipTest(unittest.TestCase):
         # ones.
         name = "positional_method_name_becomes_test_name"
         tag = "positional_base_logdir_becomes_tag"
-        self.tests.append(test.SkipTest(test.TestName(1, name), None, None, tag,
-                                        methodName="test",
-                                        other_param="Whatever"))
+        self.tests.append(test.MockingTest(test.TestName(1, name), None, None, tag,
+                                           methodName="test",
+                                           other_param="Whatever"))
         self.assertEqual(self.tests[-1].name, "1-" + name)
 
     def tearDown(self):
