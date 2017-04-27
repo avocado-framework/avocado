@@ -565,12 +565,7 @@ class Test(unittest.TestCase):
         try:
             if skip_test is False:
                 self.setUp()
-        except (exceptions.TestSetupSkip,
-                exceptions.TestTimeoutSkip,
-                exceptions.TestSkipError) as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.TestSkipError(details)
-        except exceptions.TestDecoratorSkip as details:
+        except (exceptions.TestSetupSkip, exceptions.TestSkipError) as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel as details:
@@ -591,9 +586,9 @@ class Test(unittest.TestCase):
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
-        except exceptions.TestDecoratorSkip as details:
+        except exceptions.TestSkipError as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
-            raise exceptions.TestSkipError(details)
+            raise
         except exceptions.TestCancel as details:
             stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
             raise
@@ -618,7 +613,7 @@ class Test(unittest.TestCase):
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
-            except exceptions.TestDecoratorSkip as details:
+            except exceptions.TestSkipError as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
                 skip_illegal_msg = ('Using skip decorators in tearDown() '
                                     'is not allowed in '
