@@ -175,7 +175,10 @@ popd
 pushd optional_plugins/resultsdb
 %{__python} setup.py develop --user
 popd
-selftests/run
+# Package build environments have the least amount of resources
+# we have observed so far.  Let's avoid tests that require too
+# much resources or are time sensitive
+AVOCADO_CHECK_LEVEL=0 selftests/run
 %endif
 
 %files
@@ -320,6 +323,7 @@ examples of how to write tests on your own.
 %changelog
 * Thu Apr 27 2017 Cleber Rosa <cleber@redhat.com> - 49.0-2
 - Also setup resultsdb plugin on check
+- Be explicit about selftest level run on check
 
 * Tue Apr 25 2017 Cleber Rosa <cleber@redhat.com> - 49.0-1
 - Added missing runner-docker directory
