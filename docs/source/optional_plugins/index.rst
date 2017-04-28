@@ -4,7 +4,8 @@
 Optional Plugins
 ================
 
-The following pages are the documentation for the optical plugins:
+The following pages are the documentation for some of the Avocado
+optional plugins:
 
 .. toctree::
    :maxdepth: 1
