@@ -49,17 +49,17 @@ class AstringTest(unittest.TestCase):
         the correct results. (the string_safe_encode function is in use here)
         """
 
-        matrix = [("\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4\xd0\xbe",
+        matrix = [("\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4\xff",
                    123),
-                  (u'\u0430\u0432\u043e\u043a\u0430\u0434\u043e', 123),
+                  (u'\u0430\u0432\u043e\u043a\u0430\u0434\xff', 123),
                   ("avok\xc3\xa1do", 123),
-                  ("avocado", 123)]
+                  ("a\u0430", 123)]
         str_matrix = ("\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4"
-                      "\xd0\xbe 123\n"
+                      "\xef\xbf\xbd 123\n"
                       "\xd0\xb0\xd0\xb2\xd0\xbe\xd0\xba\xd0\xb0\xd0\xb4"
-                      "\xd0\xbe 123\n"
+                      "\xc3\xbf 123\n"
                       "avok\xc3\xa1do 123\n"
-                      "avocado 123")
+                      "a\u0430 123")
         self.assertEqual(astring.tabular_output(matrix), str_matrix)
 
 
