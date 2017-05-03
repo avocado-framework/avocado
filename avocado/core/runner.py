@@ -556,7 +556,6 @@ class TestRunner(object):
         if self.job.sysinfo is not None:
             self.job.sysinfo.end_job_hook()
         self.result.end_tests()
-        self.job._result_events_dispatcher.map_method('post_tests', self.job)
         self.job.funcatexit.run()
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         return summary
