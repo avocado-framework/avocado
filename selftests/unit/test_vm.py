@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import unittest
 
 from flexmock import flexmock, flexmock_teardown
