@@ -32,7 +32,6 @@ from . import test
 from . import safeloader
 from ..utils import path
 from ..utils import stacktrace
-from ..utils import data_structures
 from .settings import settings
 
 #: Show default tests (for execution)
@@ -629,12 +628,12 @@ class FileLoader(TestLoader):
                 if safeloader.check_docstring_directive(docstring, 'disable'):
                     continue
 
-                tags = safeloader.get_docstring_directives_tags(docstring)
+                cl_tags = safeloader.get_docstring_directives_tags(docstring)
 
                 if safeloader.check_docstring_directive(docstring, 'enable'):
-                    methods = self._get_methods(statement.body)
-                    result[statement.name] = {'methods': methods,
-                                              'tags': tags}
+                    info = self._get_methods_info(statement.body,
+                                                  cl_tags)
+                    result[statement.name] = info
                     continue
 
                 if test_import:
@@ -642,9 +641,9 @@ class FileLoader(TestLoader):
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
                     if test_import_name in base_ids:
-                        methods = self._get_methods(statement.body)
-                        result[statement.name] = {'methods': methods,
-                                                  'tags': tags}
+                        info = self._get_methods_info(statement.body,
+                                                      cl_tags)
+                        result[statement.name] = info
                         continue
 
                 # Looking for a 'class FooTest(avocado.Test):'
@@ -653,19 +652,24 @@ class FileLoader(TestLoader):
                         module = base.value.id
                         klass = base.attr
                         if module == mod_import_name and klass == 'Test':
-                            methods = self._get_methods(statement.body)
-                            result[statement.name] = {'methods': methods,
-                                                      'tags': tags}
+                            info = self._get_methods_info(statement.body,
+                                                          cl_tags)
+                            result[statement.name] = info
 
         return result
 
     @staticmethod
-    def _get_methods(statement_body):
-        methods = [st.name for st in statement_body if
-                   isinstance(st, ast.FunctionDef) and
-                   st.name.startswith('test')]
-        methods = data_structures.ordered_list_unique(methods)
-        return methods
+    def _get_methods_info(statement_body, class_tags):
+        methods_info = {}
+        for st in statement_body:
+            if (isinstance(st, ast.FunctionDef) and
+                    st.name.startswith('test')):
+                docstring = ast.get_docstring(st)
+                tags = safeloader.get_docstring_directives_tags(docstring)
+                tags.update(class_tags)
+                methods_info[st.name] = tags
+
+        return methods_info
 
     def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
                             test_name=None):
@@ -677,7 +681,7 @@ class FileLoader(TestLoader):
                 test_factories = []
                 for test_class, info in tests.items():
                     if isinstance(test_class, str):
-                        for test_method in info['methods']:
+                        for test_method in sorted(info):
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
                             if (subtests_filter and
@@ -686,7 +690,7 @@ class FileLoader(TestLoader):
                             tst = (test_class, {'name': name,
                                                 'modulePath': test_path,
                                                 'methodName': test_method,
-                                                'tags': info['tags']})
+                                                'tags': info[test_method]})
                             test_factories.append(tst)
                 return test_factories
             else:
