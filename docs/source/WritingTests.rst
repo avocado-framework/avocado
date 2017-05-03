@@ -341,6 +341,7 @@ values). In total it'll produce 8 variants of each test::
        (8/8) passtest.py:PassTest.test;8: PASS (0.01 s)
       RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
       TESTS TIME : 0.06 s
+      JOB TIME   : 0.16 s
 
 There are other options to influence the params so please check out
 ``avocado run -h`` and for details use :doc:`TestParameters`.
@@ -417,6 +418,7 @@ The outcome should be similar to::
     PASS (7.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 7.01 s
+    JOB TIME   : 7.11 s
     JOB HTML   : /home/cleber/avocado/job-results/job-2016-03-18T10.29-af786f8/html/results.html
 
 The custom ``progress`` stream is combined with the application output, which
@@ -722,6 +724,7 @@ option --output-check-record all to the test runner::
      (1/1) synctest.py:SyncTest.test: PASS (2.20 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 2.20 s
+    JOB TIME   : 2.30 s
 
 
 After the reference files are added, the check process is transparent, in the sense
@@ -750,6 +753,7 @@ Let's record the output for this one::
      (1/1) output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.01 s
+    JOB TIME   : 0.11 s
 
 After this is done, you'll notice that a the test data directory
 appeared in the same level of our shell script, containing 2 files::
@@ -774,6 +778,7 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
      (1/1) output_record.sh: FAIL (0.02 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.02 s
+    JOB TIME   : 0.12 s
 
 Verifying the failure reason::
 
@@ -903,6 +908,7 @@ the test parameters, as shown below.
      (1/1) sleeptest.py:SleepTest.test: INTERRUPTED (3.04 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 1
     TESTS TIME : 3.04 s
+    JOB TIME   : 3.14 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-11-02T11.13-c78464b/html/results.html
 
 
@@ -992,6 +998,7 @@ Will produce the following result::
      (1/1) test_skip_method.py:MyTestClass.test: SKIP
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.00 s
+    JOB TIME   : 0.10 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
 
 Notice that the `tearDown()` will not be executed when `skip()` is used.
@@ -1038,6 +1045,7 @@ Will produce the following result::
      (3/3) test_skip_decorators.py:MyTest.test3: PASS (0.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 2 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.03 s
+    JOB TIME   : 0.13 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.41-59c815f/html/results.html
 
 Notice the ``test3`` was not skipped because the provided condition was
@@ -1098,6 +1106,7 @@ the correct version, the result will be::
      (2/2) /home/apahim/avocado/tests/test_cancel.py:CancelTest.test_gcc: PASS (1.13 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1
     TESTS TIME : 2.28 s
+    JOB TIME   : 2.38 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html
 
 Notice that using the `self.cancel()` will cancel the rest of the test

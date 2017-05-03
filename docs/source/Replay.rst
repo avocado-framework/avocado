@@ -20,6 +20,7 @@ Let's see an example. First, running a simple job with two test references::
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.02 s
+     JOB TIME   : 0.12 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.14-825b860/html/results.html
 
 Now we can replay the job by running::
@@ -32,6 +33,7 @@ Now we can replay the job by running::
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.01 s
+     JOB TIME   : 0.11 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
 
 The replay feature will retrieve the original test references, the variants
@@ -91,6 +93,7 @@ mux yaml file::
       (48/48) /bin/false;24: FAIL (0.01 s)
      RESULTS    : PASS 24 | ERROR 0 | FAIL 24 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.29 s
+     JOB TIME   : 0.19 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
 
 We can replay the job as is, using ``$ avocado run --replay latest``,
@@ -105,6 +108,7 @@ or replay the job ignoring the variants, as below::
       (2/2) /bin/false: FAIL (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.02 s
+     JOB TIME   : 0.12 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/html/results.html
 
 Also, it is possible to replay only the variants that faced a given
@@ -164,6 +168,7 @@ result, using the option ``--replay-test-status``. See the example below::
      (48/48) /bin/false;24: FAIL (0.01 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 24 | SKIP 24 | WARN 0 | INTERRUPT 0
     TESTS TIME : 0.19 s
+    JOB TIME   : 0.29 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html
 
 Of which one special example is ``--replay-test-status INTERRUPTED``
@@ -187,6 +192,7 @@ below::
       (1/1) /bin/true: PASS (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.01 s
+     JOB TIME   : 0.11 s
      JOB HTML   : /tmp/avocado_results/job-2016-01-11T22.10-f1b1c87/html/results.html
 
 Trying to replay the job, it fails::
@@ -203,4 +209,5 @@ In this case, we have to inform where the job results directory is located::
       (1/1) /bin/true: PASS (0.01 s)
      RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
      TESTS TIME : 0.01 s
+     JOB TIME   : 0.11 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T22.15-19c76ab/html/results.html
