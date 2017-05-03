@@ -122,9 +122,6 @@ class Job(object):
         #: test was found during resolution.
         self.test_suite = None
 
-        # A job may not have a dispatcher for pre/post tests execution plugins
-        self._job_pre_post_dispatcher = None
-
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
         # freely, let's get the result events dispatcher ready early.
@@ -422,11 +419,8 @@ class Job(object):
         Run the pre tests execution hooks
 
         By default this runs the plugins that implement the
-        :class:`avocado.core.plugin_interfaces.JobPre` interface.
+        :class:`avocado.core.plugin_interfaces.JobPreTests` interface.
         """
-        self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-        output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
-        self._job_pre_post_dispatcher.map_method('pre', self)
         self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
@@ -472,12 +466,9 @@ class Job(object):
         Run the post tests execution hooks
 
         By default this runs the plugins that implement the
-        :class:`avocado.core.plugin_interfaces.JobPost` interface.
+        :class:`avocado.core.plugin_interfaces.JobPostTests` interface.
         """
-        if self._job_pre_post_dispatcher is None:
-            self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-            output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
-        self._job_pre_post_dispatcher.map_method('post', self)
+        self._result_events_dispatcher.map_method('post_tests', self)
 
     def run(self):
         """
