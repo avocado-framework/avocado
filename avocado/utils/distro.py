@@ -302,7 +302,7 @@ class RedHatProbe(Probe):
     """
     CHECK_FILE = '/etc/redhat-release'
     CHECK_FILE_CONTAINS = 'Red Hat Enterprise Linux'
-    CHECK_FILE_DISTRO_NAME = 'redhat'
+    CHECK_FILE_DISTRO_NAME = 'rhel'
     CHECK_VERSION_REGEX = re.compile(
         r'Red Hat Enterprise Linux \w+ release (\d{1,2})\.(\d{1,2}).*')
 

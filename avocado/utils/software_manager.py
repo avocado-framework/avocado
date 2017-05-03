@@ -102,10 +102,10 @@ class SystemInspector(object):
                     self.distro in ('debian', 'ubuntu')):
                 pm_supported = 'apt-get'
             elif ('dnf' in list_supported and
-                  self.distro in ('redhat', 'fedora')):
+                  self.distro in ('rhel', 'fedora')):
                 pm_supported = 'dnf'
             elif ('yum' in list_supported and
-                  self.distro in ('redhat', 'fedora')):
+                  self.distro in ('rhel', 'fedora')):
                 pm_supported = 'yum'
             elif ('zypper' in list_supported and
                   self.distro == 'SuSE'):
