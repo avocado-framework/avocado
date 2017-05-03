@@ -219,7 +219,7 @@ class MuxPlugin(object):
         if variants:
             # variants == 0 means disable, but in plugin it's brief
             contents = variants - 1
-            out.append("Multiplex variants:")
+            out.append("Multiplex variants (%s):" % len(self))
             for variant in self:
                 if not self.debug:
                     paths = ', '.join([x.path for x in variant["variant"]])
