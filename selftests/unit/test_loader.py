@@ -61,12 +61,18 @@ class DisabledTest(Test):
 
 class FastTest(Test):
     '''
-    :avocado: tags=fast,net
+    :avocado: tags=fast
     '''
     def test_fast(self):
+        '''
+        :avocado: tags=net
+        '''
         pass
 
     def test_fast_other(self):
+        '''
+        :avocado: tags=net
+        '''
         pass
 
 class SlowTest(Test):
@@ -179,6 +185,26 @@ class Second(avocado.Test):
     def test_1(self):
         pass
 """
+
+KEEP_METHODS_ORDER = '''
+from avocado import Test
+
+class MyClass(Test):
+    def test2(self):
+        pass
+
+    def testA(self):
+        pass
+
+    def test1(self):
+        pass
+
+    def testZZZ(self):
+        pass
+
+    def test(self):
+        pass
+'''
 
 
 class LoaderTest(unittest.TestCase):
@@ -462,6 +488,17 @@ class LoaderTest(unittest.TestCase):
                                                ['-fast,-slow,-safe',
                                                 'does,not,exist'])
             self.assertEqual(len(filtered), 0)
+
+    def test_methods_order(self):
+        avocado_keep_methods_order = script.TemporaryScript(
+            'keepmethodsorder.py',
+            KEEP_METHODS_ORDER)
+        avocado_keep_methods_order.save()
+        expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
+        tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)
+        methods = [method[0] for method in tests['MyClass']]
+        self.assertEqual(expected_order, methods)
+        avocado_keep_methods_order.remove()
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

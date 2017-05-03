@@ -1356,6 +1356,40 @@ parameter, no test will be included::
   $ avocado list perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l
   0
 
+Test tags can be applied to test classes and to test methods. Tags are
+evaluated per method, meaning that the class tags will be inherited by
+all methods, being merged with method local tags. Example::
+
+    from avocado import Test
+
+    class MyClass(Test):
+        """
+        :avocado: tags=furious
+        """
+
+        def test1(self):
+            """
+            :avocado: tags=fast
+            """
+            pass
+
+        def test2(self):
+            """
+            :avocado: tags=slow
+            """
+            pass
+
+If you use the tag ``furious``, all tests will be included::
+
+    $ avocado list furious_tests.py --filter-by-tags=furious
+    INSTRUMENTED test_tags.py:MyClass.test1
+    INSTRUMENTED test_tags.py:MyClass.test2
+
+But using ``fast`` and ``furious`` will include only ``test1``::
+
+    $ avocado list furious_tests.py --filter-by-tags=fast,furious
+    INSTRUMENTED test_tags.py:MyClass.test1
+
 Multiple `--filter-by-tags`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
