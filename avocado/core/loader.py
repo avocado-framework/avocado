@@ -628,12 +628,11 @@ class FileLoader(TestLoader):
                 # ":avocado: enable" or ":avocado: disable
                 if safeloader.check_docstring_directive(docstring, 'disable'):
                     continue
-                elif safeloader.check_docstring_directive(docstring, 'enable'):
-                    methods = [st.name for st in statement.body if
-                               isinstance(st, ast.FunctionDef) and
-                               st.name.startswith('test')]
-                    methods = data_structures.ordered_list_unique(methods)
-                    tags = safeloader.get_docstring_directives_tags(docstring)
+
+                tags = safeloader.get_docstring_directives_tags(docstring)
+
+                if safeloader.check_docstring_directive(docstring, 'enable'):
+                    methods = self._get_methods(statement.body)
                     result[statement.name] = {'methods': methods,
                                               'tags': tags}
                     continue
@@ -643,11 +642,7 @@ class FileLoader(TestLoader):
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
                     if test_import_name in base_ids:
-                        methods = [st.name for st in statement.body if
-                                   isinstance(st, ast.FunctionDef) and
-                                   st.name.startswith('test')]
-                        methods = data_structures.ordered_list_unique(methods)
-                        tags = safeloader.get_docstring_directives_tags(docstring)
+                        methods = self._get_methods(statement.body)
                         result[statement.name] = {'methods': methods,
                                                   'tags': tags}
                         continue
@@ -658,15 +653,19 @@ class FileLoader(TestLoader):
                         module = base.value.id
                         klass = base.attr
                         if module == mod_import_name and klass == 'Test':
-                            methods = [st.name for st in statement.body if
-                                       isinstance(st, ast.FunctionDef) and
-                                       st.name.startswith('test')]
-                            methods = data_structures.ordered_list_unique(methods)
-                            tags = safeloader.get_docstring_directives_tags(docstring)
+                            methods = self._get_methods(statement.body)
                             result[statement.name] = {'methods': methods,
                                                       'tags': tags}
 
         return result
+
+    @staticmethod
+    def _get_methods(statement_body):
+        methods = [st.name for st in statement_body if
+                   isinstance(st, ast.FunctionDef) and
+                   st.name.startswith('test')]
+        methods = data_structures.ordered_list_unique(methods)
+        return methods
 
     def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
                             test_name=None):
