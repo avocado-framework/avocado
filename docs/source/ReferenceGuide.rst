@@ -70,21 +70,19 @@ more than one test.
 Variant IDs
 -----------
 
-The multiplexer component creates different sets of variables
+The varianter component creates different sets of variables
 (known as "variants"), to allow tests to be run individually in
 each of them.
 
 A Variant ID is an arbitrary and abstract string created by the
-multiplexer to identify each variant. It should be unique per
-variant inside a set. In other words, the multiplexer generates a
-set of variants, identified by unique IDs.
+varianter plugin to identify each variant. It should be unique per
+variant inside a set. In other words, the varianter plugin generates
+a set of variants, identified by unique IDs.
 
-A simpler implementation of the multiplexer uses serial integers
+A simpler implementation of the varianter uses serial integers
 as Variant IDs. A more sophisticated implementation could
 generate Variant IDs with more semantic, potentially representing
 their contents.
-
-.. note:: The multiplexer supports serialized variant IDs only
 
 
 Test ID

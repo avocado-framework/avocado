@@ -34,9 +34,9 @@ Now we can replay the job by running::
      TESTS TIME : 0.01 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
 
-The replay feature will retrieve the original test references, the multiplex
-tree and the configuration. Let's see another example, now using
-multiplex file::
+The replay feature will retrieve the original test references, the variants
+and the configuration. Let's see another example, now using
+mux yaml file::
 
      $ avocado run /bin/true /bin/false --mux-yaml mux-environment.yaml
      JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
@@ -94,7 +94,7 @@ multiplex file::
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
 
 We can replay the job as is, using ``$ avocado run --replay latest``,
-or replay the job ignoring the multiplex file, as below::
+or replay the job ignoring the variants, as below::
 
      $ avocado run --replay bd6aa3b --replay-ignore variants
      Ignoring variants from source job with --replay-ignore.
