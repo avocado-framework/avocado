@@ -304,7 +304,7 @@ class RedHatProbe(Probe):
     CHECK_FILE_CONTAINS = 'Red Hat'
     CHECK_FILE_DISTRO_NAME = 'redhat'
     CHECK_VERSION_REGEX = re.compile(
-        r'Red Hat Enterprise Linux Server release (\d{1,2})\.(\d{1,2}).*')
+        r'Red Hat Enterprise Linux \w+ release (\d{1,2})\.(\d{1,2}).*')
 
 
 class CentosProbe(RedHatProbe):
