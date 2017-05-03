@@ -43,19 +43,19 @@ class MultiplexTests(unittest.TestCase):
         return result
 
     def test_mplex_plugin(self):
-        cmd_line = ('%s multiplex -m examples/tests/sleeptest.py.data/'
+        cmd_line = ('%s variants -m examples/tests/sleeptest.py.data/'
                     'sleeptest.yaml' % AVOCADO)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc)
 
     def test_mplex_plugin_nonexistent(self):
-        cmd_line = '%s multiplex -m nonexist' % AVOCADO
+        cmd_line = '%s variants -m nonexist' % AVOCADO
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn('No such file or directory', result.stderr)
 
     def test_mplex_debug(self):
-        cmd_line = ('%s multiplex -c -d -m '
+        cmd_line = ('%s variants -c -d -m '
                     '/:examples/mux-selftest.yaml '
                     '/:examples/mux-environment.yaml '
                     '/:examples/mux-selftest.yaml '
