@@ -32,6 +32,7 @@ that is, the job and its test(s) results are constantly updated::
      (3/3) synctest.py:SyncTest.test: PASS (1.98 s)
     RESULTS    : PASS 1 | ERROR 1 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 3.17 s
+    JOB TIME   : 3.27 s
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.57-5ffe4792/html/results.html
 
 The most important thing is to remember that programs should never need to parse

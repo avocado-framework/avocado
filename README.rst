@@ -171,6 +171,7 @@ To run a test, call the ``run`` command::
   (1/1) <examples_path>/tests/passtest.sh: PASS (0.04 s)
   RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   TESTS TIME : 0.04 s
+  JOB TIME   : 0.14 s
 
 To continue exploring Avocado, check out the output of ``avocado --help``
 and the test runner man-page, accessible via ``man avocado``.

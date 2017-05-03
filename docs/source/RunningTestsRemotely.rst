@@ -60,6 +60,7 @@ Once the remote machine is properly set, you may run your test. Example::
      (2/2) examples/tests/failtest.py: FAIL (0.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 1.01 s
+    JOB TIME   : 1.11 s
 
 A bit of extra logging information is added to your job summary, mainly
 to distinguish the regular execution from the remote one. Note here that
@@ -137,6 +138,7 @@ Once the virtual machine is properly set, you may run your test. Example::
      (2/2) examples/tests/failtest.py:FailTest.test: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
     TESTS TIME : 1.01 s
+    JOB TIME   : 1.11 s
 
 A bit of extra logging information is added to your job summary, mainly
 to distinguish the regular execution from the remote one. Note here that
@@ -213,6 +215,7 @@ command similar to::
      (3/3) /avocado_remote_test_dir/$HOME/failtest.py:FailTest.test: FAIL (0.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 1 | INTERRUPT 0
     TESTS TIME : 0.00 s
+    JOB TIME   : 0.10 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-07-25T08.01-db309f5/html/results.html
 
 Environment Variables
