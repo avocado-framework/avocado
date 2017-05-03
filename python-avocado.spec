@@ -2,27 +2,27 @@
 
 # Conditional for release vs. snapshot builds. Set to 1 for release build.
 %if ! 0%{?rel_build:1}
-%global rel_build 1
+    %global rel_build 1
 %endif
 
 # Settings used for build from snapshots.
 %if 0%{?rel_build}
-%global gittar		%{srcname}-%{version}.tar.gz
+    %global gittar		%{srcname}-%{version}.tar.gz
 %else
-%if ! 0%{?commit:1}
-%global commit		0baf8a1665941d3e8eec88e56cda414e9d937970
-%endif
-%if ! 0%{?commit_date:1}
-%global commit_date	20170425
-%endif
-%global shortcommit	%(c=%{commit};echo ${c:0:7})
-%global gitrel		.%{commit_date}git%{shortcommit}
-%global gittar		%{srcname}-%{shortcommit}.tar.gz
+    %if ! 0%{?commit:1}
+        %global commit		b45e2c532001187e23cef61212fdc8fe44425a2a
+    %endif
+    %if ! 0%{?commit_date:1}
+        %global commit_date	20170518
+    %endif
+    %global shortcommit	%(c=%{commit};echo ${c:0:7})
+    %global gitrel		.%{commit_date}git%{shortcommit}
+    %global gittar		%{srcname}-%{shortcommit}.tar.gz
 %endif
 
-# selftests are provided but may need to skipped because many of
-# functional tests are time and resource sensitive and can
-# cause race conditions and random build failures.  they are
+# Selftests are provided but may need to be skipped because many of
+# the functional tests are time and resource sensitive and can
+# cause race conditions and random build failures. They are
 # enabled by default.
 %global with_tests 1
 
