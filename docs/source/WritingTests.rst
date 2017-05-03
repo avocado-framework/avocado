@@ -197,7 +197,7 @@ the details.
 Let's say your test receives following params (you'll learn how to execute
 them in the following section)::
 
-    $ avocado multiplex -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --variants 2
+    $ avocado variants -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --variants 2
     ...
     Variant 1:    /run/sleeptenmin/builtin, /run/variants/one_cycle
         /run/sleeptenmin/builtin:sleep_method => builtin
@@ -259,7 +259,7 @@ an example:
 
 Which produces following structure and parameters::
 
-      $ avocado multiplex -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
+      $ avocado variants -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
       Multiplex tree representation:
        ┗━━ run
             ┣━━ sleeptenmin

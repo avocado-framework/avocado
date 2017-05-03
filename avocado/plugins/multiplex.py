@@ -13,107 +13,22 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
 import logging
-import sys
 
-from avocado.core import exit_codes
-from avocado.core.plugin_interfaces import CLICmd
-from avocado.core.settings import settings
+from .variants import Variants
 
 
-_VERBOSITY_LEVELS = {"none": 0, "brief": 1, "normal": 2, "verbose": 3,
-                     "full": 4, "max": 99}
-
-
-def map_verbosity_level(level):
-    if level.isdigit():
-        return int(level)
-    level = level.lower()
-    if level in _VERBOSITY_LEVELS:
-        return _VERBOSITY_LEVELS[level]
-    else:
-        raise ValueError
-
-
-class Multiplex(CLICmd):
+class Multiplex(Variants):
 
     """
-    Implements the avocado 'multiplex' subcommand
+    DEPRECATED version of the "avocado multiplex" command which is replaced
+    by "avocado variants" one.
     """
 
-    name = 'multiplex'
-    description = "Tool to analyze and visualize test variants and params"
-
-    def __init__(self, *args, **kwargs):
-        super(Multiplex, self).__init__(*args, **kwargs)
-
-    def configure(self, parser):
-        parser = super(Multiplex, self).configure(parser)
-        verbosity_levels = ("(positive integer - 0, 1, ... - or %s)"
-                            % ", ".join(sorted(_VERBOSITY_LEVELS,
-                                        key=lambda _: _VERBOSITY_LEVELS[_])))
-        parser.add_argument("--summary", type=map_verbosity_level,
-                            help="Verbosity of the variants summary. " +
-                            verbosity_levels)
-        parser.add_argument("--variants", type=map_verbosity_level,
-                            help="Verbosity of the list of variants. " +
-                            verbosity_levels, default=1)
-        parser.add_argument('--system-wide', action='store_false',
-                            default=True, dest="variants-skip-defaults",
-                            help="Combine the files with the default "
-                            "tree.")
-        parser.add_argument('-c', '--contents', action='store_true',
-                            default=False, help="[obsoleted by --variants] "
-                            "Shows the node content (variables)")
-        env_parser = parser.add_argument_group("environment view options")
-        env_parser.add_argument('-d', '--debug', action='store_true',
-                                dest="mux_debug", default=False,
-                                help="Debug the multiplex tree.")
-        tree_parser = parser.add_argument_group("tree view options")
-        tree_parser.add_argument('-t', '--tree', action='store_true',
-                                 default=False, help='[obsoleted by --summary]'
-                                 ' Shows the multiplex tree structure')
-        tree_parser.add_argument('-i', '--inherit', action="store_true",
-                                 help="[obsoleted by --summary] Show the "
-                                 "inherited values")
+    name = "multiplex"
 
     def run(self, args):
         log = logging.getLogger("avocado.app")
-        err = None
-        if args.tree and args.mux_debug:
-            err = "Option --tree is incompatible with --debug."
-        elif not args.tree and args.inherit:
-            err = "Option --inherit can be only used with --tree"
-        if err:
-            log.error(err)
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        varianter = args.avocado_variants
-        try:
-            varianter.parse(args)
-        except (IOError, ValueError) as details:
-            log.error("Unable to parse varianter: %s", details)
-            sys.exit(exit_codes.AVOCADO_FAIL)
-        use_utf8 = settings.get_value("runner.output", "utf8",
-                                      key_type=bool, default=None)
-        summary = args.summary or 0
-        variants = args.variants or 0
-
-        # Parse obsolete options (unsafe to combine them with new args)
-        if args.tree:
-            variants = 0
-            summary += 1
-            if args.contents:
-                summary += 1
-            if args.inherit:
-                summary += 2
-        else:
-            if args.contents:
-                variants += 2
-
-        # Produce the output
-        lines = args.avocado_variants.to_str(summary=summary,
-                                             variants=variants,
-                                             use_utf8=use_utf8)
-        for line in lines.splitlines():
-            log.debug(line)
-
-        sys.exit(exit_codes.AVOCADO_ALL_OK)
+        log.warning("The 'avocado multiplex' command is deprecated by the "
+                    "'avocado variants' one. Please start using that one "
+                    "instead as this will be removed in Avocado 52.0.")
+        super(Multiplex, self).run(args)

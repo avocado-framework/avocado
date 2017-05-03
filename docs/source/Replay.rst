@@ -96,8 +96,8 @@ multiplex file::
 We can replay the job as is, using ``$ avocado run --replay latest``,
 or replay the job ignoring the multiplex file, as below::
 
-     $ avocado run --replay bd6aa3b --replay-ignore mux
-     Ignoring multiplex from source job with --replay-ignore.
+     $ avocado run --replay bd6aa3b --replay-ignore variants
+     Ignoring variants from source job with --replay-ignore.
      JOB ID     : d5a46186ee0fb4645e3f7758814003d76c980bf9
      SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T22.01-d5a4618/job.log
