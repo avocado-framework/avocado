@@ -197,7 +197,7 @@ the details.
 Let's say your test receives following params (you'll learn how to execute
 them in the following section)::
 
-    $ avocado multiplex -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --variants 2
+    $ avocado variants -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --variants 2
     ...
     Variant 1:    /run/sleeptenmin/builtin, /run/variants/one_cycle
         /run/sleeptenmin/builtin:sleep_method => builtin
@@ -259,7 +259,7 @@ an example:
 
 Which produces following structure and parameters::
 
-      $ avocado multiplex -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
+      $ avocado variants -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
       Multiplex tree representation:
        ┗━━ run
             ┣━━ sleeptenmin
@@ -887,7 +887,7 @@ Setting a Test Timeout
 Sometimes your test suite/test might get stuck forever, and this might
 impact your test grid. You can account for that possibility and set up a
 ``timeout`` parameter for your test. The test timeout can be set through
-the multiplex, as shown below.
+the test parameters, as shown below.
 
 ::
 
@@ -946,9 +946,9 @@ the multiplex, as shown below.
 	2016-11-02 11:13:04,440 test             L0592 ERROR| ERROR 1-sleeptest.py:SleepTest.test -> TestError: SystemExit('Test interrupted by SIGTERM',): Test interrupted by SIGTERM
 
 
-If you pass that multiplex file to the runner multiplexer, this will register
-a timeout of 3 seconds before Avocado ends the test forcefully by sending a
-:class:`signal.SIGTERM` to the test, making it raise a
+The ``yaml`` file defines a test parameter ``timeout`` which overrides
+the default test timeout before the runner ends the test forcefully by
+sending a class:`signal.SIGTERM` to the test, making it raise a
 :class:`avocado.core.exceptions.TestTimeoutError`.
 
 
@@ -1480,7 +1480,7 @@ the Avocado supported use cases.
 Environment Variables for Simple Tests
 ======================================
 
-Avocado exports Avocado variables and multiplexed variables as BASH environment
+Avocado exports Avocado variables and test parameters as BASH environment
 to the running test. Those variables are interesting to simple tests, because
 they can not make use of Avocado API directly with Python, like the native
 tests can do and also they can modify the test parameters.

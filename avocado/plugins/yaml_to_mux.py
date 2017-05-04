@@ -283,7 +283,7 @@ class YamlToMuxCLI(CLI):
         """
         if not MULTIPLEX_CAPABLE:
             return
-        for name in ("run", "multiplex"):
+        for name in ("run", "multiplex", "variants"):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue

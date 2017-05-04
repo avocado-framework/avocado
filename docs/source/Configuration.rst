@@ -88,10 +88,10 @@ example), we established the following order of precedence for variables (from l
 * global config file
 * local (user) config file
 * command line switch
-* multiplexer
+* test parameters
 
-So the least important value comes from the library or test code default, going all the way up to the multiplexing
-system.
+So the least important value comes from the library or test code default,
+going all the way up to the test parameters system.
 
 Config plugin
 =============
