@@ -215,9 +215,6 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_load_not_a_test_not_exec(self):
         self._test('notatest.py', NOT_A_TEST, 'NOT_A_TEST')
 
-    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
-                     "Skipping test that take a long time to run, are "
-                     "resource intensive or time sensitve")
     def test_runner_simple_python_like_multiple_files(self):
         mylib = script.TemporaryScript(
             'test2.py',
@@ -233,11 +230,11 @@ class LoaderTestFunctional(unittest.TestCase):
         cmd_line = "%s list -V %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
         self.assertIn('SIMPLE: 1', result.stdout)
-        # job should be able to finish under 5 seconds. If this fails, it's
-        # possible that we hit the "simple test fork bomb" bug
+        # Job should finish immediately unless there is a bug in Avocado
+        # which produces a fork-bomb.
         cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
                     % (AVOCADO, self.tmpdir, mytest))
-        self._run_with_timeout(cmd_line, 5)
+        self._run_with_timeout(cmd_line, 60)
 
     def test_simple_using_main(self):
         mytest = script.TemporaryScript("simple_using_main.py",
