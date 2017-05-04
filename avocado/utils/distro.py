@@ -301,10 +301,10 @@ class RedHatProbe(Probe):
     Probe with version checks for Red Hat Enterprise Linux systems
     """
     CHECK_FILE = '/etc/redhat-release'
-    CHECK_FILE_CONTAINS = 'Red Hat'
-    CHECK_FILE_DISTRO_NAME = 'redhat'
+    CHECK_FILE_CONTAINS = 'Red Hat Enterprise Linux'
+    CHECK_FILE_DISTRO_NAME = 'rhel'
     CHECK_VERSION_REGEX = re.compile(
-        r'Red Hat Enterprise Linux Server release (\d{1,2})\.(\d{1,2}).*')
+        r'Red Hat Enterprise Linux \w+ release (\d{1,2})\.(\d{1,2}).*')
 
 
 class CentosProbe(RedHatProbe):
