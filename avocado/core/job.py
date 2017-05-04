@@ -167,6 +167,8 @@ class Job(object):
         idfile = os.path.join(self.logdir, "id")
         with open(idfile, 'w') as id_file_obj:
             id_file_obj.write("%s\n" % self.unique_id)
+            id_file_obj.flush()
+            os.fsync(id_file_obj)
 
     def __start_job_logging(self):
         # Enable test logger
