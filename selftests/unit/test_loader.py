@@ -61,12 +61,18 @@ class DisabledTest(Test):
 
 class FastTest(Test):
     '''
-    :avocado: tags=fast,net
+    :avocado: tags=fast
     '''
     def test_fast(self):
+        '''
+        :avocado: tags=net
+        '''
         pass
 
     def test_fast_other(self):
+        '''
+        :avocado: tags=net
+        '''
         pass
 
 class SlowTest(Test):
