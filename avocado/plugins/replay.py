@@ -16,6 +16,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 
 from avocado.core import exit_codes
@@ -61,6 +62,8 @@ class Replay(CLI):
                                    help='Ignore variants (variants) and/or '
                                    'configuration (config) from the '
                                    'source job')
+        replay_parser.add_argument("--replay-resume", action="store_true",
+                                   help="Resume an interrupted job")
 
     def _valid_status(self, string):
         status_list = string.split(',')
@@ -90,6 +93,44 @@ class Replay(CLI):
         if config is not None:
             settings.process_config_path(config)
 
+    def _get_tests_from_tap(self, path):
+        if not os.path.exists(path):
+            return None
+        re_result = re.compile(r"(not )?ok (\d+) ([^#]*)(# (\w+).*)?")
+        re_no_tests = re.compile(r"1..(\d+)")
+        max_index = 0
+        no_tests = 0
+        _tests = {}
+        for line in open(path):
+            line = line.strip()
+            if line.startswith("#"):
+                continue
+            result = re_result.match(line)
+            if result:
+                if result.group(1) is None:
+                    res = result.group(5)
+                    if res is None:
+                        res = "PASS"
+                else:
+                    res = "ERROR"
+                index = int(result.group(2))
+                _tests[index] = {"status": res,
+                                 "test": result.group(3).rstrip()}
+                max_index = max(max_index, index)
+                continue
+            _no_tests = re_no_tests.match(line)
+            if _no_tests:
+                no_tests = int(_no_tests.group(1))
+                continue
+
+        if not (no_tests or max_index):
+            return None
+
+        # Now add _tests that were not executed
+        skipped_test = {"test": "UNKNOWN", "status": "INTERRUPTED"}
+        return [_tests[i] if i in _tests else skipped_test
+                for i in xrange(1, max(max_index, no_tests) + 1)]
+
     def _create_replay_map(self, resultsdir, replay_filter):
         """
         Creates a mapping to be used as filter for the replay. Given
@@ -98,14 +139,21 @@ class Replay(CLI):
         be replayed will have a correspondent None in the map.
         """
         json_results = os.path.join(resultsdir, "results.json")
-        if not os.path.exists(json_results):
-            return None
-
-        with open(json_results, 'r') as json_file:
-            results = json.loads(json_file.read())
+        if os.path.exists(json_results):
+            with open(json_results, 'r') as json_file:
+                results = json.loads(json_file.read())
+                tests = results["tests"]
+                for _ in xrange(results["total"] + 1 - len(tests)):
+                    tests.append({"test": "UNKNOWN", "status": "INTERRUPTED"})
+        else:
+            # get partial results from tap
+            tests = self._get_tests_from_tap(os.path.join(resultsdir,
+                                                          "results.tap"))
+            if not tests:   # tests not available, ignore replay map
+                return None
 
         replay_map = []
-        for test in results['tests']:
+        for test in tests:
             if test['status'] not in replay_filter:
                 replay_map.append(ReplaySkipTest)
             else:
@@ -214,6 +262,13 @@ class Replay(CLI):
                                 "ignore variants` to override them.")
                 setattr(args, "avocado_variants", variants)
 
+        # Extend "replay_test_status" of "INTERRUPTED" when --replay-resume
+        # supplied.
+        if args.replay_resume:
+            if not args.replay_teststatus:
+                args.replay_teststatus = ["INTERRUPTED"]
+            elif "INTERRUPTED" not in args.replay_teststatus:
+                args.replay_teststatus.append("INTERRUPTED")
         if args.replay_teststatus:
             replay_map = self._create_replay_map(resultsdir,
                                                  args.replay_teststatus)
