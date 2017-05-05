@@ -103,6 +103,7 @@ class TermSupport(object):
         self.INTERRUPT = ''
         self.ERROR = ''
         self.WARN = ''
+        self.CANCEL = ''
         self.PARTIAL = ''
         self.ENDC = ''
         self.LOWLIGHT = ''
