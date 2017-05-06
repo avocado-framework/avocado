@@ -57,7 +57,7 @@ class TestsTmpDirTests(unittest.TestCase):
                          "%d:\n%s" % (cmd_line, expected_rc, result))
         return result
 
-    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Temporary skip because of errors on Travis-CI")
     @unittest.skipIf(test.COMMON_TMPDIR_NAME in os.environ,
                      "%s already set in os.environ"

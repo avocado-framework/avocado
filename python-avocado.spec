@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 49.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -172,7 +172,13 @@ popd
 pushd optional_plugins/runner_docker
 %{__python} setup.py develop --user
 popd
-selftests/run
+pushd optional_plugins/resultsdb
+%{__python} setup.py develop --user
+popd
+# Package build environments have the least amount of resources
+# we have observed so far.  Let's avoid tests that require too
+# much resources or are time sensitive
+AVOCADO_CHECK_LEVEL=0 selftests/run
 %endif
 
 %files
@@ -183,7 +189,7 @@ selftests/run
 %dir /etc/avocado/sysinfo
 %dir /etc/avocado/scripts/job/pre.d
 %dir /etc/avocado/scripts/job/post.d
-%dir %{_sharedstatedir}/avocado/data
+%dir %{_sharedstatedir}/avocado*
 %config(noreplace)/etc/avocado/avocado.conf
 %config(noreplace)/etc/avocado/conf.d/README
 %config(noreplace)/etc/avocado/conf.d/gdb.conf
@@ -315,6 +321,11 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Thu Apr 27 2017 Cleber Rosa <cleber@redhat.com> - 49.0-2
+- Also setup resultsdb plugin on check
+- Be explicit about selftest level run on check
+- Take ownership of base avocado data dir (/var/lib/avocado)
+
 * Tue Apr 25 2017 Cleber Rosa <cleber@redhat.com> - 49.0-1
 - Added missing runner-docker directory
 
