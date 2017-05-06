@@ -78,7 +78,8 @@ def get_cpu_vendor_name():
     vendors_map = {
         'intel': ("GenuineIntel", ),
         'amd': ("AMD", ),
-        'power7': ("POWER7", )
+        'power7': ("POWER7", ),
+        'power8': ("POWER8", )
     }
 
     cpu_info = _get_cpu_info()
