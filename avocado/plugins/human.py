@@ -99,7 +99,6 @@ class Human(ResultEvents):
                       job.result.errors, job.result.failed, job.result.skipped,
                       job.result.warned, job.result.interrupted,
                       job.result.cancelled)
-        self.log.info("TESTS TIME : %.2f s", job.result.tests_total_time)
 
 
 class HumanJob(JobPre, JobPost):

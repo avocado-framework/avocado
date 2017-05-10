@@ -190,7 +190,6 @@ recognizable name::
     JOB LOG   : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/job.log
      (1/1) /bin/true: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 0.01 s
     JOB TIME   : 0.11 s
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.39-381b849a/html/results.html
 
@@ -217,7 +216,6 @@ using the ``--dry-run`` argument::
     JOB LOG    : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/job.log
      (1/1) /bin/true: SKIP
     RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 0.00 s
     JOB TIME   : 0.10 s
     JOB HTML   : /tmp/avocado-dry-runSeWniM/job-2015-10-16T15.46-0000000/html/results.html
 
@@ -306,7 +304,6 @@ instrumented and simple tests::
      (5/6) synctest.py:SyncTest.test: PASS (2.44 s)
      (6/6) /tmp/simple_test.sh.1: PASS (0.02 s)
     RESULTS    : PASS 4 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 5.88 s
     JOB TIME   : 5.98 s
     JOB HTML  : $HOME/avocado/job-results/job-2014-08-12T15.42-86911e49/html/results.html
 
@@ -323,7 +320,6 @@ on first failed test::
      (2/4) /bin/false: FAIL (0.01 s)
     Interrupting job (failfast).
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 2 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 0.02 s
     JOB TIME   : 0.12 s
     JOB HTML   : /home/apahim/avocado/job-results/job-2016-07-19T09.43-eaf51b8/html/results.html
 
@@ -370,7 +366,6 @@ files with shell code could be considered tests::
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 0.01 s
     JOB TIME   : 0.11 s
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
@@ -388,7 +383,6 @@ But now consider the following example::
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 3.04 s
     JOB TIME   : 3.14 s
     JOB HTML   : /home/<user>/avocado/job-results/job-<date>-<shortid>/html/results.html
 
