@@ -170,7 +170,6 @@ To run a test, call the ``run`` command::
   JOB LOG    : <job-results>/job-<date>-<shortid>/job.log
   (1/1) <examples_path>/tests/passtest.sh: PASS (0.04 s)
   RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
-  TESTS TIME : 0.04 s
   JOB TIME   : 0.14 s
 
 To continue exploring Avocado, check out the output of ``avocado --help``
