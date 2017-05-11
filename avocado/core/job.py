@@ -24,6 +24,7 @@ import re
 import shutil
 import sys
 import tempfile
+import time
 import traceback
 
 from . import version
@@ -108,6 +109,15 @@ class Job(object):
         self.result = result.Result(self)
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
+        #: The time at which the job has started or `-1` if it has not been
+        #: started by means of the `run()` method.
+        self.time_start = -1
+        #: The time at which the job has finished or `-1` if it has not been
+        #: started by means of the `run()` method.
+        self.time_end = -1
+        #: The total amount of time the job took from start to finish,
+        #: or `-1` if it has not been started by means of the `run()` method
+        self.time_elapsed = -1
         self.__logging_handlers = {}
         self.__start_job_logging()
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
@@ -121,9 +131,6 @@ class Job(object):
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
-
-        # A job may not have a dispatcher for pre/post tests execution plugins
-        self._job_pre_post_dispatcher = None
 
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
@@ -422,11 +429,8 @@ class Job(object):
         Run the pre tests execution hooks
 
         By default this runs the plugins that implement the
-        :class:`avocado.core.plugin_interfaces.JobPre` interface.
+        :class:`avocado.core.plugin_interfaces.JobPreTests` interface.
         """
-        self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-        output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
-        self._job_pre_post_dispatcher.map_method('pre', self)
         self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
@@ -472,12 +476,9 @@ class Job(object):
         Run the post tests execution hooks
 
         By default this runs the plugins that implement the
-        :class:`avocado.core.plugin_interfaces.JobPost` interface.
+        :class:`avocado.core.plugin_interfaces.JobPostTests` interface.
         """
-        if self._job_pre_post_dispatcher is None:
-            self._job_pre_post_dispatcher = dispatcher.JobPrePostDispatcher()
-            output.log_plugin_failures(self._job_pre_post_dispatcher.load_failures)
-        self._job_pre_post_dispatcher.map_method('post', self)
+        self._result_events_dispatcher.map_method('post_tests', self)
 
     def run(self):
         """
@@ -489,6 +490,8 @@ class Job(object):
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
+        if self.time_start == -1:
+            self.time_start = time.time()
         runtime.CURRENT_JOB = self
         try:
             self.create_test_suite()
@@ -521,6 +524,9 @@ class Job(object):
             return self.exitcode
         finally:
             self.post_tests()
+            if self.time_end == -1:
+                self.time_end = time.time()
+                self.time_elapsed = self.time_end - self.time_start
             self.__stop_job_logging()
 
 

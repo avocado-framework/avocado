@@ -23,8 +23,10 @@ import sys
 from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
+from avocado.core import output
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.dispatcher import ResultDispatcher
+from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.settings import settings
 from avocado.utils.data_structures import time_to_seconds
 
@@ -166,7 +168,17 @@ class Run(CLICmd):
             log.error(e.message)
             sys.exit(exit_codes.AVOCADO_FAIL)
         job_instance = job.Job(args)
+
+        # Run JobPre plugins
+        pre_post_dispatcher = JobPrePostDispatcher()
+        output.log_plugin_failures(pre_post_dispatcher.load_failures)
+        pre_post_dispatcher.map_method('pre', job_instance)
+
         job_run = job_instance.run()
+
+        # Run JobPost plugins
+        pre_post_dispatcher.map_method('post', job_instance)
+
         result_dispatcher = ResultDispatcher()
         if result_dispatcher.extensions:
             result_dispatcher.map_method('render',
