@@ -4,16 +4,18 @@ import shutil
 import tempfile
 import unittest
 
+from avocado.core import data_dir
 from avocado.core import exceptions
-from avocado.core import test
-from avocado.core import job
 from avocado.core import exit_codes
+from avocado.core import job
+from avocado.core import test
 from avocado.utils import path as utils_path
 
 
 class JobTest(unittest.TestCase):
 
     def setUp(self):
+        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
     @staticmethod
@@ -104,7 +106,6 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
 
-    @unittest.skip("Issue described at https://trello.com/c/qgSTIK0Y")
     def test_job_run(self):
         class JobFilterLog(job.Job):
             def pre_tests(self):
@@ -130,7 +131,29 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.unique_id[::-1],
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
 
+    def test_job_run_account_time(self):
+        args = argparse.Namespace(logdir=self.tmpdir)
+        myjob = job.Job(args)
+        myjob.run()
+        self.assertNotEqual(myjob.time_start, -1)
+        self.assertNotEqual(myjob.time_end, -1)
+        self.assertNotEqual(myjob.time_elapsed, -1)
+
+    def test_job_self_account_time(self):
+        args = argparse.Namespace(logdir=self.tmpdir)
+        myjob = job.Job(args)
+        myjob.time_start = 10.0
+        myjob.run()
+        myjob.time_end = 20.0
+        # forcing a different value to check if it's not being
+        # calculated when time_start or time_end are manually set
+        myjob.time_elapsed = 100.0
+        self.assertEqual(myjob.time_start, 10.0)
+        self.assertEqual(myjob.time_end, 20.0)
+        self.assertEqual(myjob.time_elapsed, 100.0)
+
     def tearDown(self):
+        data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         shutil.rmtree(self.tmpdir)
 
 

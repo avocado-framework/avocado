@@ -83,7 +83,7 @@ class InterruptTest(unittest.TestCase):
         # We have to actually wait 2 seconds until the ignore window is over
         time.sleep(2.5)
         proc.sendline('\x03')
-        proc.read_until_last_line_matches('TESTS TIME : %d s')
+        proc.read_until_last_line_matches('JOB TIME   : %d s')
         wait.wait_for(lambda: not proc.is_alive(), timeout=1)
 
         # Make sure the bad test will be really gone from the process table
@@ -139,7 +139,7 @@ class InterruptTest(unittest.TestCase):
         proc = aexpect.Expect(command=cmd_line, linesep='')
         proc.read_until_last_line_matches(os.path.basename(good_test.path))
         proc.sendline('\x03')
-        proc.read_until_last_line_matches('TESTS TIME : %d s')
+        proc.read_until_last_line_matches('JOB TIME   : %d s')
         wait.wait_for(lambda: not proc.is_alive(), timeout=1)
 
         # Make sure the good test will be really gone from the process table

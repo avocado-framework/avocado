@@ -485,7 +485,7 @@ test directories. The output should be similar to::
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
      (1/1) sleeptest.py:SleepTest.test: PASS (1.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 1.01 s
+    JOB TIME   : 1.11 s
 
 The test directories will vary depending on you system and installation
 method used. Still, it's pretty easy to find that out as shown in the
@@ -711,7 +711,7 @@ And the output should look like::
      (3/4) sleeptest.py:SleepTest.test;3: PASS (5.02 s)
      (4/4) sleeptest.py:SleepTest.test;4: PASS (10.01 s)
     RESULTS    : PASS 4 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 16.55 s
+    JOB TIME   : 16.65 s
 
 The `multiplex` plugin and the test runner supports two kinds of global
 filters, through the command line options `--mux-filter-only` and
@@ -903,7 +903,7 @@ files with shell code could be considered tests::
     (1/2) /tmp/pass: PASS (0.01 s)
     (2/2) /tmp/fail: FAIL (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 0.01 s
+    JOB TIME   : 0.11 s
 
 This example is pretty obvious, and could be achieved by giving
 `/tmp/pass` and `/tmp/fail` shell "shebangs" (`#!/bin/sh`), making
@@ -920,7 +920,7 @@ But now consider the following example::
     (1/2) http://local-avocado-server:9405/jobs/: PASS (0.02 s)
     (2/2) http://remote-avocado-server:9405/jobs/: FAIL (3.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 3.04 s
+    JOB TIME   : 3.14 s
 
 This effectively makes `/bin/curl` an "external test runner",
 responsible for trying to fetch those URLs, and reporting PASS or FAIL
@@ -958,7 +958,7 @@ passing the option --output-check-record all to the test runner::
     JOB LOG   : /home/<user>/avocado/job-results/job-<date>-<shortid>/job.log
      (1/1) examples/tests/synctest.py:SyncTest.test: PASS (4.00 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 4.00 s
+    JOB TIME   : 4.10 s
 
 After the reference files are added, the check process is transparent,
 in the sense that you do not need to provide special flags to the test
@@ -990,7 +990,7 @@ Let's record the output (both stdout and stderr) for this one::
     TESTS     : 1
     (1/1) home/$USER/Code/avocado/output_record.sh: PASS (0.01 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 0.01 s
+    JOB TIME   : 0.11 s
 
 After this is done, you'll notice that a the test data directory
 appeared in the same level of our shell script, containing 2 files::
@@ -1034,7 +1034,7 @@ The output should look like::
     LOGIN      : fedora@localhost:22 (TIMEOUT: 60 seconds)
      (1/1) sleeptest.py:SleepTest.test: PASS (1.02 s)
     RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
-    TESTS TIME : 1.02 s
+    JOB TIME   : 1.12 s
 
 For more information, please consult the topic Remote Machine Plugin
 on Avocado's online documentation.
