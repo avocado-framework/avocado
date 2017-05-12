@@ -19,7 +19,6 @@ Job Diff
 from __future__ import absolute_import
 import argparse
 import json
-import logging
 import os
 import subprocess
 import sys
@@ -31,11 +30,9 @@ from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import output
 
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
-
-
-LOG = logging.getLogger("avocado.app")
 
 
 class Diff(CLICmd):
@@ -217,7 +214,7 @@ class Diff(CLICmd):
             tmp_file2.writelines(job2_results)
             tmp_file2.close()
 
-            LOG.info('%s %s', tmp_file1.name, tmp_file2.name)
+            LOG_UI.info('%s %s', tmp_file1.name, tmp_file2.name)
 
         if (getattr(args, 'open_browser', False) and
                 getattr(args, 'html', None) is None):
@@ -259,10 +256,10 @@ class Diff(CLICmd):
                 with open(args.html, 'w') as html_file:
                     html_file.writelines(job_diff_html.encode("utf-8"))
 
-                LOG.info(args.html)
+                LOG_UI.info(args.html)
 
             except IOError as exception:
-                LOG.error(exception)
+                LOG_UI.error(exception)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         if getattr(args, 'open_browser', False):
@@ -281,13 +278,13 @@ class Diff(CLICmd):
                                                      job2_results,
                                                      fromfile=job1_id,
                                                      tofile=job2_id)):
-                    LOG.debug(line.strip())
+                    LOG_UI.debug(line.strip())
             else:
                 for line in unified_diff(job1_results,
                                          job2_results,
                                          fromfile=job1_id,
                                          tofile=job2_id):
-                    LOG.debug(line.strip())
+                    LOG_UI.debug(line.strip())
 
     @staticmethod
     def _validate_filters(string):
@@ -342,18 +339,18 @@ class Diff(CLICmd):
             try:
                 resultsdir = jobdata.get_resultsdir(logdir, job_id)
             except ValueError as exception:
-                LOG.error(exception.message)
+                LOG_UI.error(exception.message)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
         if resultsdir is None:
-            LOG.error("Can't find job results directory for '%s' in '%s'",
-                      job_id, logdir)
+            LOG_UI.error("Can't find job results directory for '%s' in '%s'",
+                         job_id, logdir)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'), job_id)
         if sourcejob is None:
-            LOG.error("Can't find matching job id '%s' in '%s' directory.",
-                      job_id, resultsdir)
+            LOG_UI.error("Can't find matching job id '%s' in '%s' directory.",
+                         job_id, resultsdir)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         return resultsdir, sourcejob

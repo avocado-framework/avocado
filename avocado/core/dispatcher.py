@@ -15,12 +15,12 @@
 """Extensions/plugins dispatchers."""
 
 import copy
-import logging
 import sys
 
 from stevedore import EnabledExtensionManager
 
 from .settings import settings
+from .output import LOG_UI
 from ..utils import stacktrace
 
 
@@ -183,7 +183,6 @@ class ResultEventsDispatcher(Dispatcher):
         super(ResultEventsDispatcher, self).__init__(
             'avocado.plugins.result_events',
             invoke_kwds={'args': args})
-        self.log = logging.getLogger("avocado.app")
 
     def map_method(self, method_name, *args):
         for ext in self.extensions:
@@ -196,8 +195,8 @@ class ResultEventsDispatcher(Dispatcher):
             except KeyboardInterrupt:
                 raise
             except:
-                self.log.error('Error running method "%s" of plugin "%s": %s',
-                               method_name, ext.name, sys.exc_info()[1])
+                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
+                             method_name, ext.name, sys.exc_info()[1])
 
 
 class VarianterDispatcher(Dispatcher):
@@ -244,9 +243,8 @@ class VarianterDispatcher(Dispatcher):
                 raise
             except:     # catch any exception pylint: disable=W0702
                 stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
-                log = logging.getLogger("avocado.app")
-                log.error('Error running method "%s" of plugin "%s": %s',
-                          method_name, ext.name, sys.exc_info()[1])
+                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
+                             method_name, ext.name, sys.exc_info()[1])
         return ret
 
     def map_method(self, method_name, *args, **kwargs):

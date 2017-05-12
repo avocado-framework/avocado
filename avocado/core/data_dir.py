@@ -25,7 +25,6 @@ The general reasoning to find paths is:
 * The next best location is the default system wide one.
 * The next best location is the default user specific one.
 """
-import logging
 import os
 import sys
 import shutil
@@ -34,6 +33,7 @@ import tempfile
 
 from . import job_id
 from . import settings
+from .output import LOG_JOB
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
 
@@ -52,8 +52,6 @@ USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
-
-LOG = logging.getLogger('avocado.test')
 
 
 def _get_settings_dir(dir_name):
@@ -206,8 +204,8 @@ class _TmpDirTracker(Borg):
             self.tmp_dir = tempfile.mkdtemp(prefix='avocado_',
                                             dir=self.basedir)
         elif basedir is not None and basedir != self.basedir:
-            LOG.error("The tmp_dir was already created. The new basedir "
-                      "you're trying to provide will have no effect.")
+            LOG_JOB.error("The tmp_dir was already created. The new basedir "
+                          "you're trying to provide will have no effect.")
         return self.tmp_dir
 
     def unittest_refresh_dir_tracker(self):

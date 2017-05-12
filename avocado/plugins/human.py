@@ -15,8 +15,7 @@
 Human result UI
 """
 
-import logging
-
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import ResultEvents
 from avocado.core import output
 
@@ -39,7 +38,7 @@ class Human(ResultEvents):
                       'CANCEL': output.TERM_SUPPORT.CANCEL}
 
     def __init__(self, args):
-        self.log = logging.getLogger("avocado.app")
+        self.log = LOG_UI
         self.__throbber = output.Throbber()
         stdout_claimed_by = getattr(args, 'stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by

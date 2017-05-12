@@ -15,9 +15,9 @@
 TAP output module.
 """
 
-import logging
 import os
 
+from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, ResultEvents
 
@@ -63,7 +63,7 @@ class TAPResult(ResultEvents):
         self.__open_files = []
         output = getattr(args, 'tap', None)
         if output == '-':
-            log = logging.getLogger("avocado.app").debug
+            log = LOG_UI.debug
             self.__logs.append(log)
         elif output is not None:
             log = open(output, "w", 1)

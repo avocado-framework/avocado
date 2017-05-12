@@ -1,6 +1,6 @@
 import os
-import logging
 
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core.settings import settings
 from avocado.utils import process
@@ -15,7 +15,7 @@ class JobScripts(JobPre, JobPost):
     description = 'Runs scripts before/after the job is run'
 
     def __init__(self):
-        self.log = logging.getLogger("avocado.app")
+        self.log = LOG_UI
         self.warn_non_existing_dir = settings.get_value(section=CONFIG_SECTION,
                                                         key="warn_non_existing_dir",
                                                         key_type=bool,

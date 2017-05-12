@@ -6,13 +6,9 @@ Module that implements the actions for the CLI App when the job toplevel
 command is used
 """
 
-import logging
-
 from . import base
 from ... import connection
-
-
-log = logging.getLogger("avocado.app")
+from ....output import LOG_UI
 
 
 @base.action
@@ -21,7 +17,7 @@ def status(app):
     Shows the server status
     """
     data = app.connection.request("version/")
-    log.info("Server version: %s", data.get('version'))
+    LOG_UI.info("Server version: %s", data.get('version'))
 
 
 @base.action
@@ -33,9 +29,9 @@ def list_brief(app):
         data = app.connection.get_api_list()
     except connection.UnexpectedHttpStatusCode as e:
         if e.received == 403:
-            log.error("Error: Access Forbidden")
+            LOG_UI.error("Error: Access Forbidden")
             return False
 
-    log.info("Available APIs:")
+    LOG_UI.info("Available APIs:")
     for name in data:
-        log.info(" * %s", name)
+        LOG_UI.info(" * %s", name)
