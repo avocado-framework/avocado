@@ -170,7 +170,7 @@ class FileLockTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
-    @unittest.skipIf(os.environ.get("AVOCADO_CHECK_FULL") != "1",
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_filelock(self):

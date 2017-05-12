@@ -35,13 +35,14 @@ MOCK_CONFIG=default
 all:
 	@echo
 	@echo "Development related targets:"
-	@echo "check:      Runs tree static check, unittests and fast functional tests"
-	@echo "check-full: Runs tree static check, unittests and all functional tests"
-	@echo "develop:    Runs 'python setup.py --develop on this tree alone"
-	@echo "link:       Runs 'python setup.py --develop' in all subprojects and links the needed resources"
-	@echo "clean:      Get rid of scratch, byte files and removes the links to other subprojects"
-	@echo "selfcheck:  Runs tree static check, unittests and functional tests using Avocado itself"
-	@echo "spell:      Runs spell checker on comments and docstrings (requires python-enchant)"
+	@echo "check:          Runs tree static check, unittests and fast functional tests"
+	@echo "check-extended: Runs tree static check, unittests and most functional tests"
+	@echo "check-full:     Runs tree static check, and all unittests and functional tests"
+	@echo "develop:        Runs 'python setup.py --develop on this tree alone"
+	@echo "link:           Runs 'python setup.py --develop' in all subprojects and links the needed resources"
+	@echo "clean:          Get rid of scratch, byte files and removes the links to other subprojects"
+	@echo "selfcheck:      Runs tree static check, unittests and functional tests using Avocado itself"
+	@echo "spell:          Runs spell checker on comments and docstrings (requires python-enchant)"
 	@echo
 	@echo "Package requirements related targets"
 	@echo "requirements:            Install runtime requirements"
@@ -158,11 +159,16 @@ smokecheck: clean develop
 	./scripts/avocado run passtest.py
 
 check: clean develop check_cyclical modules_boundaries
+	# Unless manually set, this is equivalent to AVOCADO_CHECK_LEVEL=0
 	selftests/checkall
 	selftests/check_tmp_dirs
 
+check-extended:	clean develop check_cyclical modules_boundaries
+	AVOCADO_CHECK_LEVEL=1 selftests/checkall
+	selftests/check_tmp_dirs
+
 check-full: clean develop check_cyclical modules_boundaries
-	AVOCADO_CHECK_FULL=1 selftests/checkall
+	AVOCADO_CHECK_LEVEL=2 selftests/checkall
 	selftests/check_tmp_dirs
 
 selfcheck: clean check_cyclical modules_boundaries develop
