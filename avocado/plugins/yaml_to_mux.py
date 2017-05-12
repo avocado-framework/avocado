@@ -14,12 +14,12 @@
 """Multiplexer plugin to parse yaml files to params"""
 
 import copy
-import logging
 import os
 import re
 import sys
 
 from avocado.core import tree, exit_codes, mux
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
 
@@ -332,10 +332,10 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     @staticmethod
     def _log_deprecation_msg(deprecated, current):
         """
-        Log a message into the "avocado.app" warning log
+        Log a message into the avocado.LOG_UI warning log
         """
         msg = "The use of '%s' is deprecated, please use '%s' instead"
-        logging.getLogger("avocado.app").warning(msg, deprecated, current)
+        LOG_UI.warning(msg, deprecated, current)
 
     def initialize(self, args):
         # Deprecated filters
@@ -369,7 +369,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 data.merge(create_from_yaml(multiplex_files, debug))
             except IOError as details:
                 error_msg = "%s : %s" % (details.strerror, details.filename)
-                logging.getLogger("avocado.app").error(error_msg)
+                LOG_UI.error(error_msg)
                 if args.subcommand == 'run':
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
@@ -385,7 +385,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 args.avocado_variants.data_merge(from_yaml)
             except IOError as details:
                 error_msg = "%s : %s" % (details.strerror, details.filename)
-                logging.getLogger("avocado.app").error(error_msg)
+                LOG_UI.error(error_msg)
                 if args.subcommand == 'run':
                     sys.exit(exit_codes.AVOCADO_JOB_FAIL)
                 else:
