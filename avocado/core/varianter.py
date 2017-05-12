@@ -19,11 +19,11 @@
 Multiplex and create variants.
 """
 
-import logging
 import re
 
 from . import tree
 from . import dispatcher
+from .output import LOG_JOB
 
 
 # TODO: Create multiplexer plugin and split these functions into multiple files
@@ -45,7 +45,7 @@ class AvocadoParams(object):
     of duplicate entries inherited from ancestor nodes.  It shouldn't produce
     false values, though.
 
-    In this version each new "get()" call is logged into "avocado.test" log.
+    In this version each new "get()" call is logged into avocado.LOG_JOB.
     This is subject of change (separate file, perhaps)
     """
 
@@ -70,7 +70,6 @@ class AvocadoParams(object):
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
         self.id = test_id
-        self._log = logging.getLogger("avocado.test").debug
         self._cache = {}     # TODO: Implement something more efficient
         # TODO: Get rid of this and prepare something better
         self._default_params = default_params
@@ -89,13 +88,11 @@ class AvocadoParams(object):
     def __getstate__(self):
         """ log can't be pickled """
         copy = self.__dict__.copy()
-        del(copy['_log'])
         return copy
 
     def __setstate__(self, orig):
         """ refresh log """
         self.__dict__.update(orig)
-        self._log = logging.getLogger("avocado.test").debug
 
     def __repr__(self):
         return "<AvocadoParams %s>" % self._str()
@@ -112,8 +109,8 @@ class AvocadoParams(object):
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
-        self._log("PARAMS (key=%s, path=%s, default=%s) => %r", key, path,
-                  default, value)
+        LOG_JOB.debug("PARAMS (key=%s, path=%s, default=%s) => %r", key, path,
+                      default, value)
 
     def _get_matching_leaves(self, path, leaves):
         """
@@ -169,7 +166,7 @@ class AvocadoParams(object):
             msg = ("You're probably retrieving param %s via attributes "
                    " (self.params.$key) which is obsoleted. Use "
                    "self.params.get($key) instead." % attr)
-            logging.getLogger("avocado.test").warn(msg)
+            LOG_JOB.warn(msg)
             return self.get(attr)
 
     def get(self, key, path=None, default=None):

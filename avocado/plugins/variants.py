@@ -13,9 +13,9 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Lukas Doktor <ldoktor@redhat.com>
 
-import logging
 import sys
 
+from avocado import LOG_UI
 from avocado.core import exit_codes
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
@@ -79,20 +79,19 @@ class Variants(CLICmd):
                                  "inherited values")
 
     def run(self, args):
-        log = logging.getLogger("avocado.app")
         err = None
         if args.tree and args.mux_debug:
             err = "Option --tree is incompatible with --debug."
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"
         if err:
-            log.error(err)
+            LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
         varianter = args.avocado_variants
         try:
             varianter.parse(args)
         except (IOError, ValueError) as details:
-            log.error("Unable to parse varianter: %s", details)
+            LOG_UI.error("Unable to parse varianter: %s", details)
             sys.exit(exit_codes.AVOCADO_FAIL)
         use_utf8 = settings.get_value("runner.output", "utf8",
                                       key_type=bool, default=None)
@@ -116,6 +115,6 @@ class Variants(CLICmd):
                                              variants=variants,
                                              use_utf8=use_utf8)
         for line in lines.splitlines():
-            log.debug(line)
+            LOG_UI.debug(line)
 
         sys.exit(exit_codes.AVOCADO_ALL_OK)

@@ -14,10 +14,10 @@
 
 import bz2
 import json
-import logging
 import os
 import sys
 
+from avocado import LOG_UI
 from avocado.core import exit_codes
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import distro as utils_distro
@@ -340,23 +340,22 @@ class Distro(CLICmd):
                                         args.distro_def_arch)
 
     def run(self, args):
-        log = logging.getLogger("avocado.app")
         if args.distro_def_create:
             if not (args.distro_def_name and args.distro_def_version and
                     args.distro_def_arch and args.distro_def_type and
                     args.distro_def_path):
-                log.error('Required arguments: name, version, arch, type '
-                          'and path')
+                LOG_UI.error('Required arguments: name, version, arch, type '
+                             'and path')
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
             output_file_name = self.get_output_file_name(args)
             if os.path.exists(output_file_name):
                 error_msg = ('Output file "%s" already exists, will not '
                              'overwrite it', output_file_name)
-                log.error(error_msg)
+                LOG_UI.error(error_msg)
             else:
-                log.debug("Loading distro information from tree... "
-                          "Please wait...")
+                LOG_UI.debug("Loading distro information from tree... "
+                             "Please wait...")
                 distro = load_from_tree(args.distro_def_name,
                                         args.distro_def_version,
                                         args.distro_def_release,
@@ -364,10 +363,10 @@ class Distro(CLICmd):
                                         args.distro_def_type,
                                         args.distro_def_path)
                 save_distro(distro, output_file_name)
-                log.debug('Distro information saved to "%s"',
-                          output_file_name)
+                LOG_UI.debug('Distro information saved to "%s"',
+                             output_file_name)
         else:
             detected = utils_distro.detect()
-            log.debug('Detected distribution: %s (%s) version %s release %s',
-                      detected.name, detected.arch, detected.version,
-                      detected.release)
+            LOG_UI.debug('Detected distribution: %s (%s) version %s release '
+                         '%s', detected.name, detected.arch, detected.version,
+                         detected.release)
