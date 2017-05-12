@@ -33,6 +33,7 @@ from avocado.core import exit_codes
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import status
+from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.runner import TestRunner
 from avocado.core.settings import settings
@@ -491,7 +492,7 @@ class RemoteTestRunner(TestRunner):
                     raise exceptions.JobError('Remote machine does not seem to'
                                               ' have avocado installed')
             except Exception as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise exceptions.JobError(details)
             results = self.run_test(self.job.references, timeout)
             remote_log_dir = os.path.dirname(results['debuglog'])
@@ -538,7 +539,7 @@ class RemoteTestRunner(TestRunner):
             try:
                 self.tear_down()
             except Exception as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise exceptions.JobError(details)
             sys.stdout = stdout_backup
             sys.stderr = stderr_backup
@@ -616,10 +617,9 @@ class RemoteCLI(CLI):
             if not getattr(args, arg):
                 missing.append(arg)
         if missing:
-            log = logging.getLogger("avocado.app")
-            log.error("Use of %s requires %s arguments to be set. Please set "
-                      "%s.", enable_arg, ', '.join(required_args),
-                      ', '.join(missing))
+            LOG_UI.error("Use of %s requires %s arguments to be set. Please "
+                         "set %s.", enable_arg, ', '.join(required_args),
+                         ', '.join(missing))
 
             return sys.exit(exit_codes.AVOCADO_FAIL)
         return True

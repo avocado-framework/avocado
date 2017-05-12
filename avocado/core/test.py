@@ -43,6 +43,7 @@ from ..utils import stacktrace
 from .decorators import skip
 from .settings import settings
 from .version import VERSION
+from .output import LOG_JOB
 
 
 #: Environment variable used to store the location of a temporary
@@ -216,7 +217,7 @@ class Test(unittest.TestCase):
             self.__sysinfodir = utils_path.init_dir(self.logdir, 'sysinfo')
             self.__sysinfo_logger = sysinfo.SysInfo(basedir=self.__sysinfodir)
 
-        self.__log = logging.getLogger("avocado.test")
+        self.__log = LOG_JOB
         original_log_warn = self.log.warning
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
@@ -491,22 +492,23 @@ class Test(unittest.TestCase):
         stream_fmt = '%(message)s'
         stream_formatter = logging.Formatter(fmt=stream_fmt)
 
-        self._register_log_file_handler(
-                                      logging.getLogger("avocado.test.stdout"),
-                                      stream_formatter,
-                                      self._stdout_file)
-        self._register_log_file_handler(
-                                      logging.getLogger("avocado.test.stderr"),
-                                      stream_formatter,
-                                      self._stderr_file)
+        log_test_stdout = LOG_JOB.getChild("stdout")
+        log_test_stderr = LOG_JOB.getChild("stderr")
+
+        self._register_log_file_handler(log_test_stdout,
+                                        stream_formatter,
+                                        self._stdout_file)
+        self._register_log_file_handler(log_test_stderr,
+                                        stream_formatter,
+                                        self._stderr_file)
         self._register_log_file_handler(logging.getLogger('paramiko'),
                                         formatter,
                                         self._ssh_logfile)
 
         if isinstance(sys.stdout, output.LoggingFile):
-            sys.stdout.add_logger(logging.getLogger("avocado.test.stdout"))
+            sys.stdout.add_logger(log_test_stdout)
         if isinstance(sys.stderr, output.LoggingFile):
-            sys.stderr.add_logger(logging.getLogger("avocado.test.stderr"))
+            sys.stderr.add_logger(log_test_stderr)
 
     def _stop_logging(self):
         """
@@ -514,9 +516,9 @@ class Test(unittest.TestCase):
         """
         self.log.removeHandler(self.file_handler)
         if isinstance(sys.stderr, output.LoggingFile):
-            sys.stderr.rm_logger(logging.getLogger("avocado.test.stderr"))
+            sys.stderr.rm_logger(LOG_JOB.getChild("stderr"))
         if isinstance(sys.stdout, output.LoggingFile):
-            sys.stdout.rm_logger(logging.getLogger("avocado.test.stdout"))
+            sys.stdout.rm_logger(LOG_JOB.getChild("stdout"))
         for name, handler in self._logging_handlers.iteritems():
             logging.getLogger(name).removeHandler(handler)
 
@@ -566,12 +568,12 @@ class Test(unittest.TestCase):
             if skip_test is False:
                 self.setUp()
         except (exceptions.TestSetupSkip, exceptions.TestSkipError) as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel as details:
             cancel_test = details
         except:  # Old-style exceptions are not inherited from Exception()
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
         try:
@@ -580,20 +582,20 @@ class Test(unittest.TestCase):
 
             testMethod()
         except exceptions.TestSetupSkip as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             skip_illegal_msg = ('Calling skip() in places other than '
                                 'setUp() is not allowed in avocado, you '
                                 'must fix your test. Original skip exception: '
                                 '%s' % details)
             raise exceptions.TestError(skip_illegal_msg)
         except exceptions.TestSkipError as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise
         except exceptions.TestCancel as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise
         except:  # Old-style exceptions are not inherited from Exception()
-            stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             details = sys.exc_info()[1]
             if not isinstance(details, Exception):  # Avoid passing nasty exc
                 details = exceptions.TestError("%r: %s" % (details, details))
@@ -607,14 +609,14 @@ class Test(unittest.TestCase):
                 if skip_test is False:
                     self.tearDown()
             except exceptions.TestSetupSkip as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 skip_illegal_msg = ('Calling skip() in places other than '
                                     'setUp() is not allowed in avocado, '
                                     'you must fix your test. Original skip '
                                     'exception: %s' % details)
                 raise exceptions.TestError(skip_illegal_msg)
             except exceptions.TestSkipError as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 skip_illegal_msg = ('Using skip decorators in tearDown() '
                                     'is not allowed in '
                                     'avocado, you must fix your '
@@ -622,10 +624,10 @@ class Test(unittest.TestCase):
                                     details)
                 raise exceptions.TestError(skip_illegal_msg)
             except exceptions.TestCancel as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise
             except:  # avoid old-style exception failures
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.test')
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 details = sys.exc_info()[1]
                 cleanup_exception = exceptions.TestSetupFail(details)
 
@@ -648,13 +650,13 @@ class Test(unittest.TestCase):
                         self._check_reference_stdout()
                     except Exception as details:
                         stacktrace.log_exc_info(sys.exc_info(),
-                                                logger='avocado.test')
+                                                logger=LOG_JOB)
                         stdout_check_exception = details
                     try:
                         self._check_reference_stderr()
                     except Exception as details:
                         stacktrace.log_exc_info(sys.exc_info(),
-                                                logger='avocado.test')
+                                                logger=LOG_JOB)
                         stderr_check_exception = details
             elif not job_standalone:
                 if output_check_record in ['all', 'stdout']:

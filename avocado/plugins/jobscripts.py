@@ -1,6 +1,6 @@
 import os
-import logging
 
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core.settings import settings
 from avocado.utils import process
@@ -15,7 +15,6 @@ class JobScripts(JobPre, JobPost):
     description = 'Runs scripts before/after the job is run'
 
     def __init__(self):
-        self.log = logging.getLogger("avocado.app")
         self.warn_non_existing_dir = settings.get_value(section=CONFIG_SECTION,
                                                         key="warn_non_existing_dir",
                                                         key_type=bool,
@@ -28,8 +27,8 @@ class JobScripts(JobPre, JobPost):
     def _run_scripts(self, kind, scripts_dir, job):
         if not os.path.isdir(scripts_dir):
             if self.warn_non_existing_dir:
-                self.log.error("Directory configured to hold %s-job scripts "
-                               "has not been found: %s", kind, scripts_dir)
+                LOG_UI.error("Directory configured to hold %s-job scripts "
+                             "has not been found: %s", kind, scripts_dir)
             return
 
         dir_list = os.listdir(scripts_dir)
@@ -44,8 +43,8 @@ class JobScripts(JobPre, JobPost):
         for script in scripts:
             result = process.run(script, ignore_status=True, env=env)
             if (result.exit_status != 0) and self.warn_non_zero_status:
-                self.log.error('%s job script "%s" exited with status "%i"',
-                               kind.capitalize(), script, result.exit_status)
+                LOG_UI.error('%s job script "%s" exited with status "%i"',
+                             kind.capitalize(), script, result.exit_status)
 
     @staticmethod
     def _job_to_environment_variables(job):

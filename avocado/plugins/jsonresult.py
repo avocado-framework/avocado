@@ -18,9 +18,9 @@ JSON output module.
 """
 
 import json
-import logging
 import os
 
+from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Result
 
@@ -86,8 +86,7 @@ class JSONResult(Result):
         json_path = getattr(job.args, 'json_output', 'None')
         if json_path is not None:
             if json_path == '-':
-                log = logging.getLogger("avocado.app")
-                log.debug(content)
+                LOG_UI.debug(content)
             else:
                 with open(json_path, 'w') as json_file:
                     json_file.write(content)

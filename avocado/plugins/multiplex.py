@@ -12,7 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import logging
+from avocado.core.output import LOG_UI
 
 from .variants import Variants
 
@@ -27,8 +27,7 @@ class Multiplex(Variants):
     name = "multiplex"
 
     def run(self, args):
-        log = logging.getLogger("avocado.app")
-        log.warning("The 'avocado multiplex' command is deprecated by the "
-                    "'avocado variants' one. Please start using that one "
-                    "instead as this will be removed in Avocado 52.0.")
+        LOG_UI.warning("The 'avocado multiplex' command is deprecated by the "
+                       "'avocado variants' one. Please start using that one "
+                       "instead as this will be removed in Avocado 52.0.")
         super(Multiplex, self).run(args)
