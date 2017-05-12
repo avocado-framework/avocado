@@ -34,15 +34,16 @@ def log_exc_info(exc_info, logger=''):
     :param exc_info: Exception info produced by sys.exc_info()
     :param logger: Name of the logger (defaults to root)
     """
-    log = logging.getLogger(logger)
-    log.error('')
+    if isinstance(logger, basestring):
+        logger = logging.getLogger(logger)
+    logger.error('')
     called_from = inspect.currentframe().f_back
-    log.error("Reproduced traceback from: %s:%s",
-              called_from.f_code.co_filename, called_from.f_lineno)
+    logger.error("Reproduced traceback from: %s:%s",
+                 called_from.f_code.co_filename, called_from.f_lineno)
     for line in tb_info(exc_info):
         for l in line.splitlines():
-            log.error(l)
-    log.error('')
+            logger.error(l)
+    logger.error('')
 
 
 def log_message(message, logger=''):
@@ -52,9 +53,10 @@ def log_message(message, logger=''):
     :param message: Message
     :param logger: Name of the logger (defaults to root)
     """
-    log = logging.getLogger(logger)
+    if isinstance(logger, basestring):
+        logger = logging.getLogger(logger)
     for line in message.splitlines():
-        log.error(line)
+        logger.error(line)
 
 
 def analyze_unpickable_item(path_prefix, obj):
