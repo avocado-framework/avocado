@@ -32,6 +32,11 @@ else:
     NULL_HANDLER = logutils.NullHandler
 
 
+#: Pre-defined Avocado human UI logger
+LOG_UI = logging.getLogger("avocado.app")
+#: Pre-defined Avocado job/test logger
+LOG_JOB = logging.getLogger("avocado.test")
+
 #: Builtin special keywords to enable set of logging streams
 BUILTIN_STREAMS = {'app': 'application output',
                    'test': 'test output',
