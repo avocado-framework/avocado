@@ -27,7 +27,7 @@ def prepare_exc_info(exc_info):
     return "".join(tb_info(exc_info))
 
 
-def log_exc_info(exc_info, logger='root'):
+def log_exc_info(exc_info, logger=''):
     """
     Log exception info to logger_name.
 
@@ -45,7 +45,7 @@ def log_exc_info(exc_info, logger='root'):
     log.error('')
 
 
-def log_message(message, logger='root'):
+def log_message(message, logger=''):
     """
     Log message to logger.
 
