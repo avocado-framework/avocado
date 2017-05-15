@@ -463,8 +463,8 @@ class OutputPluginTest(unittest.TestCase):
         os.chdir(basedir)
         cmd_line = ("%s run UNEXISTING --job-results-dir %s"
                     % (AVOCADO, self.tmpdir))
-        exit_code = process.system(cmd_line, ignore_status=True)
-        self.assertEqual(exit_code, exit_codes.AVOCADO_JOB_FAIL)
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
 
         xunit_results = os.path.join(self.tmpdir, 'latest', 'results.xml')
         self.assertFalse(os.path.exists(xunit_results))
@@ -474,6 +474,13 @@ class OutputPluginTest(unittest.TestCase):
 
         tap_results = os.path.join(self.tmpdir, 'latest', 'results.tap')
         self.assertFalse(os.path.exists(tap_results))
+
+        # Check that no UI output was generated
+        self.assertNotIn("RESULTS    : PASS ", result.stdout)
+        self.assertNotIn("JOB TIME   :", result.stdout)
+
+        # Check that plugins do not produce errors
+        self.assertNotIn("Error running method ", result.stderr)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
