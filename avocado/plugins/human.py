@@ -94,11 +94,12 @@ class Human(ResultEvents):
     def post_tests(self, job):
         if not self.owns_stdout:
             return
-        self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                      "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,
-                      job.result.errors, job.result.failed, job.result.skipped,
-                      job.result.warned, job.result.interrupted,
-                      job.result.cancelled)
+        if job.status == 'PASS':
+            self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
+                          "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,
+                          job.result.errors, job.result.failed, job.result.skipped,
+                          job.result.warned, job.result.interrupted,
+                          job.result.cancelled)
 
 
 class HumanJob(JobPre, JobPost):
@@ -114,7 +115,7 @@ class HumanJob(JobPre, JobPost):
         pass
 
     def post(self, job):
-        if job.time_elapsed != -1:
+        if job.status == 'PASS':
             if not getattr(job.args, 'stdout_claimed_by', None):
                 log = logging.getLogger("avocado.app")
                 log.info("JOB TIME   : %.2f s", job.time_elapsed)

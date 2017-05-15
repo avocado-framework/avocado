@@ -70,7 +70,8 @@ class JournalResult(ResultEvents):
             self.journal_initialized = True
 
     def _shutdown_journal(self):
-        self.journal.close()
+        if self.journal_initialized:
+            self.journal.close()
 
     def _record_job_info(self, state):
         res = self.journal_cursor.execute("SELECT unique_id FROM job_info")
