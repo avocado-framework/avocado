@@ -479,6 +479,9 @@ class OutputPluginTest(unittest.TestCase):
         self.assertNotIn("RESULTS    : PASS ", result.stdout)
         self.assertNotIn("JOB TIME   :", result.stdout)
 
+        # Check that plugins do not produce errors
+        self.assertNotIn("Error running method ", result.stderr)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
