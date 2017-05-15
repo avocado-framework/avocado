@@ -39,7 +39,7 @@ script:
             echo
             echo
             git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
-            AVOCADO_RESULTSDIR_CHECK=y SELF_CHECK_CONTINUOUS=y make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
+            AVOCADO_LOG_DEBUG=yes AVOCADO_RESULTSDIR_CHECK=y SELF_CHECK_CONTINUOUS=y make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
             make clean
         done
         if [ "$ERR" ]; then
