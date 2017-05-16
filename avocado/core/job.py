@@ -49,11 +49,11 @@ from ..utils import runtime
 from ..utils import stacktrace
 from ..utils import data_structures
 from ..utils import process
+from .output import LOG_JOB
+from .output import LOG_UI
 
 
 _NEW_ISSUE_LINK = 'https://github.com/avocado-framework/avocado/issues/new'
-
-_TEST_LOGGER = logging.getLogger('avocado.test')
 
 
 class Job(object):
@@ -75,7 +75,7 @@ class Job(object):
             args = argparse.Namespace()
         self.args = args
         self.references = getattr(args, "reference", [])
-        self.log = logging.getLogger("avocado.app")
+        self.log = LOG_UI
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
             if not self.args.unique_job_id:
@@ -122,7 +122,7 @@ class Job(object):
         self.__start_job_logging()
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
-                                                           _TEST_LOGGER)
+                                                           LOG_JOB)
         self._stdout_stderr = None
         self.replay_sourcejob = getattr(self.args, 'replay_sourcejob', None)
         self.exitcode = exit_codes.AVOCADO_ALL_OK
@@ -181,13 +181,13 @@ class Job(object):
         # Enable test logger
         fmt = ('%(asctime)s %(module)-16.16s L%(lineno)-.4d %('
                'levelname)-5.5s| %(message)s')
-        test_handler = output.add_log_handler("avocado.test",
+        test_handler = output.add_log_handler(LOG_JOB,
                                               logging.FileHandler,
                                               self.logfile, self.loglevel, fmt)
         root_logger = logging.getLogger()
         root_logger.addHandler(test_handler)
         root_logger.setLevel(self.loglevel)
-        self.__logging_handlers[test_handler] = ["avocado.test", ""]
+        self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
         # Add --store-logging-streams
         fmt = '%(asctime)s %(levelname)-5.5s| %(message)s'
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')
@@ -218,13 +218,13 @@ class Job(object):
             # Enable std{out,err} but redirect booth to stderr
             sys.stdout = STD_OUTPUT.stdout
             sys.stderr = STD_OUTPUT.stdout
-            test_handler = output.add_log_handler("avocado.test",
+            test_handler = output.add_log_handler(LOG_JOB,
                                                   logging.StreamHandler,
                                                   STD_OUTPUT.stdout,
                                                   logging.DEBUG,
                                                   fmt="%(message)s")
             root_logger.addHandler(test_handler)
-            self.__logging_handlers[test_handler] = ["avocado.test", ""]
+            self.__logging_handlers[test_handler] = [LOG_JOB.name, ""]
 
     def __stop_job_logging(self):
         if self._stdout_stderr:
@@ -239,8 +239,7 @@ class Job(object):
         """
         def soft_abort(msg):
             """ Only log the problem """
-            logging.getLogger("avocado.test").warning("Unable to update the "
-                                                      "latest link: %s" % msg)
+            LOG_JOB.warning("Unable to update the latest link: %s" % msg)
         basedir = os.path.dirname(self.logdir)
         basename = os.path.basename(self.logdir)
         proc_latest = os.path.join(basedir, "latest.%s" % os.getpid())
@@ -310,23 +309,20 @@ class Job(object):
         return suite
 
     def _log_job_id(self):
-        job_log = _TEST_LOGGER
-        job_log.info('Job ID: %s', self.unique_id)
+        LOG_JOB.info('Job ID: %s', self.unique_id)
         if self.replay_sourcejob is not None:
-            job_log.info('Replay of Job ID: %s', self.replay_sourcejob)
-        job_log.info('')
+            LOG_JOB.info('Replay of Job ID: %s', self.replay_sourcejob)
+        LOG_JOB.info('')
 
     @staticmethod
     def _log_cmdline():
-        job_log = _TEST_LOGGER
         cmdline = " ".join(sys.argv)
-        job_log.info("Command line: %s", cmdline)
-        job_log.info('')
+        LOG_JOB.info("Command line: %s", cmdline)
+        LOG_JOB.info('')
 
     @staticmethod
     def _log_avocado_version():
-        job_log = _TEST_LOGGER
-        job_log.info('Avocado version: %s', version.VERSION)
+        LOG_JOB.info('Avocado version: %s', version.VERSION)
         if os.path.exists('.git') and os.path.exists('avocado.spec'):
             cmd = "git show --summary --pretty='%H'"
             result = process.run(cmd, ignore_status=True)
@@ -339,24 +335,23 @@ class Job(object):
             # Let's display information only if git is installed
             # (commands succeed).
             if status == 0 and status2 == 0:
-                job_log.info('Avocado git repo info')
-                job_log.info("Top commit: %s", top_commit)
-                job_log.info("Branch: %s", branch)
-        job_log.info('')
+                LOG_JOB.info('Avocado git repo info')
+                LOG_JOB.info("Top commit: %s", top_commit)
+                LOG_JOB.info("Branch: %s", branch)
+        LOG_JOB.info('')
 
     @staticmethod
     def _log_avocado_config():
-        job_log = _TEST_LOGGER
-        job_log.info('Config files read (in order):')
+        LOG_JOB.info('Config files read (in order):')
         for cfg_path in settings.config_paths:
-            job_log.info(cfg_path)
+            LOG_JOB.info(cfg_path)
         if settings.config_paths_failed:
-            job_log.info('Config files failed to read (in order):')
+            LOG_JOB.info('Config files failed to read (in order):')
             for cfg_path in settings.config_paths_failed:
-                job_log.info(cfg_path)
-        job_log.info('')
+                LOG_JOB.info(cfg_path)
+        LOG_JOB.info('')
 
-        job_log.info('Avocado config:')
+        LOG_JOB.info('Avocado config:')
         header = ('Section.Key', 'Value')
         config_matrix = []
         for section in settings.config.sections():
@@ -365,28 +360,26 @@ class Job(object):
                 config_matrix.append([config_key, value[1]])
 
         for line in astring.iter_tabular_output(config_matrix, header):
-            job_log.info(line)
-        job_log.info('')
+            LOG_JOB.info(line)
+        LOG_JOB.info('')
 
     def _log_avocado_datadir(self):
-        job_log = _TEST_LOGGER
-        job_log.info('Avocado Data Directories:')
-        job_log.info('')
-        job_log.info('base     ' + data_dir.get_base_dir())
-        job_log.info('tests    ' + data_dir.get_test_dir())
-        job_log.info('data     ' + data_dir.get_data_dir())
-        job_log.info('logs     ' + self.logdir)
-        job_log.info('')
+        LOG_JOB.info('Avocado Data Directories:')
+        LOG_JOB.info('')
+        LOG_JOB.info('base     ' + data_dir.get_base_dir())
+        LOG_JOB.info('tests    ' + data_dir.get_test_dir())
+        LOG_JOB.info('data     ' + data_dir.get_data_dir())
+        LOG_JOB.info('logs     ' + self.logdir)
+        LOG_JOB.info('')
 
     def _log_variants(self, variants):
         lines = variants.to_str(summary=1, variants=1, use_utf8=False)
         for line in lines.splitlines():
-            _TEST_LOGGER.info(line)
+            LOG_JOB.info(line)
 
     def _log_tmp_dir(self):
-        job_log = _TEST_LOGGER
-        job_log.info('Temporary dir: %s', data_dir.get_tmp_dir())
-        job_log.info('')
+        LOG_JOB.info('Temporary dir: %s', data_dir.get_tmp_dir())
+        LOG_JOB.info('')
 
     def _log_job_debug_info(self, mux):
         """
@@ -410,7 +403,7 @@ class Job(object):
             self.test_suite = self._make_test_suite(self.references)
             self.result.tests_total = len(self.test_suite)
         except loader.LoaderError as details:
-            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
+            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
             raise exceptions.OptionValidationError(details)
 
         if not self.test_suite:
@@ -458,7 +451,7 @@ class Job(object):
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
-        _TEST_LOGGER.info('Test results available in %s', self.logdir)
+        LOG_JOB.info('Test results available in %s', self.logdir)
 
         if summary is None:
             self.exitcode |= exit_codes.AVOCADO_JOB_FAIL

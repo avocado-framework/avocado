@@ -16,13 +16,13 @@ This is the main entry point for the rest client cli application
 """
 
 import importlib
-import logging
 import sys
 import types
 
 from . import parser
 from .. import connection
 from ... import exit_codes
+from ...output import LOG_UI
 
 
 __all__ = ['App']
@@ -48,7 +48,7 @@ class App(object):
         self.connection = None
         self.parser = parser.Parser()
         self.parser.add_arguments_on_all_modules()
-        self.log = logging.getLogger("avocado.app")
+        self.log = LOG_UI
 
     def initialize_connection(self):
         """

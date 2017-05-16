@@ -27,6 +27,7 @@ import pkg_resources
 import pystache
 
 from avocado.core import exit_codes
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
 
 
@@ -264,15 +265,14 @@ class HTMLResult(Result):
                 report_contents = v.render('utf8')
         except UnicodeDecodeError as details:
             # FIXME: Remove me when UnicodeDecodeError problem is fixed
-            import logging
-            ui = logging.getLogger("avocado.app")
-            ui.critical("\n" + ("-" * 80))
-            ui.critical("HTML failed to render the template: %s\n\n",
-                        template)
-            ui.critical("-" * 80)
-            ui.critical("%s:\n\n", details)
-            ui.critical("%r", getattr(details, "object", "object not found"))
-            ui.critical("-" * 80)
+            LOG_UI.critical("\n" + ("-" * 80))
+            LOG_UI.critical("HTML failed to render the template: %s\n\n",
+                            template)
+            LOG_UI.critical("-" * 80)
+            LOG_UI.critical("%s:\n\n", details)
+            LOG_UI.critical("%r", getattr(details, "object",
+                                          "object not found"))
+            LOG_UI.critical("-" * 80)
             raise
 
         self._copy_static_resources(output_path)
@@ -295,8 +295,7 @@ class HTMLResult(Result):
             html_path = os.path.join(html_dir, 'results.html')
             self._render(result, html_path)
             if getattr(job.args, 'stdout_claimed_by', None) is None:
-                log = logging.getLogger("avocado.app")
-                log.info("JOB HTML   : %s", html_path)
+                LOG_UI.info("JOB HTML   : %s", html_path)
             if open_browser:
                 self._open_browser(html_path)
                 open_browser = False
@@ -351,7 +350,6 @@ class HTML(CLI):
 
     def run(self, args):
         if 'html_output' in args and args.html_output == '-':
-            log = logging.getLogger("avocado.app")
-            log.error('HTML to stdout not supported (not all HTML resources '
-                      'can be embedded on a single file)')
+            LOG_UI.error('HTML to stdout not supported (not all HTML resources'
+                         ' can be embedded on a single file)')
             sys.exit(exit_codes.AVOCADO_JOB_FAIL)

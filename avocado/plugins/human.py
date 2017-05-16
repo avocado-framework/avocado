@@ -15,8 +15,7 @@
 Human result UI
 """
 
-import logging
-
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import ResultEvents
 from avocado.core.plugin_interfaces import JobPre, JobPost
 from avocado.core import output
@@ -40,7 +39,6 @@ class Human(ResultEvents):
                       'CANCEL': output.TERM_SUPPORT.CANCEL}
 
     def __init__(self, args):
-        self.log = logging.getLogger("avocado.app")
         self.__throbber = output.Throbber()
         stdout_claimed_by = getattr(args, 'stdout_claimed_by', None)
         self.owns_stdout = not stdout_claimed_by
@@ -48,11 +46,11 @@ class Human(ResultEvents):
     def pre_tests(self, job):
         if not self.owns_stdout:
             return
-        self.log.info("JOB ID     : %s", job.unique_id)
+        LOG_UI.info("JOB ID     : %s", job.unique_id)
         replay_source_job = getattr(job.args, "replay_sourcejob", False)
         if replay_source_job:
-            self.log.info("SRC JOB ID : %s", replay_source_job)
-        self.log.info("JOB LOG    : %s", job.logfile)
+            LOG_UI.info("SRC JOB ID : %s", replay_source_job)
+        LOG_UI.info("JOB LOG    : %s", job.logfile)
 
     def start_test(self, result, state):
         if not self.owns_stdout:
@@ -64,8 +62,8 @@ class Human(ResultEvents):
         else:
             name = "<unknown>"
             uid = '?'
-        self.log.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
-                       extra={"skip_newline": True})
+        LOG_UI.debug(' (%s/%s) %s:  ', uid, result.tests_total, name,
+                     extra={"skip_newline": True})
 
     def test_progress(self, progress=False):
         if not self.owns_stdout:
@@ -74,8 +72,8 @@ class Human(ResultEvents):
             color = output.TERM_SUPPORT.PASS
         else:
             color = output.TERM_SUPPORT.PARTIAL
-        self.log.debug(color + self.__throbber.render() +
-                       output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
+        LOG_UI.debug(color + self.__throbber.render() +
+                     output.TERM_SUPPORT.ENDC, extra={"skip_newline": True})
 
     def end_test(self, result, state):
         if not self.owns_stdout:
@@ -86,20 +84,20 @@ class Human(ResultEvents):
         duration = (" (%.2f s)" % state.get('time_elapsed', -1)
                     if status != "SKIP"
                     else "")
-        self.log.debug(output.TERM_SUPPORT.MOVE_BACK +
-                       self.output_mapping[status] +
-                       status + output.TERM_SUPPORT.ENDC +
-                       duration)
+        LOG_UI.debug(output.TERM_SUPPORT.MOVE_BACK +
+                     self.output_mapping[status] +
+                     status + output.TERM_SUPPORT.ENDC +
+                     duration)
 
     def post_tests(self, job):
         if not self.owns_stdout:
             return
         if job.status == 'PASS':
-            self.log.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
-                          "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,
-                          job.result.errors, job.result.failed, job.result.skipped,
-                          job.result.warned, job.result.interrupted,
-                          job.result.cancelled)
+            LOG_UI.info("RESULTS    : PASS %d | ERROR %d | FAIL %d | SKIP %d | "
+                        "WARN %d | INTERRUPT %s | CANCEL %s", job.result.passed,
+                        job.result.errors, job.result.failed, job.result.skipped,
+                        job.result.warned, job.result.interrupted,
+                        job.result.cancelled)
 
 
 class HumanJob(JobPre, JobPost):
@@ -117,5 +115,4 @@ class HumanJob(JobPre, JobPost):
     def post(self, job):
         if job.status == 'PASS':
             if not getattr(job.args, 'stdout_claimed_by', None):
-                log = logging.getLogger("avocado.app")
-                log.info("JOB TIME   : %.2f s", job.time_elapsed)
+                LOG_UI.info("JOB TIME   : %.2f s", job.time_elapsed)

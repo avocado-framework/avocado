@@ -36,8 +36,8 @@ from ..utils import runtime
 from ..utils import process
 from ..utils import stacktrace
 
-TEST_LOG = logging.getLogger("avocado.test")
-APP_LOG = logging.getLogger("avocado.app")
+from .output import LOG_UI as APP_LOG
+from .output import LOG_JOB as TEST_LOG
 
 #: when test was interrupted (ctrl+c/timeout)
 TIMEOUT_TEST_INTERRUPTED = 1

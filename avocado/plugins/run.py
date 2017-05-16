@@ -17,13 +17,13 @@ Base Test Runner Plugins.
 """
 
 import argparse
-import logging
 import sys
 
 from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
 from avocado.core import output
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.dispatcher import JobPrePostDispatcher
@@ -153,21 +153,19 @@ class Run(CLICmd):
 
         :param args: Command line args received from the run subparser.
         """
-        log = logging.getLogger("avocado.app")
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
                 if len(args.unique_job_id) != 40:
                     raise ValueError
             except ValueError:
-                log.error('Unique Job ID needs to be a 40 digit hex number')
+                LOG_UI.error('Unique Job ID needs to be a 40 digit hex number')
                 sys.exit(exit_codes.AVOCADO_FAIL)
         try:
             args.job_timeout = time_to_seconds(args.job_timeout)
         except ValueError as e:
-            log.error(e.message)
+            LOG_UI.error(e.message)
             sys.exit(exit_codes.AVOCADO_FAIL)
-
         job_instance = job.Job(args)
         pre_post_dispatcher = JobPrePostDispatcher()
         try:

@@ -1,7 +1,7 @@
-import logging
 import smtplib
 from email.mime.text import MIMEText
 
+from avocado.core.output import LOG_UI
 from avocado.core.settings import settings
 from avocado.core.plugin_interfaces import JobPre, JobPost
 
@@ -12,7 +12,6 @@ class Mail(JobPre, JobPost):
     description = 'Sends mail to notify on job start/end'
 
     def __init__(self):
-        self.log = logging.getLogger("avocado.app")
         self.rcpt = settings.get_value(section="plugins.job.mail",
                                        key="recipient",
                                        key_type=str,
@@ -46,7 +45,7 @@ class Mail(JobPre, JobPost):
             smtp.sendmail(self.sender, [self.rcpt], msg.as_string())
             smtp.quit()
         except:
-            self.log.error("Failure to send email notification: "
-                           "please check your mail configuration")
+            LOG_UI.error("Failure to send email notification: "
+                         "please check your mail configuration")
 
     pre = post = mail

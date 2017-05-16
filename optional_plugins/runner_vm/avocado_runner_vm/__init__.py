@@ -21,7 +21,8 @@ from xml.dom import minidom
 
 import libvirt
 
-from avocado.core import exit_codes
+from avocado.core import exit_codes, exceptions
+from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado_runner_remote import Remote, RemoteTestRunner
 
@@ -491,10 +492,9 @@ class VMCLI(CLI):
             if not getattr(args, arg):
                 missing.append(arg)
         if missing:
-            log = logging.getLogger("avocado.app")
-            log.error("Use of %s requires %s arguments to be set. Please set "
-                      "%s.", enable_arg, ', '.join(required_args),
-                      ', '.join(missing))
+            LOG_UI.error("Use of %s requires %s arguments to be set. Please "
+                         "set %s.", enable_arg, ', '.join(required_args),
+                         ', '.join(missing))
 
             return sys.exit(exit_codes.AVOCADO_FAIL)
         return True
