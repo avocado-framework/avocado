@@ -1,0 +1,101 @@
+=================
+50.0 A Dog's Will
+=================
+
+The Avocado team is proud to present another release: Avocado version
+50.0, aka, "A Dog's Will" now available!
+
+Release documentation: `Avocado 50.0
+<http://avocado-framework.readthedocs.io/en/50.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* Avocado now supports resuming jobs that were interrupted.  This means
+  that a system crash, or even an intentional interruption, won't
+  prevent you from continuing the execution of a job.  To use this
+  feature, provide ``--replay-resume`` on the Avocado execution that
+  proceeds the crash or interruption.
+
+* The docstring directives that Avocado uses to allow for :ref:`test
+  categorization <categorizing-tests>` was previously limited to a
+  class docstring.  Now, individual test methods can also have their
+  own tags, while also respecting the ones at the class level.  The
+  documentation has been updated with an :ref:`example
+  <categorizing-tests-tags-on-methods>`.
+
+* The HTML report now presents the test ID and variant ID in separate
+  columns, allowing users to also sort and filter results based on
+  those specific fields.
+
+* The HTML report will now show the test parameters used in a test
+  when the user hovers the cursor over the test name.
+
+* Avocado now reports the total job execution time on the UI, instead
+  of just the tests execution time.  This may affect users that are
+  looking for the ``TESTS TIME:`` line, and reinforce that machine
+  readable formats such as JSON and XUnit are more dependable than the
+  UI intended for humans.
+
+* The :class:`avocado.core.plugin_interfaces.JobPre` is now properly
+  called *before* :meth:`avocado.core.job.Job.run`, and accordingly
+  :class:`avocado.core.plugin_interfaces.JobPost` is called *after*
+  it.  Some plugins which depended on the previous behavior can use
+  the :class:`avocado.core.plugin_interfaces.JobPreTests` and
+  :class:`avocado.core.plugin_interfaces.JobPostTests` for a similar
+  behavior.  As a example on how to write plugin code that works
+  properly this Avocado version, as well as on previous versions,
+  take a look at `this accompanying Avocado-VT plugin commit
+  <https://github.com/avocado-framework/avocado-vt/commit/d1cef6d>`_.
+
+* The Avocado ``multiplex`` command has been renamed to ``variants``.
+  Users of ``avocado multiplex`` will notice a deprecation message,
+  and are urged to switch to the new command.  The command line
+  options and behavior of the ``variants`` command is identical to the
+  ``multiplex`` one.
+
+* The number of variants produced with the ``multiplex`` command (now
+  ``variants``) was missing in the previous version.  It's now been
+  restored.
+
+Internal Changes
+================
+
+* Avocado's own internal tests now can be given different level marks,
+  and will run a different level on different environments.  The idea
+  is to increase coverage without having false positives on more
+  restricted environments.
+
+* The ``test_tests_tmp_dir`` selftests that was previously disable due
+  to failure on our CI environment was put back to be executed.
+
+* The amount of the test runner will wait for the test process exit
+  status has received tweaks and is now better documented (see
+  :data:`avocado.core.runner.TIMEOUT_TEST_INTERRUPTED`,
+  :data:`avocado.core.runner.TIMEOUT_PROCESS_DIED` and
+  :data:`avocado.core.runner.TIMEOUT_PROCESS_ALIVE`).
+
+* Some cleanups and refactors were made to how the ``SKIP`` and
+  ``CANCEL`` test statuses are implemented.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/49.0...50.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=MHOZbj29hBQ>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/FleklxHi/1016-sprint-theme-a-dog-s-will-2000

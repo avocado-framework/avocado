@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 49.0
-Release: 2%{?gitrel}%{?dist}
+Version: 50.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -321,6 +321,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue May 16 2017 Cleber Rosa <cleber@redhat.com> - 50.0-0
+- New upstream release
+
 * Thu Apr 27 2017 Cleber Rosa <cleber@redhat.com> - 49.0-2
 - Also setup resultsdb plugin on check
 - Be explicit about selftest level run on check

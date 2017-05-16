@@ -1356,6 +1356,8 @@ parameter, no test will be included::
   $ avocado list perf.py --filter-by-tags=disk,slow,superuser,safe | wc -l
   0
 
+.. _categorizing-tests-tags-on-methods:
+
 Test tags can be applied to test classes and to test methods. Tags are
 evaluated per method, meaning that the class tags will be inherited by
 all methods, being merged with method local tags. Example::
