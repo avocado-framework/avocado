@@ -1,0 +1,23 @@
+locations: !mux
+    setup:
+        location: setUp
+    test:
+        location: test
+    teardown:
+        location: tearDown
+commands: !mux
+    skip:
+        command: self.skip()
+    cancel:
+        command: self.cancel()
+    fail:
+        command: self.fail()
+    warn:
+        command: self.log.warn('')
+    exception:
+        command: raise Exception
+    exit:
+        command: import sys; sys.exit(-1)
+    kill:
+        !filter-only : /run/locations/test
+        command: import os; os.kill(os.getpid(), 9)
