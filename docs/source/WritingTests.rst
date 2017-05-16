@@ -516,9 +516,11 @@ But we'd still recommend using ``avocado.main`` instead which is our main entry 
 Setup and cleanup methods
 =========================
 
-If you need to perform setup actions before/after your test, you may do so
-in the ``setUp`` and ``tearDown`` methods, respectively. We'll give examples
-in the following section.
+To perform setup actions before/after your test, you may use ``setUp``
+and ``tearDown`` methods. The ``tearDown`` method is always executed
+even on ``setUp`` failure so don't forget to initialize your variables
+early in the ``setUp``. Example of usage is in the next section
+`Running third party test suites`_.
 
 Running third party test suites
 ===============================
