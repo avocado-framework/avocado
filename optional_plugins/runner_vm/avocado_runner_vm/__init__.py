@@ -21,7 +21,7 @@ from xml.dom import minidom
 
 import libvirt
 
-from avocado.core import exit_codes
+from avocado.core import exit_codes, exceptions
 from avocado.core.plugin_interfaces import CLI
 from avocado_runner_remote import Remote, RemoteTestRunner
 

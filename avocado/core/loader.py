@@ -33,6 +33,7 @@ from . import safeloader
 from ..utils import path
 from ..utils import stacktrace
 from .settings import settings
+from .output import LOG_UI
 
 #: Show default tests (for execution)
 DEFAULT = False
@@ -246,9 +247,9 @@ class TestLoaderProxy(object):
             # FIXME: Introduce avocado.exceptions logger and use here
             stacktrace.log_message("Test discovery plugin %s failed: "
                                    "%s" % (plugin, details),
-                                   'avocado.app.exceptions')
+                                   LOG_UI.getChild("exceptions"))
             # FIXME: Introduce avocado.traceback logger and use here
-            stacktrace.log_exc_info(sys.exc_info(), 'avocado.app.debug')
+            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
         tests = []
         unhandled_references = []
         if not references:

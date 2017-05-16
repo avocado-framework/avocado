@@ -14,10 +14,10 @@
 Libexec PATHs modifier
 """
 
-import logging
 import os
 import sys
 
+from avocado import LOG_UI
 from avocado.core import exit_codes
 from avocado.core.plugin_interfaces import CLICmd
 
@@ -37,21 +37,20 @@ class ExecPath(CLICmd):
 
         :param args: Command line args received from the run subparser.
         """
-        log = logging.getLogger("avocado.app")
         if 'VIRTUAL_ENV' in os.environ:
-            log.debug('libexec')
+            LOG_UI.debug('libexec')
         elif os.path.exists('/usr/libexec/avocado'):
-            log.debug('/usr/libexec/avocado')
+            LOG_UI.debug('/usr/libexec/avocado')
         elif os.path.exists('/usr/lib/avocado'):
-            log.debug('/usr/lib/avocado')
+            LOG_UI.debug('/usr/lib/avocado')
         else:
             for path in os.environ.get('PATH').split(':'):
                 if (os.path.exists(os.path.join(path, 'avocado')) and
                     os.path.exists(os.path.join(os.path.dirname(path),
                                                 'libexec'))):
-                    log.debug(os.path.join(os.path.dirname(path), 'libexec'))
+                    LOG_UI.debug(os.path.join(os.path.dirname(path), 'libexec'))
                     break
             else:
-                log.error("Can't locate avocado libexec path")
+                LOG_UI.error("Can't locate avocado libexec path")
                 sys.exit(exit_codes.AVOCADO_FAIL)
         return sys.exit(exit_codes.AVOCADO_ALL_OK)

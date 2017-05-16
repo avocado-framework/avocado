@@ -17,13 +17,12 @@ Avocado application command line parsing.
 """
 
 import argparse
-import logging
 
 from . import exit_codes
 from . import varianter
 from . import settings
 from . import tree
-from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS
+from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS, LOG_UI
 from .version import VERSION
 
 PROG = 'avocado'
@@ -37,9 +36,8 @@ class ArgumentParser(argparse.ArgumentParser):
     """
 
     def error(self, message):
-        log = logging.getLogger("avocado.app")
-        log.debug(self.format_help())
-        log.error("%s: error: %s", self.prog, message)
+        LOG_UI.debug(self.format_help())
+        LOG_UI.error("%s: error: %s", self.prog, message)
         self.exit(exit_codes.AVOCADO_FAIL)
 
     def _get_option_tuples(self, option_string):

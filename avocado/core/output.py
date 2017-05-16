@@ -32,6 +32,9 @@ else:
     NULL_HANDLER = logutils.NullHandler
 
 
+LOG_UI = logging.getLogger("avocado.app")
+LOG_JOB = logging.getLogger("avocado.test")
+
 #: Builtin special keywords to enable set of logging streams
 BUILTIN_STREAMS = {'app': 'application output',
                    'test': 'test output',
@@ -343,11 +346,11 @@ def early_start():
     Replace all outputs with in-memory handlers
     """
     if os.environ.get('AVOCADO_LOG_DEBUG'):
-        add_log_handler("avocado.app.debug", logging.StreamHandler, sys.stdout,
-                        logging.DEBUG)
+        add_log_handler(LOG_UI.getChild("debug"), logging.StreamHandler,
+                        sys.stdout, logging.DEBUG)
     if os.environ.get('AVOCADO_LOG_EARLY'):
         add_log_handler("", logging.StreamHandler, sys.stdout, logging.DEBUG)
-        add_log_handler("avocado.test", logging.StreamHandler, sys.stdout,
+        add_log_handler(LOG_JOB, logging.StreamHandler, sys.stdout,
                         logging.DEBUG)
     else:
         STD_OUTPUT.fake_outputs()
@@ -387,34 +390,33 @@ def reconfigure(args):
     else:
         STD_OUTPUT.enable_stderr()
     STD_OUTPUT.print_records()
-    app_logger = logging.getLogger("avocado.app")
     if "app" in enabled:
         app_handler = ProgressStreamHandler()
         app_handler.setFormatter(logging.Formatter("%(message)s"))
         app_handler.addFilter(FilterInfoAndLess())
         app_handler.stream = STD_OUTPUT.stdout
-        app_logger.addHandler(app_handler)
-        app_logger.propagate = False
-        app_logger.level = logging.DEBUG
+        LOG_UI.addHandler(app_handler)
+        LOG_UI.propagate = False
+        LOG_UI.level = logging.DEBUG
     else:
-        disable_log_handler("avocado.app")
+        disable_log_handler(LOG_UI)
     app_err_handler = ProgressStreamHandler()
     app_err_handler.setFormatter(logging.Formatter("%(message)s"))
     app_err_handler.addFilter(FilterWarnAndMore())
     app_err_handler.stream = STD_OUTPUT.stderr
-    app_logger.addHandler(app_err_handler)
-    app_logger.propagate = False
+    LOG_UI.addHandler(app_err_handler)
+    LOG_UI.propagate = False
     if not os.environ.get("AVOCADO_LOG_EARLY"):
-        logging.getLogger("avocado.test.stdout").propagate = False
-        logging.getLogger("avocado.test.stderr").propagate = False
+        LOG_JOB.getChild("stdout").propagate = False
+        LOG_JOB.getChild("stderr").propagate = False
         if "early" in enabled:
             add_log_handler("", logging.StreamHandler, STD_OUTPUT.stdout,
                             logging.DEBUG)
-            add_log_handler("avocado.test", logging.StreamHandler,
+            add_log_handler(LOG_JOB, logging.StreamHandler,
                             STD_OUTPUT.stdout, logging.DEBUG)
         else:
             disable_log_handler("")
-            disable_log_handler("avocado.test")
+            disable_log_handler(LOG_JOB)
     if "remote" in enabled:
         add_log_handler("avocado.fabric", stream=STD_OUTPUT.stdout,
                         level=logging.DEBUG)
@@ -426,9 +428,9 @@ def reconfigure(args):
     # Not enabled by env
     if not os.environ.get('AVOCADO_LOG_DEBUG'):
         if "debug" in enabled:
-            add_log_handler("avocado.app.debug", stream=STD_OUTPUT.stdout)
+            add_log_handler(LOG_UI.getChild("debug"), stream=STD_OUTPUT.stdout)
         else:
-            disable_log_handler("avocado.app.debug")
+            disable_log_handler(LOG_UI.getChild("debug"))
 
     # Add custom loggers
     for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS.iterkeys()]:
@@ -443,8 +445,8 @@ def reconfigure(args):
             add_log_handler(name, logging.StreamHandler, STD_OUTPUT.stdout,
                             level)
         except ValueError as details:
-            app_logger.error("Failed to set logger for --show %s:%s: %s.",
-                             name, level, details)
+            LOG_UI.error("Failed to set logger for --show %s:%s: %s.",
+                         name, level, details)
             sys.exit(exit_codes.AVOCADO_FAIL)
     # Remove the in-memory handlers
     for handler in logging.root.handlers:
@@ -571,18 +573,21 @@ def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
     :param level: Log level (defaults to `INFO``)
     :param fmt: Logging format (defaults to ``%(name)s: %(message)s``)
     """
+    if isinstance(logger, basestring):
+        logger = logging.getLogger(logger)
     handler = klass(stream)
     handler.setLevel(level)
     if isinstance(fmt, str):
         fmt = logging.Formatter(fmt=fmt)
     handler.setFormatter(fmt)
-    logging.getLogger(logger).addHandler(handler)
-    logging.getLogger(logger).propagate = False
+    logger.addHandler(handler)
+    logger.propagate = False
     return handler
 
 
 def disable_log_handler(logger):
-    logger = logging.getLogger(logger)
+    if isinstance(logger, basestring):
+        logger = logging.getLogger(logger)
     # Handlers might be reused elsewhere, can't delete them
     while logger.handlers:
         logger.handlers.pop()
@@ -699,7 +704,6 @@ def log_plugin_failures(failures):
                      :class:`avocado.core.dispatcher.Dispatcher`
                      attribute `load_failures`
     """
-    log = logging.getLogger("avocado.app")
     msg_fmt = 'Failed to load plugin from module "%s": %s'
     silenced = settings.get_value('plugins',
                                   'skip_broken_plugin_notification',
@@ -707,5 +711,5 @@ def log_plugin_failures(failures):
     for failure in failures:
         if failure[0].module_name in silenced:
             continue
-        log.error(msg_fmt, failure[0].module_name,
-                  failure[1].__repr__())
+        LOG_UI.error(msg_fmt, failure[0].module_name,
+                     failure[1].__repr__())

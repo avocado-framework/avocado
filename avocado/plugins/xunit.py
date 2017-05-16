@@ -16,11 +16,11 @@
 """xUnit module."""
 
 import datetime
-import logging
 import os
 import string
 from xml.dom.minidom import Document, Element
 
+from avocado import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Result
 
@@ -123,8 +123,7 @@ class XUnitResult(Result):
         xunit_path = getattr(job.args, 'xunit_output', 'None')
         if xunit_path is not None:
             if xunit_path == '-':
-                log = logging.getLogger("avocado.app")
-                log.debug(content)
+                LOG_UI.debug(content)
             else:
                 with open(xunit_path, 'w') as xunit_file:
                     xunit_file.write(content)

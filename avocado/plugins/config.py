@@ -12,8 +12,7 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import logging
-
+from avocado import LOG_UI
 from avocado.core import data_dir
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.settings import settings
@@ -38,15 +37,14 @@ class Config(CLICmd):
                             'Current: %(default)s')
 
     def run(self, args):
-        log = logging.getLogger("avocado.app")
-        log.info('Config files read (in order):')
+        LOG_UI.info('Config files read (in order):')
         for cfg_path in settings.config_paths:
-            log.debug('    %s' % cfg_path)
+            LOG_UI.debug('    %s' % cfg_path)
         if settings.config_paths_failed:
-            log.error('\nConfig files that failed to read:')
+            LOG_UI.error('\nConfig files that failed to read:')
             for cfg_path in settings.config_paths_failed:
-                log.error('    %s' % cfg_path)
-        log.debug("")
+                LOG_UI.error('    %s' % cfg_path)
+        LOG_UI.debug("")
         if not args.datadir:
             blength = 0
             for section in settings.config.sections():
@@ -57,18 +55,18 @@ class Config(CLICmd):
 
             format_str = "    %-" + str(blength) + "s %s"
 
-            log.debug(format_str, 'Section.Key', 'Value')
+            LOG_UI.debug(format_str, 'Section.Key', 'Value')
             for section in settings.config.sections():
                 for value in settings.config.items(section):
                     config_key = ".".join((section, value[0]))
-                    log.debug(format_str, config_key, value[1])
+                    LOG_UI.debug(format_str, config_key, value[1])
         else:
-            log.debug("Avocado replaces config dirs that can't be accessed")
-            log.debug("with sensible defaults. Please edit your local config")
-            log.debug("file to customize values")
-            log.debug('')
-            log.info('Avocado Data Directories:')
-            log.debug('    base     ' + data_dir.get_base_dir())
-            log.debug('    tests    ' + data_dir.get_test_dir())
-            log.debug('    data     ' + data_dir.get_data_dir())
-            log.debug('    logs     ' + data_dir.get_logs_dir())
+            LOG_UI.debug("Avocado replaces config dirs that can't be accessed")
+            LOG_UI.debug("with sensible defaults. Please edit your local config")
+            LOG_UI.debug("file to customize values")
+            LOG_UI.debug('')
+            LOG_UI.info('Avocado Data Directories:')
+            LOG_UI.debug('    base     ' + data_dir.get_base_dir())
+            LOG_UI.debug('    tests    ' + data_dir.get_test_dir())
+            LOG_UI.debug('    data     ' + data_dir.get_data_dir())
+            LOG_UI.debug('    logs     ' + data_dir.get_logs_dir())

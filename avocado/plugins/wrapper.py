@@ -12,10 +12,10 @@
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
-import logging
 import os
 import sys
 
+from avocado import LOG_UI
 from avocado.core import exit_codes
 from avocado.core.plugin_interfaces import CLI
 from avocado.utils import process
@@ -50,10 +50,9 @@ class Wrapper(CLI):
     def run(self, args):
         wraps = getattr(args, "wrapper", None)
         if wraps:
-            log = logging.getLogger("avocado.app")
             if getattr(args, 'gdb_run_bin', None):
-                log.error('Command line option --wrapper is incompatible'
-                          ' with option --gdb-run-bin.\n%s', args.wrapper)
+                LOG_UI.error('Command line option --wrapper is incompatible'
+                             ' with option --gdb-run-bin.\n%s', args.wrapper)
                 sys.exit(exit_codes.AVOCADO_FAIL)
 
             for wrap in args.wrapper:
@@ -62,13 +61,13 @@ class Wrapper(CLI):
                         script = os.path.abspath(wrap)
                         process.WRAP_PROCESS = os.path.abspath(script)
                     else:
-                        log.error("You can't have multiple global "
-                                  "wrappers at once.")
+                        LOG_UI.error("You can't have multiple global "
+                                     "wrappers at once.")
                         sys.exit(exit_codes.AVOCADO_FAIL)
                 else:
                     script, cmd = wrap.split(':', 1)
                     script = os.path.abspath(script)
                     process.WRAP_PROCESS_NAMES_EXPR.append((script, cmd))
                 if not os.path.exists(script):
-                    log.error("Wrapper '%s' not found!", script)
+                    LOG_UI.error("Wrapper '%s' not found!", script)
                     sys.exit(exit_codes.AVOCADO_FAIL)
