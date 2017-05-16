@@ -520,6 +520,11 @@ If you need to perform setup actions before/after your test, you may do so
 in the ``setUp`` and ``tearDown`` methods, respectively. We'll give examples
 in the following section.
 
+The ``teadDown`` method is always executed (unless the test is skipped).
+Even if something goes wrong in ``setUp``, generating an exception, the
+``tearDown`` will be called to make sure your environment is properly
+cleaned up.
+
 Running third party test suites
 ===============================
 
