@@ -139,6 +139,8 @@ clean:
 	rm -rf /tmp/avocado*
 	find . -name '*.pyc' -delete
 	find $(AVOCADO_OPTIONAL_PLUGINS) -name '*.egg-info' -exec rm -r {} +
+	# Remove this after 36lts is declared EOL
+	rm -rf avocado.egg-info
 
 pip:
 	$(PYTHON) -m pip --version || $(PYTHON) -c "import os; import sys; import urllib; f = urllib.urlretrieve('https://bootstrap.pypa.io/get-pip.py')[0]; os.system('%s %s' % (sys.executable, f))"
