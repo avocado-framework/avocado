@@ -133,6 +133,9 @@ popd
 pushd optional_plugins/resultsdb
 %{__python} setup.py build
 popd
+pushd optional_plugins/varianter_yaml_to_mux
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -150,6 +153,9 @@ pushd optional_plugins/runner_docker
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/resultsdb
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -173,6 +179,9 @@ pushd optional_plugins/runner_docker
 %{__python} setup.py develop --user
 popd
 pushd optional_plugins/resultsdb
+%{__python} setup.py develop --user
+popd
+pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py develop --user
 popd
 # Package build environments have the least amount of resources
@@ -210,11 +219,13 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_runner_vm*
 %exclude %{python_sitelib}/avocado_runner_docker*
 %exclude %{python_sitelib}/avocado_resultsdb*
+%exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_docker*
 %exclude %{python_sitelib}/avocado_framework_plugin_resultsdb*
+%exclude %{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -306,6 +317,18 @@ server.
 %{python_sitelib}/avocado_resultsdb*
 %{python_sitelib}/avocado_framework_plugin_resultsdb*
 
+%package plugins-varianter-yaml-to-mux
+Summary: Avocado plugin to generate variants out of yaml files
+Requires: %{name} == %{version}
+Requires: PyYAML
+
+%description plugins-varianter-yaml-to-mux
+Can be used to produce multiple test variants with test parameters
+defined in a yaml file(s).
+
+%files plugins-varianter-yaml-to-mux
+%{python_sitelib}/avocado_varianter_yaml_to_mux*
+%{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
