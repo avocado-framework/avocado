@@ -67,6 +67,13 @@ class RobotTest(test.SimpleTest):
                       'non-0 exit code (%s)' % result)
 
 
+class NotRobotTest(object):
+
+    """
+    Not a robot test (for reporting purposes)
+    """
+
+
 class RobotLoader(loader.TestLoader):
     """
     Robot loader class
@@ -91,7 +98,9 @@ class RobotLoader(loader.TestLoader):
                                  source=url,
                                  include_suites=SuiteNamePatterns())
             robot_suite = self._find_tests(test_data, test_suite={})
-        except DataError:
+        except Exception as data:
+            if which_tests == loader.ALL:
+                return [(NotRobotTest, {"name": "%s: %s" % (url, data)})]
             return []
 
         for item in robot_suite:
@@ -102,6 +111,9 @@ class RobotLoader(loader.TestLoader):
                 if subtests_filter and not subtests_filter.search(test_name):
                     continue
                 avocado_suite.append((RobotTest, {'name': test_name}))
+        if which_tests is loader.ALL and not avocado_suite:
+            return [(NotRobotTest, {"name": "%s: No robot-like tests found"
+                                    % url})]
         return avocado_suite
 
     def _find_tests(self, data, test_suite):
@@ -115,11 +127,13 @@ class RobotLoader(loader.TestLoader):
 
     @staticmethod
     def get_type_label_mapping():
-        return {RobotTest: 'ROBOT'}
+        return {RobotTest: 'ROBOT',
+                NotRobotTest: "!ROBOT"}
 
     @staticmethod
     def get_decorator_mapping():
-        return {RobotTest: output.TERM_SUPPORT.healthy_str}
+        return {RobotTest: output.TERM_SUPPORT.healthy_str,
+                NotRobotTest: output.TERM_SUPPORT.fail_header_str}
 
 
 class RobotCLI(CLI):
