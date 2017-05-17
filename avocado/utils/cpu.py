@@ -37,13 +37,16 @@ def _list_matches(lst, pattern):
 
 def _get_cpu_info():
     """
-    Reads /proc/cpuinfo and returns a list of file lines
+    Returns info on the 1st CPU entry from /proc/cpuinfo as a list of lines
 
-    :returns: `list` of lines from /proc/cpuinfo file
+    :returns: `list` of lines 1st CPU entry from /proc/cpuinfo file
     :rtype: `list`
     """
-    with open('/proc/cpuinfo', 'r') as f:
-        cpuinfo = f.readlines()
+    cpuinfo = []
+    for line in open('/proc/cpuinfo').readlines():
+        if line == '\n':
+            break
+        cpuinfo.append(line)
     return cpuinfo
 
 
