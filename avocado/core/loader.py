@@ -43,6 +43,12 @@ AVAILABLE = None
 ALL = True
 
 
+class MissingTest(object):
+    """
+    Class representing reference which failed to be discovered
+    """
+
+
 def filter_test_tags(test_suite, filter_by_tags, include_empty=False):
     """
     Filter the existing (unfiltered) test suite based on tags
@@ -209,10 +215,10 @@ class TestLoaderProxy(object):
         Update the mappings according the current initialized plugins
         """
         # Plugins are initialized, let's update mappings
-        self._label_mapping = {test.MissingTest: "MISSING"}
+        self._label_mapping = {MissingTest: "MISSING"}
         for plugin in self._initialized_plugins:
             self._label_mapping.update(plugin.get_type_label_mapping())
-        self._decorator_mapping = {test.MissingTest:
+        self._decorator_mapping = {MissingTest:
                                    output.TERM_SUPPORT.fail_header_str}
         for plugin in self._initialized_plugins:
             self._decorator_mapping.update(plugin.get_decorator_mapping())
@@ -275,7 +281,7 @@ class TestLoaderProxy(object):
                     unhandled_references.append(reference)
         if unhandled_references:
             if which_tests:
-                tests.extend([(test.MissingTest, {'name': reference})
+                tests.extend([(MissingTest, {'name': reference})
                               for reference in unhandled_references])
             else:
                 raise LoaderUnhandledReferenceError(unhandled_references,
@@ -453,6 +459,12 @@ def add_loader_options(parser):
                               'run tests from files'))
 
 
+class NotATest(object):
+    """
+    Class representing something that is not a test
+    """
+
+
 class FileLoader(TestLoader):
 
     """
@@ -469,8 +481,8 @@ class FileLoader(TestLoader):
     @staticmethod
     def get_type_label_mapping():
         return {test.SimpleTest: 'SIMPLE',
-                test.NotATest: 'NOT_A_TEST',
-                test.MissingTest: 'MISSING',
+                NotATest: 'NOT_A_TEST',
+                MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED',
                 test.Test: 'INSTRUMENTED'}
@@ -478,8 +490,8 @@ class FileLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.SimpleTest: output.TERM_SUPPORT.healthy_str,
-                test.NotATest: output.TERM_SUPPORT.warn_header_str,
-                test.MissingTest: output.TERM_SUPPORT.fail_header_str,
+                NotATest: output.TERM_SUPPORT.warn_header_str,
+                MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
                 test.Test: output.TERM_SUPPORT.healthy_str}
@@ -705,7 +717,7 @@ class FileLoader(TestLoader):
                 else:
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
-                    return make_broken(test.NotATest, test_path)
+                    return make_broken(NotATest, test_path)
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -718,7 +730,7 @@ class FileLoader(TestLoader):
                 # execute it.
                 return self._make_test(test.SimpleTest, test_path)
             else:
-                return make_broken(test.NotATest, test_path)
+                return make_broken(NotATest, test_path)
 
     @staticmethod
     def _make_test(klass, uid):
@@ -757,7 +769,7 @@ class FileLoader(TestLoader):
                     return self._make_test(test.SimpleTest,
                                            test_path)
                 else:
-                    return make_broken(test.NotATest, test_path)
+                    return make_broken(NotATest, test_path)
         else:
             if os.path.islink(test_path):
                 try:
@@ -781,7 +793,7 @@ class FileLoader(TestLoader):
                         return self._make_avocado_tests(test_path, make_broken,
                                                         subtests_filter,
                                                         test_name)
-        return make_broken(test.MissingTest, test_name)
+        return make_broken(MissingTest, test_name)
 
 
 class ExternalLoader(TestLoader):

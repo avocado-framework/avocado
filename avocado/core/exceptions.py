@@ -75,17 +75,6 @@ class TestError(TestBaseException):
     status = "ERROR"
 
 
-class NotATestError(TestBaseException):
-
-    """
-    Indicates that the file is not a test.
-
-    Causes: Non executable, non python file or python module without
-    an avocado test class in it.
-    """
-    status = "NOT_A_TEST"
-
-
 class TestNotFoundError(TestBaseException):
 
     """
