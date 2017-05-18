@@ -85,6 +85,10 @@ class Run(CLICmd):
                             default='off', help='Keep job temporary files '
                             '(useful for avocado debugging). Defaults to off.')
 
+        parser.add_argument('--force-execution', choices=('on', 'off'),
+                            help="Force the job execution, even if some of "
+                            "the test references are not resolved to tests.")
+
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
                                              key_type='bool',

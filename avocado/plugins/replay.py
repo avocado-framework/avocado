@@ -208,7 +208,8 @@ class Replay(CLI):
                      'external_runner',
                      'external_runner_testdir',
                      'external_runner_chdir',
-                     'failfast']
+                     'failfast',
+                     'force_execution']
         if replay_args is None:
             LOG_UI.warn('Source job args data not found. These options will '
                         'not be loaded in this replay job: %s',

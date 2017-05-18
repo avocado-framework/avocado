@@ -291,7 +291,8 @@ class Job(object):
         """
         loader.loader.load_plugins(self.args)
         try:
-            suite = loader.loader.discover(references)
+            force = getattr(self.args, 'force_execution', 'off')
+            suite = loader.loader.discover(references, force=force)
             if getattr(self.args, 'filter_by_tags', False):
                 suite = loader.filter_test_tags(
                     suite,
