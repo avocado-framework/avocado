@@ -239,7 +239,7 @@ class TestLoaderProxy(object):
     def get_decorator_mapping(self):
         return self._decorator_mapping
 
-    def discover(self, references, which_tests=DEFAULT):
+    def discover(self, references, which_tests=DEFAULT, force=None):
         """
         Discover (possible) tests from test references.
 
@@ -247,6 +247,8 @@ class TestLoaderProxy(object):
         :type references: builtin.list
         :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
                             DEFAULT)
+        :param force: don't raise an exception when some test references
+                      are not resolved to tests.
         :return: A list of test factories (tuples (TestClass, test_params))
         """
         def handle_exception(plugin, details):
@@ -284,8 +286,12 @@ class TestLoaderProxy(object):
                 tests.extend([(MissingTest, {'name': reference})
                               for reference in unhandled_references])
             else:
-                raise LoaderUnhandledReferenceError(unhandled_references,
-                                                    self._initialized_plugins)
+                if force == 'on':
+                    LOG_UI.error(LoaderUnhandledReferenceError(unhandled_references,
+                                                               self._initialized_plugins))
+                else:
+                    raise LoaderUnhandledReferenceError(unhandled_references,
+                                                        self._initialized_plugins)
         return tests
 
     def load_test(self, test_factory):

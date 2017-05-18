@@ -327,6 +327,34 @@ The ``--failfast`` option accepts the argument ``off``. Since it's disabled
 by default, the ``off`` argument only makes sense in replay jobs, when the
 original job was executed with ``--failfast on``.
 
+Ignoring Missing Test References
+================================
+
+When you provide a list of test references, Avocado will try to resolve
+all of them to tests. If one or more test references can not be resolved
+to tests, the Job will not be created. Example::
+
+    $ avocado run passtest.py badtest.py
+    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado list -V badtest.py' to see the details.
+
+But if you want to execute the Job anyway, with the tests that could be
+resolved, you can use ``--ignore-missing-references on``. The same message
+will appear in the UI, but the Job will be executed::
+
+    $ avocado run passtest.py badtest.py --ignore-missing-references on
+    Unable to resolve reference(s) 'badtest.py' with plugins(s) 'file', 'robot', 'external', try running 'avocado list -V badtest.py' to see the details.
+    JOB ID     : 85927c113074b9defd64ea595d6d1c3fdfc1f58f
+    JOB LOG    : $HOME/avocado/job-results/job-2017-05-17T10.54-85927c1/job.log
+     (1/1) passtest.py:PassTest.test: PASS (0.02 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB TIME   : 0.11 s
+    JOB HTML   : $HOME/avocado/job-results/job-2017-05-17T10.54-85927c1/html/results.html
+
+The ``--ignore-missing-references`` option accepts the argument ``off``.
+Since it's disabled by default, the ``off`` argument only makes sense in
+replay jobs, when the original job was executed with
+``--ignore-missing-references on``.
+
 .. _running-external-runner:
 
 Running Tests With An External Runner

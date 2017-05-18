@@ -190,6 +190,31 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    def test_runner_ignore_missing_references_one_missing(self):
+        os.chdir(basedir)
+        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                    'passtest.py badtest.py --ignore-missing-references on'
+                    % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertIn("Unable to resolve reference(s) 'badtest.py'", result.stderr)
+        self.assertIn('PASS 1 | ERROR 0 | FAIL 0 | SKIP 0', result.stdout)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
+    def test_runner_ignore_missing_references_all_missing(self):
+        os.chdir(basedir)
+        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
+                    'badtest.py badtest2.py --ignore-missing-references on'
+                    % (AVOCADO, self.tmpdir))
+        result = process.run(cmd_line, ignore_status=True)
+        self.assertIn("Unable to resolve reference(s) 'badtest.py', 'badtest2.py'",
+                      result.stderr)
+        self.assertEqual('', result.stdout)
+        expected_rc = exit_codes.AVOCADO_JOB_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" % (expected_rc, result))
+
     @unittest.skipIf(not CC_BINARY,
                      "C compiler is required by the underlying datadir.py test")
     def test_datadir_alias(self):
