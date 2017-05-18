@@ -4,6 +4,7 @@
 __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 
 import os
+import subprocess
 import sys
 import logging
 import unittest
@@ -28,16 +29,23 @@ def test_suite():
 
 
 class MyResult(unittest.TextTestResult):
-    def startTest(self, test):
-        # Destroy the data_dir.get_tmpdir
+    def stopTest(self, test):
+        # stopTest
+        ret = super(MyResult, self).stopTest(test)
+        # Destroy the data_dir.get_tmpdir ...
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
-        assert os.system(CHECK_TMP_DIRS) == 0, "Previous test left some dirs behind"
-        return super(MyResult, self).startTest(test)
+        # ... and check whether some dirs were left behind
+        dir_check = subprocess.Popen([CHECK_TMP_DIRS], stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
+        if dir_check.wait():
+            raise AssertionError("Test %s left some tmp files behind:\n%s"
+                                 % (test, dir_check.stdout.read()))
+        return ret
 
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(failfast=not os.environ.get("SELF_CHECK_CONTINUOUS"),
-                                     verbosity=2, resultclass=MyResult)
+                                     verbosity=1, resultclass=MyResult)
     result = runner.run(test_suite())
     if result.failures or result.errors:
         sys.exit(1)
