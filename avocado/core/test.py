@@ -931,34 +931,6 @@ class ExternalRunnerTest(SimpleTest):
                 os.chdir(pre_cwd)
 
 
-class MissingTest(Test):
-
-    """
-    Handle when there is no such test module in the test directory.
-    """
-
-    def test(self):
-        e_msg = ('Test %s could not be found in the test dir %s '
-                 '(or test path does not exist)' %
-                 (self.name, data_dir.get_test_dir()))
-        raise exceptions.TestNotFoundError(e_msg)
-
-
-class NotATest(Test):
-
-    """
-    The file is not a test.
-
-    Either a non executable python module with no avocado test class in it,
-    or a regular, non executable file.
-    """
-
-    def test(self):
-        e_msg = ('File %s is not executable and does not contain an avocado '
-                 'test class in it ' % self.name)
-        raise exceptions.NotATestError(e_msg)
-
-
 class MockingTest(Test):
 
     """

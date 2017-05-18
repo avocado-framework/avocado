@@ -561,6 +561,10 @@ class Paginator(object):
         except Exception:
             pass
 
+    def flush(self):
+        if not self.pipe.closed:
+            self.pipe.flush()
+
 
 def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
                     level=logging.INFO, fmt='%(name)s: %(message)s'):
