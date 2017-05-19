@@ -6,4 +6,4 @@ pyliblzma>=0.5.3
 # REST client (avocado.core.restclient)
 requests>=1.2.3
 # stevedore for loading "new style" plugins
-stevedore>=1.8.0
+stevedore>=0.14

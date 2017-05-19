@@ -173,4 +173,4 @@ if __name__ == '__main__':
           zip_safe=False,
           test_suite='selftests',
           python_requires='>=2.7',
-          install_requires=['stevedore>=1.8.0'])
+          install_requires=['stevedore>=0.14'])
