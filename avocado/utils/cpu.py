@@ -37,13 +37,16 @@ def _list_matches(lst, pattern):
 
 def _get_cpu_info():
     """
-    Reads /proc/cpuinfo and returns a list of file lines
+    Returns info on the 1st CPU entry from /proc/cpuinfo as a list of lines
 
-    :returns: `list` of lines from /proc/cpuinfo file
+    :returns: `list` of lines 1st CPU entry from /proc/cpuinfo file
     :rtype: `list`
     """
-    with open('/proc/cpuinfo', 'r') as f:
-        cpuinfo = f.readlines()
+    cpuinfo = []
+    for line in open('/proc/cpuinfo').readlines():
+        if line == '\n':
+            break
+        cpuinfo.append(line)
     return cpuinfo
 
 
@@ -94,28 +97,20 @@ def get_cpu_arch():
     """
     Work out which CPU architecture we're running on
     """
+    cpu_table = [('^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
+                 ('^cpu.*POWER4', 'power4'),
+                 ('^cpu.*POWER5', 'power5'),
+                 ('^cpu.*POWER6', 'power6'),
+                 ('^cpu.*POWER7', 'power7'),
+                 ('^cpu.*POWER8', 'power8'),
+                 ('^cpu.*PPC970', 'power970'),
+                 ('ARM', 'arm'),
+                 ('^flags.*:.* lm .*', 'x86_64')]
     cpuinfo = _get_cpu_info()
-
-    if _list_matches(cpuinfo, '^cpu.*(RS64|POWER3|Broadband Engine)'):
-        return 'power'
-    elif _list_matches(cpuinfo, '^cpu.*POWER4'):
-        return 'power4'
-    elif _list_matches(cpuinfo, '^cpu.*POWER5'):
-        return 'power5'
-    elif _list_matches(cpuinfo, '^cpu.*POWER6'):
-        return 'power6'
-    elif _list_matches(cpuinfo, '^cpu.*POWER7'):
-        return 'power7'
-    elif _list_matches(cpuinfo, '^cpu.*POWER8'):
-        return 'power8'
-    elif _list_matches(cpuinfo, '^cpu.*PPC970'):
-        return 'power970'
-    elif _list_matches(cpuinfo, 'ARM'):
-        return 'arm'
-    elif _list_matches(cpuinfo, '^flags.*:.* lm .*'):
-        return 'x86_64'
-    else:
-        return 'i386'
+    for (pattern, arch) in cpu_table:
+        if _list_matches(cpuinfo, pattern):
+            return arch
+    return 'i386'
 
 
 def cpu_online_list():
