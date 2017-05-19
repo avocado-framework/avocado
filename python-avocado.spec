@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 50.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -52,7 +52,6 @@ BuildRequires: python-resultsdb_api
 BuildRequires: python-setuptools
 BuildRequires: python-sphinx
 BuildRequires: python-stevedore
-BuildRequires: python-yaml
 BuildRequires: python2-devel
 BuildRequires: yum
 
@@ -69,7 +68,6 @@ Requires: python
 Requires: python-requests
 Requires: python-setuptools
 Requires: python-stevedore
-Requires: python-yaml
 %if 0%{?fedora}
 BuildRequires: python-aexpect
 %else
@@ -133,6 +131,9 @@ popd
 pushd optional_plugins/resultsdb
 %{__python} setup.py build
 popd
+pushd optional_plugins/varianter_yaml_to_mux
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -150,6 +151,9 @@ pushd optional_plugins/runner_docker
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/resultsdb
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -173,6 +177,9 @@ pushd optional_plugins/runner_docker
 %{__python} setup.py develop --user
 popd
 pushd optional_plugins/resultsdb
+%{__python} setup.py develop --user
+popd
+pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py develop --user
 popd
 # Package build environments have the least amount of resources
@@ -210,11 +217,13 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_runner_vm*
 %exclude %{python_sitelib}/avocado_runner_docker*
 %exclude %{python_sitelib}/avocado_resultsdb*
+%exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_docker*
 %exclude %{python_sitelib}/avocado_framework_plugin_resultsdb*
+%exclude %{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -306,6 +315,18 @@ server.
 %{python_sitelib}/avocado_resultsdb*
 %{python_sitelib}/avocado_framework_plugin_resultsdb*
 
+%package plugins-varianter-yaml-to-mux
+Summary: Avocado plugin to generate variants out of yaml files
+Requires: %{name} == %{version}
+Requires: python-yaml
+
+%description plugins-varianter-yaml-to-mux
+Can be used to produce multiple test variants with test parameters
+defined in a yaml file(s).
+
+%files plugins-varianter-yaml-to-mux
+%{python_sitelib}/avocado_varianter_yaml_to_mux*
+%{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
@@ -321,6 +342,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Fri May 19 2017 Lukas Doktor <ldoktor@redhat.com> - 50.0-1
+- Separate the varianter_yaml_to_mux plugin to a separate RPM
+
 * Tue May 16 2017 Cleber Rosa <cleber@redhat.com> - 50.0-0
 - New upstream release
 

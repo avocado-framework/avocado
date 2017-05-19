@@ -244,7 +244,7 @@ Varianter plugins
 
 A plugin interface that can be used to build custom plugins which
 are used by `Varianter`_ to get test variants. For inspiration see
-:class:`avocado.plugins.yaml_to_mux.YamlToMux` which is in-core
+:class:`avocado_varianter_yaml_to_mux.YamlToMux` which is in-core
 implementation of a multiplex varianter plugin and which is
 described in `Yaml_to_mux plugin`_.
 
@@ -258,7 +258,8 @@ the basic idea behind the tree-like params structure with the support
 to produce all possible variants. There is a core implementation of
 basic building blocks that can be used when creating a custom plugin.
 There is a demonstration version of plugin using this concept in
-:mod:`avocado.plugins.yaml_to_mux` which adds a parser and then
+:mod:`avocado_varianter_yaml_to_mux`
+which adds a parser and then
 uses this multiplexer concept to define an avocado plugin to produce
 variants from ``yaml`` (or ``json``) files.
 
@@ -443,10 +444,11 @@ of different `multiplex domains`_.
 Yaml_to_mux plugin
 ==================
 
-:mod:`avocado.plugins.yaml_to_mux`
+:mod:`avocado_varianter_yaml_to_mux`
 
 So far everything was a bit theoretical, let's use examples to describe
-how the multiplexation works on a :mod:`avocado.plugins.yaml_to_mux`
+how the multiplexation works on a
+:mod:`avocado_varianter_yaml_to_mux`
 plugin. This plugin inherits from the :class:`avocado.core.mux.MuxPlugin`
 and the only thing it implements is the argument parsing to get some
 input and a custom ``yaml`` parser (which is also capable of
