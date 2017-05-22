@@ -21,6 +21,7 @@ Get information from the current's machine CPU.
 """
 
 import re
+import os
 
 
 def _list_matches(lst, pattern):
@@ -122,3 +123,17 @@ def cpu_online_list():
         if line.startswith('processor'):
             cpus.append(int(line.split()[2]))  # grab cpu number
     return cpus
+
+
+def total_cpus_count():
+    """
+    Return Number of Total cpus in the system including offline cpus
+    """
+    return os.sysconf('SC_NPROCESSORS_CONF')
+
+
+def online_cpus_count():
+    """
+    Return Number of Online cpus in the system
+    """
+    return os.sysconf('SC_NPROCESSORS_ONLN')
