@@ -3,6 +3,7 @@ avocado.utils.lv_utils selftests
 :author: Lukas Doktor <ldoktor@redhat.com>
 :copyright: 2016 Red Hat, Inc
 """
+from __future__ import print_function
 from avocado.utils import process, lv_utils
 import glob
 import os
@@ -58,10 +59,10 @@ class LVUtilsTest(unittest.TestCase):
                 res = process.run("rmmod scsi_debug", ignore_status=True,
                                   sudo=True)
                 if not res.exit_status:
-                    print "scsi_debug removed"
+                    print("scsi_debug removed")
                     break
             else:
-                print "Fail to remove scsi_debug: %s" % res
+                print("Fail to remove scsi_debug: %s" % res)
         for _ in xrange(10):
             res = process.run("rmmod scsi_debug", ignore_status=True,
                               sudo=True)
@@ -126,16 +127,16 @@ class LVUtilsTest(unittest.TestCase):
                 process.run("mountpoint %s && umount %s"
                             % (mount_loc, mount_loc), shell=True, sudo=True)
             except BaseException as details:
-                print "Fail to unmount LV: %s" % details
+                print("Fail to unmount LV: %s" % details)
             try:
                 lv_utils.lv_remove(vg_name, lv_name)
             except BaseException as details:
-                print "Fail to cleanup LV: %s" % details
+                print("Fail to cleanup LV: %s" % details)
             try:
                 lv_utils.vg_ramdisk_cleanup(ramdisk_filename, vg_ramdisk_dir,
                                             vg_name, loop_device)
             except BaseException as details:
-                print "Fail to cleanup vg_ramdisk: %s" % details
+                print("Fail to cleanup vg_ramdisk: %s" % details)
             raise
 
 
