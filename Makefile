@@ -153,9 +153,15 @@ requirements-selftests: requirements
 	- pip install -r requirements-selftests.txt
 
 requirements-plugins: requirements
-	for MAKEFILE in $(AVOCADO_PLUGINS);\
-		do AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirements &>/dev/null && echo ">> DONE $$MAKEFILE" || echo ">> SKIP $$MAKEFILE";\
-	done
+	for MAKEFILE in $(AVOCADO_PLUGINS);do\
+		if test -f $$MAKEFILE/Makefile; then echo ">> REQUIREMENTS (Makefile) $$MAKEFILE";\
+                         if test -f $$MAKEFILE/Makefile; then AVOCADO_DIRNAME=$(AVOCADO_DIRNAME) make -C $$MAKEFILE requirement &>/dev/null; fi;\
+		elif test -f $$MAKEFILE/setup.py -o -f $$MAKEFILE/requirements.txt; then echo ">> REQUIREMENTS (setup.py/requirements.txt) $$MAKEFILE";\
+			if test -f $$MAKEFILE/setup.py; then cd $$MAKEFILE; $(PYTHON) setup.py develop $(PYTHON_DEVELOP_ARGS); cd -; fi;\
+			if test -f $$MAKEFILE/requirements.txt; then pip install $(PYTHON_DEVELOP_ARGS) -r $$MAKEFILE/requirements.txt; fi;\
+		else echo ">> SKIP $$MAKEFILE";\
+                fi;\
+	done;
 
 smokecheck: clean develop
 	./scripts/avocado run passtest.py
