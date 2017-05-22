@@ -478,8 +478,8 @@ class FileLoader(TestLoader):
     """
 
     name = 'file'
-    __not_test_str = (": Does not look like an INSTRUMENTED test, nor is "
-                      "it executable")
+    __not_test_str = ("Does not look like an INSTRUMENTED test, nor is it "
+                      "executable")
 
     def __init__(self, args, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
@@ -725,8 +725,8 @@ class FileLoader(TestLoader):
                 else:
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
-                    return make_broken(NotATest,
-                                       test_path + self.__not_test_str)
+                    return make_broken(NotATest, test_path,
+                                       self.__not_test_str)
 
         # Since a lot of things can happen here, the broad exception is
         # justified. The user will get it unadulterated anyway, and avocado
@@ -739,15 +739,18 @@ class FileLoader(TestLoader):
                 # execute it.
                 return self._make_test(test.SimpleTest, test_path)
             else:
-                return make_broken(NotATest, test_path + self.__not_test_str)
+                return make_broken(NotATest, test_path, self.__not_test_str)
 
     @staticmethod
-    def _make_test(klass, uid):
+    def _make_test(klass, uid, description=None):
         """
         Create test template
         :param klass: test class
         :param uid: test uid (by default used as id and name)
+        :param description: Description appended to "uid" (for listing purpose)
         """
+        if description:
+            uid = "%s: %s" % (uid, description)
         return [(klass, {'name': uid})]
 
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
@@ -757,7 +760,7 @@ class FileLoader(TestLoader):
         :param list_non_tests: include bad tests (NotATest, BrokenSymlink,...)
         :param subtests_filter: optional filter of methods for avocado tests
         """
-        def ignore_broken(klass, uid, params=None):
+        def ignore_broken(klass, uid, description=None):
             """ Always return empty list """
             return []
 
@@ -768,7 +771,7 @@ class FileLoader(TestLoader):
         test_name = test_path
         if os.path.exists(test_path):
             if os.access(test_path, os.R_OK) is False:
-                return make_broken(AccessDeniedPath, test_path + ": Is not "
+                return make_broken(AccessDeniedPath, test_path, "Is not "
                                    "readable")
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
@@ -779,17 +782,17 @@ class FileLoader(TestLoader):
                     return self._make_test(test.SimpleTest,
                                            test_path)
                 else:
-                    return make_broken(NotATest,
-                                       test_path + self.__not_test_str)
+                    return make_broken(NotATest, test_path,
+                                       self.__not_test_str)
         else:
             if os.path.islink(test_path):
                 try:
                     if not os.path.isfile(os.readlink(test_path)):
-                        return make_broken(BrokenSymlink, test_path + ": Is "
-                                           "a broken symlink")
+                        return make_broken(BrokenSymlink, test_path, "Is a "
+                                           "broken symlink")
                 except OSError:
-                    return make_broken(AccessDeniedPath, test_path + ": Is "
-                                       "not accessible.")
+                    return make_broken(AccessDeniedPath, test_path, "Is not "
+                                       "accessible.")
 
             # Try to resolve test ID (keep compatibility)
             test_path = os.path.join(data_dir.get_test_dir(), test_name)
@@ -806,7 +809,7 @@ class FileLoader(TestLoader):
                         return self._make_avocado_tests(test_path, make_broken,
                                                         subtests_filter,
                                                         test_name)
-        return make_broken(NotATest, test_name + self.__not_test_str)
+        return make_broken(NotATest, test_name, self.__not_test_str)
 
 
 class ExternalLoader(TestLoader):
