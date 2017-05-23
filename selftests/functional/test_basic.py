@@ -920,7 +920,9 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
                          % (exit_codes.AVOCADO_ALL_OK, result))
-        exp = ("Type    Test\nMISSING this-wont-be-matched\n\nEXTERNAL: 0\n"
+        exp = ("Type    Test                 Tag(s)\n"
+               "MISSING this-wont-be-matched \n\n"
+               "EXTERNAL: 0\n"
                "MISSING: 1\n")
         self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
                          % (exp, result))

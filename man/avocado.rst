@@ -604,7 +604,7 @@ the `--verbose`, or `-V` flag to display files that were detected but
 are not avocado tests, along with summary information::
 
     $ avocado list examples/gdb-prerun-scripts/ -V
-    Type       file
+    Type       Test                                     Tag(s)
     NOT_A_TEST examples/gdb-prerun-scripts/README
     NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
 

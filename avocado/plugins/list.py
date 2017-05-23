@@ -78,7 +78,15 @@ class TestLister(object):
             stats[type_label.lower()] += 1
             type_label = decorator(type_label)
 
-            test_matrix.append((type_label, id_label))
+            if self.args.verbose:
+                if 'tags' in params:
+                    tags = params['tags']
+                else:
+                    tags = set()
+                tags = ",".join(tags)
+                test_matrix.append((type_label, id_label, tags))
+            else:
+                test_matrix.append((type_label, id_label))
 
         return test_matrix, stats
 
@@ -86,7 +94,8 @@ class TestLister(object):
         header = None
         if self.args.verbose:
             header = (output.TERM_SUPPORT.header_str('Type'),
-                      output.TERM_SUPPORT.header_str('Test'))
+                      output.TERM_SUPPORT.header_str('Test'),
+                      output.TERM_SUPPORT.header_str('Tag(s)'))
 
         for line in astring.iter_tabular_output(test_matrix, header=header):
             LOG_UI.debug(line)
