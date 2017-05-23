@@ -57,6 +57,7 @@ class TestLister(object):
         decorator_mapping = loader.loader.get_decorator_mapping()
 
         stats = {}
+        tag_stats = {}
         for value in type_label_mapping.values():
             stats[value.lower()] = 0
 
@@ -83,14 +84,19 @@ class TestLister(object):
                     tags = params['tags']
                 else:
                     tags = set()
+                for tag in tags:
+                    if tag not in tag_stats:
+                        tag_stats[tag] = 1
+                    else:
+                        tag_stats[tag] += 1
                 tags = ",".join(tags)
                 test_matrix.append((type_label, id_label, tags))
             else:
                 test_matrix.append((type_label, id_label))
 
-        return test_matrix, stats
+        return test_matrix, stats, tag_stats
 
-    def _display(self, test_matrix, stats):
+    def _display(self, test_matrix, stats, tag_stats):
         header = None
         if self.args.verbose:
             header = (output.TERM_SUPPORT.header_str('Type'),
@@ -101,9 +107,18 @@ class TestLister(object):
             LOG_UI.debug(line)
 
         if self.args.verbose:
-            LOG_UI.debug("")
+            LOG_UI.info("")
+            LOG_UI.info("TEST TYPES SUMMARY")
+            LOG_UI.info("==================")
             for key in sorted(stats):
                 LOG_UI.info("%s: %s", key.upper(), stats[key])
+
+            if tag_stats:
+                LOG_UI.info("")
+                LOG_UI.info("TEST TAGS SUMMARY")
+                LOG_UI.info("=================")
+                for key in sorted(tag_stats):
+                    LOG_UI.info("%s: %s", key, tag_stats[key])
 
     def _list(self):
         self._extra_listing()
@@ -113,8 +128,8 @@ class TestLister(object):
                 test_suite,
                 self.args.filter_by_tags,
                 self.args.filter_by_tags_include_empty)
-        test_matrix, stats = self._get_test_matrix(test_suite)
-        self._display(test_matrix, stats)
+        test_matrix, stats, tag_stats = self._get_test_matrix(test_suite)
+        self._display(test_matrix, stats, tag_stats)
 
     def list(self):
         try:

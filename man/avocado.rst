@@ -608,6 +608,8 @@ are not avocado tests, along with summary information::
     NOT_A_TEST examples/gdb-prerun-scripts/README
     NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
 
+    TEST TYPES SUMMARY
+    ==================
     SIMPLE: 0
     INSTRUMENTED: 0
     MISSING: 0

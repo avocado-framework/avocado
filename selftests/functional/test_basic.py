@@ -922,6 +922,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          % (exit_codes.AVOCADO_ALL_OK, result))
         exp = ("Type    Test                 Tag(s)\n"
                "MISSING this-wont-be-matched \n\n"
+               "TEST TYPES SUMMARY\n"
+               "==================\n"
                "EXTERNAL: 0\n"
                "MISSING: 1\n")
         self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"

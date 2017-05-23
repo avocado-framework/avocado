@@ -1186,6 +1186,8 @@ If you try to list the tests in that file, this is what you'll get::
     Type       Test      Tag(s)
     NOT_A_TEST mytest.py
 
+    TEST TYPES SUMMARY
+    ==================
     ACCESS_DENIED: 0
     BROKEN_SYMLINK: 0
     EXTERNAL: 0
@@ -1224,6 +1226,8 @@ Now, trying to list the tests on the ``mytest.py`` file again::
     INSTRUMENTED mytest.py:MyTest.test1
     INSTRUMENTED mytest.py:MyTest.test2
 
+    TEST TYPES SUMMARY
+    ==================
     ACCESS_DENIED: 0
     BROKEN_SYMLINK: 0
     EXTERNAL: 0
