@@ -934,6 +934,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          % (exit_codes.AVOCADO_ALL_OK, result))
         exp = ("Type    Test                 Tag(s)\n"
                "MISSING this-wont-be-matched \n\n"
+               "TEST TYPES SUMMARY\n"
+               "==================\n"
                "EXTERNAL: 0\n"
                "MISSING: 1\n")
         self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
@@ -957,6 +959,10 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         full_test_name = "%s:MyTest.test" % test
         self.assertEquals("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
                           stdout_lines[1])
+        self.assertIn("TEST TYPES SUMMARY", stdout_lines)
+        self.assertIn("INSTRUMENTED: 1", stdout_lines)
+        self.assertIn("TEST TAGS SUMMARY", stdout_lines)
+        self.assertEquals("BIG_TAG_NAME: 1", stdout_lines[-1])
 
     def test_plugin_list(self):
         os.chdir(basedir)
