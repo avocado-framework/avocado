@@ -809,6 +809,8 @@ class FileLoader(TestLoader):
                         return self._make_avocado_tests(test_path, make_broken,
                                                         subtests_filter,
                                                         test_name)
+                return make_broken(NotATest, test_name, "File not found "
+                                   "('%s'; '%s')" % (test_name, test_path))
         return make_broken(NotATest, test_name, self.__not_test_str)
 
 
