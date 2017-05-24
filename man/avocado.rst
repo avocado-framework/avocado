@@ -90,6 +90,8 @@ Options for subcommand `run` (`avocado run --help`)::
                             debugging). Defaults to off.
       --sysinfo {on,off}    Enable or disable system information (hardware
                             details, profilers, etc.). Current: on
+      --suite-order {tests-per-variant,variants-per-test}
+                            How to iterate through test suite and variants
 
     output and result format:
       -s, --silent          Silence stdout

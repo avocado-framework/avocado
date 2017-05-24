@@ -485,36 +485,57 @@ class TestRunner(object):
         return True
 
     @staticmethod
-    def _iter_variants(template, variants):
+    def _template_to_factory(template, variant):
         """
-        Iterate through variants and set the params/variants accordingly.
+        Applies test params from variant to the test template
 
-        :param template: test template
-        :param variants: the Mux object containing the variants
-        :return: Yields tuple(test_factory including params, variant id)
-        :raises ValueError: When variant and template declare params.
+        :param template: a test template
+        :param variant: variant to be applied
+        :return: tuple(new_test_factory, applied_variant)
         """
-        for variant in variants.itertests():
-            params = (variant.get("variant"), variant.get("mux_path"))
-            if params:
-                if "params" in template[1]:
-                    msg = ("Unable to use test variants %s, params are already"
-                           " present in test factory: %s"
-                           % (template[0], template[1]))
-                    raise ValueError(msg)
-                factory = [template[0], template[1].copy()]
-                factory[1]["params"] = params
-            else:
-                factory = template
-            yield factory, variant
+        params = variant.get("variant"), variant.get("mux_path")
+        if params:
+            if "params" in template[1]:
+                msg = ("Unable to use test variants %s, params are already"
+                       " present in test factory: %s"
+                       % (template[0], template[1]))
+                raise ValueError(msg)
+            factory = [template[0], template[1].copy()]
+            factory[1]["params"] = params
+        else:
+            factory = template
+        return factory, variant
 
-    def run_suite(self, test_suite, variants, timeout=0, replay_map=None):
+    def _iter_suite(self, test_suite, variants, suite_order):
+        """
+        Iterates through test_suite and variants in defined order
+
+        :param test_suite: a list of tests to run
+        :param variants: a varianter object to produce test params
+        :param suite_order: way of iterating through tests/variants
+        :return: generator yielding tuple(test_factory, variant)
+        """
+        if suite_order == "tests-per-variant":
+            return (self._template_to_factory(template, variant)
+                    for variant in variants.itertests()
+                    for template in test_suite)
+        else:
+            return (self._template_to_factory(template, variant)
+                    for template in test_suite
+                    for variant in variants.itertests())
+
+    def run_suite(self, test_suite, variants, timeout=0, replay_map=None,
+                  suite_order=None):
         """
         Run one or more tests and report with test result.
 
         :param test_suite: a list of tests to run.
         :param variants: A varianter iterator to produce test params.
         :param timeout: maximum amount of time (in seconds) to execute.
+        :param replay_map: optional list to override test class based on test
+                           index.
+        :param suite_order: Mode in which we should iterate through tests
+                            resp. variants.
         :return: a set with types of test failures.
         """
         summary = set()
@@ -533,39 +554,33 @@ class TestRunner(object):
         index = -1
         try:
             for test_template in test_suite:
-                test_template[1]['base_logdir'] = self.job.logdir
-                test_template[1]['job'] = self.job
-                break_loop = False
-                for test_factory, variant in self._iter_variants(test_template,
-                                                                 variants):
-                    index += 1
-                    test_parameters = test_factory[1]
-                    name = test_parameters.get("name")
-                    test_parameters["name"] = test.TestName(index + 1, name,
-                                                            variant,
-                                                            no_digits)
-                    if deadline is not None and time.time() > deadline:
-                        summary.add('INTERRUPTED')
-                        if 'methodName' in test_parameters:
-                            del test_parameters['methodName']
-                        test_factory = (test.TimeOutSkipTest, test_parameters)
-                        break_loop = not self.run_test(test_factory, queue,
-                                                       summary)
-                        if break_loop:
-                            break
-                    else:
-                        if (replay_map is not None and
-                                replay_map[index] is not None):
-                            test_parameters["methodName"] = "test"
-                            test_factory = (replay_map[index], test_parameters)
+                test_template[1]["base_logdir"] = self.job.logdir
+                test_template[1]["job"] = self.job
+            for test_factory, variant in self._iter_suite(test_suite, variants,
+                                                          suite_order):
+                index += 1
+                test_parameters = test_factory[1]
+                name = test_parameters.get("name")
+                test_parameters["name"] = test.TestName(index + 1, name,
+                                                        variant,
+                                                        no_digits)
+                if deadline is not None and time.time() > deadline:
+                    summary.add('INTERRUPTED')
+                    if 'methodName' in test_parameters:
+                        del test_parameters['methodName']
+                    test_factory = (test.TimeOutSkipTest, test_parameters)
+                    if not self.run_test(test_factory, queue, summary):
+                        break
+                else:
+                    if (replay_map is not None and
+                            replay_map[index] is not None):
+                        test_parameters["methodName"] = "test"
+                        test_factory = (replay_map[index], test_parameters)
 
-                        break_loop = not self.run_test(test_factory, queue,
-                                                       summary, deadline)
-                        if break_loop:
-                            break
+                    if not self.run_test(test_factory, queue, summary,
+                                         deadline):
+                        break
                 runtime.CURRENT_TEST = None
-                if break_loop:
-                    break
         except KeyboardInterrupt:
             TEST_LOG.error('Job interrupted by ctrl+c.')
             summary.add('INTERRUPTED')

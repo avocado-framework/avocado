@@ -445,10 +445,12 @@ class Job(object):
         jobdata.record(self.args, self.logdir, variant, self.references,
                        sys.argv)
         replay_map = getattr(self.args, 'replay_map', None)
+        suite_order = getattr(self.args, "suite_order", None)
         summary = self.test_runner.run_suite(self.test_suite,
                                              variant,
                                              self.timeout,
-                                             replay_map)
+                                             replay_map,
+                                             suite_order)
         # If it's all good so far, set job status to 'PASS'
         if self.status == 'RUNNING':
             self.status = 'PASS'
