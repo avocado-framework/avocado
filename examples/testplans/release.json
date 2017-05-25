@@ -9,6 +9,9 @@
 	{"name": "Avocado source does not contain spelling errors",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
 
+    {"name": "Avocado source does not contain spelling errors",
+     "description": "On your development machine, on a freshen Avocado source to be released, run `$ make spell`. Expected result: Make command should say OK."},
+
 	{"name": "Avocado RPM build",
 	 "description": "On your development machine, build the Avocado RPM packages using: `$ make rpm`. Expected result: SRPM and RPM files at `BUILD/RPM/python-avocado-x.y.z-r.distro.{src,noarch}.rpm`"},
 
