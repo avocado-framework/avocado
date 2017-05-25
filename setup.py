@@ -15,6 +15,7 @@
 
 import glob
 import os
+import sys
 # pylint: disable=E0611
 
 from setuptools import setup
@@ -101,6 +102,14 @@ def get_long_description():
     return req_contents
 
 if __name__ == '__main__':
+    if sys.version_info < (2, 7, 0):
+        requirements = ["pystache>=0.5.3", "stevedore>=0.14,<=1.10.0",
+                        "argparse>=1.3.0", "logutils>=0.3.3",
+                        "importlib>=1.0.3", "PyYAML>=3.11",
+                        "unittest2>=1.0.0"]
+    else:
+        requirements = ["pystache>=0.5.3", "stevedore>=0.14",
+                        "PyYAML>=3.11"]
     setup(name='avocado',
           version='36.4',
           description='Avocado Test Framework',
@@ -150,5 +159,6 @@ if __name__ == '__main__':
                   'jobscripts = avocado.plugins.jobscripts:JobScripts',
                   ],
               },
+          install_requires=requirements,
           zip_safe=False,
           test_suite='selftests')
