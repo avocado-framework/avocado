@@ -143,6 +143,10 @@ In many situations, such as result generation, not one, but all of the
 enabled plugin types will be executed.  The order in which the plugins
 are executed follows the lexical order of the entry point name.
 
+If it sounds too complicated, it isn't.  It just means that for
+plugins of the same type, a plugin named ``automated`` will be
+executed before the plugin named ``uploader``.
+
 For example, for the JSON result plugin, whose fully qualified name
 is ``result.json``, has an entry point name of ``json``, as can be seen
 on its registration code in ``setup.py``::
@@ -152,10 +156,6 @@ on its registration code in ``setup.py``::
       'avocado.plugins.result': [
          'json = avocado.plugins.jsonresult:JSONResult',
    ...
-
-If it sounds too complicated, it isn't.  It just means that for
-plugins of the same type, a plugin named ``automated`` will be
-executed before the plugin named ``uploader``.
 
 In the default Avocado set of result plugins, it means that the JSON
 plugin (``json``) will be executed before the XUnit plugin (``xunit``).
