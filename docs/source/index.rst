@@ -1,3 +1,14 @@
+=====================
+Avocado Release Notes
+=====================
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   38_0
+
 ====================
 Avocado User's Guide
 ====================
