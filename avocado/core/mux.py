@@ -22,9 +22,9 @@ a custom Varianter plugin.
 #
 
 import collections
+import hashlib
 import itertools
 import re
-import sha
 
 from . import output
 from . import tree
@@ -172,7 +172,7 @@ class MuxPlugin(object):
             variant.sort(key=lambda x: x.path)
             fingerprint = "-".join(_.fingerprint() for _ in variant)
             variant_ids.append("-".join(node.name for node in variant) + '-' +
-                               sha.sha(fingerprint).hexdigest()[:4])
+                               hashlib.sha1(fingerprint).hexdigest()[:4])
         return variant_ids
 
     def __iter__(self):

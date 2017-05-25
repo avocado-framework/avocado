@@ -20,6 +20,7 @@ import sys
 from stevedore import EnabledExtensionManager
 
 from .settings import settings
+from .settings import SettingsError
 from .output import LOG_UI
 from ..utils import stacktrace
 
@@ -71,8 +72,17 @@ class Dispatcher(EnabledExtensionManager):
         return "plugins.%s" % self.plugin_type()
 
     def enabled(self, extension):
-        disabled = settings.get_value('plugins', 'disable', key_type=list)
-        return self.fully_qualified_name(extension) not in disabled
+        """
+        Checks configuration for explicit mention of plugin in a disable list
+
+        If configuration section or key doesn't exist, it means no plugin
+        is disabled.
+        """
+        try:
+            disabled = settings.get_value('plugins', 'disable', key_type=list)
+            return self.fully_qualified_name(extension) not in disabled
+        except SettingsError:
+            return True
 
     def names(self):
         """

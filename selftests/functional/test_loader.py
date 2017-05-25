@@ -210,7 +210,7 @@ class LoaderTestFunctional(unittest.TestCase):
 
     def test_multiple_methods_same_name(self):
         self._test('multiplemethods.py', AVOCADO_TEST_MULTIPLE_METHODS_SAME_NAME,
-                   'INSTRUMENTED', 0664, 1)
+                   'INSTRUMENTED', self.MODE_0664, 1)
 
     def test_load_not_a_test(self):
         self._test('notatest.py', NOT_A_TEST, 'SIMPLE', self.MODE_0775)
@@ -226,7 +226,7 @@ class LoaderTestFunctional(unittest.TestCase):
             'test2.py',
             AVOCADO_SIMPLE_PYTHON_LIKE_MULTIPLE_FILES_LIB,
             'avocado_simpletest_functional',
-            0644)
+            self.MODE_0644)
         mylib.save()
         mytest = script.Script(
             os.path.join(os.path.dirname(mylib.path), 'test.py'),

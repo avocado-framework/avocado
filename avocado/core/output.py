@@ -92,7 +92,7 @@ class TermSupport(object):
                          'screen-256color', 'screen.xterm-256color']
         term = os.environ.get("TERM")
         colored = settings.get_value('runner.output', 'colored',
-                                     key_type='bool')
+                                     key_type='bool', default=True)
         if not colored or not os.isatty(1) or term not in allowed_terms:
             self.disable()
 
