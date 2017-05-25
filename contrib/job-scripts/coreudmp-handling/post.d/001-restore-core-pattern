@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+if [ -z $AVOCADO_JOB_LOGDIR ]; then
+   exit 1
+fi
+
+BACKUP_CORE_PATTERN="$AVOCADO_JOB_LOGDIR/crash-dumps/.backup_core_pattern"
+if [ -f $BACKUP_CORE_PATTERN ]; then
+    cat $BACKUP_CORE_PATTERN > /proc/sys/kernel/core_pattern
+    rm $BACKUP_CORE_PATTERN
+fi

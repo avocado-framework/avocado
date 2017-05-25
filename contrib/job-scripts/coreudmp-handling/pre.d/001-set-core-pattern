@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+if [ -z $AVOCADO_JOB_LOGDIR ]; then
+   exit 1
+fi
+
+COREDUMPS_DIR="$AVOCADO_JOB_LOGDIR/coredumps"
+mkdir $COREDUMPS_DIR
+
+# Save a backup of the core pattern setting
+cat /proc/sys/kernel/core_pattern > $COREDUMPS_DIR/.backup_core_pattern
+
+# Set core pattern
+echo "$COREDUMPS_DIR/core.%p" > /proc/sys/kernel/core_pattern
