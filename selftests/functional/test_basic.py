@@ -275,6 +275,9 @@ class RunnerOperationTest(unittest.TestCase):
             self.assertIn("Runner error occurred: Test reports unsupported",
                           results["tests"][0]["fail_reason"])
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_hanged_test_with_status(self):
         """ Check that avocado handles hanged tests properly """
         os.chdir(basedir)
@@ -535,6 +538,9 @@ class RunnerOperationTest(unittest.TestCase):
                       result.stdout)
 
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_read(self):
         os.chdir(basedir)
         cmd = "%s run --sysinfo=off --job-results-dir %%s %%s" % AVOCADO
@@ -698,6 +704,9 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_runner_sleep_fail_sleep_timing(self):
         """
         Sleeptest is supposed to take 1 second, let's make a sandwich of
@@ -750,6 +759,9 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
 
     @unittest.skipIf(not SLEEP_BINARY, 'sleep binary not available')
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_kill_stopped_sleep(self):
         proc = aexpect.Expect("%s run 60 --job-results-dir %s "
                               "--external-runner %s --sysinfo=off "

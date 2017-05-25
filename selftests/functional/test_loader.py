@@ -180,6 +180,9 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_sleep_a_lot(self):
         """
         Verifies that the test loader, at list time, does not load the Python
@@ -239,6 +242,9 @@ class LoaderTestFunctional(unittest.TestCase):
                     % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_simple_using_main(self):
         mytest = script.TemporaryScript("simple_using_main.py",
                                         AVOCADO_TEST_SIMPLE_USING_MAIN,
