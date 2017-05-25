@@ -309,9 +309,6 @@ class TestRunner(object):
 
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        # Replace STDIN (0) with the /dev/null's fd
-        os.dup2(sys.stdin.fileno(), 0)
-
         instance = loader.load_test(test_factory)
         if instance.runner_queue is None:
             instance.set_runner_queue(queue)
