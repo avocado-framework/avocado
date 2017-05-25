@@ -105,6 +105,7 @@ class TestLister(object):
                 self.args.filter_by_tags,
                 self.args.filter_by_tags_include_empty)
         test_matrix, stats = self._get_test_matrix(test_suite)
+        self.log.info("Avaliable tests:")
         self._display(test_matrix, stats)
 
     def list(self):
