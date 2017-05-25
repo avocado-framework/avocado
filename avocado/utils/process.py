@@ -1118,54 +1118,6 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     return cmd_result
 
 
-def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check='all', shell=False, env=None, sudo=False,
-           ignore_bg_processes=False):
-    """
-    Run a subprocess, returning its exit code.
-
-    :param cmd: Command line to run.
-    :type cmd: str
-    :param timeout: Time limit in seconds before attempting to kill the
-                    running process. This function will take a few seconds
-                    longer than 'timeout' to complete if it has to kill the
-                    process.
-    :type timeout: float
-    :param verbose: Whether to log the command run and stdout/stderr.
-    :type verbose: bool
-    :param ignore_status: Whether to raise an exception when command returns
-                          =! 0 (False), or not (True).
-    :type ignore_status: bool
-    :param allow_output_check: Whether to log the command stream outputs
-                               (stdout and stderr) in the test stream
-                               files. Valid values: 'stdout', for
-                               allowing only standard output, 'stderr',
-                               to allow only standard error, 'all',
-                               to allow both standard output and error
-                               (default), and 'none', to allow
-                               none to be recorded.
-    :type allow_output_check: str
-    :param shell: Whether to run the command on a subshell
-    :type shell: bool
-    :param env: Use extra environment variables.
-    :type env: dict
-    :param sudo: Whether the command requires admin privileges to run,
-                 so that sudo will be prepended to the command.
-                 The assumption here is that the user running the command
-                 has a sudo configuration such that a password won't be
-                 prompted. If that's not the case, the command will
-                 straight out fail.
-
-    :return: Exit code.
-    :rtype: int
-    :raise: :class:`CmdError`, if ``ignore_status=False``.
-    """
-    cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
-                     allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes)
-    return cmd_result.exit_status
-
-
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                   allow_output_check='all', shell=False, env=None, sudo=False,
                   ignore_bg_processes=False, strip_trail_nl=True):
