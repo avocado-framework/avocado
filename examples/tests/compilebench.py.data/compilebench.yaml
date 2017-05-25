@@ -1,0 +1,11 @@
+setup:
+    trees: !mux
+        default:
+            num_kernel_trees: null
+        quick:
+            num_kernel_trees: 5
+    runs: !mux
+        default:
+            num_random_runs: null
+        minimal:
+            num_random_runs: 1
