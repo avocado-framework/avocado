@@ -351,6 +351,10 @@ class TestRunner(object):
         """
         proc = None
         sigtstp = multiprocessing.Lock()
+        if 'modulePath' in test_factory[1]:
+            test_path = test_factory[1]['modulePath']
+            test_module_dir = os.path.abspath(os.path.dirname(test_path))
+            sys.path.insert(0, test_module_dir)
 
         def sigtstp_handler(signum, frame):     # pylint: disable=W0613
             """ SIGSTOP all test processes on SIGTSTP """
