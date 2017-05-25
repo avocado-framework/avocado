@@ -1,8 +1,8 @@
-Debugging with GDB
-==================
+Debugging with GDB/rr
+=====================
 
-Avocado has two different types of GDB support that complement each
-other:
+Avocado has two different types of `GDB` support as well as example
+wrapper to record runtime information using `rr`:
 
 * Transparent execution of executables inside the GNU Debugger. This
   takes standard and possibly unmodified tests that uses the
@@ -14,13 +14,9 @@ other:
   including setting a executable to be run, setting breakpoints or any
   other types of commands. This requires a test written with that
   approach and API in mind.
-
-.. tip:: Even though this section describes the use of the Avocado GDB
-   features, which allow live debugging of binaries inside Avocado
-   tests, it's also possible to debug some application offline by
-   using tools such as `rr <http://rr-project.org>`_.  Avocado ships
-   with an example wrapper script (to be used with ``--wrapper``) for
-   that purpose.
+* The wrapper located in `/usr/share/avocado/wrappers/rr.sh` which can be
+  used to deterministically record the state of the program and re-run
+  the exact same execution later.
 
 
 Transparent Execution of Executables
@@ -185,3 +181,38 @@ breakpoints, executing commands and querying for output.
 
 When you check the output (``--show-job-log``) you can see that despite
 declaring the variable as 0, ff is injected and printed instead.
+
+
+rr wrapper
+----------
+
+It uses the ``--wrapper`` avocado functionality to run matching binaries
+inside the specified script. There is an example `rr` script in
+``/usr/share/avocado/wrappers/rr.sh`` which stores the information in
+test's `output_dir/rr` as `$bin_name.$serial_id`.
+
+Let's have a look at an example with malfunctioning qemu. Run the
+malfunctioning qemu inside avocado with wrapper::
+
+    $ avocado run "/usr/local/bin/qemu-system-aarch64 -machine virt" --wrapper /usr/share/examples/wrappers/rr.sh:*qemu*
+    JOB ID     : ded737a3494360c3f3ab125e6f70725d78c0a33e
+    JOB LOG    : /home/medic/avocado/job-results/job-2016-08-05T08.57-ded737a/job.log
+    TESTS      : 1
+     (1/1) /usr/local/bin/qemu-system-aarch64 -machine virt: FAIL (36.51 s)
+    RESULTS    : PASS 0 | ERROR 0 | FAIL 1 | SKIP 0 | WARN 0 | INTERRUPT 0
+    JOB HTML   : /home/medic/avocado/job-results/job-2016-08-05T08.57-ded737a/html/results.html
+    TESTS TIME : 36.51 s
+
+Which creates the necessary files in the results directory::
+
+    $ ls ~/avocado/job-results/job-2016-08-05T08.57-ded737a/test-results/*/data/rr
+    latest-trace  qemu-system-aarch64-0
+
+So now I can re-run the execution with forward/backward step support inside gdb (step/rstep, next/rnext, ... see `<http://rr-project.org/>`_ for details)::
+
+    $ rr replay ~/avocado/job-results/job-2016-08-05T08.57-ded737a/test-results/1-_usr_local_bin_qemu-system-aarch64\ -machine\ virt/data/rr/qemu-system-aarch64-0
+    ...
+    (rr)
+
+.. warning:: Currently you can't simply re-run programs created in the test's
+    `workdir` as the `workdir` is cleaned after each test.
