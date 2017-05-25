@@ -48,6 +48,13 @@ def memtotal():
     return read_from_meminfo('MemTotal')
 
 
+def availablememtotal():
+    """
+    Read ``MemAvailable`` from meminfo.
+    """
+    return read_from_meminfo('MemAvailable')
+
+
 def freememtotal():
     """
     Read ``MemFree`` from meminfo.
