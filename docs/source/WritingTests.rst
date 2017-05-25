@@ -447,6 +447,65 @@ The very same ``progress`` logger, could be used across multiple test methods
 and across multiple test modules.  In the example given, the test name is used
 to give extra context.
 
+Advanced logging capabilities
+=============================
+
+Avocado provides advanced logging capabilities at test run time.  These can
+be combined with the standard Python library APIs on tests.
+
+One common example is the need to follow specific progress on longer or more
+complex tests. Let's look at a very simple test example, but one multiple
+clear stages on a single test::
+
+    import logging
+    import time
+
+    from avocado import Test
+
+    progress_log = logging.getLogger("progress")
+
+    class Plant(Test):
+
+        def test_plant_organic(self):
+            rows = self.params.get("rows", default=3)
+
+            for row in range(rows):
+                progress_log.info("%s: preparing soil on row %s",
+                                  self.tagged_name, row)
+            for row in range(rows):
+                progress_log.info("%s: throwing seeds on row %s",
+                                  self.tagged_name, row)
+
+            # our magical organic Avocado needs 2 seconds to grow
+            time.sleep(2)
+            for row in range(rows):
+                progress_log.info("%s: harvesting organic avocados on row %s",
+                                  self.tagged_name, row)
+
+If you want to track the plant progress, despite the other logs, you can run
+Avocado like this::
+
+    $ avocado run plant.py --store-log-stream progress
+
+The result, besides all the other log files commonly generated, is a log file
+named ``progress.INFO`` at the job results dir. During the test run, one could
+watch the progress with::
+
+    $ tail -f ~/avocado/job-results/latest/progress.INFO
+    13:17:02 INFO | plant.py:Plant.test_plant_organic: preparing soil on row 0
+    13:17:02 INFO | plant.py:Plant.test_plant_organic: preparing soil on row 1
+    13:17:02 INFO | plant.py:Plant.test_plant_organic: preparing soil on row 2
+    13:17:02 INFO | plant.py:Plant.test_plant_organic: throwing seeds on row 0
+    13:17:02 INFO | plant.py:Plant.test_plant_organic: throwing seeds on row 1
+    13:17:02 INFO | plant.py:Plant.test_plant_organic: throwing seeds on row 2
+    13:17:04 INFO | plant.py:Plant.test_plant_organic: harvesting organic avocados on row 0
+    13:17:04 INFO | plant.py:Plant.test_plant_organic: harvesting organic avocados on row 1
+    13:17:04 INFO | plant.py:Plant.test_plant_organic: harvesting organic avocados on row 2
+
+The very same ``progress`` logger, could be used across multiple test methods
+and across multiple test modules.  In the example given, the tagged test name
+is used to give extra context.
+
 :class:`unittest.TestCase` heritage
 ===================================
 
