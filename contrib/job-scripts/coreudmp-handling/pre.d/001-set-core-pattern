@@ -1,0 +1,34 @@
+#!/bin/sh -e
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2016
+#
+# This script set up the core pattern to the "coredumps" sub directory
+# of the current job and sets the core file size limit to "unlimited"
+
+if [ -z $AVOCADO_JOB_LOGDIR ]; then
+   exit 1
+fi
+
+# Set the core ulimit for Avocado main process
+ppid=$$
+prlimit --core=unlimited --pid=$(cat /proc/$ppid/status | grep PPid | cut -f2)
+
+COREDUMPS_DIR="$AVOCADO_JOB_LOGDIR/coredumps"
+mkdir $COREDUMPS_DIR
+
+# Save a backup of the core pattern setting
+cat /proc/sys/kernel/core_pattern > $COREDUMPS_DIR/.backup_core_pattern
+
+# Set core pattern
+echo "$COREDUMPS_DIR/core.%p" > /proc/sys/kernel/core_pattern
