@@ -41,20 +41,6 @@ def read_from_meminfo(key):
     return int(re.search(r'\d+', meminfo).group(0))
 
 
-def memtotal():
-    """
-    Read ``Memtotal`` from meminfo.
-    """
-    return read_from_meminfo('MemTotal')
-
-
-def freememtotal():
-    """
-    Read ``MemFree`` from meminfo.
-    """
-    return read_from_meminfo('MemFree')
-
-
 def rounded_memtotal():
     """
     Get memtotal, properly rounded.
@@ -62,9 +48,9 @@ def rounded_memtotal():
     :return: Total memory, KB.
     """
     # Get total of all physical mem, in kbytes
-    usable_kbytes = memtotal()
+    usable_kbytes = read_from_meminfo('MemTotal')
     # usable_kbytes is system's usable DRAM in kbytes,
-    #   as reported by memtotal() from device /proc/meminfo memtotal
+    #   as reported by 'MemTotal' from device /proc/meminfo
     #   after Linux deducts 1.5% to 5.1% for system table overhead
     # Undo the unknown actual deduction by rounding up
     #   to next small multiple of a big power-of-two
@@ -109,7 +95,7 @@ def node_size():
     :return: Node size.
     """
     nodes = max(len(numa_nodes()), 1)
-    return ((memtotal() * 1024) / nodes)
+    return ((read_from_meminfo('MemTotal') * 1024) / nodes)
 
 
 def get_huge_page_size():
