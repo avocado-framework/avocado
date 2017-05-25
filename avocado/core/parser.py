@@ -137,6 +137,7 @@ class Parser(object):
         """
         self.args, extra = self.application.parse_known_args(namespace=self.args)
         if extra:
+            setattr(self.args, 'paginator', 'off')
             msg = 'unrecognized arguments: %s' % ' '.join(extra)
             for sub in self.application._subparsers._actions:
                 if sub.dest == 'subcommand':
