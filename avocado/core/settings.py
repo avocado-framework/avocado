@@ -223,6 +223,23 @@ class Settings(object):
         else:
             return default
 
+    def _handle_no_section(self, section, default):
+        """
+        What to do if section doesn't exist.
+
+        :param section: Config file section.
+        :param default: Default value for key, in case it does not exist.
+
+        :returns: Default value, if a default value was provided.
+
+        :raises: SettingsError, in case no default was provided.
+        """
+        if default is self.no_default:
+            msg = "Section '%s' doesn't exist in configuration" % section
+            raise SettingsError(msg)
+        else:
+            return default
+
     def get_value(self, section, key, key_type=str, default=no_default,
                   allow_blank=False):
         """
@@ -250,6 +267,8 @@ class Settings(object):
         """
         try:
             val = self.config.get(section, key)
+        except ConfigParser.NoSectionError:
+            return self._handle_no_section(section, default)
         except ConfigParser.Error:
             return self._handle_no_value(section, key, default)
 
