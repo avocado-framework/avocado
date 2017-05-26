@@ -112,6 +112,16 @@ def node_size():
     return ((memtotal() * 1024) / nodes)
 
 
+def get_page_size():
+    """
+    Get linux page size for this system.
+
+    :return Kernel page size (Bytes).
+    """
+    output = process.system_output('getconf PAGESIZE')
+    return int(output)
+
+
 def get_huge_page_size():
     """
     Get size of the huge pages for this system.
