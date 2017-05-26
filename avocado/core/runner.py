@@ -305,7 +305,7 @@ class TestRunner(object):
 
         def sigterm_handler(signum, frame):     # pylint: disable=W0613
             """ Produce traceback on SIGTERM """
-            raise SystemExit("Test interrupted by SIGTERM")
+            raise RuntimeError("Test interrupted by SIGTERM")
 
         signal.signal(signal.SIGTERM, sigterm_handler)
 
