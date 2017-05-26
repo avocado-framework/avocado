@@ -157,10 +157,12 @@ class TestStatus(object):
                     raise exceptions.TestError("Process died before it pushed "
                                                "early test_status.")
             if time.time() > end and not self.early_status:
+                os.kill(proc.pid, signal.SIGTERM)
+                if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
+                    os.kill(proc.pid, signal.SIGKILL)
                 msg = ("Unable to receive test's early-status in %ss, "
                        "something wrong happened probably in the "
                        "avocado framework." % timeout)
-                os.kill(proc.pid, signal.SIGKILL)
                 raise exceptions.TestError(msg)
             time.sleep(step)
 
@@ -251,15 +253,17 @@ class TestStatus(object):
                        test_state['name'])
         if proc.is_alive():
             TEST_LOG.warning("Killing hanged test process %s" % proc.pid)
-            os.kill(proc.pid, signal.SIGKILL)
-            end_time = time.time() + 60
-            while time.time() < end_time:
-                if not proc.is_alive():
-                    break
-                time.sleep(0.1)
-            else:
-                raise exceptions.TestError("Unable to destroy test's process "
-                                           "(%s)" % proc.pid)
+            os.kill(proc.pid, signal.SIGTERM)
+            if not wait.wait_for(lambda: not proc.is_alive(), 1, 0, 0.01):
+                os.kill(proc.pid, signal.SIGKILL)
+                end_time = time.time() + 60
+                while time.time() < end_time:
+                    if not proc.is_alive():
+                        break
+                    time.sleep(0.1)
+                else:
+                    raise exceptions.TestError("Unable to destroy test's "
+                                               "process (%s)" % proc.pid)
         return self._add_status_failures(test_state)
 
 
