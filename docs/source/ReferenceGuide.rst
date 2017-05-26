@@ -485,3 +485,41 @@ function, positional arguments and keyword arguments will be
 registered, not matter how many times they're attempted to be
 registered. For more information check
 :meth:`avocado.utils.data_structures.CallbackRegister.register`.
+
+.. _docstring-directive-rules:
+
+Docstring Directives Rules
+==========================
+
+Avocado INSTRUMENTED tests, those written in Python and using the
+:class:`avocado.Test` API, can make use of special directives
+specified as docstrings.
+
+To be considered valid, the docstring must match this pattern:
+:data:`avocado.core.safeloader.DOCSTRING_DIRECTIVE_RE_RAW`.
+
+An Avocado docstring directive has two parts:
+
+ 1) The marker, which is the literal string ``:avocado:``.
+
+ 2) The content, a string that follows the marker, separated by at
+    least one white space or tab.
+
+The following is a list of rules that makes a docstring directive
+be a valid one:
+
+ * It should start with ``:avocado:``, which is the docstring
+   directive "marker"
+
+ * At least one whitespace or tab must follow the marker and preceed
+   the docstring directive "content"
+
+ * The "content", which follows the marker and the space, must begin
+   with an alphanumeric character, that is, characters within "a-z",
+   "A-Z" or "0-9".
+
+ * After at least one alphanumeric character, the content may contain
+   the following special symbols too: ``_``, ``,``, ``=`` and ``:``.
+
+ * An end of string (or end of line) must immediately follow the
+   content.

@@ -1123,9 +1123,9 @@ Docstring Directives
 ====================
 
 Some Avocado features, usually only available to instrumented tests,
-depend on setting directives on the test's class docstring.  The
-standard prefix used is ``:avocado:`` followed by the directive
-itself, such as ``:avocado: directive``.
+depend on setting directives on the test's class docstring.  A
+docstring directive is composed of a marker (a literal ``:avocado:`` string),
+followed by the custom content itself, such as ``:avocado: directive``.
 
 This is similar to docstring directives such as ``:param my_param:
 description`` and shouldn't be a surprise to most Python developers.
@@ -1133,6 +1133,9 @@ description`` and shouldn't be a surprise to most Python developers.
 The reason Avocado uses those docstring directives (instead of real
 Python code) is that the inspection done while looking for tests does
 not involve any execution of code.
+
+For a detailed explanation about what makes a docstring format valid
+or not, please refer to our section on :ref:`docstring-directive-rules`.
 
 Now let's follow with some docstring directives examples.
 
