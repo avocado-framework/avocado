@@ -579,12 +579,12 @@ class RemoteCLI(CLI):
         remote_parser.add_argument('--remote-port', dest='remote_port',
                                    default=22, type=int,
                                    help=('Specify the port number to login on '
-                                         'remote machine. Current: 22'))
+                                         'remote machine. Default: %(default)s'))
         remote_parser.add_argument('--remote-username',
                                    dest='remote_username',
                                    default=getpass.getuser(),
                                    help=('Specify the username to login on'
-                                         ' remote machine. Current: '
+                                         ' remote machine. Default: '
                                          '%(default)s'))
         remote_parser.add_argument('--remote-password',
                                    dest='remote_password', default=None,
