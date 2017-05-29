@@ -104,6 +104,9 @@ def get_long_description():
 
 
 if __name__ == '__main__':
+    # Force "make develop" inside READTHEDOCS environment
+    if os.environ.get("READTHEDOCS") and "install" in sys.argv:
+        os.system("make develop")
     setup(name='avocado-framework',
           version=VERSION,
           description='Avocado Test Framework',
