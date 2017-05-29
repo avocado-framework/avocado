@@ -1,0 +1,5 @@
+arch: intel, amd
+block_driver: scsi, ide, virtio
+net_driver: rtl8139, e1000, virtio
+guest: windows, linux
+host: rhel6, rhel7, rhel8
