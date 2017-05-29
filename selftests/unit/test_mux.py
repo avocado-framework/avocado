@@ -4,8 +4,9 @@ import pickle
 import unittest
 import yaml
 
+
+import avocado_varianter_yaml_to_mux as yaml_to_mux
 from avocado.core import mux, tree, varianter
-from avocado.plugins import yaml_to_mux
 
 
 if __name__ == "__main__":

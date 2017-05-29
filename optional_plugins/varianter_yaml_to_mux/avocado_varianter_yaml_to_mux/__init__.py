@@ -9,9 +9,9 @@
 #
 # See LICENSE for more details.
 #
-# Copyright: Red Hat Inc. 2016
+# Copyright: Red Hat Inc. 2016-2017
 # Author: Lukas Doktor <ldoktor@redhat.com>
-"""Multiplexer plugin to parse yaml files to params"""
+"""Varianter plugin to parse yaml files to params"""
 
 import copy
 import os
@@ -279,7 +279,7 @@ class YamlToMuxCLI(CLI):
 
     def configure(self, parser):
         """
-        Configures "run" and "multiplex" subparsers
+        Configures "run" and "variants" subparsers
         """
         if not MULTIPLEX_CAPABLE:
             return
