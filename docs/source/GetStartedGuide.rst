@@ -264,10 +264,12 @@ treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to
 display files that were found by Avocado, but are not considered Avocado tests::
 
     $ avocado list examples/gdb-prerun-scripts/ -V
-    Type       file
+    Type       Test                                     Tag(s)
     NOT_A_TEST examples/gdb-prerun-scripts/README
     NOT_A_TEST examples/gdb-prerun-scripts/pass-sigusr1
 
+    TEST TYPES SUMMARY
+    ==================
     SIMPLE: 0
     INSTRUMENTED: 0
     MISSING: 0

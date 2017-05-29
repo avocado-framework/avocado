@@ -1186,9 +1186,11 @@ Then you implement your actual test using that derived class, in
 If you try to list the tests in that file, this is what you'll get::
 
     scripts/avocado list mytest.py -V
-    Type       Test
+    Type       Test      Tag(s)
     NOT_A_TEST mytest.py
 
+    TEST TYPES SUMMARY
+    ==================
     ACCESS_DENIED: 0
     BROKEN_SYMLINK: 0
     EXTERNAL: 0
@@ -1223,10 +1225,12 @@ the example below::
 Now, trying to list the tests on the ``mytest.py`` file again::
 
     scripts/avocado list mytest.py -V
-    Type         Test
+    Type         Test                   Tag(s)
     INSTRUMENTED mytest.py:MyTest.test1
     INSTRUMENTED mytest.py:MyTest.test2
 
+    TEST TYPES SUMMARY
+    ==================
     ACCESS_DENIED: 0
     BROKEN_SYMLINK: 0
     EXTERNAL: 0
