@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 55.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -141,6 +141,9 @@ popd
 pushd optional_plugins/golang
 %{__python} setup.py build
 popd
+pushd optional_plugins/varianter_pict
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -167,6 +170,9 @@ pushd optional_plugins/loader_yaml
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/golang
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/varianter_pict
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -199,6 +205,9 @@ pushd optional_plugins/loader_yaml
 %{__python} setup.py develop --user
 popd
 pushd optional_plugins/golang
+%{__python} setup.py develop --user
+popd
+pushd optional_plugins/varianter_pict
 %{__python} setup.py develop --user
 popd
 # Package build environments have the least amount of resources
@@ -239,12 +248,14 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_loader_yaml*
 %exclude %{python_sitelib}/avocado_golang*
 %exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
+%exclude %{python_sitelib}/avocado_varianter_pict*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_docker*
 %exclude %{python_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
+%exclude %{python_sitelib}/avocado_framework_plugin_varianter_pict*
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python_sitelib}/avocado_framework_plugin_golang*
 %{_libexecdir}/avocado/avocado-bash-utils
@@ -375,6 +386,18 @@ also run them.
 %{python_sitelib}/avocado_golang*
 %{python_sitelib}/avocado_framework_plugin_golang*
 
+%package plugins-varianter-pict
+Summary: Varianter with combinatorial capabilities by PICT
+Requires: %{name} == %{version}
+
+%description plugins-varianter-pict
+This plugin uses a third-party tool to provide variants created by
+Pair-Wise algorithms, also known as Combinatorial Independent Testing.
+
+%files plugins-varianter-pict
+%{python_sitelib}/avocado_varianter_pict*
+%{python_sitelib}/avocado_framework_plugin_varianter_pict*
+
 %package examples
 Summary: Avocado Test Framework Example Tests
 Requires: %{name} == %{version}
@@ -391,8 +414,12 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 %{_datadir}/avocado/yaml_to_mux
 %{_datadir}/avocado/yaml_to_mux_loader
+%{_datadir}/avocado/varianter_pict
 
 %changelog
+* Thu Nov 16 2017 Cleber Rosa <cleber@redhat.com> - 55.0-1
+- Introduced sub-package plugins-varianter-pict
+
 * Tue Oct 17 2017 Cleber Rosa <cleber@redhat.com> - 55.0-0
 - New upstream release
 
