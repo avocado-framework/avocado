@@ -64,8 +64,9 @@ def modules_imported_as(module):
 
 
 #: Gets the docstring directive value from a string. Used to tweak
-#: test class behavior in various ways
-AVOCADO_DOCSTRING_DIRECTIVE_RE = re.compile(r'\s*:avocado:\s*(\S+)\s*')
+#: test behavior in various ways
+DOCSTRING_DIRECTIVE_RE_RAW = r'\s*:avocado:[ \t]+([a-zA-Z0-9]+?[a-zA-Z0-9_:,\=]*)\s*$'
+DOCSTRING_DIRECTIVE_RE = re.compile(DOCSTRING_DIRECTIVE_RE_RAW)
 
 
 def get_docstring_directives(docstring):
@@ -77,10 +78,17 @@ def get_docstring_directives(docstring):
 
     :rtype: builtin.list
     """
-    try:
-        return AVOCADO_DOCSTRING_DIRECTIVE_RE.findall(docstring)
-    except TypeError:
-        return []
+    result = []
+    if docstring is None:
+        return result
+    for line in docstring.splitlines():
+        try:
+            match = DOCSTRING_DIRECTIVE_RE.match(line)
+            if match:
+                result.append(match.groups()[0])
+        except TypeError:
+            pass
+    return result
 
 
 def check_docstring_directive(docstring, directive):

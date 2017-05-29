@@ -42,6 +42,30 @@ class ModuleImportedAs(unittest.TestCase):
 
 class DocstringDirectives(unittest.TestCase):
 
+    VALID_DIRECTIVES = [":avocado: foo",
+                        " :avocado: foo",
+                        " :avocado: foo ",
+                        ":avocado:\tfoo",
+                        ":avocado: \tfoo",
+                        ":avocado: foo:",
+                        ":avocado: foo=",
+                        ":avocado: foo=bar:123",
+                        ":avocado: 42=life",
+                        ":avocado: foo,bar,baz",
+                        ":avocado: foo,bar,baz:extra",
+                        ":avocado: a=,,,",
+                        ":avocado: a=x:y:z,None"]
+
+    INVALID_DIRECTIVES = [":avocado:\nfoo",
+                          ":avocado: \nfoo",
+                          ":avocado:foo",
+                          ":avocado:_foo",
+                          ":avocado: ?notsure",
+                          ":avocado: ,foo,bar,baz",
+                          ":avocado: foo,bar,baz!!!",
+                          ":avocado: =",
+                          ":avocado: ,"]
+
     NO_TAGS = [":AVOCADO: TAGS:FAST",
                ":AVOCADO: TAGS=FAST",
                ":avocado: mytags=fast",
@@ -51,19 +75,20 @@ class DocstringDirectives(unittest.TestCase):
                ":this is not avocado: tags=foo",
                ":neither is this :avocado: tags:foo",
                ":tags:foo,bar",
-               "tags=foo,bar"]
+               "tags=foo,bar",
+               ":avocado: tags=SLOW,disk, invalid",
+               ":avocado: tags=SLOW,disk , invalid"]
 
     VALID_TAGS = {":avocado: tags=fast": set(["fast"]),
                   ":avocado: tags=fast,network": set(["fast", "network"]),
                   ":avocado: tags=fast,,network": set(["fast", "network"]),
                   ":avocado: tags=slow,DISK": set(["slow", "DISK"]),
                   ":avocado: tags=SLOW,disk,disk": set(["SLOW", "disk"]),
-                  ":avocado: tags=SLOW,disk, invalid": set(["SLOW", "disk"]),
-                  ":avocado: tags=SLOW,disk , invalid": set(["SLOW", "disk"]),
                   ":avocado:\ttags=FAST": set(["FAST"]),
                   ":avocado: tags=": set([]),
                   ":avocado: enable\n:avocado: tags=fast": set(["fast"]),
-                  ":avocado: tags=fast,slow\n:avocado: enable": set(["fast", "slow"])}
+                  ":avocado: tags=fast,slow\n:avocado: enable": set(["fast", "slow"])
+                  }
 
     def test_longline(self):
         docstring = ("This is a very long docstring in a single line. "
@@ -100,6 +125,15 @@ class DocstringDirectives(unittest.TestCase):
         for raw, tags in self.VALID_TAGS.items():
             self.assertEqual(safeloader.get_docstring_directives_tags(raw), tags)
 
+    def test_directives_regex(self):
+        """
+        Tests the documented regexes for dealing with docstring directives
+        """
+        for directive in self.VALID_DIRECTIVES:
+            self.assertRegexpMatches(directive, safeloader.DOCSTRING_DIRECTIVE_RE)
+        for directive in self.INVALID_DIRECTIVES:
+            self.assertNotRegexpMatches(directive, safeloader.DOCSTRING_DIRECTIVE_RE)
+
 
 class UnlimitedDiff(unittest.TestCase):
 
@@ -126,7 +160,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_enabled',
                                     'test_disabled',
                                     'test_get_tags_empty',
-                                    'test_get_tags'],
+                                    'test_get_tags',
+                                    'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
                                     'test_with_base_class',
@@ -147,7 +182,8 @@ class FindClassAndMethods(UnlimitedDiff):
                                     'test_enabled',
                                     'test_disabled',
                                     'test_get_tags_empty',
-                                    'test_get_tags'],
+                                    'test_get_tags',
+                                    'test_directives_regex'],
             'FindClassAndMethods': ['test_self',
                                     'test_with_pattern',
                                     'test_with_base_class',
