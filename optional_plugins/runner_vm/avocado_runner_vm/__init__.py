@@ -476,7 +476,6 @@ class VMCLI(CLI):
                                           " to the virtual machine. Defaults"
                                           " to %(default)s seconds."),
                                     default=120, type=int)
-        self.configured = True
 
     @staticmethod
     def _check_required_args(args, enable_arg, required_args):
