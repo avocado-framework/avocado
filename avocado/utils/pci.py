@@ -59,6 +59,22 @@ def get_pci_addresses():
         return addresses
 
 
+def get_pci_hbas():
+    """
+    Gets list of PCI hbas, first pci address in a hba, in the system.
+    Does not return the PCI Bridges/Switches.
+    e.g: for pci address 0000:00:14.0 and 0000:00:14.1, we return 0000:00:14.0
+
+    :return: list of full PCI hbas including domain (0000:00:14.0)
+    """
+    hbas = []
+    for pci_addr in get_pci_addresses():
+        if "%s" % pci_addr[:-2] not in hbas:
+            hbas.append(pci_addr[:-2])
+    if hbas:
+        return hbas
+
+
 def get_num_interfaces_in_pci(dom_pci_address):
     """
     Gets number of interfaces of a given partial PCI address starting with
