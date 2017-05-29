@@ -563,7 +563,6 @@ class Test(unittest.TestCase):
         stdout_check_exception = None
         stderr_check_exception = None
         skip_test = getattr(testMethod, '__skip_test_decorator__', False)
-        cancel_test = False
         try:
             if skip_test is False:
                 self.setUp()
@@ -571,39 +570,38 @@ class Test(unittest.TestCase):
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel as details:
-            cancel_test = details
+            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+            raise
         except:  # Old-style exceptions are not inherited from Exception()
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             details = sys.exc_info()[1]
             raise exceptions.TestSetupFail(details)
-        try:
-            if cancel_test:
-                raise exceptions.TestCancel(cancel_test)
-
-            testMethod()
-        except exceptions.TestSetupSkip as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-            skip_illegal_msg = ('Calling skip() in places other than '
-                                'setUp() is not allowed in avocado, you '
-                                'must fix your test. Original skip exception: '
-                                '%s' % details)
-            raise exceptions.TestError(skip_illegal_msg)
-        except exceptions.TestSkipError as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-            raise
-        except exceptions.TestCancel as details:
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-            raise
-        except:  # Old-style exceptions are not inherited from Exception()
-            stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-            details = sys.exc_info()[1]
-            if not isinstance(details, Exception):  # Avoid passing nasty exc
-                details = exceptions.TestError("%r: %s" % (details, details))
-            test_exception = details
-            self.log.debug("Local variables:")
-            local_vars = inspect.trace()[1][0].f_locals
-            for key, value in local_vars.iteritems():
-                self.log.debug(' -> %s %s: %s', key, type(value), value)
+        else:
+            try:
+                testMethod()
+            except exceptions.TestSetupSkip as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+                skip_illegal_msg = ('Calling skip() in places other than '
+                                    'setUp() is not allowed in avocado, you '
+                                    'must fix your test. Original skip exception: '
+                                    '%s' % details)
+                raise exceptions.TestError(skip_illegal_msg)
+            except exceptions.TestSkipError as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+                raise
+            except exceptions.TestCancel as details:
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+                raise
+            except:  # Old-style exceptions are not inherited from Exception()
+                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
+                details = sys.exc_info()[1]
+                if not isinstance(details, Exception):  # Avoid passing nasty exc
+                    details = exceptions.TestError("%r: %s" % (details, details))
+                test_exception = details
+                self.log.debug("Local variables:")
+                local_vars = inspect.trace()[1][0].f_locals
+                for key, value in local_vars.iteritems():
+                    self.log.debug(' -> %s %s: %s', key, type(value), value)
         finally:
             try:
                 if skip_test is False:
