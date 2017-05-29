@@ -109,6 +109,9 @@ def get_data_files():
     data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux_loader'],
                             ['yaml_to_mux_loader']),
                     glob.glob('examples/yaml_to_mux_loader/*.yaml'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'varianter_pict'],
+                            ['varianter_pict']),
+                    glob.glob('examples/varianter_pict/*.pict'))]
     return data_files
 
 
