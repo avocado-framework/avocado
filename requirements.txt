@@ -1,6 +1,4 @@
 # Avocado functional requirements
-# multiplexer (avocado.core.tree)
-PyYAML>=3.11
 # .tar.xz support (avocado.utils.archive)
 pyliblzma>=0.5.3
 # REST client (avocado.core.restclient)

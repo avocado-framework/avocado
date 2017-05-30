@@ -115,9 +115,7 @@ with open(os.path.join(api_optional_plugins_path, "index.rst"),
 Optional Plugins API
 ====================
 
-The following pages are auto-generated API documentation of optional
-Avocado plugins. This is not public API, it represents only current
-version and can be changed any time.
+The following pages document the private APIs of optional Avocado plugins.
 
 .. toctree::
    :maxdepth: 1
