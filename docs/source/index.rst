@@ -58,6 +58,7 @@ API Reference
    api/utils/avocado.utils.rst
    api/core/avocado.core.rst
    api/plugins/avocado.plugins.rst
+   api/optional-plugins/index
 
 =====================
 Avocado Release Notes
