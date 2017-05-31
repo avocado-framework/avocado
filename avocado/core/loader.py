@@ -657,8 +657,9 @@ class FileLoader(TestLoader):
                 cl_tags = safeloader.get_docstring_directives_tags(docstring)
 
                 if safeloader.check_docstring_directive(docstring, 'enable'):
-                    info = self._get_methods_info(statement.body,
-                                                  cl_tags)
+                    info = {'methods': self._get_methods_info(statement.body,
+                                                              cl_tags),
+                            'path': path}
                     result[statement.name] = info
                     continue
 
@@ -667,8 +668,9 @@ class FileLoader(TestLoader):
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
                     if test_import_name in base_ids:
-                        info = self._get_methods_info(statement.body,
-                                                      cl_tags)
+                        info = {'methods': self._get_methods_info(statement.body,
+                                                                  cl_tags),
+                                'path': path}
                         result[statement.name] = info
                         continue
 
@@ -678,8 +680,9 @@ class FileLoader(TestLoader):
                         module = base.value.id
                         klass = base.attr
                         if module == mod_import_name and klass == 'Test':
-                            info = self._get_methods_info(statement.body,
-                                                          cl_tags)
+                            info = {'methods': self._get_methods_info(statement.body,
+                                                                      cl_tags),
+                                    'path': path}
                             result[statement.name] = info
 
         return result
@@ -708,16 +711,19 @@ class FileLoader(TestLoader):
             tests = self._find_avocado_tests(test_path)
             if tests:
                 test_factories = []
-                for test_class, info in tests.items():
+                for test_class in tests:
                     if isinstance(test_class, str):
-                        for test_method, tags in info:
+                        for test_method, tags in tests[test_class]['methods']:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
                             if (subtests_filter and
                                     not subtests_filter.search(name)):
                                 continue
+                            path = tests[test_class].get('path', None)
+                            if path is None:
+                                path = test_path
                             tst = (test_class, {'name': name,
-                                                'modulePath': test_path,
+                                                'modulePath': path,
                                                 'methodName': test_method,
                                                 'tags': tags})
                             test_factories.append(tst)
