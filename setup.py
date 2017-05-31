@@ -104,6 +104,9 @@ def get_long_description():
 
 
 if __name__ == '__main__':
+    # Force "make develop" inside READTHEDOCS environment
+    if os.environ.get("READTHEDOCS") and "install" in sys.argv:
+        os.system("make develop")
     setup(name='avocado-framework',
           version=VERSION,
           description='Avocado Test Framework',
@@ -136,7 +139,6 @@ if __name__ == '__main__':
                   'journal = avocado.plugins.journal:Journal',
                   'replay = avocado.plugins.replay:Replay',
                   'tap = avocado.plugins.tap:TAP',
-                  'yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMuxCLI',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
                   ],
               'avocado.plugins.cli.cmd': [
@@ -165,9 +167,6 @@ if __name__ == '__main__':
                   'human = avocado.plugins.human:Human',
                   'tap = avocado.plugins.tap:TAPResult',
                   'journal = avocado.plugins.journal:JournalResult',
-                  ],
-              "avocado.plugins.varianter": [
-                  "yaml_to_mux = avocado.plugins.yaml_to_mux:YamlToMux",
                   ],
               },
           zip_safe=False,

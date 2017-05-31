@@ -23,7 +23,7 @@ api_source_dir = os.path.join(root_path, 'avocado')
 base_api_output_dir = os.path.join(root_path, 'docs', 'source', 'api')
 try:
     apidoc = path.find_command('sphinx-apidoc')
-    apidoc_template = apidoc + " -o %(output_dir)s " + api_source_dir + " %(exclude_dirs)s"
+    apidoc_template = apidoc + " -o %(output_dir)s %(api_source_dir)s %(exclude_dirs)s"
 except path.CmdNotFoundError:
     apidoc = False
 
@@ -42,7 +42,7 @@ API_SECTIONS = {"Test APIs": (None,
                                    open("api_utils_heading", "r").read(),
                                    "utils",
                                    ("core", "plugins"),
-                                   ("avocado.rst", "modules.rst"),),
+                                   ("avocado.rst", "modules.rst")),
 
                 "Internal (Core) APIs": ("core",
                                          "Internal APIs that may be of interest to "
@@ -100,6 +100,39 @@ for (section, params) in API_SECTIONS.iteritems():
     new_main_rst.write("\n".join(new_main_rst_content))
     new_main_rst.write("".join(main_rst_content[2:]))
     new_main_rst.close()
+
+# Generate optional-plugins
+optional_plugins_path = os.path.join(root_path, "optional_plugins")
+api_optional_plugins_path = os.path.join(base_api_output_dir,
+                                         "optional-plugins")
+if not os.path.exists(api_optional_plugins_path):
+    os.makedirs(api_optional_plugins_path)
+with open(os.path.join(api_optional_plugins_path, "index.rst"),
+          'w') as optional_plugins_toc:
+    optional_plugins_toc.write(""".. index file for optional plugins API
+
+====================
+Optional Plugins API
+====================
+
+The following pages document the private APIs of optional Avocado plugins.
+
+.. toctree::
+   :maxdepth: 1
+
+    """)
+    for path in os.walk(optional_plugins_path).next()[1]:
+        name = "avocado_%s" % os.path.basename(path)
+        path = os.path.join(optional_plugins_path, path, name)
+        if not os.path.exists(path):
+            continue
+        output_dir = os.path.join(api_optional_plugins_path, name)
+        params = {"api_source_dir": path, "output_dir": output_dir,
+                  "exclude_dirs": ""}
+        process.run(apidoc_template % params)
+        # Remove the unnecessary generated files
+        os.unlink(os.path.join(output_dir, "modules.rst"))
+        optional_plugins_toc.write("\n   %s" % os.path.join(name, name))
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',

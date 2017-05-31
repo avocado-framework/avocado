@@ -54,7 +54,9 @@ class DocBuildTest(unittest.TestCase):
                            'nonexisting document u\'api/test/avocado.utils\'')
         doc_dir = os.path.join(basedir, 'docs')
         process.run('make -C %s clean' % doc_dir)
-        result = process.run('make -C %s html' % doc_dir)
+        result = process.run('make -C %s html' % doc_dir, ignore_status=True)
+        self.assertFalse(result.exit_status, "Doc build reported non-zero "
+                         "status:\n%s" % result)
         stdout = result.stdout.splitlines()
         stderr = result.stderr.splitlines()
         output_lines = stdout + stderr
