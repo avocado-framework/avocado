@@ -613,7 +613,7 @@ class FileLoader(TestLoader):
         # The name used, in case of 'import avocado as avocadolib'
         mod_import_name = None
         # The resulting test classes
-        result = {}
+        result = collections.OrderedDict()
 
         mod = ast.parse(open(path).read(), path)
 
