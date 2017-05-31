@@ -1251,6 +1251,70 @@ The docstring ``:avocado: disable`` is evaluated first by Avocado,
 meaning that if both ``:avocado: disable`` and ``:avocado: enable`` are
 present in the same docstring, the test will not be listed.
 
+
+Recursively Discovering Tests
+-----------------------------
+
+In addition to the ``:avocado: enable`` and ``:avocado: disable``
+docstring directives, Avocado has support to the ``:avocado: recursive``
+directive. It is intended to be used in inherited classes when you want
+to tell Avocado to also discover the inherited class parents.
+
+The ``:avocado: recursive`` directive will make Avocado to evaluate all
+the parents until the base class, the one which inherits from
+`avocado.Test`.
+
+Example:
+
+File `/usr/share/avocado/tests/test_base_class.py`::
+
+    from avocado import Test
+
+
+    class BaseClass(Test):
+
+        def test_basic(self):
+            pass
+
+
+File `/usr/share/avocado/tests/test_first_child.py`::
+
+    from test_base_class import BaseClass
+
+
+    class FirstChild(BaseClass):
+
+        def test_first_child(self):
+            pass
+
+
+File `/usr/share/avocado/tests/test_second_child.py`::
+
+    from test_first_child import FirstChild
+
+
+    class SecondChild(FirstChild):
+        """
+        :avocado: recursive
+        """
+
+        def test_second_child(self):
+            pass
+
+Using only `test_second_child.py` as a test reference will result in::
+
+    $ avocado list test_second_child.py
+    INSTRUMENTED test_second_child.py:SecondChild.test_second_child
+    INSTRUMENTED test_second_child.py:FirstChild.test_first_child
+    INSTRUMENTED test_second_child.py:BaseClass.test_basic
+
+If you disable one class in the chain, it will interrupt the recursion.
+For example, using the classes above and adding ``:avocado: disable``
+to the `FirstChild` class will result in::
+
+    $ avocado list test_second_child.py
+    INSTRUMENTED test_second_child.py:SecondChild.test_second_child
+
 .. _categorizing-tests:
 
 Categorizing tests
