@@ -481,7 +481,7 @@ class LoaderTest(unittest.TestCase):
         avocado_keep_methods_order.save()
         expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
         tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)
-        methods = [method[0] for method in tests['MyClass']]
+        methods = [method[0] for method in tests['MyClass']['methods']]
         self.assertEqual(expected_order, methods)
         avocado_keep_methods_order.remove()
 
