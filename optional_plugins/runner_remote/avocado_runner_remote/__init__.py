@@ -448,7 +448,8 @@ class RemoteTestRunner(TestRunner):
 
         return json_result
 
-    def run_suite(self, test_suite, variants, timeout=0, replay_map=None):
+    def run_suite(self, test_suite, variants, timeout=0, replay_map=None,
+                  suite_order="variants-per-test"):
         """
         Run one or more tests and report with test result.
 
@@ -459,6 +460,10 @@ class RemoteTestRunner(TestRunner):
         """
         del test_suite     # using self.job.references instead
         del variants            # we're not using multiplexation here
+        if suite_order != "variants-per-test" and suite_order is not None:
+            raise exceptions.JobError("execution-order %s is not supported "
+                                      "for remote execution." % suite_order)
+        del suite_order     # suite_order is ignored for now
         if not timeout:     # avoid timeout = 0
             timeout = None
         summary = set()

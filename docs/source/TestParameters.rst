@@ -33,8 +33,8 @@ Overall picture of how the params handling works is:
              |  // single variant is passed to Test
              |
        +-----------+
-       |  Runner   |  // iterates through tests and runs each test with
-       +-----^-----+  // all variants supplied by Varianter
+       |  Runner   |  // iterates through tests and variants to run all
+       +-----^-----+  // desired combinations specified by "--execution-order"
              |
              |
    +-------------------+ provide variants +-----------------------+

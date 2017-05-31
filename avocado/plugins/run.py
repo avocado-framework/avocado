@@ -99,6 +99,12 @@ class Run(CLICmd):
                             "system information (hardware details, profilers, "
                             "etc.). Current:  %(default)s")
 
+        parser.add_argument("--execution-order", default="variants-per-test",
+                            choices=("tests-per-variant",
+                                     "variants-per-test"),
+                            help="Defines the order of iterating through test "
+                            "suite and test variants")
+
         parser.output = parser.add_argument_group('output and result format')
 
         parser.output.add_argument('-s', '--silent', action="store_true",
