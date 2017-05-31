@@ -92,7 +92,24 @@ class MultiplexTests(unittest.TestCase):
                     'examples/tests/sleeptest.py.data/sleeptest.yaml'
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
-        self.run_and_check(cmd_line, expected_rc, (4, 4))
+        result = self.run_and_check(cmd_line, expected_rc, (4, 4))
+        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
+        self.assertIn("(2/8) passtest.py:PassTest.test;medium", result.stdout)
+        self.assertIn("(8/8) failtest.py:FailTest.test;longest",
+                      result.stdout)
+
+    def test_run_mplex_failtest_tests_per_variant(self):
+        cmd_line = ("%s run --job-results-dir %s --sysinfo=off "
+                    "passtest.py failtest.py -m "
+                    "examples/tests/sleeptest.py.data/sleeptest.yaml "
+                    "--execution-order tests-per-variant"
+                    % (AVOCADO, self.tmpdir))
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        result = self.run_and_check(cmd_line, expected_rc, (4, 4))
+        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
+        self.assertIn("(2/8) failtest.py:FailTest.test;short", result.stdout)
+        self.assertIn("(8/8) failtest.py:FailTest.test;longest",
+                      result.stdout)
 
     def test_run_double_mplex(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
