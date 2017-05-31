@@ -594,11 +594,13 @@ class FileLoader(TestLoader):
                         tests.extend(self._make_tests(pth, which_tests))
         return tests
 
-    def _find_avocado_tests(self, path):
+    def _find_avocado_tests(self, path, class_name=None):
         """
         Attempts to find Avocado instrumented tests from Python source files
 
         :param path: path to a Python source code file
+        :type path: str
+        :param class_name: the specific class to be found
         :type path: str
         :returns: dict with class name and additional info such as method names
                   and tags
@@ -643,6 +645,9 @@ class FileLoader(TestLoader):
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
+                if class_name is not None and class_name != statement.name:
+                    continue
+
                 docstring = ast.get_docstring(statement)
                 # Looking for a class that has in the docstring either
                 # ":avocado: enable" or ":avocado: disable
