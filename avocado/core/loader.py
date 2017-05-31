@@ -594,11 +594,13 @@ class FileLoader(TestLoader):
                         tests.extend(self._make_tests(pth, which_tests))
         return tests
 
-    def _find_avocado_tests(self, path):
+    def _find_avocado_tests(self, path, class_name=None):
         """
         Attempts to find Avocado instrumented tests from Python source files
 
         :param path: path to a Python source code file
+        :type path: str
+        :param class_name: the specific class to be found
         :type path: str
         :returns: dict with class name and additional info such as method names
                   and tags
@@ -614,6 +616,9 @@ class FileLoader(TestLoader):
         mod_import_name = None
         # The resulting test classes
         result = {}
+
+        if os.path.isdir(path):
+            path = os.path.join(path, "__init__.py")
 
         mod = ast.parse(open(path).read(), path)
 
@@ -643,18 +648,99 @@ class FileLoader(TestLoader):
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
+
+                # class_name will exist only under recursion. In that
+                # case, we will only process the class if it has the
+                # expected class_name.
+                if class_name is not None and class_name != statement.name:
+                    continue
+
                 docstring = ast.get_docstring(statement)
                 # Looking for a class that has in the docstring either
                 # ":avocado: enable" or ":avocado: disable
-                if safeloader.check_docstring_directive(docstring, 'disable'):
+                if (safeloader.check_docstring_directive(docstring, 'disable')
+                   and class_name is None):
                     continue
 
                 cl_tags = safeloader.get_docstring_directives_tags(docstring)
 
-                if safeloader.check_docstring_directive(docstring, 'enable'):
-                    info = self._get_methods_info(statement.body,
-                                                  cl_tags)
+                if (safeloader.check_docstring_directive(docstring, 'enable')
+                   and class_name is None):
+                    info = self._get_methods_info(statement.body, cl_tags)
                     result[statement.name] = info
+                    continue
+
+                # Looking for the 'recursive' docstring or a 'class_name'
+                # (meaning we are under recursion)
+                if (safeloader.check_docstring_directive(docstring, 'recursive')
+                   or class_name is not None):
+                    info = self._get_methods_info(statement.body, cl_tags)
+                    result[statement.name] = info
+
+                    # Getting the list of parents of the current class
+                    parents = statement.bases
+
+                    # Searching the parents in the same module
+                    for parent in parents[:]:
+                        # Looking for a 'class FooTest(module.Parent)'
+                        if isinstance(parent, ast.Attribute):
+                            parent_class = parent.attr
+                        # Looking for a 'class FooTest(Parent)'
+                        else:
+                            parent_class = parent.id
+
+                        res = self._find_avocado_tests(path, parent_class)
+                        if res:
+                            parents.remove(parent)
+                            for cls in res:
+                                info.extend(res[cls])
+
+                    # If there are parents left to be discovered, they
+                    # might be in a different module.
+                    for parent in parents:
+                        if isinstance(parent, ast.Attribute):
+                            # Looking for a 'class FooTest(module.Parent)'
+                            parent_module = parent.value.id
+                            parent_class = parent.attr
+                        else:
+                            # Looking for a 'class FooTest(Parent)'
+                            parent_module = None
+                            parent_class = parent.id
+
+                        for node in mod.body:
+                            reference = None
+                            # Looking for 'from parent import class'
+                            if isinstance(node, ast.ImportFrom):
+                                reference = parent_class
+                            # Looking for 'import parent'
+                            elif isinstance(node, ast.Import):
+                                reference = parent_module
+
+                            if reference is None:
+                                continue
+
+                            for artifact in node.names:
+                                # Looking for a class alias
+                                # ('from parent import class as alias')
+                                if artifact.asname is not None:
+                                    parent_class = reference = artifact.name
+                                # If the parent class or the parent module
+                                # is found in the imports, discover the
+                                # parent module path and find the parent
+                                # class there
+                                if artifact.name == reference:
+                                    modules_paths = [os.path.dirname(path)]
+                                    modules_paths.extend(sys.path)
+                                    if parent_module is None:
+                                        parent_module = node.module
+                                    _, ppath, _ = imp.find_module(parent_module,
+                                                                  modules_paths)
+                                    res = self._find_avocado_tests(ppath,
+                                                                   parent_class)
+                                    if res:
+                                        for cls in res:
+                                            info.extend(res[cls])
+
                     continue
 
                 if test_import:
@@ -676,6 +762,7 @@ class FileLoader(TestLoader):
                             info = self._get_methods_info(statement.body,
                                                           cl_tags)
                             result[statement.name] = info
+                            continue
 
         return result
 
