@@ -440,43 +440,43 @@ class VMCLI(CLI):
             return
 
         msg = 'test execution on a Virtual Machine'
-        self.vm_parser = run_subcommand_parser.add_argument_group(msg)
-        self.vm_parser.add_argument('--vm-domain',
-                                    help=('Specify Libvirt Domain Name'))
-        self.vm_parser.add_argument('--vm-hypervisor-uri',
-                                    default='qemu:///system',
-                                    help=('Specify hypervisor URI driver '
-                                          'connection. Current: %(default)s'))
-        self.vm_parser.add_argument('--vm-hostname', default=None,
-                                    help=('Specify VM hostname to login. By '
-                                          'default Avocado attempts to '
-                                          'automatically find the VM IP '
-                                          'address.'))
-        self.vm_parser.add_argument('--vm-port', dest='vm_port',
-                                    default=22, type=int, help='Specify '
-                                    'the port number to login on VM. '
-                                    'Current: 22')
-        self.vm_parser.add_argument('--vm-username', default=getpass.getuser(),
-                                    help='Specify the username to login on VM')
-        self.vm_parser.add_argument('--vm-password',
-                                    default=None,
-                                    help='Specify the password to login on VM')
-        self.vm_parser.add_argument('--vm-key-file',
-                                    dest='vm_key_file', default=None,
-                                    help='Specify an identity file with '
-                                    'a private key instead of a password '
-                                    '(Example: .pem files from Amazon EC2)')
-        self.vm_parser.add_argument('--vm-cleanup',
-                                    action='store_true', default=False,
-                                    help='Restore VM to a previous state, '
-                                    'before running tests')
-        self.vm_parser.add_argument('--vm-timeout', metavar='SECONDS',
-                                    help=("Amount of time (in seconds) to "
-                                          "wait for a successful connection"
-                                          " to the virtual machine. Defaults"
-                                          " to %(default)s seconds."),
-                                    default=120, type=int)
-        self.configured = True
+        vm_parser = run_subcommand_parser.add_argument_group(msg)
+        vm_parser.add_argument('--vm-domain',
+                               help=('Specify Libvirt Domain Name'))
+        vm_parser.add_argument('--vm-hypervisor-uri',
+                               default='qemu:///system',
+                               help=('Specify hypervisor URI driver '
+                                     'connection. Current: %(default)s'))
+        vm_parser.add_argument('--vm-hostname', default=None,
+                               help=('Specify VM hostname to login. By '
+                                     'default Avocado attempts to '
+                                     'automatically find the VM IP '
+                                     'address.'))
+        vm_parser.add_argument('--vm-port', dest='vm_port',
+                               default=22, type=int,
+                               help=('Specify the SSH port number to login on '
+                                     'VM. Default: %(default)s'))
+        vm_parser.add_argument('--vm-username', default=getpass.getuser(),
+                               help=('Specify the username to login on VM. '
+                                     'Default: %(default)s'))
+        vm_parser.add_argument('--vm-password',
+                               default=None,
+                               help='Specify the password to login on VM')
+        vm_parser.add_argument('--vm-key-file',
+                               dest='vm_key_file', default=None,
+                               help=('Specify an identity file with '
+                                     'a private key instead of a password '
+                                     '(Example: .pem files from Amazon EC2)'))
+        vm_parser.add_argument('--vm-cleanup',
+                               action='store_true', default=False,
+                               help=('Restore VM to a previous state, '
+                                     'before running tests'))
+        vm_parser.add_argument('--vm-timeout', metavar='SECONDS',
+                               default=120, type=int,
+                               help=("Amount of time (in seconds) to "
+                                     "wait for a successful connection"
+                                     " to the virtual machine. Defaults"
+                                     " to %(default)s seconds."))
 
     @staticmethod
     def _check_required_args(args, enable_arg, required_args):

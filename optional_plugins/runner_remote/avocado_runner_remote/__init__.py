@@ -571,37 +571,36 @@ class RemoteCLI(CLI):
             return
 
         msg = 'test execution on a remote machine'
-        self.remote_parser = run_subcommand_parser.add_argument_group(msg)
-        self.remote_parser.add_argument('--remote-hostname',
-                                        dest='remote_hostname', default=None,
-                                        help='Specify the hostname to login on'
-                                        ' remote machine')
-        self.remote_parser.add_argument('--remote-port', dest='remote_port',
-                                        default=22, type=int, help='Specify '
-                                        'the port number to login on remote '
-                                        'machine. Current: 22')
-        self.remote_parser.add_argument('--remote-username',
-                                        dest='remote_username',
-                                        default=getpass.getuser(),
-                                        help='Specify the username to login on'
-                                        ' remote machine. Current: '
-                                        '%(default)s')
-        self.remote_parser.add_argument('--remote-password',
-                                        dest='remote_password', default=None,
-                                        help='Specify the password to login on'
-                                        ' remote machine')
-        self.remote_parser.add_argument('--remote-key-file',
-                                        dest='remote_key_file', default=None,
-                                        help='Specify an identity file with '
-                                        'a private key instead of a password '
-                                        '(Example: .pem files from Amazon EC2)')
-        self.remote_parser.add_argument('--remote-timeout', metavar='SECONDS',
-                                        help=("Amount of time (in seconds) to "
-                                              "wait for a successful connection"
-                                              " to the remote machine. Defaults"
-                                              " to %(default)s seconds."),
-                                        default=60, type=int)
-        self.configured = True
+        remote_parser = run_subcommand_parser.add_argument_group(msg)
+        remote_parser.add_argument('--remote-hostname',
+                                   dest='remote_hostname', default=None,
+                                   help=('Specify the hostname to login on'
+                                         ' remote machine'))
+        remote_parser.add_argument('--remote-port', dest='remote_port',
+                                   default=22, type=int,
+                                   help=('Specify the port number to login on '
+                                         'remote machine. Default: %(default)s'))
+        remote_parser.add_argument('--remote-username',
+                                   dest='remote_username',
+                                   default=getpass.getuser(),
+                                   help=('Specify the username to login on'
+                                         ' remote machine. Default: '
+                                         '%(default)s'))
+        remote_parser.add_argument('--remote-password',
+                                   dest='remote_password', default=None,
+                                   help=('Specify the password to login on'
+                                         ' remote machine'))
+        remote_parser.add_argument('--remote-key-file',
+                                   dest='remote_key_file', default=None,
+                                   help=('Specify an identity file with a '
+                                         'private key instead of a password '
+                                         '(Example: .pem files from Amazon EC2)'))
+        remote_parser.add_argument('--remote-timeout', metavar='SECONDS',
+                                   default=60, type=int,
+                                   help=("Amount of time (in seconds) to "
+                                         "wait for a successful connection"
+                                         " to the remote machine. Defaults"
+                                         " to %(default)s seconds."))
 
     @staticmethod
     def _check_required_args(args, enable_arg, required_args):
