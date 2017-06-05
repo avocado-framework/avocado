@@ -594,11 +594,13 @@ class FileLoader(TestLoader):
                         tests.extend(self._make_tests(pth, which_tests))
         return tests
 
-    def _find_avocado_tests(self, path):
+    def _find_avocado_tests(self, path, class_name=None):
         """
         Attempts to find Avocado instrumented tests from Python source files
 
         :param path: path to a Python source code file
+        :type path: str
+        :param class_name: the specific class to be found
         :type path: str
         :returns: dict with class name and additional info such as method names
                   and tags
@@ -613,7 +615,7 @@ class FileLoader(TestLoader):
         # The name used, in case of 'import avocado as avocadolib'
         mod_import_name = None
         # The resulting test classes
-        result = {}
+        result = collections.OrderedDict()
 
         mod = ast.parse(open(path).read(), path)
 
@@ -643,17 +645,27 @@ class FileLoader(TestLoader):
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
+
+                # class_name will exist only under recursion. In that
+                # case, we will only process the class if it has the
+                # expected class_name.
+                if class_name is not None and class_name != statement.name:
+                    continue
+
                 docstring = ast.get_docstring(statement)
-                # Looking for a class that has in the docstring either
+                # Looking for a class that has in the docstring
                 # ":avocado: enable" or ":avocado: disable
-                if safeloader.check_docstring_directive(docstring, 'disable'):
+                if (safeloader.check_docstring_directive(docstring, 'disable')
+                   and class_name is None):
                     continue
 
                 cl_tags = safeloader.get_docstring_directives_tags(docstring)
 
-                if safeloader.check_docstring_directive(docstring, 'enable'):
-                    info = self._get_methods_info(statement.body,
-                                                  cl_tags)
+                if (safeloader.check_docstring_directive(docstring, 'enable')
+                   and class_name is None):
+                    info = {'methods': self._get_methods_info(statement.body,
+                                                              cl_tags),
+                            'path': path}
                     result[statement.name] = info
                     continue
 
@@ -662,8 +674,9 @@ class FileLoader(TestLoader):
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
                     if test_import_name in base_ids:
-                        info = self._get_methods_info(statement.body,
-                                                      cl_tags)
+                        info = {'methods': self._get_methods_info(statement.body,
+                                                                  cl_tags),
+                                'path': path}
                         result[statement.name] = info
                         continue
 
@@ -673,9 +686,81 @@ class FileLoader(TestLoader):
                         module = base.value.id
                         klass = base.attr
                         if module == mod_import_name and klass == 'Test':
-                            info = self._get_methods_info(statement.body,
-                                                          cl_tags)
+                            info = {'methods': self._get_methods_info(statement.body,
+                                                                      cl_tags),
+                                    'path': path}
                             result[statement.name] = info
+                            continue
+
+                # Looking for the 'recursive' docstring or a class_name (what
+                # means we are under recursion)
+                if (safeloader.check_docstring_directive(docstring, 'recursive')
+                   or class_name is not None):
+                    info = {'methods': self._get_methods_info(statement.body,
+                                                              cl_tags),
+                            'path': path}
+                    result[statement.name] = info
+
+                    # Getting the list of parents of the current class
+                    parents = statement.bases
+
+                    # Searching the parents in the same module
+                    for parent in parents[:]:
+                        # Looking for a 'class FooTest(module.Parent)'
+                        if isinstance(parent, ast.Attribute):
+                            parent_class = parent.attr
+                        # Looking for a 'class FooTest(Parent)'
+                        else:
+                            parent_class = parent.id
+
+                        res = self._find_avocado_tests(path, parent_class)
+                        if res:
+                            parents.pop(0)
+                            result.update(res)
+
+                    # If there are parents left to be discovered, they
+                    # might be in a different module.
+                    for parent in parents:
+                        if isinstance(parent, ast.Attribute):
+                            # Looking for a 'class FooTest(module.Parent)'
+                            parent_module = parent.value.id
+                            parent_class = parent.attr
+                        else:
+                            # Looking for a 'class FooTest(Parent)'
+                            parent_module = None
+                            parent_class = parent.id
+
+                        for node in mod.body:
+                            reference = None
+                            # Looking for 'from parent import class'
+                            if isinstance(node, ast.ImportFrom):
+                                reference = parent_class
+                            # Looking for 'import parent'
+                            elif isinstance(node, ast.Import):
+                                reference = parent_module
+
+                            if reference is not None:
+                                for artifact in node.names:
+                                    # Looking for a class alias
+                                    # ('from parent import class as alias')
+                                    if artifact.asname is not None:
+                                        parent_class = reference = artifact.name
+                                    # If the parent class or the parent module
+                                    # is found in the imports, discover the
+                                    # parent module path and find the parent
+                                    # class there
+                                    if artifact.name == reference:
+                                        modules_paths = [os.path.dirname(path)]
+                                        modules_paths.extend(sys.path)
+                                        if parent_module is None:
+                                            parent_module = node.module
+                                        f, p, d = imp.find_module(parent_module,
+                                                                  modules_paths)
+                                        res = self._find_avocado_tests(p, parent_class)
+                                        if res:
+                                            res[parent_class]['path'] = p
+                                            result.update(res)
+                    continue
 
         return result
 
@@ -703,16 +788,19 @@ class FileLoader(TestLoader):
             tests = self._find_avocado_tests(test_path)
             if tests:
                 test_factories = []
-                for test_class, info in tests.items():
+                for test_class in tests:
                     if isinstance(test_class, str):
-                        for test_method, tags in info:
+                        for test_method, tags in tests[test_class]['methods']:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
                             if (subtests_filter and
                                     not subtests_filter.search(name)):
                                 continue
+                            path = tests[test_class].get('path', None)
+                            if path is None:
+                                path = test_path
                             tst = (test_class, {'name': name,
-                                                'modulePath': test_path,
+                                                'modulePath': path,
                                                 'methodName': test_method,
                                                 'tags': tags})
                             test_factories.append(tst)
