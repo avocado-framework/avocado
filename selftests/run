@@ -3,6 +3,7 @@
 
 __author__ = 'Lucas Meneghel Rodrigues <lmr@redhat.com>'
 
+import gc
 import os
 import subprocess
 import sys
@@ -34,6 +35,11 @@ class MyResult(unittest.TextTestResult):
         ret = super(MyResult, self).stopTest(test)
         # Destroy the data_dir.get_tmpdir ...
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
+        # Rung garbage collection (run __del__s) and force-sync disk
+        gc.collect()
+        subprocess.Popen("sync", stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE).communicate()
         # ... and check whether some dirs were left behind
         dir_check = subprocess.Popen([CHECK_TMP_DIRS], stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
