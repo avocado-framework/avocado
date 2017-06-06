@@ -60,7 +60,7 @@ class ReplayTests(unittest.TestCase):
         """
         Checks if all expected files are there.
         """
-        file_list = ['multiplex', 'config', 'test_references', 'pwd', 'args',
+        file_list = ['variants', 'config', 'test_references', 'pwd', 'args',
                      'cmdline']
         for filename in file_list:
             path = os.path.join(self.jobdir, 'jobdata', filename)
