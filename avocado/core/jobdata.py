@@ -18,6 +18,7 @@ Record/retrieve job information
 
 import ast
 import glob
+import json
 import os
 import pickle
 
@@ -49,7 +50,7 @@ def record(args, logdir, mux, references=None, cmdline=None):
                                           TEST_REFERENCES_FILENAME_LEGACY)
     path_mux = os.path.join(base_dir, VARIANTS_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
-    path_args = os.path.join(base_dir, ARGS_FILENAME)
+    path_args = os.path.join(base_dir, ARGS_FILENAME + ".json")
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
     if references:
@@ -75,7 +76,7 @@ def record(args, logdir, mux, references=None, cmdline=None):
         os.fsync(pwd_file)
 
     with open(path_args, 'w') as args_file:
-        pickle.dump(args.__dict__, args_file, pickle.HIGHEST_PROTOCOL)
+        json.dump(args.__dict__, args_file, default=lambda x: None)
         args_file.flush()
         os.fsync(args_file)
 
@@ -136,9 +137,15 @@ def retrieve_args(resultsdir):
     """
     Retrieves the job args from the results directory.
     """
+    recorded_args = _retrieve(resultsdir, ARGS_FILENAME + ".json")
+    if recorded_args:
+        with open(recorded_args, 'r') as args_file:
+            return json.load(args_file)
     recorded_args = _retrieve(resultsdir, ARGS_FILENAME)
     if recorded_args is None:
         return None
+    # old pickle-based dump
+    # TODO: Remove when 36lts is discontinued
     with open(recorded_args, 'r') as args_file:
         return pickle.load(args_file)
 
