@@ -309,24 +309,57 @@ class AvocadoParam(object):
                 yield (leaf.environment.origin[key].path, key, value)
 
 
+class FakeVariantDispatcher(object):
+
+    """
+    This object can act instead of VarianterDispatcher to report loaded
+    variants.
+    """
+
+    def __init__(self, state):
+        for variant in state:
+            variant["variant"] = [tree.TreeNodeEnvOnly(path, env)
+                                  for path, env in variant["variant"]]
+        self.variants = state
+
+    def map_method(self, method, *args, **kwargs):
+        """
+        Reports list containing one result of map_method on self
+        """
+        if hasattr(self, method):
+            return [getattr(self, method)(*args, **kwargs)]
+        else:
+            return []
+
+    def __iter__(self):
+        return iter(self.variants)
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+
 class Varianter(object):
 
     """
     This object takes care of producing test variants
     """
 
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, state=None):
         """
         :param debug: Store whether this instance should debug the mux
+        :param state: Force-varianter state
         :note: people need to check whether mux uses debug and reflect that
                in order to provide the right results.
         """
         self.default_params = {}
         self._default_params = None
-        self.debug = debug
-        self.node_class = tree.TreeNode if not debug else tree.TreeNodeDebug
-        self._variant_plugins = dispatcher.VarianterDispatcher()
-        self._no_variants = None
+        if state is None:
+            self.debug = debug
+            self.node_class = tree.TreeNodeDebug if debug else tree.TreeNode
+            self._variant_plugins = dispatcher.VarianterDispatcher()
+            self._no_variants = None
+        else:
+            self.load(state)
 
     def parse(self, args):
         """
@@ -408,6 +441,72 @@ class Varianter(object):
             return len(test_suite) * self._no_variants
         else:
             return len(test_suite)
+
+    def dump(self):
+        """
+        Dump the variants in loadable-state
+
+        This is lossy representation which takes all yielded variants and
+        replaces the list of nodes with TreeNodeEnvOnly representations::
+
+            [{'mux_path': mux_path,
+              'variant_id': variant_id,
+              'variant': dump_tree_nodes(original_variant)},
+             {'mux_path': [str, str, ...],
+              'variant_id': str,
+              'variant': [(str, [(str, str, object), ...])],
+             {'mux_path': ['/run/*'],
+              'variant_id': 'aaa-26c0'
+              'variant': [('/foo/aaa',
+                           [('/foo', 'bar', 'baz'),
+                            ('/foo/aaa', 'bbb', 'ccc')])]}
+             ...]
+
+        where `dump_tree_nodes` looks like::
+
+            [(node.path, environment_representation),
+             (node.path, [(path1, key1, value1), (path2, key2, value2), ...]),
+             ('/foo/aaa', [('/foo', 'bar', 'baz')])
+
+        :return: loadable Varianter representation
+        """
+        def dump_tree_node(node):
+            """
+            Turns TreeNode-like object into tuple(path, env_representation)
+            """
+            return (str(node.path),
+                    [(str(node.environment.origin[key].path), str(key), value)
+                     for key, value in node.environment.iteritems()])
+
+        if not self.is_parsed():
+            raise NotImplementedError("Dumping Varianter state before "
+                                      "multiplexation is not supported.")
+        variants = []
+        for variant in self.itertests():
+            safe_variant = {}
+            safe_variant["mux_path"] = [str(pth)
+                                        for pth in variant.get("mux_path")]
+            safe_variant["variant_id"] = str(variant.get("variant_id"))
+            safe_variant["variant"] = [dump_tree_node(_)
+                                       for _ in variant.get("variant", [])]
+            variants.append(safe_variant)
+
+        return variants
+
+    def load(self, state):
+        """
+        Load the variants state
+
+        Current implementation supports loading from a list of loadable
+        variants. It replaces the VariantDispatcher with fake implementation
+        which reports the loaded (and initialized) variants.
+
+        :param state: loadable Varianter representation
+        """
+        self.debug = False
+        self.node_class = tree.TreeNode
+        self._variant_plugins = FakeVariantDispatcher(state)
+        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
 
     def itertests(self):
         """

@@ -92,6 +92,37 @@ class TreeEnvironment(dict):
                          str(self.filter_out)))
 
 
+class TreeNodeEnvOnly(object):
+
+    """
+    Minimal TreeNode-like class providing interface for AvocadoParams
+    """
+    def __init__(self, path, environment=None):
+        """
+        :param path: Path of this node (must not end with '/')
+        :param environment: List of pair/key/value items
+        """
+        self.name = path.rsplit("/")[-1]
+        self.path = path
+        self.environment = TreeEnvironment()
+        if environment:
+            self.__load_environment(environment)
+
+    def __load_environment(self, environment):
+        nodes = {}
+        for path, key, value in environment:
+            self.environment[key] = value
+            if path not in nodes:
+                nodes[path] = TreeNodeEnvOnly(path)
+            self.environment.origin[key] = nodes[path]
+
+    def get_environment(self):
+        return self.environment
+
+    def get_path(self):
+        return self.path
+
+
 class TreeNode(object):
 
     """
