@@ -30,7 +30,9 @@ JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
 TEST_REFERENCES_FILENAME_LEGACY = 'urls'
-VARIANTS_FILENAME = 'multiplex'
+VARIANTS_FILENAME = 'variants'
+# TODO: Remove when 36lts is discontinued
+VARIANTS_FILENAME_OLD = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
@@ -122,6 +124,8 @@ def retrieve_variants(resultsdir):
     Retrieves the job Mux object from the results directory.
     """
     recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME)
+    if recorded_mux is None:
+        recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME_OLD)
     if recorded_mux is None:
         return None
     with open(recorded_mux, 'r') as mux_file:
