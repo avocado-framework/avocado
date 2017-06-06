@@ -26,7 +26,6 @@ from . import dispatcher
 from .output import LOG_JOB
 
 
-# TODO: Create multiplexer plugin and split these functions into multiple files
 class NoMatchError(KeyError):
     pass
 
