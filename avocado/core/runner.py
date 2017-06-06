@@ -19,7 +19,6 @@ Test runner module.
 
 import logging
 import multiprocessing
-from multiprocessing import queues
 import os
 import signal
 import sys
@@ -28,6 +27,7 @@ import time
 from . import test
 from . import exceptions
 from . import output
+from . import queues
 from . import status
 from .loader import loader
 from .status import mapping
