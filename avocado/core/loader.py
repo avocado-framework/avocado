@@ -615,6 +615,9 @@ class FileLoader(TestLoader):
         # The resulting test classes
         result = {}
 
+        if os.path.isdir(path):
+            path = os.path.join(path, "__init__.py")
+
         mod = ast.parse(open(path).read(), path)
 
         for statement in mod.body:
