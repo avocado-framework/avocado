@@ -104,6 +104,7 @@ def get_cpu_arch():
                  ('^cpu.*POWER6', 'power6'),
                  ('^cpu.*POWER7', 'power7'),
                  ('^cpu.*POWER8', 'power8'),
+                 ('^cpu.*POWER9', 'power9'),
                  ('^cpu.*PPC970', 'power970'),
                  ('ARM', 'arm'),
                  ('^flags.*:.* lm .*', 'x86_64')]
