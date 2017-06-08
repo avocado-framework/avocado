@@ -522,6 +522,11 @@ even on ``setUp`` failure so don't forget to initialize your variables
 early in the ``setUp``. Example of usage is in the next section
 `Running third party test suites`_.
 
+The ``teadDown`` method is always executed (unless the test is skipped).
+Even if something goes wrong in ``setUp``, generating an exception, the
+``tearDown`` will be called to make sure your environment is properly
+cleaned up.
+
 Running third party test suites
 ===============================
 
