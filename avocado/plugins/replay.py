@@ -254,14 +254,9 @@ class Replay(CLI):
                 LOG_UI.error('Source job variants data not found. Aborting.')
                 sys.exit(exit_codes.AVOCADO_FAIL)
             else:
-                # Ignore data manipulation. This is necessary, because
-                # we replaced the unparsed object with parsed one. There
-                # are other plugins running before/after this which might
-                # want to alter the variants object.
-                if args.avocado_variants.is_parsed():
-                    LOG_UI.warning("Using src job Mux data only, use "
-                                   "`--replay-ignore variants` to override "
-                                   "them.")
+                LOG_UI.warning("Using src job Mux data only, use "
+                               "`--replay-ignore variants` to override "
+                               "them.")
                 setattr(args, "avocado_variants", variants)
 
         # Extend "replay_test_status" of "INTERRUPTED" when --replay-resume

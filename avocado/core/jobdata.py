@@ -18,9 +18,12 @@ Record/retrieve job information
 
 import ast
 import glob
+import json
 import os
 import pickle
 
+from . import varianter
+from .output import LOG_UI, LOG_JOB
 from .settings import settings
 from ..utils.path import init_dir
 
@@ -30,7 +33,9 @@ JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
 TEST_REFERENCES_FILENAME_LEGACY = 'urls'
-VARIANTS_FILENAME = 'multiplex'
+VARIANTS_FILENAME = 'variants'
+# TODO: Remove when 36lts is discontinued
+VARIANTS_FILENAME_LEGACY = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
@@ -40,14 +45,18 @@ def record(args, logdir, mux, references=None, cmdline=None):
     """
     Records all required job information.
     """
+    def json_bad_mux_obj(item):
+        for log in [LOG_UI, LOG_JOB]:
+            log.warning("jobdata.variants: Unable to serialize '%s'", item)
+        return str(item)
     base_dir = init_dir(logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
     path_references_legacy = os.path.join(base_dir,
                                           TEST_REFERENCES_FILENAME_LEGACY)
-    path_mux = os.path.join(base_dir, VARIANTS_FILENAME)
+    path_mux = os.path.join(base_dir, VARIANTS_FILENAME + ".json")
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
-    path_args = os.path.join(base_dir, ARGS_FILENAME)
+    path_args = os.path.join(base_dir, ARGS_FILENAME + ".json")
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
     if references:
@@ -63,7 +72,7 @@ def record(args, logdir, mux, references=None, cmdline=None):
         os.fsync(config_file)
 
     with open(path_mux, 'w') as mux_file:
-        pickle.dump(mux, mux_file, pickle.HIGHEST_PROTOCOL)
+        json.dump(mux.dump(), mux_file, default=json_bad_mux_obj)
         mux_file.flush()
         os.fsync(mux_file)
 
@@ -73,7 +82,7 @@ def record(args, logdir, mux, references=None, cmdline=None):
         os.fsync(pwd_file)
 
     with open(path_args, 'w') as args_file:
-        pickle.dump(args.__dict__, args_file, pickle.HIGHEST_PROTOCOL)
+        json.dump(args.__dict__, args_file, default=lambda x: None)
         args_file.flush()
         os.fsync(args_file)
 
@@ -121,9 +130,17 @@ def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
+    recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME + ".json")
+    if recorded_mux:    # new json-based dump
+        with open(recorded_mux, 'r') as mux_file:
+            return varianter.Varianter(state=json.load(mux_file))
     recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME)
     if recorded_mux is None:
+        recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME_LEGACY)
+    if recorded_mux is None:
         return None
+    # old pickle-based dump
+    # TODO: Remove when 36lts is discontinued
     with open(recorded_mux, 'r') as mux_file:
         return pickle.load(mux_file)
 
@@ -132,9 +149,15 @@ def retrieve_args(resultsdir):
     """
     Retrieves the job args from the results directory.
     """
+    recorded_args = _retrieve(resultsdir, ARGS_FILENAME + ".json")
+    if recorded_args:
+        with open(recorded_args, 'r') as args_file:
+            return json.load(args_file)
     recorded_args = _retrieve(resultsdir, ARGS_FILENAME)
     if recorded_args is None:
         return None
+    # old pickle-based dump
+    # TODO: Remove when 36lts is discontinued
     with open(recorded_args, 'r') as args_file:
         return pickle.load(args_file)
 
