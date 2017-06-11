@@ -658,22 +658,25 @@ class FileLoader(TestLoader):
                 docstring = ast.get_docstring(statement)
                 # Looking for a class that has in the docstring either
                 # ":avocado: enable" or ":avocado: disable
-                if (safeloader.check_docstring_directive(docstring, 'disable')
-                   and class_name is None):
+                has_disable = safeloader.check_docstring_directive(docstring,
+                                                                   'disable')
+                if (has_disable and class_name is None):
                     continue
 
                 cl_tags = safeloader.get_docstring_directives_tags(docstring)
 
-                if (safeloader.check_docstring_directive(docstring, 'enable')
-                   and class_name is None):
+                has_enable = safeloader.check_docstring_directive(docstring,
+                                                                  'enable')
+                if (has_enable and class_name is None):
                     info = self._get_methods_info(statement.body, cl_tags)
                     result[statement.name] = info
                     continue
 
                 # Looking for the 'recursive' docstring or a 'class_name'
                 # (meaning we are under recursion)
-                if (safeloader.check_docstring_directive(docstring, 'recursive')
-                   or class_name is not None):
+                has_recurse = safeloader.check_docstring_directive(docstring,
+                                                                   'recursive')
+                if (has_recurse or class_name is not None):
                     info = self._get_methods_info(statement.body, cl_tags)
                     result[statement.name] = info
 
