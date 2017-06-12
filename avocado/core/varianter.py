@@ -456,17 +456,17 @@ class Varianter(object):
               'variant_id': str,
               'variant': [(str, [(str, str, object), ...])],
              {'mux_path': ['/run/*'],
-              'variant_id': 'aaa-26c0'
-              'variant': [('/foo/aaa',
-                           [('/foo', 'bar', 'baz'),
-                            ('/foo/aaa', 'bbb', 'ccc')])]}
+              'variant_id': 'cat-26c0'
+              'variant': [('/pig/cat',
+                           [('/pig', 'ant', 'fox'),
+                            ('/pig/cat', 'dog', 'bee')])]}
              ...]
 
         where `dump_tree_nodes` looks like::
 
             [(node.path, environment_representation),
              (node.path, [(path1, key1, value1), (path2, key2, value2), ...]),
-             ('/foo/aaa', [('/foo', 'bar', 'baz')])
+             ('/pig/cat', [('/pig', 'ant', 'fox')])
 
         :return: loadable Varianter representation
         """
