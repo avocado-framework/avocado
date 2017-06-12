@@ -58,9 +58,9 @@ Now check if you have the ``avocado`` and ``avocado-lts`` repositories configure
 
 Regular users of Avocado will want to use the standard ``avocado``
 repository, which tracks the latest Avocado releases.  For more
-information about the LTS releases, please refer to the `Avocado Long
-Term Stability`_ thread and to your package management docs on
-how to switch to the ``avocado-lts`` repo.
+information about the LTS releases, please refer to
+:ref:`rfc-long-term-stability`  and to your package management
+docs on how to switch to the ``avocado-lts`` repo.
 
 Finally, after deciding between regular Avocado releases or LTS, you
 can install the RPM packages by running the following commands::
@@ -106,9 +106,9 @@ Other available packages (depending on the Avocado version) may include:
 * ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 The LTS (Long Term Stability) repositories are also available for
-Enterprise Linux.  Please refer to the `Avocado Long Term
-Stability`_ thread and to your package management docs on how to
-switch to the ``avocado-lts`` repo.
+Enterprise Linux.  Please refer to :ref:`rfc-long-term-stability` and
+to your package management docs on how to switch to the
+``avocado-lts`` repo.
 
 OpenSUSE
 ~~~~~~~~
@@ -477,5 +477,4 @@ For custom interactions it is also possible to use other means like ``pdb``
 or ``pydevd`` :doc:`DevelopmentTips` breakpoints. Beware it's not possible
 to use ``STDIN`` from tests (unless dark magic is used).
 
-.. _Avocado Long Term Stability: https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado

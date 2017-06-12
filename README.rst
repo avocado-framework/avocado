@@ -122,8 +122,8 @@ Other available packages (depending on the Avocado version) may include:
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  For more information about the LTS releases, please
-refer to the Avocado Long Term Stability thread
-(https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html)
+refer to
+http://avocado-framework.readthedocs.io/en/latest/rfcs/LongTermStability.html
 and to your package management docs on how to switch to the
 ``avocado-lts`` repo.
 
