@@ -31,9 +31,9 @@ class NetworkBridge(object):
 
     def __init__(self, brname=None):
         """
-        Creates network bridge device with name 
+        Creates network bridge device with name
 
-        :param brname: name of brdige device 
+        :param brname: name of bridge device
         """
         self.brname = brname
         self.devicelist = set()
@@ -49,8 +49,9 @@ class NetworkBridge(object):
 
     def getName(self):
         """
-        get bridge name
-        :return: String 
+        Get bridge name
+
+        :return: String
         """
         return self.brname
 
@@ -129,7 +130,8 @@ class SimulationNetwork(object):
     def __init__(self, bridge=NetworkBridge()):
         """
         Create them inside network bridge if needed
-        :param bridge: 
+
+        :param bridge:
         """
         try:
             process.run("modprobe dummy", verbose=False)
@@ -154,8 +156,8 @@ class SimulationNetwork(object):
         """
         Check if device is added to this object
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if device in self.interfaces:
             return True
@@ -165,8 +167,8 @@ class SimulationNetwork(object):
         """
         Create new network interface and add them to bridge if defined
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if not self.deviceExist(device):
             process.run("ip link add %s type dummy" % device)
@@ -177,8 +179,8 @@ class SimulationNetwork(object):
         """
         Delete device and unregister them from bridge
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if self.isAdded(device):
             self.unregisterDeviceDown(device)
@@ -188,7 +190,7 @@ class SimulationNetwork(object):
         """
         Do explicit cleanup of all registered devices
 
-        :return: 
+        :return:
         """
         innner = self.interfaces.copy()
         for device in innner:
@@ -244,7 +246,7 @@ class SimulationNetworkVeth(SimulationNetwork):
     def __init__(self, bridge=NetworkBridge()):
         """
         Create them inside network bridge if needed
-        :param bridge: 
+        :param bridge:
         """
         try:
             process.run("modprobe veth", verbose=False)
@@ -257,8 +259,8 @@ class SimulationNetworkVeth(SimulationNetwork):
         """
         Create new network interface and add them to bridge if defined
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if not self.deviceExist(device):
             process.run(
@@ -271,8 +273,8 @@ class SimulationNetworkVeth(SimulationNetwork):
         """
         Delete device and unregister them from bridge
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if self.isAdded(device):
             self.unregisterDeviceDown(device)
@@ -292,7 +294,7 @@ class SimulationNetworkTap(SimulationNetwork):
     def __init__(self, bridge=NetworkBridge()):
         """
         Create them inside network bridge if needed
-        :param bridge: 
+        :param bridge:
         """
         self.__util = None
         proc = process.run("ip tuntap s", ignore_status=True)
@@ -312,8 +314,8 @@ class SimulationNetworkTap(SimulationNetwork):
         """
         Create new network interface and add them to bridge if defined
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if not self.deviceExist(device):
             if "tuntap" in self.__util:
@@ -329,8 +331,8 @@ class SimulationNetworkTap(SimulationNetwork):
         """
         Delete device and unregister them from bridge
 
-        :param device: 
-        :return: 
+        :param device:
+        :return:
         """
         if self.isAdded(device):
             self.unregisterDeviceDown(device)
