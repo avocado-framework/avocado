@@ -30,9 +30,11 @@ Other available packages (depending on the Avocado version) may include:
 
 * ``python-avocado-examples``: contains example tests and other example files
 * ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
 * ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
 * ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
 * ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 .. _fedora-from-avocados-own-repo:
 
@@ -56,9 +58,9 @@ Now check if you have the ``avocado`` and ``avocado-lts`` repositories configure
 
 Regular users of Avocado will want to use the standard ``avocado``
 repository, which tracks the latest Avocado releases.  For more
-information about the LTS releases, please refer to the `Avocado Long
-Term Stability`_ thread and to your package management docs on
-how to switch to the ``avocado-lts`` repo.
+information about the LTS releases, please refer to
+:ref:`rfc-long-term-stability`  and to your package management
+docs on how to switch to the ``avocado-lts`` repo.
 
 Finally, after deciding between regular Avocado releases or LTS, you
 can install the RPM packages by running the following commands::
@@ -69,9 +71,11 @@ Additionally, other Avocado packages are available for Fedora:
 
 * ``python-avocado-examples``: contains example tests and other example files
 * ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
 * ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
 * ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
 * ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
@@ -95,14 +99,16 @@ Other available packages (depending on the Avocado version) may include:
 
 * ``python-avocado-examples``: contains example tests and other example files
 * ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
 * ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
 * ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
 * ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 The LTS (Long Term Stability) repositories are also available for
-Enterprise Linux.  Please refer to the `Avocado Long Term
-Stability`_ thread and to your package management docs on how to
-switch to the ``avocado-lts`` repo.
+Enterprise Linux.  Please refer to :ref:`rfc-long-term-stability` and
+to your package management docs on how to switch to the
+``avocado-lts`` repo.
 
 OpenSUSE
 ~~~~~~~~
@@ -471,5 +477,4 @@ For custom interactions it is also possible to use other means like ``pdb``
 or ``pydevd`` :doc:`DevelopmentTips` breakpoints. Beware it's not possible
 to use ``STDIN`` from tests (unless dark magic is used).
 
-.. _Avocado Long Term Stability: https://www.redhat.com/archives/avocado-devel/2016-April/msg00038.html
 .. _OpenSUSE: https://build.opensuse.org/package/show/Virtualization:Tests/avocado

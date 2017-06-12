@@ -1,3 +1,5 @@
+.. _rfc-long-term-stability:
+
 ==========================
  RFC: Long Term Stability
 ==========================
