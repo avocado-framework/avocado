@@ -1141,6 +1141,7 @@ or not, please refer to our section on :ref:`docstring-directive-rules`.
 
 Now let's follow with some docstring directives examples.
 
+.. _docstring-directive-enable-disable:
 
 Explicitly enabling or disabling tests
 --------------------------------------
@@ -1251,6 +1252,7 @@ The docstring ``:avocado: disable`` is evaluated first by Avocado,
 meaning that if both ``:avocado: disable`` and ``:avocado: enable`` are
 present in the same docstring, the test will not be listed.
 
+.. _docstring-directive-recursive:
 
 Recursively Discovering Tests
 -----------------------------

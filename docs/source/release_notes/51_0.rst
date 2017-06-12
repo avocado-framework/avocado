@@ -1,0 +1,119 @@
+========================
+51.0 The White Mountains
+========================
+
+The Avocado team is proud to present another release: Avocado version
+51.0, aka, "The White Mountains" now available!
+
+Release documentation: `Avocado 51.0
+<http://avocado-framework.readthedocs.io/en/51.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* Users will be given more information when a test reference is not
+  recognized by a given test loader.
+
+* Users can now choose to proceed with the execution of a job even if
+  one or more test references have not been resolved by one Avocado
+  test loader (AKA a test resolver).  By giving the command line option
+  ``--ignore-missing-references=on``, jobs will be executed (provided
+  the job's test suite has at least one test).
+
+* The ``yaml-to-mux`` varianter implementation (the only one at this
+  point) is now an optional plugin.  Basically, this means that users
+  deploying this (and later) version of Avocado, should also
+  explicitly install it.  For ``pip`` users, the module name is
+  ``avocado-framework-plugin-varianter-yaml-to-mux``.  The RPM package
+  name is ``python-avocado-plugins-varianter-yaml-to-mux``.
+
+* Users can now choose in which order the job will execute tests (from
+  its suite) and variants.  Previously, users would always get one
+  test executed with all its variants, than the second tests with all
+  variants, and so on.  Now, users can give the
+  ``--execution-order=tests-per-variant`` command line option and all
+  tests on the job's test suite will be executed with the first
+  variant, then all tests will be executed with the second variant and
+  so on.  The original (still the current default behavior) can also
+  be available explicitly selected with the command line option
+  ``--execution-order=variants-per-test``.
+
+* Test methods on parent classes are now found upon the use of the new
+  :ref:`recursive <docstring-directive-recursive>` docstring
+  directive.  While ``:avocado: enable`` enables Avocado to find
+  INSTRUMENTED tests that do not look like one (more details :ref:`here
+  <docstring-directive-enable-disable>`), ``recursive`` will do that
+  while also finding test methods present on parent classes.
+
+* The docstring directives now have a properly defined :ref:`format
+  <docstring-directive-rules>`.  This applies to ``:avocado: tags=``
+  docstring directives, used for :ref:`categorizing tests
+  <categorizing-tests>`.
+
+* Users can now see the tags set on ``INSTRUMENTED`` test when listing
+  tests with the ``-V`` (verbose) option.
+
+Internal Changes
+================
+
+* The ``jobdata`` file responsible for keeping track of the variants
+  on a given job (saved under ``$JOB_RESULTS/jobdata/multiplex``) is
+  now called ``variants.json``.  As it names indicates, it's now a JSON
+  file that contains the *result* of the variants generation.  The
+  previous file format was based on Python's pickle, which was not
+  reliable across different Avocado versions and/or environments.
+
+* Avocado is one step closer to Python 3 compatibility.  The basic
+  ``avocado`` command line application runs, and loads some plugins.
+  Still, the very much known ``byte`` versus ``string`` issues plague
+  the code enough to prevent tests from being loaded and executed.  We
+  anticipate that once the ``byte`` versus ``string`` is tackled, most
+  functionality will be available.
+
+* Avocado now uniformly uses :data:`avocado.core.output.LOG_UI` for
+  outputting to the UI and :data:`avocado.core.output.LOG_JOB` to
+  output to the job log.
+
+* Some classes previously regarded as "test types" to flag error
+  conditions have now be rewritten to *not* inherit from
+  :class:`avocado.core.test.Test`.  It's now easier to identify real
+  Avocado test types.
+
+Improvements for Developers
+===========================
+
+* Developers now will also get Python "eggs" cleaned up when running
+  ``make clean``.
+
+* Developers can now run ``make requirements-plugins`` to (attempt to)
+  install external plugins dependencies, provided they are located at
+  the same base directory where Avocado is.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/50.0...51.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=NWfOvo2gWhE>`_.
+
+Next Release
+============
+
+The next Avocado release, 52.0, will be a LTS (Long Term Stability
+Release).  For more information please read
+:ref:`rfc-long-term-stability`.
+
+----
+
+| Sprint theme: https://trello.com/c/dDou6uk0/1034-sprint-theme-the-white-mountains-the-tripods

@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 50.0
-Release: 1%{?gitrel}%{?dist}
+Version: 51.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -342,6 +342,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Jun 12 2017 Cleber Rosa <cleber@redhat.com> - 51.0-0
+- New upstream release
+
 * Fri May 19 2017 Lukas Doktor <ldoktor@redhat.com> - 50.0-1
 - Separate the varianter_yaml_to_mux plugin to a separate RPM
 
