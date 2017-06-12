@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import errno
+import importlib
 import os
 import sys
 
@@ -123,6 +124,11 @@ The following pages document the private APIs of optional Avocado plugins.
     """)
     for path in os.walk(optional_plugins_path).next()[1]:
         name = "avocado_%s" % os.path.basename(path)
+        try:
+            importlib.import_module(name)
+        except ImportError:
+            continue
+
         path = os.path.join(optional_plugins_path, path, name)
         if not os.path.exists(path):
             continue
