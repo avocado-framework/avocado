@@ -30,9 +30,11 @@ Other available packages (depending on the Avocado version) may include:
 
 * ``python-avocado-examples``: contains example tests and other example files
 * ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
 * ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
 * ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
 * ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 .. _fedora-from-avocados-own-repo:
 
@@ -69,9 +71,11 @@ Additionally, other Avocado packages are available for Fedora:
 
 * ``python-avocado-examples``: contains example tests and other example files
 * ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
 * ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
 * ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
 * ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 Enterprise Linux
 ~~~~~~~~~~~~~~~~
@@ -95,9 +99,11 @@ Other available packages (depending on the Avocado version) may include:
 
 * ``python-avocado-examples``: contains example tests and other example files
 * ``python2-avocado-plugins-output-html``: HTML job report plugin
+* ``python2-avocado-plugins-resultsdb``: propagate Job results to Resultsdb
 * ``python2-avocado-plugins-runner-remote``: execution of jobs on a remote machine
 * ``python2-avocado-plugins-runner-vm``: execution of jobs on a libvirt based VM
 * ``python2-avocado-plugins-runner-docker``: execution of jobs on a Docker container
+* ``python-avocado-plugins-varianter-yaml-to-mux``: parse YAML file into variants
 
 The LTS (Long Term Stability) repositories are also available for
 Enterprise Linux.  Please refer to the `Avocado Long Term

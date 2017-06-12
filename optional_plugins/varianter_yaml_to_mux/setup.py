@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
-      description='Avocado Varianter plugin to parse yaml file into variants',
+      description='Avocado Varianter plugin to parse YAML file into variants',
       version=open("VERSION", "r").read().strip(),
       author='Avocado Developers',
       author_email='avocado-devel@redhat.com',
