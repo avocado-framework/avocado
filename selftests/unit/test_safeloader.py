@@ -127,7 +127,7 @@ class DocstringDirectives(unittest.TestCase):
 
     def test_directives_regex(self):
         """
-        Tests the documented regexes for dealing with docstring directives
+        Tests the regular expressions that deal with docstring directives
         """
         for directive in self.VALID_DIRECTIVES:
             self.assertRegexpMatches(directive, safeloader.DOCSTRING_DIRECTIVE_RE)
