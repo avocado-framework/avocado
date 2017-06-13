@@ -331,6 +331,28 @@ class FakeVariantDispatcher(object):
         else:
             return []
 
+    def to_str(self, summary=0, variants=0, **kwargs):
+        if not self.variants:
+            return ""
+        out = []
+        for variant in self.variants:
+            paths = ', '.join([x.path for x in variant["variant"]])
+            out.append('\nVariant %s:    %s' % (variant["variant_id"],
+                                                paths))
+            env = set()
+            for node in variant["variant"]:
+                for key, value in node.environment.iteritems():
+                    origin = node.environment.origin[key].path
+                    env.add(("%s:%s" % (origin, key), str(value)))
+            if not env:
+                continue
+            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+            for record in sorted(env):
+                out.append(fmt % record)
+        return "\n".join(out)
+
+
+
     def __iter__(self):
         return iter(self.variants)
 
