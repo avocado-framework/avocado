@@ -222,7 +222,7 @@ class Replay(CLI):
                                 "given on the command line.",
                                 option.replace('_', '-'),
                                 option.replace('_', '-'))
-                else:
+                elif option in replay_args:
                     setattr(args, option, replay_args[option])
 
         # Keeping this for compatibility.
