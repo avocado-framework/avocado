@@ -145,6 +145,26 @@ def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
+    def _apply_workarounds(variants):
+        """
+        Older version of TreeNode used 2 dicts to store environment, lets
+        replace the dict with TreeEnvironment to make it work properly
+        from AvocadoParams point of view.
+        """
+        try:
+            for plugin in variants._variant_plugins.extensions:
+                if plugin.name == "yaml_to_mux":
+                    for variant in plugin.obj.variants.pools:
+                        for mux_tree in variant:
+                            for node in mux_tree.pools:
+                                if hasattr(node, "filters"):
+                                    return  # it's new (or renewed) style
+                                root = node.root
+                                for _node in root.iter_children_preorder():
+                                    _node.filters = [[], []]
+                                    _node._environment = None
+        except:
+            pass
     recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME + ".json")
     if recorded_mux:    # new json-based dump
         with open(recorded_mux, 'r') as mux_file:
@@ -159,7 +179,9 @@ def retrieve_variants(resultsdir):
     with open(recorded_mux, 'r') as mux_file:
         unpickler = pickle.Unpickler(mux_file)
         unpickler.find_class = _find_class
-        return unpickler.load()
+        variants = unpickler.load()
+        _apply_workarounds(variants)
+        return variants
 
 
 def retrieve_args(resultsdir):
