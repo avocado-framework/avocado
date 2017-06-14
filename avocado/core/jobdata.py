@@ -21,6 +21,7 @@ import glob
 import json
 import os
 import pickle
+import sys
 
 from . import varianter
 from .output import LOG_UI, LOG_JOB
@@ -39,6 +40,20 @@ VARIANTS_FILENAME_LEGACY = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
+
+
+def _find_class(module, name):
+    """
+    Look for a class including compatibility workarounds
+    """
+    if module == "avocado.plugins.yaml_to_mux":
+        mod = __import__("avocado_varianter_yaml_to_mux", fromlist=[module])
+        return getattr(mod, name)
+    else:
+        mod = __import__(module)
+        mod = sys.modules[module]
+        klass = getattr(mod, name)
+        return klass
 
 
 def record(args, logdir, mux, references=None, cmdline=None):
@@ -142,7 +157,9 @@ def retrieve_variants(resultsdir):
     # old pickle-based dump
     # TODO: Remove when 36lts is discontinued
     with open(recorded_mux, 'r') as mux_file:
-        return pickle.load(mux_file)
+        unpickler = pickle.Unpickler(mux_file)
+        unpickler.find_class = _find_class
+        return unpickler.load()
 
 
 def retrieve_args(resultsdir):
@@ -159,7 +176,9 @@ def retrieve_args(resultsdir):
     # old pickle-based dump
     # TODO: Remove when 36lts is discontinued
     with open(recorded_args, 'r') as args_file:
-        return pickle.load(args_file)
+        unpickler = pickle.Unpickler(args_file)
+        unpickler.find_class = _find_class
+        return unpickler.load()
 
 
 def retrieve_config(resultsdir):
