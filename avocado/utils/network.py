@@ -18,6 +18,8 @@ Module with network related utility functions
 
 import socket
 
+from .data_structures import Borg
+
 
 def is_port_free(port, address):
     """
@@ -71,3 +73,44 @@ def find_free_ports(start_port, end_port, count, address="localhost"):
             count -= 1
         i += 1
     return ports
+
+
+class PortTracker(Borg):
+
+    """
+    Tracks ports used in the host machine.
+    """
+
+    def __init__(self):
+        Borg.__init__(self)
+        self.address = 'localhost'
+        self.start_port = 5000
+        if not hasattr(self, 'retained_ports'):
+            self._reset_retained_ports()
+
+    def __str__(self):
+        return 'Ports tracked: %r' % self.retained_ports
+
+    def _reset_retained_ports(self):
+        self.retained_ports = []
+
+    def register_port(self, port):
+        if (port not in self.retained_ports) and is_port_free(port, self.address):
+            self.retained_ports.append(port)
+        else:
+            raise ValueError('Port %d in use' % port)
+        return port
+
+    def find_free_port(self, start_port=None):
+        if start_port is None:
+            start_port = self.start_port
+        port = start_port
+        while ((port in self.retained_ports) or
+               (not is_port_free(port, self.address))):
+            port += 1
+        self.retained_ports.append(port)
+        return port
+
+    def release_port(self, port):
+        if port in self.retained:
+            self.retained.remove(port)
