@@ -215,26 +215,6 @@ class HTMLResult(Result):
     description = 'HTML result support'
 
     @staticmethod
-    def _copy_static_resources(html_path):
-        module = 'avocado_result_html'
-        base_path = 'resources/static'
-
-        for top_dir in pkg_resources.resource_listdir(module, base_path):
-            rsrc_dir = base_path + '/%s' % top_dir
-            if pkg_resources.resource_isdir(module, rsrc_dir):
-                rsrc_files = pkg_resources.resource_listdir(module, rsrc_dir)
-                for rsrc_file in rsrc_files:
-                    source = pkg_resources.resource_filename(
-                        module,
-                        rsrc_dir + '/%s' % rsrc_file)
-                    dest = os.path.join(
-                        os.path.dirname(os.path.abspath(html_path)),
-                        top_dir,
-                        os.path.basename(source))
-                    pkg_resources.ensure_directory(dest)
-                    shutil.copy(source, dest)
-
-    @staticmethod
     def _open_browser(html_path):
         # if possible, put browser in separate process
         # group, so keyboard interrupts don't affect
@@ -275,7 +255,6 @@ class HTMLResult(Result):
             LOG_UI.critical("-" * 80)
             raise
 
-        self._copy_static_resources(output_path)
         with codecs.open(output_path, 'w', 'utf-8') as report_file:
             report_file.write(report_contents)
 
@@ -302,9 +281,6 @@ class HTMLResult(Result):
 
         html_path = getattr(job.args, 'html_output', 'None')
         if html_path is not None:
-            # Avoid removing static content in user-provided path as it might
-            # also contain other user file/dirs (eg. "/tmp/report.html" would
-            # otherwise delete "/tmp"
             self._render(result, html_path)
             if open_browser:
                 self._open_browser(html_path)
