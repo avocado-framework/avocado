@@ -498,7 +498,7 @@ Let's take a second look at the first example::
 After filters are applied (simply removes non-matching variants), leaves
 are gathered and all variants are generated::
 
-    $ avocado variants -m examples/mux-environment.yaml
+    $ avocado variants -m selftests/.data/mux-environment.yaml
     Variants generated:
     Variant 1:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/debug
     Variant 2:    /hw/cpu/intel, /hw/disk/scsi, /distro/fedora, /env/prod
