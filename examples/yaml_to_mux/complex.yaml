@@ -1,0 +1,8 @@
+# This is an advanced example which includes other files with filters. Note it
+# is important to inject this into the default path (/run), otherwise the
+# filters won't work properly (simply use `avocado variants -m complex.yaml`)
+os: !mux
+    !include : os/linux.yaml
+    !include : os/windows.yaml
+hw:
+    !include : hw/hw.yaml

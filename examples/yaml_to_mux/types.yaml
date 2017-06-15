@@ -1,0 +1,19 @@
+# This demonstrates different value types as well as a clash
+by_type: !mux
+    string:
+        value: "this is string"
+    int:
+        value: 1
+    float:
+        value: -1.1
+
+key: value
+some:
+    path:
+        containing:
+            value: |
+                this will produce `self.params.get("value")` clashes as
+                Avocado can't determine which of those values do you need.
+                You have to use `self.params.get("value", path="*/by_type/*")`
+                or `self.params.get("value", path="*/some/path/*")` to
+                distinguish which `value` you have in mind.

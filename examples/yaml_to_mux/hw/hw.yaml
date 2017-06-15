@@ -1,0 +1,15 @@
+cpu: !mux
+    intel:
+        cpu_CFLAGS: '-march=core2'
+    amd:
+        cpu_CFLAGS: '-march=athlon64'
+    arm:
+        !filter-only : /run/hw/disk/virtio
+        !filter-only : /run/os/linux
+        cpu_CFLAGS: '-mabi=apcs-gnu -march=armv8-a -mtune=arm8'
+disk: !mux
+    scsi:
+        disk_type: 'scsi'
+    virtio:
+        disk_type: 'virtio'
+

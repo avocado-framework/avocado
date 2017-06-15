@@ -1,0 +1,6 @@
+os_type: windows
+username: Administrator
+versions: !mux
+    xp:
+        shutdown_command: shutdown /s /f /t 0
+
