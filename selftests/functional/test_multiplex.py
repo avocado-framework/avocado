@@ -13,14 +13,14 @@ basedir = os.path.abspath(basedir)
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
 
-DEBUG_OUT = """Variant mint-debug-amd-virtio-5e02:    amd@examples/mux-environment.yaml, virtio@examples/mux-environment.yaml, mint@examples/mux-environment.yaml, debug@examples/mux-environment.yaml
-    /distro/mint:init         => systemv@examples/mux-environment.yaml:/distro/mint
-    /env/debug:opt_CFLAGS     => -O0 -g@examples/mux-environment.yaml:/env/debug
-    /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@examples/mux-environment.yaml:/hw/cpu/amd
-    /hw/cpu/amd:joinlist      => ['first_item']@examples/mux-selftest.yaml:/hw/cpu + ['second', 'third']@examples/mux-selftest.yaml:/hw/cpu/amd
-    /hw/disk/virtio:disk_type => virtio@examples/mux-environment.yaml:/hw/disk/virtio
-    /hw/disk:corruptlist      => nonlist@examples/mux-selftest.yaml:/hw/disk
-    /hw:corruptlist           => ['upper_node_list']@examples/mux-selftest.yaml:/hw
+DEBUG_OUT = """Variant mint-debug-amd-virtio-07c6:    amd@selftests/.data/mux-environment.yaml, virtio@selftests/.data/mux-environment.yaml, mint@selftests/.data/mux-environment.yaml, debug@selftests/.data/mux-environment.yaml
+    /distro/mint:init         => systemv@selftests/.data/mux-environment.yaml:/distro/mint
+    /env/debug:opt_CFLAGS     => -O0 -g@selftests/.data/mux-environment.yaml:/env/debug
+    /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@selftests/.data/mux-environment.yaml:/hw/cpu/amd
+    /hw/cpu/amd:joinlist      => ['first_item']@selftests/.data/mux-selftest.yaml:/hw/cpu + ['second', 'third']@selftests/.data/mux-selftest.yaml:/hw/cpu/amd
+    /hw/disk/virtio:disk_type => virtio@selftests/.data/mux-environment.yaml:/hw/disk/virtio
+    /hw/disk:corruptlist      => nonlist@selftests/.data/mux-selftest.yaml:/hw/disk
+    /hw:corruptlist           => ['upper_node_list']@selftests/.data/mux-selftest.yaml:/hw
 """
 
 
@@ -56,10 +56,10 @@ class MultiplexTests(unittest.TestCase):
 
     def test_mplex_debug(self):
         cmd_line = ('%s variants -c -d -m '
-                    '/:examples/mux-selftest.yaml '
-                    '/:examples/mux-environment.yaml '
-                    '/:examples/mux-selftest.yaml '
-                    '/:examples/mux-environment.yaml' % AVOCADO)
+                    '/:selftests/.data/mux-selftest.yaml '
+                    '/:selftests/.data/mux-environment.yaml '
+                    '/:selftests/.data/mux-selftest.yaml '
+                    '/:selftests/.data/mux-environment.yaml' % AVOCADO)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(DEBUG_OUT, result.stdout)

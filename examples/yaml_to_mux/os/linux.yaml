@@ -1,0 +1,15 @@
+os_type: linux
+username: root
+shutdown_command: shutdown -h now
+distros:
+    redhat: !mux
+        fedora:
+            version: !mux
+                20:
+                21:
+            flavor: !mux
+                workstation:
+                cloud:
+        rhel: !mux
+            5:
+            6:

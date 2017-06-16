@@ -203,7 +203,7 @@ class ReplayTests(unittest.TestCase):
         ignored)
         """
         cmdline = ("%s run --replay %s --job-results-dir %s "
-                   "--sysinfo=off -m examples/mux-selftest.yaml"
+                   "--sysinfo=off -m selftests/.data/mux-selftest.yaml"
                    % (AVOCADO, self.jobid, self.tmpdir))
         self.run_and_check(cmdline, exit_codes.AVOCADO_ALL_OK)
 

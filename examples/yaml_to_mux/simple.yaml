@@ -1,0 +1,4 @@
+# Very simple example with 2 variants and no values in them
+!mux
+first:
+second:

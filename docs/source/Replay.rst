@@ -41,55 +41,11 @@ mux yaml file::
      $ avocado run /bin/true /bin/false --mux-yaml mux-environment.yaml
      JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/job.log
-      (1/48) /bin/true;1: PASS (0.01 s)
-      (2/48) /bin/true;2: PASS (0.01 s)
-      (3/48) /bin/true;3: PASS (0.01 s)
-      (4/48) /bin/true;4: PASS (0.01 s)
-      (5/48) /bin/true;5: PASS (0.01 s)
-      (6/48) /bin/true;6: PASS (0.01 s)
-      (7/48) /bin/true;7: PASS (0.01 s)
-      (8/48) /bin/true;8: PASS (0.01 s)
-      (9/48) /bin/true;9: PASS (0.01 s)
-      (10/48) /bin/true;10: PASS (0.01 s)
-      (11/48) /bin/true;11: PASS (0.01 s)
-      (12/48) /bin/true;12: PASS (0.01 s)
-      (13/48) /bin/true;13: PASS (0.01 s)
-      (14/48) /bin/true;14: PASS (0.01 s)
-      (15/48) /bin/true;15: PASS (0.01 s)
-      (16/48) /bin/true;16: PASS (0.01 s)
-      (17/48) /bin/true;17: PASS (0.01 s)
-      (18/48) /bin/true;18: PASS (0.01 s)
-      (19/48) /bin/true;19: PASS (0.01 s)
-      (20/48) /bin/true;20: PASS (0.01 s)
-      (21/48) /bin/true;21: PASS (0.01 s)
-      (22/48) /bin/true;22: PASS (0.01 s)
-      (23/48) /bin/true;23: PASS (0.01 s)
-      (24/48) /bin/true;24: PASS (0.01 s)
-      (25/48) /bin/false;1: FAIL (0.01 s)
-      (26/48) /bin/false;2: FAIL (0.01 s)
-      (27/48) /bin/false;3: FAIL (0.01 s)
-      (28/48) /bin/false;4: FAIL (0.01 s)
-      (29/48) /bin/false;5: FAIL (0.01 s)
-      (30/48) /bin/false;6: FAIL (0.01 s)
-      (31/48) /bin/false;7: FAIL (0.01 s)
-      (32/48) /bin/false;8: FAIL (0.01 s)
-      (33/48) /bin/false;9: FAIL (0.01 s)
-      (34/48) /bin/false;10: FAIL (0.01 s)
-      (35/48) /bin/false;11: FAIL (0.01 s)
-      (36/48) /bin/false;12: FAIL (0.01 s)
-      (37/48) /bin/false;13: FAIL (0.01 s)
-      (38/48) /bin/false;14: FAIL (0.01 s)
-      (39/48) /bin/false;15: FAIL (0.01 s)
-      (40/48) /bin/false;16: FAIL (0.01 s)
-      (41/48) /bin/false;17: FAIL (0.01 s)
-      (42/48) /bin/false;18: FAIL (0.01 s)
-      (43/48) /bin/false;19: FAIL (0.01 s)
-      (44/48) /bin/false;20: FAIL (0.01 s)
-      (45/48) /bin/false;21: FAIL (0.01 s)
-      (46/48) /bin/false;22: FAIL (0.01 s)
-      (47/48) /bin/false;23: FAIL (0.01 s)
-      (48/48) /bin/false;24: FAIL (0.01 s)
-     RESULTS    : PASS 24 | ERROR 0 | FAIL 24 | SKIP 0 | WARN 0 | INTERRUPT 0
+      (1/4) /bin/true;first-c49a: PASS (0.01 s)
+      (2/4) /bin/true;second-f05f: PASS (0.01 s)
+      (3/4) /bin/false;first-c49a: FAIL (0.04 s)
+      (4/4) /bin/false;second-f05f: FAIL (0.04 s)
+     RESULTS    : PASS 2 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB TIME   : 0.19 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
 
@@ -114,54 +70,10 @@ result, using the option ``--replay-test-status``. See the example below::
     JOB ID     : 2e1dc41af6ed64895f3bb45e3820c5cc62a9b6eb
     SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
     JOB LOG    : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/job.log
-     (1/48) /bin/true;1: SKIP
-     (2/48) /bin/true;2: SKIP
-     (3/48) /bin/true;3: SKIP
-     (4/48) /bin/true;4: SKIP
-     (5/48) /bin/true;5: SKIP
-     (6/48) /bin/true;6: SKIP
-     (7/48) /bin/true;7: SKIP
-     (8/48) /bin/true;8: SKIP
-     (9/48) /bin/true;9: SKIP
-     (10/48) /bin/true;10: SKIP
-     (11/48) /bin/true;11: SKIP
-     (12/48) /bin/true;12: SKIP
-     (13/48) /bin/true;13: SKIP
-     (14/48) /bin/true;14: SKIP
-     (15/48) /bin/true;15: SKIP
-     (16/48) /bin/true;16: SKIP
-     (17/48) /bin/true;17: SKIP
-     (18/48) /bin/true;18: SKIP
-     (19/48) /bin/true;19: SKIP
-     (20/48) /bin/true;20: SKIP
-     (21/48) /bin/true;21: SKIP
-     (22/48) /bin/true;22: SKIP
-     (23/48) /bin/true;23: SKIP
-     (24/48) /bin/true;24: SKIP
-     (25/48) /bin/false;1: FAIL (0.01 s)
-     (26/48) /bin/false;2: FAIL (0.01 s)
-     (27/48) /bin/false;3: FAIL (0.01 s)
-     (28/48) /bin/false;4: FAIL (0.01 s)
-     (29/48) /bin/false;5: FAIL (0.01 s)
-     (30/48) /bin/false;6: FAIL (0.01 s)
-     (31/48) /bin/false;7: FAIL (0.01 s)
-     (32/48) /bin/false;8: FAIL (0.01 s)
-     (33/48) /bin/false;9: FAIL (0.01 s)
-     (34/48) /bin/false;10: FAIL (0.01 s)
-     (35/48) /bin/false;11: FAIL (0.01 s)
-     (36/48) /bin/false;12: FAIL (0.01 s)
-     (37/48) /bin/false;13: FAIL (0.01 s)
-     (38/48) /bin/false;14: FAIL (0.01 s)
-     (39/48) /bin/false;15: FAIL (0.01 s)
-     (40/48) /bin/false;16: FAIL (0.01 s)
-     (41/48) /bin/false;17: FAIL (0.01 s)
-     (42/48) /bin/false;18: FAIL (0.01 s)
-     (43/48) /bin/false;19: FAIL (0.01 s)
-     (44/48) /bin/false;20: FAIL (0.01 s)
-     (45/48) /bin/false;21: FAIL (0.01 s)
-     (46/48) /bin/false;22: FAIL (0.01 s)
-     (47/48) /bin/false;23: FAIL (0.01 s)
-     (48/48) /bin/false;24: FAIL (0.01 s)
+     (1/4) /bin/true;first-c49a: SKIP
+     (2/4) /bin/true;second-f05f: SKIP
+     (3/4) /bin/false;first-c49a: FAIL (0.03 s)
+     (4/4) /bin/false;second-f05f: FAIL (0.04 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 24 | SKIP 24 | WARN 0 | INTERRUPT 0
     JOB TIME   : 0.29 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html

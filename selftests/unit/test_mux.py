@@ -25,7 +25,7 @@ def combine(leaves_pools):
 class TestMuxTree(unittest.TestCase):
     # Share tree with all tests
     tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
-                                         'examples/mux-selftest.yaml'])
+                                         'selftests/.data/mux-selftest.yaml'])
 
     def test_node_order(self):
         self.assertIsInstance(self.tree, mux.MuxTreeNode)
@@ -166,7 +166,7 @@ class TestMuxTree(unittest.TestCase):
 
     def test_advanced_yaml(self):
         tree2 = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
-                                              'examples/mux-selftest-advanced.'
+                                              'selftests/.data/mux-selftest-advanced.'
                                               'yaml'])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
                '7', 'gentoo', 'mint', 'prod', 'new_node', 'on']
@@ -233,7 +233,7 @@ class TestMultiplex(unittest.TestCase):
                      "Not multiplex capable")
     def setUp(self):
         self.mux_tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
-                                                      'examples/mux-selftest.'
+                                                      'selftests/.data/mux-selftest.'
                                                       'yaml'])
         self.mux_full = tuple(mux.MuxTree(self.mux_tree))
 
@@ -252,7 +252,7 @@ class TestMultiplex(unittest.TestCase):
 
     def test_create_variants(self):
         from_file = yaml_to_mux.create_from_yaml(
-            ["/:" + PATH_PREFIX + 'examples/mux-selftest.yaml'])
+            ["/:" + PATH_PREFIX + 'selftests/.data/mux-selftest.yaml'])
         from_file = mux.MuxTree(from_file)
         self.assertEqual(self.mux_full, tuple(from_file))
 
@@ -260,7 +260,7 @@ class TestMultiplex(unittest.TestCase):
     def test_filter_only(self):
         exp = (['intel', 'scsi'], ['intel', 'virtio'])
         act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
-                                            'examples/mux-selftest.yaml'])
+                                            'selftests/.data/mux-selftest.yaml'])
         act = mux.apply_filters(act, ('/hw/cpu/intel', '/distro/fedora',
                                       '/hw'))
         act = tuple(mux.MuxTree(act))
@@ -268,7 +268,7 @@ class TestMultiplex(unittest.TestCase):
 
     def test_filter_out(self):
         act = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
-                                            'examples/mux-selftest.yaml'])
+                                            'selftests/.data/mux-selftest.yaml'])
         act = mux.apply_filters(act, None, ('/hw/cpu/intel', '/distro/fedora',
                                             '/distro'))
         act = tuple(mux.MuxTree(act))
@@ -285,7 +285,7 @@ class TestAvocadoParams(unittest.TestCase):
 
     def setUp(self):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
-                                              'examples/mux-selftest-params.yaml'])
+                                              'selftests/.data/mux-selftest-params.yaml'])
         self.yamls = iter(mux.MuxTree(yamls))
         self.params1 = varianter.AvocadoParams(self.yamls.next(), 'Unittest1',
                                                ['/ch0/*', '/ch1/*'], {})
@@ -412,12 +412,12 @@ class TestMultipleLoaders(unittest.TestCase):
         Verifies that `create_from_yaml` does not affects the main yaml.Loader
         """
         nondebug = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
-                                                 'examples/mux-selftest.'
+                                                 'selftests/.data/mux-selftest.'
                                                  'yaml'])
         self.assertEqual(type(nondebug), mux.MuxTreeNode)
         self.assertEqual(type(nondebug.children[0]), mux.MuxTreeNode)
         debug = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
-                                              'examples/mux-selftest.'
+                                              'selftests/.data/mux-selftest.'
                                               'yaml'],
                                              debug=True)
         self.assertEqual(type(debug), mux.MuxTreeNodeDebug)
