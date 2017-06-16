@@ -242,6 +242,38 @@ approved by your employer) and you grant a full, complete, irrevocable
 copyright license to all users and developers of the Avocado project,
 present and future, pursuant to the license of the project.
 
+Code Review
+-----------
+
+Every single Pull Request in Avocado has to be reviewed by at least one
+other developer. All members of the core team have permission to merge
+a Pull Request, but there are some conditions that have to be fulfilled
+before merging the code:
+
+- Pull Request has to pass the CI tests.
+- One 'Approved' code review should be given.
+- No explicit disapproval should be present.
+
+Pull Requests failing in CI will not be merged, and reviews won't be
+given to them until all the problems are sorted out. If you want help
+to debug the issues with the CI, please reach the developers and/or the
+community using the available communication channels.
+
+While reviewing the code, one should:
+
+- Verify that the code is sound and clean.
+- Run the highest level of selftests (see `make`).
+- Verify that code works to its purpose.
+- Make sure the commits organization is proper (i.e. code is well
+  organized in atomic commits, there's no extra/unwanted commits, ...).
+- Provide an in-line feedback with explicit questions and/or requests of
+  improvements.
+- Provide a general feedback in the review message, being explicit about
+  what's expected for the next Pull Request version, if that's the case.
+
+When the Pull Request is approved, the reviewer will merge the code or
+wait for someone with merge permission to merge it.
+
 Tests Repositories
 ==================
 
