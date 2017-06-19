@@ -1,0 +1,139 @@
+========
+52.0 LTS
+========
+
+The Avocado team is proud to present another release: Avocado version
+52.0, the second Avocado LTS version.
+
+Release documentation: `Avocado 52.0
+<http://avocado-framework.readthedocs.io/en/52.0/>`_
+
+When compared to the last LTS (v36), the main features introduced by
+this versions are:
+
+- TAP[2] version 12 support.
+- The download of assets in tests now allow for an expiration time.
+- Environment variables can be propagated into tests running on remote
+  systems.
+- The plugin interfaces have been moved into the
+  `avocado.core.plugin_interfaces` module.
+- A contrib script for running `kvm-unit-tests`.
+- Support for running tests in Docker container.
+- Introduction of the “Fail Fast” feature.
+- Special keyword `latest` for replaying previous jobs.
+- The introduction of a tool that generated a diff-like report of two
+  jobs.
+- New `avocado.utils.process.SubProcess.get_pid()` method.
+- The introduction of a `rr` based wrapper.
+- The `coredump` generation contrib scripts will check if the user
+  running Avocado is privileged to actually generate those dumps.
+- New `avocado.utils.linux_modules.check_kernel_config()`.
+- The automatic VM IP detection that kicks in when one uses `--vm-domain`
+  without a matching `--vm-hostname`, now uses a more reliable method
+  (libvirt/qemu-gust-agent query).
+- Set `LC_ALL=C` by default on sysinfo collection to simplify avocado
+  diff comparison between different machines.
+- List result plugins (JSON, XUnit, HTML) in avocado plugins command
+  output.
+- Multiplexer: it now defines an API to inject and merge data into the
+  multiplexer tree.
+- It’s now possible to disable plugins by using the configuration file.
+- Users of the `avocado.utils.process` module will now be able to access
+  the process ID in the `avocado.utils.process.CmdResult`.
+- Improved `avocado.utils.iso9660` with a more complete standard API
+  across all back-end implementations.
+- Improved `avocado.utils.build.make()`, which will now return the make
+  process exit status code.
+- Better error handling of the virtual machine plugin (`--vm-domain` and
+  related options).
+- The `avocado.utils.process` library makes it possible to ignore
+  background processes that never finish.
+- When discovering tests on a directory, the result now is a properly
+  alphabetically ordered list of tests.
+- Plugins can now be setup to run at a specific order.
+- A contrib script that looks for a job result directory based on a
+  partial (or complete) job ID is now available at
+  `contrib/scripts/avocado-get-job-results-dir.py`.
+- Support for filtering tests by user supplied “tags”.
+- Users can now choose to keep the complete set of files, including
+  temporary ones, created during an Avocado job run by using the
+  `--keep-tmp` option.
+- Tests running with the external runner (`--external-runner`) feature
+  will now have access to the extended behavior for SIMPLE tests, such
+  as being able to exit a test with the WARNING status.
+- Users will now be able to properly run tests based on any Unicode
+  string (as a test reference).
+- Test writers now have access to a test temporary directory that will
+  last not only for the duration of the test, but for the duration of
+  the whole job execution.
+- When running jobs with the TAP plugin enabled (the default), users
+  will now also get a results.tap file created by default in their job
+  results directory.
+- Avocado is now available on Fedora.
+- Avocado packages on PyPI now are always the last version.
+- Avocado test writers can now use a family of decorators, namely
+  `avocado.skip()`, `avocado.skipIf()` and `avocado.skipUnless()` to
+  skip the execution of tests.
+- Sysinfo collection based on command execution now allows a timeout to
+  be set.
+- The non-local runner plugins are now distributed in separate packages.
+- The `avocado.Test` class now better exports (and protects) the core
+  class attributes members (such as params and runner_queue).
+- Users sending SIGTERM to Avocado can now expect it to be properly handled.
+- `avocado.utils.linux_modules` functions now returns module name, size,
+  submodules if present, filename, version, number of modules using it,
+  list of modules it is dependent on and finally a list of params.
+- `avocado.TestFail`, `avocado.TestError` and `avocado.TestCancel` are
+  now public Avocado Test APIs, available from the main avocado namespace.
+- Support for new type of test status, `CANCEL`, and of course the
+  mechanisms to set a test with this status.
+- Introduction of the robot plugin, which allows Robot Framework tests
+  to be listed and executed natively within Avocado.
+- A brand new ResultsDB plugin.
+- When users run `avocado list --loaders ?` they used to receive a
+  single list containing loader plugins and test types, all mixed
+  together. Now users will get one loader listed per line, along with
+  the test types that each loader supports.
+- Variant-IDs created by the multiplexer are now much more meaningful.
+- The multiplexer now supports the use filters defined inside the YAML
+  files, and greatly expand its filtering capabilities.
+- Avocado now supports resuming jobs that were interrupted.
+- The HTML report now presents the test ID and variant ID in separate
+  columns, allowing users to also sort and filter results based on those
+  specific fields.
+- The HTML report will now show the test parameters used in a test when
+  the user hovers the cursor over the test name.
+- Avocado now reports the total job execution time on the UI, instead of
+  just the tests execution time.
+- The Avocado multiplex command has been renamed to variants.
+- Users will be given more information when a test reference is not
+  recognized by a given test loader.
+- Users can now choose to proceed with the execution of a job even if
+  one or more test references have not been resolved by one Avocado test
+  loader (AKA a test resolver).
+- The yaml-to-mux varianter implementation (the only one at this point)
+  is now an optional plugin.
+- Users can now choose in which order the job will execute tests (from
+  its suite) and variants.
+- Test methods on parent classes are now found upon the use of the new
+  `recursive` docstring directive.
+- The docstring directives now have a properly defined format.
+- Users can now see the tags set on `INSTRUMENTED` test when listing
+  tests with the `-V` (verbose) option.
+
+Those are the main features that are available for users. Besides that
+features, we have some statistics. When compared to the last LTS, we had:
+
+- 1187 commits (and counting).
+- 15 new versions.
+- 4811 more lines of Python code (+27,42%).
+- 1800 more lines of code comment (+24,67%).
+- 31 more Python files (+16,48%).
+- 69 closed GitHub issues.
+
+And that not all. We had great improvements in documentation, with new
+sections to Release Notes and Optional Plugins, very improved
+Contribution and Community Guide and much more.
+
+Bugs were always handled as high priority and every single version was
+delivered with all the reported bugs properly fixed.
