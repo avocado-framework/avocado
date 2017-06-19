@@ -80,3 +80,119 @@ test categories. With tags set, users can select a subset of the
 tests found by the test resolver (also known as test loader). For
 more information about the test tags, visit
 `<WritingTests.html#categorizing-tests>`__
+
+Test References
+===============
+
+A Test Reference is a string that can be resolved into (interpreted as)
+one or more tests by the Avocado Test Resolver.
+
+Each resolver (a.k.a. loader) can handle the test references
+differently. For example, External Loader will use the Test Reference as
+an argument for the external command, while the File Loader will expect
+a file path.
+
+If you don't specify the loader that you want to use, all of the
+available loaders will be used to resolve the provided test references.
+One by one, the test references will be resolved by the first loader
+able to create a test list out of that reference.
+
+Below you can find some extra details about the specific builtin Avocado
+loaders.
+
+For Loaders introduced to Avocado via plugins (VT, Robot, ...), please
+refer to the corresponding loader/plugin documentation.
+
+File Loader
+-----------
+
+For the File Loader, the loader responsible for discovering INSTRUMENTED
+and SIMPLE tests, the Test Reference is a path/filename of a test file.
+
+If the file corresponds to an INSTRUMENTED test, you can filter the Test
+IDs adding `:` and then a regular expression to the Test Reference.
+
+For instance, if you want to list all tests that are present in the
+`gdbtest.py` file, you can use the list command below::
+
+    $ avocado list /usr/share/avocado/tests/gdbtest.py
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_start_exit
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_generate_core
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_set_multiple_break
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_disconnect_raw
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_disconnect
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_remote_exec
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_stream_messages
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_connect_multiple_clients
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_server_exit
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_multiple_servers
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_args
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_exit_status
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_server_stderr
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_server_stdout
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_stdout
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_remote
+
+To filter the results, listing only the tests that have `test_interactive`
+in their test method names, you can execute::
+
+    $ avocado list /usr/share/avocado/tests/gdbtest.py:test_interactive
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_args
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_stdout
+
+As the string after the `:` is a regular expression, three tests were
+filtered in. You can manipulate the regular expression to have only the
+test with that exact name::
+
+    $ avocado list /usr/share/avocado/tests/gdbtest.py:test_interactive$
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive
+
+The regular expression enables you to have more complex filters.
+Example::
+
+    $ avocado list /usr/share/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw
+    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
+
+Once the test reference is providing you the expected outcome, you can
+replace the `list` subcommand with the `run` subcommand to execute your
+tests::
+
+    $ avocado run /usr/share/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw
+    JOB ID     : 333912fb02698ed5339a400b832795a80757b8af
+    JOB LOG    : $HOME/avocado/job-results/job-2017-06-14T14.54-333912f/job.log
+     (1/2) /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw: PASS (0.59 s)
+     (2/2) /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw: PASS (0.42 s)
+    RESULTS    : PASS 2 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB TIME   : 1.15 s
+    JOB HTML   : $HOME/avocado/job-results/job-2017-06-14T14.54-333912f/html/results.html
+
+External Loader
+---------------
+
+Using the External Loader, Avocado will consider that and External
+Runner will be in place and so Avocado doesn't really need to resolve
+the references. Instead, Avocado will pass the references as parameters
+to the External Runner. Example::
+
+    $ avocado run 20
+    Unable to resolve reference(s) '20' with plugins(s) 'file', 'robot',
+    'vt', 'external', try running 'avocado list -V 20' to see the details.
+
+In the command above, no loaders can resolve `20` as a test. But running
+the command above with the External Runner `/bin/sleep` will make Avocado
+to actually execute `/bin/sleep 20` and check for its return code::
+
+    $ avocado run 20 --loaders external:/bin/sleep
+    JOB ID     : 42215ece2894134fb9379ee564aa00f1d1d6cb91
+    JOB LOG    : $HOME/avocado/job-results/job-2017-06-19T11.17-42215ec/job.log
+     (1/1) 20: PASS (20.03 s)
+    RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
+    JOB TIME   : 20.13 s
+    JOB HTML   : $HOME/avocado/job-results/job-2017-06-19T11.17-42215ec/html/results.html
