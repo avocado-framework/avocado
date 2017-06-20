@@ -35,8 +35,8 @@ Now we can replay the job by running::
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T16.18-55a0d10/html/results.html
 
 The replay feature will retrieve the original test references, the variants
-and the configuration. Let's see another example, now using
-mux yaml file::
+and the configuration. Let's see another example, now using a
+mux YAML file::
 
      $ avocado run /bin/true /bin/false --mux-yaml mux-environment.yaml
      JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
