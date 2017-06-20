@@ -355,8 +355,9 @@ Test execution instances specification
 The instances should have:
 
 1) A top level human readable ``job.log``, with job debug information
-2) A ``sysinfo`` subdir, with sub directories ``pre`` and ``post``, that store
-   sysinfo files pre test and post test, respectively.
+2) A ``sysinfo`` subdir, with sub directories ``pre``, ``post`` and
+   ``profile`` that store sysinfo files pre test, post test and
+   profiling info while the test was running, respectively.
 3) A ``data`` subdir, where the test can output a number of files if necessary.
 
 .. [#f1] Avocado plugins can introduce additional test types.
