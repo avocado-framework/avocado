@@ -360,7 +360,6 @@ The instances should have:
    profiling info while the test was running, respectively.
 3) A ``data`` subdir, where the test can output a number of files if necessary.
 
-.. [#f1] Avocado plugins can introduce additional test types.
 
 Pre and post tests plugins
 ==========================
@@ -524,3 +523,5 @@ be a valid one:
 
  * An end of string (or end of line) must immediately follow the
    content.
+
+.. [#f1] Avocado plugins can introduce additional test types.
