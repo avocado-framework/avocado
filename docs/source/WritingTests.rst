@@ -329,7 +329,7 @@ Which produces following structure and parameters::
           /run/variants/six_hundred_cycles:sleep_length => 1
 
 You can see that it creates all possible variants of each ``multiplex domain``,
-which are defined by ``!mux`` tag in the yaml file and displayed as single
+which are defined by ``!mux`` tag in the YAML file and displayed as single
 lines in tree view (compare to double lines which are individual nodes with
 values). In total it'll produce 8 variants of each test::
 
@@ -953,7 +953,7 @@ the test parameters, as shown below.
 	2016-11-02 11:13:04,440 test             L0592 ERROR| ERROR 1-sleeptest.py:SleepTest.test -> TestError: SystemExit('Test interrupted by SIGTERM',): Test interrupted by SIGTERM
 
 
-The ``yaml`` file defines a test parameter ``timeout`` which overrides
+The YAML file defines a test parameter ``timeout`` which overrides
 the default test timeout before the runner ends the test forcefully by
 sending a class:`signal.SIGTERM` to the test, making it raise a
 :class:`avocado.core.exceptions.TestTimeoutError`.

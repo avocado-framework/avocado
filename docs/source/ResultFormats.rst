@@ -89,11 +89,11 @@ output in the standard output of the runner, simply use::
 .. note:: The dash `-` in the option `--xunit`, it means that the xunit result
           should go to the standard output.
 
-json
+JSON
 ~~~~
 
 `JSON <http://www.json.org/>`__ is a widely used data exchange format. The
-json Avocado plugin outputs job information, similarly to the xunit output
+JSON Avocado plugin outputs job information, similarly to the xunit output
 plugin::
 
     $ avocado run sleeptest.py failtest.py synctest.py --json -
