@@ -224,17 +224,22 @@ In test you can access those params by:
 Running multiple variants of tests
 ==================================
 
-In previous section we describe the params handling so let's have a look on
-how to produce them and execute your tests with different params.
+In the previous section we described how parameters are handled.  Now,
+let's have a look at how to produce them and execute your tests with
+different parameters.
 
-The variants system is pluggable so you might use custom plugins to
-produce and feed avocado with your params, but let's start with the
-plugin called "yaml_to_mux", which is shipped with avocado by default.
-It accepts ``yaml`` or even ``json`` files where using ordered dicts
-to create a tree-like structure and storing the non-dict variables as
-parameters and using custom tags to mark locations as multiplex domains.
-Let's use ``examples/tests/sleeptenmin.py.data/sleeptenmin.yaml`` file as
-an example:
+The variants subsystem is what allows the creation of multiple
+variations of parameters, and the execution of tests with those
+parameter variations.  This subsystem is pluggable, so you might use
+custom plugins to produce variants.  To keep things simple, let's
+use Avocado's primary implementation, called "yaml_to_mux".
+
+The "yaml_to_mux" plugin accepts YAML files.  Those will create a
+tree-like structure, store the variables as parameters and use custom
+tags to mark locations as "multiplex" domains.
+
+Let's use ``examples/tests/sleeptenmin.py.data/sleeptenmin.yaml`` file
+as an example:
 
 .. code-block:: yaml
 
