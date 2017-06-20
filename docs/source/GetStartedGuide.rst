@@ -12,6 +12,9 @@ The first step towards using Avocado is, quite obviously, installing it.
          set of ReST/sphinx statements, which do not look as good on a
          plain README file.
 
+
+.. _Installing Avocado:
+
 Installing Avocado
 ==================
 
