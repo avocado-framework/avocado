@@ -361,6 +361,72 @@ The instances should have:
 
 .. [#f1] Avocado plugins can introduce additional test types.
 
+Test execution environment
+--------------------------
+
+Each test is executed in a separate process.  Due to how the
+underlying operating system works, a lot of the attributes of the
+parent process (the Avocado test **runner**) are passed down to the
+test process.
+
+On GNU/Linux systems, a child process should be *"an exact duplicate
+of the parent process, except"* some items that are documented in
+the ``fork(2)`` man page.
+
+Besides those operating system exceptions, the Avocado test runner
+changes the test process in the following ways:
+
+1) The standard input (``STDIN``) is set to a :data:`null device
+   <os.devnull>`.  This is truth both for :data:`sys.stdin` and for
+   file descriptor ``0``.  Both will point to the same open null
+   device file.
+
+2) The standard output (``STDOUT``), as in :data:`sys.stdout`, is
+   redirected so that it doesn't interfere with the test runner's own
+   output.  All content written to the test's :data:`sys.stdout` will
+   be available in the logs under the ``output`` prefix.
+
+   .. warning:: The file descriptor ``1`` (AKA ``/dev/stdout``, AKA
+                ``/proc/self/fd/1``, etc) is **not** currently
+                redirected for INSTRUMENTED tests.  Any attempt to
+                write directly to the file descriptor will interfere
+                with the runner's own output stream.  This behavior
+                will be addressed in a future version.
+
+3) The standard error (``STDERR``), as in :data:`sys.stderr`, is
+   redirected so that it doesn't interfere with the test runner's own
+   errors.  All content written to the test's :data:`sys.stderr` will
+   be available in the logs under the ``output`` prefix.
+
+   .. warning:: The file descriptor ``2`` (AKA ``/dev/stderr``, AKA
+                ``/proc/self/fd/2``, etc) is **not** currently
+                redirected for INSTRUMENTED tests.  Any attempt to
+                write directly to the file descriptor will interfere
+                with the runner's own error stream.  This behavior
+                will be addressed in a future version.
+
+4) A custom handler for signal ``SIGTERM`` which will simply raise an
+   exception (with the appropriate message) to be handled by the
+   Avocado test runner, stating the fact that the test was interrupted
+   by such a signal.
+
+   .. tip:: By following the backtrace that is given alongside the in
+            the test log (look for ``RuntimeError: Test interrupted
+            by SIGTERM``) a user can quickly grasp at which point the
+            test was interrupted.
+
+   .. note:: If the test handles ``SIGTERM`` differently and doesn't
+             finish the test process quickly enough, it will receive
+             then a ``SIGKILL`` which is supposed to definitely end
+             the test process.
+
+5) A number of :ref:`environment variables
+   <environment-variables-for-tests>` that are set by Avocado, all
+   prefixed with ``AVOCADO_``.
+
+If you to see for yourself what is described here, you may want to
+run the example test ``test_env.py`` and examine its log messages.
+
 Pre and post tests plugins
 ==========================
 
