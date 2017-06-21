@@ -316,6 +316,12 @@ class TestRunner(object):
         # Replace STDIN (0) with the /dev/null's fd
         os.dup2(sys.stdin.fileno(), 0)
 
+        # Redirect the test's stdout and stderr to devnull at this point
+        # this should prevent tests from writing to the test runner's output
+        silent_test = open(os.devnull, 'a')
+        os.dup2(silent_test.fileno(), 1)
+        os.dup2(silent_test.fileno(), 2)
+
         instance = loader.load_test(test_factory)
         if instance.runner_queue is None:
             instance.set_runner_queue(queue)
