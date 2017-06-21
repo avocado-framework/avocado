@@ -51,6 +51,20 @@ def _get_cpu_info():
     return cpuinfo
 
 
+def _get_cpu_status(cpu):
+    """
+    Check if a CPU is online or offline
+
+    :pram cpu: CPU number 1 or 2 or 39
+    :type cpu: integer
+    :returns: `bool` True if online or False if not
+    :rtype: 'bool'
+    """
+    if '1' in open('/sys/devices/system/cpu/cpu%s/online' % cpu).read():
+        return True
+    return False
+
+
 def cpu_has_flags(flags):
     """
     Check if a list of flags are available on current CPU info
@@ -138,3 +152,25 @@ def online_cpus_count():
     Return Number of Online cpus in the system
     """
     return os.sysconf('SC_NPROCESSORS_ONLN')
+
+
+def online(cpu):
+    """
+    Online given CPU
+    """
+    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "w") as fd:
+        fd.write('1')
+    if _get_cpu_status(cpu):
+        return 0
+    return 1
+
+
+def offline(cpu):
+    """
+    Offline given CPU
+    """
+    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "w") as fd:
+        fd.write('0')
+    if _get_cpu_status(cpu):
+        return 1
+    return 0
