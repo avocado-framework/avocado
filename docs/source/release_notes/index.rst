@@ -6,6 +6,13 @@ Release Notes
 
 The following pages summarize what is new in Avocado:
 
+Regular Releases
+================
+
+The regular releases are released after each sprint, which usually takes
+3 weeks. Regular releases are supported only until the next version is
+released.
+
 .. toctree::
    :maxdepth: 1
 
@@ -37,3 +44,16 @@ The following pages summarize what is new in Avocado:
    0_27_0
    0_26_0
    0_25_0
+
+Long Term Stability Releases
+============================
+
+The LTS releases are regular releases considering the release cycle, but
+they are flagged as supported for a period of about 18 months after
+released. Every year (or so) a new LTS version is released, what gives
+users 6 months of support overlap between two subsequent LTSs.
+
+.. toctree::
+   :maxdepth: 1
+
+   lts/52_0
