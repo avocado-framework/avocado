@@ -46,14 +46,21 @@ def _find_class(module, name):
     """
     Look for a class including compatibility workarounds
     """
-    if module == "avocado.plugins.yaml_to_mux":
-        mod = __import__("avocado_varianter_yaml_to_mux", fromlist=[module])
-        return getattr(mod, name)
-    else:
+    try:
         mod = __import__(module)
         mod = sys.modules[module]
-        klass = getattr(mod, name)
-        return klass
+        return getattr(mod, name)
+    except ImportError:
+        if module == "avocado.core.multiplexer":
+            mod = __import__("avocado.core.jobdata_compat_36_to_52",
+                             fromlist=[module])
+            return getattr(mod, name)
+        elif module == "avocado.plugins.yaml_to_mux":
+            mod = __import__("avocado_varianter_yaml_to_mux", fromlist=[module])
+            return getattr(mod, name)
+        else:
+            print module
+            print name
 
 
 def record(args, logdir, mux, references=None, cmdline=None):
@@ -165,6 +172,27 @@ def retrieve_variants(resultsdir):
                                     _node._environment = None
         except:
             pass
+
+    def _apply_36_to_52_workarounds(variants):
+        """
+        The 36.x version of TreeNode did not contain `filters`. Let's
+        re-initialize it per each child.
+        """
+        def get_fingerprint_meth(fingerprint):
+            """
+            36.x's TreeNode used to actually be equivalent of MuxTreeNode,
+            let's adjust the fingerprint to also contain self.ctrl
+            """
+            def get():
+                return fingerprint
+            return get
+        for node in variants.variants.root.iter_children_preorder():
+            node.filters = [[], []]
+            node._environment = None
+            fingerprint = node.fingerprint()
+            node.fingerprint = get_fingerprint_meth("%s%s" % (fingerprint,
+                                                              node.ctrl))
+
     recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME + ".json")
     if recorded_mux:    # new json-based dump
         with open(recorded_mux, 'r') as mux_file:
@@ -180,8 +208,14 @@ def retrieve_variants(resultsdir):
         unpickler = pickle.Unpickler(mux_file)
         unpickler.find_class = _find_class
         variants = unpickler.load()
-        _apply_workarounds(variants)
-        return variants
+        if "jobdata_compat_36_to_52" in str(type(variants)):
+            LOG_UI.warn("Using outdated 36.x variants file")
+            _apply_36_to_52_workarounds(variants)
+        else:
+            LOG_UI.warn("Using outdated pre-52.x variants file")
+            _apply_workarounds(variants)
+        state = varianter.dump_ivariants(variants.itertests)
+        return varianter.Varianter(state=state)
 
 
 def retrieve_args(resultsdir):
