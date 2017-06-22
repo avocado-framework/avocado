@@ -328,9 +328,6 @@ class TestRunner(object):
             instance.error(stacktrace.str_unpickable_object(early_state))
 
         self.result.start_test(early_state)
-        self.job._result_events_dispatcher.map_method('start_test',
-                                                      self.result,
-                                                      early_state)
         try:
             instance.run_avocado()
         finally:
@@ -381,8 +378,20 @@ class TestRunner(object):
 
         cycle_timeout = 1
         time_started = time.time()
-        proc.start()
 
+        # A fake early status is necessary because to be accurate, the
+        # start_test event should be triggered as closely as possible to
+        # the real start of the test process **AND** it has to be triggered
+        # from the test runner, and not from the test itself
+        test_parameters = test_factory[1]
+        fake_early_status = {'name': test_parameters.get('name'),
+                             'job_logdir': self.job.logdir,
+                             'job_unique_id': self.job.unique_id}
+        self.job._result_events_dispatcher.map_method('start_test',
+                                                      self.job.result,
+                                                      fake_early_status)
+
+        proc.start()
         test_status.wait_for_early_status(proc, 60)
 
         # At this point, the test is already initialized and we know
