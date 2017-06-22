@@ -361,6 +361,57 @@ The instances should have:
 
 .. [#f1] Avocado plugins can introduce additional test types.
 
+Test execution environment
+--------------------------
+
+Each test is executed in a separate process.  Due to how the
+underlying operating system works, a lot of the attributes of the
+parent process (the Avocado test **runner**) are passed down to the
+test process.
+
+On GNU/Linux systems, a child process should be *"an exact duplicate
+of the parent process, except"* some items that are documented in
+the ``fork(2)`` man page.
+
+Besides those operating system exceptions, the Avocado test runner
+changes the test process in the following ways:
+
+1) The standard input (``STDIN``) is set to a :data:`null device
+   <os.devnull>`.  This is truth both for :data:`sys.stdin` and for
+   file descriptor ``0``.  Both will point to the same open null
+   device file.
+
+2) The standard output (``STDOUT``), as in :data:`sys.stdout`, is
+   redirected so that it doesn't interfere with the test runner's own
+   output.  All content written to the test's :data:`sys.stdout` will
+   be available in the logs under the ``output`` prefix.
+
+   .. warning:: The file descriptor ``1`` (AKA ``/dev/stdout``, AKA
+                ``/proc/self/fd/1``, etc) is **not** currently
+                redirected for INSTRUMENTED tests.  Any attempt to
+                write directly to the file descriptor will interfere
+                with the runner's own output.
+
+3) The standard error (``STDERR``), as in :data:`sys.stderr`, is
+   redirected so that it doesn't interfere with the test runner's own
+   errors.  All content written to the test's :data:`sys.stderr` will
+   be available in the logs under the ``output`` prefix.
+
+   .. warning:: The file descriptor ``2`` (AKA ``/dev/stderr``, AKA
+                ``/proc/self/fd/2``, etc) is **not** currently
+                redirected for INSTRUMENTED tests.  Any attempt to
+                write directly to the file descriptor will interfere
+                with the runner's own errors.
+
+4) A custom handler for signal ``SIGSTOP`` is installed and allows
+   users to pause and resume tests.  The signal is usually sent by to
+   the test process by means of pressing the ``CTRL+Z`` key
+   combination in the Avocado test runner.
+
+5) A custom handler for signal ``SIGTERM`` which will simply raise
+   an exception (with the appropriate message) to be handled by the
+   Avocado test runner.
+
 Pre and post tests plugins
 ==========================
 

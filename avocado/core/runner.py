@@ -313,7 +313,13 @@ class TestRunner(object):
 
         signal.signal(signal.SIGTERM, sigterm_handler)
 
-        # Replace STDIN (0) with the /dev/null's fd
+        # At this point, the original `sys.stdin` has already been
+        # closed and replaced with `os.devnull` by
+        # `multiprocessing.Process()` (not directly from Avocado
+        # code).  Still, tests trying to use file descriptor 0 would
+        # be able to read from the tty, and would hang. Let's replace
+        # STDIN fd (0), with the same fd previously set by
+        # `multiprocessing.Process()`
         os.dup2(sys.stdin.fileno(), 0)
 
         instance = loader.load_test(test_factory)
