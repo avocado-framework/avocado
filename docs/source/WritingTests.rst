@@ -62,6 +62,8 @@ To minimize the accidental clashes we define the public ones as properties
 so if you see something like ``AttributeError: can't set attribute`` double
 you are not overriding these.
 
+.. _Test statuses:
+
 Test statuses
 =============
 
@@ -512,6 +514,8 @@ It can be run by::
    OK
 
 But we'd still recommend using ``avocado.main`` instead which is our main entry point.
+
+.. _Setup and cleanup methods:
 
 Setup and cleanup methods
 =========================
