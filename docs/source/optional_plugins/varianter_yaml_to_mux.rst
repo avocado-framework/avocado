@@ -15,7 +15,7 @@ As mentioned earlier, it inherits from the
 is the argument parsing to get some input and a custom ``yaml``
 parser (which is also capable of parsing ``json``).
 
-The ``yaml`` file is perfect for this task as it's easily read by
+The YAML file is perfect for this task as it's easily read by
 both, humans and machines.  Let's start with an example (line
 numbers at the first columns are for documentation purposes only,
 they are not part of the multiplex file format):
@@ -69,7 +69,7 @@ for what this values might be used for and also it makes possible to define
 multiple values of the same keys with different scope.
 
 Due to their purpose the YAML automatic type conversion for nodes names
-is disabled, so the value of node name is always as written in the yaml
+is disabled, so the value of node name is always as written in the YAML
 file (unlike values, where `yes` converts to `True` and such).
 
 Nodes are organized in parent-child relationship and together they create
@@ -265,7 +265,7 @@ are available in the default path and you can safely use ``params.get(key)``.
 When you need to put a file into a different location, for example
 when you have two files and you don't want the content to be merged into
 a single place becoming effectively a single blob, you can do that by
-giving a name to your yaml file::
+giving a name to your YAML file::
 
     avocado run sleeptest.py --mux-yaml duration:duration.yaml
 
