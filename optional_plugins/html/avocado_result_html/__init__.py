@@ -273,6 +273,8 @@ class HTMLResult(Result):
             os.makedirs(html_dir)
             html_path = os.path.join(html_dir, 'results.html')
             self._render(result, html_path)
+            html_symlink_path = os.path.join(job.logdir, 'results.html')
+            os.symlink(os.path.join('html', 'results.html'), html_symlink_path)
             if getattr(job.args, 'stdout_claimed_by', None) is None:
                 LOG_UI.info("JOB HTML   : %s", html_path)
             if open_browser:
