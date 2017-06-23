@@ -21,7 +21,9 @@ import glob
 import json
 import os
 import pickle
+import sys
 
+from . import tree
 from . import varianter
 from .output import LOG_UI, LOG_JOB
 from .settings import settings
@@ -39,6 +41,20 @@ VARIANTS_FILENAME_LEGACY = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
+
+
+def _find_class(module, name):
+    """
+    Look for a class including compatibility workarounds
+    """
+    if module == "avocado.plugins.yaml_to_mux":
+        mod = __import__("avocado_varianter_yaml_to_mux", fromlist=[module])
+        return getattr(mod, name)
+    else:
+        mod = __import__(module)
+        mod = sys.modules[module]
+        klass = getattr(mod, name)
+        return klass
 
 
 def record(args, logdir, mux, references=None, cmdline=None):
@@ -130,6 +146,26 @@ def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
+    def _apply_workarounds(variants):
+        """
+        Older version of TreeNode used 2 dicts to store environment, lets
+        replace the dict with TreeEnvironment to make it work properly
+        from AvocadoParams point of view.
+        """
+        try:
+            for plugin in variants._variant_plugins.extensions:
+                if plugin.name == "yaml_to_mux":
+                    for variant in plugin.obj.variants.pools:
+                        for mux_tree in variant:
+                            for node in mux_tree.pools:
+                                if hasattr(node, "filters"):
+                                    return  # it's new (or renewed) style
+                                root = node.root
+                                for _node in root.iter_children_preorder():
+                                    _node.filters = [[], []]
+                                    _node._environment = None
+        except:
+            pass
     recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME + ".json")
     if recorded_mux:    # new json-based dump
         with open(recorded_mux, 'r') as mux_file:
@@ -142,7 +178,11 @@ def retrieve_variants(resultsdir):
     # old pickle-based dump
     # TODO: Remove when 36lts is discontinued
     with open(recorded_mux, 'r') as mux_file:
-        return pickle.load(mux_file)
+        unpickler = pickle.Unpickler(mux_file)
+        unpickler.find_class = _find_class
+        variants = unpickler.load()
+        _apply_workarounds(variants)
+        return variants
 
 
 def retrieve_args(resultsdir):
@@ -159,7 +199,9 @@ def retrieve_args(resultsdir):
     # old pickle-based dump
     # TODO: Remove when 36lts is discontinued
     with open(recorded_args, 'r') as args_file:
-        return pickle.load(args_file)
+        unpickler = pickle.Unpickler(args_file)
+        unpickler.find_class = _find_class
+        return unpickler.load()
 
 
 def retrieve_config(resultsdir):
