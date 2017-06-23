@@ -23,7 +23,7 @@ import re
 
 from . import tree
 from . import dispatcher
-from .output import LOG_JOB
+from . import output
 
 
 class NoMatchError(KeyError):
@@ -108,8 +108,8 @@ class AvocadoParams(object):
 
     def log(self, key, path, default, value):
         """ Predefined format for displaying params query """
-        LOG_JOB.debug("PARAMS (key=%s, path=%s, default=%s) => %r", key, path,
-                      default, value)
+        output.LOG_JOB.debug("PARAMS (key=%s, path=%s, default=%s) => %r", key,
+                             path, default, value)
 
     def _get_matching_leaves(self, path, leaves):
         """
@@ -165,7 +165,7 @@ class AvocadoParams(object):
             msg = ("You're probably retrieving param %s via attributes "
                    " (self.params.$key) which is obsoleted. Use "
                    "self.params.get($key) instead." % attr)
-            LOG_JOB.warn(msg)
+            output.LOG_JOB.warn(msg)
             return self.get(attr)
 
     def get(self, key, path=None, default=None):
@@ -309,6 +309,45 @@ class AvocadoParam(object):
                 yield (leaf.environment.origin[key].path, key, value)
 
 
+def variant_to_str(variant, verbosity, out_args=None, debug=False):
+    """
+    Reports human readable representation of a variant
+
+    :param variant: Valid variant (list of TreeNode-like objects)
+    :param verbosity: Output verbosity where 0 means brief
+    :param out_args: Extra output arguments (currently unused)
+    :param debug: Whether the variant contains and should report debug info
+    :return: Human readable representation
+    """
+    del out_args
+    out = []
+    if not debug:
+        paths = ', '.join([x.path for x in variant["variant"]])
+    else:
+        color = output.TERM_SUPPORT.LOWLIGHT
+        cend = output.TERM_SUPPORT.ENDC
+        paths = ', '.join(["%s%s@%s%s" % (_.name, color,
+                                          getattr(_, 'yaml',
+                                                  "Unknown"),
+                                          cend)
+                           for _ in variant["variant"]])
+    out.append('%sVariant %s:    %s' % ('\n' if verbosity else '',
+                                        variant["variant_id"],
+                                        paths))
+    if verbosity:
+        env = set()
+        for node in variant["variant"]:
+            for key, value in node.environment.iteritems():
+                origin = node.environment.origin[key].path
+                env.add(("%s:%s" % (origin, key), str(value)))
+        if not env:
+            return out
+        fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+        for record in sorted(env):
+            out.append(fmt % record)
+    return out
+
+
 class FakeVariantDispatcher(object):
 
     """
@@ -385,7 +424,7 @@ class Varianter(object):
         self.default_params.clear()     # We don't need these anymore
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
-        if (not getattr(args, "variants_skip_defaults", False) and
+        if (not getattr(args, "variants-skip-defaults", False) and
                 hasattr(args, "default_avocado_params")):
             self._default_params.merge(args.default_avocado_params)
         return self._default_params
@@ -428,6 +467,15 @@ class Varianter(object):
         :param kwargs: Other free-form arguments
         :rtype: str
         """
+        if self._no_variants == 0:  # No variants, only defaults:
+            out = []
+            if summary:
+                out.append("No variants available, using defaults only")
+            if variants:
+                out.append("\n".join(variant_to_str(next(self.itertests()),
+                                                    variants - 1, kwargs,
+                                                    self.debug)))
+            return "\n\n".join(out)
         return "\n\n".join(self._variant_plugins.map_method("to_str", summary,
                                                             variants,
                                                             **kwargs))
