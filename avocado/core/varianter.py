@@ -309,6 +309,30 @@ class AvocadoParam(object):
                 yield (leaf.environment.origin[key].path, key, value)
 
 
+def dump_ivariants(ivariants):
+    """
+    Walks the iterable variants and dumps them into json-serializable object
+    """
+    def dump_tree_node(node):
+        """
+        Turns TreeNode-like object into tuple(path, env_representation)
+        """
+        return (str(node.path),
+                [(str(node.environment.origin[key].path), str(key), value)
+                 for key, value in node.environment.iteritems()])
+
+    variants = []
+    for variant in ivariants():
+        safe_variant = {}
+        safe_variant["mux_path"] = [str(pth)
+                                    for pth in variant.get("mux_path")]
+        safe_variant["variant_id"] = str(variant.get("variant_id"))
+        safe_variant["variant"] = [dump_tree_node(_)
+                                   for _ in variant.get("variant", [])]
+        variants.append(safe_variant)
+    return variants
+
+
 class FakeVariantDispatcher(object):
 
     """
@@ -330,6 +354,26 @@ class FakeVariantDispatcher(object):
             return [getattr(self, method)(*args, **kwargs)]
         else:
             return []
+
+    def to_str(self, summary=0, variants=0, **kwargs):
+        if not self.variants:
+            return ""
+        out = []
+        for variant in self.variants:
+            paths = ', '.join([x.path for x in variant["variant"]])
+            out.append('\nVariant %s:    %s' % (variant["variant_id"],
+                                                paths))
+            env = set()
+            for node in variant["variant"]:
+                for key, value in node.environment.iteritems():
+                    origin = node.environment.origin[key].path
+                    env.add(("%s:%s" % (origin, key), str(value)))
+            if not env:
+                continue
+            fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+            for record in sorted(env):
+                out.append(fmt % record)
+        return "\n".join(out)
 
     def __iter__(self):
         return iter(self.variants)
@@ -470,28 +514,10 @@ class Varianter(object):
 
         :return: loadable Varianter representation
         """
-        def dump_tree_node(node):
-            """
-            Turns TreeNode-like object into tuple(path, env_representation)
-            """
-            return (str(node.path),
-                    [(str(node.environment.origin[key].path), str(key), value)
-                     for key, value in node.environment.iteritems()])
-
         if not self.is_parsed():
             raise NotImplementedError("Dumping Varianter state before "
                                       "multiplexation is not supported.")
-        variants = []
-        for variant in self.itertests():
-            safe_variant = {}
-            safe_variant["mux_path"] = [str(pth)
-                                        for pth in variant.get("mux_path")]
-            safe_variant["variant_id"] = str(variant.get("variant_id"))
-            safe_variant["variant"] = [dump_tree_node(_)
-                                       for _ in variant.get("variant", [])]
-            variants.append(safe_variant)
-
-        return variants
+        return dump_ivariants(self.itertests)
 
     def load(self, state):
         """

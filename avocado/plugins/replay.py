@@ -209,7 +209,8 @@ class Replay(CLI):
                      'external_runner_testdir',
                      'external_runner_chdir',
                      'failfast',
-                     'ignore_missing_references']
+                     'ignore_missing_references',
+                     'execution_order']
         if replay_args is None:
             LOG_UI.warn('Source job args data not found. These options will '
                         'not be loaded in this replay job: %s',
@@ -222,7 +223,7 @@ class Replay(CLI):
                                 "given on the command line.",
                                 option.replace('_', '-'),
                                 option.replace('_', '-'))
-                else:
+                elif option in replay_args:
                     setattr(args, option, replay_args[option])
 
         # Keeping this for compatibility.

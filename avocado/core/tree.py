@@ -116,6 +116,15 @@ class TreeNodeEnvOnly(object):
                 nodes[path] = TreeNodeEnvOnly(path)
             self.environment.origin[key] = nodes[path]
 
+    def __eq__(self, other):
+        if self.name != other.name:
+            return False
+        if self.path != other.path:
+            return False
+        if self.environment != other.environment:
+            return False
+        return True
+
     def get_environment(self):
         return self.environment
 
