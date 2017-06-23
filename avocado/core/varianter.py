@@ -348,6 +348,30 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
     return out
 
 
+def dump_ivariants(ivariants):
+    """
+    Walks the iterable variants and dumps them into json-serializable object
+    """
+    def dump_tree_node(node):
+        """
+        Turns TreeNode-like object into tuple(path, env_representation)
+        """
+        return (str(node.path),
+                [(str(node.environment.origin[key].path), str(key), value)
+                 for key, value in node.environment.iteritems()])
+
+    variants = []
+    for variant in ivariants():
+        safe_variant = {}
+        safe_variant["mux_path"] = [str(pth)
+                                    for pth in variant.get("mux_path")]
+        safe_variant["variant_id"] = str(variant.get("variant_id"))
+        safe_variant["variant"] = [dump_tree_node(_)
+                                   for _ in variant.get("variant", [])]
+        variants.append(safe_variant)
+    return variants
+
+
 class FakeVariantDispatcher(object):
 
     """
@@ -539,28 +563,10 @@ class Varianter(object):
 
         :return: loadable Varianter representation
         """
-        def dump_tree_node(node):
-            """
-            Turns TreeNode-like object into tuple(path, env_representation)
-            """
-            return (str(node.path),
-                    [(str(node.environment.origin[key].path), str(key), value)
-                     for key, value in node.environment.iteritems()])
-
         if not self.is_parsed():
             raise NotImplementedError("Dumping Varianter state before "
                                       "multiplexation is not supported.")
-        variants = []
-        for variant in self.itertests():
-            safe_variant = {}
-            safe_variant["mux_path"] = [str(pth)
-                                        for pth in variant.get("mux_path")]
-            safe_variant["variant_id"] = str(variant.get("variant_id"))
-            safe_variant["variant"] = [dump_tree_node(_)
-                                       for _ in variant.get("variant", [])]
-            variants.append(safe_variant)
-
-        return variants
+        return dump_ivariants(self.itertests)
 
     def load(self, state):
         """
