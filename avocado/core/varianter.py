@@ -467,6 +467,16 @@ class Varianter(object):
         :param kwargs: Other free-form arguments
         :rtype: str
         """
+        if self._no_variants == 0:  # No variants, only defaults:
+            out = []
+            if summary:
+                out.append("No variants available, using defaults only")
+            if variants:
+                variant = next(self.itertests())
+                variant["variant_id"] = ""  # Don't confuse people with None
+                out.append("\n".join(variant_to_str(variant, variants - 1,
+                                                    kwargs, self.debug)))
+            return "\n\n".join(out)
         return "\n\n".join(self._variant_plugins.map_method("to_str", summary,
                                                             variants,
                                                             **kwargs))
