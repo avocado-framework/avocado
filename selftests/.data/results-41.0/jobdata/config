@@ -1,0 +1,56 @@
+[datadir.paths]
+base_dir = /usr/share/avocado
+test_dir = /usr/share/avocado/tests
+data_dir = /usr/share/avocado/data
+logs_dir = ~/avocado/job-results
+
+[sysinfo.collect]
+enabled = True
+installed_packages = False
+profiler = False
+locale = C
+
+[sysinfo.collectibles]
+commands = /etc/avocado/sysinfo/commands
+files = /etc/avocado/sysinfo/files
+profilers = /etc/avocado/sysinfo/profilers
+
+[runner.output]
+colored = True
+utf8 = 
+
+[runner.behavior]
+keep_tmp_files = False
+
+[remoter.behavior]
+reject_unknown_hosts = False
+disable_known_hosts = False
+
+[job.output]
+loglevel = debug
+
+[restclient.connection]
+hostname = localhost
+port = 9405
+username = 
+password = 
+
+[plugins]
+skip_broken_plugin_notification = []
+loaders = ['file', '@DEFAULT']
+
+[plugins.vtjoblock]
+dir = /tmp
+
+[gdb.paths]
+gdb = /usr/bin/gdb
+gdbserver = /usr/bin/gdbserver
+
+[plugins.jobscripts]
+pre = /etc/avocado/scripts/job/pre.d/
+post = /etc/avocado/scripts/job/post.d/
+warn_non_existing_dir = False
+warn_non_zero_status = True
+
+[avocado.selftest]
+jobdata = yes
