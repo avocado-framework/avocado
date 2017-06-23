@@ -26,8 +26,8 @@ import hashlib
 import itertools
 import re
 
-from . import output
 from . import tree
+from . import varianter
 
 
 #
@@ -218,33 +218,10 @@ class MuxPlugin(object):
 
         if variants:
             # variants == 0 means disable, but in plugin it's brief
-            contents = variants - 1
             out.append("Multiplex variants (%s):" % len(self))
             for variant in self:
-                if not self.debug:
-                    paths = ', '.join([x.path for x in variant["variant"]])
-                else:
-                    color = output.TERM_SUPPORT.LOWLIGHT
-                    cend = output.TERM_SUPPORT.ENDC
-                    paths = ', '.join(["%s%s@%s%s" % (_.name, color,
-                                                      getattr(_, 'yaml',
-                                                              "Unknown"),
-                                                      cend)
-                                       for _ in variant["variant"]])
-                out.append('%sVariant %s:    %s' % ('\n' if contents else '',
-                                                    variant["variant_id"],
-                                                    paths))
-                if contents:
-                    env = set()
-                    for node in variant["variant"]:
-                        for key, value in node.environment.iteritems():
-                            origin = node.environment.origin[key].path
-                            env.add(("%s:%s" % (origin, key), str(value)))
-                    if not env:
-                        continue
-                    fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
-                    for record in sorted(env):
-                        out.append(fmt % record)
+                out.extend(varianter.variant_to_str(variant, variants - 1,
+                                                    kwargs, self.debug))
         return "\n".join(out)
 
     def __len__(self):
