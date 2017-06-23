@@ -228,6 +228,18 @@ def retrieve_cmdline(resultsdir):
     """
     recorded_cmdline = _retrieve(resultsdir, CMDLINE_FILENAME)
     if recorded_cmdline is None:
+        # Attemp to restore cmdline from log
+        try:
+            with open(os.path.join(resultsdir, "job.log"), "r") as log:
+                import re
+                cmd = re.search(r"# \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} "
+                                r"\w{17}\w\d{4} INFO | Command line: (.*)",
+                                log.read())
+                if cmd:
+                    import shlex
+                    return shlex.split(cmd.group(1))
+        except IOError:
+            pass
         return None
     with open(recorded_cmdline, 'r') as cmdline_file:
         return ast.literal_eval(cmdline_file.read())
