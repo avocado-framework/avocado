@@ -69,6 +69,15 @@ Avocado Release Notes
 
    release_notes/index
 
+====================================
+Avocado Long Term Stability Releases
+====================================
+
+.. toctree::
+   :maxdepth: 1
+
+   ltss/52.rst
+
 ===========================
 Request For Comments (RFCs)
 ===========================
