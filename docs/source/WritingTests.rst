@@ -1586,15 +1586,21 @@ from an outside source (say a "pickle" file).  Finding and using a
 reliable and safe location for saving such data is currently not in
 the Avocado supported use cases.
 
-Environment Variables for Simple Tests
-======================================
+.. _environment-variables-for-tests:
 
-Avocado exports Avocado variables and test parameters as BASH environment
-to the running test. Those variables are interesting to simple tests, because
-they can not make use of Avocado API directly with Python, like the native
-tests can do and also they can modify the test parameters.
+Environment Variables for Tests
+===============================
 
-Here are the current variables that Avocado exports to the tests:
+Avocado exports some information, including test parameters, as environment
+variables to the running test.
+
+While these variables are available to all tests, they are usually
+more interesting to SIMPLE tests.  The reason is that SIMPLE tests can
+not make direct use of Avocado API.  INSTRUMENTED tests will usually
+have more powerful ways, to access the same information.
+
+Here is a list of the variables that Avocado currently exports to
+tests:
 
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | Environemnt Variable        | Meaning                               | Example                                                                                             |
