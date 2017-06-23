@@ -361,24 +361,87 @@ The instances should have:
 
 .. [#f1] Avocado plugins can introduce additional test types.
 
-Pre and post tests plugins
-==========================
+Pre and post plugins
+====================
+
+Avocado provides interfaces with which custom plugins can register to
+be called at various times.  For instance, it's possible to trigger
+custom actions before and after the execution of a :class:`job
+<avocado.core.job.Job>`, or before and after the execution of the
+tests from a job :data:`test suite <avocado.core.job.Job.test_suite>`.
+
+Let's discuss each interface briefly.
+
+Before and after jobs
+---------------------
 
 Avocado supports plug-ins which are (guaranteed to be) executed before the
 first test and after all tests finished. The interfaces are
-:class:`avocado.core.plugin_interfaces.JobPre`, resp.
-:class:`avocado.core.plugin_interfaces.JobPost`.
+:class:`avocado.core.plugin_interfaces.JobPre` and
+:class:`avocado.core.plugin_interfaces.JobPost`, respectively.
 
-Note the ``pre_tests`` might not be executed due to earlier failure which
-prevents the tests from being executed.
+The :meth:`pre <avocado.core.plugin_interfaces.JobPre.pre>` method of
+each installed plugin of type ``job.prepost`` will be called by the
+``run`` command, that is, anytime an ``avocado run
+<valid_test_reference>`` command is executed.
 
-The same applies for ``post_tests``, but it is possible to have ``post_tests``
-executed even when ``pre_tests`` were not. Additionally the ``post_tests``
-are (obviously) not executed on ``SIGKILL``. On the other hand they are
-executed on ``SIGTERM`` and ``KeyboardInterrupt`` while running
-the tests, but once the ``post_tests`` are executed the ``KeyboardInterrupt``
-or ``SystemExit`` interrupts their processing (to avoid hangs) and remaining
-plug-ins will **NOT** be executed.
+.. note:: Conditions such as the :exc:`SystemExit` or
+          :exc:`KeyboardInterrupt` execeptions being raised can
+          interrupt the execution of those plugins.
+
+Then, immediately after that, the job's :meth:`run
+<avocado.core.job.Job.run>` method is called, which attempts to run
+all job phases, from test suite creation to test execution.
+
+Unless a :exc:`SystemExit` or :exc:`KeyboardInterrupt` is raised, or
+yet another major external event (like a system condition that Avocado
+can not control) it will attempt to run the :meth:`post
+<avocado.core.plugin_interfaces.JobPre.post>` methods of all the
+installed plugins of type ``job.prepost``.  This even includes job
+executions where the :meth:`pre
+<avocado.core.plugin_interfaces.JobPre.pre>` plugin executions were
+interrupted.
+
+Before and after the execution of tests
+---------------------------------------
+
+If you followed the previous section, you noticed that the job's
+:meth:`run <avocado.core.job.Job.run>` method was said to run all the
+test phases.  Here's a sequence of the job phases:
+
+1) :meth:`Creation of the test suite <avocado.core.job.Job.create_test_suite>`
+2) :meth:`Pre tests hook <avocado.core.job.Job.pre_tests>`
+3) :meth:`Tests execution <avocado.core.job.Job.run_tests>`
+4) :meth:`Post tests hook <avocado.core.job.Job.post_tests>`
+
+Plugin writers can have their own code called at Avocado during a job
+by writing a that will be called at phase number 2 (``pre_tests``) by
+writing a method according to the
+:meth:`avocado.core.plugin_interfaces.JobPreTests` interface.
+Accordingly, plugin writers can have their own called at phase number
+4 (``post_tests``) by writing a method according to the
+:meth:`avocado.core.plugin_interfaces.JobPostTests` interface.
+
+Note that there's no guarantee that all of the first 3 job phases will
+be executed, so a failure in phase 1 (``create_test_suite``), may
+prevent the phase 2 (``pre_tests``) and/or 3 (``run_tests``) from from
+being executed.
+
+Now, no matter what happens in the *attempted execution* of job phases
+1 through 3, job phase 4 (``post_tests``) will be *attempted to be
+executed*.  To make it extra clear, as long as the Avocado test runner
+is still in execution (that is, has not been terminated by a system
+condition that it can not control), it will execute plugin's
+``post_tests`` methods.
+
+As a concrete example, a plugin' ``post_tests`` method would not be
+executed after a ``SIGKILL`` is sent to the Avocado test runner on
+phases 1 through 3, because the Avocado test runner would be promptly
+interrupted.  But, a ``SIGTERM`` and ``KeyboardInterrupt`` sent to the
+Avocado test runner under phases 1 though 3 would still cause the test
+runner to run ``post_tests`` (phase 4).  Now, if during phase 4 a
+``KeyboardInterrupt`` or ``SystemExit`` is received, the remaining
+plugins' ``post_tests`` methods will **NOT** be executed.
 
 Jobscripts plugin
 -----------------
