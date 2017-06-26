@@ -1,3 +1,5 @@
+.. _lts_52_0:
+
 ========
 52.0 LTS
 ========
@@ -336,3 +338,10 @@ Focusing only on the changes you might need to adjust the usage of:
 
 Also check out the :mod:`avocado.utils` for complete list of available
 utils as there were many additions between 36.4 and 52.0.
+
+Complete list of changes
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a complete list of changes between the last LTS release (36.4) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/36.4...52.0>`_.

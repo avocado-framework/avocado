@@ -10,7 +10,7 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		b45e2c532001187e23cef61212fdc8fe44425a2a
+        %global commit		b066ee5ae204e4bd2eefd59151c8fb2a453aa47d
     %endif
     %if ! 0%{?commit_date:1}
         %global commit_date	20170518
@@ -28,7 +28,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 51.0
+Version: 52.0
 Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -342,6 +342,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Jun 26 2017 Cleber Rosa <cleber@redhat.com> - 52.0-0
+- New upstream release
+
 * Mon Jun 12 2017 Cleber Rosa <cleber@redhat.com> - 51.0-0
 - New upstream release
 
