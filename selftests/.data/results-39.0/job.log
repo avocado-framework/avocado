@@ -1,0 +1,3 @@
+2017-06-22 18:27:22,725 sysinfo          L0424 INFO | System log file not found (looked for ['/var/log/messages', '/var/log/syslog', '/var/log/system.log'])
+2017-06-22 18:27:22,725 job              L0364 INFO | Command line: /usr/local/bin/avocado run --external-runner /bin/echo -m examples/mux-0.yaml -- yes no
+2017-06-22 18:27:22,725 job              L0365 INFO | 

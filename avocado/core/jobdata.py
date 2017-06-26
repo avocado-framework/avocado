@@ -21,7 +21,9 @@ import glob
 import json
 import os
 import pickle
+import sys
 
+from . import jobdata_compat_36_to_52
 from . import varianter
 from .output import LOG_UI, LOG_JOB
 from .settings import settings
@@ -39,6 +41,27 @@ VARIANTS_FILENAME_LEGACY = 'multiplex'
 PWD_FILENAME = 'pwd'
 ARGS_FILENAME = 'args'
 CMDLINE_FILENAME = 'cmdline'
+
+
+def _find_class(module, name):
+    """
+    Look for a class including compatibility workarounds
+    """
+    try:
+        mod = __import__(module)
+        mod = sys.modules[module]
+        return getattr(mod, name)
+    except ImportError:
+        if module == "avocado.core.multiplexer":
+            mod = __import__("avocado.core.jobdata_compat_36_to_52",
+                             fromlist=[module])
+            return getattr(mod, name)
+        elif module == "avocado.plugins.yaml_to_mux":
+            mod = __import__("avocado_varianter_yaml_to_mux",
+                             fromlist=[module])
+            return getattr(mod, name)
+        else:
+            raise
 
 
 def record(args, logdir, mux, references=None, cmdline=None):
@@ -130,6 +153,26 @@ def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
+    def _apply_36_to_52_workarounds(variants):
+        """
+        The 36.x version of TreeNode did not contain `filters`. Let's
+        re-initialize it per each child.
+        """
+        def get_fingerprint_meth(fingerprint):
+            """
+            36.x's TreeNode used to actually be equivalent of MuxTreeNode,
+            let's adjust the fingerprint to also contain self.ctrl
+            """
+            def get():
+                return fingerprint
+            return get
+        for node in variants.variants.root.iter_children_preorder():
+            node.filters = [[], []]
+            node._environment = None
+            fingerprint = node.fingerprint()
+            node.fingerprint = get_fingerprint_meth("%s%s" % (fingerprint,
+                                                              node.ctrl))
+
     recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME + ".json")
     if recorded_mux:    # new json-based dump
         with open(recorded_mux, 'r') as mux_file:
@@ -142,7 +185,14 @@ def retrieve_variants(resultsdir):
     # old pickle-based dump
     # TODO: Remove when 36lts is discontinued
     with open(recorded_mux, 'r') as mux_file:
-        return pickle.load(mux_file)
+        unpickler = pickle.Unpickler(mux_file)
+        unpickler.find_class = _find_class
+        variants = unpickler.load()
+        if isinstance(variants, jobdata_compat_36_to_52.Mux):
+            LOG_UI.warn("Using outdated 36.x variants file.")
+            _apply_36_to_52_workarounds(variants)
+        state = varianter.dump_ivariants(variants.itertests)
+        return varianter.Varianter(state=state)
 
 
 def retrieve_args(resultsdir):
@@ -178,6 +228,18 @@ def retrieve_cmdline(resultsdir):
     """
     recorded_cmdline = _retrieve(resultsdir, CMDLINE_FILENAME)
     if recorded_cmdline is None:
+        # Attemp to restore cmdline from log
+        try:
+            with open(os.path.join(resultsdir, "job.log"), "r") as log:
+                import re
+                cmd = re.search(r"# \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} "
+                                r"\w{17}\w\d{4} INFO | Command line: (.*)",
+                                log.read())
+                if cmd:
+                    import shlex
+                    return shlex.split(cmd.group(1))
+        except IOError:
+            pass
         return None
     with open(recorded_cmdline, 'r') as cmdline_file:
         return ast.literal_eval(cmdline_file.read())
