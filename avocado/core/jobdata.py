@@ -34,7 +34,6 @@ JOB_DATA_DIR = 'jobdata'
 JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
-TEST_REFERENCES_FILENAME_LEGACY = 'urls'
 VARIANTS_FILENAME = 'variants'
 # TODO: Remove when 36lts is discontinued
 VARIANTS_FILENAME_LEGACY = 'multiplex'
@@ -75,8 +74,6 @@ def record(args, logdir, mux, references=None, cmdline=None):
     base_dir = init_dir(logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
-    path_references_legacy = os.path.join(base_dir,
-                                          TEST_REFERENCES_FILENAME_LEGACY)
     path_mux = os.path.join(base_dir, VARIANTS_FILENAME + ".json")
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
     path_args = os.path.join(base_dir, ARGS_FILENAME + ".json")
@@ -87,7 +84,6 @@ def record(args, logdir, mux, references=None, cmdline=None):
             references_file.write('%s' % references)
             references_file.flush()
             os.fsync(references_file)
-        os.symlink(TEST_REFERENCES_FILENAME, path_references_legacy)
 
     with open(path_cfg, 'w') as config_file:
         settings.config.write(config_file)
@@ -140,9 +136,10 @@ def retrieve_references(resultsdir):
     Retrieves the job test references from the results directory.
     """
     recorded_references = _retrieve(resultsdir, TEST_REFERENCES_FILENAME)
+    # TODO: Remove if support for replaying jobs generated under older
+    # versions is also removed
     if recorded_references is None:
-        recorded_references = _retrieve(resultsdir,
-                                        TEST_REFERENCES_FILENAME_LEGACY)
+        recorded_references = _retrieve(resultsdir, 'urls')
     if recorded_references is None:
         return None
     with open(recorded_references, 'r') as references_file:
