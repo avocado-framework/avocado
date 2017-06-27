@@ -50,11 +50,11 @@ class AvocadoApp(object):
         self.parser = Parser()
         output.early_start()
         try:
+            self.parser.start()
             self.cli_dispatcher = CLIDispatcher()
             self.cli_cmd_dispatcher = CLICmdDispatcher()
             output.log_plugin_failures(self.cli_dispatcher.load_failures +
                                        self.cli_cmd_dispatcher.load_failures)
-            self.parser.start()
             if self.cli_cmd_dispatcher.extensions:
                 self.cli_cmd_dispatcher.map_method('configure', self.parser)
             if self.cli_dispatcher.extensions:
