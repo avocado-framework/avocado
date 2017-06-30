@@ -175,7 +175,7 @@ class List(CLICmd):
         loader.add_loader_options(parser)
 
         filtering = parser.add_argument_group('filtering parameters')
-        filtering.add_argument('--filter-by-tags', metavar='TAGS',
+        filtering.add_argument('-t', '--filter-by-tags', metavar='TAGS',
                                action='append',
                                help='Filter INSTRUMENTED tests based on '
                                '":avocado: tags=tag1,tag2" notation in '
