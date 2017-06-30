@@ -10,7 +10,7 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		b066ee5ae204e4bd2eefd59151c8fb2a453aa47d
+        %global commit		bb62fe5a1fa93ea6573da46556928af5041c1b7d
     %endif
     %if ! 0%{?commit_date:1}
         %global commit_date	20170518
@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 52.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -54,6 +54,7 @@ BuildRequires: python-sphinx
 BuildRequires: python-stevedore
 BuildRequires: python2-devel
 BuildRequires: yum
+BuildRequires: python-aexpect
 
 %if %{with_tests}
 BuildRequires: libvirt-python
@@ -68,11 +69,6 @@ Requires: python
 Requires: python-requests
 Requires: python-setuptools
 Requires: python-stevedore
-%if 0%{?fedora}
-BuildRequires: python-aexpect
-%else
-BuildRequires: aexpect
-%endif
 
 # For compatibility reasons, let's mark this package as one that
 # provides the same functionality as the old package name and also
@@ -285,11 +281,7 @@ itself.  Avocado must be previously installed on the VM.
 Summary: Avocado Runner for Execution on Docker Containers
 Requires: %{name} == %{version}
 Requires: %{name}-plugins-runner-remote == %{version}
-%if 0%{?fedora}
 Requires: python-aexpect
-%else
-Requires: aexpect
-%endif
 Obsoletes: %{srcname}-plugins-runner-docker < 47.0-1
 Provides: %{srcname}-plugins-runner-docker = %{version}-%{release}
 
@@ -342,6 +334,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Jun 27 2017 Cleber Rosa <cleber@redhat.com> - 52.0-1
+- Fix python-aexpect depedency on EL7
+
 * Mon Jun 26 2017 Cleber Rosa <cleber@redhat.com> - 52.0-0
 - New upstream release
 
