@@ -267,15 +267,8 @@ class HTMLResult(Result):
 
         open_browser = getattr(job.args, 'open_browser', False)
         if getattr(job.args, 'html_job_result', 'off') == 'on':
-            # FIXME: remove html legacy dir after 52.0 LTS release
-            html_legacy_dir = os.path.join(job.logdir, 'html')
-            if os.path.exists(html_legacy_dir):    # update the html result if exists
-                shutil.rmtree(html_legacy_dir)
             html_path = os.path.join(job.logdir, 'results.html')
             self._render(result, html_path)
-            os.makedirs(html_legacy_dir)
-            os.symlink(os.path.join(os.path.pardir, 'results.html'),
-                       os.path.join(html_legacy_dir, 'results.html'))
             if getattr(job.args, 'stdout_claimed_by', None) is None:
                 LOG_UI.info("JOB HTML   : %s", html_path)
             if open_browser:
