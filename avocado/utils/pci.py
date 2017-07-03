@@ -262,6 +262,22 @@ def get_driver(pci_address):
                 return line.rsplit(None, 1)[-1]
 
 
+def get_slot(pci_address):
+    """
+    Gets the slot number of given PCI address.
+
+    :param pci_address: Any segment of a PCI address
+
+    :return slot number, if not found return none
+    """
+    cmd = "lspci -nnvmms %s" % pci_address
+    output = process.system_output(cmd, ignore_status=True)
+    if output:
+        for line in output.splitlines():
+            if 'PhySlot' in line:
+                return line.split()[-1]
+
+
 def get_memory_address(pci_address):
     """
     Gets the memory address of a PCI address. (first match only)
