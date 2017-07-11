@@ -27,8 +27,75 @@ from . import process
 from . import genio
 
 
-# Returns total memory in kb
+def _check_memory_state(mem_block):
+    """
+    Check the given memory block is online or offline
 
+    :param mem_block: memory block id.
+    :type string: like 198
+    :return: 'True' if online or 'False' if offline
+    :rtype: bool
+    """
+    if 'online' in open('/sys/devices/system/memory/memory%s/state' % mem_block).read():
+        return True
+    return False
+
+
+def _check_hot_plug():
+    """
+    Check kernel support for memory hotplug
+
+    :return: True if hotplug supported,  else False
+    :rtype: 'bool'
+    """
+    if glob.glob('/sys/devices/system/memory/memory*'):
+        return True
+    return False
+
+
+def _is_hot_pluggable(mem_block):
+    """
+    Check if the given memory block is hotpluggable
+
+    :param mem_block: memory block id.
+    :type string: like 198
+    :retrun: True if hotpluggable, else False
+    :rtype: 'bool'
+    """
+    if os.path.exists('/sys/devices/system/memory/memory%s/removable' % mem_block):
+        return True
+    return False
+
+
+def memory_hot_plug(mem_block):
+    """
+    Online the memory for the given block id.
+
+    :param mem_block: memory block id.
+    :type string: like 198
+    """
+    if _is_hot_pluggable(mem_block):
+        with open('/sys/devices/system/memory/memory%s/state' % mem_block, 'w') as fd:
+            fd.write('online')
+        if not _check_memory_state(mem_block):
+            raise ValueError("unable to online memory block, device busy?")
+
+
+def memory_hot_unplug(mem_block):
+    """
+    Offline the memory for the given block id.
+
+    :param mem_block: memory block id.
+    :type string: like 198
+    """
+    if _is_hot_pluggable(mem_block):
+        with open('/sys/devices/system/memory/memory%s/state' % mem_block, 'w') as fd:
+            fd.write('offline')
+        if _check_memory_state(mem_block):
+            raise ValueError("unable to offline memory block, device busy?")
+
+
+# Returns total memory in kb
 
 def read_from_meminfo(key):
     """
@@ -39,6 +106,20 @@ def read_from_meminfo(key):
     cmd_result = process.run('grep %s /proc/meminfo' % key, verbose=False)
     meminfo = cmd_result.stdout
     return int(re.search(r'\d+', meminfo).group(0))
+
+
+def swaptotal():
+    """
+    Read ``SwapTotal`` from meminfo.
+    """
+    return read_from_meminfo('SwapTotal')
+
+
+def freeswap():
+    """
+    Read ``SwapFree`` from meminfo.
+    """
+    return read_from_meminfo('SwapFree')
 
 
 def memtotal():
