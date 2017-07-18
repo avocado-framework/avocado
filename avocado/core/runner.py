@@ -29,6 +29,7 @@ from . import test
 from . import exceptions
 from . import output
 from . import status
+from . import varianter
 from .loader import loader
 from .status import mapping
 from ..utils import wait
@@ -506,10 +507,19 @@ class TestRunner(object):
         params = variant.get("variant"), variant.get("mux_path")
         if params:
             if "params" in template[1]:
-                msg = ("Unable to use test variants %s, params are already"
-                       " present in test factory: %s"
-                       % (template[0], template[1]))
-                raise ValueError(msg)
+                if not varianter.is_empty_variant(params[0]):
+                    msg = ("Specifying test params from test loader and "
+                           "from varianter at the same time is not yet "
+                           "supported. Please remove either variants defined"
+                           "by the varianter (%s) or make the test loader of"
+                           "test %s to not to fill variants."
+                           % (variant, template))
+                    raise NotImplementedError(msg)
+                params = template[1]["params"]
+                variant_id = varianter.generate_variant_id(params[0])
+                return template, {"variant": params[0],
+                                  "variant_id": variant_id,
+                                  "mux_path": params[1]}
             factory = [template[0], template[1].copy()]
             factory[1]["params"] = params
         else:
