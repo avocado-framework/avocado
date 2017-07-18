@@ -1,0 +1,20 @@
+# Notice the order of params and tests...
+
+timeout: !mux
+    short:
+        timeout: 2
+    longer:
+        timeout: 6
+    no_timeout:
+tests: !mux
+    passtest:
+        test_reference: passtest.py
+    sleeptest:
+        test_reference: sleeptest.py
+        !include : ../tests/sleeptest.py.data/sleeptest.yaml
+    failtest:
+        test_reference: failtest.py
+        some_test_variants: !mux
+            this_fails:
+            this_also_fails:
+            and_this_fails_as_well:

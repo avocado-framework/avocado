@@ -1,0 +1,51 @@
+# test_reference_resolver - should map to initialized loaders from the
+#     LoaderProxy (Not supported in this PoC)
+# test_reference_resolver_class - should be an importable loader class
+#     which receives the arguments from this loader plugin. (Not supported
+#     in this PoC)
+# test_reference_resolver_extra - extra argument to the resolver_class
+
+iterations: !mux
+    1:
+    2:
+    3:
+    4:
+    5:
+qemu-versions: !mux
+    upstream:
+        # TODO: Support relative-path internal filters
+        # or at least prefix the current location if needed
+        !filter-only : "*/machine_type/ppc64le/*"
+        qemu_compile_location: git://...
+    downstream:
+        !filter-only : "*/machine_type/ppc64le/*"
+        qemu_compile_location: git://...
+archs:
+    machine_type: !mux
+        ppc64:
+            machine_type: ppc64
+        ppc64le:
+            machine_type: ppc64le
+tests: !mux
+    install_qemu:
+        test_reference_resolver: file
+        test_reference: "install_qemu"
+    unattended_install:
+        test_reference: "unattended_install.cdrom.extra_cdrom_ks.default_install.aio_threads"
+    boot:
+        test_reference: boot
+    migrate:
+        test_reference: migrate.with_reboot.tcp
+    sleeptest:
+        test_reference_resolver: file
+        test_reference: sleeptest.py
+        variants:
+            !include : /usr/share/avocado/examples/tests/sleeptest.py.data/sleeptest.yaml
+    iotests:
+        test_reference_resolver_class: external
+        test_reference_resolver_extra: "./check"
+        !include : tests/iotests.yaml
+    kvm-unit-tests:
+        test_reference_resolver: external
+        test_reference_resolver_extra: "./run_kvm_unittest"
+        test_reference: ...

@@ -310,6 +310,16 @@ class AvocadoParam(object):
                 yield (leaf.environment.origin[key].path, key, value)
 
 
+def is_empty_variant(variant):
+    """
+    Reports whether the variant contains any data
+
+    :param variant: Avocado test variant (list of TreeNode-like objects)
+    :return: True when the variant does not contain (any useful) data
+    """
+    return not variant or variant == [tree.TreeNode()] * len(variant)
+
+
 def generate_variant_id(variant):
     """
     Basic function to generate variant-id from a variant
