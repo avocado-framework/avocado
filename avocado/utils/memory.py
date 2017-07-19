@@ -48,6 +48,25 @@ def memtotal():
     return read_from_meminfo('MemTotal')
 
 
+def memtotal_sys():
+    """
+    Reports actual memory size according to online-memory
+    blocks available via "/sys"
+
+    :return: system memory in Kb as float
+    """
+    sys_mempath = '/sys/devices/system/memory'
+    no_memblocks = 0
+    for directory in os.listdir(sys_mempath):
+        if directory.startswith('memory'):
+            if open(os.path.join(sys_mempath, directory, 'online'), "r").read().strip() == '1':
+                no_memblocks += 1
+    block_size = int(open(os.path.join(sys_mempath,
+                                       'block_size_bytes'),
+                          "r").read().strip(), 16)
+    return (no_memblocks * block_size)/1024.0
+
+
 def freememtotal():
     """
     Read ``MemFree`` from meminfo.
