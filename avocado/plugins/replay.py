@@ -172,7 +172,7 @@ class Replay(CLI):
         elif args.replay_teststatus and args.reference:
             err = ("Option --replay-test-status is incompatible with "
                    "test references given on the command line.")
-        elif args.remote_hostname:
+        elif getattr(args, "remote_hostname", False):
             err = "Currently we don't replay jobs in remote hosts."
         if err is not None:
             LOG_UI.error(err)
