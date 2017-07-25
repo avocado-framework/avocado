@@ -1,0 +1,14 @@
+# test_reference - specifies the test reference to be loaded with the default
+#     (file) loader.
+
+!mux
+passtest:
+    test_reference: passtest.py
+sleeptest:
+    test_reference: sleeptest.py
+failtest:
+    test_reference: failtest.py
+    some_test_variants: !mux
+        this_fails:
+        this_also_fails:
+        and_this_fails_as_well:
