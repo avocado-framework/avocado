@@ -62,18 +62,8 @@ class TestLister(object):
             stats[value.lower()] = 0
 
         for cls, params in test_suite:
-            id_label = ''
-            if 'params' in params:
-                id_label = params['params']['id']
-            else:
-                if 'name' in params:
-                    id_label = params['name']
-                elif 'path' in params:
-                    id_label = params['path']
-
             if isinstance(cls, basestring):
                 cls = test.Test
-                id_label = params['name']
             type_label = type_label_mapping[cls]
             decorator = decorator_mapping[cls]
             stats[type_label.lower()] += 1
@@ -90,9 +80,9 @@ class TestLister(object):
                     else:
                         tag_stats[tag] += 1
                 tags = ",".join(tags)
-                test_matrix.append((type_label, id_label, tags))
+                test_matrix.append((type_label, params['name'], tags))
             else:
-                test_matrix.append((type_label, id_label))
+                test_matrix.append((type_label, params['name']))
 
         return test_matrix, stats, tag_stats
 
