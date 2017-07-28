@@ -19,6 +19,7 @@ It needs root access.
 
 import time
 import logging
+import ast
 from . import distro
 from . import process
 from . import service
@@ -30,8 +31,7 @@ def get_svc_name():
     """
     if distro.detect().name == 'Ubuntu':
         return "multipath-tools"
-    else:
-        return "multipathd"
+    return "multipathd"
 
 
 def form_conf_mpath_file(blacklist="", defaults_extra=""):
@@ -113,6 +113,48 @@ def get_paths(wwid):
         if not (('size' in line) or ('policy' in line) or (wwid in line)):
             paths.append(line.split()[-5])
     return paths
+
+
+def get_multipath_details():
+    """
+    Get multipath details as a dictionary, as given by the command:
+    multipathd show maps json
+
+    :return: Dictionary of multipath output in json format.
+    """
+    mpath_op = process.system_output("multipathd show maps json", shell=True)
+    mpath_op = ast.literal_eval(mpath_op.replace("\n", '').replace(' ', ''))
+    return mpath_op
+
+
+def is_path_a_multipath(disk_path):
+    """
+    Check if given disk path is part of a multipath.
+
+    :param disk_path: disk path. Example: sda, sdb.
+
+    :return: True if part of multipath, else False.
+    """
+    if not process.system("multipath -c /dev/%s" % disk_path, shell=True,
+                          ignore_status=True):
+        return True
+    return False
+
+
+def get_path_status(disk_path):
+    """
+    Return the status of a path in multipath.
+
+    :param disk_path: disk path. Example: sda, sdb.
+
+    :return: Tuple in the format of (dm status, dev status, checker status)
+    """
+    mpath_op = get_multipath_details()
+    for maps in mpath_op['maps']:
+        for path_groups in maps['path_groups']:
+            for paths in path_groups['paths']:
+                if paths['dev'] == disk_path:
+                    return(paths['dm_st'], paths['dev_st'], paths['chk_st'])
 
 
 def get_policy(wwid):
