@@ -356,9 +356,25 @@ def dump_ivariants(ivariants):
         """
         Turns TreeNode-like object into tuple(path, env_representation)
         """
-        return (str(node.path),
-                [(str(node.environment.origin[key].path), str(key), value)
-                 for key, value in node.environment.iteritems()])
+        result = []
+        if isinstance(node, (tree.TreeNode, tree.TreeNodeEnvOnly)):
+            for key, value in node.environment.iteritems():
+                if hasattr(value, '__iter__'):
+                    val = []
+                    for item in value:
+                        val.append(dump_tree_node(item))
+                    value = val
+                result.append((str(node.environment.origin[key].path),
+                              str(key), value))
+            return (str(node.path), result)
+        else:
+            val = []
+            for item in node:
+                if isinstance(item, tree.TreeNode):
+                    val.append(dump_tree_node(item))
+                else:
+                    val.append(item)
+            return val
 
     variants = []
     for variant in ivariants():
