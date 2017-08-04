@@ -320,3 +320,57 @@ def get_thp_value(feature):
         return (re.search(r"\[(\w+)\]", value)).group(1)
     else:
         return value
+
+
+class _MemInfoItem(object):
+    """
+    Representation of one item from /proc/meminfo
+    """
+    def __init__(self, name):
+        self.name = name
+        self.__multipliers = {'b': 1,  # 2**0
+                              'kb': 1024,  # 2**10
+                              'mb': 1048576,  # 2**20
+                              'gb': 1073741824,  # 2**30
+                              'tb': 1099511627776}  # 2**40
+
+    def __getattr__(self, attr):
+        """
+        Creates one extra attribute per available conversion unit,
+        which will return the converted value.
+        """
+        if attr not in self.__multipliers:
+            raise AttributeError('Attribute %s does not exist.' % attr)
+        return self.value * 1024 / self.__multipliers[attr]
+
+    def __dir__(self):
+        """
+        Makes the extra attributes visible when calling dir().
+        """
+        listing = dir(type(self)) + list(self.__dict__.keys())
+        listing.extend(['%s' % item for item in self.__multipliers])
+        return listing
+
+    @property
+    def value(self):
+        return read_from_meminfo(self.name)
+
+
+class MemInfo(object):
+    """
+    Representation of /proc/meminfo
+    """
+
+    def __init__(self):
+        with open('/proc/meminfo', 'r') as meminfo_file:
+            for line in meminfo_file.readlines():
+                name = line.strip().split()[0].strip(':')
+                safe_name = name.replace('(', '_').replace(')', '_')
+                setattr(self, safe_name, _MemInfoItem(name))
+
+    def __iter__(self):
+        for _, item in self.__dict__.iteritems():
+            yield item
+
+
+meminfo = MemInfo()
