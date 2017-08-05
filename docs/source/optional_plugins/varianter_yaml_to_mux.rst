@@ -543,3 +543,23 @@ From this example you can see that querying for ``/env/debug`` works only in
 the first variant, but returns nothing in the second variant. Keep this in mind
 and when you use the ``!mux`` flag always query for the pre-mux path,
 ``/env/*`` in this example.
+
+
+Yaml_to_mux_loader plugin
+=========================
+
+This plugin is part of the `Yaml_to_mux` plugin and it understands the same
+content, only it works on loader-level, rather than on test variants level.
+The result is that this plugin tries to open the test reference as if it was
+a file specifying variants and if it succeeds it iterates through variants
+and looks for `test_reference` entries. On success it attempts to discover
+the reference using `FileLoader` and then it assigns the current variant's
+params to it. This way one can freely assign various variants to different
+tests.
+
+Keep in mind YAML files (in Avocado) are ordered, therefor variant name won't
+re-arrange the test order. The only exception is when you use the same variant
+name twice, then the second one will get merged into the first one.
+
+The simplest way to learn about this plugin is to look at examples in
+``examples/yaml_to_mux_loader/``.

@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import tree, exit_codes, mux
+from avocado.core import tree, exit_codes, mux, varianter, loader
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
@@ -314,10 +314,63 @@ class YamlToMuxCLI(CLI):
                              help="DEPRECATED: Filter out path(s) from "
                              "multiplexing (use --mux-filter-out instead)")
 
+            mux = subparser.add_argument_group("yaml to mux testsuite options")
+            mux.add_argument("--mux-suite-only", nargs="+",
+                             help="Filter only part of the YAML suite file")
+            mux.add_argument("--mux-suite-out", nargs="+",
+                             help="Filter out part of the YAML suite file")
+
     def run(self, args):
         """
         The YamlToMux varianter plugin handles these
         """
+        loader.loader.register_plugin(YamlTestsuiteLoader)
+
+
+class YamlTestsuiteLoader(loader.TestLoader):
+
+    """
+    Gets variants from a YAML file and uses `test_reference` entries
+    to create a test suite.
+    """
+
+    name = "yaml_testsuite"
+
+    @staticmethod
+    def get_type_label_mapping():
+        """
+        Currently this plugin uses loader.FileLoader, therefor it can only
+        resolve it's test types.
+        """
+        return loader.FileLoader.get_type_label_mapping()
+
+    @staticmethod
+    def get_decorator_mapping():
+        """
+        Currently this plugin uses loader.FileLoader, therefor it can only
+        resolve it's test types.
+        """
+        return loader.FileLoader.get_decorator_mapping()
+
+    def discover(self, reference, which_tests=loader.DEFAULT):
+        tests = []
+        try:
+            root = mux.apply_filters(create_from_yaml([reference], False),
+                                     getattr(self.args, "mux_suite_only", []),
+                                     getattr(self.args, "mux_suite_out", []))
+        except Exception:
+            return []
+        mux_tree = mux.MuxTree(root)
+        f_loader = loader.FileLoader(self.args, {})
+        for variant in mux_tree:
+            params = varianter.AvocadoParams(variant, "YamlTestsuiteLoader",
+                                             ["/run/*"], {})
+            reference = params.get("test_reference")
+            _tests = f_loader.discover(reference)
+            for tst in _tests:
+                tst[1]["params"] = (variant, ["/run/*"])
+            tests.extend(_tests)
+        return tests
 
 
 class YamlToMux(mux.MuxPlugin, Varianter):

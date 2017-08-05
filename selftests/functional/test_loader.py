@@ -261,6 +261,41 @@ class LoaderTestFunctional(unittest.TestCase):
                     % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
+    def test_yaml_loader_run(self):
+        # Checks that yaml_loader supplies correct params and that
+        # --mux-suite-only filters the test suite
+        result = process.run("%s --show test run --dry-run --mux-suite-only "
+                             "/run/tests/sleeptest -- examples/yaml_to_mux_"
+                             "loader/advanced.yaml" % AVOCADO)
+        test = -1
+        exp_timeouts = [2] * 4 + [6] * 4 + [None] * 4
+        exp_timeout = None
+        exp_sleep_lengths = [0.5, 1, 5, 10] * 3
+        exp_sleep_length = None
+        for line in result.stdout.splitlines():
+            if line.startswith("START "):
+                self.assertFalse(exp_timeout, "%s was not found in test %ss "
+                                 "output:\n%s" % (exp_timeout, test, result))
+                self.assertFalse(exp_timeout, "%s was not found in test %ss "
+                                 "output:\n%s" % (exp_sleep_length, test,
+                                                  result))
+                self.assertLess(test, 12, "Number of tests is greater than "
+                                "12:\n%s" % result)
+                test += 1
+                timeout = exp_timeouts[test]
+                if timeout:
+                    exp_timeout = "timeout ==> %s" % timeout
+                else:
+                    exp_timeout = "(key=timeout, path=*, default=None) => None"
+                exp_sleep_length = ("sleep_length ==> %s"
+                                    % exp_sleep_lengths[test])
+            elif exp_timeout and exp_timeout in line:
+                exp_timeout = None
+            elif exp_sleep_length and exp_sleep_length in line:
+                exp_sleep_length = None
+        self.assertEqual(test, 11, "Number of tests is not 12 (%s):\n%s"
+                         % (test, result))
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 

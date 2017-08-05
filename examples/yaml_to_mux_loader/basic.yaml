@@ -1,0 +1,18 @@
+# This example shows how to define test as well as params together in one
+# file. To execute it simply install avocado_varianter_yaml_to_mux plugin
+# and run this as if it was a test (avocado run $this_file)
+#
+# test_reference - specifies the test reference to be loaded with the default
+#     (file) loader.
+
+!mux
+passtest:
+    test_reference: passtest.py
+sleeptest:
+    test_reference: sleeptest.py
+failtest:
+    test_reference: failtest.py
+    some_test_variants: !mux
+        this_fails:
+        this_also_fails:
+        and_this_fails_as_well:
