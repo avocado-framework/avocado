@@ -261,6 +261,29 @@ class LoaderTestFunctional(unittest.TestCase):
                     % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
+    @unittest.skipUnless(os.path.exists("/bin/true"), "/bin/true not "
+                         "available")
+    @unittest.skipUnless(os.path.exists("/bin/echo"), "/bin/echo not "
+                         "available")
+    def test_yaml_loader_list(self):
+        # Verifies that yaml_loader list won't crash and is able to detect
+        # various test types
+        result = process.run("%s list -V --loaders yaml_testsuite -- "
+                             "examples/yaml_to_mux_loader/loaders.yaml"
+                             % AVOCADO)
+        # This has to be defined like this as pep8 complains about tailing
+        # empty spaces when using """
+        self.assertRegexpMatches(result.stdout, r"Type *Test *Tag\(s\)\n"
+                                 r"INSTRUMENTED *passtest.py:PassTest.test *"
+                                 "fast\n"
+                                 r"SIMPLE.*passtest.sh *\n"
+                                 r"EXTERNAL *external_echo *\n"
+                                 r"EXTERNAL *external_false *\n")
+        # Also check whether list without loaders won't crash
+        result = process.run("%s list -V -- "
+                             "examples/yaml_to_mux_loader/loaders.yaml"
+                             % AVOCADO)
+
     def test_yaml_loader_run(self):
         # Checks that yaml_loader supplies correct params and that
         # --mux-suite-only filters the test suite
