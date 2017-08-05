@@ -208,7 +208,6 @@ class TestLoaderProxy(object):
                 extra_params['loader_options'] = loaders[i][1]
             plugin = self.registered_plugins[supported_loaders.index(name)]
             self._initialized_plugins.append(plugin(args, extra_params))
-        self._update_mappings()
 
     def _update_mappings(self):
         """
@@ -217,11 +216,11 @@ class TestLoaderProxy(object):
         # Plugins are initialized, let's update mappings
         self._label_mapping = {MissingTest: "MISSING"}
         for plugin in self._initialized_plugins:
-            self._label_mapping.update(plugin.get_type_label_mapping())
+            self._label_mapping.update(plugin.get_full_type_label_mapping())
         self._decorator_mapping = {MissingTest:
                                    output.TERM_SUPPORT.fail_header_str}
         for plugin in self._initialized_plugins:
-            self._decorator_mapping.update(plugin.get_decorator_mapping())
+            self._decorator_mapping.update(plugin.get_full_decorator_mapping())
 
     def get_extra_listing(self):
         for loader_plugin in self._initialized_plugins:
@@ -234,9 +233,15 @@ class TestLoaderProxy(object):
         return base_path
 
     def get_type_label_mapping(self):
+        if self._label_mapping is None:
+            raise RuntimeError("LoaderProxy.discover has to be called before "
+                               "LoaderProxy.get_type_label_mapping")
         return self._label_mapping
 
     def get_decorator_mapping(self):
+        if self._label_mapping is None:
+            raise RuntimeError("LoaderProxy.discover has to be called before "
+                               "LoaderProxy.get_decorator_mapping")
         return self._decorator_mapping
 
     def discover(self, references, which_tests=DEFAULT, force=None):
@@ -292,6 +297,7 @@ class TestLoaderProxy(object):
                 else:
                     raise LoaderUnhandledReferenceError(unhandled_references,
                                                         self._initialized_plugins)
+        self._update_mappings()
         return tests
 
     def load_test(self, test_factory):
@@ -390,6 +396,12 @@ class TestLoader(object):
         """
         raise NotImplementedError
 
+    def get_full_type_label_mapping(self):     # pylint: disable=R0201
+        """
+        Allows extending the type-label-mapping after the object is initialized
+        """
+        return self.get_type_label_mapping()
+
     @staticmethod
     def get_decorator_mapping():
         """
@@ -398,6 +410,12 @@ class TestLoader(object):
         :return: Dict {TestClass: decorator function}
         """
         raise NotImplementedError
+
+    def get_full_decorator_mapping(self):      # pylint: disable=R0201
+        """
+        Allows extending the decorator-mapping after the object is initialized
+        """
+        return self.get_decorator_mapping()
 
     def discover(self, reference, which_tests=DEFAULT):
         """
