@@ -114,6 +114,19 @@ class MyTest(Test):
 '''
 
 
+RAISE_CUSTOM_PATH_EXCEPTION_CONTENT = '''import os
+import sys
+
+from avocado import Test
+
+class SharedLibTest(Test):
+    def test(self):
+        sys.path.append(os.path.join(os.path.dirname(__file__), "shared_lib"))
+        from mylib import CancelExc
+        raise CancelExc("This should not crash on unpickling in runner")
+'''
+
+
 def probe_binary(binary):
     try:
         return utils_path.find_command(binary)
@@ -390,6 +403,26 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
         self.assertIn('"status": "FAIL"', result.stdout)
+
+    def test_exception_not_in_path(self):
+        os.chdir(basedir)
+        os.mkdir(os.path.join(self.tmpdir, "shared_lib"))
+        mylib = script.Script(os.path.join(self.tmpdir, "shared_lib",
+                                           "mylib.py"),
+                              "from avocado import TestCancel\n\n"
+                              "class CancelExc(TestCancel):\n"
+                              "    pass")
+        mylib.save()
+        mytest = script.Script(os.path.join(self.tmpdir, "mytest.py"),
+                               RAISE_CUSTOM_PATH_EXCEPTION_CONTENT)
+        mytest.save()
+        result = process.run("%s --show test run --sysinfo=off "
+                             "--job-results-dir %s %s"
+                             % (AVOCADO, self.tmpdir, mytest))
+        self.assertIn("mytest.py:SharedLibTest.test -> CancelExc: This "
+                      "should not crash on unpickling in runner",
+                      result.stdout)
+        self.assertNotIn("Failed to read queue", result.stdout)
 
     def test_runner_timeout(self):
         os.chdir(basedir)

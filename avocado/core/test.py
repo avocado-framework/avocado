@@ -707,12 +707,12 @@ class Test(unittest.TestCase):
         except exceptions.TestBaseException as detail:
             self.__status = detail.status
             self.__fail_class = detail.__class__.__name__
-            self.__fail_reason = detail
+            self.__fail_reason = str(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except AssertionError as detail:
             self.__status = 'FAIL'
             self.__fail_class = detail.__class__.__name__
-            self.__fail_reason = detail
+            self.__fail_reason = str(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception as detail:
             self.__status = 'ERROR'
