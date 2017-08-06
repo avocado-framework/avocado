@@ -189,6 +189,11 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     'passtest.py passtest.py' % (AVOCADO, self.tmpdir))
         process.run(cmd_line)
+        # Also check whether jobdata contains correct mux_path
+        variants = open(os.path.join(self.tmpdir, "latest", "jobdata",
+                        "variants.json")).read()
+        self.assertIn('["/run/*"]', variants, "mux_path stored in jobdata "
+                      "does not contains [\"/run/*\"]\n%s" % variants)
 
     def test_runner_failfast(self):
         os.chdir(basedir)
