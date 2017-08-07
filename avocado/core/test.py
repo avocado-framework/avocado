@@ -243,12 +243,19 @@ class Test(unittest.TestCase):
         self.__fail_reason = None
         self.__fail_class = None
         self.__traceback = None
+        self.__cache_dirs = None    # Is initialized lazily
 
         self.__running = False
         self.paused = False
         self.paused_msg = ''
 
         self.__runner_queue = runner_queue
+
+        basename = (os.path.basename(self.logdir).replace(':', '_')
+                    .replace(';', '_'))
+        self.__workdir = utils_path.init_dir(data_dir.get_tmp_dir(),
+                                             basename)
+        self.__srcdir = utils_path.init_dir(self.workdir, 'src')
 
         unittest.TestCase.__init__(self, methodName=methodName)
 
@@ -355,27 +362,27 @@ class Test(unittest.TestCase):
             raise EnvironmentError(msg)
         return path
 
-    @data_structures.LazyProperty
+    @property
     def workdir(self):
-        basename = (os.path.basename(self.logdir).replace(':', '_')
-                    .replace(';', '_'))
-        return utils_path.init_dir(data_dir.get_tmp_dir(), basename)
+        return self.__workdir
 
-    @data_structures.LazyProperty
+    @property
     def srcdir(self):
-        return utils_path.init_dir(self.workdir, 'src')
+        return self.__srcdir
 
-    @data_structures.LazyProperty
+    @property
     def cache_dirs(self):
         """
         Returns a list of cache directories as set in config file.
         """
-        cache_dirs = settings.get_value('datadir.paths', 'cache_dirs',
-                                        key_type=list, default=[])
-        datadir_cache = os.path.join(data_dir.get_data_dir(), 'cache')
-        if datadir_cache not in cache_dirs:
-            cache_dirs.append(datadir_cache)
-        return cache_dirs
+        if self.__cache_dirs is None:
+            cache_dirs = settings.get_value('datadir.paths', 'cache_dirs',
+                                            key_type=list, default=[])
+            datadir_cache = os.path.join(data_dir.get_data_dir(), 'cache')
+            if datadir_cache not in cache_dirs:
+                cache_dirs.append(datadir_cache)
+            self.__cache_dirs = cache_dirs
+        return self.__cache_dirs
 
     @property
     def runner_queue(self):

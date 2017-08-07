@@ -28,19 +28,19 @@ class SyncTest(Test):
         sync_tarball = self.params.get('sync_tarball', '*', 'synctest.tar.bz2')
         tarball_path = os.path.join(self.datadir, sync_tarball)
         archive.extract(tarball_path, self.srcdir)
-        self.srcdir = os.path.join(self.srcdir, 'synctest')
+        srcdir = os.path.join(self.srcdir, 'synctest')
+        os.chdir(srcdir)
         if self.params.get('debug_symbols', default=True):
-            build.make(self.srcdir,
+            build.make(srcdir,
                        env={'CFLAGS': '-g -O0'},
                        extra_args='synctest')
         else:
-            build.make(self.srcdir)
+            build.make(srcdir)
 
     def test(self):
         """
         Execute synctest with the appropriate params.
         """
-        os.chdir(self.srcdir)
         path = os.path.join(os.getcwd(), 'synctest')
         cmd = ('%s %s %s' %
                (path, self.params.get('sync_length', default=100),
