@@ -300,8 +300,8 @@ class TestRunner(object):
         :type queue: :class:`multiprocessing.Queue` instance.
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
-        sys.stdout = output.LoggingFile(loggers=[TEST_LOG])
-        sys.stderr = output.LoggingFile(loggers=[TEST_LOG])
+        sys.stdout = output.LoggingFile(["[stdout] "], loggers=[TEST_LOG])
+        sys.stderr = output.LoggingFile(["[stderr] "], loggers=[TEST_LOG])
 
         def sigterm_handler(signum, frame):     # pylint: disable=W0613
             """ Produce traceback on SIGTERM """
