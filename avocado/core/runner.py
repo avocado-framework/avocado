@@ -304,8 +304,8 @@ class TestRunner(object):
                               logging.getLogger('paramiko')]
         logger_list_stderr = [TEST_LOG,
                               logging.getLogger('paramiko')]
-        sys.stdout = output.LoggingFile(logger=logger_list_stdout)
-        sys.stderr = output.LoggingFile(logger=logger_list_stderr)
+        sys.stdout = output.LoggingFile(loggers=logger_list_stdout)
+        sys.stderr = output.LoggingFile(loggers=logger_list_stderr)
 
         def sigterm_handler(signum, frame):     # pylint: disable=W0613
             """ Produce traceback on SIGTERM """
