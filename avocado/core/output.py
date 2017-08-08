@@ -607,17 +607,15 @@ class LoggingFile(object):
     File-like object that will receive messages pass them to logging.
     """
 
-    def __init__(self, prefix='', level=logging.DEBUG,
+    def __init__(self, prefixes=None, level=logging.DEBUG,
                  loggers=None):
         """
         Constructor. Sets prefixes and which loggers is going to be used.
 
-        :param prefix - The prefix for each line logged by this object.
+        :param prefixes: Prefix per logger to be prefixed to each line.
         :param level: Log level to be used when writing messages.
         :param loggers: Loggers into which write should be issued.
         """
-
-        self._prefix = prefix
         if not loggers:
             loggers = [logging.getLogger()]
         self._level = level
@@ -625,6 +623,9 @@ class LoggingFile(object):
         if not isinstance(loggers, list):
             loggers = [loggers]
         self._loggers = loggers
+        if prefixes is None:
+            prefixes = [""] * len(loggers)
+        self._prefixes = prefixes
 
     def write(self, data):
         """"
@@ -655,8 +656,8 @@ class LoggingFile(object):
         """
         Passes lines of output to the logging module.
         """
-        for lg in self._loggers:
-            lg.log(self._level, self._prefix + line)
+        for i in xrange(len(self._loggers)):
+            self._loggers[i].log(self._level, self._prefixes[i] + line)
 
     def _flush_buffer(self):
         if self._buffer:
@@ -669,11 +670,14 @@ class LoggingFile(object):
     def isatty(self):
         return False
 
-    def add_logger(self, logger):
+    def add_logger(self, logger, prefix=""):
         self._loggers.append(logger)
+        self._prefixes.append(prefix)
 
     def rm_logger(self, logger):
+        idx = self._loggers.index(logger)
         self._loggers.remove(logger)
+        self._prefixes = self._prefixes[:idx] + self._prefixes[idx+1:]
 
 
 class Throbber(object):
