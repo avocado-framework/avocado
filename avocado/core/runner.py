@@ -17,7 +17,6 @@
 Test runner module.
 """
 
-import logging
 import multiprocessing
 from multiprocessing import queues
 import os
@@ -301,12 +300,8 @@ class TestRunner(object):
         :type queue: :class:`multiprocessing.Queue` instance.
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
-        logger_list_stdout = [TEST_LOG,
-                              logging.getLogger('paramiko')]
-        logger_list_stderr = [TEST_LOG,
-                              logging.getLogger('paramiko')]
-        sys.stdout = output.LoggingFile(loggers=logger_list_stdout)
-        sys.stderr = output.LoggingFile(loggers=logger_list_stderr)
+        sys.stdout = output.LoggingFile(loggers=[TEST_LOG])
+        sys.stderr = output.LoggingFile(loggers=[TEST_LOG])
 
         def sigterm_handler(signum, frame):     # pylint: disable=W0613
             """ Produce traceback on SIGTERM """
