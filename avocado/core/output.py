@@ -608,19 +608,21 @@ class LoggingFile(object):
     """
 
     def __init__(self, prefix='', level=logging.DEBUG,
-                 logger=[logging.getLogger()]):
+                 loggers=None):
         """
-        Constructor. Sets prefixes and which logger is going to be used.
+        Constructor. Sets prefixes and which loggers are going to be used.
 
         :param prefix - The prefix for each line logged by this object.
+        :param level: Log level to be used when writing messages.
+        :param loggers: Loggers into which write should be issued. (list)
         """
 
         self._prefix = prefix
+        if not loggers:
+            loggers = [logging.getLogger()]
         self._level = level
         self._buffer = []
-        if not isinstance(logger, list):
-            logger = [logger]
-        self._logger = logger
+        self._loggers = loggers
 
     def write(self, data):
         """"
@@ -651,7 +653,7 @@ class LoggingFile(object):
         """
         Passes lines of output to the logging module.
         """
-        for lg in self._logger:
+        for lg in self._loggers:
             lg.log(self._level, self._prefix + line)
 
     def _flush_buffer(self):
@@ -666,10 +668,10 @@ class LoggingFile(object):
         return False
 
     def add_logger(self, logger):
-        self._logger.append(logger)
+        self._loggers.append(logger)
 
     def rm_logger(self, logger):
-        self._logger.remove(logger)
+        self._loggers.remove(logger)
 
 
 class Throbber(object):
