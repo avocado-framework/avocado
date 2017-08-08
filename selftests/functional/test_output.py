@@ -35,6 +35,7 @@ $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
 
 
 OUTPUT_TEST_CONTENT = """#!/bin/env python
+import os
 import sys
 
 from avocado import Test
@@ -44,6 +45,9 @@ print "top_print"
 sys.stdout.write("top_stdout\\n")
 sys.stderr.write("top_stderr\\n")
 process.run("/bin/echo top_process")
+os.write(1, "top_1\\n")
+os.write(2, "top_2\\n")
+
 
 class OutputTest(Test):
     def __init__(self, *args, **kwargs):
@@ -52,18 +56,24 @@ class OutputTest(Test):
         sys.stdout.write("init_stdout\\n")
         sys.stderr.write("init_stderr\\n")
         process.run("/bin/echo init_process")
+        os.write(1, "init_1\\n")
+        os.write(2, "init_2\\n")
 
     def test(self):
         print "test_print"
         sys.stdout.write("test_stdout\\n")
         sys.stderr.write("test_stderr\\n")
         process.run("/bin/echo test_process")
+        os.write(1, "test_1\\n")
+        os.write(2, "test_2\\n")
 
     def __del__(self):
         print "del_print"
         sys.stdout.write("del_stdout\\n")
         sys.stderr.write("del_stderr\\n")
         process.run("/bin/echo del_process")
+        os.write(1, "del_1\\n")
+        os.write(2, "del_2\\n")
 """
 
 
@@ -145,10 +155,18 @@ class OutputTest(unittest.TestCase):
                 "[stdout] test_print", "[stdout] test_stdout",
                 "[stderr] test_stderr", "[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
+        exps = ["[stdout] top_1", "[stdout] init_1",
+                "[stdout] test_1"]
+        _check_output(joblog, exps, "job.log")
+        exps = ["[stderr] top_2", "[stderr] init_2",
+                "[stderr] test_2"]
+        _check_output(joblog, exps, "job.log")
+        for not_in in ["del_1", "del_2"]:
+            self.assertNotIn(not_in, open(joblog).read())
         testdir = res["tests"][0]["logdir"]
-        self.assertEqual("test_print\ntest_stdout\ntest_process\n",
+        self.assertEqual("test_print\ntest_stdout\ntest_process\ntest_1\n",
                          open(os.path.join(testdir, "stdout")).read())
-        self.assertEqual("test_stderr\n",
+        self.assertEqual("test_stderr\ntest_2\n",
                          open(os.path.join(testdir, "stderr")).read())
 
     def tearDown(self):

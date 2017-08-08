@@ -472,6 +472,21 @@ class FilterInfoAndLess(logging.Filter):
         return record.levelno <= logging.INFO
 
 
+class FilenoHandler(logging.StreamHandler):
+    def __init__(self, fileno):
+        super(FilenoHandler, self).__init__()
+        self.fileno = fileno
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            os.write(self.fileno, msg + "\n")
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            self.handleError(record)
+
+
 class ProgressStreamHandler(logging.StreamHandler):
 
     """
