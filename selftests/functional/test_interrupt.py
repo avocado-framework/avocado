@@ -1,13 +1,16 @@
 import os
 import tempfile
 import time
+import signal
 import shutil
 import stat
+import subprocess
 import unittest
 
 import aexpect
 import psutil
 
+from avocado.utils import process
 from avocado.utils import wait
 from avocado.utils import script
 from avocado.utils import data_factory
@@ -183,6 +186,45 @@ class InterruptTest(unittest.TestCase):
         self.assertIn('Interrupt requested. Waiting 2 seconds for test to '
                       'finish (ignoring new SIGINT until then)',
                       proc.get_output())
+
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
+    def test_main_process_sigint(self):
+        """
+        Make sure Avocado finishes after the main process receives
+        a SIGINT.
+        """
+        good_test_basename = ('goodtest-%s.py' %
+                              data_factory.generate_random_string(5))
+        good_test = script.TemporaryScript(good_test_basename, GOOD_TEST,
+                                           'avocado_interrupt_test',
+                                           mode=DEFAULT_MODE)
+        good_test.save()
+        os.chdir(basedir)
+        cmd = ('%s run %s --sysinfo=off --job-results-dir %s ' %
+               (AVOCADO, good_test.path, self.tmpdir))
+        proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+        def has_children():
+            return len(psutil.Process(proc.pid).children()) > 0
+        wait.wait_for(has_children, timeout=5)
+
+        os.kill(proc.pid, signal.SIGINT)
+
+        def is_finished():
+            return proc.poll() is not None
+        finished = wait.wait_for(is_finished, timeout=5)
+        if not finished:
+            process.kill_process_tree(proc.pid)
+            self.fail('Avocado was still running after receiving SIGINT.')
+
+        output = proc.communicate()[0]
+        self.assertNotIn('Killing test subprocess', output)
+        self.assertIn('Interrupt requested. Waiting 2 seconds for test to '
+                      'finish (ignoring new SIGINT until then)',
+                      output)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
