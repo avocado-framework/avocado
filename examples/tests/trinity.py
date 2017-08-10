@@ -31,10 +31,10 @@ class TrinityTest(Test):
         tarball = self.params.get('tarball', default='trinity-1.5.tar.bz2')
         tarball_path = os.path.join(self.datadir, tarball)
         archive.extract(tarball_path, self.srcdir)
-        self.srcdir = os.path.join(self.srcdir, 'trinity-1.5')
-        os.chdir(self.srcdir)
+        srcdir = os.path.join(self.srcdir, 'trinity-1.5')
+        os.chdir(srcdir)
         process.run('./configure.sh')
-        build.make(self.srcdir)
+        build.make(srcdir)
         self.victims_path = data_factory.make_dir_and_populate(self.workdir)
 
     def test(self):
