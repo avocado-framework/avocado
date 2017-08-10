@@ -186,7 +186,8 @@ class ArchiveFile(object):
                 dst = os.path.join(dst_dir, path)
                 if not os.path.islink(dst):
                     # Link created as an ordinary file containing the dst path
-                    src = open(dst, 'r').read()
+                    with open(dst, 'r') as dst_path:
+                        src = dst_path.read()
                 else:
                     # Link is already there and could be outdated. Let's read
                     # the original destination from the zip file.
