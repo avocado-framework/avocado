@@ -79,7 +79,7 @@ class InterruptTest(unittest.TestCase):
         proc.sendline('\x03')
         proc.read_until_last_line_matches('Interrupt requested. Waiting 2 '
                                           'seconds for test to finish '
-                                          '(ignoring new Ctrl+C until then)')
+                                          '(ignoring new SIGINT until then)')
         # We have to actually wait 2 seconds until the ignore window is over
         time.sleep(2.5)
         proc.sendline('\x03')
@@ -181,7 +181,7 @@ class InterruptTest(unittest.TestCase):
         self.assertNotIn('Killing test subprocess', proc.get_output())
         # Make sure the Interrupted requested sentence is there
         self.assertIn('Interrupt requested. Waiting 2 seconds for test to '
-                      'finish (ignoring new Ctrl+C until then)',
+                      'finish (ignoring new SIGINT until then)',
                       proc.get_output())
 
     def tearDown(self):
