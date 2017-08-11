@@ -78,13 +78,25 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, (4, 0))
+        # Also check whether jobdata contains correct mux_path
+        variants = open(os.path.join(self.tmpdir, "latest", "jobdata",
+                        "variants.json")).read()
+        self.assertIn('["/run/*"]', variants, "mux_path stored in jobdata "
+                      "does not contains [\"/run/*\"]\n%s" % variants)
 
     def test_run_mplex_doublepass(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py passtest.py -m '
-                    'examples/tests/sleeptest.py.data/sleeptest.yaml'
+                    'examples/tests/sleeptest.py.data/sleeptest.yaml '
+                    '--mux-path /foo/\\* /bar/\\* /baz/\\*'
                     % (AVOCADO, self.tmpdir))
         self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (8, 0))
+        # Also check whether jobdata contains correct mux_path
+        variants = open(os.path.join(self.tmpdir, "latest", "jobdata",
+                        "variants.json")).read()
+        exp = '["/foo/*", "/bar/*", "/baz/*"]'
+        self.assertIn(exp, variants, "mux_path stored in jobdata "
+                      "does not contains %s\n%s" % (exp, variants))
 
     def test_run_mplex_failtest(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
