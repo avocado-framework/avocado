@@ -653,4 +653,34 @@ be a valid one:
  * An end of string (or end of line) must immediately follow the
    content.
 
+.. _signal_handlers:
+
+Signal Handlers
+===============
+
+Avocado normal operation is related to run code written by
+users/test-writers. It means the test code can carry its own handlers
+for different signals or even ignore then. Still, as the code is being
+executed by Avocado, we have to make sure we will finish all the
+subprocesses we create before ending our execution.
+
+Signals sent to the Avocado main process will be handled as follows:
+
+- SIGSTP/Ctrl+Z: On SIGSTP, Avocado will pause the execution of the
+  subprocesses, while the main process will still be running,
+  respecting the timeout timer and waiting for the subprocesses to
+  finish. A new SIGSTP will make the subprocesses to resume the
+  execution.
+- SIGINT/Ctrl+C: This signal will be forwarded to the test process and
+  Avocado will wait until it's finished. If the test process does not
+  finish after receiving a SIGINT, user can send a second SIGINT (after
+  the 2 seconds ignore period). The second SIGINT will make Avocado
+  to send a SIGKILL to the whole subprocess tree and then complete the
+  main process execution.
+- SIGTERM: This signal will make Avocado to terminate immediately. A
+  SIGKILL will be sent to the whole subprocess tree and the main process
+  will exit without completing the execution. Notice that it's a
+  best-effort attempt, meaning that in case of fork-bomb, newly created
+  processes might still be left behind.
+
 .. [#f1] Avocado plugins can introduce additional test types.
