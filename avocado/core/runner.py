@@ -21,8 +21,10 @@ import logging
 import multiprocessing
 from multiprocessing import queues
 import os
+import select
 import signal
 import sys
+import threading
 import time
 
 from . import test
@@ -286,6 +288,20 @@ class TestRunner(object):
         self.result = result
         self.sigstopped = False
 
+    def _pipe_to_file(self, pipe, target, finish):
+        while True:
+            # finish, nor select should be necessary, I just forgot to close
+            # the pipe somewhere...
+            if finish:
+                break
+            if select.select([pipe], [], [], 0.1)[0]:
+                data = os.read(pipe, 1024)
+                if data:
+                    target.write(data)
+                else:
+                    break
+        os.close(pipe)
+
     def _run_test(self, test_factory, queue):
         """
         Run a test instance.
@@ -301,12 +317,65 @@ class TestRunner(object):
         :type queue: :class:`multiprocessing.Queue` instance.
         """
         signal.signal(signal.SIGTSTP, signal.SIG_IGN)
-        logger_list_stdout = [TEST_LOG,
-                              logging.getLogger('paramiko')]
-        logger_list_stderr = [TEST_LOG,
-                              logging.getLogger('paramiko')]
-        sys.stdout = output.LoggingFile(logger=logger_list_stdout)
-        sys.stderr = output.LoggingFile(logger=logger_list_stderr)
+        # backup the raw outputs
+        raw_1 = os.dup(1)
+        raw_2 = os.dup(2)
+        # replace StreamHandlers in logging with handlers that output into
+        # raw outputs (to avoid double [stdout] prefixes)
+        for log in logging.Logger.manager.loggerDict.itervalues():
+            if not hasattr(log, "handlers"):
+                continue
+            stdouts = []
+            stderrs = []
+            for handler in log.handlers:
+                stream = getattr(handler, "stream", None)
+                if not stream:
+                    continue
+                elif stream == sys.stdout:
+                    stdouts.append(handler)
+                elif stream == sys.stderr:
+                    stderrs.append(handler)
+            if stdouts:
+                for handler in stdouts:
+                    if handler in log.handlers:
+                        log.handlers.remove(handler)
+                new_handler = output.FilenoHandler(raw_1)
+                new_handler.filters = handler.filters
+                new_handler.formatter = handler.formatter
+                log.addHandler(new_handler)
+            if stderrs:
+                for handler in stderrs:
+                    if handler in log.handlers:
+                        log.handlers.remove(handler)
+                new_handler = output.FilenoHandler(raw_2)
+                new_handler.filters = handler.filters
+                new_handler.formatter = handler.formatter
+                log.addHandler(new_handler)
+        # Replace sys.stdout with logger-redirector
+        #   * here avocado.test is added with "[stdout] " prefix (job.log,
+        #     debug.log, if enabled also (raw)stdout)
+        #   * on Test._start_logging avocado.test.stdout is added without
+        #     any prefix (stdout)
+        sys.stdout = output.LoggingFile(["[stdout] "], loggers=[TEST_LOG])
+        sys.stderr = output.LoggingFile(["[stderr] "], loggers=[TEST_LOG])
+
+        # Create pipes to be able to replace fd1 and fd2 with a fd
+        stdout_out, stdout_in = os.pipe()
+        stderr_out, stderr_in = os.pipe()
+
+        # Start threads to read from fd1 and fd2 and forward it to the
+        # "updated" stdout/stderr (the logger-redirection)
+        # note: The finish should not be necessary, I just had no time to
+        #       debug where I forgot to close the pipe...
+        finish = []
+        th_stdout = threading.Thread(target=self._pipe_to_file,
+                                     name="1_to_stdout",
+                                     args=(stdout_out, sys.stdout, finish))
+        th_stderr = threading.Thread(target=self._pipe_to_file,
+                                     name="2_to_stderr",
+                                     args=(stderr_out, sys.stderr, finish))
+        th_stdout.start()
+        th_stderr.start()
 
         def sigterm_handler(signum, frame):     # pylint: disable=W0613
             """ Produce traceback on SIGTERM """
@@ -322,7 +391,12 @@ class TestRunner(object):
         # STDIN fd (0), with the same fd previously set by
         # `multiprocessing.Process()`
         os.dup2(sys.stdin.fileno(), 0)
-
+        # Replace the 1 and 2 with our pipe, which then forwards the output
+        # to the logger redirector, which produces raw messages in the "stdout"
+        # file as well as "[stdout] " prefixed ones in avocado.test logger.
+        os.dup2(stdout_in, 1)
+        os.dup2(stderr_in, 2)
+        # Now we are all set...
         instance = loader.load_test(test_factory)
         if instance.runner_queue is None:
             instance.set_runner_queue(queue)
@@ -341,6 +415,15 @@ class TestRunner(object):
         try:
             instance.run_avocado()
         finally:
+            # Finish the logging, theoretically we should replace the output
+            # with raw_outputs to be able to see what's going on after this
+            # point. This is why we don't see the `del_1/2` messages in the
+            # selftest.
+            finish.append(True)
+            os.close(stdout_in)
+            os.close(stderr_in)
+            th_stdout.join()
+            th_stderr.join()
             try:
                 state = instance.get_state()
                 queue.put(state)
@@ -383,7 +466,7 @@ class TestRunner(object):
         signal.signal(signal.SIGTSTP, sigtstp_handler)
 
         proc = multiprocessing.Process(target=self._run_test,
-                                       args=(test_factory, queue,))
+                                       args=(test_factory, queue))
         test_status = TestStatus(self.job, queue)
 
         cycle_timeout = 1

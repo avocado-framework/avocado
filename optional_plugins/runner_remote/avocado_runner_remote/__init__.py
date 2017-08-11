@@ -483,12 +483,11 @@ class RemoteTestRunner(TestRunner):
         fabric_logger.addHandler(file_handler)
         paramiko_logger.addHandler(file_handler)
         remote_logger.addHandler(file_handler)
-        logger_list = [fabric_logger]
         if self.job.args.show_job_log:
-            logger_list.append(app_logger)
             output.add_log_handler(paramiko_logger.name)
-        sys.stdout = output.LoggingFile(logger=logger_list)
-        sys.stderr = output.LoggingFile(logger=logger_list)
+        logger_list = [output.LOG_JOB]
+        sys.stdout = output.LoggingFile(loggers=logger_list)
+        sys.stderr = output.LoggingFile(loggers=logger_list)
         try:
             try:
                 self.setup()

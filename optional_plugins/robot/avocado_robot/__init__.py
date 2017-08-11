@@ -54,8 +54,8 @@ class RobotTest(test.SimpleTest):
         Create the Robot command and execute it.
         """
         suite_name, test_name = self.name.name.split(':')[1].split('.')
-        log_stdout = output.LoggingFile(logger=[self.log], level=logging.INFO)
-        log_stderr = output.LoggingFile(logger=[self.log], level=logging.ERROR)
+        log_stdout = output.LoggingFile(loggers=[self.log], level=logging.INFO)
+        log_stderr = output.LoggingFile(loggers=[self.log], level=logging.ERROR)
         result = run(self.filename,
                      suite=suite_name,
                      test=test_name,
