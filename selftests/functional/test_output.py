@@ -34,6 +34,39 @@ $parser->plan eq '1..3' || die "Plan does not match what was expected!\n";
 """ % AVOCADO
 
 
+OUTPUT_TEST_CONTENT = """#!/bin/env python
+import sys
+
+from avocado import Test
+from avocado.utils import process
+
+print "top_print"
+sys.stdout.write("top_stdout\\n")
+sys.stderr.write("top_stderr\\n")
+process.run("/bin/echo top_process")
+
+class OutputTest(Test):
+    def __init__(self, *args, **kwargs):
+        super(OutputTest, self).__init__(*args, **kwargs)
+        print "init_print"
+        sys.stdout.write("init_stdout\\n")
+        sys.stderr.write("init_stderr\\n")
+        process.run("/bin/echo init_process")
+
+    def test(self):
+        print "test_print"
+        sys.stdout.write("test_stdout\\n")
+        sys.stderr.write("test_stderr\\n")
+        process.run("/bin/echo test_process")
+
+    def __del__(self):
+        print "del_print"
+        sys.stdout.write("del_stdout\\n")
+        sys.stderr.write("del_stderr\\n")
+        process.run("/bin/echo del_process")
+"""
+
+
 def image_output_uncapable():
     try:
         import PIL
@@ -83,6 +116,40 @@ class OutputTest(unittest.TestCase):
         self.assertNotIn(bad_string, output,
                          "Libc double free can be seen in avocado "
                          "doublefree output:\n%s" % output)
+
+    def test_print_to_std(self):
+        def _check_output(path, exps, name):
+            i = 0
+            end = len(exps)
+            for line in open(path):
+                if exps[i] in line:
+                    i += 1
+                    if i == end:
+                        break
+            self.assertEqual(i, end, "Failed to found %sth message from\n%s\n"
+                             "\nin the %s. Either it's missing or in wrong "
+                             "order.\n%s" % (i, "\n".join(exps), name,
+                                             open(path).read()))
+        test = script.Script(os.path.join(self.tmpdir, "output_test.py"),
+                             OUTPUT_TEST_CONTENT)
+        test.save()
+        os.chdir(basedir)
+        result = process.run("%s run --job-results-dir %s --sysinfo=off "
+                             "--json - -- %s" % (AVOCADO, self.tmpdir, test))
+        res = json.loads(result.stdout)
+        joblog = res["debuglog"]
+        exps = ["[stdout] top_print", "[stdout] top_stdout",
+                "[stderr] top_stderr", "[stdout] top_process",
+                "[stdout] init_print", "[stdout] init_stdout",
+                "[stderr] init_stderr", "[stdout] init_process",
+                "[stdout] test_print", "[stdout] test_stdout",
+                "[stderr] test_stderr", "[stdout] test_process"]
+        _check_output(joblog, exps, "job.log")
+        testdir = res["tests"][0]["logdir"]
+        self.assertEqual("test_print\ntest_stdout\ntest_process\n",
+                         open(os.path.join(testdir, "stdout")).read())
+        self.assertEqual("test_stderr\n",
+                         open(os.path.join(testdir, "stderr")).read())
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
