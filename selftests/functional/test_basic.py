@@ -29,23 +29,6 @@ basedir = os.path.abspath(basedir)
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
-PASS_SCRIPT_CONTENTS = """#!/bin/sh
-true
-"""
-
-PASS_SHELL_CONTENTS = "exit 0"
-
-FAIL_SCRIPT_CONTENTS = """#!/bin/sh
-false
-"""
-
-FAIL_SHELL_CONTENTS = "exit 1"
-
-HELLO_LIB_CONTENTS = """
-def hello():
-    return 'Hello world'
-"""
-
 LOCAL_IMPORT_TEST_CONTENTS = '''
 from avocado import Test
 from mylib import hello
@@ -272,7 +255,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_runner_test_with_local_imports(self):
         mylib = script.TemporaryScript(
             'mylib.py',
-            HELLO_LIB_CONTENTS,
+            "def hello():\n    return 'Hello world'",
             'avocado_simpletest_functional')
         mylib.save()
         mytest = script.Script(
@@ -697,11 +680,11 @@ class RunnerSimpleTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'ʊʋʉʈɑ ʅʛʌ',
-            PASS_SCRIPT_CONTENTS,
+            "#!/bin/sh\ntrue",
             'avocado_simpletest_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript('avocado_fail.sh',
-                                                  FAIL_SCRIPT_CONTENTS,
+                                                  "#!/bin/sh\nfalse",
                                                   'avocado_simpletest_'
                                                   'functional')
         self.fail_script.save()
@@ -861,12 +844,12 @@ class ExternalRunnerTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'pass',
-            PASS_SHELL_CONTENTS,
+            "exit 0",
             'avocado_externalrunner_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript(
             'fail',
-            FAIL_SHELL_CONTENTS,
+            "exit 1",
             'avocado_externalrunner_functional')
         self.fail_script.save()
 
