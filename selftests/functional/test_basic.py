@@ -29,23 +29,6 @@ basedir = os.path.abspath(basedir)
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
-PASS_SCRIPT_CONTENTS = """#!/bin/sh
-true
-"""
-
-PASS_SHELL_CONTENTS = "exit 0"
-
-FAIL_SCRIPT_CONTENTS = """#!/bin/sh
-false
-"""
-
-FAIL_SHELL_CONTENTS = "exit 1"
-
-HELLO_LIB_CONTENTS = """
-def hello():
-    return 'Hello world'
-"""
-
 LOCAL_IMPORT_TEST_CONTENTS = '''
 from avocado import Test
 from mylib import hello
@@ -111,6 +94,19 @@ import signal
 class MyTest(Test):
     def test(self):
          os.kill(os.getpid(), signal.SIGKILL)
+'''
+
+
+RAISE_CUSTOM_PATH_EXCEPTION_CONTENT = '''import os
+import sys
+
+from avocado import Test
+
+class SharedLibTest(Test):
+    def test(self):
+        sys.path.append(os.path.join(os.path.dirname(__file__), "shared_lib"))
+        from mylib import CancelExc
+        raise CancelExc("This should not crash on unpickling in runner")
 '''
 
 
@@ -264,7 +260,7 @@ class RunnerOperationTest(unittest.TestCase):
     def test_runner_test_with_local_imports(self):
         mylib = script.TemporaryScript(
             'mylib.py',
-            HELLO_LIB_CONTENTS,
+            "def hello():\n    return 'Hello world'",
             'avocado_simpletest_functional')
         mylib.save()
         mytest = script.Script(
@@ -395,6 +391,26 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
         self.assertIn('"status": "FAIL"', result.stdout)
+
+    def test_exception_not_in_path(self):
+        os.chdir(basedir)
+        os.mkdir(os.path.join(self.tmpdir, "shared_lib"))
+        mylib = script.Script(os.path.join(self.tmpdir, "shared_lib",
+                                           "mylib.py"),
+                              "from avocado import TestCancel\n\n"
+                              "class CancelExc(TestCancel):\n"
+                              "    pass")
+        mylib.save()
+        mytest = script.Script(os.path.join(self.tmpdir, "mytest.py"),
+                               RAISE_CUSTOM_PATH_EXCEPTION_CONTENT)
+        mytest.save()
+        result = process.run("%s --show test run --sysinfo=off "
+                             "--job-results-dir %s %s"
+                             % (AVOCADO, self.tmpdir, mytest))
+        self.assertIn("mytest.py:SharedLibTest.test -> CancelExc: This "
+                      "should not crash on unpickling in runner",
+                      result.stdout)
+        self.assertNotIn("Failed to read queue", result.stdout)
 
     def test_runner_timeout(self):
         os.chdir(basedir)
@@ -669,11 +685,11 @@ class RunnerSimpleTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'ʊʋʉʈɑ ʅʛʌ',
-            PASS_SCRIPT_CONTENTS,
+            "#!/bin/sh\ntrue",
             'avocado_simpletest_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript('avocado_fail.sh',
-                                                  FAIL_SCRIPT_CONTENTS,
+                                                  "#!/bin/sh\nfalse",
                                                   'avocado_simpletest_'
                                                   'functional')
         self.fail_script.save()
@@ -833,12 +849,12 @@ class ExternalRunnerTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
             'pass',
-            PASS_SHELL_CONTENTS,
+            "exit 0",
             'avocado_externalrunner_functional')
         self.pass_script.save()
         self.fail_script = script.TemporaryScript(
             'fail',
-            FAIL_SHELL_CONTENTS,
+            "exit 1",
             'avocado_externalrunner_functional')
         self.fail_script.save()
 
