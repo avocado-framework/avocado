@@ -448,13 +448,14 @@ class TestRunner(object):
                                            ignore_window)
                         stage_1_msg_displayed = True
                     ignore_time_started = time.time()
+                    process.kill_process_tree(proc.pid, signal.SIGINT)
                 if (ctrl_c_count > 1) and (time_elapsed > ignore_window):
                     if not stage_2_msg_displayed:
                         abort_reason = "Interrupted by ctrl+c (multiple-times)"
                         self.job.log.debug("Killing test subprocess %s",
                                            proc.pid)
                         stage_2_msg_displayed = True
-                    os.kill(proc.pid, signal.SIGKILL)
+                    process.kill_process_tree(proc.pid, signal.SIGKILL)
 
         # Get/update the test status (decrease timeout on abort)
         if abort_reason:
