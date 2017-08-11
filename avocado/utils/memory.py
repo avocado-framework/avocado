@@ -320,3 +320,87 @@ def get_thp_value(feature):
         return (re.search(r"\[(\w+)\]", value)).group(1)
     else:
         return value
+
+
+class MemInfo(object):
+    """
+    Representation of /proc/meminfo
+    """
+
+    class MemInfoObject(object):
+        """
+        Representation of one item from /proc/meminfo
+        """
+        def __init__(self, name, value):
+            self.name = name
+            self.value = int(value)
+            self.__units = {'bytes': 2**0,
+                            'kbytes': 2**10,
+                            'mbytes': 2**20,
+                            'gbytes': 2**30,
+                            'tbytes': 2**40}
+
+        def __call__(self):
+            """
+            Returns the value when the class is called.
+            """
+            return self.value
+
+        def __getattr__(self, attr):
+            """
+            Creates one extra attribute per available conversion unit,
+            which will return the converted value.
+            """
+            unit = attr.split('_')[-1]
+            if unit not in self.__units:
+                raise AttributeError('Attribute %s does not exist.' % attr)
+            return self._convert(self.value, unit)
+
+        def __dir__(self):
+            """
+            Makes the extra attributes visible when calling dir().
+            """
+            listing = dir(type(self)) + list(self.__dict__.keys())
+            listing.extend(['value_in_%s' % item for item in self.__units])
+            return listing
+
+        def _convert(self, mem, unit):
+            """
+            Converts memory from kbytes to bytes, mbytes, gbytes or tbytes.
+            """
+            if unit not in self.__units:
+                raise TypeError('Unit %s is not valid.')
+            return int(mem) * self.__units['kbytes'] / self.__units[unit]
+
+    def __init__(self):
+        self.__meminfo = {}
+        with open('/proc/meminfo', 'r') as f:
+            for line in f.readlines():
+                item, value = line.strip().split(None, 1)
+                item = item.replace('(', '_').replace(')', '_').strip(':')
+                value = value.strip(' kB')
+                self.__meminfo[item] = value
+
+    def __getattr__(self, name):
+        """
+        Creates one extra attribute per item in /proc/meminfo.
+        """
+        try:
+            return self.MemInfoObject(name, self.__meminfo[name])
+        except KeyError:
+            raise AttributeError('Attribute %s does not exist.' % name)
+
+    def __dir__(self):
+        """
+        Makes the extra attributes visible when calling dir().
+        """
+        listing = dir(type(self)) + list(self.__dict__.keys())
+        listing.extend([item for item in self.__meminfo])
+        return listing
+
+    def __iter__(self):
+        for item in self.__meminfo:
+            yield self.MemInfoObject(item, self.__meminfo[item])
+
+
+meminfo = MemInfo()
