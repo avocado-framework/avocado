@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import tree, exit_codes, mux, varianter, loader
+from avocado.core import tree, exit_codes, mux, varianter, loader, output
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
@@ -327,6 +327,11 @@ class YamlToMuxCLI(CLI):
         loader.loader.register_plugin(YamlTestsuiteLoader)
 
 
+class BrokenYamlTestsuite(object):
+
+    """Used to mark broken testsuite"""
+
+
 class YamlTestsuiteLoader(loader.TestLoader):
 
     """
@@ -335,8 +340,9 @@ class YamlTestsuiteLoader(loader.TestLoader):
     """
 
     name = "yaml_testsuite"
-    _extra_type_label_mapping = {}
-    _extra_decorator_mapping = {}
+    _extra_type_label_mapping = {BrokenYamlTestsuite: '!YAML'}
+    _extra_decorator_mapping = {BrokenYamlTestsuite:
+                                output.TERM_SUPPORT.fail_header_str}
 
     @staticmethod
     def get_type_label_mapping():
@@ -405,11 +411,17 @@ class YamlTestsuiteLoader(loader.TestLoader):
         for variant in mux_tree:
             params = varianter.AvocadoParams(variant, "YamlTestsuiteLoader",
                                              ["/run/*"], {})
-            reference = params.get("test_reference")
+            ref = params.get("test_reference")
             test_loader = self._get_loader(params)
-            if not test_loader:
-                continue
-            _tests = test_loader.discover(reference, which_tests)
+            if test_loader is None:
+                if which_tests is loader.ALL:
+                    msg = ("No loader defined in variant %s"
+                           % varianter.generate_variant_id(variant))
+                    tests.append((BrokenYamlTestsuite, {"name": "%s: %s"
+                                                        % (reference, msg)}))
+                else:   # Report empty suite as this variant is invalid
+                    return []
+            _tests = test_loader.discover(ref, loader.DEFAULT)
             self._extra_type_label_mapping.update(
                 test_loader.get_full_type_label_mapping())
             self._extra_decorator_mapping.update(
@@ -418,6 +430,14 @@ class YamlTestsuiteLoader(loader.TestLoader):
                 for tst in _tests:
                     tst[1]["params"] = (variant, ["/run/*"])
                 tests.extend(_tests)
+            else:
+                if which_tests is loader.ALL:
+                    msg = ("Discovery for variant %s returned no tests"
+                           % varianter.generate_variant_id(variant))
+                    tests.append((BrokenYamlTestsuite, {"name": "%s: %s"
+                                                        % (reference, msg)}))
+                else:   # Report empty suite as this variant is invalid
+                    return []
         return tests
 
 
