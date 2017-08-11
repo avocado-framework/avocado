@@ -348,6 +348,47 @@ class SubProcess(object):
         self._popen = None
         self._ignore_bg_processes = ignore_bg_processes
 
+        def sigint_handler(signum, frame):
+            """
+            When we receive a SIGINT, we should just forward the same
+            SIGINT to the subprocess and, it that's enough to finish the
+            subprocess, we call the default_int_handler() to flag to our
+            caller that everything went as expected.
+            If subprocess keeps running after we send it a SIGINT, so do
+            we.
+            """
+            try:
+                self._popen.send_signal(signal.SIGINT)
+            except:
+                pass
+            if self._popen.poll() is not None:
+                self.result.interrupted = "signal/SIGINT"
+                signal.default_int_handler()
+
+        signal.signal(signal.SIGINT, sigint_handler)
+
+        def sigterm_handler(signum, frame):
+            """
+            When we receive a SIGTERM, it means we should really
+            terminate our subprocess. So, we first try to be nice and
+            send to the subprocess the same SIGTERM. If that's not
+            enough, we have to be more aggressive and kill it,
+            otherwise our caller will hang waiting our good will.
+            """
+            try:
+                self._popen.send_signal(signal.SIGTERM)
+            except:
+                pass
+
+            if self._popen.poll() is not None:
+                self.result.interrupted = "signal/SIGTERM"
+            else:
+                # No man left behind
+                self._popen.kill()
+                self.result.interrupted = "signal/SIGKILL"
+
+        signal.signal(signal.SIGTERM, sigterm_handler)
+
     def __repr__(self):
         if self._popen is None:
             rc = '(not started)'
@@ -419,16 +460,6 @@ class SubProcess(object):
             self.stderr_thread.daemon = True
             self.stdout_thread.start()
             self.stderr_thread.start()
-
-            def signal_handler(signum, frame):
-                self.result.interrupted = "signal/ctrl+c"
-                self.wait()
-                signal.default_int_handler()
-            try:
-                signal.signal(signal.SIGINT, signal_handler)
-            except ValueError:
-                if self.verbose:
-                    log.info("Command %s running on a thread", self.cmd)
 
     def _fd_drainer(self, input_pipe, ignore_bg_processes=False):
         """
