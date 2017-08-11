@@ -18,7 +18,7 @@ import os
 import re
 import sys
 
-from avocado.core import tree, exit_codes, mux
+from avocado.core import tree, exit_codes, mux, varianter, loader
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
@@ -314,10 +314,111 @@ class YamlToMuxCLI(CLI):
                              help="DEPRECATED: Filter out path(s) from "
                              "multiplexing (use --mux-filter-out instead)")
 
+            mux = subparser.add_argument_group("yaml to mux testsuite options")
+            mux.add_argument("--mux-suite-only", nargs="+",
+                             help="Filter only part of the YAML suite file")
+            mux.add_argument("--mux-suite-out", nargs="+",
+                             help="Filter out part of the YAML suite file")
+
     def run(self, args):
         """
         The YamlToMux varianter plugin handles these
         """
+        loader.loader.register_plugin(YamlTestsuiteLoader)
+
+
+class YamlTestsuiteLoader(loader.TestLoader):
+
+    """
+    Gets variants from a YAML file and uses `test_reference` entries
+    to create a test suite.
+    """
+
+    name = "yaml_testsuite"
+    _extra_type_label_mapping = {}
+    _extra_decorator_mapping = {}
+
+    @staticmethod
+    def get_type_label_mapping():
+        """
+        No type is discovered by default, uses "full_*_mappings" to report
+        the actual types after "discover()" is called.
+        """
+        return {}
+
+    def get_full_type_label_mapping(self):
+        return self._extra_type_label_mapping
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {}
+
+    def get_full_decorator_mapping(self):
+        return self._extra_decorator_mapping
+
+    def _get_loader(self, params):
+        """
+        Initializes test loader according to params.
+
+        Uses params.get():
+          test_reference_resolver_class - loadable location of the loader class
+          test_reference_resolver_args - args to override current Avocado args
+                                         before being passed to the loader
+                                         class. (dict)
+          test_reference_resolver_extra - extra_params to be passed to resolver
+                                          (dict)
+        """
+        resolver_class = params.get("test_reference_resolver_class")
+        if not resolver_class:
+            if params.get("test_reference"):
+                resolver_class = "avocado.core.loader.FileLoader"
+            else:
+                # Don't supply the default when no `test_reference` is given
+                # to avoid listing default FileLoader tests
+                return None
+        mod, klass = resolver_class.rsplit(".", 1)
+        try:
+            loader_class = getattr(__import__(mod, fromlist=[klass]), klass)
+        except ImportError:
+            raise RuntimeError("Unable to import class defined by test_"
+                               "reference_resolver_class '%s.%s'"
+                               % (mod, klass))
+        _args = params.get("test_reference_resolver_args")
+        if not _args:
+            args = self.args
+        else:
+            args = copy.deepcopy(self.args)
+            for key, value in _args.iteritems():
+                setattr(args, key, value)
+        extra_params = params.get("test_reference_resolver_extra", default={})
+        return loader_class(args, extra_params)
+
+    def discover(self, reference, which_tests=loader.DEFAULT):
+        tests = []
+        try:
+            root = mux.apply_filters(create_from_yaml([reference], False),
+                                     getattr(self.args, "mux_suite_only", []),
+                                     getattr(self.args, "mux_suite_out", []))
+        except Exception:
+            return []
+        mux_tree = mux.MuxTree(root)
+        for variant in mux_tree:
+            params = varianter.AvocadoParams(variant, "YamlTestsuiteLoader",
+                                             ["/run/*"], {})
+            reference = params.get("test_reference")
+            test_loader = self._get_loader(params)
+            if not test_loader:
+                continue
+            _tests = test_loader.discover(reference, which_tests)
+            self._extra_type_label_mapping.update(
+                test_loader.get_full_type_label_mapping())
+            self._extra_decorator_mapping.update(
+                test_loader.get_full_decorator_mapping())
+            if _tests:
+                for tst in _tests:
+                    tst[1]["params"] = (variant, ["/run/*"])
+                tests.extend(_tests)
+        return tests
 
 
 class YamlToMux(mux.MuxPlugin, Varianter):

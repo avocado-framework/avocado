@@ -1,0 +1,49 @@
+# This rather advanced example shows how to specify custom loaders. Note
+# it's also possible to enable loaders that are not enabled by Avocado
+# simply by passing the `test_reference_resolver_class`.
+#
+# test_reference_resolver_class - loadable location of the loader class
+# test_reference_resolver_args  - args to override current Avocado args
+#                                 before being passed to the loader
+#                                 class. (dict)
+# test_reference_resolver_extra - extra_params to be passed to resolver (dict)
+
+tests: !mux
+    instrumented_default:
+        test_reference: passtest.py
+    instrumented_custom:
+        test_reference: passtest.sh
+        # Force-set the FileLoader
+        test_reference_resolver_class: "avocado.core.loader.FileLoader"
+        # Make sure only SIMPLE test types will be detected
+        test_reference_resolver_extra: !!python/dict
+            allowed_test_types: SIMPLE
+    silently_skipped_test:
+        test_reference: passtest.sh
+        # This test will be skipped as it won't be discovered because of type-mismatch
+        test_reference_resolver_class: "avocado.core.loader.FileLoader"
+        test_reference_resolver_extra: !!python/dict
+            allowed_test_types: INSTRUMENTED
+    external_echo:
+        test_reference: "external_echo"
+        # Use ExternalLoader
+        test_reference_resolver_class: "avocado.core.loader.ExternalLoader"
+        # Set the loader_option to "/bin/echo"
+        test_reference_resolver_extra:
+            !!python/dict
+            loader_options: "/bin/echo"
+    external_false:
+        test_reference: "external_false"
+        test_reference_resolver_class: "avocado.core.loader.ExternalLoader"
+        test_reference_resolver_extra: !!python/dict
+            loader_options: "/bin/false"
+    # This demonstrates features which require Avocado-vt installed
+    # avocado-vt-simple:
+    #     test_reference: boot
+    #     test_reference_resolver_class: "avocado_vt.loader.VirtTestLoader"
+    # avocado-vt:
+    #      test_reference_resolver_class: "avocado_vt.loader.VirtTestLoader"
+    #      test_reference_resolver_args:
+    #          !!python/dict
+    #          # Replace this with path to custom --vt-config compatible file
+    #          vt_config: migrate.cfg

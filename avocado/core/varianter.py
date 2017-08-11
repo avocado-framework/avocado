@@ -19,6 +19,7 @@
 Multiplex and create variants.
 """
 
+import hashlib
 import re
 
 from . import tree
@@ -307,6 +308,30 @@ class AvocadoParam(object):
         for leaf in self._leaves:
             for key, value in leaf.environment.iteritems():
                 yield (leaf.environment.origin[key].path, key, value)
+
+
+def is_empty_variant(variant):
+    """
+    Reports whether the variant contains any data
+
+    :param variant: Avocado test variant (list of TreeNode-like objects)
+    :return: True when the variant does not contain (any useful) data
+    """
+    return not variant or variant == [tree.TreeNode()] * len(variant)
+
+
+def generate_variant_id(variant):
+    """
+    Basic function to generate variant-id from a variant
+
+    :param variant: Avocado test variant (list of TreeNode-like objects)
+    :return: String compounded of ordered node names and a hash of all
+             values.
+    """
+    variant = sorted(variant, key=lambda x: x.path)
+    fingerprint = "-".join(_.fingerprint() for _ in variant)
+    return ("-".join(node.name for node in variant) + '-' +
+            hashlib.sha1(fingerprint).hexdigest()[:4])
 
 
 def variant_to_str(variant, verbosity, out_args=None, debug=False):
