@@ -15,7 +15,7 @@
     %if ! 0%{?commit_date:1}
         %global commit_date	20170518
     %endif
-    %global shortcommit	%(c=%{commit};echo ${c:0:7})
+    %global shortcommit	%(c=%{commit};echo ${c:0:8})
     %global gitrel		.%{commit_date}git%{shortcommit}
     %global gittar		%{srcname}-%{shortcommit}.tar.gz
 %endif
