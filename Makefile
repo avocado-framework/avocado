@@ -1,16 +1,3 @@
-#
-# NOTE: to build Avocado RPM packages extra deps not present out of the box
-# are necessary. These packages are currently hosted at:
-#
-# https://repos-avocadoproject.rhcloud.com/static/avocado-fedora.repo
-# or
-# https://repos-avocadoproject.rhcloud.com/static/avocado-el.repo
-#
-# Since the RPM build steps are based on mock, edit your chroot config
-# file (/etc/mock/<your-config>.cnf) and add the corresponding repo
-# configuration there.
-#
-
 PYTHON=$(shell which python)
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
