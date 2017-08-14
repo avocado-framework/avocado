@@ -329,7 +329,7 @@ class GdbTest(Test):
         """
         self.log.info('Testing GDB interactivity with arguments')
         result = process.run("%s 0" % self.return99_binary_path)
-        self.assertEquals(result.exit_status, 0)
+        self.assertEqual(result.exit_status, 0)
 
     def test_exit_status(self):
         """
@@ -343,7 +343,7 @@ class GdbTest(Test):
             self.log.info('Expecting exit status "%s"', exp)
             cmd = "%s %s" % (self.return99_binary_path, arg)
             result = process.run(cmd, ignore_status=True)
-            self.assertEquals(result.exit_status, exp)
+            self.assertEqual(result.exit_status, exp)
 
     def test_server_stderr(self):
         self.log.info('Testing server stderr collection')

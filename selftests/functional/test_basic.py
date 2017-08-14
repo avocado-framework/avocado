@@ -990,12 +990,12 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         stdout_lines = result.stdout.splitlines()
         self.assertIn("Tag(s)", stdout_lines[0])
         full_test_name = "%s:MyTest.test" % test
-        self.assertEquals("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
-                          stdout_lines[1])
+        self.assertEqual("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
+                         stdout_lines[1])
         self.assertIn("TEST TYPES SUMMARY", stdout_lines)
         self.assertIn("INSTRUMENTED: 1", stdout_lines)
         self.assertIn("TEST TAGS SUMMARY", stdout_lines)
-        self.assertEquals("BIG_TAG_NAME: 1", stdout_lines[-1])
+        self.assertEqual("BIG_TAG_NAME: 1", stdout_lines[-1])
 
     def test_plugin_list(self):
         os.chdir(basedir)

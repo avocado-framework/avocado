@@ -117,7 +117,7 @@ class XUnitResult(Result):
         content = self._render(result)
         if getattr(job.args, 'xunit_job_result', 'off') == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
-            with open(xunit_path, 'w') as xunit_file:
+            with open(xunit_path, 'wb') as xunit_file:
                 xunit_file.write(content)
 
         xunit_path = getattr(job.args, 'xunit_output', 'None')
@@ -125,7 +125,7 @@ class XUnitResult(Result):
             if xunit_path == '-':
                 LOG_UI.debug(content)
             else:
-                with open(xunit_path, 'w') as xunit_file:
+                with open(xunit_path, 'wb') as xunit_file:
                     xunit_file.write(content)
 
 

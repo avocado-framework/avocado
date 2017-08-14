@@ -63,7 +63,7 @@ class ArgumentParsingErrorEarlyTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
         path_job_glob = os.path.join(log_dir, "job-*-%s" % job[0:7])
-        self.assertEquals(glob.glob(path_job_glob), [])
+        self.assertEqual(glob.glob(path_job_glob), [])
 
     def test_whacky_option(self):
         self.run_but_fail_before_create_job_dir('--whacky-option passtest',

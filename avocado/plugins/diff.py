@@ -201,14 +201,16 @@ class Diff(CLICmd):
         if getattr(args, 'create_reports', False):
             self.std_diff_output = False
             prefix = 'avocado_diff_%s_' % job1_id[:7]
-            tmp_file1 = tempfile.NamedTemporaryFile(prefix=prefix,
+            tmp_file1 = tempfile.NamedTemporaryFile(mode='w',
+                                                    prefix=prefix,
                                                     suffix='.txt',
                                                     delete=False)
             tmp_file1.writelines(job1_results)
             tmp_file1.close()
 
             prefix = 'avocado_diff_%s_' % job2_id[:7]
-            tmp_file2 = tempfile.NamedTemporaryFile(prefix=prefix,
+            tmp_file2 = tempfile.NamedTemporaryFile(mode='w',
+                                                    prefix=prefix,
                                                     suffix='.txt',
                                                     delete=False)
             tmp_file2.writelines(job2_results)
@@ -220,7 +222,8 @@ class Diff(CLICmd):
                 getattr(args, 'html', None) is None):
 
             prefix = 'avocado_diff_%s_%s_' % (job1_id[:7], job2_id[:7])
-            tmp_file = tempfile.NamedTemporaryFile(prefix=prefix,
+            tmp_file = tempfile.NamedTemporaryFile(mode='w',
+                                                   prefix=prefix,
                                                    suffix='.html',
                                                    delete=False)
 

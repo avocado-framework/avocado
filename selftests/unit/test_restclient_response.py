@@ -23,7 +23,7 @@ class ResultResponseTest(unittest.TestCase):
 
     def test_good_data(self):
         r = response.ResultResponse(self.GOOD_DATA)
-        self.assertEquals(r.count, 1)
+        self.assertEqual(r.count, 1)
 
     def test_bad_data_json(self):
         self.assertRaises(response.InvalidJSONError,
