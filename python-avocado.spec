@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 52.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -59,6 +59,11 @@ BuildRequires: python-aexpect
 %if %{with_tests}
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
+%if 0%{?rhel}
+BuildRequires: python-yaml
+%else
+BuildRequires: python2-yaml
+%endif
 %endif
 
 Requires: gdb
@@ -310,7 +315,11 @@ server.
 %package plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
 Requires: %{name} == %{version}
+%if 0%{?rhel}
 Requires: python-yaml
+%else
+Requires: python2-yaml
+%endif
 
 %description plugins-varianter-yaml-to-mux
 Can be used to produce multiple test variants with test parameters
@@ -334,6 +343,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Mon Aug 14 2017 Cleber Rosa <cleber@redhat.com> - 52.0-2
+- Add python[2]-yaml requirements
+
 * Tue Jun 27 2017 Cleber Rosa <cleber@redhat.com> - 52.0-1
 - Fix python-aexpect depedency on EL7
 
