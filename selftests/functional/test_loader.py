@@ -173,7 +173,7 @@ class LoaderTestFunctional(unittest.TestCase):
                 os.killpg(os.getpgid(test_process.pid), signal.SIGKILL)
                 self.fail("Failed to run test under %s seconds" % timeout)
             time.sleep(0.05)
-        self.assertEquals(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
+        self.assertEqual(test_process.returncode, exit_codes.AVOCADO_TESTS_FAIL)
 
     def test_simple(self):
         self._test('simpletest.sh', SIMPLE_TEST, 'SIMPLE', self.MODE_0775)

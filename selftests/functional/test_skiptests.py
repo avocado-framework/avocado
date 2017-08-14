@@ -118,7 +118,7 @@ class TestSkipDecorators(unittest.TestCase):
         debuglog = json_results['debuglog']
 
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEquals(json_results['skip'], 3)
+        self.assertEqual(json_results['skip'], 3)
         self.assertFalse('setup executed' in open(debuglog, 'r').read())
         self.assertFalse('test executed' in open(debuglog, 'r').read())
         self.assertFalse('teardown executed' in open(debuglog, 'r').read())
@@ -135,7 +135,7 @@ class TestSkipDecorators(unittest.TestCase):
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEquals(json_results['skip'], 1)
+        self.assertEqual(json_results['skip'], 1)
 
     def test_skip_teardown(self):
         os.chdir(basedir)
@@ -149,7 +149,7 @@ class TestSkipDecorators(unittest.TestCase):
         result = process.run(' '.join(cmd_line), ignore_status=True)
         json_results = json.loads(result.stdout)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-        self.assertEquals(json_results['errors'], 1)
+        self.assertEqual(json_results['errors'], 1)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
