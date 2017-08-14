@@ -107,7 +107,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                 new_line.append(100 * ratio - 100)
             elif ratio > (1 + threshold):   # handling improvements
                 improvements += 1
-                new_line.append("+" + str(100 * ratio - 100))
+                new_line.append("+%.6g" % (100 * ratio - 100))
             else:
                 same += 1
                 new_line.append(".")
