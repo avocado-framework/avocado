@@ -4,8 +4,12 @@ import shutil
 import tempfile
 import unittest
 from lxml import etree
-from StringIO import StringIO
 from xml.dom import minidom
+
+try:
+    from io import BytesIO
+except:
+    from BytesIO import BytesIO
 
 from avocado import Test
 from avocado.core import job
@@ -57,7 +61,7 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test_result.end_tests()
         xunit_result = xunit.XUnitResult()
         xunit_result.render(self.test_result, self.job)
-        with open(self.job.args.xunit_output) as fp:
+        with open(self.job.args.xunit_output, 'rb') as fp:
             xml = fp.read()
         try:
             dom = minidom.parseString(xml)
@@ -69,7 +73,7 @@ class xUnitSucceedTest(unittest.TestCase):
 
         with open(self.junit, 'r') as f:
             xmlschema = etree.XMLSchema(etree.parse(f))
-        self.assertTrue(xmlschema.validate(etree.parse(StringIO(xml))),
+        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
                         "Failed to validate against %s, content:\n%s" %
                         (self.junit, xml))
 
