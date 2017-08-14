@@ -18,12 +18,6 @@ tests: !mux
         # Make sure only SIMPLE test types will be detected
         test_reference_resolver_extra: !!python/dict
             allowed_test_types: SIMPLE
-    silently_skipped_test:
-        test_reference: passtest.sh
-        # This test will be skipped as it won't be discovered because of type-mismatch
-        test_reference_resolver_class: "avocado.core.loader.FileLoader"
-        test_reference_resolver_extra: !!python/dict
-            allowed_test_types: INSTRUMENTED
     external_echo:
         test_reference: "external_echo"
         # Use ExternalLoader
