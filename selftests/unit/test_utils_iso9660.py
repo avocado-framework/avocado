@@ -30,10 +30,10 @@ class BaseIso9660(unittest.TestCase):
                   due to ast loader we can't just define a base-class.
         """
         self.assertEqual(self.iso.read("file"),
-                         "file content\n")
+                         b"file content\n")
         dst = os.path.join(self.tmpdir, "file")
         self.iso.copy(os.path.join("Dir", "in_dir_file"), dst)
-        self.assertEqual(open(dst).read(), "content of in-dir-file\n")
+        self.assertEqual(open(dst, 'rb').read(), b"content of in-dir-file\n")
         self.iso.close()
         self.iso.close()    # check that double-close won't fail
 
