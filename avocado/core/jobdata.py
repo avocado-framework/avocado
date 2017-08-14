@@ -157,7 +157,7 @@ def retrieve_variants(resultsdir):
         """
         def get_fingerprint_meth(fingerprint):
             """
-            36.x's TreeNode used to actually be equivalent of MuxTreeNode,
+            36.x TreeNode used to actually be equivalent of MuxTreeNode,
             let's adjust the fingerprint to also contain self.ctrl
             """
             def get():
