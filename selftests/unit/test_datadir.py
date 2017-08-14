@@ -28,7 +28,7 @@ class DataDirTest(unittest.TestCase):
                          'test_dir = %(test_dir)s\n'
                          'data_dir = %(data_dir)s\n'
                          'logs_dir = %(logs_dir)s\n') % mapping
-        config_file = tempfile.NamedTemporaryFile(delete=False)
+        config_file = tempfile.NamedTemporaryFile('w', delete=False)
         config_file.write(temp_settings)
         config_file.close()
         return (mapping, config_file.name)

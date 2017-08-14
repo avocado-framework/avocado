@@ -19,7 +19,7 @@ home_path = ~
 class SettingsTest(unittest.TestCase):
 
     def setUp(self):
-        self.config_file = tempfile.NamedTemporaryFile(delete=False)
+        self.config_file = tempfile.NamedTemporaryFile('w', delete=False)
         self.config_file.write(example_1)
         self.config_file.close()
         self.settings = settings.Settings(self.config_file.name)
