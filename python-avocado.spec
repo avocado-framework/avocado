@@ -130,6 +130,9 @@ popd
 pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py build
 popd
+pushd optional_plugins/loader_yaml
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -150,6 +153,9 @@ pushd optional_plugins/resultsdb
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/varianter_yaml_to_mux
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/loader_yaml
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -176,6 +182,9 @@ pushd optional_plugins/resultsdb
 %{__python} setup.py develop --user
 popd
 pushd optional_plugins/varianter_yaml_to_mux
+%{__python} setup.py develop --user
+popd
+pushd optional_plugins/loader_yaml
 %{__python} setup.py develop --user
 popd
 # Package build environments have the least amount of resources
@@ -220,6 +229,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_docker*
 %exclude %{python_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
+%exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -319,6 +329,18 @@ defined in a yaml file(s).
 %files plugins-varianter-yaml-to-mux
 %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
+
+%package plugins-varianter-loader-yaml
+Summary: Avocado Plugin that loads tests from YAML files
+Requires: %{name}-plugins-varianter-yaml-to-mux == %{version}
+
+%description plugins-varianter-loader-yaml
+Can be used to produce a test suite from definitions in a YAML file,
+similar to the one used in the yaml_to_mux varianter plugin.
+
+%files plugins-varianter-loader-yaml
+%{python_sitelib}/avocado_loader_yaml*
+%{python_sitelib}/avocado_framework_plugin_loader_yaml*
 
 %package examples
 Summary: Avocado Test Framework Example Tests
