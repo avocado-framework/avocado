@@ -16,7 +16,11 @@ import psutil
 import pkg_resources
 
 from lxml import etree
-from StringIO import StringIO
+
+try:
+    from io import BytesIO
+except:
+    from BytesIO import BytesIO
 
 from avocado.core import exit_codes
 from avocado.utils import astring
@@ -1163,7 +1167,7 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
         with open(self.junit, 'r') as f:
             xmlschema = etree.XMLSchema(etree.parse(f))
 
-        self.assertTrue(xmlschema.validate(etree.parse(StringIO(xml_output))),
+        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(result.stdout_bytes))),
                         "Failed to validate against %s, message:\n%s" %
                         (self.junit,
                          xmlschema.error_log.filter_from_errors()))
