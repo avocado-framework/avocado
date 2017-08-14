@@ -79,7 +79,7 @@ class TestName(object):
         :param no_digits: number of digits of the test uid
         """
         self.uid = uid
-        if no_digits >= 0:
+        if no_digits is not None and no_digits >= 0:
             self.str_uid = str(uid).zfill(no_digits if no_digits else 3)
         else:
             self.str_uid = str(uid)
