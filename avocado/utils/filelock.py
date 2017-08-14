@@ -42,7 +42,7 @@ class FileLock(object):
 
     def __init__(self, filename, timeout=0):
         self.filename = '%s.lock' % filename
-        self.pid = str(os.getpid())
+        self.pid = b'%r' % os.getpid()
         self.locked = False
         self.timeout = timeout
 
