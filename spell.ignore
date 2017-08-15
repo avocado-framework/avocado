@@ -437,3 +437,6 @@ readthedocs
 devnull
 jobdata
 serializable
+sigint
+resultsdb
+rst
