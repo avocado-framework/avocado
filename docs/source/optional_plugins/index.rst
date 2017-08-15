@@ -13,3 +13,4 @@ optional plugins:
    results
    robot
    varianter_yaml_to_mux
+   yaml_loader
