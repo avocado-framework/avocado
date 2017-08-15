@@ -42,7 +42,7 @@ class AvocadoApp(object):
         def sigterm_handler(signum, frame):     # pylint: disable=W0613
             children = process.get_children_pids(os.getpid())
             for child in children:
-                process.kill_process_tree(int(child), sig=signal.SIGTERM)
+                process.kill_process_tree(int(child), sig=signal.SIGKILL)
             raise SystemExit('Terminated')
 
         signal.signal(signal.SIGTERM, sigterm_handler)
