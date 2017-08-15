@@ -10,7 +10,7 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		bb62fe5a1fa93ea6573da46556928af5041c1b7d
+        %global commit		72f8069f1ae3def8d2eca47cba554660411ab045
     %endif
     %if ! 0%{?commit_date:1}
         %global commit_date	20170518
@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 52.0
-Release: 2%{?gitrel}%{?dist}
+Version: 53.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -365,6 +365,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Aug 15 2017 Cleber Rosa <cleber@redhat.com> - 53.0-0
+- New upstream release
+
 * Mon Aug 14 2017 Cleber Rosa <cleber@redhat.com> - 52.0-2
 - Add python[2]-yaml requirements
 

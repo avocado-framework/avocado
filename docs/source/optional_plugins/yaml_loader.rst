@@ -1,3 +1,5 @@
+.. _yaml_loader:
+
 YAML Loader (yaml_loader)
 =========================
 

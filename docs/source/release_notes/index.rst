@@ -16,6 +16,7 @@ released.
 .. toctree::
    :maxdepth: 1
 
+   53_0
    52_0
    51_0
    50_0
@@ -59,3 +60,4 @@ have 6 months of supportability overlap.
    :maxdepth: 1
 
    lts/52_0
+   lts/next
