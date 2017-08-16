@@ -51,7 +51,7 @@ class Variants(CLICmd):
         parser = super(Variants, self).configure(parser)
         verbosity_levels = ("(positive integer - 0, 1, ... - or %s)"
                             % ", ".join(sorted(_VERBOSITY_LEVELS,
-                                        key=lambda _: _VERBOSITY_LEVELS[_])))
+                                               key=lambda _: _VERBOSITY_LEVELS[_])))
         parser.add_argument("--summary", type=map_verbosity_level,
                             help="Verbosity of the variants summary. " +
                             verbosity_levels)

@@ -47,8 +47,9 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
-        self.junit = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     os.path.pardir, ".data", 'junit-4.xsd'))
+        junit_xsd = os.path.join(os.path.dirname(__file__),
+                                 os.path.pardir, ".data", 'junit-4.xsd')
+        self.junit = os.path.abspath(junit_xsd)
 
     def tearDown(self):
         os.close(self.tmpfile[0])

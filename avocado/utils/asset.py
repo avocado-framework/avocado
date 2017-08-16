@@ -95,7 +95,7 @@ class Asset(object):
             # - Be valid (not expired).
             # - Be verified (hash check).
             if (os.path.isfile(self.asset_file) and
-               not self._is_expired(self.asset_file, self.expire)):
+                    not self._is_expired(self.asset_file, self.expire)):
                 try:
                     with FileLock(self.asset_file, 1):
                         if self._verify():

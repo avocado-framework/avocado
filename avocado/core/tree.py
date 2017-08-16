@@ -97,6 +97,7 @@ class TreeNodeEnvOnly(object):
     """
     Minimal TreeNode-like class providing interface for AvocadoParams
     """
+
     def __init__(self, path, environment=None):
         """
         :param path: Path of this node (must not end with '/')

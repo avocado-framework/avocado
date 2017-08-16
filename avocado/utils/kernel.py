@@ -17,7 +17,7 @@ import os
 import shutil
 import logging
 import tempfile
-from distutils.version import LooseVersion
+from distutils.version import LooseVersion  # pylint: disable=E0611
 
 from . import asset, archive, build
 
