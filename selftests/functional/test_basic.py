@@ -1140,8 +1140,9 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        self.junit = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     os.path.pardir, ".data", 'junit-4.xsd'))
+        junit_xsd = os.path.join(os.path.dirname(__file__),
+                                 os.path.pardir, ".data", 'junit-4.xsd')
+        self.junit = os.path.abspath(junit_xsd)
         super(PluginsXunitTest, self).setUp()
 
     def run_and_check(self, testname, e_rc, e_ntests, e_nerrors,

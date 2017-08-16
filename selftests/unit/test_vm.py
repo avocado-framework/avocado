@@ -20,6 +20,7 @@ class _FakeVM(avocado_runner_vm.VM):
     Fake VM-inherited object (it's better to inherit it, than to flexmock the
     isinstance)
     """
+
     def __init__(self):  # pylint: disable=W0231
         # don't call avocado_runner_vm.VM.__init__
         self.snapshot = True
