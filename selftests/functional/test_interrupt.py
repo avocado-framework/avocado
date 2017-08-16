@@ -126,7 +126,7 @@ class InterruptTest(unittest.TestCase):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
 
-        if not wait.wait_for(self._has_children, timeout=2):
+        if not wait.wait_for(self._has_children, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado did not start the test process.')
 
@@ -138,13 +138,13 @@ class InterruptTest(unittest.TestCase):
         time.sleep(2.5)
         os.kill(self.proc.pid, signal.SIGINT)
 
-        if not wait.wait_for(self._is_finished, timeout=2):
+        if not wait.wait_for(self._is_finished, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado was still running after receiving SIGINT '
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                        timeout=2), 'Avocado left processes behind.')
+                        timeout=10), 'Avocado left processes behind.')
 
         output = self.proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
@@ -174,7 +174,7 @@ class InterruptTest(unittest.TestCase):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
 
-        if not wait.wait_for(self._has_children, timeout=2):
+        if not wait.wait_for(self._has_children, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado did not start the test process.')
 
@@ -182,13 +182,13 @@ class InterruptTest(unittest.TestCase):
         # receives a SIGTERM, even if the test process ignores SIGTERM.
         os.kill(self.proc.pid, signal.SIGTERM)
 
-        if not wait.wait_for(self._is_finished, timeout=2):
+        if not wait.wait_for(self._is_finished, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado was still running after receiving SIGINT '
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                        timeout=2), 'Avocado left processes behind.')
+                        timeout=10), 'Avocado left processes behind.')
 
         # Make sure the Interrupted test sentence is there
         self.assertIn('Terminated\n', self.proc.stdout.read())
@@ -214,7 +214,7 @@ class InterruptTest(unittest.TestCase):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
 
-        if not wait.wait_for(self._has_children, timeout=2):
+        if not wait.wait_for(self._has_children, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado did not start the test process.')
 
@@ -222,13 +222,13 @@ class InterruptTest(unittest.TestCase):
         # terminate right away.
         os.kill(self.proc.pid, signal.SIGINT)
 
-        if not wait.wait_for(self._is_finished, timeout=2):
+        if not wait.wait_for(self._is_finished, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado was still running after receiving SIGINT '
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                        timeout=2), 'Avocado left processes behind.')
+                        timeout=10), 'Avocado left processes behind.')
 
         output = self.proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
@@ -258,7 +258,7 @@ class InterruptTest(unittest.TestCase):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
 
-        if not wait.wait_for(self._has_children, timeout=2):
+        if not wait.wait_for(self._has_children, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado did not start the test process.')
 
@@ -266,13 +266,13 @@ class InterruptTest(unittest.TestCase):
         # receives a SIGTERM.
         os.kill(self.proc.pid, signal.SIGTERM)
 
-        if not wait.wait_for(self._is_finished, timeout=2):
+        if not wait.wait_for(self._is_finished, timeout=10):
             process.kill_process_tree(self.proc.pid)
             self.fail('Avocado was still running after receiving SIGINT '
                       'twice.')
 
         self.assertTrue(wait.wait_for(self._no_test_in_process_table,
-                        timeout=2), 'Avocado left processes behind.')
+                        timeout=10), 'Avocado left processes behind.')
 
         # Make sure the Interrupted test sentence is there
         self.assertIn('Terminated\n', self.proc.stdout.read())
