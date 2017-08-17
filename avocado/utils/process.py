@@ -267,11 +267,14 @@ class CmdResult(object):
     :param duration: Elapsed wall clock time running the process
     :param encoding: Encoding used by the stdout and stderr properties
                  to decode stdout_bytes and stderr_bytes.
+    :param errors: The error handler used by the stdout and stderr
+                 properties when Unicode decoding fails.
     :param pid: ID of the process
     """
 
     def __init__(self, command="", stdout_bytes=b"", stderr_bytes=b"",
-                 exit_status=None, duration=0, encoding='utf-8', pid=None):
+                 exit_status=None, duration=0, encoding='utf-8',
+                 errors='strict', pid=None):
         self.command = command
         self.exit_status = exit_status
         self.stdout_bytes = stdout_bytes
@@ -280,6 +283,7 @@ class CmdResult(object):
         self._stderr = None
         self.duration = duration
         self.encoding = encoding
+        self.errors = errors
         self.interrupted = False
         self.pid = pid
 
@@ -287,14 +291,14 @@ class CmdResult(object):
     def stdout(self):
         if self._stdout is not None:
             return self._stdout
-        self._stdout = self.stdout_bytes.decode(self.encoding)
+        self._stdout = self.stdout_bytes.decode(self.encoding, self.errors)
         return self._stdout
 
     @property
     def stderr(self):
         if self._stderr is not None:
             return self._stderr
-        self._stderr = self.stderr_bytes.decode(self.encoding)
+        self._stderr = self.stderr_bytes.decode(self.encoding, self.errors)
         return self._stderr
 
     def __repr__(self):
@@ -319,7 +323,8 @@ class SubProcess(object):
 
     def __init__(self, cmd, verbose=True, allow_output_check='all',
                  shell=False, env=None, sudo=False,
-                 ignore_bg_processes=False, encoding='utf-8'):
+                 ignore_bg_processes=False, encoding='utf-8',
+                 errors='strict'):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -355,13 +360,18 @@ class SubProcess(object):
                     to be running after the process finishes.
         :param encoding: Encoding that self.result will use to decode the command's
                     output.
+        :param errors: The error handler that self.result will use to decode the command's
+                    output.
         """
         # Now assemble the final command considering the need for sudo
         self.cmd = self._prepend_sudo(cmd, sudo, shell)
         self.verbose = verbose
         self.allow_output_check = allow_output_check
         self.encoding = encoding
-        self.result = CmdResult(self.cmd, encoding=self.encoding)
+        self.errors = errors
+        self.result = CmdResult(command=self.cmd,
+                                encoding=self.encoding,
+                                errors=self.errors)
         self.shell = shell
         if env:
             self.env = os.environ.copy()
@@ -1104,7 +1114,7 @@ def get_sub_process_klass(cmd):
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
         allow_output_check='all', shell=False, env=None, sudo=False,
-        ignore_bg_processes=False, encoding='utf-8'):
+        ignore_bg_processes=False, encoding='utf-8', errors='strict'):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -1141,6 +1151,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
                  straight out fail.
     :param encoding: Encoding that the returned :class:`CmdResult` will
                 use to decode the command's output.
+    :param errors: The error handler that the returned :class:`CmdResult` will
+                use to decode the command's output.
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
@@ -1149,7 +1161,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
                sudo=sudo, ignore_bg_processes=ignore_bg_processes,
-               encoding=encoding)
+               encoding=encoding, errors=errors)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -1209,7 +1221,8 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                   allow_output_check='all', shell=False, env=None, sudo=False,
-                  ignore_bg_processes=False, strip_trail_nl=True, encoding='utf-8'):
+                  ignore_bg_processes=False, strip_trail_nl=True, encoding='utf-8',
+                  errors='strict'):
     """
     Run a subprocess, returning its output.
 
@@ -1250,6 +1263,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type strip_trail_nl: bool
     :param encoding: Encoding used to decode the command's output.
                 If ``None``, return the bytes object.
+    :param errors: Error handler used to decode the command's output.
 
     :return: Command output.
     :rtype: str
@@ -1257,7 +1271,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes, encoding=encoding)
+                     sudo=sudo, ignore_bg_processes=ignore_bg_processes, encoding=encoding,
+                     errors='strict')
     if encoding is None:
         if strip_trail_nl:
             return cmd_result.stdout_bytes.rstrip(b'\n\r')
