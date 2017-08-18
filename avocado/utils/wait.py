@@ -13,7 +13,7 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None):
 
     :param timeout: Timeout in seconds
     :param first: Time to sleep before first attempt
-    :param steps: Time to sleep between attempts in seconds
+    :param step: Time to sleep between attempts in seconds
     :param text: Text to print while waiting, for debug purposes
     """
     start_time = time.time()
