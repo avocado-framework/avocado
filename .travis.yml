@@ -17,7 +17,7 @@ sudo: false
 addons:
   apt:
     packages:
-    - python-libvirt
+    - libvirt-dev
 
 install:
     - pip install -r requirements-travis.txt
