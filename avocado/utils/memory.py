@@ -25,9 +25,88 @@ import logging
 
 from . import process
 from . import genio
+from . import wait
 
 
-# Returns total memory in kb
+class MemoryError(Exception):
+
+    """
+    called when memory operations fails
+    """
+    pass
+
+
+def _check_memory_state(block):
+    """
+    Check the given memory block is online or offline
+
+    :param block: memory block id.
+    :type string: like 198
+    :return: 'True' if online or 'False' if offline
+    :rtype: bool
+    """
+    def _is_online():
+        with open('/sys/devices/system/memory/memory%s/state' % block, 'r') as state_file:
+            if 'online' in state_file.read():
+                return True
+            return False
+
+    return wait.wait_for(_is_online, timeout=120, step=1) or False
+
+
+def _check_hotplug():
+    """
+    Check kernel support for memory hotplug
+
+    :return: True if hotplug supported,  else False
+    :rtype: 'bool'
+    """
+    if glob.glob('/sys/devices/system/memory/memory*'):
+        return True
+    return False
+
+
+def _is_hot_pluggable(block):
+    """
+    Check if the given memory block is hotpluggable
+
+    :param block: memory block id.
+    :type string: like 198
+    :retrun: True if hotpluggable, else False
+    :rtype: 'bool'
+    """
+    with open('/sys/devices/system/memory/memory%s/removable' % block, 'r') as file_obj:
+        return bool(int(file_obj.read()))
+
+
+def hotplug(block):
+    """
+    Online the memory for the given block id.
+
+    :param block: memory block id.
+    :type string: like 198
+    """
+    if _is_hot_pluggable(block):
+        with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+            state_file.write('online')
+        if not _check_memory_state(block):
+            raise MemoryError(
+                "unable to hot-plug memory%s block, not supported ?" % block)
+
+
+def hotunplug(block):
+    """
+    Offline the memory for the given block id.
+
+    :param block: memory block id.
+    :type string: like 198
+    """
+    if _is_hot_pluggable(block):
+        with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+            state_file.write('offline')
+        if _check_memory_state(block):
+            raise MemoryError(
+                "unable to hot-unplug memory%s block. Device busy?" % block)
 
 
 def read_from_meminfo(key):
