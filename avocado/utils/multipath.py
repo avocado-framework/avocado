@@ -30,8 +30,7 @@ def get_svc_name():
     """
     if distro.detect().name == 'Ubuntu':
         return "multipath-tools"
-    else:
-        return "multipathd"
+    return "multipathd"
 
 
 def form_conf_mpath_file(blacklist="", defaults_extra=""):
