@@ -133,6 +133,98 @@ class TestID(object):
                                  % (self.str_uid, str(self)))
 
 
+def get_file_data_dir(test):
+    """
+    Returns the path to the file-level data directory
+
+    For test a test file hosted at /usr/share/avocado/tests/sleeptest.py
+    the file-level data dir is /usr/share/avocado/tests/sleeptest.py.data.
+
+    Note that this directory has no specific relation to the test
+    name, only to the file that contains the test.  It can be used to
+    host data files that are generic enough to be used for all tests
+    contained in a given test file.
+
+    This function is currently a thin wrapper (almost an alias) for
+    :attr:`avocado.core.test.Test.datadir`.  The idea is just to give
+    consistent naming across the various data dir, and prepare for the
+    removal of :attr:`avocado.core.test.Test.datadir`.
+
+    :param test: the test to locate its file-level data directory
+    """
+    # TODO: on removal of Test.datadir, move its code over here
+    return test.datadir
+
+
+def get_test_data_dir(test):
+    """
+    Returns the path to the test-level data directory
+
+    For an INSTRUMENTED test, implemented by a method named `test`, on
+    a class named `SleepTest`, hosted at a file located at
+    /usr/share/avocado/tests/sleeptest.py, the test-level data directory
+    is /usr/share/avocado/tests/sleeptest.py.data/SleepTest.test
+
+    For a SIMPLE test, the test is the file, so this is the same as
+    :func:`get_file_data_dir`.
+
+    :param test: the test to locate its file-level data directory
+    """
+    file_data_dir = get_file_data_dir(test)
+    if file_data_dir is None:
+        return None
+
+    if isinstance(test, SimpleTest):
+        return file_data_dir
+
+    test_level_data_dir = "%s.%s" % (test.__class__.__name__,
+                                     test._testMethodName)
+    test_level_data_dir = astring.string_to_safe_path(test_level_data_dir)
+    return os.path.join(file_data_dir, test_level_data_dir)
+
+
+def get_variant_data_dir(test):
+    """
+    Returns the path to the variant-level data directory
+
+    For an INSTRUMENTED test, implemented by a method named `test`, on
+    a class named `SleepTest`, hosted at a file located at
+    /usr/share/avocado/tests/sleeptest.py, and with variant name
+    "foo-ffff", the variant-level data directory is
+    /usr/share/avocado/tests/sleeptest.py.data/SleepTest.test;foo-ffff
+
+    :param test: the test to locate its file-level data directory
+    """
+    test_data_dir = get_test_data_dir(test)
+    if test_data_dir is None or test.name.variant is None:
+        return None
+
+    variant_dirname = astring.string_to_safe_path(test.name.variant)
+    return os.path.join(test_data_dir, variant_dirname)
+
+
+def get_simplified_variant_data_dir(test):
+    """
+    Returns the path to the simplified variant-level data directory
+
+    This is a directory that omits the 4 digits hashes that acompany
+    variant names.  The reason for this is that usually, test variant
+    data tends to change at a much slower pace than the variant hashes,
+    which also considers keys and values content.
+
+    This implementation simply strips the hash and separator, that is,
+    for variant-level data dir "t.py:Klass.test;foo-ffff", it returns
+    "t.py:Klass.test;foo"
+
+    :param test: the test to locate its file-level data directory
+    """
+    variant_data_dir = get_variant_data_dir(test)
+    if variant_data_dir is None:
+        return None
+
+    return variant_data_dir[:-5]
+
+
 class Test(unittest.TestCase):
 
     """
@@ -337,12 +429,73 @@ class Test(unittest.TestCase):
         host data files that are generic enough to be used for all tests
         contained in a given test file.
         """
+        # TODO: on removal of Test.datadir, move its code over to
+        # get_file_data_dir
         # Maximal allowed file name length is 255
         if (self.filename is not None and
                 len(os.path.basename(self.filename)) < 251):
             return self.filename + '.data'
         else:
             return None
+
+    def get_data(self, filename):
+        """
+        Returns the path of a data file, if one exists
+
+        This method respects the existence of directories in the
+        following order:
+
+        1) "$(TEST_FILENAME).data/$(TEST)/$(VARIANT-$HASH)", if a
+           variant exists
+        2) "$(TEST_FILENAME).data/$(TEST)/$(VARIANT)", if a
+           variant exists
+        3) "$(TEST_FILENAME).data/$(TEST)", if no variant is used
+        4) "$(TEST_FILENAME).data", as a fallback for files common
+           to all tests hosted on a single file
+
+        :param filename: the relative name of the file to be searched
+                         on the the possible data directories
+        :type filename: str
+        :returns: either the path to the data file or None
+        :rtype: str or None
+        """
+        log_fmt = 'DATA (filename=%s) => %s (%s)'
+        datadir = get_file_data_dir(self)
+        if datadir is None or not os.path.isdir(datadir):
+            self.log.debug(log_fmt, filename, None,
+                           "no data dir exists")
+            return None
+
+        variant_data_dir = get_variant_data_dir(self)
+        if variant_data_dir is not None:
+            variant_filename = os.path.join(variant_data_dir, filename)
+            if os.path.exists(variant_filename):
+                self.log.debug(log_fmt, filename, variant_filename,
+                               "found at variant-level data dir")
+                return variant_filename
+
+        variant_data_dir = get_simplified_variant_data_dir(self)
+        if variant_data_dir is not None:
+            variant_filename = os.path.join(variant_data_dir, filename)
+            if os.path.exists(variant_filename):
+                self.log.debug(log_fmt, filename, variant_filename,
+                               "found at simplified (name-only, no hash) "
+                               "variant-level data dir")
+                return variant_filename
+
+        test_data_dir = get_test_data_dir(self)
+        test_filename = os.path.join(test_data_dir, filename)
+        if os.path.exists(test_filename):
+            self.log.debug(log_fmt, filename, test_filename,
+                           "found at test-level data dir")
+            return test_filename
+
+        file_filename = os.path.join(datadir, filename)
+        if os.path.exists(file_filename):
+            self.log.debug(log_fmt, filename, file_filename,
+                           "found at file-level data dir")
+            return file_filename
+        return None
 
     @property
     def filename(self):
