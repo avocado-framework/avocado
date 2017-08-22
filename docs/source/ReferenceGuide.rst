@@ -66,6 +66,14 @@ By definition, a Test Name is a Test Reference, but the
 reciprocal is not necessarily true, as the latter can represent
 more than one test.
 
+Examples of Test Names::
+
+   '/bin/true'
+   'passtest.py:Passtest.test'
+   'file:///tmp/passtest.py:Passtest.test'
+   'multiple_tests.py:MultipleTests.test_hello'
+   'type_specific.io-github-autotest-qemu.systemtap_tracing.qemu.qemu_free'
+
 
 Variant IDs
 -----------
@@ -108,14 +116,13 @@ Syntax::
 
    <unique-id>-<test-name>[;<variant-id>]
 
-Examples of test-names::
+Example of Test IDs::
 
-   '/bin/true'
-   'passtest.py:Passtest.test'
-   'file:///tmp/passtest.py:Passtest.test'
-   'multiple_tests.py:MultipleTests.test_hello'
-   'type_specific.io-github-autotest-qemu.systemtap_tracing.qemu.qemu_free'
-
+   '001-/bin/true'
+   '002-passtest.py:Passtest.test;quiet-'
+   '003-file:///tmp/passtest.py:Passtest.test'
+   '004-multiple_tests.py:MultipleTests.test_hello;maximum_debug-df2f'
+   '005-type_specific.io-github-autotest-qemu.systemtap_tracing.qemu.qemu_free'
 
 .. _test-types:
 
