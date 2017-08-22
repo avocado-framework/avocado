@@ -5,7 +5,7 @@ from avocado.utils import output
 
 class UtilsOutputTest(unittest.TestCase):
 
-    def testDisplayDataSizeFactor1024(self):
+    def test_display_data_size_factor_1024(self):
         self.assertEqual(output.display_data_size(103), '103.00 B')
         self.assertEqual(output.display_data_size(1024**1), '1.02 KB')
         self.assertEqual(output.display_data_size(1024**2), '1.05 MB')
@@ -14,7 +14,7 @@ class UtilsOutputTest(unittest.TestCase):
         self.assertEqual(output.display_data_size(1024**5), '1.13 PB')
         self.assertEqual(output.display_data_size(1024**6), '1152.92 PB')
 
-    def testDisplayDataSizeFactor1000(self):
+    def test_display_data_size_factor_1000(self):
         self.assertEqual(output.display_data_size(1000**1), '1.00 KB')
         self.assertEqual(output.display_data_size(1000**2), '1.00 MB')
         self.assertEqual(output.display_data_size(1000**3), '1.00 GB')

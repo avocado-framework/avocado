@@ -44,7 +44,7 @@ class JSONResultTest(unittest.TestCase):
         os.remove(self.tmpfile[1])
         shutil.rmtree(self.tmpdir)
 
-    def testAddSuccess(self):
+    def test_add_success(self):
         self.test_result.start_test(self.test1)
         self.test_result.end_test(self.test1.get_state())
         self.test_result.end_tests()
@@ -56,7 +56,7 @@ class JSONResultTest(unittest.TestCase):
         self.assertTrue(obj)
         self.assertEqual(len(obj['tests']), 1)
 
-    def testAddSeveralStatuses(self):
+    def test_add_several_statuses(self):
         def run_fake_status(status):
             self.test_result.start_test(self.test1)
             self.test_result.check_test(status)
@@ -92,7 +92,7 @@ class JSONResultTest(unittest.TestCase):
         check_item("[skip]", res["skip"], 4)
         check_item("[total]", res["total"], 13)
 
-    def testNegativeStatus(self):
+    def test_negative_status(self):
         def check_item(name, value, exp):
             self.assertEqual(value, exp, "Result%s is %s and not %s\n%s"
                              % (name, value, exp, res))

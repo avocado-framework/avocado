@@ -30,7 +30,7 @@ class TestClassTestUnit(unittest.TestCase):
         flexmock_teardown()
         shutil.rmtree(self.tmpdir)
 
-    def testUglyName(self):
+    def test_ugly_name(self):
         def run(name, path_name):
             """ Initialize test and check the dirs were created """
             tst = self.DummyTest("test", test.TestName(1, name),
@@ -56,7 +56,7 @@ class TestClassTestUnit(unittest.TestCase):
                 "\xac\xef\xb7\xad\xef\xb7\xae\xef\xb7\xaf")
         run(name, "1-" + name)
 
-    def testLongName(self):
+    def test_long_name(self):
         def check(uid, name, variant, exp_logdir):
             tst = self.DummyTest("test", test.TestName(uid, name, variant),
                                  base_logdir=self.tmpdir)
@@ -93,13 +93,13 @@ class TestClassTestUnit(unittest.TestCase):
         tst._record_reference_stdout()
         tst._record_reference_stderr()
 
-    def testAllDirsExistsNoHang(self):
+    def test_all_dirs_exists_no_hang(self):
         flexmock(os.path)
         os.path.should_receive('exists').and_return(True)
         self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
                           test.TestName(1, "name"), base_logdir=self.tmpdir)
 
-    def testTryOverrideTestVariable(self):
+    def test_try_override_test_variable(self):
         test = self.DummyTest(base_logdir=self.tmpdir)
         self.assertRaises(AttributeError, setattr, test, "name", "whatever")
         self.assertRaises(AttributeError, setattr, test, "status", "whatever")
@@ -119,16 +119,16 @@ class TestClassTest(unittest.TestCase):
         self.tst_instance_pass = AvocadoPass(base_logdir=self.base_logdir)
         self.tst_instance_pass.run_avocado()
 
-    def testClassAttributesName(self):
+    def test_class_attributes_name(self):
         self.assertEqual(self.tst_instance_pass.name, '0-AvocadoPass')
 
-    def testClassAttributesStatus(self):
+    def test_class_attributes_status(self):
         self.assertEqual(self.tst_instance_pass.status, 'PASS')
 
-    def testClassAttributesTimeElapsed(self):
+    def test_class_attributes_time_elapsed(self):
         self.assertIsInstance(self.tst_instance_pass.time_elapsed, float)
 
-    def testWhiteboardSave(self):
+    def test_whiteboard_save(self):
         whiteboard_file = os.path.join(
             self.tst_instance_pass.logdir, 'whiteboard')
         self.assertTrue(os.path.isfile(whiteboard_file))
@@ -136,7 +136,7 @@ class TestClassTest(unittest.TestCase):
             whiteboard_contents = whiteboard_file_obj.read().strip()
             self.assertTrue(whiteboard_contents, 'foo')
 
-    def testRunningTestTwiceWithTheSameUidFailure(self):
+    def test_running_test_twice_with_the_same_uid_failure(self):
         class AvocadoPass(test.Test):
 
             def test(self):
@@ -145,7 +145,7 @@ class TestClassTest(unittest.TestCase):
         self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
                           base_logdir=self.base_logdir)
 
-    def testNotTestName(self):
+    def test_not_test_name(self):
         self.assertRaises(test.NameNotTestNameError,
                           test.Test, name='mytest')
 
@@ -179,10 +179,10 @@ class SimpleTestClassTest(unittest.TestCase):
             base_logdir=self.tmpdir)
         self.tst_instance_fail.run_avocado()
 
-    def testSimpleTestPassStatus(self):
+    def test_simple_test_pass_status(self):
         self.assertEqual(self.tst_instance_pass.status, 'PASS')
 
-    def testSimpleTestFailStatus(self):
+    def test_simple_test_fail_status(self):
         self.assertEqual(self.tst_instance_fail.status, 'FAIL')
 
     def tearDown(self):
