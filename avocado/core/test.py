@@ -72,7 +72,7 @@ class TestName(object):
             self.str_uid = str(uid).zfill(no_digits if no_digits else 3)
         else:
             self.str_uid = str(uid)
-        self.name = name or "<unknown>"
+        self.name = name
         self.variant = variant["variant_id"] if variant else None
         if variant is None:
             self.str_variant = ""
