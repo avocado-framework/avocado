@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 53.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -201,20 +201,20 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %files
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
-%dir /etc/avocado
-%dir /etc/avocado/conf.d
-%dir /etc/avocado/sysinfo
-%dir /etc/avocado/scripts/job/pre.d
-%dir /etc/avocado/scripts/job/post.d
+%dir %{_sysconfdir}/avocado
+%dir %{_sysconfdir}/avocado/conf.d
+%dir %{_sysconfdir}/avocado/sysinfo
+%dir %{_sysconfdir}/avocado/scripts/job/pre.d
+%dir %{_sysconfdir}/avocado/scripts/job/post.d
 %dir %{_sharedstatedir}/avocado
-%config(noreplace)/etc/avocado/avocado.conf
-%config(noreplace)/etc/avocado/conf.d/README
-%config(noreplace)/etc/avocado/conf.d/gdb.conf
-%config(noreplace)/etc/avocado/sysinfo/commands
-%config(noreplace)/etc/avocado/sysinfo/files
-%config(noreplace)/etc/avocado/sysinfo/profilers
-%config(noreplace)/etc/avocado/scripts/job/pre.d/README
-%config(noreplace)/etc/avocado/scripts/job/post.d/README
+%config(noreplace)%{_sysconfdir}/avocado/avocado.conf
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/README
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/gdb.conf
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
+%config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
+%config(noreplace)%{_sysconfdir}/avocado/scripts/job/post.d/README
 %{python_sitelib}/avocado*
 %{_bindir}/avocado
 %{_bindir}/avocado-rest-client
@@ -365,6 +365,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/wrappers
 
 %changelog
+* Tue Aug 22 2017 Cleber Rosa <cleber@redhat.com> - 53.0-1
+- Use variable name for configuration dir
+
 * Tue Aug 15 2017 Cleber Rosa <cleber@redhat.com> - 53.0-0
 - New upstream release
 
