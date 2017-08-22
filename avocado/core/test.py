@@ -865,7 +865,7 @@ class SimpleTest(Test):
         self.log.info("Exit status: %s", result.exit_status)
         self.log.info("Duration: %s", result.duration)
 
-    def execute_cmd(self):
+    def _execute_cmd(self):
         """
         Run the executable, and log its detailed execution.
         """
@@ -891,7 +891,7 @@ class SimpleTest(Test):
         """
         Run the test and postprocess the results
         """
-        self.execute_cmd()
+        self._execute_cmd()
 
 
 class ExternalRunnerTest(SimpleTest):
@@ -929,7 +929,7 @@ class ExternalRunnerTest(SimpleTest):
                                new_cwd)
                 os.chdir(new_cwd)
 
-            self.execute_cmd()
+            self._execute_cmd()
 
         finally:
             if new_cwd is not None:
