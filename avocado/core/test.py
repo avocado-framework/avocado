@@ -307,7 +307,15 @@ class Test(unittest.TestCase):
     @property
     def datadir(self):
         """
-        Returns the path to the directory that contains test data files
+        Returns the path to the directory that may contain test data files
+
+        For test a test file hosted at /usr/share/avocado/tests/sleeptest.py
+        the datadir is /usr/share/avocado/tests/sleeptest.py.data.
+
+        Note that this directory has no specific relation to the test
+        name, only to the file that contains the test.  It can be used to
+        host data files that are generic enough to be used for all tests
+        contained in a given test file.
         """
         # Maximal allowed file name length is 255
         if (self.filename is not None and
