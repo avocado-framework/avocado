@@ -56,7 +56,7 @@ class xUnitSucceedTest(unittest.TestCase):
         os.remove(self.tmpfile[1])
         shutil.rmtree(self.tmpdir)
 
-    def testAddSuccess(self):
+    def test_add_success(self):
         self.test_result.start_test(self.test1)
         self.test_result.end_test(self.test1.get_state())
         self.test_result.end_tests()

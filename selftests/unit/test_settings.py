@@ -24,21 +24,21 @@ class SettingsTest(unittest.TestCase):
         self.config_file.close()
         self.settings = settings.Settings(self.config_file.name)
 
-    def testStringConversion(self):
+    def test_string_conversion(self):
         self.assertEqual(self.settings.get_value('foo', 'str_key', str),
                          'frobnicate')
 
-    def testIntConversion(self):
+    def test_int_conversion(self):
         self.assertEqual(self.settings.get_value('foo', 'int_key', int), 1)
 
-    def testFloatConversion(self):
+    def test_float_conversion(self):
         self.assertEqual(self.settings.get_value('foo', 'float_key', float),
                          1.25)
 
-    def testBoolConversion(self):
+    def test_bool_conversion(self):
         self.assertTrue(self.settings.get_value('foo', 'bool_key', bool))
 
-    def testPathHomeDir(self):
+    def test_path_homedir(self):
         raw_from_settings = '~/path/at/home'
         path_from_settings = self.settings.get_value('foo', 'path', 'path')
         home_str_from_settings = self.settings.get_value('foo', 'home_path', str)
@@ -49,47 +49,47 @@ class SettingsTest(unittest.TestCase):
         self.assertEqual(os.path.expanduser(home_str_from_settings),
                          self.settings.get_value('foo', 'home_path', 'path'))
 
-    def testPathOnStrKey(self):
+    def test_path_on_str_key(self):
         self.assertEqual(self.settings.get_value('foo', 'path', str),
                          '~/path/at/home')
 
-    def testListConversion(self):
+    def test_list_conversion(self):
         self.assertEqual(self.settings.get_value('foo', 'list_key', list),
                          ['I', 'love', 'settings'])
 
-    def testDefault(self):
+    def test_default(self):
         self.assertEqual(self.settings.get_value('foo', 'non_existing',
                                                  str, "ohnoes"), "ohnoes")
 
-    def testNonExistingKey(self):
+    def test_non_existing_key(self):
         with self.assertRaises(settings.SettingsError):
             self.settings.get_value('foo', 'non_existing', str)
 
-    def testAllowBlankTrueStr(self):
+    def test_allow_blank_true_str(self):
         self.assertEqual(self.settings.get_value('foo', 'empty_key', str,
                                                  allow_blank=True), "")
 
-    def testAllowBlankTrueInt(self):
+    def test_allow_blank_true_int(self):
         self.assertEqual(self.settings.get_value('foo', 'empty_key', int,
                                                  allow_blank=True), 0)
 
-    def testAllowBlankTrueFloat(self):
+    def test_allow_blank_true_float(self):
         self.assertEqual(self.settings.get_value('foo', 'empty_key', float,
                                                  allow_blank=True), 0.0)
 
-    def testAllowBlankTrueList(self):
+    def test_allow_blank_true_list(self):
         self.assertEqual(self.settings.get_value('foo', 'empty_key', list,
                                                  allow_blank=True), [])
 
-    def testAllowBlankTrueBool(self):
+    def test_allow_blank_true_bool(self):
         self.assertEqual(self.settings.get_value('foo', 'empty_key', bool,
                                                  allow_blank=True), False)
 
-    def testAllowBlankTrueOther(self):
+    def test_allow_blank_true_other(self):
         self.assertEqual(self.settings.get_value('foo', 'empty_key', 'baz',
                                                  allow_blank=True), None)
 
-    def testAllowBlankFalse(self):
+    def test_allow_blank_false(self):
         with self.assertRaises(settings.SettingsError):
             self.settings.get_value('foo', 'empty_key', str)
 

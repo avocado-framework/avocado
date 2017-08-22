@@ -266,69 +266,69 @@ as an example:
 
 Which produces following structure and parameters::
 
-      $ avocado variants -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
-      Multiplex tree representation:
-       ┗━━ run
-            ┣━━ sleeptenmin
-            ┃    ╠══ builtin
-            ┃    ║     → sleep_method: builtin
-            ┃    ╚══ shell
-            ┃          → sleep_method: shell
-            ┗━━ variants
-                 ╠══ one_cycle
-                 ║     → sleep_length: 600
-                 ║     → sleep_cycles: 1
-                 ╠══ six_cycles
-                 ║     → sleep_length: 100
-                 ║     → sleep_cycles: 6
-                 ╠══ one_hundred_cycles
-                 ║     → sleep_length: 6
-                 ║     → sleep_cycles: 100
-                 ╚══ six_hundred_cycles
-                       → sleep_length: 1
-                       → sleep_cycles: 600
+  $ avocado variants -m examples/tests/sleeptenmin.py.data/sleeptenmin.yaml --summary 2 --variants 2
+  Multiplex tree representation:
+   ┗━━ run
+        ┣━━ sleeptenmin
+        ┃    ╠══ builtin
+        ┃    ║     → sleep_method: builtin
+        ┃    ╚══ shell
+        ┃          → sleep_method: shell
+        ┗━━ variants
+             ╠══ one_cycle
+             ║     → sleep_length: 600
+             ║     → sleep_cycles: 1
+             ╠══ six_cycles
+             ║     → sleep_length: 100
+             ║     → sleep_cycles: 6
+             ╠══ one_hundred_cycles
+             ║     → sleep_length: 6
+             ║     → sleep_cycles: 100
+             ╚══ six_hundred_cycles
+                   → sleep_length: 1
+                   → sleep_cycles: 600
 
-      Multiplex variants:
+  Multiplex variants (8):
 
-      Variant 1:    /run/sleeptenmin/builtin, /run/variants/one_cycle
-          /run/sleeptenmin/builtin:sleep_method => builtin
-          /run/variants/one_cycle:sleep_cycles  => 1
-          /run/variants/one_cycle:sleep_length  => 600
+  Variant builtin-one_cycle-f659:    /run/sleeptenmin/builtin, /run/variants/one_cycle
+      /run/sleeptenmin/builtin:sleep_method => builtin
+      /run/variants/one_cycle:sleep_cycles  => 1
+      /run/variants/one_cycle:sleep_length  => 600
 
-      Variant 2:    /run/sleeptenmin/builtin, /run/variants/six_cycles
-          /run/sleeptenmin/builtin:sleep_method => builtin
-          /run/variants/six_cycles:sleep_cycles => 6
-          /run/variants/six_cycles:sleep_length => 100
+  Variant builtin-six_cycles-723b:    /run/sleeptenmin/builtin, /run/variants/six_cycles
+      /run/sleeptenmin/builtin:sleep_method => builtin
+      /run/variants/six_cycles:sleep_cycles => 6
+      /run/variants/six_cycles:sleep_length => 100
 
-      Variant 3:    /run/sleeptenmin/builtin, /run/variants/one_hundred_cycles
-          /run/sleeptenmin/builtin:sleep_method         => builtin
-          /run/variants/one_hundred_cycles:sleep_cycles => 100
-          /run/variants/one_hundred_cycles:sleep_length => 6
+  Variant builtin-one_hundred_cycles-633a:    /run/sleeptenmin/builtin, /run/variants/one_hundred_cycles
+      /run/sleeptenmin/builtin:sleep_method         => builtin
+      /run/variants/one_hundred_cycles:sleep_cycles => 100
+      /run/variants/one_hundred_cycles:sleep_length => 6
 
-      Variant 4:    /run/sleeptenmin/builtin, /run/variants/six_hundred_cycles
-          /run/sleeptenmin/builtin:sleep_method         => builtin
-          /run/variants/six_hundred_cycles:sleep_cycles => 600
-          /run/variants/six_hundred_cycles:sleep_length => 1
+  Variant builtin-six_hundred_cycles-a570:    /run/sleeptenmin/builtin, /run/variants/six_hundred_cycles
+      /run/sleeptenmin/builtin:sleep_method         => builtin
+      /run/variants/six_hundred_cycles:sleep_cycles => 600
+      /run/variants/six_hundred_cycles:sleep_length => 1
 
-      Variant 5:    /run/sleeptenmin/shell, /run/variants/one_cycle
-          /run/sleeptenmin/shell:sleep_method  => shell
-          /run/variants/one_cycle:sleep_cycles => 1
-          /run/variants/one_cycle:sleep_length => 600
+  Variant shell-one_cycle-55f5:    /run/sleeptenmin/shell, /run/variants/one_cycle
+      /run/sleeptenmin/shell:sleep_method  => shell
+      /run/variants/one_cycle:sleep_cycles => 1
+      /run/variants/one_cycle:sleep_length => 600
 
-      Variant 6:    /run/sleeptenmin/shell, /run/variants/six_cycles
-          /run/sleeptenmin/shell:sleep_method   => shell
-          /run/variants/six_cycles:sleep_cycles => 6
-          /run/variants/six_cycles:sleep_length => 100
+  Variant shell-six_cycles-9e23:    /run/sleeptenmin/shell, /run/variants/six_cycles
+      /run/sleeptenmin/shell:sleep_method   => shell
+      /run/variants/six_cycles:sleep_cycles => 6
+      /run/variants/six_cycles:sleep_length => 100
 
-      Variant 7:    /run/sleeptenmin/shell, /run/variants/one_hundred_cycles
-          /run/sleeptenmin/shell:sleep_method           => shell
-          /run/variants/one_hundred_cycles:sleep_cycles => 100
-          /run/variants/one_hundred_cycles:sleep_length => 6
+  Variant shell-one_hundred_cycles-586f:    /run/sleeptenmin/shell, /run/variants/one_hundred_cycles
+      /run/sleeptenmin/shell:sleep_method           => shell
+      /run/variants/one_hundred_cycles:sleep_cycles => 100
+      /run/variants/one_hundred_cycles:sleep_length => 6
 
-      Variant 8:    /run/sleeptenmin/shell, /run/variants/six_hundred_cycles
-          /run/sleeptenmin/shell:sleep_method           => shell
-          /run/variants/six_hundred_cycles:sleep_cycles => 600
-          /run/variants/six_hundred_cycles:sleep_length => 1
+  Variant shell-six_hundred_cycles-1e84:    /run/sleeptenmin/shell, /run/variants/six_hundred_cycles
+      /run/sleeptenmin/shell:sleep_method           => shell
+      /run/variants/six_hundred_cycles:sleep_cycles => 600
+      /run/variants/six_hundred_cycles:sleep_length => 1
 
 You can see that it creates all possible variants of each ``multiplex domain``,
 which are defined by ``!mux`` tag in the YAML file and displayed as single
@@ -338,14 +338,14 @@ values). In total it'll produce 8 variants of each test::
       $ avocado run --mux-yaml examples/tests/sleeptenmin.py.data/sleeptenmin.yaml -- passtest.py
       JOB ID     : cc7ef22654c683b73174af6f97bc385da5a0f02f
       JOB LOG    : /home/medic/avocado/job-results/job-2017-01-22T11.26-cc7ef22/job.log
-       (1/8) passtest.py:PassTest.test;1: PASS (0.01 s)
-       (2/8) passtest.py:PassTest.test;2: PASS (0.01 s)
-       (3/8) passtest.py:PassTest.test;3: PASS (0.01 s)
-       (4/8) passtest.py:PassTest.test;4: PASS (0.01 s)
-       (5/8) passtest.py:PassTest.test;5: PASS (0.01 s)
-       (6/8) passtest.py:PassTest.test;6: PASS (0.01 s)
-       (7/8) passtest.py:PassTest.test;7: PASS (0.01 s)
-       (8/8) passtest.py:PassTest.test;8: PASS (0.01 s)
+       (1/8) passtest.py:PassTest.test;builtin-one_cycle-f659: PASS (0.01 s)
+       (2/8) passtest.py:PassTest.test;builtin-six_cycles-723b: PASS (0.01 s)
+       (3/8) passtest.py:PassTest.test;builtin-one_hundred_cycles-633a: PASS (0.01 s)
+       (4/8) passtest.py:PassTest.test;builtin-six_hundred_cycles-a570: PASS (0.01 s)
+       (5/8) passtest.py:PassTest.test;shell-one_cycle-55f5: PASS (0.01 s)
+       (6/8) passtest.py:PassTest.test;shell-six_cycles-9e23: PASS (0.01 s)
+       (7/8) passtest.py:PassTest.test;shell-one_hundred_cycles-586f: PASS (0.01 s)
+       (8/8) passtest.py:PassTest.test;shell-six_hundred_cycles-1e84: PASS (0.01 s)
       RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
       JOB TIME   : 0.16 s
 
@@ -567,7 +567,7 @@ an example that does that::
             self.sync_loop = self.params.get('sync_loop', default=10)
             # Build the synctest suite
             self.cwd = os.getcwd()
-            tarball_path = os.path.join(self.datadir, sync_tarball)
+            tarball_path = self.get_data(sync_tarball)
             archive.extract(tarball_path, self.srcdir)
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
@@ -588,7 +588,7 @@ an example that does that::
 
 Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
-:meth:`avocado.Test.datadir`, then uncompress the tarball through
+:func:`avocado.Test.get_data`, then uncompress the tarball through
 :func:`avocado.utils.archive.extract`, an API that will
 decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
 the suite.

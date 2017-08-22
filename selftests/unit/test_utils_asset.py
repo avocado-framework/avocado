@@ -20,7 +20,7 @@ class TestAsset(unittest.TestCase):
         self.url = 'file://%s' % self.localpath
         self.cache_dir = tempfile.mkdtemp(dir=self.basedir)
 
-    def testFetch_urlname(self):
+    def test_fetch_urlname(self):
         foo_tarball = asset.Asset(self.url,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
@@ -30,7 +30,7 @@ class TestAsset(unittest.TestCase):
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
 
-    def testFetch_location(self):
+    def test_fetch_location(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
@@ -40,7 +40,7 @@ class TestAsset(unittest.TestCase):
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
 
-    def testFecth_expire(self):
+    def test_fecth_expire(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
@@ -81,13 +81,13 @@ class TestAsset(unittest.TestCase):
             content2 = f.read()
         self.assertNotEqual(content1, content2)
 
-    def testException(self):
+    def test_exception(self):
         a = asset.Asset(name='bar.tgz', asset_hash=None, algorithm=None,
                         locations=None, cache_dirs=[self.cache_dir],
                         expire=None)
         self.assertRaises(EnvironmentError, a.fetch)
 
-    def testFetch_lockerror(self):
+    def test_fetch_lockerror(self):
         with FileLock(os.path.join(self.cache_dir, self.assetname)):
             a = asset.Asset(self.url,
                             asset_hash=self.assethash,
