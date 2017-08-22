@@ -361,13 +361,18 @@ Some of them are used as functional tests of the framework, others serve as
 examples of how to write tests on your own.
 
 %files examples
+%{_datadir}/avocado/gdb-prerun-scripts
+%{_datadir}/avocado/plugins
 %{_datadir}/avocado/tests
 %{_datadir}/avocado/wrappers
+%{_datadir}/avocado/yaml_to_mux
+%{_datadir}/avocado/yaml_to_mux_loader
 
 %changelog
 * Tue Aug 22 2017 Cleber Rosa <cleber@redhat.com> - 53.0-1
 - Use variable name for configuration dir
 - Clean up old changelog entries
+- Include other example files
 
 * Tue Aug 15 2017 Cleber Rosa <cleber@redhat.com> - 53.0-0
 - New upstream release
