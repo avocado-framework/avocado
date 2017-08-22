@@ -52,19 +52,24 @@ from .output import LOG_JOB
 COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
 
 
-class TestName(object):
+class TestID(object):
 
     """
-    Test name representation
+    Test ID construction and representation according to specification
+
+    This class wraps the representation of both Avocado's Test ID
+    specification and Avocado's Test Name, which is part of a Test ID.
     """
 
     def __init__(self, uid, name, variant=None, no_digits=None):
         """
-        Test name according to avocado specification
+        Constructs a TestID instance
 
         :param uid: unique test id (within the job)
-        :param name: test name (identifies the executed test)
-        :param variant: variant id
+        :param name: test name, as returned by the Avocado test resolver
+                     (AKA as test loader)
+        :param variant: the variant applied to this Test ID
+        :type variant: dict
         :param no_digits: number of digits of the test uid
         """
         self.uid = uid
@@ -92,26 +97,39 @@ class TestName(object):
         else:
             return self.__dict__ == other.__dict__
 
+    @property
     def str_filesystem(self):
         """
-        File-system friendly representation of the test name
+        Test ID in a format suitable for use in file systems
+
+        The string returned should be safe to be used as a file or
+        directory name.  This file system version of the test ID may
+        have to shorten either the Test Name or the Variant ID.
+
+        The first component of a Test ID, the numeric unique test id,
+        AKA "uid", will be used as a an stable identifier between the
+        Test ID and the file or directory created based on the return
+        value of this method.  If the filesystem can not even
+        represent the "uid", than an exception will be raised.
+
+        For Test ID "001-mytest;foo", examples of shortened file
+        system versions include "001-mytest;f" or "001-myte;foo".
+
+        :raises: AssertionError
         """
-        name = str(self)
-        fsname = astring.string_to_safe_path(name)
-        if len(name) == len(fsname):    # everything fits in
-            return fsname
-        # 001-mytest;foo
-        # 001-mytest;f
-        # 001-myte;foo
-        idx_fit_variant = len(fsname) - len(self.str_variant)
+        test_id = str(self)
+        test_id_fs = astring.string_to_safe_path(test_id)
+        if len(test_id) == len(test_id_fs):    # everything fits in
+            return test_id_fs
+        idx_fit_variant = len(test_id_fs) - len(self.str_variant)
         if idx_fit_variant > len(self.str_uid):     # full uid+variant
-            return (fsname[:idx_fit_variant] +
+            return (test_id_fs[:idx_fit_variant] +
                     astring.string_to_safe_path(self.str_variant))
-        elif len(self.str_uid) <= len(fsname):   # full uid
+        elif len(self.str_uid) <= len(test_id_fs):   # full uid
             return astring.string_to_safe_path(self.str_uid + self.str_variant)
         else:       # not even uid could be stored in fs
-            raise AssertionError("Test uid is too long to be stored on the "
-                                 "filesystem: %s\nFull test name is %s"
+            raise AssertionError('Test uid is too long to be stored on the '
+                                 'filesystem: "%s"\nFull Test ID: "%s"'
                                  % (self.str_uid, str(self)))
 
 
@@ -150,7 +168,7 @@ class Test(unittest.TestCase):
                      written with the avocado API, this should not be
                      set.  This is reserved for internal Avocado use,
                      such as when running random executables as tests.
-        :type name: :class:`avocado.core.test.TestName`
+        :type name: :class:`avocado.core.test.TestID`
         :param base_logdir: Directory where test logs should go. If None
                             provided, it'll use
                             :func:`avocado.data_dir.create_job_logs_dir`.
@@ -165,7 +183,7 @@ class Test(unittest.TestCase):
         if name is not None:
             self.__name = name
         else:
-            self.__name = TestName(0, self.__class__.__name__)
+            self.__name = TestID(0, self.__class__.__name__)
 
         self.__job = job
 
@@ -181,7 +199,7 @@ class Test(unittest.TestCase):
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
-        logdir = os.path.join(base_logdir, self.name.str_filesystem())
+        logdir = os.path.join(base_logdir, self.name.str_filesystem)
         if os.path.exists(logdir):
             raise exceptions.TestSetupFail("Log dir already exists, this "
                                            "should never happen: %s"
@@ -248,7 +266,9 @@ class Test(unittest.TestCase):
     @property
     def name(self):
         """
-        The test name (TestName instance)
+        Returns the Test ID, which includes the test name
+
+        :rtype: TestID
         """
         return self.__name
 
