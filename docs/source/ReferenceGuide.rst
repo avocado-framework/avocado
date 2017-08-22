@@ -111,7 +111,6 @@ Syntax::
 Examples of test-names::
 
    '/bin/true'
-   '/bin/grep foobar /etc/passwd'
    'passtest.py:Passtest.test'
    'file:///tmp/passtest.py:Passtest.test'
    'multiple_tests.py:MultipleTests.test_hello'
