@@ -253,7 +253,7 @@ class LoaderTest(unittest.TestCase):
         test_class, test_parameters = (
             self.loader.discover(simple_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
-        test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['name'] = test.TestID(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         tc.run_avocado()
@@ -299,7 +299,7 @@ class LoaderTest(unittest.TestCase):
         test_class, test_parameters = (
             self.loader.discover(avocado_not_a_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest, test_class)
-        test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['name'] = test.TestID(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         # The test can't be executed (no shebang), raising an OSError
@@ -315,7 +315,7 @@ class LoaderTest(unittest.TestCase):
         test_class, test_parameters = (
             self.loader.discover(avocado_simple_test.path, loader.ALL)[0])
         self.assertTrue(test_class == test.SimpleTest)
-        test_parameters['name'] = test.TestName(0, test_parameters['name'])
+        test_parameters['name'] = test.TestID(0, test_parameters['name'])
         test_parameters['base_logdir'] = self.tmpdir
         tc = test_class(**test_parameters)
         tc.run_avocado()
