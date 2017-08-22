@@ -26,7 +26,6 @@ The general reasoning to find paths is:
 * The next best location is the default user specific one.
 """
 import os
-import sys
 import shutil
 import time
 import tempfile
@@ -36,10 +35,6 @@ from . import settings
 from .output import LOG_JOB
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
-
-_BASE_DIR = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
-_BASE_DIR = os.path.abspath(_BASE_DIR)
-_IN_TREE_TESTS_DIR = os.path.join(_BASE_DIR, 'examples', 'tests')
 
 SYSTEM_BASE_DIR = '/var/lib/avocado'
 if 'VIRTUAL_ENV' in os.environ:
@@ -109,7 +104,8 @@ def get_test_dir():
         return configured
 
     if settings.settings.intree:
-        return _IN_TREE_TESTS_DIR
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        return os.path.join(base_dir, 'examples', 'tests')
 
     if utils_path.usable_ro_dir(SYSTEM_TEST_DIR):
         return SYSTEM_TEST_DIR
