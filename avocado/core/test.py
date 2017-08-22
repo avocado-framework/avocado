@@ -73,12 +73,12 @@ class TestName(object):
         else:
             self.str_uid = str(uid)
         self.name = name or "<unknown>"
-        self.variant = variant["variant_id"] if variant else None
-        if variant is None:
+        if variant is None or variant["variant_id"] is None:
+            self.variant = None
             self.str_variant = ""
         else:
-            self.str_variant = (";" + str(variant["variant_id"])
-                                if variant["variant_id"] else "")
+            self.variant = variant["variant_id"]
+            self.str_variant = ";%s" % self.variant
 
     def __str__(self):
         return "%s-%s%s" % (self.str_uid, self.name, self.str_variant)
