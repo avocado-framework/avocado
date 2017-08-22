@@ -145,10 +145,6 @@ class TestClassTest(unittest.TestCase):
         self.assertRaises(exceptions.TestSetupFail, AvocadoPass,
                           base_logdir=self.base_logdir)
 
-    def test_not_test_name(self):
-        self.assertRaises(test.NameNotTestNameError,
-                          test.Test, name='mytest')
-
     def tearDown(self):
         shutil.rmtree(self.base_logdir)
 
