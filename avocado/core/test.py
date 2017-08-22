@@ -428,6 +428,9 @@ class Test(unittest.TestCase):
         name, only to the file that contains the test.  It can be used to
         host data files that are generic enough to be used for all tests
         contained in a given test file.
+
+        This property is deprecated and will be removed in the future.
+        The :meth:`get_data` function should be used instead.
         """
         # TODO: on removal of Test.datadir, move its code over to
         # get_file_data_dir
