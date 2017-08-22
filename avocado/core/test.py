@@ -52,17 +52,6 @@ from .output import LOG_JOB
 COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
 
 
-class NameNotTestNameError(Exception):
-
-    """
-    The given test name is not a TestName instance
-
-    With the introduction of :class:`avocado.core.test.TestName`, it's
-    not allowed to use other types as the ``name`` parameter to a test
-    instance.  This exception is raised when this is attempted.
-    """
-
-
 class TestName(object):
 
     """
@@ -166,7 +155,6 @@ class Test(unittest.TestCase):
                             provided, it'll use
                             :func:`avocado.data_dir.create_job_logs_dir`.
         :param job: The job that this test is part of.
-        :raises: :class:`avocado.core.test.NameNotTestNameError`
         """
         def record_and_warn(*args, **kwargs):
             """ Record call to this function and log warning """
@@ -175,8 +163,6 @@ class Test(unittest.TestCase):
             return original_log_warn(*args, **kwargs)
 
         if name is not None:
-            if not isinstance(name, TestName):
-                raise NameNotTestNameError(name)
             self.__name = name
         else:
             self.__name = TestName(0, self.__class__.__name__)
