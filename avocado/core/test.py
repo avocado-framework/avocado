@@ -341,6 +341,54 @@ class Test(unittest.TestCase):
         else:
             return None
 
+    def get_data(self, filename):
+        """
+        Returns the path of a data file, if one exists
+
+        This method respects the existence of directories in the
+        following order:
+
+        1) "$(TEST_FILENAME).data/$(TEST)/$(VARIANT-$HASH)", if a
+           variant exists
+        2) "$(TEST_FILENAME).data/$(TEST)/$(VARIANT)", if a
+           variant exists
+        3) "$(TEST_FILENAME).data/$(TEST)", if no variant is used
+        4) "$(TEST_FILENAME).data", as a fallback for files common
+           to all tests hosted on a single file
+
+        :param filename: the relative name of the file to be searched
+                         on the the possible data directories
+        :type filename: str
+        :returns: either the path to the data file or None
+        :rtype: str or None
+        """
+        datadir = self.datadir
+        if datadir is None or not os.path.isdir(datadir):
+            return None
+
+        test_dirname = "%s.%s" % (self.__class__.__name__, self._testMethodName)
+        test_dirname = astring.string_to_safe_path(test_dirname)
+        test_datadir = os.path.join(datadir, test_dirname)
+
+        if self.name.variant is not None:
+            variant_full_name = self.name.variant
+            variant_short_name = variant_full_name[:-5]   # no hash
+            for variant_name in (variant_full_name, variant_short_name):
+                variant_dirname = astring.string_to_safe_path(variant_name)
+                variant_datadir = os.path.join(test_datadir, variant_dirname)
+                variant_filename = os.path.join(variant_datadir, filename)
+                if os.path.exists(variant_filename):
+                    return variant_filename
+
+        test_filename = os.path.join(test_datadir, filename)
+        if os.path.exists(test_filename):
+            return test_filename
+
+        file_filename = os.path.join(datadir, filename)
+        if os.path.exists(file_filename):
+            return file_filename
+        return None
+
     @property
     def filename(self):
         """
