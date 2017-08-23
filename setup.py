@@ -82,6 +82,33 @@ def get_data_files():
                     glob.glob('examples/wrappers/*.sh'))]
 
     data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'gdb-prerun-scripts'],
+                            ['gdb-prerun-scripts']),
+                    glob.glob('examples/gdb-prerun-scripts/*'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'plugins',
+                             'job-pre-post'],
+                            ['plugins/job-pre-post']),
+                    glob.glob('examples/plugins/job-pre-post/README.rst'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'plugins',
+                             'job-pre-post', 'mail'],
+                            ['plugins/job-pre-post/mail']),
+                    glob.glob('examples/plugins/job-pre-post/mail/*'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'plugins',
+                             'job-pre-post', 'sleep'],
+                            ['plugins/job-pre-post/sleep']),
+                    glob.glob('examples/plugins/job-pre-post/sleep/*'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux'],
+                            ['yaml_to_mux']),
+                    glob.glob('examples/yaml_to_mux/*.yaml'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux', 'hw'],
+                            ['yaml_to_mux/hw']),
+                    glob.glob('examples/yaml_to_mux/hw/*.yaml'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux', 'os'],
+                            ['yaml_to_mux/os']),
+                    glob.glob('examples/yaml_to_mux/os/*.yaml'))]
+    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux_loader'],
+                            ['yaml_to_mux_loader']),
+                    glob.glob('examples/yaml_to_mux_loader/*.yaml'))]
     return data_files
 
 
