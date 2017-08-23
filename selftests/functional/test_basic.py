@@ -763,6 +763,11 @@ class RunnerSimpleTest(unittest.TestCase):
         simplewarning.sh uses the avocado-bash-utils
         """
         os.chdir(basedir)
+        # simplewarning.sh calls "avocado" without specifying a path
+        os.environ['PATH'] += ":" + os.path.join(basedir, 'scripts')
+        # simplewarning.sh calls "avocado exec-path" which hasn't
+        # access to an installed location for the libexec scripts
+        os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'examples/tests/simplewarning.sh --show-job-log'
                     % (AVOCADO, self.tmpdir))
