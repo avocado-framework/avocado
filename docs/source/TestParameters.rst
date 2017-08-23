@@ -102,7 +102,7 @@ AvocadoParams
 Is a "database" of params present in every (instrumented) avocado test.
 It's produced during :class:`avocado.core.test.Test`'s ``__init__``
 from a `variant`_. It accepts a list of `TreeNode`_ objects; test name
-:class:`avocado.core.test.TestName` (for logging purposes); list of
+:class:`avocado.core.test.TestID` (for logging purposes); list of
 default paths (`Mux path`_) and the `Test's default params`_.
 
 In test it allows querying for data by using::

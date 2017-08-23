@@ -5,7 +5,7 @@ from avocado.utils import astring
 
 class AstringTest(unittest.TestCase):
 
-    def testTabularOutput(self):
+    def test_tabular_output(self):
         matrix = [('foo', 'bar'), ('/bin/bar/sbrubles',
                                    '/home/myuser/sbrubles')]
         self.assertEqual(astring.tabular_output(matrix),
@@ -17,7 +17,7 @@ class AstringTest(unittest.TestCase):
                           'foo               bar\n'
                           '/bin/bar/sbrubles /home/myuser/sbrubles'))
 
-    def testTabularWithConsoleCodes(self):
+    def test_tabular_with_console_codes(self):
         matrix = [("a", "an", "dog", "word", "last"),
                   ("\x1b[94ma",             # {BLUE}a
                    "\033[0man",             # {END}an
@@ -32,7 +32,7 @@ class AstringTest(unittest.TestCase):
                          "[94ma [0man cc[91mc "
                          "[91md[92md[94md[90md[0m last")
 
-    def testTabularOutputDifferentNOCols(self):
+    def test_tabular_output_different_no_cols(self):
         matrix = [[], [1], [2, 2], [333, 333, 333], [4, 4, 4, 4444]]
         self.assertEqual(astring.tabular_output(matrix),
                          "1\n"
@@ -40,7 +40,7 @@ class AstringTest(unittest.TestCase):
                          "333 333 333\n"
                          "4   4   4   4444")
 
-    def testUnicodeTabular(self):
+    def test_unicode_tabular(self):
         """
         Verifies tabular can handle utf-8 chars properly
 

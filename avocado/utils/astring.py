@@ -209,25 +209,30 @@ def tabular_output(matrix, header=None):
     return "\n".join(iter_tabular_output(matrix, header))
 
 
-def string_safe_encode(string):
+def string_safe_encode(input_str):
     """
     People tend to mix unicode streams with encoded strings. This function
     tries to replace any input with a valid utf-8 encoded ascii stream.
+
+    :param input_str: possibly unsafe string or other object that can
+                      be turned into a string
+    :returns: a utf-8 encoded ascii stream
     """
-    if not isinstance(string, basestring):
-        string = str(string)
+    if not isinstance(input_str, basestring):
+        input_str = str(input_str)
     try:
-        return string.encode("utf-8")
+        return input_str.encode("utf-8")
     except UnicodeDecodeError:
-        return string.decode("utf-8", "replace").encode("utf-8")
+        return input_str.decode("utf-8", "replace").encode("utf-8")
 
 
-def string_to_safe_path(string):
+def string_to_safe_path(input_str):
     """
     Convert string to a valid file/dir name.
-    :param string: String to be converted
+
+    :param input_str: String to be converted
     :return: String which is safe to pass as a file/dir name (on recent fs)
     """
-    if string.startswith("."):
-        string = "_" + string[1:]
-    return string.replace(os.path.sep, '_')[:255]
+    if input_str.startswith("."):
+        input_str = "_" + input_str[1:]
+    return input_str.replace(os.path.sep, '_')[:255]

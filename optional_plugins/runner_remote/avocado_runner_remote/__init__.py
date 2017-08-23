@@ -37,7 +37,7 @@ from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.runner import TestRunner
 from avocado.core.settings import settings
-from avocado.core.test import TestName
+from avocado.core.test import TestID
 from avocado.utils import archive
 from avocado.utils import astring
 from avocado.utils import process
@@ -507,7 +507,7 @@ class RemoteTestRunner(TestRunner):
                 name = [name[0]] + name[1].split(';')
                 if len(name) == 3:
                     name[2] = {"variant_id": name[2]}
-                name = TestName(*name, no_digits=-1)
+                name = TestID(*name, no_digits=-1)
                 state = dict(name=name,
                              time_elapsed=tst['time'],
                              time_start=tst['start'],

@@ -37,7 +37,7 @@ class DataDirTest(unittest.TestCase):
         (self.mapping,
          self.config_file_path) = self._get_temporary_dirs_mapping_and_config()
 
-    def testDataDirFromConfig(self):
+    def test_datadir_from_config(self):
         """
         When avocado.conf is present, honor the values coming from it.
         """
@@ -57,7 +57,7 @@ class DataDirTest(unittest.TestCase):
             flexmock(settings, settings=stg_orig)
         del data_dir
 
-    def testUniqueLogDir(self):
+    def test_unique_log_dir(self):
         """
         Tests that multiple queries for a logdir at the same time provides
         unique results.
@@ -78,7 +78,7 @@ class DataDirTest(unittest.TestCase):
         self.assertEqual(path, path_prefix + uid + ".1")
         self.assertTrue(os.path.exists(path))
 
-    def testSettingsDirAlternateDynamic(self):
+    def test_settings_dir_alternate_dynamic(self):
         """
         Tests that changes to the data_dir settings are applied dynamically
 

@@ -11,7 +11,7 @@ class SysinfoTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="sysinfo_unittest")
 
-    def testLoggablesEqual(self):
+    def test_loggables_equal(self):
         cmd1 = sysinfo.Command("ls -l")
         cmd2 = sysinfo.Command("ls -l")
         self.assertEqual(cmd1, cmd2)
@@ -19,7 +19,7 @@ class SysinfoTest(unittest.TestCase):
         file2 = sysinfo.Logfile("/proc/cpuinfo")
         self.assertEqual(file1, file2)
 
-    def testLoggablesNotEqual(self):
+    def test_loggables_not_equal(self):
         cmd1 = sysinfo.Command("ls -l")
         cmd2 = sysinfo.Command("ls -la")
         self.assertNotEqual(cmd1, cmd2)
@@ -27,7 +27,7 @@ class SysinfoTest(unittest.TestCase):
         file2 = sysinfo.Logfile("/etc/fstab")
         self.assertNotEqual(file1, file2)
 
-    def testLoggablesSet(self):
+    def test_loggables_set(self):
         container = set()
         cmd1 = sysinfo.Command("ls -l")
         cmd2 = sysinfo.Command("ls -l")

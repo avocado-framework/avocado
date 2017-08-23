@@ -580,9 +580,9 @@ class TestRunner(object):
                 index += 1
                 test_parameters = test_factory[1]
                 name = test_parameters.get("name")
-                test_parameters["name"] = test.TestName(index + 1, name,
-                                                        variant,
-                                                        no_digits)
+                test_parameters["name"] = test.TestID(index + 1, name,
+                                                      variant,
+                                                      no_digits)
                 if deadline is not None and time.time() > deadline:
                     summary.add('INTERRUPTED')
                     if 'methodName' in test_parameters:
