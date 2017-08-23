@@ -323,22 +323,14 @@ class Job(object):
 
     @staticmethod
     def _log_avocado_version():
-        LOG_JOB.info('Avocado version: %s', version.VERSION)
-        if os.path.exists('.git') and os.path.exists('avocado.spec'):
+        version_log = version.VERSION
+        if os.path.exists('.git') and os.path.exists('python-avocado.spec'):
             cmd = "git show --summary --pretty='%H'"
-            result = process.run(cmd, ignore_status=True)
-            status = result.exit_status
-            top_commit = result.stdout.splitlines()[0]
-            cmd2 = "git rev-parse --abbrev-ref HEAD"
-            result2 = process.run(cmd2)
-            status2 = result2.exit_status
-            branch = result2.stdout
-            # Let's display information only if git is installed
-            # (commands succeed).
-            if status == 0 and status2 == 0:
-                LOG_JOB.info('Avocado git repo info')
-                LOG_JOB.info("Top commit: %s", top_commit)
-                LOG_JOB.info("Branch: %s", branch)
+            result = process.run(cmd, ignore_status=True, verbose=False)
+            if result.exit_status == 0:
+                top_commit = result.stdout.splitlines()[0][:8]
+                version_log += " (GIT commit %s)" % top_commit
+        LOG_JOB.info('Avocado version: %s', version_log)
         LOG_JOB.info('')
 
     @staticmethod
