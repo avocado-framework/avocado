@@ -226,8 +226,6 @@ class Replay(CLI):
                 elif option in replay_args:
                     setattr(args, option, replay_args[option])
 
-        # Keeping this for compatibility.
-        # TODO: Use replay_args['reference'] at some point in the future.
         if getattr(args, 'reference', None):
             LOG_UI.warn('Overriding the replay test references with test '
                         'references given in the command line.')
