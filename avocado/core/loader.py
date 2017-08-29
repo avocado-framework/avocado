@@ -42,6 +42,10 @@ AVAILABLE = None
 ALL = True
 
 
+# Regexp to find python unittests
+_RE_UNIT_TEST = re.compile(r'test.*')
+
+
 class MissingTest(object):
     """
     Class representing reference which failed to be discovered
@@ -510,7 +514,8 @@ class FileLoader(TestLoader):
                 MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED'}
+                test.Test: 'INSTRUMENTED',
+                test.PythonUnittest: 'PyUNITTEST'}
 
     @staticmethod
     def get_decorator_mapping():
@@ -519,7 +524,8 @@ class FileLoader(TestLoader):
                 MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str}
+                test.Test: output.TERM_SUPPORT.healthy_str,
+                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
 
     def discover(self, reference, which_tests=DEFAULT):
         """
@@ -619,8 +625,10 @@ class FileLoader(TestLoader):
         :type path: str
         :param class_name: the specific class to be found
         :type path: str
-        :returns: dict with class name and additional info such as method names
-                  and tags
+        :returns: tuple where first item is dict with class name and additional
+                  info such as method names and tags; the second item is
+                  set of class names which look like avocado tests but are
+                  force-disabled.
         :rtype: dict
         """
         # If only the Test class was imported from the avocado namespace
@@ -633,6 +641,7 @@ class FileLoader(TestLoader):
         mod_import_name = None
         # The resulting test classes
         result = {}
+        disabled = set()
 
         if os.path.isdir(path):
             path = os.path.join(path, "__init__.py")
@@ -678,6 +687,7 @@ class FileLoader(TestLoader):
                 has_disable = safeloader.check_docstring_directive(docstring,
                                                                    'disable')
                 if (has_disable and class_name is None):
+                    disabled.add(statement.name)
                     continue
 
                 cl_tags = safeloader.get_docstring_directives_tags(docstring)
@@ -708,12 +718,12 @@ class FileLoader(TestLoader):
                         # Looking for a 'class FooTest(Parent)'
                         else:
                             parent_class = parent.id
-
-                        res = self._find_avocado_tests(path, parent_class)
+                        res, dis = self._find_avocado_tests(path, parent_class)
                         if res:
                             parents.remove(parent)
                             for cls in res:
                                 info.extend(res[cls])
+                        disabled.update(dis)
 
                     # If there are parents left to be discovered, they
                     # might be in a different module.
@@ -755,11 +765,12 @@ class FileLoader(TestLoader):
                                         parent_module = node.module
                                     _, ppath, _ = imp.find_module(parent_module,
                                                                   modules_paths)
-                                    res = self._find_avocado_tests(ppath,
-                                                                   parent_class)
+                                    res, dis = self._find_avocado_tests(ppath,
+                                                                        parent_class)
                                     if res:
                                         for cls in res:
                                             info.extend(res[cls])
+                                    disabled.update(dis)
 
                     continue
 
@@ -784,7 +795,7 @@ class FileLoader(TestLoader):
                             result[statement.name] = info
                             continue
 
-        return result
+        return result, disabled
 
     @staticmethod
     def _get_methods_info(statement_body, class_tags):
@@ -802,13 +813,28 @@ class FileLoader(TestLoader):
 
         return methods_info
 
+    def _find_python_unittests(self, test_path, disabled):
+        result = []
+        class_methods = safeloader.find_class_and_methods(test_path,
+                                                          _RE_UNIT_TEST)
+        for klass, methods in class_methods.iteritems():
+            if klass in disabled:
+                continue
+            if test_path.endswith(".py"):
+                test_path = test_path[:-3]
+            test_module_name = os.path.relpath(test_path)
+            test_module_name = test_module_name.replace(os.path.sep, ".")
+            result += ["%s.%s.%s" % (test_module_name, klass, method)
+                       for method in methods]
+        return result
+
     def _make_existing_file_tests(self, test_path, make_broken,
                                   subtests_filter, test_name=None):
         if test_name is None:
             test_name = test_path
         try:
             # Avocado tests
-            avocado_tests = self._find_avocado_tests(test_path)
+            avocado_tests, disabled = self._find_avocado_tests(test_path)
             if avocado_tests:
                 test_factories = []
                 for test_class, info in avocado_tests.items():
@@ -825,6 +851,20 @@ class FileLoader(TestLoader):
                                                 'tags': tags})
                             test_factories.append(tst)
                 return test_factories
+            # Python unittests
+            old_dir = os.getcwd()
+            try:
+                _test_dir = os.path.abspath(os.path.dirname(test_path))
+                _test_name = os.path.basename(test_path)
+                os.chdir(_test_dir)
+                python_unittests = self._find_python_unittests(_test_name,
+                                                               disabled)
+            finally:
+                os.chdir(old_dir)
+            if python_unittests:
+                return [(test.PythonUnittest, {"name": name,
+                                               "test_dir": _test_dir})
+                        for name in python_unittests]
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
