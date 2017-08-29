@@ -43,6 +43,10 @@ AVAILABLE = None
 ALL = True
 
 
+# Regexp to find python unittests
+_RE_UNIT_TEST = re.compile(r'test.*')
+
+
 class MissingTest(object):
     """
     Class representing reference which failed to be discovered
@@ -511,7 +515,8 @@ class FileLoader(TestLoader):
                 MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED'}
+                test.Test: 'INSTRUMENTED',
+                test.PythonUnittest: 'PyUNITTEST'}
 
     @staticmethod
     def get_decorator_mapping():
@@ -520,7 +525,8 @@ class FileLoader(TestLoader):
                 MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str}
+                test.Test: output.TERM_SUPPORT.healthy_str,
+                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
 
     def discover(self, reference, which_tests=DEFAULT):
         """
@@ -803,6 +809,19 @@ class FileLoader(TestLoader):
 
         return methods_info
 
+    def _find_python_unittests(self, test_path):
+        result = []
+        class_methods = safeloader.find_class_and_methods(test_path,
+                                                          _RE_UNIT_TEST)
+        for klass, methods in class_methods.iteritems():
+            if test_path.endswith(".py"):
+                test_path = test_path[:-3]
+            test_module_name = os.path.relpath(test_path)
+            test_module_name = test_module_name.replace(os.path.sep, ".")
+            result += ["%s.%s.%s" % (test_module_name, klass, method)
+                       for method in methods]
+        return result
+
     def _make_existing_file_tests(self, test_path, make_broken,
                                   subtests_filter, test_name=None):
         if test_name is None:
@@ -826,6 +845,19 @@ class FileLoader(TestLoader):
                                                 'tags': tags})
                             test_factories.append(tst)
                 return test_factories
+            # Python unittests
+            old_dir = os.path.curdir
+            try:
+                _test_dir = os.path.abspath(os.path.dirname(test_path))
+                _test_name = os.path.basename(test_path)
+                os.chdir(_test_dir)
+                python_unittests = self._find_python_unittests(_test_name)
+            finally:
+                os.chdir(old_dir)
+            if python_unittests:
+                return [(test.PythonUnittest, {"name": name,
+                                               "test_dir": _test_dir})
+                        for name in python_unittests]
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but

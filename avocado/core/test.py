@@ -960,6 +960,18 @@ class ExternalRunnerTest(SimpleTest):
                 os.chdir(pre_cwd)
 
 
+class PythonUnittest(ExternalRunnerTest):
+    """
+    Python unittest test
+    """
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 test_dir=None):
+        runner = "%s -m unittest -q -c" % sys.executable
+        external_runner = ExternalRunnerSpec(runner, "test", test_dir)
+        super(PythonUnittest, self).__init__(name, params, base_logdir, job,
+                                             external_runner=external_runner)
+
+
 class MockingTest(Test):
 
     """
