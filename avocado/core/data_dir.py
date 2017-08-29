@@ -36,14 +36,17 @@ from .output import LOG_JOB
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
 
-SYSTEM_BASE_DIR = '/var/lib/avocado'
 if 'VIRTUAL_ENV' in os.environ:
     SYSTEM_BASE_DIR = os.environ['VIRTUAL_ENV']
+    USER_BASE_DIR = SYSTEM_BASE_DIR
+else:
+    SYSTEM_BASE_DIR = '/var/lib/avocado'
+    USER_BASE_DIR = os.path.expanduser('~/avocado')
+
 SYSTEM_TEST_DIR = os.path.join(SYSTEM_BASE_DIR, 'tests')
 SYSTEM_DATA_DIR = os.path.join(SYSTEM_BASE_DIR, 'data')
 SYSTEM_LOG_DIR = os.path.join(SYSTEM_BASE_DIR, 'job-results')
 
-USER_BASE_DIR = os.path.expanduser('~/avocado')
 USER_TEST_DIR = os.path.join(USER_BASE_DIR, 'tests')
 USER_DATA_DIR = os.path.join(USER_BASE_DIR, 'data')
 USER_LOG_DIR = os.path.join(USER_BASE_DIR, 'job-results')
