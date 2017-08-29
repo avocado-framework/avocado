@@ -18,7 +18,6 @@ Test loader module.
 """
 
 import ast
-import collections
 import imp
 import inspect
 import os
