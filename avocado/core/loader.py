@@ -964,10 +964,7 @@ class ExternalLoader(TestLoader):
                        '"--external-runner-chdir=test".')
                 raise LoaderError(msg)
 
-            cls_external_runner = collections.namedtuple('ExternalLoader',
-                                                         ['runner', 'chdir',
-                                                          'test_dir'])
-            return cls_external_runner(runner, chdir, test_dir)
+            return test.ExternalRunnerSpec(runner, chdir, test_dir)
         elif chdir:
             msg = ('Option "--external-runner-chdir" requires '
                    '"--external-runner" to be set.')

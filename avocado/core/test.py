@@ -908,6 +908,16 @@ class SimpleTest(Test):
         self._execute_cmd()
 
 
+class ExternalRunnerSpec(object):
+    """
+    Defines the basic options used by ExternalRunner
+    """
+    def __init__(self, runner, chdir=None, test_dir=None):
+        self.runner = runner
+        self.chdir = chdir
+        self.test_dir = test_dir
+
+
 class ExternalRunnerTest(SimpleTest):
 
     def __init__(self, name, params=None, base_logdir=None, job=None,
