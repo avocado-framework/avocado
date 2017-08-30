@@ -390,7 +390,7 @@ def dump_ivariants(ivariants):
         safe_variant = {}
         safe_variant["mux_path"] = [str(pth)
                                     for pth in variant.get("mux_path")]
-        safe_variant["variant_id"] = str(variant.get("variant_id"))
+        safe_variant["variant_id"] = variant.get("variant_id")
         safe_variant["variant"] = [dump_tree_node(_)
                                    for _ in variant.get("variant", [])]
         variants.append(safe_variant)
