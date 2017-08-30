@@ -175,6 +175,8 @@ class TestLoaderProxy(object):
             self.register_plugin(FileLoader)
         if ExternalLoader not in self.registered_plugins:
             self.register_plugin(ExternalLoader)
+        if PythonUnittestLoader not in self.registered_plugins:
+            self.register_plugin(PythonUnittestLoader)
         # Register external runner when --external-runner is used
         if getattr(args, "external_runner", None):
             self.register_plugin(ExternalLoader)
@@ -514,8 +516,7 @@ class FileLoader(TestLoader):
                 MissingTest: 'MISSING',
                 BrokenSymlink: 'BROKEN_SYMLINK',
                 AccessDeniedPath: 'ACCESS_DENIED',
-                test.Test: 'INSTRUMENTED',
-                test.PythonUnittest: 'PyUNITTEST'}
+                test.Test: 'INSTRUMENTED'}
 
     @staticmethod
     def get_decorator_mapping():
@@ -524,8 +525,7 @@ class FileLoader(TestLoader):
                 MissingTest: output.TERM_SUPPORT.fail_header_str,
                 BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
                 AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
-                test.Test: output.TERM_SUPPORT.healthy_str,
-                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
+                test.Test: output.TERM_SUPPORT.healthy_str}
 
     def discover(self, reference, which_tests=DEFAULT):
         """
@@ -844,19 +844,6 @@ class FileLoader(TestLoader):
                                                 'tags': tags})
                             test_factories.append(tst)
                 return test_factories
-            # Python unittests
-            old_dir = os.path.curdir
-            try:
-                _test_dir = os.path.abspath(os.path.dirname(test_path))
-                _test_name = os.path.basename(test_path)
-                os.chdir(_test_dir)
-                python_unittests = self._find_python_unittests(_test_name)
-            finally:
-                os.chdir(old_dir)
-            if python_unittests:
-                return [(test.PythonUnittest, {"name": name,
-                                               "test_dir": _test_dir})
-                        for name in python_unittests]
             else:
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
@@ -1025,6 +1012,68 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
+
+
+class PythonUnittestLoader(FileLoader):
+    name = "py_unittest"
+
+    __not_test_str = ("Does not look like a python unittest")
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {NotATest: 'NOT_A_TEST',
+                MissingTest: 'MISSING',
+                BrokenSymlink: 'BROKEN_SYMLINK',
+                AccessDeniedPath: 'ACCESS_DENIED',
+                test.Test: 'INSTRUMENTED',
+                test.PythonUnittest: 'PyUNITTEST'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {NotATest: output.TERM_SUPPORT.warn_header_str,
+                MissingTest: output.TERM_SUPPORT.fail_header_str,
+                BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
+                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
+                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
+
+    def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
+        def ignore_broken(klass, uid, description=None):
+            """ Always return empty list """
+            return []
+
+        if list_non_tests:  # return broken test with params
+            make_broken = self._make_test
+        else:  # return empty set instead
+            make_broken = ignore_broken
+        try:
+            # Python unittests
+            assert (test_path.endswith(".py") or test_path.endswith(".pyc") or
+                    test_path.endswith(".pyo"))
+            old_dir = os.path.abspath(os.path.curdir)
+            try:
+                _test_dir = os.path.abspath(os.path.dirname(test_path))
+                _test_name = os.path.basename(test_path)
+                os.chdir(_test_dir)
+                python_unittests = self._find_python_unittests(_test_name)
+            finally:
+                os.chdir(old_dir)
+            if python_unittests:
+                return [(test.PythonUnittest, {"name": name,
+                                               "test_dir": _test_dir})
+                        for name in python_unittests
+                        if not (subtests_filter and
+                                not subtests_filter.search(name))]
+            else:
+                return make_broken(NotATest, test_path,
+                                   self.__not_test_str)
+
+        # Since a lot of things can happen here, the broad exception is
+        # justified. The user will get it unadulterated anyway, and avocado
+        # will not crash.
+        except BaseException as details:  # Ugly python files can raise any exc
+            if isinstance(details, KeyboardInterrupt):
+                raise  # Don't ignore ctrl+c
+            return make_broken(NotATest, test_path, self.__not_test_str)
 
 
 class DummyLoader(TestLoader):
