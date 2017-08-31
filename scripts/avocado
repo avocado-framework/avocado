@@ -58,20 +58,8 @@ def handle_exception(*exc_info):
 
 if __name__ == '__main__':
     sys.excepthook = handle_exception
+    from avocado.core.app import AvocadoApp
 
-
-# simple magic for using scripts within a source tree
-basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if os.path.isdir(os.path.join(basedir, 'avocado')):
-    os.environ['PATH'] += ":" + os.path.join(basedir, 'scripts')
-    os.environ['PATH'] += ":" + os.path.join(basedir, 'libexec')
-    sys.path.append(basedir)
-
-
-from avocado.core.app import AvocadoApp
-
-
-if __name__ == '__main__':
     # Override tmp in case it's not set in env
     for attr in ("TMP", "TEMP", "TMPDIR"):
         if attr in os.environ:
