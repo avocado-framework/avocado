@@ -262,7 +262,18 @@ class Test(unittest.TestCase):
                                              basename)
         self.__srcdir = utils_path.init_dir(self.workdir, 'src')
 
+        test_metadata = self._get_metadata()
+        if test_metadata:
+            self.log.debug("Test metadata:")
+            for key, value in test_metadata.iteritems():
+                self.log.debug("  %s: %s", key, value)
         unittest.TestCase.__init__(self, methodName=methodName)
+
+    def _get_metadata(self):
+        """
+        Returns a dictionary containing various metadata about this test
+        """
+        return {"test_src": inspect.getfile(self.__class__)}
 
     @property
     def name(self):
