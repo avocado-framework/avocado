@@ -25,8 +25,6 @@ ALL_MESSAGES = ['setup pre',
 #                     [msg_in, ...])
 EXPECTED_RESULTS = {'skip-setup-d304': ('SKIP',
                                         ['setup pre',
-                                         'teardown pre',
-                                         'teardown post',
                                          "[WARNING: self.skip() will be "
                                          "deprecated. Use 'self.cancel()' "
                                          "or the skip decorators]"]),

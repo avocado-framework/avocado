@@ -597,6 +597,7 @@ class Test(unittest.TestCase):
             if skip_test is False:
                 self.setUp()
         except (exceptions.TestSetupSkip, exceptions.TestSkipError) as details:
+            skip_test = True
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise exceptions.TestSkipError(details)
         except exceptions.TestCancel as details:
