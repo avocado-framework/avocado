@@ -150,6 +150,9 @@ class OutputTest(unittest.TestCase):
                          open(os.path.join(testdir, "stdout")).read())
         self.assertEqual("test_stderr\n",
                          open(os.path.join(testdir, "stderr")).read())
+        self.assertEqual("test_print\ntest_stdout\ntest_stderr\n"
+                         "test_process\n",
+                         open(os.path.join(testdir, "output")).read())
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

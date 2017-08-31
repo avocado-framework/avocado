@@ -213,6 +213,7 @@ class Test(unittest.TestCase):
 
         self._stdout_file = os.path.join(self.logdir, 'stdout')
         self._stderr_file = os.path.join(self.logdir, 'stderr')
+        self._output_file = os.path.join(self.logdir, 'output')
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
@@ -525,6 +526,14 @@ class Test(unittest.TestCase):
         self._register_log_file_handler(logging.getLogger('paramiko'),
                                         formatter,
                                         self._ssh_logfile)
+
+        # combined output logging
+        self._register_log_file_handler(log_test_stdout,
+                                        stream_formatter,
+                                        self._output_file)
+        self._register_log_file_handler(log_test_stderr,
+                                        stream_formatter,
+                                        self._output_file)
 
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.add_logger(log_test_stdout)
