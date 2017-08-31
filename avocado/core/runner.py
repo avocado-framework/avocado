@@ -299,7 +299,6 @@ class TestRunner(object):
         :param queue: Multiprocess queue.
         :type queue: :class:`multiprocessing.Queue` instance.
         """
-        signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         sys.stdout = output.LoggingFile(["[stdout] "], loggers=[TEST_LOG])
         sys.stderr = output.LoggingFile(["[stderr] "], loggers=[TEST_LOG])
 
@@ -375,16 +374,15 @@ class TestRunner(object):
                     process.kill_process_tree(proc.pid, signal.SIGSTOP, False)
                     self.sigstopped = True
 
-        signal.signal(signal.SIGTSTP, sigtstp_handler)
-
         proc = multiprocessing.Process(target=self._run_test,
                                        args=(test_factory, queue,))
         test_status = TestStatus(self.job, queue)
 
         cycle_timeout = 1
         time_started = time.time()
+        signal.signal(signal.SIGTSTP, signal.SIG_IGN)
         proc.start()
-
+        signal.signal(signal.SIGTSTP, sigtstp_handler)
         test_status.wait_for_early_status(proc, 60)
 
         # At this point, the test is already initialized and we know
