@@ -18,7 +18,6 @@ Test loader module.
 """
 
 import ast
-import collections
 import imp
 import inspect
 import os
@@ -41,6 +40,10 @@ DEFAULT = False
 AVAILABLE = None
 #: All tests (including broken ones)
 ALL = True
+
+
+# Regexp to find python unittests
+_RE_UNIT_TEST = re.compile(r'test.*')
 
 
 class MissingTest(object):
@@ -172,6 +175,8 @@ class TestLoaderProxy(object):
             self.register_plugin(FileLoader)
         if ExternalLoader not in self.registered_plugins:
             self.register_plugin(ExternalLoader)
+        if PythonUnittestLoader not in self.registered_plugins:
+            self.register_plugin(PythonUnittestLoader)
         # Register external runner when --external-runner is used
         if getattr(args, "external_runner", None):
             self.register_plugin(ExternalLoader)
@@ -803,15 +808,29 @@ class FileLoader(TestLoader):
 
         return methods_info
 
-    def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
-                            test_name=None):
+    def _find_python_unittests(self, test_path):
+        result = []
+        class_methods = safeloader.find_class_and_methods(test_path,
+                                                          _RE_UNIT_TEST)
+        for klass, methods in class_methods.iteritems():
+            if test_path.endswith(".py"):
+                test_path = test_path[:-3]
+            test_module_name = os.path.relpath(test_path)
+            test_module_name = test_module_name.replace(os.path.sep, ".")
+            result += ["%s.%s.%s" % (test_module_name, klass, method)
+                       for method in methods]
+        return result
+
+    def _make_existing_file_tests(self, test_path, make_broken,
+                                  subtests_filter, test_name=None):
         if test_name is None:
             test_name = test_path
         try:
-            tests = self._find_avocado_tests(test_path)
-            if tests:
+            # Avocado tests
+            avocado_tests = self._find_avocado_tests(test_path)
+            if avocado_tests:
                 test_factories = []
-                for test_class, info in tests.items():
+                for test_class, info in avocado_tests.items():
                     if isinstance(test_class, str):
                         for test_method, tags in info:
                             name = test_name + \
@@ -883,8 +902,8 @@ class FileLoader(TestLoader):
                                    "readable")
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
-                return self._make_avocado_tests(test_path, make_broken,
-                                                subtests_filter)
+                return self._make_existing_file_tests(test_path, make_broken,
+                                                      subtests_filter)
             else:
                 if os.access(test_path, os.X_OK):
                     return self._make_test(test.SimpleTest,
@@ -905,8 +924,9 @@ class FileLoader(TestLoader):
             # Try to resolve test ID (keep compatibility)
             test_path = os.path.join(data_dir.get_test_dir(), test_name)
             if os.path.exists(test_path):
-                return self._make_avocado_tests(test_path, make_broken,
-                                                subtests_filter, test_name)
+                return self._make_existing_file_tests(test_path, make_broken,
+                                                      subtests_filter,
+                                                      test_name)
             else:
                 if not subtests_filter and ':' in test_name:
                     test_name, subtests_filter = test_name.split(':', 1)
@@ -914,9 +934,10 @@ class FileLoader(TestLoader):
                                              test_name)
                     if os.path.exists(test_path):
                         subtests_filter = re.compile(subtests_filter)
-                        return self._make_avocado_tests(test_path, make_broken,
-                                                        subtests_filter,
-                                                        test_name)
+                        return self._make_existing_file_tests(test_path,
+                                                              make_broken,
+                                                              subtests_filter,
+                                                              test_name)
                 return make_broken(NotATest, test_name, "File not found "
                                    "('%s'; '%s')" % (test_name, test_path))
         return make_broken(NotATest, test_name, self.__not_test_str)
@@ -961,10 +982,7 @@ class ExternalLoader(TestLoader):
                        '"--external-runner-chdir=test".')
                 raise LoaderError(msg)
 
-            cls_external_runner = collections.namedtuple('ExternalLoader',
-                                                         ['runner', 'chdir',
-                                                          'test_dir'])
-            return cls_external_runner(runner, chdir, test_dir)
+            return test.ExternalRunnerSpec(runner, chdir, test_dir)
         elif chdir:
             msg = ('Option "--external-runner-chdir" requires '
                    '"--external-runner" to be set.')
@@ -994,6 +1012,68 @@ class ExternalLoader(TestLoader):
     @staticmethod
     def get_decorator_mapping():
         return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
+
+
+class PythonUnittestLoader(FileLoader):
+    name = "py_unittest"
+
+    __not_test_str = ("Does not look like a python unittest")
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {NotATest: 'NOT_A_TEST',
+                MissingTest: 'MISSING',
+                BrokenSymlink: 'BROKEN_SYMLINK',
+                AccessDeniedPath: 'ACCESS_DENIED',
+                test.Test: 'INSTRUMENTED',
+                test.PythonUnittest: 'PyUNITTEST'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {NotATest: output.TERM_SUPPORT.warn_header_str,
+                MissingTest: output.TERM_SUPPORT.fail_header_str,
+                BrokenSymlink: output.TERM_SUPPORT.fail_header_str,
+                AccessDeniedPath: output.TERM_SUPPORT.fail_header_str,
+                test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
+
+    def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
+        def ignore_broken(klass, uid, description=None):
+            """ Always return empty list """
+            return []
+
+        if list_non_tests:  # return broken test with params
+            make_broken = self._make_test
+        else:  # return empty set instead
+            make_broken = ignore_broken
+        try:
+            # Python unittests
+            assert (test_path.endswith(".py") or test_path.endswith(".pyc") or
+                    test_path.endswith(".pyo"))
+            old_dir = os.path.abspath(os.path.curdir)
+            try:
+                _test_dir = os.path.abspath(os.path.dirname(test_path))
+                _test_name = os.path.basename(test_path)
+                os.chdir(_test_dir)
+                python_unittests = self._find_python_unittests(_test_name)
+            finally:
+                os.chdir(old_dir)
+            if python_unittests:
+                return [(test.PythonUnittest, {"name": name,
+                                               "test_dir": _test_dir})
+                        for name in python_unittests
+                        if not (subtests_filter and
+                                not subtests_filter.search(name))]
+            else:
+                return make_broken(NotATest, test_path,
+                                   self.__not_test_str)
+
+        # Since a lot of things can happen here, the broad exception is
+        # justified. The user will get it unadulterated anyway, and avocado
+        # will not crash.
+        except BaseException as details:  # Ugly python files can raise any exc
+            if isinstance(details, KeyboardInterrupt):
+                raise  # Don't ignore ctrl+c
+            return make_broken(NotATest, test_path, self.__not_test_str)
 
 
 class DummyLoader(TestLoader):
