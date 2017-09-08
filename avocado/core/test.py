@@ -262,6 +262,9 @@ class Test(unittest.TestCase):
                                              basename)
         self.__srcdir = utils_path.init_dir(self.workdir, 'src')
 
+        if self.filename:
+            self.log.debug("Test metadata:")
+            self.log.debug("  filename: %s", self.filename)
         unittest.TestCase.__init__(self, methodName=methodName)
 
     @property
