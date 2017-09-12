@@ -921,6 +921,16 @@ class SimpleTest(Test):
         self._execute_cmd()
 
 
+class ExternalRunnerSpec(object):
+    """
+    Defines the basic options used by ExternalRunner
+    """
+    def __init__(self, runner, chdir=None, test_dir=None):
+        self.runner = runner
+        self.chdir = chdir
+        self.test_dir = test_dir
+
+
 class ExternalRunnerTest(SimpleTest):
 
     def __init__(self, name, params=None, base_logdir=None, job=None,
@@ -961,6 +971,18 @@ class ExternalRunnerTest(SimpleTest):
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)
+
+
+class PythonUnittest(ExternalRunnerTest):
+    """
+    Python unittest test
+    """
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 test_dir=None):
+        runner = "%s -m unittest -q -c" % sys.executable
+        external_runner = ExternalRunnerSpec(runner, "test", test_dir)
+        super(PythonUnittest, self).__init__(name, params, base_logdir, job,
+                                             external_runner=external_runner)
 
 
 class MockingTest(Test):
