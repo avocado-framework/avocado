@@ -16,6 +16,7 @@ Plugins information plugin
 """
 
 from avocado.core import dispatcher
+from avocado.core.resolver import Resolver
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.utils import astring
@@ -51,7 +52,9 @@ class Plugins(CLICmd):
              ('Plugins that generate job result based on job/test events '
               '(result_events):')),
             (dispatcher.VarianterDispatcher(),
-             'Plugins that generate test variants (varianter): ')
+             'Plugins that generate test variants (varianter): '),
+            (Resolver(),
+             'Plugins that resolve test references: ')
         ]
         for plugins_active, msg in plugin_types:
             LOG_UI.info(msg)

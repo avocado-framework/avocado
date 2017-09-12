@@ -1,17 +1,14 @@
 import asyncio
 import multiprocessing
-import os
 import random
 import sys
 
 from avocado.core import nrunner
-from avocado.core import loader
+from avocado.core import resolver
 from avocado.core import exit_codes
-from avocado.core import exceptions
 from avocado.core import test
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
-from avocado.utils import stacktrace
 
 
 class NRun(CLICmd):
@@ -31,57 +28,20 @@ class NRun(CLICmd):
                             help="Host and port for status server, default is: %(default)s")
 
     @staticmethod
-    def create_test_suite(references):
-        """
-        Creates the test suite for this Job
-
-        This is a public Job API as part of the documented Job phases
-
-        NOTE: This is similar to avocado.core.Job.create_test_suite
-        """
-        try:
-            suite = loader.loader.discover(references)
-        except loader.LoaderError as details:
-            stacktrace.log_exc_info(sys.exc_info(), LOG_UI.getChild("debug"))
-            raise exceptions.OptionValidationError(details)
-
-        if not suite:
-            if references:
-                references = " ".join(references)
-                e_msg = ("No tests found for given test references, try "
-                         "'avocado list -V %s' for details" % references)
-            else:
-                e_msg = ("No test references provided nor any other arguments "
-                         "resolved into tests. Please double check the "
-                         "executed command.")
-            raise exceptions.OptionValidationError(e_msg)
-
-        return suite
-
-    @staticmethod
-    def suite_to_tasks(suite, status_uris):
+    def resolutions_to_tasks(resolutions, status_uris):
         tasks = []
         index = 0
-        no_digits = len(str(len(suite)))
-        for factory in suite:
-            klass, args = factory
-            name = args.get("name")
-            identifier = str(test.TestID(index + 1, name, None, no_digits))
-            if klass == test.PythonUnittest:
-                test_dir = args.get("test_dir")
-                module_prefix = test_dir.split(os.getcwd())[1][1:]
-                module_prefix = module_prefix.replace("/", ".")
-                unittest_path = "%s.%s" % (module_prefix, args.get("name"))
-                runnable = nrunner.Runnable('python-unittest', unittest_path)
-            elif klass == test.SimpleTest:
-                runnable = nrunner.Runnable('exec-test', args.get('executable'))
-            else:
-                # FIXME: This should instead raise an error
-                print('WARNING: unknown test type "%s", using "noop"' % factory[0])
-                runnable = nrunner.Runnable('noop')
-
-            tasks.append(nrunner.Task(identifier, runnable, status_uris))
-            index += 1
+        resolutions = [res for res in resolutions if
+                       res.result == resolver.ReferenceResolutionResult.SUCCESS]
+        no_digits = len(str(len(resolutions)))
+        for resolution in resolutions:
+            name = resolution.reference
+            for runnable in resolution.resolutions:
+                if runnable.uri:
+                    name = runnable.uri
+                identifier = str(test.TestID(index + 1, name, None, no_digits))
+                tasks.append(nrunner.Task(identifier, runnable, status_uris))
+                index += 1
         return tasks
 
     @asyncio.coroutine
@@ -138,15 +98,8 @@ class NRun(CLICmd):
             stderr=asyncio.subprocess.PIPE)
 
     def run(self, args):
-        try:
-            loader.loader.load_plugins(args)
-        except loader.LoaderError as details:
-            sys.stderr.write(str(details))
-            sys.stderr.write('\n')
-            sys.exit(exit_codes.AVOCADO_FAIL)
-
-        suite = self.create_test_suite(args.reference)
-        self.pending_tasks = self.suite_to_tasks(suite, [args.status_server])
+        resolutions = resolver.resolve(args.reference)
+        self.pending_tasks = self.resolutions_to_tasks(resolutions, [args.status_server])
 
         if not args.disable_task_randomization:
             random.shuffle(self.pending_tasks)

@@ -23,6 +23,11 @@ from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
 from avocado.core.plugin_interfaces import CLI
+from avocado.core.plugin_interfaces import Resolver
+from avocado.core.resolver import ReferenceResolution
+from avocado.core.resolver import ReferenceResolutionResult
+# FIXME: needed when implementation becomes non-stub
+# from avocado.core.nrunner import Runnable
 from robot import run
 from robot.errors import DataError
 from robot.parsing.model import TestData
@@ -141,6 +146,18 @@ class RobotLoader(loader.TestLoader):
     def get_decorator_mapping():
         return {RobotTest: output.TERM_SUPPORT.healthy_str,
                 NotRobotTest: output.TERM_SUPPORT.fail_header_str}
+
+
+class RobotResolver(Resolver):
+
+    name = 'robot'
+    description = 'Test resolver for Robot tests'
+
+    @staticmethod
+    def resolve(reference):
+        # FIXME: stub implementation
+        return ReferenceResolution(reference,
+                                   ReferenceResolutionResult.NOTFOUND)
 
 
 class RobotCLI(CLI):

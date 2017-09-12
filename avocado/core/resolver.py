@@ -1,0 +1,149 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See LICENSE for more details.
+#
+# Copyright: Red Hat Inc. 2019
+# Authors: Cleber Rosa <crosa@redhat.com>
+
+"""
+Test resolver module.
+"""
+
+import os
+from enum import Enum
+
+from .dispatcher import EnabledExtensionManager
+
+
+class ReferenceResolutionResult(Enum):
+    #: Given test reference was properly resolved
+    SUCCESS = object()
+    #: Given test reference was not properly resolved
+    NOTFOUND = object()
+    #: Internal error in the resolution process
+    ERROR = object()
+
+
+class ReferenceResolutionAction(Enum):
+    #: Stop trying to resolve the reference
+    RETURN = object()
+    #: Continue to resolve the given reference
+    CONTINUE = object()
+
+
+class ReferenceResolution:
+
+    """
+    Represents one complete reference resolution
+
+    Note that the reference itself may result in many resolutions, or
+    none.
+    """
+
+    def __init__(self, reference, result, resolutions=None, info=None, origin=None):
+        """
+        :param reference: a specification that can eventually be resolved
+                          into a test (in the form of a
+                          :class:`avocado.core.nrunner.Runnable`)
+        :type reference: str
+        :param result: if the complete resolution was a success,
+                       failure or error
+        :type result: :class:`ReferenceResolutionResult`
+        :param resolutions: the runnable definitions resulting from the
+        resolution
+        :type resolutions: list
+        :param info: free form information the resolver may add
+        :type info: str
+        :param origin: the name of the resolver that performed the resolution
+        :type origin: str
+        """
+        self.reference = reference
+        self.result = result
+        if resolutions is None:
+            resolutions = []
+        self.resolutions = resolutions
+        self.info = info
+        self.origin = origin
+
+
+class Resolver(EnabledExtensionManager):
+
+    """
+    Main test reference resolution utility.
+
+    This performs the actual resolution according to the active
+    resolver plugins and a resolution policy.
+    """
+
+    DEFAULT_POLICY = {
+        ReferenceResolutionResult.SUCCESS: ReferenceResolutionAction.RETURN,
+        ReferenceResolutionResult.NOTFOUND: ReferenceResolutionAction.CONTINUE,
+        ReferenceResolutionResult.ERROR: ReferenceResolutionAction.CONTINUE
+    }
+
+    def __init__(self):
+        super(Resolver, self).__init__('avocado.plugins.resolver')
+
+    def resolve(self, reference):
+        resolution = []
+        for ext in self.extensions:
+            try:
+                result = ext.obj.resolve(reference)
+                if not result.origin:
+                    result.origin = ext.name
+            except Exception as exc:
+                result = ReferenceResolution(reference,
+                                             ReferenceResolutionResult.ERROR,
+                                             info=exc,
+                                             origin=ext.name)
+            resolution.append(result)
+            action = self.DEFAULT_POLICY.get(result.result,
+                                             ReferenceResolutionAction.CONTINUE)
+            if action == ReferenceResolutionAction.RETURN:
+                break
+        return resolution
+
+
+def _extend_directory(path):
+    if not os.path.isdir(path):
+        return [path]
+    paths = []
+    # no error handling so far
+    for dirpath, dirs, filenames in os.walk(path):
+        dirs.sort()
+        for file_name in sorted(filenames):
+            # does it make sense to ignore hidden files here?
+            if file_name.startswith('.'):
+                continue
+            pth = os.path.join(dirpath, file_name)
+            paths.append(pth)
+    if not paths:
+        paths = [path]
+    return paths
+
+
+def resolve(references):
+    resolutions = []
+
+    if references:
+        # should be initialized with args, to define the behavior
+        # of this instance as a whole
+        resolver = Resolver()
+        extended_references = []
+        for reference in references:
+            # a reference extender is not (yet?) an extensible feature
+            # here it walks directories if one is given, and extends
+            # the original reference into final file paths
+            extended_references.extend(_extend_directory(reference))
+
+        for reference in extended_references:
+            resolutions.extend(resolver.resolve(reference))
+
+    return resolutions

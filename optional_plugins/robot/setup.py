@@ -28,5 +28,8 @@ setup(name='avocado-framework-plugin-robot',
       entry_points={
           'avocado.plugins.cli': [
               'robot = avocado_robot:RobotCLI',
+          ],
+          'avocado.plugins.resolver': [
+              'glib = avocado_glib:GLibResolver'
           ]}
       )

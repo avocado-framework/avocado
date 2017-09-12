@@ -264,3 +264,24 @@ class Varianter(Plugin):
         :param kwargs: Other free-form arguments
         :rtype: str
         """
+
+
+class Resolver(Plugin):
+    """
+    Base plugin interface for resolving test interfaces into test factories
+    """
+
+    @abc.abstractmethod
+    def resolve(self, reference):
+        """
+        Resolves the given reference into a :class:`resolver.ReferenceResolution`
+
+        :param reference: a specification that can eventually be resolved
+                          into a test (in the form of a
+                          :class:`avocado.core.nrunner.Runnable`)
+        :type reference: str
+        :returns: the result of the resolution process, containing the
+                  success, failure or error, along with zero or more
+                  :class:`avocado.core.nrunner.Runnable`s
+        :rtype: :class:`avocado.core.resolver.ReferenceResolution`
+        """
