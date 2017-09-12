@@ -496,8 +496,8 @@ class FileLoader(TestLoader):
     """
 
     name = 'file'
-    __not_test_str = ("Does not look like an INSTRUMENTED test, nor is it "
-                      "executable")
+    __not_test_str = ("Not an INSTRUMENTED (avocado.Test based) "
+                      "or SIMPLE (executable) test")
 
     def __init__(self, args, extra_params):
         test_type = extra_params.pop('allowed_test_types', None)
