@@ -157,8 +157,8 @@ class ProcessTest(unittest.TestCase):
 
 
 def file_lock_action(args):
-    path, players = args
-    max_individual_timeout = 0.021
+    path, players, max_individual_timeout = args
+    start = time.time()
     max_timeout = max_individual_timeout * players
     with FileLock(path, max_timeout):
         sleeptime = random.random() / 100
@@ -174,9 +174,15 @@ class FileLockTest(unittest.TestCase):
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_filelock(self):
+        # Calculate the timeout based on t_100_iter + 2e-5*players
+        start = time.time()
+        for _ in xrange(100):
+            with FileLock(self.tmpdir):
+                pass
+        timeout = 0.02 + (time.time() - start)
         players = 1000
         pool = multiprocessing.Pool(players)
-        args = [(self.tmpdir, players)] * players
+        args = [(self.tmpdir, players, timeout)] * players
         try:
             pool.map(file_lock_action, args)
         except:
