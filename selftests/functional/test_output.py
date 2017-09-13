@@ -99,11 +99,11 @@ class OutputTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        os.chdir(basedir)
 
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying doublefree.py test")
     def test_output_doublefree(self):
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'doublefree.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
@@ -133,7 +133,6 @@ class OutputTest(unittest.TestCase):
         test = script.Script(os.path.join(self.tmpdir, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
-        os.chdir(basedir)
         result = process.run("%s run --job-results-dir %s --sysinfo=off "
                              "--json - -- %s" % (AVOCADO, self.tmpdir, test))
         res = json.loads(result.stdout)
@@ -162,6 +161,7 @@ class OutputPluginTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        os.chdir(basedir)
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
@@ -183,7 +183,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertIn("\n# debug.log of ", tap)
 
     def test_output_incompatible_setup(self):
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--xunit - --json - passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
@@ -202,7 +201,6 @@ class OutputPluginTest(unittest.TestCase):
     @unittest.skipIf(html_uncapable(),
                      "Uncapable of Avocado Result HTML plugin")
     def test_output_incompatible_setup_2(self):
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--html - passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
@@ -217,7 +215,6 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_compatible_setup(self):
         tmpfile = tempfile.mktemp()
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--journal --xunit %s --json - passtest.py' %
                     (AVOCADO, self.tmpdir, tmpfile))
@@ -239,7 +236,6 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--xunit - --json %s passtest.py' %
                     (AVOCADO, self.tmpdir, tmpfile))
@@ -269,7 +265,6 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile2 = tempfile.mktemp(prefix='avocado_' + __name__)
         tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         tmpfile3 = tempfile.mktemp(dir=tmpdir)
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--xunit %s --json %s --html %s passtest.py'
                     % (AVOCADO, self.tmpdir, tmpfile, tmpfile2, tmpfile3))
@@ -301,7 +296,6 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_nooutput(self):
         tmpfile = tempfile.mktemp()
         tmpfile2 = tempfile.mktemp()
-        os.chdir(basedir)
         # Verify --silent can be supplied as app argument
         cmd_line = ('%s --silent run --job-results-dir %s '
                     '--sysinfo=off --xunit %s --json %s passtest.py'
@@ -348,7 +342,6 @@ class OutputPluginTest(unittest.TestCase):
         self.check_output_files(debug_log)
 
     def test_show_job_log(self):
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py --show-job-log' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
@@ -364,7 +357,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(len(job_id), 40)
 
     def test_silent_trumps_show_job_log(self):
-        os.chdir(basedir)
         # Also verify --silent can be supplied as run option
         cmd_line = ('%s run --silent --job-results-dir %s '
                     '--sysinfo=off passtest.py --show-job-log'
@@ -378,7 +370,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(output, "")
 
     def test_default_enabled_plugins(self):
-        os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
@@ -400,7 +391,6 @@ class OutputPluginTest(unittest.TestCase):
     def test_verify_whiteboard_save(self):
         tmpfile = tempfile.mktemp()
         try:
-            os.chdir(basedir)
             config = os.path.join(self.tmpdir, "conf.ini")
             content = ("[datadir.paths]\nlogs_dir = %s"
                        % os.path.relpath(self.tmpdir, "."))
@@ -431,7 +421,6 @@ class OutputPluginTest(unittest.TestCase):
     def test_gendata(self):
         tmpfile = tempfile.mktemp()
         try:
-            os.chdir(basedir)
             cmd_line = ("%s run --job-results-dir %s "
                         "--sysinfo=off gendata.py --json %s" %
                         (AVOCADO, self.tmpdir, tmpfile))
@@ -470,7 +459,6 @@ class OutputPluginTest(unittest.TestCase):
     def test_redirect_output(self):
         redirected_output_path = tempfile.mktemp()
         try:
-            os.chdir(basedir)
             cmd_line = ('%s run --job-results-dir %s '
                         '--sysinfo=off passtest.py > %s'
                         % (AVOCADO, self.tmpdir, redirected_output_path))
@@ -501,11 +489,9 @@ class OutputPluginTest(unittest.TestCase):
                                              PERL_TAP_PARSER_SNIPPET
                                              % self.tmpdir)
         perl_script.save()
-        os.chdir(basedir)
         process.run("perl %s" % perl_script)
 
     def test_tap_totaltests(self):
-        os.chdir(basedir)
         cmd_line = ("%s run passtest.py "
                     "-m examples/tests/sleeptest.py.data/sleeptest.yaml "
                     "--job-results-dir %s "
@@ -516,7 +502,6 @@ class OutputPluginTest(unittest.TestCase):
                       % (expr, result.stdout))
 
     def test_broken_pipe(self):
-        os.chdir(basedir)
         cmd_line = "(%s run --help | whacky-unknown-command)" % AVOCADO
         result = process.run(cmd_line, shell=True, ignore_status=True,
                              env={"LC_ALL": "C"})
@@ -530,7 +515,6 @@ class OutputPluginTest(unittest.TestCase):
         self.assertNotIn("Avocado crashed", result.stderr)
 
     def test_results_plugins_no_tests(self):
-        os.chdir(basedir)
         cmd_line = ("%s run UNEXISTING --job-results-dir %s"
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
