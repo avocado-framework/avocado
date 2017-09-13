@@ -803,15 +803,16 @@ class FileLoader(TestLoader):
 
         return methods_info
 
-    def _make_avocado_tests(self, test_path, make_broken, subtests_filter,
-                            test_name=None):
+    def _make_existing_file_tests(self, test_path, make_broken,
+                                  subtests_filter, test_name=None):
         if test_name is None:
             test_name = test_path
         try:
-            tests = self._find_avocado_tests(test_path)
-            if tests:
+            # Avocado tests
+            avocado_tests = self._find_avocado_tests(test_path)
+            if avocado_tests:
                 test_factories = []
-                for test_class, info in tests.items():
+                for test_class, info in avocado_tests.items():
                     if isinstance(test_class, str):
                         for test_method, tags in info:
                             name = test_name + \
@@ -883,8 +884,8 @@ class FileLoader(TestLoader):
                                    "readable")
             path_analyzer = path.PathInspector(test_path)
             if path_analyzer.is_python():
-                return self._make_avocado_tests(test_path, make_broken,
-                                                subtests_filter)
+                return self._make_existing_file_tests(test_path, make_broken,
+                                                      subtests_filter)
             else:
                 if os.access(test_path, os.X_OK):
                     return self._make_test(test.SimpleTest,
@@ -905,8 +906,9 @@ class FileLoader(TestLoader):
             # Try to resolve test ID (keep compatibility)
             test_path = os.path.join(data_dir.get_test_dir(), test_name)
             if os.path.exists(test_path):
-                return self._make_avocado_tests(test_path, make_broken,
-                                                subtests_filter, test_name)
+                return self._make_existing_file_tests(test_path, make_broken,
+                                                      subtests_filter,
+                                                      test_name)
             else:
                 if not subtests_filter and ':' in test_name:
                     test_name, subtests_filter = test_name.split(':', 1)
@@ -914,9 +916,10 @@ class FileLoader(TestLoader):
                                              test_name)
                     if os.path.exists(test_path):
                         subtests_filter = re.compile(subtests_filter)
-                        return self._make_avocado_tests(test_path, make_broken,
-                                                        subtests_filter,
-                                                        test_name)
+                        return self._make_existing_file_tests(test_path,
+                                                              make_broken,
+                                                              subtests_filter,
+                                                              test_name)
                 return make_broken(NotATest, test_name, "File not found "
                                    "('%s'; '%s')" % (test_name, test_path))
         return make_broken(NotATest, test_name, self.__not_test_str)
