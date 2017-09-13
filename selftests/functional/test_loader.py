@@ -108,6 +108,9 @@ from avocado import main
 from test2 import *
 
 class BasicTestSuite(SuperTest):
+    '''
+    :avocado: disable
+    '''
 
     def test1(self):
         self.xxx()

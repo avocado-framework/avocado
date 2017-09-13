@@ -153,6 +153,7 @@ class TestStatuses(unittest.TestCase):
                                                  ".data",
                                                  'test_statuses.yaml'))
 
+        os.chdir(basedir)
         cmd = ('%s run %s -m %s --sysinfo=off --job-results-dir %s --json -' %
                (AVOCADO, test_file, yaml_file, self.tmpdir))
 

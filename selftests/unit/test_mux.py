@@ -1,5 +1,6 @@
 import copy
 import itertools
+import os
 import pickle
 import unittest
 import yaml
@@ -8,11 +9,10 @@ import yaml
 import avocado_varianter_yaml_to_mux as yaml_to_mux
 from avocado.core import mux, tree, varianter
 
+BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+BASEDIR = os.path.abspath(BASEDIR)
 
-if __name__ == "__main__":
-    PATH_PREFIX = "../../"
-else:
-    PATH_PREFIX = ""
+PATH_PREFIX = os.path.relpath(BASEDIR) + os.path.sep
 
 
 def combine(leaves_pools):

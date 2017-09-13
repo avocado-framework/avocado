@@ -93,7 +93,7 @@ if [ "$AVOCADO_PARALLEL_CHECK" ]; then
 elif [ -z "$AVOCADO_SELF_CHECK" ]; then
     run_rc selftests selftests/run
 else
-    CMD='scripts/avocado run --job-results-dir=$(mktemp -d) `./contrib/scripts/avocado-find-unittests selftests/{unit,functional,doc}/*.py | xargs` --external-runner="/usr/bin/env python -m unittest"'
+    CMD='scripts/avocado run --job-results-dir=$(mktemp -d) selftests/{unit,functional,doc}'
     [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
     run_rc selftests "$CMD"
 fi
