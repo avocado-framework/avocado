@@ -8,6 +8,7 @@ import unittest
 
 from avocado.core import test
 from avocado.core import loader
+from avocado.core import test
 from avocado.utils import script
 
 # We need to access protected members pylint: disable=W0212
@@ -235,6 +236,14 @@ class ThirdChild(Test, SecondChild):
     :avocado: recursive
     '''
     def test_third_child(self):
+        pass
+"""
+
+PYTHON_UNITTEST = """#!/usr/bin/env python
+from unittest import TestCase
+
+class SampleTest(TestCase):
+    def test(self):
         pass
 """
 
@@ -513,7 +522,7 @@ class LoaderTest(unittest.TestCase):
             KEEP_METHODS_ORDER)
         avocado_keep_methods_order.save()
         expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
-        tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)
+        tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)[0]
         methods = [method[0] for method in tests['MyClass']]
         self.assertEqual(expected_order, methods)
         avocado_keep_methods_order.remove()
@@ -529,12 +538,28 @@ class LoaderTest(unittest.TestCase):
         avocado_recursive_discovery_test2.save()
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
-        tests = self.loader._find_avocado_tests(avocado_recursive_discovery_test2.path)
+        tests = self.loader._find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
         expected = {'ThirdChild': [('test_third_child', set([])),
                                    ('test_second_child', set([])),
                                    ('test_first_child', set([])),
                                    ('test_basic', set([]))]}
         self.assertEqual(expected, tests)
+
+    def test_python_unittest(self):
+        disabled_test = script.TemporaryScript("disabled.py",
+                                               AVOCADO_TEST_OK_DISABLED,
+                                               mode=DEFAULT_NON_EXEC_MODE)
+        python_unittest = script.TemporaryScript("python_unittest.py",
+                                                 PYTHON_UNITTEST)
+        disabled_test.save()
+        python_unittest.save()
+        tests = self.loader.discover(disabled_test.path)
+        self.assertEqual(tests, [])
+        tests = self.loader.discover(python_unittest.path)
+        exp = [(test.PythonUnittest,
+                {"name": "python_unittest.SampleTest.test",
+                 "test_dir": os.path.dirname(python_unittest.path)})]
+        self.assertEqual(tests, exp)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
