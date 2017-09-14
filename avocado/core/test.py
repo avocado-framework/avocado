@@ -133,7 +133,111 @@ class TestID(object):
                                  % (self.str_uid, str(self)))
 
 
-class Test(unittest.TestCase):
+class BaseTestData(object):
+
+    """
+    Class that adds the hability for tests to have access to data files
+
+    An implementation of this interfaces needs to declare the name of
+    data sources it knows, and a single method for users to get the
+    data files, either from a specific source, or from its built-in
+    order of sources.
+    """
+
+    DATA_SOURCES = []
+
+    def _check_valid_data_source(self, source):
+        """
+        Utility to check if user chose a specific data source
+
+        :param source: either None for no specific selection or a source name
+        :type source: None or str
+        :raises: ValueError
+        """
+        if source is not None and source not in self.DATA_SOURCES:
+            msg = 'Data file source requested (%s) is not one of: %s'
+            msg %= (source, ', '.join(self.DATA_SOURCES))
+            raise ValueError(msg)
+
+    def get_data(self, source=None):
+        """
+        Retrieves the path to a given data file.
+
+        :param source: one of the defined data sources
+        :type source: str
+        :rtype: str or None
+        """
+        raise NotImplementedError
+
+
+class TestData(BaseTestData):
+
+    DATA_SOURCES = ["file", "test", "variant"]
+    GET_DATA_LOG_FMT = 'DATA (filename=%s) => %s (%s)'
+
+    def _get_data_file(self, filename):
+        if self.datadir is None or not os.path.isdir(self.datadir):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, None,
+                           "no data dir exists")
+            return None
+
+        file_filename = os.path.join(self.datadir, filename)
+        if os.path.exists(file_filename):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, file_filename,
+                           "found at file-level data dir")
+            return file_filename
+
+    def _get_data_test(self, filename):
+        if self.datadir is None or not os.path.isdir(self.datadir):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, None,
+                           "no data dir exists")
+            return None
+
+        test_level_data_dir = "%s.%s" % (self.__class__.__name__,
+                                         self._testMethodName)
+        test_level_data_dir = astring.string_to_safe_path(test_level_data_dir)
+        test_data_dir = os.path.join(self.datadir, test_level_data_dir)
+        test_filename = os.path.join(test_data_dir, filename)
+        if os.path.exists(test_filename):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, test_filename,
+                           "found at test-level data dir")
+            return test_filename
+
+    def _get_data_variant(self, filename):
+        if self.datadir is None or not os.path.isdir(self.datadir):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, None,
+                           "no data dir exists")
+            return None
+
+        test_level_data_dir = "%s.%s" % (self.__class__.__name__,
+                                         self._testMethodName)
+        test_level_data_dir = astring.string_to_safe_path(test_level_data_dir)
+        test_data_dir = os.path.join(self.datadir, test_level_data_dir)
+        if test_data_dir is None or self.name.variant is None:
+            return None
+
+        variant_dirname = astring.string_to_safe_path(self.name.variant)
+        variant_data_dir = os.path.join(test_data_dir, variant_dirname)
+        variant_filename = os.path.join(variant_data_dir, filename)
+        if os.path.exists(variant_filename):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename,
+                           variant_filename, "found at variant-level data dir")
+            return variant_filename
+
+    def get_data(self, filename, source=None):
+        self._check_valid_data_source(source)
+        for attempt_source in reversed(self.DATA_SOURCES):
+            get_callable = "_get_data_%s" % attempt_source
+            kallable = getattr(self, get_callable)
+            result = kallable(filename)
+            if result is not None:
+                return result
+
+        self.log.debug(self.GET_DATA_LOG_FMT, filename, "NOT FOUND",
+                       "data sources: %s" % ', '.join(self.DATA_SOURCES))
+
+
+class Test(unittest.TestCase, TestData):
 
     """
     Base implementation for the test class.
