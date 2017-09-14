@@ -5,3 +5,5 @@ pyliblzma>=0.5.3
 requests>=1.2.3
 # stevedore for loading "new style" plugins
 stevedore>=0.14
+# Python bindings for libvirt
+libvirt-python>=3.7.0
