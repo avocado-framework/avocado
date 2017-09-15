@@ -281,7 +281,7 @@ class TestID(unittest.TestCase):
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 
-    def test_uid_name_uid_too_large_digitis(self):
+    def test_uid_name_uid_too_large_digits(self):
         """
         Tests that when the filesystem can not cope with the size of
         the Test ID, not even the test uid, an exception will be
