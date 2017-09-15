@@ -17,6 +17,7 @@ class StreamsTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+        os.chdir(basedir)
 
     def test_app_info_stdout(self):
         """
