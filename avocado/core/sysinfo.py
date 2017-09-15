@@ -16,6 +16,7 @@ import gzip
 import json
 import logging
 import os
+import shlex
 import shutil
 import time
 import threading
@@ -173,9 +174,9 @@ class Command(Collectible):
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
         try:
-            proc = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
-                                    stderr=subprocess.STDOUT, shell=True,
-                                    env=env)
+            proc = subprocess.Popen(shlex.split(self.cmd), stdin=stdin,
+                                    stdout=stdout, stderr=subprocess.STDOUT,
+                                    shell=False, env=env)
             timeout = settings.get_value("sysinfo.collect", "commands_timeout",
                                          int, -1)
             if timeout <= 0:
@@ -222,8 +223,9 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.pipe = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
-                                     stderr=subprocess.STDOUT, shell=True, env=env)
+        self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin,
+                                     stdout=stdout, stderr=subprocess.STDOUT,
+                                     shell=False, env=env)
 
     def stop(self):
         """
@@ -231,7 +233,7 @@ class Daemon(Command):
         """
         retcode = self.pipe.poll()
         if retcode is None:
-            self.pipe.terminate()
+            process.kill_process_tree(self.pipe.pid)
             retcode = self.pipe.wait()
         else:
             log.error("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
