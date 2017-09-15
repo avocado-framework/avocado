@@ -137,24 +137,8 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                 using = using[:-1]
             return using
 
-        node = cls_node(str(name))
-        if not values:
-            return node
-        using = ''
-
-        if isinstance(values, dict):    # didn't looked like a node
-            for key, value in values.iteritems():
-                if isinstance(key, mux.Control):
-                    if key.code == YAML_USING:
-                        using = handle_control_tag_using(name, using, value)
-                    else:
-                        handle_control_tag(node, [key, value])
-                elif (isinstance(value, collections.OrderedDict) or
-                      value is None):
-                    node.add_child(tree_node_from_values(key, value))
-                else:
-                    node.value[key] = value
-        else:       # already looked like a dict
+        def node_content_from_node(node, values, using):
+            """Processes node values into the current node content"""
             for value in values:
                 if isinstance(value, cls_node):
                     node.add_child(value)
@@ -168,8 +152,25 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                                                          value[1]))
                 else:
                     node.value[value[0]] = value[1]
+            return using
 
-        if using:
+        def node_content_from_dict(node, values, using):
+            """Processes dict values into the current node content"""
+            for key, value in values.iteritems():
+                if isinstance(key, mux.Control):
+                    if key.code == YAML_USING:
+                        using = handle_control_tag_using(name, using, value)
+                    else:
+                        handle_control_tag(node, [key, value])
+                elif (isinstance(value, collections.OrderedDict) or
+                      value is None):
+                    node.add_child(tree_node_from_values(key, value))
+                else:
+                    node.value[key] = value
+            return using
+
+        def apply_using(name, using, node):
+            '''Create the structure defined by using and return the new root'''
             if name is not '':
                 for name in using.split('/')[::-1]:
                     node = cls_node(name, children=[node])
@@ -182,6 +183,23 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                     name = using.pop()  # 'using' is list pylint: disable=E1101
                     node = cls_node(name, children=[node])
                 node = cls_node('', children=[node])
+            return node
+
+        # Initialize the node
+        node = cls_node(str(name))
+        if not values:
+            return node
+        using = ''
+
+        # Fill the node content from parsed values
+        if isinstance(values, dict):
+            using = node_content_from_dict(node, values, using)
+        else:
+            using = node_content_from_node(node, values, using)
+
+        # Prefix nodes if tag "!using" was used
+        if using:
+            node = apply_using(name, using, node)
         return node
 
     def mapping_to_tree_loader(loader, node, looks_like_node=False):
