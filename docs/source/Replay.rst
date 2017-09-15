@@ -41,10 +41,10 @@ mux YAML file::
      $ avocado run /bin/true /bin/false --mux-yaml mux-environment.yaml
      JOB ID     : bd6aa3b852d4290637b5e771b371537541043d1d
      JOB LOG    : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/job.log
-      (1/4) /bin/true;first-c49a: PASS (0.01 s)
-      (2/4) /bin/true;second-f05f: PASS (0.01 s)
-      (3/4) /bin/false;first-c49a: FAIL (0.04 s)
-      (4/4) /bin/false;second-f05f: FAIL (0.04 s)
+      (1/4) /bin/true+first-c49a: PASS (0.01 s)
+      (2/4) /bin/true+second-f05f: PASS (0.01 s)
+      (3/4) /bin/false+first-c49a: FAIL (0.04 s)
+      (4/4) /bin/false+second-f05f: FAIL (0.04 s)
      RESULTS    : PASS 2 | ERROR 0 | FAIL 2 | SKIP 0 | WARN 0 | INTERRUPT 0
      JOB TIME   : 0.19 s
      JOB HTML   : $HOME/avocado/job-results/job-2016-01-11T21.56-bd6aa3b/html/results.html
@@ -70,10 +70,10 @@ result, using the option ``--replay-test-status``. See the example below::
     JOB ID     : 2e1dc41af6ed64895f3bb45e3820c5cc62a9b6eb
     SRC JOB ID : bd6aa3b852d4290637b5e771b371537541043d1d
     JOB LOG    : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/job.log
-     (1/4) /bin/true;first-c49a: SKIP
-     (2/4) /bin/true;second-f05f: SKIP
-     (3/4) /bin/false;first-c49a: FAIL (0.03 s)
-     (4/4) /bin/false;second-f05f: FAIL (0.04 s)
+     (1/4) /bin/true+first-c49a: SKIP
+     (2/4) /bin/true+second-f05f: SKIP
+     (3/4) /bin/false+first-c49a: FAIL (0.03 s)
+     (4/4) /bin/false+second-f05f: FAIL (0.04 s)
     RESULTS    : PASS 0 | ERROR 0 | FAIL 24 | SKIP 24 | WARN 0 | INTERRUPT 0
     JOB TIME   : 0.29 s
     JOB HTML   : $HOME/avocado/job-results/job-2016-01-12T00.38-2e1dc41/html/results.html

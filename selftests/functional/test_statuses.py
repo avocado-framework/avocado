@@ -164,7 +164,7 @@ class TestStatuses(unittest.TestCase):
 
         # Testing each individual test results
         for test in self.results['tests']:
-            variant = test['id'].split(';')[1]
+            variant = test['id'].split('+')[1]
             expected = EXPECTED_RESULTS.get(variant, False)
             if not expected:
                 missing_tests.append(variant)
@@ -178,7 +178,7 @@ class TestStatuses(unittest.TestCase):
                          missing_msg)
 
     def _check_test(self, test, expected):
-        variant = test['id'].split(';')[1]
+        variant = test['id'].split('+')[1]
         self.assertEqual(expected[0], test['status'],
                          "Status error: '%s' != '%s' (%s)" %
                          (expected[0], test['status'], variant))

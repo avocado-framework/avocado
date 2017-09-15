@@ -105,9 +105,9 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn("(2/8) passtest.py:PassTest.test;medium", result.stdout)
-        self.assertIn("(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn("(1/8) passtest.py:PassTest.test+short", result.stdout)
+        self.assertIn("(2/8) passtest.py:PassTest.test+medium", result.stdout)
+        self.assertIn("(8/8) failtest.py:FailTest.test+longest",
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
@@ -118,9 +118,9 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn("(2/8) failtest.py:FailTest.test;short", result.stdout)
-        self.assertIn("(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn("(1/8) passtest.py:PassTest.test+short", result.stdout)
+        self.assertIn("(2/8) failtest.py:FailTest.test+short", result.stdout)
+        self.assertIn("(8/8) failtest.py:FailTest.test+longest",
                       result.stdout)
 
     def test_run_double_mplex(self):
