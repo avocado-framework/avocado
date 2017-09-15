@@ -55,23 +55,22 @@ class _BaseLoader(Loader):
     YAML loader with additional features related to mux
     """
     Loader.add_constructor(u'!include',
-                           lambda loader, node: mux.Control(YAML_INCLUDE))
+                           lambda *_: mux.Control(YAML_INCLUDE))
     Loader.add_constructor(u'!using',
-                           lambda loader, node: mux.Control(YAML_USING))
+                           lambda *_: mux.Control(YAML_USING))
     Loader.add_constructor(u'!remove_node',
-                           lambda loader, node: mux.Control(YAML_REMOVE_NODE))
+                           lambda *_: mux.Control(YAML_REMOVE_NODE))
     Loader.add_constructor(u'!remove_value',
-                           lambda loader, node: mux.Control(YAML_REMOVE_VALUE))
+                           lambda *_: mux.Control(YAML_REMOVE_VALUE))
     Loader.add_constructor(u'!filter-only',
-                           lambda loader, node: mux.Control(YAML_FILTER_ONLY))
+                           lambda *_: mux.Control(YAML_FILTER_ONLY))
     Loader.add_constructor(u'!filter-out',
-                           lambda loader, node: mux.Control(YAML_FILTER_OUT))
+                           lambda *_: mux.Control(YAML_FILTER_OUT))
 
 
 class Value(tuple):     # Few methods pylint: disable=R0903
 
-    """ Used to mark values to simplify checking for node vs. value """
-    pass
+    """Used to mark values to simplify checking for node vs. value"""
 
 
 class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
@@ -79,7 +78,6 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     """
     Used to mark list as list of objects from whose node is going to be created
     """
-    pass
 
 
 class MappingDict(dict):
@@ -88,13 +86,13 @@ class MappingDict(dict):
 
 
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
-    """ Create tree structure from yaml stream """
+    """Create tree structure from yaml stream"""
     def tree_node_from_values(name, values):
-        """ Create `name` node and add values  """
+        """Create `name` node and add values"""
         def handle_control_tag(node, value):
-            """ Handling of YAML tags (except of !using) """
+            """Handling of YAML tags (except of !using)"""
             def normalize_path(path):
-                """ End the path with single '/', None when empty path """
+                """End the path with single '/', None when empty path"""
                 if not path:
                     return
                 if path[-1] != '/':
@@ -128,7 +126,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                     node.filters[1].append(new_value)
 
         def handle_control_tag_using(name, using, value):
-            """ Handling of the !using tag """
+            """Handling of the !using tag"""
             if using:
                 raise ValueError("!using can be used only once per "
                                  "node! (%s:%s)" % (path, name))
@@ -187,7 +185,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
         return node
 
     def mapping_to_tree_loader(loader, node, looks_like_node=False):
-        """ Maps yaml mapping tag to TreeNode structure """
+        """Maps yaml mapping tag to TreeNode structure"""
         _value = []
         for key_node, value_node in node.value:
             # Allow only strings as dict keys
@@ -276,13 +274,13 @@ def create_from_yaml(paths, debug=False):
     :return: Root of the created tree structure
     """
     def _merge(data, path):
-        """ Normal run """
+        """Normal run"""
         tmp = _create_from_yaml(path)
         if tmp:
             data.merge(tmp)
 
     def _merge_debug(data, path):
-        """ Use NamedTreeNodeDebug magic """
+        """Use NamedTreeNodeDebug magic"""
         node_cls = tree.get_named_tree_cls(path, mux.MuxTreeNodeDebug)
         tmp = _create_from_yaml(path, node_cls)
         if tmp:
@@ -328,32 +326,33 @@ class YamlToMuxCLI(CLI):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue
-            mux = subparser.add_argument_group("yaml to mux options")
-            mux.add_argument("-m", "--mux-yaml", nargs='*', metavar="FILE",
-                             help="Location of one or more Avocado"
-                             " multiplex (.yaml) FILE(s) (order dependent)")
-            mux.add_argument('--mux-filter-only', nargs='*', default=[],
-                             help='Filter only path(s) from multiplexing')
-            mux.add_argument('--mux-filter-out', nargs='*', default=[],
-                             help='Filter out path(s) from multiplexing')
-            mux.add_argument('--mux-path', nargs='*', default=None,
-                             help="List of default paths used to determine "
-                             "path priority when querying for parameters")
-            mux.add_argument('--mux-inject', default=[], nargs='*',
-                             help="Inject [path:]key:node values into the "
-                             "final multiplex tree.")
-            mux = subparser.add_argument_group("yaml to mux options "
-                                               "[deprecated]")
-            mux.add_argument("--multiplex", nargs='*',
-                             default=None, metavar="FILE",
-                             help="DEPRECATED: Location of one or more Avocado"
-                             " multiplex (.yaml) FILE(s) (order dependent)")
-            mux.add_argument("--filter-only", nargs='*', default=[],
-                             help="DEPRECATED: Filter only path(s) from "
-                             "multiplexing (use --mux-filter-only instead)")
-            mux.add_argument("--filter-out", nargs='*', default=[],
-                             help="DEPRECATED: Filter out path(s) from "
-                             "multiplexing (use --mux-filter-out instead)")
+            agroup = subparser.add_argument_group("yaml to mux options")
+            agroup.add_argument("-m", "--mux-yaml", nargs='*', metavar="FILE",
+                                help="Location of one or more Avocado"
+                                " multiplex (.yaml) FILE(s) (order dependent)")
+            agroup.add_argument('--mux-filter-only', nargs='*', default=[],
+                                help='Filter only path(s) from multiplexing')
+            agroup.add_argument('--mux-filter-out', nargs='*', default=[],
+                                help='Filter out path(s) from multiplexing')
+            agroup.add_argument('--mux-path', nargs='*', default=None,
+                                help="List of default paths used to determine "
+                                "path priority when querying for parameters")
+            agroup.add_argument('--mux-inject', default=[], nargs='*',
+                                help="Inject [path:]key:node values into the "
+                                "final multiplex tree.")
+            agroup = subparser.add_argument_group("yaml to mux options "
+                                                  "[deprecated]")
+            agroup.add_argument("--multiplex", nargs='*',
+                                default=None, metavar="FILE",
+                                help="DEPRECATED: Location of one or more "
+                                "Avocado multiplex (.yaml) FILE(s) (order "
+                                "dependent)")
+            agroup.add_argument("--filter-only", nargs='*', default=[],
+                                help="DEPRECATED: Filter only path(s) from "
+                                "multiplexing (use --mux-filter-only instead)")
+            agroup.add_argument("--filter-out", nargs='*', default=[],
+                                help="DEPRECATED: Filter out path(s) from "
+                                "multiplexing (use --mux-filter-out instead)")
 
     def run(self, args):
         """
