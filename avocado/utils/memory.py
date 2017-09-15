@@ -47,6 +47,7 @@ def _check_memory_state(block):
     """
     if not block.startswith("memory"):
         block = "memory%s" % block
+
     def _is_online():
         with open('/sys/devices/system/memory/%s/state' % block, 'r') as state_file:
             if state_file.read() == 'online\n':
@@ -149,7 +150,7 @@ def memtotal_sys():
     block_size = int(open(os.path.join(sys_mempath,
                                        'block_size_bytes'),
                           "r").read().strip(), 16)
-    return (no_memblocks * block_size)/1024.0
+    return (no_memblocks * block_size) / 1024.0
 
 
 def freememtotal():
@@ -427,9 +428,11 @@ def get_thp_value(feature):
 
 
 class _MemInfoItem(object):
+
     """
     Representation of one item from /proc/meminfo
     """
+
     def __init__(self, name):
         self.name = name
         self.__multipliers = {'b': 1,  # 2**0
@@ -461,6 +464,7 @@ class _MemInfoItem(object):
 
 
 class MemInfo(object):
+
     """
     Representation of /proc/meminfo
     """
