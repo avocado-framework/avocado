@@ -611,6 +611,10 @@ class SysInfo(object):
         """
         for log in self.end_test_collectibles:
             log.run(self.post_dir)
+        # Stop daemon(s) started previously
+        for log in self.start_test_collectibles:
+            if isinstance(log, Daemon):
+                log.stop()
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)
