@@ -7,6 +7,8 @@ from avocado.core import exit_codes
 from avocado.utils import process
 from avocado.utils import script
 
+BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+BASEDIR = os.path.abspath(BASEDIR)
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
@@ -47,6 +49,7 @@ class JobScriptsTest(unittest.TestCase):
         os.mkdir(self.pre_dir)
         self.post_dir = os.path.join(self.tmpdir, 'post.d')
         os.mkdir(self.post_dir)
+        os.chdir(BASEDIR)
 
     def test_pre_post(self):
         """

@@ -921,6 +921,16 @@ class SimpleTest(Test):
         self._execute_cmd()
 
 
+class ExternalRunnerSpec(object):
+    """
+    Defines the basic options used by ExternalRunner
+    """
+    def __init__(self, runner, chdir=None, test_dir=None):
+        self.runner = runner
+        self.chdir = chdir
+        self.test_dir = test_dir
+
+
 class ExternalRunnerTest(SimpleTest):
 
     def __init__(self, name, params=None, base_logdir=None, job=None,
@@ -961,6 +971,45 @@ class ExternalRunnerTest(SimpleTest):
         finally:
             if new_cwd is not None:
                 os.chdir(pre_cwd)
+
+
+class PythonUnittest(ExternalRunnerTest):
+    """
+    Python unittest test
+    """
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 test_dir=None):
+        runner = "%s -m unittest -q -c" % sys.executable
+        external_runner = ExternalRunnerSpec(runner, "test", test_dir)
+        super(PythonUnittest, self).__init__(name, params, base_logdir, job,
+                                             external_runner=external_runner)
+
+    def _find_result(self, status="OK"):
+        status_line = "[stderr] %s" % status
+        with open(self.logfile) as logfile:
+            lines = iter(logfile)
+            for line in lines:
+                if "[stderr] Ran 1 test in" in line:
+                    break
+            for line in lines:
+                if status_line in line:
+                    return line
+        self.error("Fail to parse status from test result.")
+
+    def test(self):
+        try:
+            super(PythonUnittest, self).test()
+        except exceptions.TestFail:
+            status = self._find_result("FAILED")
+            if "errors" in status:
+                self.error("Unittest reported error(s)")
+            elif "failures" in status:
+                self.fail("Unittest reported failure(s)")
+            else:
+                self.error("Unknown failure executing the unittest")
+        status = self._find_result("OK")
+        if "skipped" in status:
+            self.cancel("Unittest reported skip")
 
 
 class MockingTest(Test):
