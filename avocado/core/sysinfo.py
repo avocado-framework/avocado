@@ -16,6 +16,7 @@ import gzip
 import json
 import logging
 import os
+import shlex
 import shutil
 import time
 import threading
@@ -222,8 +223,8 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.pipe = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
-                                     stderr=subprocess.STDOUT, shell=True, env=env)
+        self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin, stdout=stdout,
+                                     stderr=subprocess.STDOUT, shell=False, env=env)
 
     def stop(self):
         """
@@ -231,7 +232,7 @@ class Daemon(Command):
         """
         retcode = self.pipe.poll()
         if retcode is None:
-            self.pipe.terminate()
+            process.kill_process_tree(self.pipe.pid)
             retcode = self.pipe.wait()
         else:
             log.error("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
@@ -610,6 +611,10 @@ class SysInfo(object):
         """
         for log in self.end_test_collectibles:
             log.run(self.post_dir)
+        # Stop daemon(s) started previously
+        for log in self.start_test_collectibles:
+            if isinstance(log, Daemon):
+                log.stop()
 
         if self.log_packages:
             self._log_modified_packages(self.post_dir)
