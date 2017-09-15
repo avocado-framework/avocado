@@ -297,6 +297,20 @@ example parameters for your plugin, which you need to separate from the test
 parameters.
 
 
+Special values
+--------------
+
+As you might have noticed, we are using mapping/dicts to define the structure
+of the params. To avoid surprises we disallowed the smart typing of mapping
+keys so:
+
+.. code-block:: yaml
+
+   on: on
+
+Won't become ``True: True``, but the key will be preserved as string
+``on: True``.
+
 Multiple files
 --------------
 
