@@ -11,6 +11,7 @@
 #
 # Copyright: Red Hat Inc. 2016-2017
 # Author: Lukas Doktor <ldoktor@redhat.com>
+import collections
 """Varianter plugin to parse yaml files to params"""
 
 import copy
@@ -80,6 +81,10 @@ class ListOfNodeObjects(list):     # Few methods pylint: disable=R0903
     pass
 
 
+class MappingDict(dict):
+    pass
+
+
 def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     """ Create tree structure from yaml stream """
     def tree_node_from_values(name, values):
@@ -125,7 +130,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             if using:
                 raise ValueError("!using can be used only once per "
                                  "node! (%s:%s)" % (path, name))
-            using = value[1]
+            using = value
             if using[0] == '/':
                 using = using[1:]
             if using[-1] == '/':
@@ -133,17 +138,37 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
             return using
 
         node = cls_node(str(name))
+        if not values:
+            return node
         using = ''
-        for value in values:
-            if isinstance(value, cls_node):
-                node.add_child(value)
-            elif isinstance(value[0], mux.Control):
-                if value[0].code == YAML_USING:
-                    using = handle_control_tag_using(name, using, value)
+
+        if isinstance(values, dict):    # didn't looked like a node
+            for key, value in values.iteritems():
+                if isinstance(key, mux.Control):
+                    if key.code == YAML_USING:
+                        using = handle_control_tag_using(name, using, value)
+                    else:
+                        handle_control_tag(node, [key, value])
+                elif (isinstance(value, collections.OrderedDict) or
+                      value is None):
+                    node.add_child(tree_node_from_values(key, value))
                 else:
-                    handle_control_tag(node, value)
-            else:
-                node.value[value[0]] = value[1]
+                    node.value[key] = value
+        else:       # already looked like a dict
+            for value in values:
+                if isinstance(value, cls_node):
+                    node.add_child(value)
+                elif isinstance(value[0], mux.Control):
+                    if value[0].code == YAML_USING:
+                        using = handle_control_tag_using(name, using, value[1])
+                    else:
+                        handle_control_tag(node, value)
+                elif isinstance(value[1], collections.OrderedDict):
+                    node.add_child(tree_node_from_values(str(value[0]),
+                                                         value[1]))
+                else:
+                    node.value[value[0]] = value[1]
+
         if using:
             if name is not '':
                 for name in using.split('/')[::-1]:
@@ -159,17 +184,30 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
                 node = cls_node('', children=[node])
         return node
 
-    def mapping_to_tree_loader(loader, node):
+    def mapping_to_tree_loader(loader, node, looks_like_node=False):
         """ Maps yaml mapping tag to TreeNode structure """
         _value = []
         for key_node, value_node in node.value:
+            # Allow only strings as dict keys
             if key_node.tag.startswith('!'):    # reflect tags everywhere
                 key = loader.construct_object(key_node)
             else:
                 key = loader.construct_python_str(key_node)
+            # If we are to keep them, use following, but we lose the control
+            # for both, nodes and dicts
+            # key = loader.construct_object(key_node)
+            if isinstance(key, mux.Control):
+                looks_like_node = True
             value = loader.construct_object(value_node)
+            if isinstance(value, ListOfNodeObjects):
+                looks_like_node = True
             _value.append((key, value))
+
+        if not looks_like_node:
+            return collections.OrderedDict(_value)
+
         objects = ListOfNodeObjects()
+        looks_like_node = False
         for name, values in _value:
             if isinstance(values, ListOfNodeObjects):   # New node from list
                 objects.append(tree_node_from_values(name, values))
@@ -184,7 +222,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
         Special !mux loader which allows to tag node as 'multiplex = True'.
         """
         if not isinstance(obj, yaml.ScalarNode):
-            objects = mapping_to_tree_loader(loader, obj)
+            objects = mapping_to_tree_loader(loader, obj, looks_like_node=True)
         else:   # This means it's empty node. Don't call mapping_to_tree_loader
             objects = ListOfNodeObjects()
         objects.append((mux.Control(YAML_MUX), None))
@@ -214,6 +252,8 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
         loaded_tree = yaml.load(stream, loader)
         if loaded_tree is None:
             return
+        #import pydevd; pydevd.settrace("127.0.0.1", True, True)
+
         loaded_tree = tree_node_from_values('', loaded_tree)
 
     # Add prefix
