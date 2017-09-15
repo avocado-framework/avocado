@@ -20,7 +20,7 @@ import os
 import re
 import sys
 
-from avocado.core import tree, exit_codes, mux, varianter, loader
+from avocado.core import tree, exit_codes, mux, varianter
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
