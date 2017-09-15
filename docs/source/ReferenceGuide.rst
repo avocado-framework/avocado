@@ -129,8 +129,8 @@ Example of Test IDs::
 Test Types
 ==========
 
-Avocado at its simplest configuration can run two different types of tests [#f1]_. You can mix
-and match those in a single job.
+Avocado at its simplest configuration can run three different types of tests
+[#f1]_. You can mix and match those in a single job.
 
 Instrumented
 ------------
@@ -147,6 +147,16 @@ including logging, test result status and other more sophisticated test APIs.
 Test statuses ``PASS``, ``WARN``, ``START`` and ``SKIP`` are considered as
 successful builds. The ``ABORT``, ``ERROR``, ``FAIL``, ``ALERT``, ``RUNNING``,
 ``NOSTATUS`` and ``INTERRUPTED`` are considered as failed ones.
+
+Python unittest
+---------------
+
+The discovery of classical python unittest is also supported, although unlike
+python unittest we still use static analysis to get individual tests so
+dynamically created cases are not recognized. Also note that test result SKIP
+is reported as CANCEL in Avocado as SKIP test meaning differs from our
+definition. Apart from that there should be no surprises when running
+unittests via Avocado.
 
 Simple
 ------

@@ -104,11 +104,11 @@ please refer to the corresponding loader/plugin documentation.
 File Loader
 -----------
 
-For the File Loader, the loader responsible for discovering INSTRUMENTED
-and SIMPLE tests, the Test Reference is a path/filename of a test file.
+For the File Loader, the loader responsible for discovering INSTRUMENTED,
+PyUNITTEST (classic python unittests) and SIMPLE tests.
 
-If the file corresponds to an INSTRUMENTED test, you can filter the Test
-IDs by adding to the Test Reference a ``:`` followed by a regular
+If the file corresponds to an INSTRUMENTED or PyUNITTEST test, you can filter
+the Test IDs by adding to the Test Reference a ``:`` followed by a regular
 expression.
 
 For instance, if you want to list all tests that are present in the
