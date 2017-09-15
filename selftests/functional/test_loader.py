@@ -1,4 +1,5 @@
 import os
+import json
 import subprocess
 import time
 import stat
@@ -108,6 +109,9 @@ from avocado import main
 from test2 import *
 
 class BasicTestSuite(SuperTest):
+    '''
+    :avocado: disable
+    '''
 
     def test1(self):
         self.xxx()
@@ -318,6 +322,30 @@ class LoaderTestFunctional(unittest.TestCase):
                 exp_sleep_length = None
         self.assertEqual(test, 11, "Number of tests is not 12 (%s):\n%s"
                          % (test, result))
+
+    def test_python_unittest(self):
+        test_path = os.path.join(basedir, "selftests", ".data", "unittests.py")
+        cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"
+               % (AVOCADO, self.tmpdir, test_path))
+        result = process.run(cmd, ignore_status=True)
+        jres = json.loads(result.stdout)
+        self.assertEqual(result.exit_status, 1, result)
+        exps = [("unittests.Second.test_fail", "FAIL"),
+                ("unittests.Second.test_error", "ERROR"),
+                ("unittests.Second.test_skip", "CANCEL"),
+                ("unittests.First.test_pass", "PASS")]
+        for test in jres["tests"]:
+            for exp in exps:
+                if exp[0] in test["id"]:
+                    self.assertEqual(test["status"], exp[1], "Status of %s not"
+                                     " as expected\n%s" % (exp, result))
+                    exps.remove(exp)
+                    break
+            else:
+                self.fail("No expected result for %s\n%s\n\nexps = %s"
+                          % (test["id"], result, exps))
+        self.assertFalse(exps, "Some expected result not matched to actual"
+                         "results:\n%s\n\nexps = %s" % (result, exps))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
