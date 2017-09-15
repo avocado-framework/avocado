@@ -16,6 +16,7 @@ import gzip
 import json
 import logging
 import os
+import shlex
 import shutil
 import time
 import threading
@@ -222,8 +223,8 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.pipe = subprocess.Popen(self.cmd, stdin=stdin, stdout=stdout,
-                                     stderr=subprocess.STDOUT, shell=True, env=env)
+        self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin, stdout=stdout,
+                                     stderr=subprocess.STDOUT, shell=False, env=env)
 
     def stop(self):
         """
