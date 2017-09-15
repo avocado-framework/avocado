@@ -51,7 +51,7 @@ def _check_memory_state(block):
                 return True
             return False
 
-    return wait.wait_for(_is_online, timeout=120, step=1) or False
+    return wait.wait_for(_is_online, timeout=10, step=0.2) or False
 
 
 def check_hotplug():
