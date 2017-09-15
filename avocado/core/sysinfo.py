@@ -232,7 +232,7 @@ class Daemon(Command):
         """
         retcode = self.pipe.poll()
         if retcode is None:
-            self.pipe.terminate()
+            process.kill_process_tree(self.pipe.pid)
             retcode = self.pipe.wait()
         else:
             log.error("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
