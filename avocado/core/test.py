@@ -1019,6 +1019,8 @@ class SimpleTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
+    DATA_SOURCES = ["file", "variant"]
+
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
@@ -1028,6 +1030,21 @@ class SimpleTest(Test):
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
+
+    def _get_variant_datadir(self):
+        """
+        This is like TestData._get_variant_datadir(), but uses the file
+        level datadir as base, because a simple test doesn't have a test
+        specific data dir (it's a 1:1 file to test relationship).
+        """
+        if self._cached_variant_datadir is None:
+            test_data_dir = self._get_file_datadir()
+            if test_data_dir is None:
+                return None
+            datadir = astring.string_to_safe_path(self.name.variant)
+            self._cached_variant_datadir = os.path.join(test_data_dir,
+                                                        datadir)
+        return self._cached_variant_datadir
 
     @property
     def filename(self):
