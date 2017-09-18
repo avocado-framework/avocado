@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-
 from avocado import Test
 from avocado import main
 from avocado.utils import kernel
@@ -22,7 +20,9 @@ class LinuxBuildTest(Test):
         kernel_version = self.params.get('linux_version', default='3.19.8')
         linux_config = self.params.get('linux_config', default=None)
         if linux_config is not None:
-            linux_config = os.path.join(self.datadir, linux_config)
+            linux_config = self.get_dat(linux_config)
+        if linux_config is None:
+            self.cancel('Test is missing data file %s' % linux_config)
 
         self.linux_build = kernel.KernelBuild(kernel_version,
                                               linux_config,

@@ -332,6 +332,15 @@ class TestRunner(object):
         self.job._result_events_dispatcher.map_method('start_test',
                                                       self.result,
                                                       early_state)
+        if getattr(self.job.args, 'list_test_data_directories', False):
+            TEST_LOG.info('Possible data directories: ')
+            TEST_LOG.info('file-level: %s', test.get_file_data_dir(instance))
+            TEST_LOG.info('test-level: %s', test.get_test_data_dir(instance))
+            if instance.name.variant is not None:
+                TEST_LOG.info('variant-level: %s',
+                              test.get_variant_data_dir(instance))
+                TEST_LOG.info('simplified variant-level: %s',
+                              test.get_simplified_variant_data_dir(instance))
         try:
             instance.run_avocado()
         finally:
