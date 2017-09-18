@@ -174,17 +174,13 @@ attempt to do so by running::
 
   pip install -r https://raw.githubusercontent.com/avocado-framework/avocado/master/requirements.txt
 
-This way you only get the base avocado-framework without the optional
-plugins. Additionally the installation requires correctly configured
-system with the right compilers, header files and libraries available.
-The more predictable and complete Avocado experience can be achieved with
-the official RPM packages.
+which installs the python dependencies, although you might still be
+missing the non-python dependencies so the use of distribution package
+is preferred.
 
-Plugins
-~~~~~~~
-
-Also available from PyPI, that is, installable from ``pip`` are the various
-Avocado plugins, including:
+The optional plugins are also shipped via PyPI and you should be able
+to find them via ``pip search avocado-framework``. Some of them
+are listed below:
 
 * `avocado-framework-plugin-result-html <https://pypi.python.org/pypi/avocado-framework-plugin-result-html>`_: HTML Report for Jobs
 * `avocado-framework-plugin-resultsdb <https://pypi.python.org/pypi/avocado-framework-plugin-resultsdb>`_: Propagate Job results to Resultsdb
