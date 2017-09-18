@@ -297,6 +297,30 @@ example parameters for your plugin, which you need to separate from the test
 parameters.
 
 
+Special values
+--------------
+
+As you might have noticed, we are using mapping/dicts to define the structure
+of the params. To avoid surprises we disallowed the smart typing of mapping
+keys so:
+
+.. code-block:: yaml
+
+   on: on
+
+Won't become ``True: True``, but the key will be preserved as string
+``on: True``.
+
+You might also want to use dict as values in your params. This is also
+supported but as we can't easily distinguish whether that value is
+a value or a node (structure), you have to either embed it into another
+object (list, ..) or you have to clearly state the type (yaml tag
+``!!python/dict``). Even then the value won't be a standard dictionary,
+but it'll be ``collections.OrderedDict`` and similarly to nodes
+structure all keys are preserved as strings and no smart type detection
+is used. Apart from that it should behave similarly as dict, only you
+get the values ordered by the order they appear in the file.
+
 Multiple files
 --------------
 

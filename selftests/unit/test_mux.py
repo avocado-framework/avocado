@@ -169,7 +169,7 @@ class TestMuxTree(unittest.TestCase):
                                               'selftests/.data/mux-selftest-advanced.'
                                               'yaml'])
         exp = ['intel', 'amd', 'arm', 'scsi', 'virtio', 'fedora', '6',
-               '7', 'gentoo', 'mint', 'prod', 'new_node', 'on']
+               '7', 'gentoo', 'mint', 'prod', 'new_node', 'on', 'dict']
         act = tree2.get_leaves()
         oldroot = tree2.children[0]
         self.assertEqual(exp, act)
@@ -185,6 +185,10 @@ class TestMuxTree(unittest.TestCase):
         # Convert values, but not keys
         self.assertEqual({'on': True, "true": "true"},
                          oldroot.children[4].value)
+        # Dicts as values
+        self.assertEqual({"explicit": {"foo": "bar", "bar": "baz"},
+                          "in_list": [{"foo": "bar", "bar": "baz"}]},
+                         oldroot.children[5].value)
         # multiplex root (always True)
         self.assertEqual(tree2.multiplex, None)
         # multiplex /virt/

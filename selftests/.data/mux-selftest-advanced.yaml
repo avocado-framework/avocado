@@ -33,3 +33,14 @@ new_node:
 on:
     on: on
     true: "true"
+# We do also support ordinary dicts as values if they are either marked
+# as dicts or when they are stored inside another object.
+# note: They will be turned into OrderedDict(s), but the behavior
+#       should be similar.
+dict:
+    explicit: !!python/dict
+        foo: bar
+        bar: baz
+    in_list:
+        - foo: bar
+          bar: baz
