@@ -180,6 +180,21 @@ system with the right compilers, header files and libraries available.
 The more predictable and complete Avocado experience can be achieved with
 the official RPM packages.
 
+Plugins
+~~~~~~~
+
+Also available from PyPI, that is, installable from ``pip`` are the various
+Avocado plugins, including:
+
+* `avocado-framework-plugin-result-html <https://pypi.python.org/pypi/avocado-framework-plugin-result-html>`_: HTML Report for Jobs
+* `avocado-framework-plugin-resultsdb <https://pypi.python.org/pypi/avocado-framework-plugin-resultsdb>`_: Propagate Job results to Resultsdb
+* `avocado-framework-plugin-runner-remote <https://pypi.python.org/pypi/avocado-framework-plugin-runner-remote>`_: Runner for Remote Execution
+* `avocado-framework-plugin-runner-vm <https://pypi.python.org/pypi/avocado-framework-plugin-runner-vm>`_: Runner for libvirt VM Execution
+* `avocado-framework-plugin-runner-docker <https://pypi.python.org/pypi/avocado-framework-plugin-runner-docker>`_: Runner for Execution on Docker Containers
+* `avocado-framework-plugin-loader-yaml <https://pypi.python.org/pypi/avocado-framework-plugin-loader-yaml>`_: Loads tests from YAML files
+* `avocado-framework-plugin-robot <https://pypi.python.org/pypi/avocado-framework-plugin-robot>`_: Execution of Robot Framework tests
+* `avocado-framework-plugin-varianter-yaml-to-mux <https://pypi.python.org/pypi/avocado-framework-plugin-varianter-yaml-to-mux>`_: Parse YAML file into variants
+
 Using Avocado
 =============
 
