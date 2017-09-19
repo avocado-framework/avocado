@@ -41,12 +41,16 @@ def _check_memory_state(block):
     Check the given memory block is online or offline
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     :return: 'True' if online or 'False' if offline
     :rtype: bool
     """
+    block = [block]
+
     def _is_online():
-        with open('/sys/devices/system/memory/memory%s/state' % block, 'r') as state_file:
+        if not block[0].startswith("memory"):
+            block[0] = "memory%s" % block[0]
+        with open('/sys/devices/system/memory/%s/state' % block[0], 'r') as state_file:
             if state_file.read() == 'online\n':
                 return True
             return False
@@ -71,11 +75,13 @@ def is_hot_pluggable(block):
     Check if the given memory block is hotpluggable
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     :return: True if hotpluggable, else False
     :rtype: 'bool'
     """
-    with open('/sys/devices/system/memory/memory%s/removable' % block, 'r') as file_obj:
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+    with open('/sys/devices/system/memory/%s/removable' % block, 'r') as file_obj:
         return bool(int(file_obj.read()))
 
 
@@ -84,9 +90,11 @@ def hotplug(block):
     Online the memory for the given block id.
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     """
-    with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
         state_file.write('online')
     if not _check_memory_state(block):
         raise MemoryError(
@@ -98,9 +106,11 @@ def hotunplug(block):
     Offline the memory for the given block id.
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     """
-    with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
         state_file.write('offline')
     if _check_memory_state(block):
         raise MemoryError(
