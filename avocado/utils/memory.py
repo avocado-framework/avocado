@@ -72,7 +72,7 @@ def is_hot_pluggable(block):
 
     :param block: memory block id.
     :type string: like 198
-    :retrun: True if hotpluggable, else False
+    :return: True if hotpluggable, else False
     :rtype: 'bool'
     """
     with open('/sys/devices/system/memory/memory%s/removable' % block, 'r') as file_obj:
