@@ -104,7 +104,7 @@ class ImageProviderBase(object):
                         # Can it be converted to float?
                         resulting_versions.append(float(version))
                     except ValueError:
-                        # So it's juat a string
+                        # So it's just a string
                         resulting_versions.append(version)
             self._best_version = max(resulting_versions)
             return self._best_version

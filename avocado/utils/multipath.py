@@ -149,7 +149,8 @@ def get_path_status(disk_path):
 
     :param disk_path: disk path. Example: sda, sdb.
 
-    :return: Tuple in the format of (dm status, dev status, checker status)
+    :return: Tuple in the format of (device mapper status, dev status,
+             checker status)
     """
     mpath_op = get_multipath_details()
     if not mpath_op:
