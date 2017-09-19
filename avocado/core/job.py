@@ -322,17 +322,26 @@ class Job(object):
         LOG_JOB.info('')
 
     @staticmethod
-    def _log_avocado_version():
-        version_log = version.VERSION
-        git_root = process.run('git rev-parse --show-toplevel',
+    def _get_avocado_git_version():
+        try:
+            git = path.find_command('git')
+        except path.CmdNotFoundError:
+            return
+        git_root = process.run('%s rev-parse --show-toplevel' % git,
                                ignore_status=True, verbose=False)
         if git_root.exit_status == 0 and os.path.exists(os.path.join(
                 git_root.stdout.strip(), 'python-avocado.spec')):
-            cmd = "git show --summary --pretty='%H'"
+            cmd = "%s show --summary --pretty='%H'" % git
             result = process.run(cmd, ignore_status=True, verbose=False)
             if result.exit_status == 0:
                 top_commit = result.stdout.splitlines()[0][:8]
-                version_log += " (GIT commit %s)" % top_commit
+                return " (GIT commit %s)" % top_commit
+
+    def _log_avocado_version(self):
+        version_log = version.VERSION
+        git_version = self._get_avocado_git_version()
+        if git_version is not None:
+            version_log += git_version
         LOG_JOB.info('Avocado version: %s', version_log)
         LOG_JOB.info('')
 
