@@ -83,7 +83,7 @@ class TestID(object):
             self.str_variant = ""
         else:
             self.variant = variant["variant_id"]
-            self.str_variant = ";%s" % self.variant
+            self.str_variant = "+%s" % self.variant
 
     def __str__(self):
         return "%s-%s%s" % (self.str_uid, self.name, self.str_variant)
@@ -112,8 +112,8 @@ class TestID(object):
         value of this method.  If the filesystem can not even
         represent the "uid", than an exception will be raised.
 
-        For Test ID "001-mytest;foo", examples of shortened file
-        system versions include "001-mytest;f" or "001-myte;foo".
+        For Test ID "001-mytest+foo", examples of shortened file
+        system versions include "001-mytest+f" or "001-myte+foo".
 
         :raises: AssertionError
         """

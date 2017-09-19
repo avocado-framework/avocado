@@ -65,13 +65,13 @@ class TestClassTestUnit(unittest.TestCase):
 
         # Everything fits
         check(1, "a" * 253, None, "1-" + ("a" * 253))
-        check(2, "a" * 251, {"variant_id": 1}, "2-" + ("a" * 251) + ";1")
-        check(99, "a" * 249, {"variant_id": 88}, "99-" + ("a" * 249) + ";88")
+        check(2, "a" * 251, {"variant_id": 1}, "2-" + ("a" * 251) + "+1")
+        check(99, "a" * 249, {"variant_id": 88}, "99-" + ("a" * 249) + "+88")
         # Shrink name
-        check(3, "a" * 252, {"variant_id": 1}, "3-" + ('a' * 251) + ";1")
+        check(3, "a" * 252, {"variant_id": 1}, "3-" + ('a' * 251) + "+1")
         # Shrink variant
-        check("a" * 253, "whatever", {"variant_id": 99}, "a" * 253 + ";9")
-        check("a" * 254, "whatever", {"variant_id": 99}, "a" * 254 + ";")
+        check("a" * 253, "whatever", {"variant_id": 99}, "a" * 253 + "+9")
+        check("a" * 254, "whatever", {"variant_id": 99}, "a" * 254 + "+")
         # No variant
         tst = check("a" * 255, "whatever", {"variant_id": "whatever-else"},
                     "a" * 255)
@@ -281,7 +281,7 @@ class TestID(unittest.TestCase):
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 
-    def test_uid_name_uid_too_large_digitis(self):
+    def test_uid_name_uid_too_large_digits(self):
         """
         Tests that when the filesystem can not cope with the size of
         the Test ID, not even the test uid, an exception will be
@@ -316,9 +316,9 @@ class TestID(unittest.TestCase):
         variant = {'variant_id': variant_id}
         test_id = test.TestID(uid, name, variant=variant)
         self.assertEqual(test_id.uid, 1)
-        self.assertEqual(test_id.str_filesystem, '%s;%s' % (uid, variant_id[:253]))
+        self.assertEqual(test_id.str_filesystem, '%s+%s' % (uid, variant_id[:253]))
         self.assertIs(test_id.variant, variant_id)
-        self.assertEqual(test_id.str_variant, ";%s" % variant_id)
+        self.assertEqual(test_id.str_variant, "+%s" % variant_id)
 
 
 if __name__ == '__main__':
