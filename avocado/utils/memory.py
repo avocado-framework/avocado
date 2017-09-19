@@ -41,17 +41,20 @@ def _check_memory_state(block):
     Check the given memory block is online or offline
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     :return: 'True' if online or 'False' if offline
     :rtype: bool
     """
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+
     def _is_online():
-        with open('/sys/devices/system/memory/memory%s/state' % block, 'r') as state_file:
+        with open('/sys/devices/system/memory/%s/state' % block, 'r') as state_file:
             if state_file.read() == 'online\n':
                 return True
             return False
 
-    return wait.wait_for(_is_online, timeout=120, step=1) or False
+    return wait.wait_for(_is_online, timeout=10, step=1) or False
 
 
 def check_hotplug():
@@ -71,11 +74,13 @@ def is_hot_pluggable(block):
     Check if the given memory block is hotpluggable
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     :retrun: True if hotpluggable, else False
     :rtype: 'bool'
     """
-    with open('/sys/devices/system/memory/memory%s/removable' % block, 'r') as file_obj:
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+    with open('/sys/devices/system/memory/%s/removable' % block, 'r') as file_obj:
         return bool(int(file_obj.read()))
 
 
@@ -84,9 +89,11 @@ def hotplug(block):
     Online the memory for the given block id.
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     """
-    with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
         state_file.write('online')
     if not _check_memory_state(block):
         raise MemoryError(
@@ -98,9 +105,11 @@ def hotunplug(block):
     Offline the memory for the given block id.
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     """
-    with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+    if not block.startswith("memory"):
+        block = "memory%s" % block
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
         state_file.write('offline')
     if _check_memory_state(block):
         raise MemoryError(
@@ -141,7 +150,7 @@ def memtotal_sys():
     block_size = int(open(os.path.join(sys_mempath,
                                        'block_size_bytes'),
                           "r").read().strip(), 16)
-    return (no_memblocks * block_size)/1024.0
+    return (no_memblocks * block_size) / 1024.0
 
 
 def freememtotal():
@@ -419,9 +428,11 @@ def get_thp_value(feature):
 
 
 class _MemInfoItem(object):
+
     """
     Representation of one item from /proc/meminfo
     """
+
     def __init__(self, name):
         self.name = name
         self.__multipliers = {'b': 1,  # 2**0
@@ -453,6 +464,7 @@ class _MemInfoItem(object):
 
 
 class MemInfo(object):
+
     """
     Representation of /proc/meminfo
     """
