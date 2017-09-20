@@ -28,7 +28,7 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 54.0
+Version: 54.1
 Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
@@ -369,6 +369,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 
 %changelog
+* Wed Sep 20 2017 Cleber Rosa <cleber@redhat.com> - 54.1-0
+- New minor upstream release
+
 * Wed Sep 20 2017 Cleber Rosa <cleber@redhat.com> - 54.0-0
 - New upstream release
 
