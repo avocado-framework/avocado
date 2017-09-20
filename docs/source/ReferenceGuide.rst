@@ -114,14 +114,14 @@ sets of Test IDs.
 
 Syntax::
 
-   <unique-id>-<test-name>[+<variant-id>]
+   <unique-id>-<test-name>[;<variant-id>]
 
 Example of Test IDs::
 
    '1-/bin/true'
-   '2-passtest.py:Passtest.test+quiet-'
+   '2-passtest.py:Passtest.test;quiet-'
    '3-file:///tmp/passtest.py:Passtest.test'
-   '4-multiple_tests.py:MultipleTests.test_hello+maximum_debug-df2f'
+   '4-multiple_tests.py:MultipleTests.test_hello;maximum_debug-df2f'
    '5-type_specific.io-github-autotest-qemu.systemtap_tracing.qemu.qemu_free'
 
 .. _test-types:

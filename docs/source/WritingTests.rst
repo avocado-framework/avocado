@@ -338,14 +338,14 @@ values). In total it'll produce 8 variants of each test::
       $ avocado run --mux-yaml examples/tests/sleeptenmin.py.data/sleeptenmin.yaml -- passtest.py
       JOB ID     : cc7ef22654c683b73174af6f97bc385da5a0f02f
       JOB LOG    : /home/medic/avocado/job-results/job-2017-01-22T11.26-cc7ef22/job.log
-       (1/8) passtest.py:PassTest.test+builtin-one_cycle-f659: PASS (0.01 s)
-       (2/8) passtest.py:PassTest.test+builtin-six_cycles-723b: PASS (0.01 s)
-       (3/8) passtest.py:PassTest.test+builtin-one_hundred_cycles-633a: PASS (0.01 s)
-       (4/8) passtest.py:PassTest.test+builtin-six_hundred_cycles-a570: PASS (0.01 s)
-       (5/8) passtest.py:PassTest.test+shell-one_cycle-55f5: PASS (0.01 s)
-       (6/8) passtest.py:PassTest.test+shell-six_cycles-9e23: PASS (0.01 s)
-       (7/8) passtest.py:PassTest.test+shell-one_hundred_cycles-586f: PASS (0.01 s)
-       (8/8) passtest.py:PassTest.test+shell-six_hundred_cycles-1e84: PASS (0.01 s)
+       (1/8) passtest.py:PassTest.test;builtin-one_cycle-f659: PASS (0.01 s)
+       (2/8) passtest.py:PassTest.test;builtin-six_cycles-723b: PASS (0.01 s)
+       (3/8) passtest.py:PassTest.test;builtin-one_hundred_cycles-633a: PASS (0.01 s)
+       (4/8) passtest.py:PassTest.test;builtin-six_hundred_cycles-a570: PASS (0.01 s)
+       (5/8) passtest.py:PassTest.test;shell-one_cycle-55f5: PASS (0.01 s)
+       (6/8) passtest.py:PassTest.test;shell-six_cycles-9e23: PASS (0.01 s)
+       (7/8) passtest.py:PassTest.test;shell-one_hundred_cycles-586f: PASS (0.01 s)
+       (8/8) passtest.py:PassTest.test;shell-six_hundred_cycles-1e84: PASS (0.01 s)
       RESULTS    : PASS 8 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0
       JOB TIME   : 0.16 s
 
