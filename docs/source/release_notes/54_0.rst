@@ -21,14 +21,6 @@ Users/Test Writers
   :mod:`unittest` users were waiting for to start running them with
   Avocado.
 
-* The Test ID format Avocado has been using for a while received a
-  minor tweak, to allow for better serialization into some filesystem
-  types, such as Microsoft Windows' ones.  Basically, the character
-  that precedes the variant name, a separator, used to be ``;``, which
-  is not allowed on some filesystems.  Now, a ``+`` character is used.
-  A Test ID ``sleeptest.py:SleepTest.test;short-beaf`` on a previous
-  Avocado version is now ``sleeptest.py:SleepTest.test+short-beaf``.
-
 * The full path of the filename that holds the currently running test
   is now output is the test log, under the heading ``Test metadata:``.
 
