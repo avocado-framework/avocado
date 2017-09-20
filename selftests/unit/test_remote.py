@@ -9,7 +9,7 @@ import avocado_runner_remote
 
 
 JSON_RESULTS = ('Something other than json\n'
-                '{"tests": [{"test": "1-sleeptest+0",'
+                '{"tests": [{"test": "1-sleeptest;0",'
                 '"reference": "sleeptest", '
                 '"fail_reason": "None", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
@@ -44,7 +44,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         result_dispatcher.should_receive("map_method")
         job = flexmock(args=Args, log=log,
                        references=['/tests/sleeptest', '/tests/other/test',
-                                   'passtest'], unique_id='1-sleeptest+0',
+                                   'passtest'], unique_id='1-sleeptest;0',
                        logdir="/local/path",
                        _result_events_dispatcher=result_dispatcher)
 
@@ -56,7 +56,7 @@ class RemoteTestRunnerTest(unittest.TestCase):
         flexmock(logging).should_receive("FileHandler").and_return(filehandler)
 
         test_results = flexmock(stdout=JSON_RESULTS, exit_status=0)
-        stream = flexmock(job_unique_id='1-sleeptest+0',
+        stream = flexmock(job_unique_id='1-sleeptest;0',
                           debuglog='/local/path/dirname')
         Remote = flexmock()
         Remoter = flexmock(avocado_runner_remote.Remote)
@@ -95,7 +95,7 @@ _=/usr/bin/env''', exit_status=0)
          .with_args(args_version, ignore_status=True, timeout=60)
          .once().and_return(version_result))
 
-        args = ("avocado run --force-job-id 1-sleeptest+0 "
+        args = ("avocado run --force-job-id 1-sleeptest;0 "
                 "--json - --archive /tests/sleeptest /tests/other/test "
                 "passtest -m ~/avocado/tests/foo.yaml "
                 "~/avocado/tests/bar/baz.yaml --dry-run")
@@ -107,12 +107,12 @@ _=/usr/bin/env''', exit_status=0)
                           args=flexmock(show_job_log=False,
                                         mux_yaml=['foo.yaml', 'bar/baz.yaml'],
                                         dry_run=True))
-        args = {'name': '1-sleeptest+0', 'time_end': 1.23,
+        args = {'name': '1-sleeptest;0', 'time_end': 1.23,
                 'status': u'PASS', 'time_start': 0,
                 'time_elapsed': 1.23, 'job_unique_id': '',
                 'fail_reason': u'None',
-                'logdir': u'/local/path/test-results/1-sleeptest+0',
-                'logfile': u'/local/path/test-results/1-sleeptest+0/debug.log',
+                'logdir': u'/local/path/test-results/1-sleeptest;0',
+                'logfile': u'/local/path/test-results/1-sleeptest;0/debug.log',
                 'job_logdir': u'/local/path'}
         Result.should_receive('start_test').once().with_args(args).ordered()
         Result.should_receive('check_test').once().with_args(args).ordered()
