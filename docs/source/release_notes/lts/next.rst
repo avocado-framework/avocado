@@ -41,6 +41,18 @@ introduced by the next LTS version are:
   :func:`avocado.utils.data_structures.LazyProperty` which did not
   prevent test writers from overwriting them.
 
+* Avocado can now run list and run standard Python unittests, that is,
+  tests written in Python that use the :mod:`unittest` library alone.
+
+* The Test ID format Avocado has been using for a while received a
+  minor tweak: the character that precedes the variant name, a
+  separator, used to be ``;``, which is not allowed on some
+  filesystems, and is now a ``+`` character instead.
+
+* The complete output of tests, that is the combination of ``STDOUT``
+  and ``STDERR`` is now also recorded in the test result directory as
+  a file named ``output``.
+
 Complete list of changes
 ========================
 

@@ -1,0 +1,125 @@
+===================
+54.0 House of Cards
+===================
+
+The Avocado team is proud to present another release: Avocado version
+54.0, aka, "House of Cards" is now available!
+
+Release documentation: `Avocado 54.0
+<http://avocado-framework.readthedocs.io/en/54.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* Avocado can now run list and run standard Python unittests, that is,
+  tests written in Python that use the :mod:`unittest` library alone.
+  This should help streamline the execution of tests on projects that
+  use different test types.  Or, it may just be what plain
+  :mod:`unittest` users were waiting for to start running them with
+  Avocado.
+
+* The Test ID format Avocado has been using for a while received a
+  minor tweak, to allow for better serialization into some filesystem
+  types, such as Microsoft Windows' ones.  Basically, the character
+  that precedes the variant name, a separator, used to be ``;``, which
+  is not allowed on some filesystems.  Now, a ``+`` character is used.
+  A Test ID ``sleeptest.py:SleepTest.test;short-beaf`` on a previous
+  Avocado version is now ``sleeptest.py:SleepTest.test+short-beaf``.
+
+* The full path of the filename that holds the currently running test
+  is now output is the test log, under the heading ``Test metadata:``.
+
+* The ``yaml_to_mux`` varianter plugin, while parsing the YAML files,
+  would convert objects into :class:`avocado.core.tree.TreeNode`.
+  This caused when the variants were serialized (such as part of the
+  job replay support).  Objects are now converted into ordered
+  dictionaries, which, besides supporting a proper serialization are
+  also more easily accessible as test parameters.
+
+* The test profilers, which are defined by default in
+  ``/etc/avocado/sysinfo/profilers``, are now executed without a backing
+  shell.  While Avocado doesn't ship with examples of shell commands
+  as profilers, or suggests users to do so, it may be that some users
+  could be using that functionality.  If that's the case, it will now
+  be necessary to write a script that wraps you previous shell command.
+  The reason for doing so, was to fix a bug that could leave profiler
+  processes after the test had already finished.
+
+* The newly introduced :mod:`avocado.utils.vmimage` library can
+  immensely help test writers that need access to virtual machine
+  images in their tests.  The simplest use of the API,
+  ``vmimage.get()`` returns a ready to use disposable image (snapshot
+  based, backed by a complete base image).  Users can ask for more
+  specific images, such as ``vmimage.get(arch='aarch64')`` for a image
+  with a ARM OS ready to run.
+
+* When installing and using Avocado in a Python virtual environment,
+  the ubiquitous "venvs", the base data directory was one defined
+  outside the virtual environment.  Now, Avocado respects the virtual
+  environment also in this aspect.
+
+* A new network related utility function,
+  :class:`avocado.utils.network.PortTracker` was ported from
+  Avocado-Virt, given the perceived general value in a variety of
+  tests.
+
+* A new memory utility utility, :class:`avocado.utils.memory.MemInfo`,
+  and its ready to use instance :data:`avocado.utils.memory.meminfo`,
+  allows easy access to most memory related information on Linux
+  systems.
+
+* The complete output of tests, that is the combination of ``STDOUT``
+  and ``STDERR`` is now also recorded in the test result directory as
+  a file named ``output``.
+
+Bug Fixes
+=========
+
+* As mentioned before, test profiler processes could be left running
+  in the system, even after the test had already finished.
+
+* The change towards serializing YAML objects as ordered dicts,
+  instead of as `:class:`avocado.core.tree.TreeNode`, also fixed a
+  bug, that manifested itself in the command line application UI.
+
+* When the various ``skip*`` decorators were applied to ``setUp``
+  test methods, they would not be effective, and ``tearDown`` would
+  also be called.
+
+* When a job was replayed, tests without variants in the original (AKA
+  "source" job, would appear to have a variant named ``None`` in the
+  replayed job.
+
+Internal Changes
+================
+
+* Avocado is now using the newest inspektor version 0.4.5.  Developers
+  should also update their installed versions to have comparable results
+  to the CI checks.
+
+* The old ``avocado.test.TestName`` class was renamed to
+  :class:`avocado.core.test.TestID`, and its member attributes updated
+  to reflect the fact that it covers the complete Test ID, and not
+  just a Test Name.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/53.0...54.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=ssAYB0Kb-rw>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/fA4RL1eo/1100-sprint-theme-house-of-cards
