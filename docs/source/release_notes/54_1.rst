@@ -1,0 +1,32 @@
+===================================
+54.1 House of Cards (minor release)
+===================================
+
+Right on the heels of the 54.0 release, the Avocado team would like to
+apologize for a mistake that made into that version.  The following
+change, as documented on 54.0 has been **reverted** on this 54.1
+release:
+
+* Test ID format Avocado has been using for a while received a
+  minor tweak, to allow for better serialization into some filesystem
+  types, such as Microsoft Windows' ones.  Basically, the character
+  that precedes the variant name, a separator, used to be ``;``, which
+  is not allowed on some filesystems.  Now, a ``+`` character is used.
+  A Test ID ``sleeptest.py:SleepTest.test;short-beaf`` on a previous
+  Avocado version is now ``sleeptest.py:SleepTest.test+short-beaf``.
+
+The reason for the revert and the new release, is that the actual
+character causing trouble in Windows filesystems was "lost in
+translation".  The culprit was the ``:`` character, and not ``;``.
+This means that the Variant ID separator character change was
+unnecessary, and another fix is necessary.
+
+Release documentation: `Avocado 54.1
+<http://avocado-framework.readthedocs.io/en/54.1/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/54.0...54.1>`_.
