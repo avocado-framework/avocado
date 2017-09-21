@@ -112,5 +112,5 @@ class PortTracker(Borg):
         return port
 
     def release_port(self, port):
-        if port in self.retained:
-            self.retained.remove(port)
+        if port in self.retained_ports:
+            self.retained_ports.remove(port)
