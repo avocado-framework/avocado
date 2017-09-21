@@ -152,6 +152,11 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.time_end, 20.0)
         self.assertEqual(myjob.time_elapsed, 100.0)
 
+    def test_job_dryrun_no_unique_job_id(self):
+        args = argparse.Namespace(dry_run=True, base_logdir=self.tmpdir)
+        empty_job = job.Job(args)
+        self.assertIsNotNone(empty_job.args.unique_job_id)
+
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         shutil.rmtree(self.tmpdir)
