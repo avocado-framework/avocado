@@ -78,7 +78,8 @@ class Job(object):
         self.log = LOG_UI
         self.standalone = getattr(self.args, 'standalone', False)
         if getattr(self.args, "dry_run", False):  # Modify args for dry-run
-            if not self.args.unique_job_id:
+            unique_id = getattr(self.args, 'unique_job_id', None)
+            if unique_id is None:
                 self.args.unique_job_id = "0" * 40
             self.args.sysinfo = False
             if self.args.logdir is None:
