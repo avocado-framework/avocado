@@ -4,6 +4,11 @@ import shutil
 import tempfile
 import unittest
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.core import exit_codes
@@ -156,6 +161,13 @@ class JobTest(unittest.TestCase):
         args = argparse.Namespace(dry_run=True, logdir=self.tmpdir)
         empty_job = job.Job(args)
         self.assertIsNotNone(empty_job.args.unique_job_id)
+
+    def test_job_no_logdir(self):
+        args = argparse.Namespace()
+        with mock.patch('avocado.core.job.data_dir.create_job_logs_dir',
+                        return_value=self.tmpdir):
+            empty_job = job.Job(args)
+            self.assertEqual(empty_job.logdir, self.tmpdir)
 
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
