@@ -82,7 +82,8 @@ class Job(object):
             if unique_id is None:
                 self.args.unique_job_id = "0" * 40
             self.args.sysinfo = False
-            if self.args.base_logdir is None:
+            base_logdir = getattr(self.args, "base_logdir", None)
+            if base_logdir is None:
                 self.args.base_logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
 
         unique_id = getattr(self.args, 'unique_job_id', None)
