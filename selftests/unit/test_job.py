@@ -171,6 +171,13 @@ class JobTest(unittest.TestCase):
         self.assertEqual(os.path.dirname(empty_job.logdir), self.tmpdir)
         self.assertTrue(os.path.isfile(os.path.join(empty_job.logdir, 'id')))
 
+    def test_job_dryrun_no_base_logdir(self):
+        args = argparse.Namespace(dry_run=True)
+        empty_job = job.Job(args)
+        self.assertTrue(os.path.isdir(empty_job.logdir))
+        self.assertTrue(os.path.isfile(os.path.join(empty_job.logdir, 'id')))
+        shutil.rmtree(empty_job.args.base_logdir)
+
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
         shutil.rmtree(self.tmpdir)
