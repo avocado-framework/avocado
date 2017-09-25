@@ -65,7 +65,7 @@ class Run(CLICmd):
                             'unless you know exactly what you\'re doing')
 
         parser.add_argument('--job-results-dir', action='store',
-                            dest='logdir', default=None, metavar='DIRECTORY',
+                            dest='base_logdir', default=None, metavar='DIRECTORY',
                             help=('Forces to use of an alternate job '
                                   'results directory.'))
 

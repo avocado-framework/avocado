@@ -81,8 +81,8 @@ class Job(object):
             if not self.args.unique_job_id:
                 self.args.unique_job_id = "0" * 40
             self.args.sysinfo = False
-            if self.args.logdir is None:
-                self.args.logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
+            if self.args.base_logdir is None:
+                self.args.base_logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
 
         unique_id = getattr(self.args, 'unique_job_id', None)
         if unique_id is None:
@@ -153,20 +153,20 @@ class Job(object):
         """
         Prepares a job result directory, also known as logdir, for this job
         """
-        logdir = getattr(self.args, 'logdir', None)
+        base_logdir = getattr(self.args, 'base_logdir', None)
         if self.standalone:
-            if logdir is not None:
-                logdir = os.path.abspath(logdir)
-                self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
+            if base_logdir is not None:
+                base_logdir = os.path.abspath(base_logdir)
+                self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
                                                            unique_id=self.unique_id)
             else:
                 self.logdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         else:
-            if logdir is None:
+            if base_logdir is None:
                 self.logdir = data_dir.create_job_logs_dir(unique_id=self.unique_id)
             else:
-                logdir = os.path.abspath(logdir)
-                self.logdir = data_dir.create_job_logs_dir(logdir=logdir,
+                base_logdir = os.path.abspath(base_logdir)
+                self.logdir = data_dir.create_job_logs_dir(base_dir=base_logdir,
                                                            unique_id=self.unique_id)
         if not (self.standalone or getattr(self.args, "dry_run", False)):
             self._update_latest_link()
@@ -558,7 +558,7 @@ class TestProgram(object):
         self.parser = argparse.ArgumentParser(prog=self.progName)
         self.parser.add_argument('-r', '--remove-test-results', action='store_true',
                                  help='remove all test results files after test execution')
-        self.parser.add_argument('-d', '--test-results-dir', dest='logdir', default=None,
+        self.parser.add_argument('-d', '--test-results-dir', dest='base_logdir', default=None,
                                  metavar='TEST_RESULTS_DIR',
                                  help='use an alternative test results directory')
         self.args = self.parser.parse_args(argv)
