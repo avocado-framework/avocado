@@ -4,6 +4,11 @@ import shutil
 import tempfile
 import unittest
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 from avocado.core import data_dir
 from avocado.core import exceptions
 from avocado.core import exit_codes
@@ -29,22 +34,22 @@ class JobTest(unittest.TestCase):
         return found
 
     def test_job_empty_suite(self):
-        args = argparse.Namespace(logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir)
         empty_job = job.Job(args)
         self.assertIsNone(empty_job.test_suite)
 
     def test_job_empty_has_id(self):
-        args = argparse.Namespace(logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir)
         empty_job = job.Job(args)
         self.assertIsNotNone(empty_job.unique_id)
 
     def test_job_test_suite_not_created(self):
-        args = argparse.Namespace(logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir)
         myjob = job.Job(args)
         self.assertIsNone(myjob.test_suite)
 
     def test_job_create_test_suite_empty(self):
-        args = argparse.Namespace(logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir)
         myjob = job.Job(args)
         self.assertRaises(exceptions.OptionValidationError,
                           myjob.create_test_suite)
@@ -52,7 +57,7 @@ class JobTest(unittest.TestCase):
     def test_job_create_test_suite_simple(self):
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir)
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(myjob.test_suite))
@@ -69,7 +74,7 @@ class JobTest(unittest.TestCase):
                 super(JobFilterTime, self).pre_tests()
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir)
         myjob = JobFilterTime(args)
         myjob.create_test_suite()
         try:
@@ -81,7 +86,7 @@ class JobTest(unittest.TestCase):
     def test_job_run_tests(self):
         simple_tests_found = self._find_simple_test_candidates(['true'])
         args = argparse.Namespace(reference=simple_tests_found,
-                                  logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir)
         myjob = job.Job(args)
         myjob.create_test_suite()
         self.assertEqual(myjob.run_tests(),
@@ -95,7 +100,7 @@ class JobTest(unittest.TestCase):
                 super(JobLogPost, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir)
         myjob = JobLogPost(args)
         myjob.create_test_suite()
         try:
@@ -123,7 +128,7 @@ class JobTest(unittest.TestCase):
                 super(JobFilterLog, self).post_tests()
         simple_tests_found = self._find_simple_test_candidates()
         args = argparse.Namespace(reference=simple_tests_found,
-                                  logdir=self.tmpdir)
+                                  base_logdir=self.tmpdir)
         myjob = JobFilterLog(args)
         self.assertEqual(myjob.run(),
                          exit_codes.AVOCADO_ALL_OK)
@@ -132,7 +137,7 @@ class JobTest(unittest.TestCase):
                          open(os.path.join(myjob.logdir, "reversed_id")).read())
 
     def test_job_run_account_time(self):
-        args = argparse.Namespace(logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir)
         myjob = job.Job(args)
         myjob.run()
         self.assertNotEqual(myjob.time_start, -1)
@@ -140,7 +145,7 @@ class JobTest(unittest.TestCase):
         self.assertNotEqual(myjob.time_elapsed, -1)
 
     def test_job_self_account_time(self):
-        args = argparse.Namespace(logdir=self.tmpdir)
+        args = argparse.Namespace(base_logdir=self.tmpdir)
         myjob = job.Job(args)
         myjob.time_start = 10.0
         myjob.run()
@@ -151,6 +156,27 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.time_start, 10.0)
         self.assertEqual(myjob.time_end, 20.0)
         self.assertEqual(myjob.time_elapsed, 100.0)
+
+    def test_job_dryrun_no_unique_job_id(self):
+        args = argparse.Namespace(dry_run=True, base_logdir=self.tmpdir)
+        empty_job = job.Job(args)
+        self.assertIsNotNone(empty_job.args.unique_job_id)
+
+    def test_job_no_base_logdir(self):
+        args = argparse.Namespace()
+        with mock.patch('avocado.core.job.data_dir.get_logs_dir',
+                        return_value=self.tmpdir):
+            empty_job = job.Job(args)
+        self.assertTrue(os.path.isdir(empty_job.logdir))
+        self.assertEqual(os.path.dirname(empty_job.logdir), self.tmpdir)
+        self.assertTrue(os.path.isfile(os.path.join(empty_job.logdir, 'id')))
+
+    def test_job_dryrun_no_base_logdir(self):
+        args = argparse.Namespace(dry_run=True)
+        empty_job = job.Job(args)
+        self.assertTrue(os.path.isdir(empty_job.logdir))
+        self.assertTrue(os.path.isfile(os.path.join(empty_job.logdir, 'id')))
+        shutil.rmtree(empty_job.args.base_logdir)
 
     def tearDown(self):
         data_dir._tmp_tracker.unittest_refresh_dir_tracker()
