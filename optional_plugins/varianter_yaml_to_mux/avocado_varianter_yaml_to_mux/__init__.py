@@ -413,12 +413,12 @@ class YamlToMux(mux.MuxPlugin, Varianter):
                 args.mux_filter_out = mux_filter_out + out
             else:
                 args.mux_filter_out = out
-        if args.avocado_variants.debug:
+
+        debug = getattr(args, "mux_debug", False)
+        if debug:
             data = mux.MuxTreeNodeDebug()
         else:
             data = mux.MuxTreeNode()
-
-        debug = getattr(args, "mux_debug", False)
 
         # Merge the multiplex
         multiplex_files = getattr(args, "mux_yaml", None)
