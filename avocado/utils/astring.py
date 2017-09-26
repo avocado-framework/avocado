@@ -26,8 +26,14 @@ And not notice until their code starts failing.
 """
 
 import itertools
-import os.path
 import re
+import string
+
+
+#: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
+FS_UNSAFE_CHARS = '<>:"/\\|?*'
+#: Translate table to replace fs-unfriendly chars
+FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, "_" * len(FS_UNSAFE_CHARS))
 
 
 def bitlist_to_string(data):
@@ -234,5 +240,12 @@ def string_to_safe_path(input_str):
     :return: String which is safe to pass as a file/dir name (on recent fs)
     """
     if input_str.startswith("."):
-        input_str = "_" + input_str[1:]
-    return input_str.replace(os.path.sep, '_')[:255]
+        input_str = "_" + input_str[1:255]
+    elif len(input_str) > 255:
+        input_str = input_str[:255]
+    try:
+        return string.translate(input_str, FS_TRANSLATE)
+    except UnicodeDecodeError:
+        for bad_chr in FS_UNSAFE_CHARS:
+            input_str = input_str.replace(bad_chr, "_")
+    return input_str
