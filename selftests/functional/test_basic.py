@@ -13,7 +13,6 @@ import xml.dom.minidom
 import zipfile
 import unittest
 import psutil
-import pkg_resources
 
 from lxml import etree
 from StringIO import StringIO
@@ -115,6 +114,16 @@ def probe_binary(binary):
         return utils_path.find_command(binary)
     except utils_path.CmdNotFoundError:
         return None
+
+
+def has_html_plugin():
+    olddir = os.getcwd()
+    try:
+        os.chdir(basedir)
+        out = process.system_output("avocado plugins", ignore_status=True)
+        return True if "HTML result support" in out else False
+    finally:
+        os.chdir(olddir)
 
 
 TRUE_CMD = probe_binary('true')
@@ -1034,12 +1043,9 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
 
         result_plugins = ["json", "xunit", "zip_archive"]
         result_outputs = ["results.json", "results.xml"]
-        try:
-            pkg_resources.require('avocado_result_html')
+        if has_html_plugin():
             result_plugins.append("html")
-            result_outputs.append("html/results.html")
-        except pkg_resources.DistributionNotFound:
-            pass
+            result_outputs.append("results.html")
 
         cmd_line = '%s plugins' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)

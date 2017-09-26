@@ -6,8 +6,6 @@ import shutil
 import unittest
 from xml.dom import minidom
 
-import pkg_resources
-
 from avocado.core import exit_codes
 from avocado.core.output import TermSupport
 from avocado.utils import process
@@ -67,19 +65,21 @@ class OutputTest(Test):
 """
 
 
+def has_html_plugin():
+    olddir = os.getcwd()
+    try:
+        os.chdir(basedir)
+        out = process.system_output("avocado plugins", ignore_status=True)
+        return True if "HTML result support" in out else False
+    finally:
+        os.chdir(olddir)
+
+
 def image_output_uncapable():
     try:
         import PIL
         return False
     except ImportError:
-        return True
-
-
-def html_uncapable():
-    try:
-        pkg_resources.require('avocado_result_html')
-        return False
-    except pkg_resources.DistributionNotFound:
         return True
 
 
@@ -198,7 +198,7 @@ class OutputPluginTest(unittest.TestCase):
                              "Missing error message from output:\n%s" %
                              result.stderr)
 
-    @unittest.skipIf(html_uncapable(),
+    @unittest.skipIf(not has_html_plugin(),
                      "Uncapable of Avocado Result HTML plugin")
     def test_output_incompatible_setup_2(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -258,7 +258,7 @@ class OutputPluginTest(unittest.TestCase):
             except OSError:
                 pass
 
-    @unittest.skipIf(html_uncapable(),
+    @unittest.skipIf(not has_html_plugin(),
                      "Uncapable of Avocado Result HTML plugin")
     def test_output_compatible_setup_3(self):
         tmpfile = tempfile.mktemp(prefix='avocado_' + __name__)
@@ -272,8 +272,9 @@ class OutputPluginTest(unittest.TestCase):
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         tmpdir_contents = os.listdir(tmpdir)
-        self.assertEqual(len(tmpdir_contents), 4,
-                         'Not all resources dir were created: %s' % tmpdir_contents)
+        # Results should be a single file
+        self.assertEqual(len(tmpdir_contents), 1, 'Not all resources dir were '
+                         'created: %s' % tmpdir_contents)
         try:
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
