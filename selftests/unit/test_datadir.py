@@ -63,20 +63,21 @@ class DataDirTest(unittest.TestCase):
         unique results.
         """
         from avocado.core import data_dir
-        flexmock(data_dir.time).should_receive('strftime').and_return("date")
-        logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
-        path_prefix = os.path.join(logdir, "job-date-")
-        uid = "1234567890"*4
-        for i in xrange(7, 40):
+        with mock.patch('avocado.core.data_dir.time.strftime',
+                        return_value="date_would_go_here"):
+            logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
+            path_prefix = os.path.join(logdir, "job-date_would_go_here-")
+            uid = "1234567890"*4
+            for i in xrange(7, 40):
+                path = data_dir.create_job_logs_dir(logdir, uid)
+                self.assertEqual(path, path_prefix + uid[:i])
+                self.assertTrue(os.path.exists(path))
             path = data_dir.create_job_logs_dir(logdir, uid)
-            self.assertEqual(path, path_prefix + uid[:i])
+            self.assertEqual(path, path_prefix + uid + ".0")
             self.assertTrue(os.path.exists(path))
-        path = data_dir.create_job_logs_dir(logdir, uid)
-        self.assertEqual(path, path_prefix + uid + ".0")
-        self.assertTrue(os.path.exists(path))
-        path = data_dir.create_job_logs_dir(logdir, uid)
-        self.assertEqual(path, path_prefix + uid + ".1")
-        self.assertTrue(os.path.exists(path))
+            path = data_dir.create_job_logs_dir(logdir, uid)
+            self.assertEqual(path, path_prefix + uid + ".1")
+            self.assertTrue(os.path.exists(path))
 
     def test_settings_dir_alternate_dynamic(self):
         """
