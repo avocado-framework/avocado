@@ -1035,9 +1035,9 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         result_plugins = ["json", "xunit", "zip_archive"]
         result_outputs = ["results.json", "results.xml"]
         try:
-            pkg_resources.require('avocado_result_html')
+            pkg_resources.require('avocado-framework-plugin-result-html')
             result_plugins.append("html")
-            result_outputs.append("html/results.html")
+            result_outputs.append("results.html")
         except pkg_resources.DistributionNotFound:
             pass
 
