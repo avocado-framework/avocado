@@ -1,4 +1,4 @@
-PYTHON=$(shell which python)
+PYTHON=$(shell which python 2>/dev/null || which python3 2>/dev/null)
 PYTHON_DEVELOP_ARGS=$(shell if ($(PYTHON) setup.py develop --help 2>/dev/null | grep -q '\-\-user'); then echo "--user"; else echo ""; fi)
 VERSION=$(shell $(PYTHON) setup.py --version 2>/dev/null)
 DESTDIR=/
