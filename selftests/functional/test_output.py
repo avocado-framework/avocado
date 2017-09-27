@@ -77,7 +77,7 @@ def image_output_uncapable():
 
 def html_uncapable():
     try:
-        pkg_resources.require('avocado_result_html')
+        pkg_resources.require('avocado-framework-plugin-result-html')
         return False
     except pkg_resources.DistributionNotFound:
         return True
@@ -272,8 +272,8 @@ class OutputPluginTest(unittest.TestCase):
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
         tmpdir_contents = os.listdir(tmpdir)
-        self.assertEqual(len(tmpdir_contents), 4,
-                         'Not all resources dir were created: %s' % tmpdir_contents)
+        self.assertEqual(len(tmpdir_contents), 1, 'Not all resources dir were'
+                         'created: %s' % tmpdir_contents)
         try:
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
