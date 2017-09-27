@@ -393,7 +393,6 @@ aexpect
 remoter's
 isinstance
 dkrcmd
-flexmock
 lockfile
 urlparse
 cpus
