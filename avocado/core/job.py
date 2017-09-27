@@ -131,6 +131,7 @@ class Job(object):
         #: has not been attempted.  If set to an empty list, it means that no
         #: test was found during resolution.
         self.test_suite = None
+        self.test_runner = None
 
         # The result events dispatcher is shared with the test runner.
         # Because of our goal to support using the phases of a job
@@ -284,8 +285,8 @@ class Job(object):
         """
         Prepares a test suite to be used for running tests
 
-        :param references: String with tests references to be resolved, and then
-                           run, separated by whitespace. Optionally, a
+        :param references: String with tests references to be resolved, and
+                           then run, separated by whitespace. Optionally, a
                            list of tests (each test a string).
         :returns: a test suite (a list of test factories)
         """
@@ -327,15 +328,21 @@ class Job(object):
             git = path.find_command('git')
         except path.CmdNotFoundError:
             return
-        git_root = process.run('%s rev-parse --show-toplevel' % git,
-                               ignore_status=True, verbose=False)
-        if git_root.exit_status == 0 and os.path.exists(os.path.join(
-                git_root.stdout.strip(), 'python-avocado.spec')):
-            cmd = "%s show --summary --pretty='%%H'" % git
-            result = process.run(cmd, ignore_status=True, verbose=False)
-            if result.exit_status == 0:
-                top_commit = result.stdout.splitlines()[0][:8]
-                return " (GIT commit %s)" % top_commit
+        # We need to get git root as `py2to3` creates this file in BUILD
+        olddir = os.getcwd()
+        try:
+            os.chdir(os.path.dirname(__file__))
+            git_root = process.run('%s rev-parse --show-toplevel' % git,
+                                   ignore_status=True, verbose=False)
+            if git_root.exit_status == 0 and os.path.exists(os.path.join(
+                    git_root.stdout.strip(), 'python-avocado.spec')):
+                cmd = "%s show --summary --pretty='%%H'" % git
+                res = process.run(cmd, ignore_status=True, verbose=False)
+                if res.exit_status == 0:
+                    top_commit = res.stdout.splitlines()[0][:8]
+                    return " (GIT commit %s)" % top_commit
+        finally:
+            os.chdir(olddir)
 
     def _log_avocado_version(self):
         version_log = version.VERSION
@@ -377,12 +384,14 @@ class Job(object):
         LOG_JOB.info('logs     ' + self.logdir)
         LOG_JOB.info('')
 
-    def _log_variants(self, variants):
+    @staticmethod
+    def _log_variants(variants):
         lines = variants.to_str(summary=1, variants=1, use_utf8=False)
         for line in lines.splitlines():
             LOG_JOB.info(line)
 
-    def _log_tmp_dir(self):
+    @staticmethod
+    def _log_tmp_dir():
         LOG_JOB.info('Temporary dir: %s', data_dir.get_tmp_dir())
         LOG_JOB.info('')
 
@@ -418,8 +427,8 @@ class Job(object):
                          "'avocado list -V %s' for details" % references)
             else:
                 e_msg = ("No test references provided nor any other arguments "
-                         "resolved into tests. Please double check the executed"
-                         " command.")
+                         "resolved into tests. Please double check the "
+                         "executed command.")
             raise exceptions.OptionValidationError(e_msg)
 
     def pre_tests(self):
@@ -432,6 +441,9 @@ class Job(object):
         self._result_events_dispatcher.map_method('pre_tests', self)
 
     def run_tests(self):
+        """
+        The actual test execution phase
+        """
         variant = getattr(self.args, "avocado_variants", None)
         if variant is None:
             variant = varianter.Varianter()
@@ -547,23 +559,25 @@ class TestProgram(object):
             sys.exit(exit_codes.AVOCADO_FAIL)
         os.environ['AVOCADO_STANDALONE_IN_MAIN'] = 'True'
 
-        self.progName = os.path.basename(sys.argv[0])
+        self.prog_name = os.path.basename(sys.argv[0])
         output.add_log_handler("", output.ProgressStreamHandler,
                                fmt="%(message)s")
-        self.parseArgs(sys.argv[1:])
+        self.parse_args(sys.argv[1:])
         self.args.reference = [sys.argv[0]]
-        self.runTests()
+        self.run_tests()
 
-    def parseArgs(self, argv):
-        self.parser = argparse.ArgumentParser(prog=self.progName)
-        self.parser.add_argument('-r', '--remove-test-results', action='store_true',
-                                 help='remove all test results files after test execution')
-        self.parser.add_argument('-d', '--test-results-dir', dest='logdir', default=None,
-                                 metavar='TEST_RESULTS_DIR',
-                                 help='use an alternative test results directory')
+    def parse_args(self, argv):
+        self.parser = argparse.ArgumentParser(prog=self.prog_name)
+        self.parser.add_argument('-r', '--remove-test-results',
+                                 action='store_true', help="remove all test "
+                                 "results files after test execution")
+        self.parser.add_argument('-d', '--test-results-dir', dest='logdir',
+                                 default=None, metavar='TEST_RESULTS_DIR',
+                                 help="use an alternative test results "
+                                 "directory")
         self.args = self.parser.parse_args(argv)
 
-    def runTests(self):
+    def run_tests(self):
         self.args.standalone = True
         self.args.show = ["test"]
         output.reconfigure(self.args)
