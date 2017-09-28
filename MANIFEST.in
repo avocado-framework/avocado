@@ -1,5 +1,4 @@
 include README.rst
 include LICENSE
 include Makefile
-include examples/*.yaml
 recursive-include selftests *
