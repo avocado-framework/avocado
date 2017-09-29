@@ -332,6 +332,18 @@ class TestRunner(object):
         self.job._result_events_dispatcher.map_method('start_test',
                                                       self.result,
                                                       early_state)
+        if getattr(self.job.args, 'list_test_data_directories', False):
+            data_sources = getattr(instance, "DATA_SOURCES", [])
+            if data_sources:
+                locations = []
+                for source in data_sources:
+                    locations.append(instance.get_data("", source=source,
+                                                       must_exist=False))
+                TEST_LOG.info('Test data directories: ')
+                for source, location in zip(data_sources, locations):
+                    if location is not None:
+                        TEST_LOG.info('    %s: %s', source, location)
+                TEST_LOG.info('')
         try:
             instance.run_avocado()
         finally:

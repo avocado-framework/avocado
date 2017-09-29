@@ -26,7 +26,9 @@ class SyncTest(Test):
         """
         self.cwd = os.getcwd()
         sync_tarball = self.params.get('sync_tarball', '*', 'synctest.tar.bz2')
-        tarball_path = os.path.join(self.datadir, sync_tarball)
+        tarball_path = self.get_data(sync_tarball)
+        if tarball_path is None:
+            self.cancel('Test is missing data file %s' % tarball_path)
         archive.extract(tarball_path, self.srcdir)
         srcdir = os.path.join(self.srcdir, 'synctest')
         os.chdir(srcdir)

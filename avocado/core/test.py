@@ -133,7 +133,156 @@ class TestID(object):
                                  % (self.str_uid, str(self)))
 
 
-class Test(unittest.TestCase):
+class BaseTestData(object):
+
+    """
+    Class that adds the hability for tests to have access to data files
+
+    An implementation of this interfaces needs to declare the name of
+    data sources it knows, and a single method for users to get the
+    data files, either from a specific source, or from its built-in
+    order of sources.
+    """
+
+    DATA_SOURCES = []
+
+    def _check_valid_data_source(self, source):
+        """
+        Utility to check if user chose a specific data source
+
+        :param source: either None for no specific selection or a source name
+        :type source: None or str
+        :raises: ValueError
+        """
+        if source is not None and source not in self.DATA_SOURCES:
+            msg = 'Data file source requested (%s) is not one of: %s'
+            msg %= (source, ', '.join(self.DATA_SOURCES))
+            raise ValueError(msg)
+
+    def get_data(self, source=None, must_exist=True):
+        """
+        Retrieves the path to a given data file.
+
+        :param source: one of the defined data sources
+        :type source: str
+        :param must_exist: whether the existence of a file is checked
+        :type must_exist: bool
+        :rtype: str or None
+        """
+        raise NotImplementedError
+
+
+class TestData(BaseTestData):
+
+    DATA_SOURCES = ["file", "test", "variant"]
+    GET_DATA_LOG_FMT = 'DATA (filename=%s) => %s (%s)'
+
+    def __init__(self):
+        self._cached_file_datadir = None
+        self._cached_test_datadir = None
+        self._cached_variant_datadir = None
+
+    def _get_file_datadir(self):
+        """
+        Returns the data dir associated with the file
+        """
+        if self.datadir is not None:
+            self._cached_file_datadir = self.datadir
+        return self._cached_file_datadir
+
+    def _get_test_datadir(self):
+        """
+        Returns the data dir associated with the test
+        """
+        if self._cached_test_datadir is None:
+            file_level_datadir = self._get_file_datadir()
+            if file_level_datadir is None:
+                return None
+            datadir = "%s.%s" % (self.__class__.__name__,
+                                 self._testMethodName)
+            datadir = astring.string_to_safe_path(datadir)
+            self._cached_test_datadir = os.path.join(file_level_datadir,
+                                                     datadir)
+        return self._cached_test_datadir
+
+    def _get_variant_datadir(self):
+        if self._cached_variant_datadir is None:
+            test_data_dir = self._get_test_datadir()
+            if test_data_dir is None:
+                return None
+            datadir = astring.string_to_safe_path(self.name.variant)
+            self._cached_variant_datadir = os.path.join(test_data_dir,
+                                                        datadir)
+        return self._cached_variant_datadir
+
+    def _get_data_file(self, filename, must_exist):
+        datadir = self._get_file_datadir()
+        if datadir is None:
+            return None
+        file_filename = os.path.join(self.datadir, filename)
+        if not must_exist:
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, file_filename,
+                           "to be found at file-level data dir")
+            return file_filename
+        else:
+            if os.path.exists(file_filename):
+                self.log.debug(self.GET_DATA_LOG_FMT, filename, file_filename,
+                               "found at file-level data dir")
+                return file_filename
+
+    def _get_data_test(self, filename, must_exist):
+        if self.datadir is None or not os.path.isdir(self.datadir):
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, None,
+                           "no data dir exists")
+            return None
+
+        test_data_dir = self._get_test_datadir()
+        test_filename = os.path.join(test_data_dir, filename)
+        if not must_exist:
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, test_filename,
+                           "to be found at test-level data dir")
+            return test_filename
+        else:
+            if os.path.exists(test_filename):
+                self.log.debug(self.GET_DATA_LOG_FMT, filename, test_filename,
+                               "found at test-level data dir")
+                return test_filename
+
+    def _get_data_variant(self, filename, must_exist):
+        if self.name.variant is None:
+            return None
+        variant_data_dir = self._get_variant_datadir()
+        if variant_data_dir is None:
+            return None
+        variant_filename = os.path.join(variant_data_dir, filename)
+        if not must_exist:
+            self.log.debug(self.GET_DATA_LOG_FMT, filename, variant_filename,
+                           "to be found at variant-level data dir")
+            return variant_filename
+        else:
+            if os.path.exists(variant_filename):
+                self.log.debug(self.GET_DATA_LOG_FMT, filename,
+                               variant_filename, "found at variant-level data dir")
+                return variant_filename
+
+    def get_data(self, filename, source=None, must_exist=True):
+        if source is None:
+            sources = reversed(self.DATA_SOURCES)
+        else:
+            self._check_valid_data_source(source)
+            sources = [source]
+        for attempt_source in sources:
+            get_callable = "_get_data_%s" % attempt_source
+            kallable = getattr(self, get_callable)
+            result = kallable(filename, must_exist)
+            if result is not None:
+                return result
+
+        self.log.debug(self.GET_DATA_LOG_FMT, filename, "NOT FOUND",
+                       "data sources: %s" % ', '.join(self.DATA_SOURCES))
+
+
+class Test(unittest.TestCase, TestData):
 
     """
     Base implementation for the test class.
@@ -186,15 +335,6 @@ class Test(unittest.TestCase):
             self.__name = TestID(0, self.__class__.__name__)
 
         self.__job = job
-
-        if self.datadir is None:
-            self._expected_stdout_file = None
-            self._expected_stderr_file = None
-        else:
-            self._expected_stdout_file = os.path.join(self.datadir,
-                                                      'stdout.expected')
-            self._expected_stderr_file = os.path.join(self.datadir,
-                                                      'stderr.expected')
 
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
@@ -266,6 +406,7 @@ class Test(unittest.TestCase):
             self.log.debug("Test metadata:")
             self.log.debug("  filename: %s", self.filename)
         unittest.TestCase.__init__(self, methodName=methodName)
+        TestData.__init__(self)
 
     @property
     def name(self):
@@ -340,6 +481,9 @@ class Test(unittest.TestCase):
         name, only to the file that contains the test.  It can be used to
         host data files that are generic enough to be used for all tests
         contained in a given test file.
+
+        This property is deprecated and will be removed in the future.
+        The :meth:`get_data` function should be used instead.
         """
         # Maximal allowed file name length is 255
         if (self.filename is not None and
@@ -556,28 +700,30 @@ class Test(unittest.TestCase):
             logging.getLogger(name).removeHandler(handler)
 
     def _record_reference_stdout(self):
-        if self.datadir is not None:
-            utils_path.init_dir(self.datadir)
-            shutil.copyfile(self._stdout_file, self._expected_stdout_file)
+        stdout_expected = self.get_data('stdout.expected', must_exist=False)
+        if stdout_expected is not None:
+            utils_path.init_dir(os.path.dirname(stdout_expected))
+            shutil.copyfile(self._stdout_file, stdout_expected)
 
     def _record_reference_stderr(self):
-        if self.datadir is not None:
-            utils_path.init_dir(self.datadir)
-            shutil.copyfile(self._stderr_file, self._expected_stderr_file)
+        stderr_expected = self.get_data('stderr.expected', must_exist=False)
+        if stderr_expected is not None:
+            utils_path.init_dir(os.path.dirname(stderr_expected))
+            shutil.copyfile(self._stderr_file, stderr_expected)
 
     def _check_reference_stdout(self):
-        if (self._expected_stdout_file is not None and
-                os.path.isfile(self._expected_stdout_file)):
-            expected = genio.read_file(self._expected_stdout_file)
+        expected_path = self.get_data('stdout.expected')
+        if expected_path is not None:
+            expected = genio.read_file(expected_path)
             actual = genio.read_file(self._stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
     def _check_reference_stderr(self):
-        if (self._expected_stderr_file is not None and
-                os.path.isfile(self._expected_stderr_file)):
-            expected = genio.read_file(self._expected_stderr_file)
+        expected_path = self.get_data('stderr.expected')
+        if expected_path is not None:
+            expected = genio.read_file(expected_path)
             actual = genio.read_file(self._stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
@@ -866,6 +1012,8 @@ class SimpleTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
+    DATA_SOURCES = ["file", "variant"]
+
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
@@ -875,6 +1023,21 @@ class SimpleTest(Test):
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
+
+    def _get_variant_datadir(self):
+        """
+        This is like TestData._get_variant_datadir(), but uses the file
+        level datadir as base, because a simple test doesn't have a test
+        specific data dir (it's a 1:1 file to test relationship).
+        """
+        if self._cached_variant_datadir is None:
+            test_data_dir = self._get_file_datadir()
+            if test_data_dir is None:
+                return None
+            datadir = astring.string_to_safe_path(self.name.variant)
+            self._cached_variant_datadir = os.path.join(test_data_dir,
+                                                        datadir)
+        return self._cached_variant_datadir
 
     @property
     def filename(self):
