@@ -317,7 +317,7 @@ class RemoteTestRunner(TestRunner):
         self.remote = None
 
     def setup(self):
-        """ Setup remote environment and copy test directories """
+        """ Setup remote environment """
         stdout_claimed_by = getattr(self.job.args, 'stdout_claimed_by', None)
         if not stdout_claimed_by:
             self.job.log.info("LOGIN      : %s@%s:%d (TIMEOUT: %s seconds)",
