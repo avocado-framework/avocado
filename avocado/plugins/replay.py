@@ -178,20 +178,19 @@ class Replay(CLI):
             LOG_UI.error(err)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
-        if getattr(args, 'logdir', None) is not None:
-            logdir = args.logdir
-        else:
-            logdir = settings.get_value(section='datadir.paths',
-                                        key='logs_dir', key_type='path',
-                                        default=None)
+        base_logdir = getattr(args, 'base_logdir', None)
+        if base_logdir is None:
+            base_logdir = settings.get_value(section='datadir.paths',
+                                             key='logs_dir', key_type='path',
+                                             default=None)
         try:
-            resultsdir = jobdata.get_resultsdir(logdir, args.replay_jobid)
+            resultsdir = jobdata.get_resultsdir(base_logdir, args.replay_jobid)
         except ValueError as exception:
             LOG_UI.error(exception.message)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         if resultsdir is None:
-            LOG_UI.error("Can't find job results directory in '%s'", logdir)
+            LOG_UI.error("Can't find job results directory in '%s'", base_logdir)
             sys.exit(exit_codes.AVOCADO_FAIL)
 
         sourcejob = jobdata.get_id(os.path.join(resultsdir, 'id'),
