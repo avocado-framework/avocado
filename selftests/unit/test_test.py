@@ -2,8 +2,10 @@ import os
 import shutil
 import tempfile
 import unittest
-
-from flexmock import flexmock, flexmock_teardown
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from avocado.core import test, exceptions
 from avocado.utils import script
@@ -40,7 +42,6 @@ class TestClassTestUnit(unittest.TestCase):
         return FakeFilename("test", tst_id, base_logdir=self.tmpdir)
 
     def tearDown(self):
-        flexmock_teardown()
         shutil.rmtree(self.tmpdir)
 
     def test_ugly_name(self):
@@ -117,10 +118,9 @@ class TestClassTestUnit(unittest.TestCase):
         tst._record_reference_stderr()
 
     def test_all_dirs_exists_no_hang(self):
-        flexmock(os.path)
-        os.path.should_receive('exists').and_return(True)
-        self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
-                          test.TestID(1, "name"), base_logdir=self.tmpdir)
+        with mock.patch('os.path.exists', return_value=True):
+            self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
+                              test.TestID(1, "name"), base_logdir=self.tmpdir)
 
     def test_try_override_test_variable(self):
         test = self.DummyTest(base_logdir=self.tmpdir)
