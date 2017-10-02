@@ -7,7 +7,6 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-from flexmock import flexmock
 
 from six.moves import xrange as range
 
@@ -92,17 +91,15 @@ class DataDirTest(unittest.TestCase):
         No data_dir module reload should be necessary to get the new locations
         from data_dir APIs.
         """
-        stg_orig = settings.settings
-        from avocado.core import data_dir
         (self.alt_mapping,
          self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()
         stg = settings.Settings(self.alt_config_file_path)
-        flexmock(settings, settings=stg)
-        for key in self.alt_mapping.keys():
-            data_dir_func = getattr(data_dir, 'get_%s' % key)
-            self.assertEqual(data_dir_func(), self.alt_mapping[key])
-        flexmock(settings, settings=stg_orig)
-        del data_dir
+        with mock.patch('avocado.core.data_dir.settings.settings', stg):
+            from avocado.core import data_dir
+            for key in self.alt_mapping.keys():
+                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                self.assertEqual(data_dir_func(), self.alt_mapping[key])
+            del data_dir
 
     def tearDown(self):
         os.unlink(self.config_file_path)
