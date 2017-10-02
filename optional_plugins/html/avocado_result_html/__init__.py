@@ -179,7 +179,7 @@ class ReportModel(object):
         for s_f in sysinfo_files:
             sysinfo_dict = {}
             sysinfo_path = os.path.join(base_path, s_f)
-            sysinfo_dict['file'] = " ".join(s_f.split("_"))
+            sysinfo_dict['file'] = s_f
             sysinfo_dict['element_id'] = '%s_heading_%s' % (phase, s_id)
             sysinfo_dict['collapse_id'] = '%s_collapse_%s' % (phase, s_id)
             try:

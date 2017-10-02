@@ -62,6 +62,12 @@ class AstringTest(unittest.TestCase):
                       "a\u0430 123")
         self.assertEqual(astring.tabular_output(matrix), str_matrix)
 
+    def test_safe_path(self):
+        self.assertEqual(astring.string_to_safe_path('a<>:"/\\|\?*b'),
+                         "a__________b")
+        self.assertEqual(astring.string_to_safe_path('..'), "_.")
+        self.assertEqual(len(astring.string_to_safe_path(" " * 300)), 255)
+
 
 if __name__ == '__main__':
     unittest.main()

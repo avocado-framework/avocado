@@ -104,7 +104,7 @@ class SysInfoTest(unittest.TestCase):
                          'Avocado did not return rc %d:\n%s'
                          % (expected_rc, result))
         sleep_log = os.path.join(self.tmpdir, "latest", "sysinfo", "pre",
-                                 "sleep_%s" % sleep)
+                                 "sleep %s" % sleep)
         if not os.path.exists(sleep_log):
             path = os.path.abspath(sleep_log)
             while not os.path.exists(path):

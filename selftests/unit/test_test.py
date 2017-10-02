@@ -6,7 +6,7 @@ import unittest
 from flexmock import flexmock, flexmock_teardown
 
 from avocado.core import test, exceptions
-from avocado.utils import script
+from avocado.utils import astring, script
 
 PASS_SCRIPT_CONTENTS = """#!/bin/sh
 true
@@ -253,7 +253,8 @@ class TestID(unittest.TestCase):
         test_id = test.TestID(uid, name)
         self.assertEqual(test_id.uid, 1)
         self.assertEqual(test_id.str_uid, '1')
-        self.assertEqual(test_id.str_filesystem, '%s-%s' % (uid, name))
+        self.assertEqual(test_id.str_filesystem,
+                         astring.string_to_safe_path('%s-%s' % (uid, name)))
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 
@@ -263,7 +264,8 @@ class TestID(unittest.TestCase):
         test_id = test.TestID(uid, name, no_digits=2)
         self.assertEqual(test_id.uid, 1)
         self.assertEqual(test_id.str_uid, '01')
-        self.assertEqual(test_id.str_filesystem, '%s-%s' % ('01', name))
+        self.assertEqual(test_id.str_filesystem,
+                         astring.string_to_safe_path('%s-%s' % ('01', name)))
         self.assertIs(test_id.variant, None)
         self.assertIs(test_id.str_variant, '')
 

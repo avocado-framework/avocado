@@ -134,6 +134,14 @@ READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
 
 
+def html_uncapable():
+    try:
+        pkg_resources.require('avocado-framework-plugin-result-html')
+        return False
+    except pkg_resources.DistributionNotFound:
+        return True
+
+
 class RunnerOperationTest(unittest.TestCase):
 
     def setUp(self):
@@ -631,7 +639,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
                          " test-results dir, but only one test was executed: "
                          "%s" % (test_dirs))
         self.assertEqual(os.path.basename(test_dirs[0]),
-                         '1-foo\\\\n\\\'\\"\\\\nbar_baz')
+                         "1-foo__n_'____nbar_baz")
 
     def test_replay_skip_skipped(self):
         cmd = ("%s run --job-results-dir %s --json - "
@@ -746,6 +754,36 @@ class RunnerSimpleTest(unittest.TestCase):
                       'finish with warning)', result.stdout, result)
         self.assertIn('ERROR| Error message (ordinary message not changing '
                       'the results)', result.stdout, result)
+
+    @unittest.skipIf(not GNU_ECHO_BINARY, "Uses echo as test")
+    def test_fs_unfriendly_run(self):
+        os.chdir(basedir)
+        commands_path = os.path.join(self.tmpdir, "commands")
+        script.make_script(commands_path, "echo '\"\\/|?*<>'")
+        config_path = os.path.join(self.tmpdir, "config.conf")
+        script.make_script(config_path,
+                           "[sysinfo.collectibles]\ncommands = %s"
+                           % commands_path)
+        cmd_line = ("%s --show all --config %s run --job-results-dir %s "
+                    "--sysinfo=on --external-runner %s -- \"'\\\"\\/|?*<>'\""
+                    % (AVOCADO, config_path, self.tmpdir, GNU_ECHO_BINARY))
+        result = process.run(cmd_line)
+        self.assertTrue(os.path.exists(os.path.join(self.tmpdir, "latest",
+                                                    "test-results",
+                                                    "1-\'________\'/")))
+        self.assertTrue(os.path.exists(os.path.join(self.tmpdir, "latest",
+                                                    "sysinfo", "pre",
+                                                    "echo \'________\'")))
+
+        if html_uncapable():
+            with open(os.path.join(self.tmpdir, "latest",
+                                   "results.html")) as html_res:
+                html_results = html_res.read()
+            # test results should replace odd chars with "_"
+            self.assertIn(os.path.join("test-results", "1-'________'"),
+                          html_results)
+            # sysinfo replaces "_" with " "
+            self.assertIn("echo '________'", html_results)
 
     def test_non_absolute_path(self):
         avocado_path = os.path.join(basedir, 'scripts', 'avocado')
@@ -1034,12 +1072,10 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
 
         result_plugins = ["json", "xunit", "zip_archive"]
         result_outputs = ["results.json", "results.xml"]
-        try:
-            pkg_resources.require('avocado_result_html')
+        if html_uncapable():
+            pkg_resources.require('avocado-framework-plugin-result-html')
             result_plugins.append("html")
-            result_outputs.append("html/results.html")
-        except pkg_resources.DistributionNotFound:
-            pass
+            result_outputs.append("results.html")
 
         cmd_line = '%s plugins' % AVOCADO
         result = process.run(cmd_line, ignore_status=True)
@@ -1244,7 +1280,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                          '1--ne foo\\\\n\\\'\\"\\\\nbar/baz')
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
-                         '1--ne foo\\\\n\\\'\\"\\\\nbar_baz')
+                         "1--ne foo__n_'____nbar_baz")
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

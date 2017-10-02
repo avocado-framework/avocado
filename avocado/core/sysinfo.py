@@ -28,6 +28,7 @@ except ImportError:
 
 from . import output
 from .settings import settings
+from ..utils import astring
 from ..utils import genio
 from ..utils import process
 from ..utils import software_manager
@@ -44,7 +45,7 @@ class Collectible(object):
     """
 
     def __init__(self, logf):
-        self.logf = logf
+        self.logf = astring.string_to_safe_path(logf)
 
     def readline(self, logdir):
         """
@@ -122,7 +123,7 @@ class Command(Collectible):
 
     def __init__(self, cmd, logf=None, compress_log=False):
         if not logf:
-            logf = cmd.replace(" ", "_")
+            logf = cmd
         super(Command, self).__init__(logf)
         self.cmd = cmd
         self._compress_log = compress_log
