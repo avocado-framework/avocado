@@ -999,12 +999,17 @@ class SimpleTest(Test):
     Run an arbitrary command that returns either 0 (PASS) or !=0 (FAIL).
     """
 
+    DATA_SOURCES = ["file", "variant"]
+
     re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
                                 r' \d\d:\d\d:\d\d WARN \|')
 
     def __init__(self, name, params=None, base_logdir=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, job=job)
+        self._data_sources_mapping = {"file": [lambda: self.datadir],
+                                      "variant": [lambda: self.datadir,
+                                                  lambda: self.name.variant]}
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
