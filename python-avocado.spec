@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 54.1
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -43,7 +43,6 @@ BuildRequires: fabric
 BuildRequires: procps-ng
 BuildRequires: pystache
 BuildRequires: python-docutils
-BuildRequires: python-flexmock
 BuildRequires: python-lxml
 BuildRequires: python-mock
 BuildRequires: python-psutil
@@ -370,6 +369,10 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 
 %changelog
+
+* Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-2
+- Remove python-flexmock requirement
+
 * Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-1
 - Add explicit BuildRequires for python-six
 
