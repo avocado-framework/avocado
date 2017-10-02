@@ -142,7 +142,7 @@ class ProcessTest(unittest.TestCase):
         time.sleep(3)
         proc.terminate()
         proc.wait()
-        stdout = proc.get_stdout()
+        stdout = proc.get_stdout().decode('utf-8')
         self.assertIn('memory', stdout, 'result: %s' % stdout)
         self.assertRegexpMatches(stdout, '[0-9]+')
 
