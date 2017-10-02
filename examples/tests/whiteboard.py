@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import base64
-import os
 
 from avocado import Test
 from avocado import main
@@ -19,7 +18,6 @@ class WhiteBoard(Test):
     """
 
     def test(self):
-        os.chdir(self.datadir)    # Just to stress out Avocado
         data_file = self.params.get('whiteboard_data_file', default='')
         data_size = self.params.get('whiteboard_data_size', default='10')
         if data_file:
