@@ -3,6 +3,10 @@ import os
 import shutil
 import tempfile
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from flexmock import flexmock
 
 from avocado.core import settings
@@ -41,21 +45,17 @@ class DataDirTest(unittest.TestCase):
         """
         When avocado.conf is present, honor the values coming from it.
         """
-        stg_orig = settings.settings
         stg = settings.Settings(self.config_file_path)
-        try:
-            # Trick the module to think we're on a system wide install
-            stg.intree = False
-            flexmock(settings, settings=stg)
+        # Trick the module to think we're on a system wide install
+        stg.intree = False
+        with mock.patch('avocado.core.data_dir.settings.settings', stg):
             from avocado.core import data_dir
-            flexmock(data_dir.settings, settings=stg)
             self.assertFalse(data_dir.settings.settings.intree)
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
-        finally:
-            flexmock(settings, settings=stg_orig)
-        del data_dir
+        # make sure that without the patch, we have a different value here
+        self.assertTrue(data_dir.settings.settings.intree)
 
     def test_unique_log_dir(self):
         """
