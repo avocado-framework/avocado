@@ -88,8 +88,8 @@ class TestClassTestUnit(unittest.TestCase):
                          tst.datadir)
         tst.should_receive('filename').and_return("a"*251)
         self.assertFalse(tst.datadir)
-        tst._record_reference_stdout       # Should does nothing
-        tst._record_reference_stderr       # Should does nothing
+        tst._record_reference_stdout       # Should do nothing
+        tst._record_reference_stderr       # Should do nothing
         tst._record_reference_stdout()
         tst._record_reference_stderr()
 
