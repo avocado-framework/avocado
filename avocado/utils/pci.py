@@ -23,8 +23,7 @@ Module for all PCI devices related functions.
 
 import re
 import os
-from .genio import read_file
-from . import process
+from . import process, genio
 
 
 def get_domains():
@@ -173,14 +172,17 @@ def get_slot_from_sysfs(full_pci_address):
 
     :param full_pci_address: Full PCI address including domain (0000:03:00.0)
 
-    :return: slot of PCI address from sysfs.
+    :return: Removed port related details using re, only returns till
+             physical slot of the adapter.
     """
     if not os.path.isfile('/sys/bus/pci/devices/%s/devspec' % full_pci_address):
         return
-    devspec = read_file("/sys/bus/pci/devices/%s/devspec" % full_pci_address)
+    devspec = genio.read_file("/sys/bus/pci/devices/%s/devspec"
+                              % full_pci_address)
     if not os.path.isfile("/proc/device-tree/%s/ibm,loc-code" % devspec):
         return
-    slot = read_file("/proc/device-tree/%s/ibm,loc-code" % devspec)
+    slot = genio.read_file("/proc/device-tree/%s/ibm,loc-code" % devspec)
+    slot = re.match(r'((\w+)[.])+(\w+)-P(\d+)-C(\d+)|Slot(\d+)', slot).group()
     return slot
 
 
