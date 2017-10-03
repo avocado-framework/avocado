@@ -1,5 +1,7 @@
 import unittest
 
+from six.moves import xrange
+
 from avocado.utils import data_structures
 
 
