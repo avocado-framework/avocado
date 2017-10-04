@@ -1,8 +1,10 @@
-import os
 import re
 import unittest
 
-from flexmock import flexmock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from avocado.utils import distro
 
@@ -64,10 +66,11 @@ class ProbeTest(unittest.TestCase):
             CHECK_FILE = distro_file
             CHECK_FILE_DISTRO_NAME = distro_name
 
-        flexmock(os.path)
-        os.path.should_receive('exists').and_return(True)
         my_probe = MyProbe()
-        probed_distro_name = my_probe.name_for_file()
+        with mock.patch('avocado.utils.distro.os.path.exists',
+                        return_value=True) as mocked:
+            probed_distro_name = my_probe.name_for_file()
+            mocked.assert_called_once_with(distro_file)
         self.assertEqual(distro_name, probed_distro_name)
 
 

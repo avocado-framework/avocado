@@ -7,10 +7,11 @@ avocado.utils.partition unittests
 import os
 import shutil
 import tempfile
-import time
 import unittest     # pylint: disable=C0411
-
-from flexmock import flexmock, flexmock_teardown
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from avocado.utils import partition, process
 from avocado.utils import path as utils_path
@@ -109,12 +110,10 @@ class TestMtabLock(unittest.TestCase):
     def test_lock(self):
         """ Check double-lock raises exception after 60s (in 0.1s) """
         with partition.MtabLock():
-            # speedup the process a bit
-            (flexmock(time).should_receive("time").and_return(1)
-             .and_return(2).and_return(62))
-            self.assertRaises(partition.PartitionError,
-                              partition.MtabLock().__enter__)
-            flexmock_teardown()
+            with mock.patch('avocado.utils.partition.time.time',
+                            mock.MagicMock(side_effect=[1, 2, 62])):
+                self.assertRaises(partition.PartitionError,
+                                  partition.MtabLock().__enter__)
 
 
 if __name__ == '__main__':
