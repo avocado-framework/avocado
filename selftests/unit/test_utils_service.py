@@ -18,7 +18,10 @@
 
 import unittest
 
-from mock import MagicMock, patch
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from avocado.utils import service
 
@@ -84,15 +87,15 @@ class TestSysVInit(unittest.TestCase):
 class TestSpecificServiceManager(unittest.TestCase):
 
     def setUp(self):
-        self.run_mock = MagicMock()
+        self.run_mock = mock.MagicMock()
         self.init_name = "init"
-        get_name_of_init_mock = MagicMock(return_value="init")
+        get_name_of_init_mock = mock.MagicMock(return_value="init")
 
-        @patch.object(service, "get_name_of_init", get_name_of_init_mock)
+        @mock.patch.object(service, "get_name_of_init", get_name_of_init_mock)
         def patch_service_command_generator():
             return service._auto_create_specific_service_command_generator()
 
-        @patch.object(service, "get_name_of_init", get_name_of_init_mock)
+        @mock.patch.object(service, "get_name_of_init", get_name_of_init_mock)
         def patch_service_result_parser():
             return service._auto_create_specific_service_result_parser()
         service_command_generator = patch_service_command_generator()
@@ -136,7 +139,7 @@ class TestServiceManager(unittest.TestCase):
 class TestSystemdServiceManager(TestServiceManager):
 
     def setUp(self):
-        self.run_mock = MagicMock()
+        self.run_mock = mock.MagicMock()
         self.init_name = "systemd"
         self.service_manager = super(TestSystemdServiceManager,
                                      self).get_service_manager_from_init_and_run(self.init_name,
@@ -149,10 +152,11 @@ class TestSystemdServiceManager(TestServiceManager):
         self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_list(self):
-        list_result_mock = MagicMock(exit_status=0, stdout="sshd.service enabled\n"
-                                                           "vsftpd.service disabled\n"
-                                                           "systemd-sysctl.service static\n")
-        run_mock = MagicMock(return_value=list_result_mock)
+        list_result_mock = mock.MagicMock(exit_status=0,
+                                          stdout="sshd.service enabled\n"
+                                          "vsftpd.service disabled\n"
+                                          "systemd-sysctl.service static\n")
+        run_mock = mock.MagicMock(return_value=list_result_mock)
         service_manager = super(TestSystemdServiceManager,
                                 self).get_service_manager_from_init_and_run(self.init_name,
                                                                             run_mock)
@@ -165,13 +169,13 @@ class TestSystemdServiceManager(TestServiceManager):
 
     def test_set_default_runlevel(self):
         runlevel = service.convert_sysv_runlevel(3)
-        mktemp_mock = MagicMock(return_value="temp_filename")
-        symlink_mock = MagicMock()
-        rename_mock = MagicMock()
+        mktemp_mock = mock.MagicMock(return_value="temp_filename")
+        symlink_mock = mock.MagicMock()
+        rename_mock = mock.MagicMock()
 
-        @patch.object(service, "mktemp", mktemp_mock)
-        @patch("os.symlink", symlink_mock)
-        @patch("os.rename", rename_mock)
+        @mock.patch.object(service, "mktemp", mktemp_mock)
+        @mock.patch("os.symlink", symlink_mock)
+        @mock.patch("os.rename", rename_mock)
         def _():
             self.service_manager.change_default_runlevel(runlevel)
             self.assertTrue(mktemp_mock.called)
@@ -196,21 +200,22 @@ class TestSystemdServiceManager(TestServiceManager):
 class TestSysVInitServiceManager(TestServiceManager):
 
     def setUp(self):
-        self.run_mock = MagicMock()
+        self.run_mock = mock.MagicMock()
         self.init_name = "init"
         self.service_manager = super(TestSysVInitServiceManager,
                                      self).get_service_manager_from_init_and_run(self.init_name,
                                                                                  self.run_mock)
 
     def test_list(self):
-        list_result_mock = MagicMock(exit_status=0,
-                                     stdout="sshd             0:off   1:off   2:off   3:off   4:off   5:off   6:off\n"
-                                            "vsftpd           0:off   1:off   2:off   3:off   4:off   5:on   6:off\n"
-                                            "xinetd based services:\n"
-                                            "        amanda:         off\n"
-                                            "        chargen-dgram:  on\n")
+        list_result_mock = mock.MagicMock(
+            exit_status=0,
+            stdout="sshd             0:off   1:off   2:off   3:off   4:off   5:off   6:off\n"
+            "vsftpd           0:off   1:off   2:off   3:off   4:off   5:on   6:off\n"
+            "xinetd based services:\n"
+            "        amanda:         off\n"
+            "        chargen-dgram:  on\n")
 
-        run_mock = MagicMock(return_value=list_result_mock)
+        run_mock = mock.MagicMock(return_value=list_result_mock)
         service_manager = super(TestSysVInitServiceManager,
                                 self).get_service_manager_from_init_and_run(self.init_name,
                                                                             run_mock)
