@@ -5,6 +5,8 @@ import shutil
 import sys
 import random
 
+from six.moves import xrange as range
+
 from avocado.utils import archive
 from avocado.utils import crypto
 from avocado.utils import data_factory
@@ -20,7 +22,7 @@ class ArchiveTest(unittest.TestCase):
 
     def compress_and_check_dir(self, extension):
         hash_map_1 = {}
-        for i in xrange(self.sys_random.randint(10, 20)):
+        for i in range(self.sys_random.randint(10, 20)):
             if i % 2 == 0:
                 compressdir = tempfile.mkdtemp(dir=self.compressdir)
             else:
