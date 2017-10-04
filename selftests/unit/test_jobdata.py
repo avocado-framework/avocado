@@ -1,4 +1,3 @@
-import glob
 import os
 import unittest
 
@@ -13,8 +12,8 @@ BASEDIR = os.path.abspath(BASEDIR)
 
 class JobdataTest(unittest.TestCase):
 
-    @staticmethod
-    def _check_results(pth):
+    def _check_results(self, dirname):
+        pth = os.path.join(BASEDIR, "selftests", ".data", dirname)
         errs = []
         # pwd
         exp = "/home/medic/Work/Projekty/avocado/avocado"
@@ -86,21 +85,35 @@ class JobdataTest(unittest.TestCase):
                '/bin/echo', '-m', 'examples/mux-0.yaml', '--', 'yes', 'no']
         if exp != act:
             errs.append("cmdline: Invalid cmdline '%s' (%s)" % (act, exp))
-        return errs
+        self.assertFalse(errs, "Errors: %s" % "\n  ".join(errs))
 
     @unittest.skipIf(PY3, "Skipping tests with data pickled on Python 2")
-    def test_versions(self):
+    def setUp(self):
         os.chdir(BASEDIR)
-        errs = []
-        for pth in sorted(glob.glob(os.path.join(BASEDIR, "selftests",
-                                                 ".data", "results-*"))):
-            res = self._check_results(pth)
-            if res:
-                name = os.path.basename(pth)
-                errs.append("%s\n%s\n\n  %s\n\n" % (name, "-" * len(name),
-                                                    "\n  ".join(res)))
-        self.assertFalse(errs, "Some results were not loaded properly:\n%s"
-                         % "\n * ".join(errs))
+
+    def test_36_0_lts(self):
+        self._check_results("results-36.0lts")
+
+    def test_36_4(self):
+        self._check_results("results-36.4")
+
+    def test_37_0(self):
+        self._check_results("results-37.0")
+
+    def test_38_0(self):
+        self._check_results("results-38.0")
+
+    def test_39_0(self):
+        self._check_results("results-39.0")
+
+    def test_40_0(self):
+        self._check_results("results-40.0")
+
+    def test_41_0(self):
+        self._check_results("results-41.0")
+
+    def test_51_0(self):
+        self._check_results("results-51.0")
 
 
 if __name__ == "__main__":
