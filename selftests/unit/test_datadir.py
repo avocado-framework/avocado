@@ -3,7 +3,10 @@ import os
 import shutil
 import tempfile
 
-from flexmock import flexmock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from six.moves import xrange as range
 
@@ -43,21 +46,17 @@ class DataDirTest(unittest.TestCase):
         """
         When avocado.conf is present, honor the values coming from it.
         """
-        stg_orig = settings.settings
         stg = settings.Settings(self.config_file_path)
-        try:
-            # Trick the module to think we're on a system wide install
-            stg.intree = False
-            flexmock(settings, settings=stg)
+        # Trick the module to think we're on a system wide install
+        stg.intree = False
+        with mock.patch('avocado.core.data_dir.settings.settings', stg):
             from avocado.core import data_dir
-            flexmock(data_dir.settings, settings=stg)
             self.assertFalse(data_dir.settings.settings.intree)
             for key in self.mapping.keys():
                 data_dir_func = getattr(data_dir, 'get_%s' % key)
                 self.assertEqual(data_dir_func(), stg.get_value('datadir.paths', key))
-        finally:
-            flexmock(settings, settings=stg_orig)
-        del data_dir
+        # make sure that without the patch, we have a different value here
+        self.assertTrue(data_dir.settings.settings.intree)
 
     def test_unique_log_dir(self):
         """
@@ -65,20 +64,21 @@ class DataDirTest(unittest.TestCase):
         unique results.
         """
         from avocado.core import data_dir
-        flexmock(data_dir.time).should_receive('strftime').and_return("date")
-        logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
-        path_prefix = os.path.join(logdir, "job-date-")
-        uid = "1234567890"*4
-        for i in range(7, 40):
+        with mock.patch('avocado.core.data_dir.time.strftime',
+                        return_value="date_would_go_here"):
+            logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
+            path_prefix = os.path.join(logdir, "job-date_would_go_here-")
+            uid = "1234567890"*4
+            for i in range(7, 40):
+                path = data_dir.create_job_logs_dir(logdir, uid)
+                self.assertEqual(path, path_prefix + uid[:i])
+                self.assertTrue(os.path.exists(path))
             path = data_dir.create_job_logs_dir(logdir, uid)
-            self.assertEqual(path, path_prefix + uid[:i])
+            self.assertEqual(path, path_prefix + uid + ".0")
             self.assertTrue(os.path.exists(path))
-        path = data_dir.create_job_logs_dir(logdir, uid)
-        self.assertEqual(path, path_prefix + uid + ".0")
-        self.assertTrue(os.path.exists(path))
-        path = data_dir.create_job_logs_dir(logdir, uid)
-        self.assertEqual(path, path_prefix + uid + ".1")
-        self.assertTrue(os.path.exists(path))
+            path = data_dir.create_job_logs_dir(logdir, uid)
+            self.assertEqual(path, path_prefix + uid + ".1")
+            self.assertTrue(os.path.exists(path))
 
     def test_settings_dir_alternate_dynamic(self):
         """
@@ -91,17 +91,15 @@ class DataDirTest(unittest.TestCase):
         No data_dir module reload should be necessary to get the new locations
         from data_dir APIs.
         """
-        stg_orig = settings.settings
-        from avocado.core import data_dir
         (self.alt_mapping,
          self.alt_config_file_path) = self._get_temporary_dirs_mapping_and_config()
         stg = settings.Settings(self.alt_config_file_path)
-        flexmock(settings, settings=stg)
-        for key in self.alt_mapping.keys():
-            data_dir_func = getattr(data_dir, 'get_%s' % key)
-            self.assertEqual(data_dir_func(), self.alt_mapping[key])
-        flexmock(settings, settings=stg_orig)
-        del data_dir
+        with mock.patch('avocado.core.data_dir.settings.settings', stg):
+            from avocado.core import data_dir
+            for key in self.alt_mapping.keys():
+                data_dir_func = getattr(data_dir, 'get_%s' % key)
+                self.assertEqual(data_dir_func(), self.alt_mapping[key])
+            del data_dir
 
     def tearDown(self):
         os.unlink(self.config_file_path)

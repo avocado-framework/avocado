@@ -3,8 +3,6 @@
 setuptools>=18.0.0
 # sphinx (doc build test)
 Sphinx>=1.3b1
-# flexmock (some unittests use it)
-flexmock>=0.9.7
 # inspektor (static and style checks)
 inspektor>=0.4.5
 # mock (some unittests use it)
