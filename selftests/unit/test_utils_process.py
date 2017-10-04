@@ -1,6 +1,11 @@
 import os
 import unittest
-from mock import MagicMock, patch
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 
 from avocado.utils import gdb
 from avocado.utils import process
@@ -75,125 +80,127 @@ def mock_fail_find_cmd(cmd, default=None):
 
 class TestProcessRun(unittest.TestCase):
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid',
+                       mock.MagicMock(return_value=1000))
     def test_subprocess_nosudo(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=0))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=0))
     def test_subprocess_nosudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid',
+                       mock.MagicMock(return_value=1000))
     def test_subprocess_sudo(self):
         expected_command = '%s -n ls -l' % TRUE_CMD
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command', mock_fail_find_cmd)
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_subprocess_sudo_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=0))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=0))
     def test_subprocess_sudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_subprocess_sudo_shell(self):
         expected_command = '%s -n -s ls -l' % TRUE_CMD
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command', mock_fail_find_cmd)
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_subprocess_sudo_shell_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=0))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=0))
     def test_subprocess_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_run_nosudo(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=0))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=0))
     def test_run_nosudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_run_sudo(self):
         expected_command = '%s -n ls -l' % TRUE_CMD
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command', mock_fail_find_cmd)
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_run_sudo_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=0))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=0))
     def test_run_sudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_run_sudo_shell(self):
         expected_command = '%s -n -s ls -l' % TRUE_CMD
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command', mock_fail_find_cmd)
-    @patch.object(os, 'getuid', MagicMock(return_value=1000))
+    @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=1000))
     def test_run_sudo_shell_no_sudo_installed(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @patch.object(path, 'find_command',
-                  MagicMock(return_value=TRUE_CMD))
-    @patch.object(os, 'getuid', MagicMock(return_value=0))
+    @mock.patch.object(path, 'find_command',
+                       mock.MagicMock(return_value=TRUE_CMD))
+    @mock.patch.object(os, 'getuid', mock.MagicMock(return_value=0))
     def test_run_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
