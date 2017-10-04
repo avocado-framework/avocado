@@ -22,6 +22,8 @@ import stat
 import tarfile
 import zipfile
 
+from six import iteritems
+
 
 LOG = logging.getLogger(__name__)
 
@@ -172,7 +174,7 @@ class ArchiveFile(object):
             LOG.warn("Attr handling in zip files only supported on Linux.")
             return
         # Walk all files and re-create files as symlinks
-        for path, info in self._engine.NameToInfo.iteritems():
+        for path, info in iteritems(self._engine.NameToInfo):
             dst = os.path.join(dst_dir, path)
             if not os.path.exists(dst):
                 LOG.warn("One or more files in the ZIP archive '%s' could "
