@@ -145,11 +145,11 @@ class OutputTest(unittest.TestCase):
                 "[stderr] test_stderr", "[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
-        self.assertEqual("test_print\ntest_stdout\ntest_process\n",
+        self.assertEqual("test_printtest_stdouttest_process\n",
                          open(os.path.join(testdir, "stdout")).read())
-        self.assertEqual("test_stderr\n",
+        self.assertEqual("test_stderr",
                          open(os.path.join(testdir, "stderr")).read())
-        self.assertEqual("test_print\ntest_stdout\ntest_stderr\n"
+        self.assertEqual("test_printtest_stdouttest_stderr"
                          "test_process\n",
                          open(os.path.join(testdir, "output")).read())
 

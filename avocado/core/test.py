@@ -52,6 +52,33 @@ from .output import LOG_JOB
 COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
 
 
+class RawFileHandler(logging.FileHandler):
+
+    """
+    File Handler that doesn't include arbitrary characters to the
+    logged stream but still respects the formatter.
+    """
+
+    def __init__(self, *args, **kwargs):
+        logging.FileHandler.__init__(self, *args, **kwargs)
+
+    def emit(self, record):
+        """
+        Modifying the original emit() to avoid including a new line
+        in streams that should be logged in its purest form, like in
+        stdout/stderr recordings.
+        """
+        if self.stream is None:
+            self.stream = self._open()
+        try:
+            msg = self.format(record)
+            stream = self.stream
+            stream.write('%s' % msg)
+            self.flush()
+        except Exception:
+            self.handleError(record)
+
+
 class TestID(object):
 
     """
@@ -494,8 +521,11 @@ class Test(unittest.TestCase):
         return state
 
     def _register_log_file_handler(self, logger, formatter, filename,
-                                   log_level=logging.DEBUG):
-        file_handler = logging.FileHandler(filename=filename)
+                                   log_level=logging.DEBUG, raw=False):
+        if raw:
+            file_handler = RawFileHandler(filename=filename)
+        else:
+            file_handler = logging.FileHandler(filename=filename)
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
@@ -522,10 +552,12 @@ class Test(unittest.TestCase):
 
         self._register_log_file_handler(log_test_stdout,
                                         stream_formatter,
-                                        self._stdout_file)
+                                        self._stdout_file,
+                                        raw=True)
         self._register_log_file_handler(log_test_stderr,
                                         stream_formatter,
-                                        self._stderr_file)
+                                        self._stderr_file,
+                                        raw=True)
         self._register_log_file_handler(logging.getLogger('paramiko'),
                                         formatter,
                                         self._ssh_logfile)
@@ -533,10 +565,12 @@ class Test(unittest.TestCase):
         # combined output logging
         self._register_log_file_handler(log_test_stdout,
                                         stream_formatter,
-                                        self._output_file)
+                                        self._output_file,
+                                        raw=True)
         self._register_log_file_handler(log_test_stderr,
                                         stream_formatter,
-                                        self._output_file)
+                                        self._output_file,
+                                        raw=True)
 
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.add_logger(log_test_stdout)
