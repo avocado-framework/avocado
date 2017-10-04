@@ -30,6 +30,8 @@ import shutil
 import time
 import tempfile
 
+from six.moves import xrange
+
 from . import job_id
 from . import settings
 from .output import LOG_JOB

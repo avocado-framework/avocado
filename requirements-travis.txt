@@ -13,6 +13,8 @@ pygraphviz==1.3rc2
 mock==1.2.0
 aexpect==1.0.0
 psutil==3.1.1
+# six is a stevedore depedency, but we also use it directly
+six==1.9.0
 # stevedore for loading "new style" plugins
 stevedore==1.20.0
 lxml>=3.4.4
