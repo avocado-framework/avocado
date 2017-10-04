@@ -5,6 +5,8 @@ import tempfile
 
 from flexmock import flexmock
 
+from six.moves import xrange
+
 from avocado.core import settings
 
 
