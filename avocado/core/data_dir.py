@@ -30,6 +30,8 @@ import shutil
 import time
 import tempfile
 
+from six.moves import xrange as range
+
 from . import job_id
 from . import settings
 from .output import LOG_JOB
@@ -172,7 +174,7 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
         unique_id = job_id.create_unique_job_id()
 
     logdir = os.path.join(base_dir, 'job-%s-%s' % (start_time, unique_id[:7]))
-    for i in xrange(7, len(unique_id)):
+    for i in range(7, len(unique_id)):
         try:
             os.mkdir(logdir)
         except OSError:
@@ -180,7 +182,7 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
             continue
         return logdir
     logdir += "."
-    for i in xrange(1000):
+    for i in range(1000):
         try:
             os.mkdir(logdir + str(i))
         except OSError:

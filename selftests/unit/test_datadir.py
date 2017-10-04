@@ -5,6 +5,8 @@ import tempfile
 
 from flexmock import flexmock
 
+from six.moves import xrange as range
+
 from avocado.core import settings
 
 
@@ -67,7 +69,7 @@ class DataDirTest(unittest.TestCase):
         logdir = os.path.join(self.mapping['base_dir'], "foor", "bar", "baz")
         path_prefix = os.path.join(logdir, "job-date-")
         uid = "1234567890"*4
-        for i in xrange(7, 40):
+        for i in range(7, 40):
             path = data_dir.create_job_logs_dir(logdir, uid)
             self.assertEqual(path, path_prefix + uid[:i])
             self.assertTrue(os.path.exists(path))
