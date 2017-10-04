@@ -2,6 +2,8 @@ import glob
 import os
 import unittest
 
+from six import PY3
+
 from avocado.core import jobdata
 
 
@@ -87,6 +89,7 @@ class JobdataTest(unittest.TestCase):
             errs.append("cmdline: Invalid cmdline '%s' (%s)" % (act, exp))
         return errs
 
+    @unittest.skipIf(PY3, "Skipping tests with data pickled on Python 2")
     def test_versions(self):
         os.chdir(BASEDIR)
         errs = []
