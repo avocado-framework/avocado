@@ -24,7 +24,8 @@ avocado core code or plugins.
 
 import sys
 import math
-from itertools import izip
+
+from six.moves import zip
 
 
 def ordered_list_unique(object_list):
@@ -72,18 +73,18 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
     same = 0
     new_matrix = []
 
-    for line1, line2 in izip(matrix1, matrix2):
+    for line1, line2 in zip(matrix1, matrix2):
         new_line = []
-        elements = izip(line1, line2)
+        elements = zip(line1, line2)
         try:
-            element1, element2 = elements.next()
+            element1, element2 = next(elements)
         except StopIteration:             # no data in this row
             new_matrix.append(new_line)
             continue
         if element1 == element2:          # this column contains header
             new_line.append(element1)
             try:
-                element1, element2 = elements.next()
+                element1, element2 = next(elements)
             except StopIteration:
                 new_matrix.append(new_line)
                 continue
@@ -98,7 +99,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                     new_line.append("error_%s/%s" % (element2, element1))
                     improvements += 1
                 try:
-                    element1, element2 = elements.next()
+                    element1, element2 = next(elements)
                 except StopIteration:
                     break
                 continue
@@ -112,7 +113,7 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
                 same += 1
                 new_line.append(".")
             try:
-                element1, element2 = elements.next()
+                element1, element2 = next(elements)
             except StopIteration:
                 break
         new_matrix.append(new_line)

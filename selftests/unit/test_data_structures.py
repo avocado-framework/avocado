@@ -1,5 +1,7 @@
 import unittest
 
+from six.moves import xrange as range
+
 from avocado.utils import data_structures
 
 
@@ -22,7 +24,7 @@ class TestDataStructures(unittest.TestCase):
         Verify the correct value is produced and it allows processing of long
         lists of values where some algorithm fails.
         """
-        self.assertEqual(data_structures.geometric_mean(xrange(1, 180)),
+        self.assertEqual(data_structures.geometric_mean(range(1, 180)),
                          67.1555819421869)
 
     def test_compare_matrices(self):
