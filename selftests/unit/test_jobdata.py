@@ -13,7 +13,6 @@ class JobdataTest(unittest.TestCase):
 
     @staticmethod
     def _check_results(pth):
-        msg = "Retrieved %s is not '%s' (%s)"
         errs = []
         # pwd
         exp = "/home/medic/Work/Projekty/avocado/avocado"
