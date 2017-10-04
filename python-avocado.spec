@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 54.1
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -51,6 +51,7 @@ BuildRequires: python-requests
 BuildRequires: python-resultsdb_api
 BuildRequires: python-setuptools
 BuildRequires: python-sphinx
+BuildRequires: python-six
 BuildRequires: python-stevedore
 BuildRequires: python2-devel
 BuildRequires: yum
@@ -369,6 +370,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 
 %changelog
+* Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-1
+- Add explicit BuildRequires for python-six
+
 * Wed Sep 20 2017 Cleber Rosa <cleber@redhat.com> - 54.1-0
 - New minor upstream release
 
