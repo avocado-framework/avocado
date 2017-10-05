@@ -38,6 +38,8 @@ import itertools
 import locale
 import os
 
+from six import iterkeys, iteritems
+
 from . import output
 
 
@@ -80,10 +82,10 @@ class TreeEnvironment(dict):
     def __str__(self):
         # Use __str__ instead of __repr__ to improve readability
         if self:
-            _values = ["%s: %s" % _ for _ in self.iteritems()]
+            _values = ["%s: %s" % _ for _ in iteritems(self)]
             values = "{%s}" % ", ".join(_values)
             _origin = ["%s: %s" % (key, node.path)
-                       for key, node in self.origin.iteritems()]
+                       for key, node in iteritems(self.origin)]
             origin = "{%s}" % ", ".join(_origin)
         else:
             values = "{}"
@@ -276,7 +278,7 @@ class TreeNode(object):
         if self._environment is None:
             self._environment = (self.parent.environment.copy()
                                  if self.parent else TreeEnvironment())
-            for key, value in self.value.iteritems():
+            for key, value in iteritems(self.value):
                 if isinstance(value, list):
                     if (key in self._environment and
                             isinstance(self._environment[key], list)):
@@ -408,7 +410,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
         self.yaml = srcyaml
         self.node = node
         self.yaml_per_key = {}
-        for key, value in values.iteritems():
+        for key, value in iteritems(values):
             self[key] = value
 
     def __setitem__(self, key, value):
@@ -434,7 +436,7 @@ class ValueDict(dict):  # only container pylint: disable=R0903
 
     def iteritems(self):
         """ Slower implementation with the use of __getitem__ """
-        for key in self.iterkeys():
+        for key in iterkeys(self):
             yield key, self[key]
         raise StopIteration
 
@@ -525,13 +527,13 @@ def tree_view(root, verbose=None, use_utf8=None):
             right = charset['Right']
         out = [node.name]
         if verbose >= 2 and node.is_leaf:
-            values = itertools.chain(node.environment.iteritems(),
+            values = itertools.chain(iteritems(node.environment),
                                      [("filter-only", _)
                                       for _ in node.environment.filter_only],
                                      [("filter-out", _)
                                       for _ in node.environment.filter_out])
         elif verbose in (1, 3):
-            values = itertools.chain(node.value.iteritems(),
+            values = itertools.chain(iteritems(node.value),
                                      [("filter-only", _)
                                       for _ in node.filters[0]],
                                      [("filter-out", _)
@@ -586,9 +588,9 @@ def tree_view(root, verbose=None, use_utf8=None):
         right = charset['Right']
     out = []
     if (verbose >= 2) and root.is_leaf:
-        values = root.environment.iteritems()
+        values = iteritems(root.environment)
     elif verbose in (1, 3):
-        values = root.value.iteritems()
+        values = iteritems(root.value)
     else:
         values = None
     if values:

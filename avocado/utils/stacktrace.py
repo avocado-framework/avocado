@@ -7,7 +7,7 @@ import inspect
 import pickle
 from pprint import pformat
 
-from six import string_types
+from six import string_types, iteritems
 
 
 def tb_info(exc_info):
@@ -84,7 +84,7 @@ def analyze_unpickable_item(path_prefix, obj):
             subitems = enumerate(obj.__iter__())
             path_prefix += "<%s>"
         elif hasattr(obj, "__dict__"):
-            subitems = obj.__dict__.iteritems()
+            subitems = iteritems(obj.__dict__)
             path_prefix += ".%s"
         else:
             return [(path_prefix, obj)]

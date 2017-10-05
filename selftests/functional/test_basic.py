@@ -15,8 +15,10 @@ import unittest
 import psutil
 import pkg_resources
 
-from lxml import etree
 from StringIO import StringIO
+
+from lxml import etree
+from six import iteritems
 
 from avocado.core import exit_codes
 from avocado.utils import astring
@@ -169,7 +171,7 @@ class RunnerOperationTest(unittest.TestCase):
                    'data_dir': os.path.join(base_dir, 'data'),
                    'logs_dir': os.path.join(base_dir, 'logs')}
         config = '[datadir.paths]'
-        for key, value in mapping.iteritems():
+        for key, value in iteritems(mapping):
             if not os.path.isdir(value):
                 os.mkdir(value)
             config += "%s = %s\n" % (key, value)

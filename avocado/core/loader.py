@@ -25,6 +25,8 @@ import re
 import shlex
 import sys
 
+from six import iteritems
+
 from . import data_dir
 from . import output
 from . import test
@@ -155,7 +157,7 @@ class TestLoaderProxy(object):
             # Using __func__ to avoid problem with different term_supp instances
             healthy_func = getattr(output.TERM_SUPPORT.healthy_str, '__func__')
             types = [mapping[_[0]]
-                     for _ in plugin.get_decorator_mapping().iteritems()
+                     for _ in iteritems(plugin.get_decorator_mapping())
                      if _[1].__func__ is healthy_func]
             return [name + '.' + _ for _ in types]
 
@@ -553,7 +555,7 @@ class FileLoader(TestLoader):
                     if not isinstance(tst[0], str):
                         return None
             else:
-                test_class = (key for key, value in mapping.iteritems()
+                test_class = (key for key, value in iteritems(mapping)
                               if value == self.test_type).next()
                 for tst in tests:
                     if (isinstance(tst[0], str) or
@@ -817,7 +819,7 @@ class FileLoader(TestLoader):
         result = []
         class_methods = safeloader.find_class_and_methods(test_path,
                                                           _RE_UNIT_TEST)
-        for klass, methods in class_methods.iteritems():
+        for klass, methods in iteritems(class_methods):
             if klass in disabled:
                 continue
             if test_path.endswith(".py"):
