@@ -12,6 +12,13 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+
+# This should generate pylint error
+import collection
+
+
+
+
 """
 The core Avocado application.
 """
