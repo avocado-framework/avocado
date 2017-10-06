@@ -2,8 +2,10 @@ import os
 import shutil
 import tempfile
 import unittest
-
-from flexmock import flexmock, flexmock_teardown
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from avocado.core import test, exceptions
 from avocado.utils import astring, script
@@ -26,8 +28,20 @@ class TestClassTestUnit(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
+    def _get_fake_filename_test(self, name):
+
+        class FakeFilename(test.Test):
+            @property
+            def filename(self):
+                return name
+
+            def test(self):
+                pass
+
+        tst_id = test.TestID("test", name=name)
+        return FakeFilename("test", tst_id, base_logdir=self.tmpdir)
+
     def tearDown(self):
-        flexmock_teardown()
         shutil.rmtree(self.tmpdir)
 
     def test_ugly_name(self):
@@ -81,12 +95,22 @@ class TestClassTestUnit(unittest.TestCase):
 
         self.assertEqual(os.path.basename(tst.workdir),
                          os.path.basename(tst.logdir))
-        flexmock(tst)
-        tst.should_receive('filename').and_return(os.path.join(self.tmpdir,
-                                                               "a"*250))
-        self.assertEqual(os.path.join(self.tmpdir, "a"*250 + ".data"),
+
+    def test_data_dir(self):
+        """
+        Tests that a valid datadir exists follwowing the test filename
+        """
+        max_length_name = os.path.join(self.tmpdir, "a" * 250)
+        tst = self._get_fake_filename_test(max_length_name)
+        self.assertEqual(os.path.join(self.tmpdir, max_length_name + ".data"),
                          tst.datadir)
-        tst.should_receive('filename').and_return("a"*251)
+
+    def test_no_data_dir(self):
+        """
+        Tests that with a filename too long, no datadir is possible
+        """
+        above_limit_name = os.path.join(self.tmpdir, "a" * 251)
+        tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.datadir)
         tst._record_reference_stdout       # Should does nothing
         tst._record_reference_stderr       # Should does nothing
@@ -94,10 +118,9 @@ class TestClassTestUnit(unittest.TestCase):
         tst._record_reference_stderr()
 
     def test_all_dirs_exists_no_hang(self):
-        flexmock(os.path)
-        os.path.should_receive('exists').and_return(True)
-        self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
-                          test.TestID(1, "name"), base_logdir=self.tmpdir)
+        with mock.patch('os.path.exists', return_value=True):
+            self.assertRaises(exceptions.TestSetupFail, self.DummyTest, "test",
+                              test.TestID(1, "name"), base_logdir=self.tmpdir)
 
     def test_try_override_test_variable(self):
         test = self.DummyTest(base_logdir=self.tmpdir)
