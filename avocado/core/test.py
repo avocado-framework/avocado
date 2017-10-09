@@ -28,6 +28,8 @@ import sys
 import time
 import unittest
 
+from six import string_types
+
 from . import data_dir
 from . import exceptions
 from . import varianter
@@ -119,7 +121,7 @@ class TestID(object):
         return repr(str(self))
 
     def __eq__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, string_types):
             return str(self) == other
         else:
             return self.__dict__ == other.__dict__

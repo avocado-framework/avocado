@@ -1,4 +1,7 @@
+import sys
 import unittest
+
+from six import PY2
 
 from avocado.utils import astring
 
@@ -40,6 +43,11 @@ class AstringTest(unittest.TestCase):
                          "333 333 333\n"
                          "4   4   4   4444")
 
+    # This could be a skip based on the Python version, but this is more
+    # specific to the exact reason why it does/doesn't make sense to run it
+    @unittest.skipUnless(sys.getdefaultencoding() == 'ascii',
+                         "Test verifies conversion behavior of between ascii "
+                         "and utf-8 only")
     def test_unicode_tabular(self):
         """
         Verifies tabular can handle utf-8 chars properly
@@ -67,6 +75,10 @@ class AstringTest(unittest.TestCase):
                          "a__________b")
         self.assertEqual(astring.string_to_safe_path('..'), "_.")
         self.assertEqual(len(astring.string_to_safe_path(" " * 300)), 255)
+        if PY2:
+            self.assertRaises(TypeError,
+                              astring.string_to_safe_path,
+                              unicode("foo"))
 
 
 if __name__ == '__main__':
