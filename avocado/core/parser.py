@@ -121,6 +121,14 @@ class Parser(object):
             description='valid subcommands',
             help='subcommand help',
             dest='subcommand')
+        # On Python 2, required doesn't make a difference because a
+        # subparser is considered an unconsumed positional arguments,
+        # and not providing one will error with a "too few arguments"
+        # message.  On Python 3, required arguments are used instead.
+        # Unfortunately, there's no way to pass this as an option when
+        # constructing the sub parsers, but it is possible to set that
+        # option afterwards.
+        self.subcommands.required = True
 
         # Allow overriding default params by plugins
         variants = varianter.Varianter(getattr(self.args, "mux-debug", False))
