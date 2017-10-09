@@ -29,6 +29,8 @@ import itertools
 import re
 import string
 
+from six import string_types
+
 
 #: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
 FS_UNSAFE_CHARS = '<>:"/\\|?*'
@@ -224,7 +226,7 @@ def string_safe_encode(input_str):
                       be turned into a string
     :returns: a utf-8 encoded ascii stream
     """
-    if not isinstance(input_str, basestring):
+    if not isinstance(input_str, string_types):
         input_str = str(input_str)
     try:
         return input_str.encode("utf-8")
