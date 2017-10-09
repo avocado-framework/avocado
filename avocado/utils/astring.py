@@ -29,8 +29,8 @@ import itertools
 import re
 import string
 
-from six import string_types
-
+from six import string_types, PY3
+from six.moves import zip, xrange
 
 #: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
 FS_UNSAFE_CHARS = '<>:"/\\|?*'
@@ -177,7 +177,9 @@ def iter_tabular_output(matrix, header=None):
         len_matrix.append([])
         str_matrix.append([string_safe_encode(column) for column in row])
         for i, column in enumerate(str_matrix[-1]):
-            col_len = len(strip_console_codes(column.decode("utf-8")))
+            if not PY3:
+                column = column.decode("utf-8")
+            col_len = len(strip_console_codes(column))
             len_matrix[-1].append(col_len)
             try:
                 max_len = lengths[i]
@@ -189,11 +191,11 @@ def iter_tabular_output(matrix, header=None):
         # but later in `yield` we don't want it in `len_matrix`
         len_matrix[-1] = len_matrix[-1][:-1]
 
-    for row, row_lens in itertools.izip(str_matrix, len_matrix):
+    for row, row_lens in zip(str_matrix, len_matrix):
         out = []
         padding = [" " * (lengths[i] - row_lens[i])
                    for i in xrange(len(row_lens))]
-        out = ["%s%s" % line for line in itertools.izip(row, padding)]
+        out = ["%s%s" % line for line in zip(row, padding)]
         try:
             out.append(row[-1])
         except IndexError:
@@ -222,12 +224,21 @@ def string_safe_encode(input_str):
     People tend to mix unicode streams with encoded strings. This function
     tries to replace any input with a valid utf-8 encoded ascii stream.
 
+    On Python 3, it's a terrible idea to try to mess with encodings,
+    so this function is limited to converting other types into
+    strings, such as numeric values that are often the members of a
+    matrix.
+
     :param input_str: possibly unsafe string or other object that can
                       be turned into a string
     :returns: a utf-8 encoded ascii stream
     """
     if not isinstance(input_str, string_types):
         input_str = str(input_str)
+
+    if PY3:
+        return input_str
+
     try:
         return input_str.encode("utf-8")
     except UnicodeDecodeError:
