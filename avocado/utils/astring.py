@@ -32,11 +32,6 @@ import string
 from six import string_types, PY3
 from six.moves import zip, xrange
 
-#: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
-FS_UNSAFE_CHARS = '<>:"/\\|?*'
-#: Translate table to replace fs-unfriendly chars
-FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, "_" * len(FS_UNSAFE_CHARS))
-
 
 def bitlist_to_string(data):
     """
@@ -249,6 +244,13 @@ def string_to_safe_path(input_str):
     """
     Convert string to a valid file/dir name.
 
+    This takes a string that may contain characters that are not allowed on
+    FAT (Windows) filesystems and/or ext3 (Linux) filesystems, and replaces
+    them for safe (boring) underlines.
+
+    It limits the size of the path to be under 255 chars, and make hidden
+    paths (starting with ".") non-hidden by making them start with "_".
+
     :param input_str: String to be converted
     :return: String which is safe to pass as a file/dir name (on recent fs)
     """
@@ -256,9 +258,9 @@ def string_to_safe_path(input_str):
         input_str = "_" + input_str[1:255]
     elif len(input_str) > 255:
         input_str = input_str[:255]
-    try:
-        return string.translate(input_str, FS_TRANSLATE)
-    except UnicodeDecodeError:
-        for bad_chr in FS_UNSAFE_CHARS:
-            input_str = input_str.replace(bad_chr, "_")
-    return input_str
+
+    if PY3:
+        maketrans = bytes.maketrans
+    else:
+        maketrans = string.maketrans
+    return input_str.translate(maketrans(b'<>:"/\|?*', b'_________'))

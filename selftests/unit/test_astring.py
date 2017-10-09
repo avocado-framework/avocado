@@ -1,6 +1,8 @@
 import sys
 import unittest
 
+from six import PY2
+
 from avocado.utils import astring
 
 
@@ -73,6 +75,10 @@ class AstringTest(unittest.TestCase):
                          "a__________b")
         self.assertEqual(astring.string_to_safe_path('..'), "_.")
         self.assertEqual(len(astring.string_to_safe_path(" " * 300)), 255)
+        if PY2:
+            self.assertRaises(TypeError,
+                              astring.string_to_safe_path,
+                              unicode("foo"))
 
 
 if __name__ == '__main__':
