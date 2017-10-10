@@ -18,6 +18,8 @@ Avocado application command line parsing.
 
 import argparse
 
+from six import iteritems
+
 from . import exit_codes
 from . import varianter
 from . import settings
@@ -80,8 +82,8 @@ class Parser(object):
         self.application.add_argument('--config', metavar='CONFIG_FILE',
                                       nargs='?',
                                       help='Use custom configuration from a file')
-        streams = (['"%s": %s' % _ for _ in BUILTIN_STREAMS.iteritems()] +
-                   ['"%s": %s' % _ for _ in BUILTIN_STREAM_SETS.iteritems()])
+        streams = (['"%s": %s' % _ for _ in iteritems(BUILTIN_STREAMS)] +
+                   ['"%s": %s' % _ for _ in iteritems(BUILTIN_STREAM_SETS)])
         streams = "; ".join(streams)
         self.application.add_argument('--show', action="store",
                                       type=lambda value: value.split(","),

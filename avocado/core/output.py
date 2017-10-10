@@ -21,7 +21,7 @@ import os
 import re
 import sys
 
-from six import string_types
+from six import string_types, iterkeys
 
 from . import exit_codes
 from ..utils import path as utils_path
@@ -437,7 +437,7 @@ def reconfigure(args):
             disable_log_handler(LOG_UI.getChild("debug"))
 
     # Add custom loggers
-    for name in [_ for _ in enabled if _ not in BUILTIN_STREAMS.iterkeys()]:
+    for name in [_ for _ in enabled if _ not in iterkeys(BUILTIN_STREAMS)]:
         stream_level = re.split(r'(?<!\\):', name, maxsplit=1)
         name = stream_level[0]
         if len(stream_level) == 1:

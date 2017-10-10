@@ -22,6 +22,8 @@ Multiplex and create variants.
 import hashlib
 import re
 
+from six import iterkeys, iteritems, itervalues
+
 from . import tree
 from . import dispatcher
 from . import output
@@ -75,9 +77,9 @@ class AvocadoParams(object):
         self._default_params = default_params
 
     def __eq__(self, other):
-        if set(self.__dict__.iterkeys()) != set(other.__dict__.iterkeys()):
+        if set(iterkeys(self.__dict__)) != set(iterkeys(other.__dict__)):
             return False
-        for attr in self.__dict__.iterkeys():
+        for attr in iterkeys(self.__dict__):
             if (getattr(self, attr) != getattr(other, attr)):
                 return False
         return True
@@ -229,11 +231,11 @@ class AvocadoParams(object):
         """
         env = []
         for param in self._rel_paths:
-            for path, key, value in param.iteritems():
+            for path, key, value in iteritems(param):
                 if (path, key) not in env:
                     env.append((path, key))
                     yield (path, key, value)
-        for path, key, value in self._abs_path.iteritems():
+        for path, key, value in iteritems(self._abs_path):
             if (path, key) not in env:
                 env.append((path, key))
                 yield (path, key, value)
@@ -306,7 +308,7 @@ class AvocadoParam(object):
         which generates lots of duplicate entries due to inherited values.
         """
         for leaf in self._leaves:
-            for key, value in leaf.environment.iteritems():
+            for key, value in iteritems(leaf.environment):
                 yield (leaf.environment.origin[key].path, key, value)
 
 
@@ -362,7 +364,7 @@ def variant_to_str(variant, verbosity, out_args=None, debug=False):
     if verbosity:
         env = set()
         for node in variant["variant"]:
-            for key, value in node.environment.iteritems():
+            for key, value in iteritems(node.environment):
                 origin = node.environment.origin[key].path
                 env.add(("%s:%s" % (origin, key), str(value)))
         if not env:
@@ -383,7 +385,7 @@ def dump_ivariants(ivariants):
         """
         return (str(node.path),
                 [(str(node.environment.origin[key].path), str(key), value)
-                 for key, value in node.environment.iteritems()])
+                 for key, value in iteritems(node.environment)])
 
     variants = []
     for variant in ivariants():
@@ -429,7 +431,7 @@ class FakeVariantDispatcher(object):
                                                 paths))
             env = set()
             for node in variant["variant"]:
-                for key, value in node.environment.iteritems():
+                for key, value in iteritems(node.environment):
                     origin = node.environment.origin[key].path
                     env.add(("%s:%s" % (origin, key), str(value)))
             if not env:
@@ -487,7 +489,7 @@ class Varianter(object):
         :param args: Parsed cmdline arguments
         """
         default_params = self.node_class()
-        for default_param in self.default_params.itervalues():
+        for default_param in itervalues(self.default_params):
             default_params.merge(default_param)
         self._default_params = default_params
         self.default_params.clear()     # We don't need these anymore

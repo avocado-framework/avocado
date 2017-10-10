@@ -19,7 +19,9 @@ Avocado Plugin to propagate Job results to Resultsdb
 import os
 import sys
 import time
+
 import resultsdb_api
+from six import iteritems
 
 from avocado.core.plugin_interfaces import CLI, ResultEvents
 from avocado.core.settings import settings
@@ -105,7 +107,7 @@ class ResultsdbResult(ResultEvents):
                 'status': state['status']}
 
         params = {}
-        for param in state['params'].iteritems():
+        for param in iteritems(state['params']):
             params['param %s' % param[1]] = '%s (path: %s)' % (param[2],
                                                                param[0])
         data.update(params)

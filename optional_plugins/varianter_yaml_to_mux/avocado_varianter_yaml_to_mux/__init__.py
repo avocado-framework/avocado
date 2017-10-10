@@ -20,6 +20,8 @@ import os
 import re
 import sys
 
+from six import iteritems
+
 from avocado.core import tree, exit_codes, mux, varianter
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
@@ -156,7 +158,7 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
 
         def node_content_from_dict(node, values, using):
             """Processes dict values into the current node content"""
-            for key, value in values.iteritems():
+            for key, value in iteritems(values):
                 if isinstance(key, mux.Control):
                     if key.code == YAML_USING:
                         using = handle_control_tag_using(name, using, value)

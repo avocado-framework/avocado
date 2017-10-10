@@ -465,7 +465,7 @@ class MemInfo(object):
                 setattr(self, safe_name, _MemInfoItem(name))
 
     def __iter__(self):
-        for _, item in self.__dict__.iteritems():
+        for item in self.__dict__.items():
             yield item
 
 

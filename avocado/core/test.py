@@ -28,7 +28,7 @@ import sys
 import time
 import unittest
 
-from six import string_types
+from six import string_types, iteritems
 
 from . import data_dir
 from . import exceptions
@@ -588,7 +588,7 @@ class Test(unittest.TestCase):
             sys.stderr.rm_logger(LOG_JOB.getChild("stderr"))
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.rm_logger(LOG_JOB.getChild("stdout"))
-        for name, handler in self._logging_handlers.iteritems():
+        for name, handler in iteritems(self._logging_handlers):
             logging.getLogger(name).removeHandler(handler)
 
     def _record_reference_stdout(self):
@@ -670,7 +670,7 @@ class Test(unittest.TestCase):
                 test_exception = details
                 self.log.debug("Local variables:")
                 local_vars = inspect.trace()[1][0].f_locals
-                for key, value in local_vars.iteritems():
+                for key, value in iteritems(local_vars):
                     self.log.debug(' -> %s %s: %s', key, type(value), value)
         finally:
             try:
@@ -934,7 +934,7 @@ class SimpleTest(Test):
         """
         try:
             test_params = dict([(str(key), str(val)) for _, key, val in
-                                self.params.iteritems()])
+                                iteritems(self.params)])
 
             # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(self._command, verbose=True,
@@ -1099,7 +1099,7 @@ class DryRunTest(MockingTest):
 
     def setUp(self):
         self.log.info("Test params:")
-        for path, key, value in self.params.iteritems():
+        for path, key, value in iteritems(self.params):
             self.log.info("%s:%s ==> %s", path, key, value)
         self.cancel('Test cancelled due to --dry-run')
 

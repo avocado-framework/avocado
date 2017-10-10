@@ -26,6 +26,8 @@ import time
 import pkg_resources
 import pystache
 
+from six import iteritems
+
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
@@ -125,7 +127,7 @@ class ReportModel(object):
             params = ''
             try:
                 parameters = 'Params:\n'
-                for path, key, value in tst['params'].iteritems():
+                for path, key, value in iteritems(tst['params']):
                     parameters += '  %s:%s => %s\n' % (path, key, value)
             except KeyError:
                 pass
