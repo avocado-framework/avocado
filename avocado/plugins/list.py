@@ -14,6 +14,7 @@
 
 import sys
 
+from six import string_types
 
 from avocado.core import exit_codes, output
 from avocado.core import loader
@@ -62,7 +63,7 @@ class TestLister(object):
             stats[value.lower()] = 0
 
         for cls, params in test_suite:
-            if isinstance(cls, basestring):
+            if isinstance(cls, string_types):
                 cls = test.Test
             type_label = type_label_mapping[cls]
             decorator = decorator_mapping[cls]

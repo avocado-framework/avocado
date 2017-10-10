@@ -162,7 +162,7 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
 
     :param base_dir: Base log directory, if `None`, use value from configuration.
     :param unique_id: The unique identification. If `None`, create one.
-    :rtype: basestring
+    :rtype: str
     """
     start_time = time.strftime('%Y-%m-%dT%H.%M')
     if base_dir is None:

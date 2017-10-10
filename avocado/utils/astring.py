@@ -29,11 +29,9 @@ import itertools
 import re
 import string
 
-
-#: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
-FS_UNSAFE_CHARS = '<>:"/\\|?*'
-#: Translate table to replace fs-unfriendly chars
-FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, "_" * len(FS_UNSAFE_CHARS))
+from six import string_types, PY3
+from six.moves import zip
+from six.moves import xrange as range
 
 
 def bitlist_to_string(data):
@@ -175,7 +173,9 @@ def iter_tabular_output(matrix, header=None):
         len_matrix.append([])
         str_matrix.append([string_safe_encode(column) for column in row])
         for i, column in enumerate(str_matrix[-1]):
-            col_len = len(strip_console_codes(column.decode("utf-8")))
+            if not PY3:
+                column = column.decode("utf-8")
+            col_len = len(strip_console_codes(column))
             len_matrix[-1].append(col_len)
             try:
                 max_len = lengths[i]
@@ -187,11 +187,11 @@ def iter_tabular_output(matrix, header=None):
         # but later in `yield` we don't want it in `len_matrix`
         len_matrix[-1] = len_matrix[-1][:-1]
 
-    for row, row_lens in itertools.izip(str_matrix, len_matrix):
+    for row, row_lens in zip(str_matrix, len_matrix):
         out = []
         padding = [" " * (lengths[i] - row_lens[i])
-                   for i in xrange(len(row_lens))]
-        out = ["%s%s" % line for line in itertools.izip(row, padding)]
+                   for i in range(len(row_lens))]
+        out = ["%s%s" % line for line in zip(row, padding)]
         try:
             out.append(row[-1])
         except IndexError:
@@ -220,12 +220,21 @@ def string_safe_encode(input_str):
     People tend to mix unicode streams with encoded strings. This function
     tries to replace any input with a valid utf-8 encoded ascii stream.
 
+    On Python 3, it's a terrible idea to try to mess with encodings,
+    so this function is limited to converting other types into
+    strings, such as numeric values that are often the members of a
+    matrix.
+
     :param input_str: possibly unsafe string or other object that can
                       be turned into a string
     :returns: a utf-8 encoded ascii stream
     """
-    if not isinstance(input_str, basestring):
+    if not isinstance(input_str, string_types):
         input_str = str(input_str)
+
+    if PY3:
+        return input_str
+
     try:
         return input_str.encode("utf-8")
     except UnicodeDecodeError:
@@ -236,6 +245,13 @@ def string_to_safe_path(input_str):
     """
     Convert string to a valid file/dir name.
 
+    This takes a string that may contain characters that are not allowed on
+    FAT (Windows) filesystems and/or ext3 (Linux) filesystems, and replaces
+    them for safe (boring) underlines.
+
+    It limits the size of the path to be under 255 chars, and make hidden
+    paths (starting with ".") non-hidden by making them start with "_".
+
     :param input_str: String to be converted
     :return: String which is safe to pass as a file/dir name (on recent fs)
     """
@@ -243,9 +259,9 @@ def string_to_safe_path(input_str):
         input_str = "_" + input_str[1:255]
     elif len(input_str) > 255:
         input_str = input_str[:255]
-    try:
-        return string.translate(input_str, FS_TRANSLATE)
-    except UnicodeDecodeError:
-        for bad_chr in FS_UNSAFE_CHARS:
-            input_str = input_str.replace(bad_chr, "_")
-    return input_str
+
+    if PY3:
+        maketrans = bytes.maketrans
+    else:
+        maketrans = string.maketrans
+    return input_str.translate(maketrans(b'<>:"/\|?*', b'_________'))
