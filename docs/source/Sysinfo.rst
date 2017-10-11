@@ -26,6 +26,9 @@ the sysinfo collection. Avocado supports three types of tasks:
 Additionally this plugin tries to follow the system log via ``journalctl``
 if available.
 
+By default these are collected per-job but you can also run them per-test by
+setting ``per_test = True`` in the ``sysinfo.collect`` section.
+
 The sysinfo can also be enabled/disabled on the cmdline if needed by
 ``--sysinfo on|off``.
 
