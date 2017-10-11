@@ -271,4 +271,10 @@ def string_to_safe_path(input_str):
     elif len(input_str) > 255:
         input_str = input_str[:255]
 
-    return input_str.translate(_FS_TRANSLATE)
+    try:
+        return input_str.translate(_FS_TRANSLATE)
+    except TypeError:
+        # Deal with incorrect encodings
+        for bad_chr in FS_UNSAFE_CHARS:
+            input_str = input_str.replace(bad_chr, "_")
+        return input_str
