@@ -19,6 +19,7 @@ from StringIO import StringIO
 
 from lxml import etree
 from six import iteritems
+from six.moves import xrange as range
 
 from avocado.core import exit_codes
 from avocado.utils import astring
@@ -508,7 +509,7 @@ class RunnerOperationTest(unittest.TestCase):
         avocado_process = process.SubProcess(cmd_line)
         avocado_process.start()
         link = os.path.join(self.tmpdir, 'latest')
-        for trial in xrange(0, 50):
+        for trial in range(0, 50):
             time.sleep(0.1)
             if os.path.exists(link) and os.path.islink(link):
                 avocado_process.wait()
@@ -529,7 +530,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result['job_id'], u'0' * 40)
         # Check if all tests were skipped
         self.assertEqual(result['cancel'], 4)
-        for i in xrange(4):
+        for i in range(4):
             test = result['tests'][i]
             self.assertEqual(test['fail_reason'],
                              u'Test cancelled due to --dry-run')
