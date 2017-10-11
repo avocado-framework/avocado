@@ -25,7 +25,7 @@ import re
 import shlex
 import sys
 
-from six import iteritems
+from six import string_types, iteritems
 
 from . import data_dir
 from . import output
@@ -321,7 +321,7 @@ class TestLoaderProxy(object):
             test_path = test_parameters.pop('modulePath')
         else:
             test_path = None
-        if isinstance(test_class, str):
+        if isinstance(test_class, string_types):
             module_name = os.path.basename(test_path).split('.')[0]
             test_module_dir = os.path.abspath(os.path.dirname(test_path))
             # Tests with local dir imports need this
@@ -551,13 +551,13 @@ class FileLoader(TestLoader):
                 # Instrumented tests are defined as string and loaded at the
                 # execution time.
                 for tst in tests:
-                    if not isinstance(tst[0], str):
+                    if not isinstance(tst[0], string_types):
                         return None
             else:
                 test_class = next(key for key, value in iteritems(mapping)
                                   if value == self.test_type)
                 for tst in tests:
-                    if (isinstance(tst[0], str) or
+                    if (isinstance(tst[0], string_types) or
                             not issubclass(tst[0], test_class)):
                         return None
         return tests
@@ -844,7 +844,7 @@ class FileLoader(TestLoader):
             if avocado_tests:
                 test_factories = []
                 for test_class, info in avocado_tests.items():
-                    if isinstance(test_class, str):
+                    if isinstance(test_class, string_types):
                         for test_method, tags in info:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
