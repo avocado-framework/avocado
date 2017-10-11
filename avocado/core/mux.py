@@ -95,7 +95,8 @@ class MuxTree(object):
                 pools.append([pool])
         variants = itertools.product(*pools)
         while True:
-            yield list(itertools.chain(*variants.next()))
+            n = next(variants)
+            yield list(itertools.chain(*n))
 
     @staticmethod
     def _valid_variant(variant):

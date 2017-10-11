@@ -45,7 +45,8 @@ class MuxTree(mux.MuxPlugin):
         while True:
             # TODO: Implement 2nd level filters here
             # TODO: This part takes most of the time, optimize it
-            yield list(itertools.chain(*pools.next()))
+            n = next(pools)
+            yield list(itertools.chain(*n))
 
 
 class AvocadoParams(varianter.AvocadoParams):
