@@ -601,7 +601,10 @@ class SysInfo(object):
         Logging hook called before a test starts.
         """
         for log in self.start_test_collectibles:
-            log.run(self.pre_dir)
+            if isinstance(log, Daemon):  # log daemons in profile directory
+                log.run(self.profile_dir)
+            else:
+                log.run(self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
