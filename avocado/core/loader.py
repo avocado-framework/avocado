@@ -647,7 +647,8 @@ class FileLoader(TestLoader):
         if os.path.isdir(path):
             path = os.path.join(path, "__init__.py")
 
-        mod = ast.parse(open(path).read(), path)
+        with open(path) as source_file:
+            mod = ast.parse(source_file.read(), path)
 
         for statement in mod.body:
             # Looking for a 'from avocado import Test'
