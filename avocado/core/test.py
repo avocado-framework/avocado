@@ -28,6 +28,7 @@ import sys
 import time
 import unittest
 
+from difflib import unified_diff
 from six import string_types, iteritems
 
 from . import data_dir
@@ -718,18 +719,56 @@ class Test(unittest.TestCase, TestData):
         if expected_path is not None:
             expected = genio.read_file(expected_path)
             actual = genio.read_file(self._stdout_file)
-            msg = ('Actual test sdtout differs from expected one:\n'
-                   'Actual:\n%s\nExpected:\n%s' % (actual, expected))
-            self.assertEqual(expected, actual, msg)
+
+            stdout_diff = os.path.join(self.logdir, 'stdout.diff')
+
+            fmt = '%(message)s'
+            formatter = logging.Formatter(fmt=fmt)
+            log_stdout_diff = LOG_JOB.getChild("stdout_diff")
+            self._register_log_file_handler(log_stdout_diff,
+                                            formatter,
+                                            stdout_diff)
+
+            diff = unified_diff(expected.splitlines(), actual.splitlines(),
+                                fromfile=expected_path,
+                                tofile=self._stdout_file)
+            diff_content = []
+            for diff_line in diff:
+                diff_content.append(diff_line.rstrip('\n'))
+
+            if diff_content:
+                self.log.debug('Stdout Diff:')
+                for line in diff_content:
+                    log_stdout_diff.debug(line)
+                self.fail('Actual test sdtout differs from expected one')
 
     def _check_reference_stderr(self):
         expected_path = self.get_data('stderr.expected')
         if expected_path is not None:
             expected = genio.read_file(expected_path)
             actual = genio.read_file(self._stderr_file)
-            msg = ('Actual test sdterr differs from expected one:\n'
-                   'Actual:\n%s\nExpected:\n%s' % (actual, expected))
-            self.assertEqual(expected, actual, msg)
+
+            stderr_diff = os.path.join(self.logdir, 'stderr.diff')
+
+            fmt = '%(message)s'
+            formatter = logging.Formatter(fmt=fmt)
+            log_stderr_diff = LOG_JOB.getChild("stderr_diff")
+            self._register_log_file_handler(log_stderr_diff,
+                                            formatter,
+                                            stderr_diff)
+
+            diff = unified_diff(expected.splitlines(), actual.splitlines(),
+                                fromfile=expected_path,
+                                tofile=self._stderr_file)
+            diff_content = []
+            for diff_line in diff:
+                diff_content.append(diff_line.rstrip('\n'))
+
+            if diff_content:
+                self.log.debug('Stderr Diff:')
+                for line in diff_content:
+                    log_stderr_diff.debug(line)
+                self.fail('Actual test sdterr differs from expected one')
 
     def _run_avocado(self):
         """
