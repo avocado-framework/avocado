@@ -224,8 +224,8 @@ class TestMuxTree(unittest.TestCase):
         mux2.initialize_mux(tree2, "", False)
         mux1.update_defaults(tree.TreeNode())
         mux2.update_defaults(tree.TreeNode())
-        variant1 = iter(mux1).next()
-        variant2 = iter(mux2).next()
+        variant1 = next(iter(mux1))
+        variant2 = next(iter(mux2))
         self.assertNotEqual(variant1, variant2)
         self.assertEqual(str(variant1), "{'mux_path': '', 'variant': "
                          "[TreeNode(name='child1'), TreeNode(name="
@@ -292,11 +292,11 @@ class TestAvocadoParams(unittest.TestCase):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                               'selftests/.data/mux-selftest-params.yaml'])
         self.yamls = iter(mux.MuxTree(yamls))
-        self.params1 = varianter.AvocadoParams(self.yamls.next(), 'Unittest1',
+        self.params1 = varianter.AvocadoParams(next(self.yamls), 'Unittest1',
                                                ['/ch0/*', '/ch1/*'], {})
-        self.yamls.next()    # Skip 2nd
-        self.yamls.next()    # and 3rd
-        self.params2 = varianter.AvocadoParams(self.yamls.next(), 'Unittest2',
+        next(self.yamls)    # Skip 2nd
+        next(self.yamls)    # and 3rd
+        self.params2 = varianter.AvocadoParams(next(self.yamls), 'Unittest2',
                                                ['/ch1/*', '/ch0/*'], {})
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")

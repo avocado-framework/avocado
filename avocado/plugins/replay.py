@@ -18,6 +18,8 @@ import os
 import re
 import sys
 
+from six.moves import xrange as range
+
 from avocado.core import exit_codes
 from avocado.core import jobdata
 from avocado.core import status
@@ -129,7 +131,7 @@ class Replay(CLI):
         # Now add _tests that were not executed
         skipped_test = {"test": "UNKNOWN", "status": "INTERRUPTED"}
         return [_tests[i] if i in _tests else skipped_test
-                for i in xrange(1, max(max_index, no_tests) + 1)]
+                for i in range(1, max(max_index, no_tests) + 1)]
 
     def _create_replay_map(self, resultsdir, replay_filter):
         """
@@ -143,7 +145,7 @@ class Replay(CLI):
             with open(json_results, 'r') as json_file:
                 results = json.loads(json_file.read())
                 tests = results["tests"]
-                for _ in xrange(results["total"] + 1 - len(tests)):
+                for _ in range(results["total"] + 1 - len(tests)):
                     tests.append({"test": "UNKNOWN", "status": "INTERRUPTED"})
         else:
             # get partial results from tap

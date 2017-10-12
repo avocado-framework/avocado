@@ -25,13 +25,12 @@ import re
 import shlex
 import sys
 
-from six import iteritems
+from six import string_types, iteritems
 
 from . import data_dir
 from . import output
 from . import test
 from . import safeloader
-from ..utils import path
 from ..utils import stacktrace
 from .settings import settings
 from .output import LOG_UI
@@ -322,7 +321,7 @@ class TestLoaderProxy(object):
             test_path = test_parameters.pop('modulePath')
         else:
             test_path = None
-        if isinstance(test_class, str):
+        if isinstance(test_class, string_types):
             module_name = os.path.basename(test_path).split('.')[0]
             test_module_dir = os.path.abspath(os.path.dirname(test_path))
             # Tests with local dir imports need this
@@ -373,11 +372,11 @@ class TestLoader(object):
                        "'allowed_test_types' in the plugin."
                        % (self.name, self.name, self.name, types))
                 raise LoaderError(msg)
-            elif mapping.itervalues().next() != types:
+            elif next(mapping.itervalues()) != types:
                 raise LoaderError("Loader '%s' doesn't support test type '%s',"
                                   " it supports only '%s'"
                                   % (self.name, types,
-                                     mapping.itervalues().next()))
+                                     next(mapping.itervalues())))
         if "loader_options" in extra_params:
             raise LoaderError("Loader '%s' doesn't support 'loader_options', "
                               "please don't use --loader %s:%s"
@@ -552,13 +551,13 @@ class FileLoader(TestLoader):
                 # Instrumented tests are defined as string and loaded at the
                 # execution time.
                 for tst in tests:
-                    if not isinstance(tst[0], str):
+                    if not isinstance(tst[0], string_types):
                         return None
             else:
-                test_class = (key for key, value in iteritems(mapping)
-                              if value == self.test_type).next()
+                test_class = next(key for key, value in iteritems(mapping)
+                                  if value == self.test_type)
                 for tst in tests:
-                    if (isinstance(tst[0], str) or
+                    if (isinstance(tst[0], string_types) or
                             not issubclass(tst[0], test_class)):
                         return None
         return tests
@@ -648,7 +647,8 @@ class FileLoader(TestLoader):
         if os.path.isdir(path):
             path = os.path.join(path, "__init__.py")
 
-        mod = ast.parse(open(path).read(), path)
+        with open(path) as source_file:
+            mod = ast.parse(source_file.read(), path)
 
         for statement in mod.body:
             # Looking for a 'from avocado import Test'
@@ -844,7 +844,7 @@ class FileLoader(TestLoader):
             if avocado_tests:
                 test_factories = []
                 for test_class, info in avocado_tests.items():
-                    if isinstance(test_class, str):
+                    if isinstance(test_class, string_types):
                         for test_method, tags in info:
                             name = test_name + \
                                 ':%s.%s' % (test_class, test_method)
@@ -928,8 +928,7 @@ class FileLoader(TestLoader):
             if os.access(test_path, os.R_OK) is False:
                 return make_broken(AccessDeniedPath, test_path, "Is not "
                                    "readable")
-            path_analyzer = path.PathInspector(test_path)
-            if path_analyzer.is_python():
+            if test_path.endswith('.py'):
                 return self._make_existing_file_tests(test_path, make_broken,
                                                       subtests_filter)
             else:
