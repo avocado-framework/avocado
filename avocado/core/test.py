@@ -28,6 +28,7 @@ import sys
 import time
 import unittest
 
+from difflib import unified_diff
 from six import string_types, iteritems
 
 from . import data_dir
@@ -243,6 +244,10 @@ class Test(unittest.TestCase):
         self._stdout_file = os.path.join(self.logdir, 'stdout')
         self._stderr_file = os.path.join(self.logdir, 'stderr')
         self._output_file = os.path.join(self.logdir, 'output')
+        self._stdout_diff_file = os.path.join(self.logdir,
+                                              'stdout_expected.diff')
+        self._stderr_diff_file = os.path.join(self.logdir,
+                                              'stderr_expected.diff')
         self._logging_handlers = {}
 
         self.__outputdir = utils_path.init_dir(self.logdir, 'data')
@@ -606,6 +611,14 @@ class Test(unittest.TestCase):
                 os.path.isfile(self._expected_stdout_file)):
             expected = genio.read_file(self._expected_stdout_file)
             actual = genio.read_file(self._stdout_file)
+
+            diff = unified_diff(expected.splitlines(), actual.splitlines(),
+                                fromfile=self._expected_stdout_file,
+                                tofile=self._stdout_file)
+            with open(self._stdout_diff_file, 'w') as file_obj:
+                for line in diff:
+                    file_obj.write(line.strip()+'\n')
+
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
@@ -615,6 +628,14 @@ class Test(unittest.TestCase):
                 os.path.isfile(self._expected_stderr_file)):
             expected = genio.read_file(self._expected_stderr_file)
             actual = genio.read_file(self._stderr_file)
+
+            diff = unified_diff(expected.splitlines(), actual.splitlines(),
+                                fromfile=self._expected_stderr_file,
+                                tofile=self._stderr_file)
+            with open(self._stderr_diff_file, 'w') as file_obj:
+                for line in diff:
+                    file_obj.write(line.strip()+'\n')
+
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
