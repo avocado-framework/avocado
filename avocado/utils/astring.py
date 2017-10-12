@@ -34,6 +34,17 @@ from six.moves import zip
 from six.moves import xrange as range
 
 
+#: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
+FS_UNSAFE_CHARS = '<>:"/\\|?*'
+
+# Translate table to replace fs-unfriendly chars
+if PY3:
+    _FS_TRANSLATE = bytes.maketrans(bytes(FS_UNSAFE_CHARS, "ascii"),
+                                    b'_________')
+else:
+    _FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, '_________')
+
+
 def bitlist_to_string(data):
     """
     Transform from bit list to ASCII string.
@@ -260,8 +271,10 @@ def string_to_safe_path(input_str):
     elif len(input_str) > 255:
         input_str = input_str[:255]
 
-    if PY3:
-        maketrans = bytes.maketrans
-    else:
-        maketrans = string.maketrans
-    return input_str.translate(maketrans(b'<>:"/\|?*', b'_________'))
+    try:
+        return input_str.translate(_FS_TRANSLATE)
+    except TypeError:
+        # Deal with incorrect encodings
+        for bad_chr in FS_UNSAFE_CHARS:
+            input_str = input_str.replace(bad_chr, "_")
+        return input_str
