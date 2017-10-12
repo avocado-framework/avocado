@@ -57,13 +57,13 @@ class OutputTest(Test):
         print "test_print"
         sys.stdout.write("test_stdout\\n")
         sys.stderr.write("test_stderr\\n")
-        process.run("/bin/echo test_process")
+        process.run("/bin/echo -n test_process")
 
     def __del__(self):
         print "del_print"
         sys.stdout.write("del_stdout\\n")
         sys.stderr.write("del_stderr\\n")
-        process.run("/bin/echo del_process")
+        process.run("/bin/echo -n del_process")
 """
 
 
@@ -145,12 +145,12 @@ class OutputTest(unittest.TestCase):
                 "[stderr] test_stderr", "[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
-        self.assertEqual("test_printtest_stdouttest_process\n",
+        self.assertEqual("test_print\ntest_stdout\ntest_process",
                          open(os.path.join(testdir, "stdout")).read())
-        self.assertEqual("test_stderr",
+        self.assertEqual("test_stderr\n",
                          open(os.path.join(testdir, "stderr")).read())
-        self.assertEqual("test_printtest_stdouttest_stderr"
-                         "test_process\n",
+        self.assertEqual("test_print\ntest_stdout\ntest_stderr\n"
+                         "test_process",
                          open(os.path.join(testdir, "output")).read())
 
     def tearDown(self):
