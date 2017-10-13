@@ -8,6 +8,8 @@ import tempfile
 import time
 import unittest
 
+from six.moves import xrange as range
+
 from avocado.utils.filelock import FileLock
 from avocado.utils.stacktrace import prepare_exc_info
 from avocado.utils import process
@@ -176,7 +178,7 @@ class FileLockTest(unittest.TestCase):
     def test_filelock(self):
         # Calculate the timeout based on t_100_iter + 2e-5*players
         start = time.time()
-        for _ in xrange(100):
+        for _ in range(100):
             with FileLock(self.tmpdir):
                 pass
         timeout = 0.02 + (time.time() - start)

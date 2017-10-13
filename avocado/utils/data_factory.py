@@ -22,6 +22,8 @@ import random
 import string
 import tempfile
 
+from six.moves import xrange as range
+
 _RAND_POOL = random.SystemRandom()
 
 log = logging.getLogger('avocado.test')
@@ -72,11 +74,11 @@ def make_dir_and_populate(basedir='/tmp'):
         path = tempfile.mkdtemp(prefix='avocado_' + __name__,
                                 dir=basedir)
         n_files = _RAND_POOL.randint(100, 150)
-        for _ in xrange(n_files):
+        for _ in range(n_files):
             fd, _ = tempfile.mkstemp(dir=path, text=True)
             str_length = _RAND_POOL.randint(30, 50)
             n_lines = _RAND_POOL.randint(5, 7)
-            for _ in xrange(n_lines):
+            for _ in range(n_lines):
                 os.write(fd, generate_random_string(str_length))
             os.close(fd)
     except OSError as details:

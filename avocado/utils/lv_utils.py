@@ -25,6 +25,9 @@ import os
 import re
 import shutil
 import time
+
+from six.moves import xrange as range
+
 from . import process
 
 
@@ -174,7 +177,7 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
             if ramdisk_filename is not None:
                 ramdisk_filename = ramdisk_filename.group(1)
 
-            for _ in xrange(10):
+            for _ in range(10):
                 result = process.run("losetup -d %s" % loop_device,
                                      ignore_status=True, sudo=True)
                 if "resource busy" not in result.stderr:
@@ -194,7 +197,7 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
     if vg_ramdisk_dir is not None:
         if not process.system("mountpoint %s" % vg_ramdisk_dir,
                               ignore_status=True):
-            for _ in xrange(10):
+            for _ in range(10):
                 result = process.run("umount %s" % vg_ramdisk_dir,
                                      ignore_status=True, sudo=True)
                 time.sleep(0.1)
