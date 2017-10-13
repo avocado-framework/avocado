@@ -112,8 +112,8 @@ class TestClassTestUnit(unittest.TestCase):
         above_limit_name = os.path.join(self.tmpdir, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.datadir)
-        tst._record_reference_stdout       # Should does nothing
-        tst._record_reference_stderr       # Should does nothing
+        tst._record_reference_stdout       # Should do nothing
+        tst._record_reference_stderr       # Should do nothing
         tst._record_reference_stdout()
         tst._record_reference_stderr()
 
