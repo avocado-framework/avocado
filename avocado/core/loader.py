@@ -31,7 +31,6 @@ from . import data_dir
 from . import output
 from . import test
 from . import safeloader
-from ..utils import path
 from ..utils import stacktrace
 from .settings import settings
 from .output import LOG_UI
@@ -928,8 +927,7 @@ class FileLoader(TestLoader):
             if os.access(test_path, os.R_OK) is False:
                 return make_broken(AccessDeniedPath, test_path, "Is not "
                                    "readable")
-            path_analyzer = path.PathInspector(test_path)
-            if path_analyzer.is_python():
+            if test_path.endswith('.py'):
                 return self._make_existing_file_tests(test_path, make_broken,
                                                       subtests_filter)
             else:

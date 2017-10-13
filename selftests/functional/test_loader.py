@@ -188,6 +188,9 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_pass(self):
         self._test('passtest.py', AVOCADO_TEST_OK, 'INSTRUMENTED')
 
+    def test_not_python_module(self):
+        self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST')
+
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
