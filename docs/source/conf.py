@@ -122,7 +122,7 @@ The following pages document the private APIs of optional Avocado plugins.
    :maxdepth: 1
 
     """)
-    for path in os.walk(optional_plugins_path).next()[1]:
+    for path in next(os.walk(optional_plugins_path))[1]:
         name = "avocado_%s" % os.path.basename(path)
         try:
             importlib.import_module(name)

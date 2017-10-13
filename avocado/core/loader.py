@@ -372,11 +372,11 @@ class TestLoader(object):
                        "'allowed_test_types' in the plugin."
                        % (self.name, self.name, self.name, types))
                 raise LoaderError(msg)
-            elif mapping.itervalues().next() != types:
+            elif next(mapping.itervalues()) != types:
                 raise LoaderError("Loader '%s' doesn't support test type '%s',"
                                   " it supports only '%s'"
                                   % (self.name, types,
-                                     mapping.itervalues().next()))
+                                     next(mapping.itervalues())))
         if "loader_options" in extra_params:
             raise LoaderError("Loader '%s' doesn't support 'loader_options', "
                               "please don't use --loader %s:%s"
@@ -554,8 +554,8 @@ class FileLoader(TestLoader):
                     if not isinstance(tst[0], str):
                         return None
             else:
-                test_class = (key for key, value in iteritems(mapping)
-                              if value == self.test_type).next()
+                test_class = next(key for key, value in iteritems(mapping)
+                                  if value == self.test_type)
                 for tst in tests:
                     if (isinstance(tst[0], str) or
                             not issubclass(tst[0], test_class)):
