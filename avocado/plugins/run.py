@@ -157,6 +157,13 @@ class Run(CLICmd):
                                      'will be kept in the test suite found '
                                      'previously to filtering.'))
 
+        parser.add_argument("--log-test-data-directories", action="store_true",
+                            help=("Logs the possible data directories for each"
+                                  "test. This is helpful when writing new "
+                                  "tests and not being sure where to put data"
+                                  "files. Look for \"Test data "
+                                  "directories\" in your test log"))
+
     def run(self, args):
         """
         Run test modules or simple tests.
