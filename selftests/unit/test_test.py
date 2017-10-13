@@ -176,37 +176,35 @@ class SimpleTestClassTest(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
-        self.pass_script = script.TemporaryScript(
+        self.script = None
+
+    def test_simple_test_pass_status(self):
+        self.script = script.TemporaryScript(
             'avocado_pass.sh',
             PASS_SCRIPT_CONTENTS,
             'avocado_simpletest_unittest')
-        self.pass_script.save()
+        self.script.save()
+        tst_instance = test.SimpleTest(
+            name=test.TestID(1, self.script.path),
+            base_logdir=self.tmpdir)
+        tst_instance.run_avocado()
+        self.assertEqual(tst_instance.status, 'PASS')
 
-        self.fail_script = script.TemporaryScript(
+    def test_simple_test_fail_status(self):
+        self.script = script.TemporaryScript(
             'avocado_fail.sh',
             FAIL_SCRIPT_CONTENTS,
             'avocado_simpletest_unittest')
-        self.fail_script.save()
-
-        self.tst_instance_pass = test.SimpleTest(
-            name=test.TestID(1, self.pass_script.path),
+        self.script.save()
+        tst_instance = test.SimpleTest(
+            name=test.TestID(1, self.script.path),
             base_logdir=self.tmpdir)
-        self.tst_instance_pass.run_avocado()
-
-        self.tst_instance_fail = test.SimpleTest(
-            name=test.TestID(1, self.fail_script.path),
-            base_logdir=self.tmpdir)
-        self.tst_instance_fail.run_avocado()
-
-    def test_simple_test_pass_status(self):
-        self.assertEqual(self.tst_instance_pass.status, 'PASS')
-
-    def test_simple_test_fail_status(self):
-        self.assertEqual(self.tst_instance_fail.status, 'FAIL')
+        tst_instance.run_avocado()
+        self.assertEqual(tst_instance.status, 'FAIL')
 
     def tearDown(self):
-        self.pass_script.remove()
-        self.fail_script.remove()
+        if self.script is not None:
+            self.script.remove()
         shutil.rmtree(self.tmpdir)
 
 
