@@ -31,13 +31,18 @@ class GdbTest(Test):
                     "-auto-debug-it"]
 
     def setUp(self):
+        return99_source_path = self.get_data('return99.c')
+        if return99_source_path is None:
+            self.cancel('Test is missing data file "return99.c"')
+
+        segfault_source_path = self.get_data('segfault.c')
+        if segfault_source_path is None:
+            self.cancel('Test is missing data file "segfault.c"')
+
         self.return99_binary_path = os.path.join(self.outputdir, 'return99')
-        return99_source_path = os.path.join(self.datadir, 'return99.c')
         process.system('gcc -O0 -g %s -o %s' % (return99_source_path,
                                                 self.return99_binary_path))
-
         self.segfault_binary_path = os.path.join(self.outputdir, 'segfault')
-        segfault_source_path = os.path.join(self.datadir, 'segfault.c')
         process.system('gcc -O0 -g %s -o %s' % (segfault_source_path,
                                                 self.segfault_binary_path))
 

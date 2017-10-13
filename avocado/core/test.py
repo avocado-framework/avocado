@@ -485,6 +485,9 @@ class Test(unittest.TestCase, TestData):
         name, only to the file that contains the test.  It can be used to
         host data files that are generic enough to be used for all tests
         contained in a given test file.
+
+        This property is deprecated and will be removed in the future.
+        The :meth:`get_data` function should be used instead.
         """
         # Maximal allowed file name length is 255
         if (self.filename is not None and
