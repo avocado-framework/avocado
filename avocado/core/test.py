@@ -162,7 +162,120 @@ class TestID(object):
                                  % (self.str_uid, str(self)))
 
 
-class Test(unittest.TestCase):
+class TestData(object):
+
+    """
+    Class that adds the hability for tests to have access to data files
+
+    Writers of new test types can change the completely change the behavior
+    and still be compatible by providing an :attr:`DATA_SOURCES` attribute
+    and a meth:`get_data` method.
+    """
+
+    #: Defines the name of data sources that this implementation makes
+    #: available.  Users may choose to pick data file from a specific
+    #: source.
+    DATA_SOURCES = ["variant", "test", "file"]
+
+    def __init__(self):
+        self._data_sources_mapping = {
+            "variant": [lambda: self.datadir,
+                        lambda: "%s.%s" % (self.__class__.__name__,
+                                           self._testMethodName),
+                        lambda: self.name.variant],
+            "test": [lambda: self.datadir,
+                     lambda: "%s.%s" % (self.__class__.__name__,
+                                        self._testMethodName)],
+            "file": [lambda: self.datadir]
+        }
+
+    def _check_valid_data_source(self, source):
+        """
+        Utility to check if user chose a specific data source
+
+        :param source: either None for no specific selection or a source name
+        :type source: None or str
+        :raises: ValueError
+        """
+        if source is not None and source not in self.DATA_SOURCES:
+            msg = 'Data file source requested (%s) is not one of: %s'
+            msg %= (source, ', '.join(self.DATA_SOURCES))
+            raise ValueError(msg)
+
+    def _get_datadir(self, source):
+        path_components = self._data_sources_mapping.get(source)
+        if path_components is None:
+            return
+
+        # evaluate lazily, needed when the class changes its own
+        # information such as its datadir
+        path_components = [func() for func in path_components]
+        if None in path_components:
+            return
+
+        # if path components are absolute paths, let's believe that
+        # they have already been treated (such as the entries that
+        # return the self.datadir).  If not, let's split the path
+        # components so that they can be treated in the next loop
+        split_path_components = []
+        for path_component in path_components:
+            if not os.path.isabs(path_component):
+                split_path_components += path_component.split(os.path.sep)
+            else:
+                split_path_components.append(path_component)
+
+        # now, make sure each individual path component can be represented
+        # in the filesystem.  again, if it's an absolute path, do nothing
+        paths = []
+        for path in split_path_components:
+            if os.path.isabs(path):
+                paths.append(path)
+            else:
+                paths.append(astring.string_to_safe_path(path))
+
+        return os.path.join(*paths)
+
+    def get_data(self, filename, source=None, must_exist=True):
+        """
+        Retrieves the path to a given data file.
+
+        This implementation looks for data file in one of the sources
+        defined by the :attr:`DATA_SOURCES` attribute.
+
+        :param filename: the name of the data file to be retrieved
+        :type filename: str
+        :param source: one of the defined data sources
+        :type source: str
+        :param must_exist: whether the existence of a file is checked
+        :type must_exist: bool
+        :rtype: str or None
+        """
+        log_fmt = 'DATA (filename=%s) => %s (%s)'
+        if source is None:
+            sources = self.DATA_SOURCES
+        else:
+            self._check_valid_data_source(source)
+            sources = [source]
+        for attempt_source in sources:
+            datadir = self._get_datadir(attempt_source)
+            if datadir is not None:
+                path = os.path.join(datadir, filename)
+                if not must_exist:
+                    self.log.debug(log_fmt, filename, path,
+                                   ("assumed to be located at %s source "
+                                    "dir" % attempt_source))
+                    return path
+                else:
+                    if os.path.exists(path):
+                        self.log.debug(log_fmt, filename, path,
+                                       "found at %s source dir" % attempt_source)
+                        return path
+
+        self.log.debug(log_fmt, filename, "NOT FOUND",
+                       "data sources: %s" % ', '.join(sources))
+
+
+class Test(unittest.TestCase, TestData):
 
     """
     Base implementation for the test class.
@@ -295,6 +408,7 @@ class Test(unittest.TestCase):
             self.log.debug("Test metadata:")
             self.log.debug("  filename: %s", self.filename)
         unittest.TestCase.__init__(self, methodName=methodName)
+        TestData.__init__(self)
 
     @property
     def name(self):
