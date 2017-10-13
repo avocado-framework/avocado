@@ -3,6 +3,8 @@
 import base64
 import os
 
+from six.moves import xrange as range
+
 from avocado import Test
 from avocado import main
 
@@ -36,7 +38,7 @@ class WhiteBoard(Test):
         iterations = int(self.params.get('whiteboard_writes', default=1))
 
         result = ''
-        for _ in xrange(0, iterations):
+        for _ in range(0, iterations):
             result += data
         self.whiteboard = base64.encodestring(result)
 

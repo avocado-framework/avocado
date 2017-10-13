@@ -25,6 +25,8 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+from six import string_types
+
 from ..utils import path
 
 if 'VIRTUAL_ENV' in os.environ:
@@ -98,7 +100,7 @@ def convert_value_type(value, value_type):
     except Exception:
         sval = value
 
-    if isinstance(value_type, str):
+    if isinstance(value_type, string_types):
         if value_type == 'str':
             value_type = str
         elif value_type == 'bool':

@@ -585,7 +585,7 @@ def add_log_handler(logger, klass=logging.StreamHandler, stream=sys.stdout,
         logger = logging.getLogger(logger)
     handler = klass(stream)
     handler.setLevel(level)
-    if isinstance(fmt, str):
+    if isinstance(fmt, string_types):
         fmt = logging.Formatter(fmt=fmt)
     handler.setFormatter(fmt)
     logger.addHandler(handler)

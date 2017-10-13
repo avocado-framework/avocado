@@ -23,6 +23,8 @@ __version__ = 'SPARK-0.7 (pre-alpha-7)'
 
 import re
 
+from six.moves import xrange as range
+
 
 def _namelist(instance):
     namelist, namedict, classlist = [], {}, [instance.__class__]
@@ -326,7 +328,7 @@ class GenericParser:
             self.states = {0: self.makeState0()}
             self.makeState(0, self._BOF)
 
-        for i in xrange(len(tokens)):
+        for i in range(len(tokens)):
             sets.append([])
 
             if sets[i] == []:

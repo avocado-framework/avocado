@@ -30,7 +30,6 @@ class MuxTree(mux.MuxPlugin):
     Excerpt of MuxTree object in order to make it compatible with 52
     """
     pools = []
-    filters = [None, None]
 
     def __iter__(self):
         """
@@ -46,7 +45,7 @@ class MuxTree(mux.MuxPlugin):
         while True:
             # TODO: Implement 2nd level filters here
             # TODO: This part takes most of the time, optimize it
-            yield list(itertools.chain(*pools.next()))
+            yield list(itertools.chain(*next(pools)))
 
 
 class AvocadoParams(varianter.AvocadoParams):
@@ -64,7 +63,6 @@ class AvocadoParams(varianter.AvocadoParams):
         :param mux_path: list of entry points
         :param default_params: dict of params used when no matches found
         """
-        del tag
         super(AvocadoParams, self).__init__(leaves, test_id, mux_path,
                                             default_params)
 

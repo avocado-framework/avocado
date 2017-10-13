@@ -38,7 +38,7 @@ import itertools
 import locale
 import os
 
-from six import iterkeys, iteritems
+from six import string_types, iterkeys, iteritems
 
 from . import output
 
@@ -172,7 +172,7 @@ class TreeNode(object):
 
     def __eq__(self, other):
         """ Compares node to other node or string to name of this node """
-        if isinstance(other, str):  # Compare names
+        if isinstance(other, string_types):  # Compare names
             if self.name == other:
                 return True
         else:
