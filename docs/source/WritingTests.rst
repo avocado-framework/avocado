@@ -567,7 +567,7 @@ an example that does that::
             self.sync_loop = self.params.get('sync_loop', default=10)
             # Build the synctest suite
             self.cwd = os.getcwd()
-            tarball_path = os.path.join(self.datadir, sync_tarball)
+            tarball_path = self.get_data(sync_tarball)
             archive.extract(tarball_path, self.srcdir)
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
@@ -588,7 +588,7 @@ an example that does that::
 
 Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
-:meth:`avocado.Test.datadir`, then uncompress the tarball through
+:func:`avocado.Test.get_data`, then uncompress the tarball through
 :func:`avocado.utils.archive.extract`, an API that will
 decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
 the suite.
