@@ -134,7 +134,8 @@ def find_class_and_methods(path, method_pattern=None, base_class=None):
         return base_class_name in base_ids
 
     result = {}
-    mod = ast.parse(open(path).read(), path)
+    with open(path) as source_file:
+        mod = ast.parse(source_file.read(), path)
     modules = modules_imported_as(mod)
 
     for statement in mod.body:
