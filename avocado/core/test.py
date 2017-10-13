@@ -329,15 +329,6 @@ class Test(unittest.TestCase, TestData):
 
         self.__job = job
 
-        if self.datadir is None:
-            self._expected_stdout_file = None
-            self._expected_stderr_file = None
-        else:
-            self._expected_stdout_file = os.path.join(self.datadir,
-                                                      'stdout.expected')
-            self._expected_stderr_file = os.path.join(self.datadir,
-                                                      'stderr.expected')
-
         if base_logdir is None:
             base_logdir = data_dir.create_job_logs_dir()
         base_logdir = os.path.join(base_logdir, 'test-results')
@@ -709,28 +700,30 @@ class Test(unittest.TestCase, TestData):
             logging.getLogger(name).removeHandler(handler)
 
     def _record_reference_stdout(self):
-        if self.datadir is not None:
-            utils_path.init_dir(self.datadir)
-            shutil.copyfile(self._stdout_file, self._expected_stdout_file)
+        stdout_expected = self.get_data('stdout.expected', must_exist=False)
+        if stdout_expected is not None:
+            utils_path.init_dir(os.path.dirname(stdout_expected))
+            shutil.copyfile(self._stdout_file, stdout_expected)
 
     def _record_reference_stderr(self):
-        if self.datadir is not None:
-            utils_path.init_dir(self.datadir)
-            shutil.copyfile(self._stderr_file, self._expected_stderr_file)
+        stderr_expected = self.get_data('stderr.expected', must_exist=False)
+        if stderr_expected is not None:
+            utils_path.init_dir(os.path.dirname(stderr_expected))
+            shutil.copyfile(self._stderr_file, stderr_expected)
 
     def _check_reference_stdout(self):
-        if (self._expected_stdout_file is not None and
-                os.path.isfile(self._expected_stdout_file)):
-            expected = genio.read_file(self._expected_stdout_file)
+        expected_path = self.get_data('stdout.expected')
+        if expected_path is not None:
+            expected = genio.read_file(expected_path)
             actual = genio.read_file(self._stdout_file)
             msg = ('Actual test sdtout differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
             self.assertEqual(expected, actual, msg)
 
     def _check_reference_stderr(self):
-        if (self._expected_stderr_file is not None and
-                os.path.isfile(self._expected_stderr_file)):
-            expected = genio.read_file(self._expected_stderr_file)
+        expected_path = self.get_data('stderr.expected')
+        if expected_path is not None:
+            expected = genio.read_file(expected_path)
             actual = genio.read_file(self._stderr_file)
             msg = ('Actual test sdterr differs from expected one:\n'
                    'Actual:\n%s\nExpected:\n%s' % (actual, expected))
