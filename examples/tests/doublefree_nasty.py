@@ -26,7 +26,9 @@ class DoubleFreeTest(Test):
         Build 'doublefree'.
         """
         source = self.params.get('source', default='doublefree.c')
-        c_file = os.path.join(self.datadir, source)
+        c_file = self.get_data(source)
+        if c_file is None:
+            self.cancel('Test is missing data file %s' % source)
         shutil.copy(c_file, self.srcdir)
         self.__binary = source.rsplit('.', 1)[0]
         build.make(self.srcdir,

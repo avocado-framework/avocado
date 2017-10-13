@@ -122,6 +122,14 @@ class Run(CLICmd):
                                    help="Store given logging STREAMs in "
                                    "$JOB_RESULTS_DIR/$STREAM.$LEVEL.")
 
+        parser.output.add_argument("--log-test-data-directories",
+                                   action="store_true",
+                                   help="Logs the possible data directories "
+                                   "for each test. This is helpful when "
+                                   "writing new tests and not being sure "
+                                   "where to put data files. Look for \""
+                                   "Test data directories\" in your test log")
+
         out_check = parser.add_argument_group('output check arguments')
 
         out_check.add_argument('--output-check-record',
