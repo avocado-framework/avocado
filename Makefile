@@ -24,7 +24,7 @@ all:
 	@echo "Development related targets:"
 	@echo "check:          Runs tree static check, unittests and fast functional tests"
 	@echo "check-full:     Runs tree static check, and all unittests and functional tests"
-	@echo "develop:        Runs 'python setup.py --develop on this tree alone"
+	@echo "develop:        Runs 'python setup.py --develop' on this tree alone"
 	@echo "link:           Runs 'python setup.py --develop' in all subprojects and links the needed resources"
 	@echo "clean:          Get rid of scratch, byte files and removes the links to other subprojects"
 	@echo "selfcheck:      Runs tree static check, unittests and functional tests using Avocado itself"
@@ -35,7 +35,7 @@ all:
 	@echo "requirements-selftests:  Install runtime and selftests requirements"
 	@echo "requirements-plugins:    Install plugins requirements"
 	@echo
-	@echo "Platform independent distribution/installtion related targets:"
+	@echo "Platform independent distribution/installation related targets:"
 	@echo "source:   Create source package"
 	@echo "install:  Install on local system"
 	@echo "man:      Generate the avocado man page"
