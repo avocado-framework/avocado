@@ -179,6 +179,51 @@ If you need to attach several output files, you can also use
 ``$RESULTS/test-results/$TEST_ID/data`` location and is reserved for
 arbitrary test result data.
 
+Accessing test data files
+=========================
+
+Some tests can depend on data files, external to the test file itself.
+Avocado provides an mechanism an a test API that makes it really easy
+to access such files: :meth:`get_data() <avocado.core.test.TestData.get_data>`.
+
+For Avocado tests (that is, ``INSTRUMENTED`` tests)
+:meth:`get_data() <avocado.core.test.TestData.get_data>` allows test data files
+to be accessed from up to three sources:
+
+ * **file** level data directory: a directory named after the test file, but
+   ending with ``.data``.  For a test file ``/home/user/test.py``, the file level
+   data directory is ``/home/user/test.py.data/``.
+
+ * **test** level data directory: a directory named after the test file and the
+   specific test name.  These are useful when different tests part of the
+   same file need different data files (with the same name or not).  Considering
+   the previous example of ``/home/user/test.py``, and supposing it contains two
+   tests, ``MyTest.test_foo`` and ``MyTest.test_bar``, the test level data
+   directories will be, ``/home/user/test.py.data/MyTest.test_foo/`` and
+   ``home/user/test.py.data/MyTest.test_bar/`` respectively.
+
+ * **variant** level data directory: if variants are being used during the test
+   execution, a directory named after the variant will also be considered when
+   looking for test data files.  For test file ``/home/user/test.py``, and test
+   ``MyTest.test_foo``, with variant ``debug-ffff``, the data directory path
+   will be ``/home/user/test.py.data/MyTest.test_foo/debug-ffff/``.
+
+Avocado looks for data files in the order defined at
+:attr:`DATA_SOURCES <avocado.core.test.TestData.DATA_SOURCES>`, which are
+from most specific one, to most generic one.  That means that, if a variant
+is being used, the **variant** directory is used first.  Then the **test**
+level directory is attempted, and finally the **file** level directory.
+
+.. tip:: When running tests you can use the ``--log-test-data-directories``
+         command line option log the test data directories that will be used
+         for that specific test and execution conditions (such as with or
+         without variants).  Look for "Test data directories" in the test logs.
+
+.. note:: An older API, :attr:`avocado.core.test.Test.datadir`, allows access
+          to the data directory based on the test file location only.  This API
+          is limited, deprecated and will be removed.  All new users should rely
+          on ``get_data()`` instead.
+
 .. _accessing-test-parameters:
 
 Accessing test parameters
@@ -567,7 +612,7 @@ an example that does that::
             self.sync_loop = self.params.get('sync_loop', default=10)
             # Build the synctest suite
             self.cwd = os.getcwd()
-            tarball_path = os.path.join(self.datadir, sync_tarball)
+            tarball_path = self.get_data(sync_tarball)
             archive.extract(tarball_path, self.srcdir)
             self.srcdir = os.path.join(self.srcdir, 'synctest')
             build.make(self.srcdir)
@@ -588,7 +633,7 @@ an example that does that::
 
 Here we have an example of the ``setUp`` method in action: Here we get the
 location of the test suite code (tarball) through
-:meth:`avocado.Test.datadir`, then uncompress the tarball through
+:func:`avocado.Test.get_data`, then uncompress the tarball through
 :func:`avocado.utils.archive.extract`, an API that will
 decompress the suite tarball, followed by :func:`avocado.utils.build.make`, that will build
 the suite.

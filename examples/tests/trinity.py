@@ -29,7 +29,9 @@ class TrinityTest(Test):
         Build trinity.
         """
         tarball = self.params.get('tarball', default='trinity-1.5.tar.bz2')
-        tarball_path = os.path.join(self.datadir, tarball)
+        tarball_path = self.get_data(tarball)
+        if tarball_path is None:
+            self.cancel('Test is missing data file %s' % tarball_path)
         archive.extract(tarball_path, self.srcdir)
         srcdir = os.path.join(self.srcdir, 'trinity-1.5')
         os.chdir(srcdir)

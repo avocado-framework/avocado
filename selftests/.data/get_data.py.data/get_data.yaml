@@ -1,0 +1,7 @@
+!mux
+short:
+  in_variant: True
+medium:
+  in_variant: True
+long:
+  in_variant: True
