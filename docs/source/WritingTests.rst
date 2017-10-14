@@ -208,6 +208,10 @@ to be accessed from up to three sources:
    ``MyTest.test_foo``, with variant ``debug-ffff``, the data directory path
    will be ``/home/user/test.py.data/MyTest.test_foo/debug-ffff/``.
 
+.. note:: Unlike INSTRUMENTED tests the ``SIMPLE`` tests only define `file`
+          and `variant` data_dirs, therefor the most-specific data-dir
+          might look like ``/bin/echo.data/debug-ffff/``.
+
 Avocado looks for data files in the order defined at
 :attr:`DATA_SOURCES <avocado.core.test.TestData.DATA_SOURCES>`, which are
 from most specific one, to most generic one.  That means that, if a variant
