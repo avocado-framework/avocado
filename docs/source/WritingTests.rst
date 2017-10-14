@@ -213,6 +213,9 @@ Avocado looks for data files in the order defined at
 from most specific one, to most generic one.  That means that, if a variant
 is being used, the **variant** directory is used first.  Then the **test**
 level directory is attempted, and finally the **file** level directory.
+Additionally you can use ``get_data(filename, must_exist=False)`` to get
+expected location of a possibly non-existing file, which is useful when
+you intend to create it.
 
 .. tip:: When running tests you can use the ``--log-test-data-directories``
          command line option log the test data directories that will be used
