@@ -403,7 +403,7 @@ class TestRunner(object):
         timeout = float(timeout or self.DEFAULT_TIMEOUT)
 
         test_deadline = time_started + timeout
-        if job_deadline > 0:
+        if job_deadline is not None and job_deadline > 0:
             deadline = min(test_deadline, job_deadline)
         else:
             deadline = test_deadline
