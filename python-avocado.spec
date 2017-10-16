@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 54.1
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -227,6 +227,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_runner_vm*
 %exclude %{python_sitelib}/avocado_runner_docker*
 %exclude %{python_sitelib}/avocado_resultsdb*
+%exclude %{python_sitelib}/avocado_loader_yaml*
 %exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
@@ -369,6 +370,8 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 
 %changelog
+* Mon Oct 16 2017 Cleber Rosa <cleber@redhat.com> - 54.1-3
+- Excluded avocado_loader_yaml files from main package
 
 * Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-2
 - Remove python-flexmock requirement
