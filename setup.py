@@ -151,7 +151,6 @@ if __name__ == '__main__':
               "Topic :: Software Development :: Quality Assurance",
               "Topic :: Software Development :: Testing",
               ],
-          use_2to3=True,
           packages=find_packages(exclude=('selftests*',)),
           data_files=get_data_files(),
           scripts=['scripts/avocado',
