@@ -137,7 +137,7 @@ If your test compounds of many executions and you can't get this exception
 in other case then expected failure, you can simplify the code by using
 ``fail_on`` decorator::
 
-    avocado.fail_on(process.CmdError)
+    @avocado.fail_on(process.CmdError)
     def test(self):
         process.run("first cmd")
         process.run("second cmd")
