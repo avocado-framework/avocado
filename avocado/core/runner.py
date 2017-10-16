@@ -403,7 +403,7 @@ class TestRunner(object):
         timeout = float(timeout or self.DEFAULT_TIMEOUT)
 
         test_deadline = time_started + timeout
-        if job_deadline > 0:
+        if job_deadline is not None and job_deadline > 0:
             deadline = min(test_deadline, job_deadline)
         else:
             deadline = test_deadline
@@ -570,7 +570,13 @@ class TestRunner(object):
         summary = set()
         if self.job.sysinfo is not None:
             self.job.sysinfo.start_job_hook()
-        queue = queues.SimpleQueue()
+
+        # Python 3 requires a context for a queue
+        if hasattr(multiprocessing, 'get_context'):
+            ctx = multiprocessing.get_context('spawn')
+            queue = queues.SimpleQueue(ctx=ctx)     # pylint: disable=E1123
+        else:
+            queue = queues.SimpleQueue()
 
         if timeout > 0:
             deadline = time.time() + timeout

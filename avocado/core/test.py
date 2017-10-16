@@ -1090,7 +1090,7 @@ class SimpleTest(Test):
         """
         try:
             test_params = dict([(str(key), str(val)) for _, key, val in
-                                iteritems(self.params)])
+                                self.params.iteritems()])
 
             # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(self._command, verbose=True,

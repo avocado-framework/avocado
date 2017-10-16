@@ -232,11 +232,11 @@ class AvocadoParams(object):
         """
         env = []
         for param in self._rel_paths:
-            for path, key, value in iteritems(param):
+            for path, key, value in param.iteritems():
                 if (path, key) not in env:
                     env.append((path, key))
                     yield (path, key, value)
-        for path, key, value in iteritems(self._abs_path):
+        for path, key, value in self._abs_path.iteritems():
             if (path, key) not in env:
                 env.append((path, key))
                 yield (path, key, value)
