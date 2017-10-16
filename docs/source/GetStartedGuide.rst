@@ -344,9 +344,8 @@ on first failed test::
     JOB TIME   : 0.12 s
     JOB HTML   : /home/apahim/avocado/job-results/job-2016-07-19T09.43-eaf51b8/html/results.html
 
-The ``--failfast`` option accepts the argument ``off``. Since it's disabled
-by default, the ``off`` argument only makes sense in replay jobs, when the
-original job was executed with ``--failfast on``.
+One can also use ``--failfast off`` in order to force-disable failfast mode
+when replaying a job executed with ``--failfast on``.
 
 Ignoring Missing Test References
 ================================
