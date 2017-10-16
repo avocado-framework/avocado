@@ -138,6 +138,9 @@ popd
 pushd optional_plugins/loader_yaml
 %{__python} setup.py build
 popd
+pushd optional_plugins/golang
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -161,6 +164,9 @@ pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/loader_yaml
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/golang
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -190,6 +196,9 @@ pushd optional_plugins/varianter_yaml_to_mux
 %{__python} setup.py develop --user
 popd
 pushd optional_plugins/loader_yaml
+%{__python} setup.py develop --user
+popd
+pushd optional_plugins/golang
 %{__python} setup.py develop --user
 popd
 # Package build environments have the least amount of resources
@@ -228,6 +237,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_runner_docker*
 %exclude %{python_sitelib}/avocado_resultsdb*
 %exclude %{python_sitelib}/avocado_loader_yaml*
+%exclude %{python_sitelib}/avocado_golang*
 %exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
@@ -236,6 +246,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_resultsdb*
 %exclude %{python_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
+%exclude %{python_sitelib}/avocado_framework_plugin_golang*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -352,6 +363,18 @@ similar to the one used in the yaml_to_mux varianter plugin.
 %{python_sitelib}/avocado_loader_yaml*
 %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 
+%package plugins-golang
+Summary: Avocado Plugin for Execution of golang tests
+Requires: golang
+
+%description plugins-golang
+Allows Avocado to list golang tests, and if golang is installed,
+also run them.
+
+%files plugins-golang
+%{python_sitelib}/avocado_golang*
+%{python_sitelib}/avocado_framework_plugin_golang*
+
 %package examples
 Summary: Avocado Test Framework Example Tests
 Requires: %{name} == %{version}
@@ -372,6 +395,7 @@ examples of how to write tests on your own.
 %changelog
 * Mon Oct 16 2017 Cleber Rosa <cleber@redhat.com> - 54.1-3
 - Excluded avocado_loader_yaml files from main package
+- Package recently introduced golang plugin
 
 * Wed Oct  4 2017 Cleber Rosa <cleber@redhat.com> - 54.1-2
 - Remove python-flexmock requirement
