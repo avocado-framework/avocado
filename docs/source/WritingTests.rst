@@ -79,8 +79,8 @@ Avocado supports the most common exit statuses:
   ``PASS`` instead)
 * ``SKIP`` - the test's pre-requisites were not satisfied and the test's
   body was not executed (nor its ``setUp()`` and ``tearDown``).
-* ``CANCEL`` - the test was canceled somewhere during the `setUp()`, the
-  test method or the `tearDown()`. The ``setUp()`` and ``tearDown``
+* ``CANCEL`` - the test was canceled somewhere during the ``setUp()``, the
+  test method or the ``tearDown()``. The ``setUp()`` and ``tearDown``
   methods are executed.
 * ``FAIL`` - test did not result in the expected outcome. A failure points
   at a (possible) bug in the tested subject, and not in the test itself.
@@ -1050,9 +1050,9 @@ Will produce the following result::
     JOB TIME   : 0.10 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
 
-Notice that the `tearDown()` will not be executed when `skip()` is used.
-Any cleanup treatment has to be handled by the `setUp()`, before the
-call to `skip()`.
+Notice that the ``tearDown()`` will not be executed when ``skip()`` is used.
+Any cleanup treatment has to be handled by the ``setUp()``, before the
+call to ``skip()``.
 
 Avocado Skip Decorators
 -----------------------
@@ -1156,10 +1156,10 @@ the correct version, the result will be::
     JOB TIME   : 2.38 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html
 
-Notice that using the `self.cancel()` will cancel the rest of the test
-from that point on, but the `tearDown()` will still be executed.
+Notice that using the ``self.cancel()`` will cancel the rest of the test
+from that point on, but the ``tearDown()`` will still be executed.
 
-Depending on the result format you're referring to, the `CANCEL` status
+Depending on the result format you're referring to, the ``CANCEL`` status
 is mapped to a corresponding valid status in that format. See the table
 below:
 
@@ -1318,7 +1318,7 @@ to tell Avocado to also discover the ancestor classes.
 
 The ``:avocado: recursive`` directive will direct Avocado to evaluate all
 the ancestors of the class until the base class, the one derived from
-from `avocado.Test`.
+from ``avocado.Test``.
 
 Example:
 
@@ -1364,9 +1364,9 @@ Using only `test_second_child.py` as a test reference will result in::
     INSTRUMENTED test_second_child.py:SecondChild.test_first_child
     INSTRUMENTED test_second_child.py:SecondChild.test_basic
 
-Notice that the `:avocado: disable` docstring will be ignored in
+Notice that the ``:avocado: disable`` docstring will be ignored in
 ancestors during the recursive discovery. What means that even if an
-ancestor contains the docstring `:avocado: disable`, that ancestor will
+ancestor contains the docstring ``:avocado: disable``, that ancestor will
 still be included in the results.
 
 .. _categorizing-tests:
@@ -1527,8 +1527,8 @@ given tags (effectively a logical AND operation), it's also possible
 to use multiple ``--filter-by-tags`` (effectively a logical OR
 operation).
 
-For instance To include all tests that have the `disk` tag and all
-tests that have the `net` tag, you can run::
+For instance To include all tests that have the ``disk`` tag and all
+tests that have the ``net`` tag, you can run::
 
   $ avocado list perf.py --filter-by-tags=disk --filter-by-tags=net
   INSTRUMENTED perf.py:Disk.test_device
@@ -1537,7 +1537,7 @@ tests that have the `net` tag, you can run::
 
 Including tests without tags
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The normal behavior when using `--filter-by-tags` is to require the
+The normal behavior when using ``--filter-by-tags`` is to require the
 given tags on all tests.  In some situations, though, it may be
 desirable to include tests that have no tags set.
 
@@ -1548,8 +1548,8 @@ not (yet) received tags.  Consider this command::
   $ avocado list perf.py /bin/true --filter-by-tags=disk
   INSTRUMENTED perf.py:Disk.test_device
 
-Since it requires the `disk` tag, only one test was returned.  By
-using the `--filter-by-tags-include-empty` option, you can force the
+Since it requires the ``disk`` tag, only one test was returned.  By
+using the ``--filter-by-tags-include-empty`` option, you can force the
 inclusion of tests without tags::
 
   $ avocado list perf.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
