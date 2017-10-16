@@ -179,6 +179,8 @@ If you need to attach several output files, you can also use
 ``$RESULTS/test-results/$TEST_ID/data`` location and is reserved for
 arbitrary test result data.
 
+.. _accessing-test-data-files:
+
 Accessing test data files
 =========================
 
@@ -755,10 +757,9 @@ use case, we offer the option ``--output-check-record [mode]`` to the test runne
 
 If this option is used, it will store the stdout or stderr of the process (or
 both, if you specified ``all``) being executed to reference files: ``stdout.expected``
-and ``stderr.expected``. Those files will be recorded in the test data dir. The
-data dir is in the same directory as the test source file, named
-``[source_file_name.data]``. Let's take as an example the test ``synctest.py``. In a
-fresh checkout of Avocado, you can see::
+and ``stderr.expected``. Those files will be recorded in the first (most specific)
+test's data dir (:ref:`accessing-test-data-files`). Let's take as an example the test
+``synctest.py``. In a fresh checkout of Avocado, you can see::
 
         examples/tests/synctest.py.data/stderr.expected
         examples/tests/synctest.py.data/stdout.expected
