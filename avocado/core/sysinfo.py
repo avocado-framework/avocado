@@ -484,17 +484,27 @@ class SysInfo(object):
                          logpaths)
 
     def _set_collectibles(self):
+        add_per_test = settings.get_value("sysinfo.collect", "per_test",
+                                          bool, None)
         if self.profiler:
             for cmd in self.profilers:
                 self.start_job_collectibles.add(Daemon(cmd))
+                if add_per_test:
+                    self.start_test_collectibles.add(Daemon(cmd))
 
         for cmd in self.commands:
             self.start_job_collectibles.add(Command(cmd))
             self.end_job_collectibles.add(Command(cmd))
+            if add_per_test:
+                self.start_test_collectibles.add(Command(cmd))
+                self.end_test_collectibles.add(Command(cmd))
 
         for filename in self.files:
             self.start_job_collectibles.add(Logfile(filename))
             self.end_job_collectibles.add(Logfile(filename))
+            if add_per_test:
+                self.start_test_collectibles.add(Logfile(filename))
+                self.end_test_collectibles.add(Logfile(filename))
 
         # As the system log path is not standardized between distros,
         # we have to probe and find out the correct path.
@@ -601,7 +611,10 @@ class SysInfo(object):
         Logging hook called before a test starts.
         """
         for log in self.start_test_collectibles:
-            log.run(self.pre_dir)
+            if isinstance(log, Daemon):  # log daemons in profile directory
+                log.run(self.profile_dir)
+            else:
+                log.run(self.pre_dir)
 
         if self.log_packages:
             self._log_installed_packages(self.pre_dir)
