@@ -165,7 +165,7 @@ class TestID(object):
 class TestData(object):
 
     """
-    Class that adds the hability for tests to have access to data files
+    Class that adds the ability for tests to have access to data files
 
     Writers of new test types can change the completely change the behavior
     and still be compatible by providing an :attr:`DATA_SOURCES` attribute

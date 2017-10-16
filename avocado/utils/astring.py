@@ -231,7 +231,7 @@ def string_safe_encode(input_str):
     People tend to mix unicode streams with encoded strings. This function
     tries to replace any input with a valid utf-8 encoded ascii stream.
 
-    On Python 3, it's a terrible idea to try to mess with encodings,
+    On Python 3, it's a terrible idea to try to mess with encoding,
     so this function is limited to converting other types into
     strings, such as numeric values that are often the members of a
     matrix.
@@ -274,7 +274,7 @@ def string_to_safe_path(input_str):
     try:
         return input_str.translate(_FS_TRANSLATE)
     except TypeError:
-        # Deal with incorrect encodings
+        # Deal with incorrect encoding
         for bad_chr in FS_UNSAFE_CHARS:
             input_str = input_str.replace(bad_chr, "_")
         return input_str

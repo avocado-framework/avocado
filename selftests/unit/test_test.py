@@ -98,7 +98,7 @@ class TestClassTestUnit(unittest.TestCase):
 
     def test_data_dir(self):
         """
-        Tests that a valid datadir exists follwowing the test filename
+        Tests that a valid datadir exists following the test filename
         """
         max_length_name = os.path.join(self.tmpdir, "a" * 250)
         tst = self._get_fake_filename_test(max_length_name)
