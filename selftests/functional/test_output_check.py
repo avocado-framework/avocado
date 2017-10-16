@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import shutil
@@ -15,6 +16,7 @@ basedir = os.path.abspath(basedir)
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 OUTPUT_SCRIPT_CONTENTS = """#!/bin/sh
 echo "Hello, avocado!"
+echo "Hello, stderr!" >&2
 """
 
 
@@ -97,6 +99,55 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertIn(tampered_msg, result.stdout)
+
+    def test_output_diff(self):
+        self.test_output_record_all()
+        tampered_msg_stdout = "I PITY THE FOOL THAT STANDS ON STDOUT!"
+        tampered_msg_stderr = "I PITY THE FOOL THAT STANDS ON STDERR!"
+
+        stdout_file = "%s.data/stdout.expected" % self.output_script.path
+        with open(stdout_file, 'w') as stdout_file_obj:
+            stdout_file_obj.write(tampered_msg_stdout)
+
+        stderr_file = "%s.data/stderr.expected" % self.output_script.path
+        with open(stderr_file, 'w') as stderr_file_obj:
+            stderr_file_obj.write(tampered_msg_stderr)
+
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --json -'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+
+        json_result = json.loads(result.stdout)
+        job_log = json_result['debuglog']
+        stdout_diff = os.path.join(json_result['tests'][0]['logdir'],
+                                   'stdout.diff')
+        stderr_diff = os.path.join(json_result['tests'][0]['logdir'],
+                                   'stderr.diff')
+
+        with open(stdout_diff, 'r') as stdout_diff_obj:
+            stdout_diff_content = stdout_diff_obj.read()
+        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDOUT!',
+                      stdout_diff_content)
+        self.assertIn('+Hello, avocado!', stdout_diff_content)
+
+        with open(stderr_diff, 'r') as stderr_diff_obj:
+            stderr_diff_content = stderr_diff_obj.read()
+        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDERR!',
+                      stderr_diff_content)
+        self.assertIn('+Hello, stderr!', stderr_diff_content)
+
+        with open(job_log, 'r') as job_log_obj:
+            job_log_content = job_log_obj.read()
+        self.assertIn('Stdout Diff:', job_log_content)
+        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
+        self.assertIn('+Hello, avocado!', job_log_content)
+        self.assertIn('Stdout Diff:', job_log_content)
+        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDERR!', job_log_content)
+        self.assertIn('+Hello, stderr!', job_log_content)
 
     def test_disable_output_check(self):
         self.test_output_record_all()

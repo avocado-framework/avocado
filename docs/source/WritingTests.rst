@@ -840,51 +840,45 @@ happens if we change the ``stdout.expected`` file contents to ``Hello, Avocado!`
 
 Verifying the failure reason::
 
-    $ cat $HOME/avocado/job-results/job-2014-09-25T20.52-f0521e5/job.log
-    20:52:38 test       L0163 INFO | START 1-output_record.sh
-    20:52:38 test       L0164 DEBUG|
-    20:52:38 test       L0165 DEBUG| Test instance parameters:
-    20:52:38 test       L0173 DEBUG|
-    20:52:38 test       L0176 DEBUG| Default parameters:
-    20:52:38 test       L0180 DEBUG|
-    20:52:38 test       L0181 DEBUG| Test instance params override defaults whenever available
-    20:52:38 test       L0182 DEBUG|
-    20:52:38 process    L0242 INFO | Running '$HOME/Code/avocado/output_record.sh'
-    20:52:38 process    L0310 DEBUG| [stdout] Hello, world!
-    20:52:38 test       L0565 INFO | Command: $HOME/Code/avocado/output_record.sh
-    20:52:38 test       L0565 INFO | Exit status: 0
-    20:52:38 test       L0565 INFO | Duration: 0.00313782691956
-    20:52:38 test       L0565 INFO | Stdout:
-    20:52:38 test       L0565 INFO | Hello, world!
-    20:52:38 test       L0565 INFO |
-    20:52:38 test       L0565 INFO | Stderr:
-    20:52:38 test       L0565 INFO |
-    20:52:38 test       L0060 ERROR|
-    20:52:38 test       L0063 ERROR| Traceback (most recent call last):
-    20:52:38 test       L0063 ERROR|   File "$HOME/Code/avocado/avocado/test.py", line 397, in check_reference_stdout
-    20:52:38 test       L0063 ERROR|     self.assertEqual(expected, actual, msg)
-    20:52:38 test       L0063 ERROR|   File "/usr/lib64/python2.7/unittest/case.py", line 551, in assertEqual
-    20:52:38 test       L0063 ERROR|     assertion_func(first, second, msg=msg)
-    20:52:38 test       L0063 ERROR|   File "/usr/lib64/python2.7/unittest/case.py", line 544, in _baseAssertEqual
-    20:52:38 test       L0063 ERROR|     raise self.failureException(msg)
-    20:52:38 test       L0063 ERROR| AssertionError: Actual test sdtout differs from expected one:
-    20:52:38 test       L0063 ERROR| Actual:
-    20:52:38 test       L0063 ERROR| Hello, world!
-    20:52:38 test       L0063 ERROR|
-    20:52:38 test       L0063 ERROR| Expected:
-    20:52:38 test       L0063 ERROR| Hello, Avocado!
-    20:52:38 test       L0063 ERROR|
-    20:52:38 test       L0064 ERROR|
-    20:52:38 test       L0529 ERROR| FAIL 1-output_record.sh -> AssertionError: Actual test sdtout differs from expected one:
-    Actual:
-    Hello, world!
+    $ cat $HOME/avocado/job-results/latest/job.log
+	2017-10-16 14:23:02,567 test             L0381 INFO | START 1-output_record.sh
+	2017-10-16 14:23:02,568 test             L0402 DEBUG| Test metadata:
+	2017-10-16 14:23:02,568 test             L0403 DEBUG|   filename: $HOME/output_record.sh
+	2017-10-16 14:23:02,596 process          L0389 INFO | Running '$HOME/output_record.sh'
+	2017-10-16 14:23:02,603 process          L0499 INFO | Command '$HOME/output_record.sh' finished with 0 after 0.00131011009216s
+	2017-10-16 14:23:02,602 process          L0479 DEBUG| [stdout] Hello, world!
+	2017-10-16 14:23:02,603 test             L1084 INFO | Exit status: 0
+	2017-10-16 14:23:02,604 test             L1085 INFO | Duration: 0.00131011009216
+	2017-10-16 14:23:02,604 test             L0274 DEBUG| DATA (filename=stdout.expected) => $HOME/output_record.sh.data/stdout.expected (found at file source dir)
+	2017-10-16 14:23:02,605 test             L0740 DEBUG| Stdout Diff:
+	2017-10-16 14:23:02,605 test             L0742 DEBUG| --- $HOME/output_record.sh.data/stdout.expected
+	2017-10-16 14:23:02,605 test             L0742 DEBUG| +++ $HOME/avocado/job-results/job-2017-10-16T14.23-8cba866/test-results/1-output_record.sh/stdout
+	2017-10-16 14:23:02,605 test             L0742 DEBUG| @@ -1 +1 @@
+	2017-10-16 14:23:02,605 test             L0742 DEBUG| -Hello, Avocado!
+	2017-10-16 14:23:02,605 test             L0742 DEBUG| +Hello, world!
+	2017-10-16 14:23:02,606 stacktrace       L0041 ERROR|
+	2017-10-16 14:23:02,606 stacktrace       L0044 ERROR| Reproduced traceback from: $HOME/git/avocado/avocado/core/test.py:872
+	2017-10-16 14:23:02,606 stacktrace       L0047 ERROR| Traceback (most recent call last):
+	2017-10-16 14:23:02,606 stacktrace       L0047 ERROR|   File "$HOME/git/avocado/avocado/core/test.py", line 743, in _check_reference_stdout
+	2017-10-16 14:23:02,606 stacktrace       L0047 ERROR|     self.fail('Actual test sdtout differs from expected one')
+	2017-10-16 14:23:02,606 stacktrace       L0047 ERROR|   File "$HOME//git/avocado/avocado/core/test.py", line 983, in fail
+	2017-10-16 14:23:02,607 stacktrace       L0047 ERROR|     raise exceptions.TestFail(message)
+	2017-10-16 14:23:02,607 stacktrace       L0047 ERROR| TestFail: Actual test sdtout differs from expected one
+	2017-10-16 14:23:02,607 stacktrace       L0048 ERROR|
+	2017-10-16 14:23:02,607 test             L0274 DEBUG| DATA (filename=stderr.expected) => $HOME//output_record.sh.data/stderr.expected (found at file source dir)
+	2017-10-16 14:23:02,608 test             L0965 ERROR| FAIL 1-output_record.sh -> TestFail: Actual test sdtout differs from expected one
 
-    Expected:
-    Hello, Avocado!
 
-    20:52:38 test       L0516 INFO |
+As expected, the test failed because we changed its expectations, so an
+unified diff was logged. The unified diffs are also present in the files
+`stdout.diff` and `stderr.diff`, present in the test results directory::
 
-As expected, the test failed because we changed its expectations.
+	$ cat $HOME/avocado/job-results/latest/test-results/1-output_record.sh/stdout.diff
+	--- $HOME/output_record.sh.data/stdout.expected
+	+++ $HOME/avocado/job-results/job-2017-10-16T14.23-8cba866/test-results/1-output_record.sh/stdout
+	@@ -1 +1 @@
+	-Hello, Avocado!
+	+Hello, world!
 
 Test log, stdout and stderr in native Avocado modules
 =====================================================
