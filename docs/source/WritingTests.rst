@@ -1707,6 +1707,8 @@ We recommend you take a look at the example tests present in the
 ``examples/tests`` directory, that contains a few samples to take some
 inspiration from. That directory, besides containing examples, is also used by
 the Avocado self test suite to do functional testing of Avocado itself.
+Although one can inspire in `<https://github.com/avocado-framework-tests>`__
+where people are allowed to share their basic system tests.
 
 It is also recommended that you take a look at the :ref:`api-reference`.
 for more possibilities.
