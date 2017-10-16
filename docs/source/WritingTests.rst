@@ -79,8 +79,8 @@ Avocado supports the most common exit statuses:
   ``PASS`` instead)
 * ``SKIP`` - the test's pre-requisites were not satisfied and the test's
   body was not executed (nor its ``setUp()`` and ``tearDown``).
-* ``CANCEL`` - the test was canceled somewhere during the `setUp()`, the
-  test method or the `tearDown()`. The ``setUp()`` and ``tearDown``
+* ``CANCEL`` - the test was canceled somewhere during the ``setUp()``, the
+  test method or the ``tearDown()``. The ``setUp()`` and ``tearDown``
   methods are executed.
 * ``FAIL`` - test did not result in the expected outcome. A failure points
   at a (possible) bug in the tested subject, and not in the test itself.
@@ -137,7 +137,7 @@ If your test compounds of many executions and you can't get this exception
 in other case then expected failure, you can simplify the code by using
 ``fail_on`` decorator::
 
-    avocado.fail_on(process.CmdError)
+    @avocado.fail_on(process.CmdError)
     def test(self):
         process.run("first cmd")
         process.run("second cmd")
@@ -178,6 +178,8 @@ If you need to attach several output files, you can also use
 ``self.outputdir``, which points to the
 ``$RESULTS/test-results/$TEST_ID/data`` location and is reserved for
 arbitrary test result data.
+
+.. _accessing-test-data-files:
 
 Accessing test data files
 =========================
@@ -762,10 +764,9 @@ use case, we offer the option ``--output-check-record [mode]`` to the test runne
 
 If this option is used, it will store the stdout or stderr of the process (or
 both, if you specified ``all``) being executed to reference files: ``stdout.expected``
-and ``stderr.expected``. Those files will be recorded in the test data dir. The
-data dir is in the same directory as the test source file, named
-``[source_file_name.data]``. Let's take as an example the test ``synctest.py``. In a
-fresh checkout of Avocado, you can see::
+and ``stderr.expected``. Those files will be recorded in the first (most specific)
+test's data dir (:ref:`accessing-test-data-files`). Let's take as an example the test
+``synctest.py``. In a fresh checkout of Avocado, you can see::
 
         examples/tests/synctest.py.data/stderr.expected
         examples/tests/synctest.py.data/stdout.expected
@@ -1051,9 +1052,9 @@ Will produce the following result::
     JOB TIME   : 0.10 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
 
-Notice that the `tearDown()` will not be executed when `skip()` is used.
-Any cleanup treatment has to be handled by the `setUp()`, before the
-call to `skip()`.
+Notice that the ``tearDown()`` will not be executed when ``skip()`` is used.
+Any cleanup treatment has to be handled by the ``setUp()``, before the
+call to ``skip()``.
 
 Avocado Skip Decorators
 -----------------------
@@ -1157,10 +1158,10 @@ the correct version, the result will be::
     JOB TIME   : 2.38 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-03-10T16.22-39c1f12/html/results.html
 
-Notice that using the `self.cancel()` will cancel the rest of the test
-from that point on, but the `tearDown()` will still be executed.
+Notice that using the ``self.cancel()`` will cancel the rest of the test
+from that point on, but the ``tearDown()`` will still be executed.
 
-Depending on the result format you're referring to, the `CANCEL` status
+Depending on the result format you're referring to, the ``CANCEL`` status
 is mapped to a corresponding valid status in that format. See the table
 below:
 
@@ -1319,7 +1320,7 @@ to tell Avocado to also discover the ancestor classes.
 
 The ``:avocado: recursive`` directive will direct Avocado to evaluate all
 the ancestors of the class until the base class, the one derived from
-from `avocado.Test`.
+from ``avocado.Test``.
 
 Example:
 
@@ -1365,9 +1366,9 @@ Using only `test_second_child.py` as a test reference will result in::
     INSTRUMENTED test_second_child.py:SecondChild.test_first_child
     INSTRUMENTED test_second_child.py:SecondChild.test_basic
 
-Notice that the `:avocado: disable` docstring will be ignored in
+Notice that the ``:avocado: disable`` docstring will be ignored in
 ancestors during the recursive discovery. What means that even if an
-ancestor contains the docstring `:avocado: disable`, that ancestor will
+ancestor contains the docstring ``:avocado: disable``, that ancestor will
 still be included in the results.
 
 .. _categorizing-tests:
@@ -1528,8 +1529,8 @@ given tags (effectively a logical AND operation), it's also possible
 to use multiple ``--filter-by-tags`` (effectively a logical OR
 operation).
 
-For instance To include all tests that have the `disk` tag and all
-tests that have the `net` tag, you can run::
+For instance To include all tests that have the ``disk`` tag and all
+tests that have the ``net`` tag, you can run::
 
   $ avocado list perf.py --filter-by-tags=disk --filter-by-tags=net
   INSTRUMENTED perf.py:Disk.test_device
@@ -1538,7 +1539,7 @@ tests that have the `net` tag, you can run::
 
 Including tests without tags
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The normal behavior when using `--filter-by-tags` is to require the
+The normal behavior when using ``--filter-by-tags`` is to require the
 given tags on all tests.  In some situations, though, it may be
 desirable to include tests that have no tags set.
 
@@ -1549,8 +1550,8 @@ not (yet) received tags.  Consider this command::
   $ avocado list perf.py /bin/true --filter-by-tags=disk
   INSTRUMENTED perf.py:Disk.test_device
 
-Since it requires the `disk` tag, only one test was returned.  By
-using the `--filter-by-tags-include-empty` option, you can force the
+Since it requires the ``disk`` tag, only one test was returned.  By
+using the ``--filter-by-tags-include-empty`` option, you can force the
 inclusion of tests without tags::
 
   $ avocado list perf.py /bin/true --filter-by-tags=disk --filter-by-tags-include-empty
@@ -1707,6 +1708,8 @@ We recommend you take a look at the example tests present in the
 ``examples/tests`` directory, that contains a few samples to take some
 inspiration from. That directory, besides containing examples, is also used by
 the Avocado self test suite to do functional testing of Avocado itself.
+Although one can inspire in `<https://github.com/avocado-framework-tests>`__
+where people are allowed to share their basic system tests.
 
 It is also recommended that you take a look at the :ref:`api-reference`.
 for more possibilities.
