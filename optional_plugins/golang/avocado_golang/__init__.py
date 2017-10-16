@@ -21,6 +21,7 @@ import glob
 import os
 import re
 
+from avocado.core import exceptions
 from avocado.core import loader
 from avocado.core import output
 from avocado.core import test
@@ -29,7 +30,10 @@ from avocado.utils import path as utils_path
 from avocado.utils import process
 
 
-_GO_BIN = utils_path.find_command('go')
+try:
+    _GO_BIN = utils_path.find_command('go')
+except utils_path.CmdNotFoundError:
+    _GO_BIN = None
 
 
 class GolangTest(test.SimpleTest):
@@ -57,6 +61,9 @@ class GolangTest(test.SimpleTest):
         """
         Create the Golang command and execute it.
         """
+        if _GO_BIN is None:
+            raise exceptions.TestError("go binary not found")
+
         test_name = '%s$' % self.name.name.split(':')[1]
         if self.subtest is not None:
             test_name += '/%s' % self.subtest
