@@ -10,7 +10,7 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		1d4e7bdf857cf9408113a3a39cd327b4fe22c64c
+        %global commit		4ecbf18580fa5205a79c9742cbe1219537975045
     %endif
     %if ! 0%{?commit_date:1}
         %global commit_date	20170518
@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 54.1
-Release: 3%{?gitrel}%{?dist}
+Version: 55.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -393,6 +393,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 
 %changelog
+* Tue Oct 17 2017 Cleber Rosa <cleber@redhat.com> - 55.0-0
+- New upstream release
+
 * Mon Oct 16 2017 Cleber Rosa <cleber@redhat.com> - 54.1-3
 - Excluded avocado_loader_yaml files from main package
 - Package recently introduced golang plugin

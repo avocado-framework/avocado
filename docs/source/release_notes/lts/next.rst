@@ -44,14 +44,41 @@ introduced by the next LTS version are:
 * Avocado can now run list and run standard Python unittests, that is,
   tests written in Python that use the :mod:`unittest` library alone.
 
-* The Test ID format Avocado has been using for a while received a
-  minor tweak: the character that precedes the variant name, a
-  separator, used to be ``;``, which is not allowed on some
-  filesystems, and is now a ``+`` character instead.
+* Improvements in the serialization of TestIDs allow test result
+  directories to be properly stored and accessed on Windows based
+  filesystems.
 
 * The complete output of tests, that is the combination of ``STDOUT``
   and ``STDERR`` is now also recorded in the test result directory as
   a file named ``output``.
+
+* Support for listing and running golang tests has been introduced.
+  Avocado can now discover tests written in Go, and if Go is properly
+  installed, Avocado can run them.
+
+* The support for test data files has been improved to support more
+  specific sources of data.  For instance, when a test file used to
+  contain more than one test, all of them shared the same ``datadir``
+  property value, thus the same directory which contained data files.
+  Now, tests should use the newly introduced :meth:`get_data()
+  <avocado.core.test.TestData.get_data>` API, which will attempt to
+  locate data files specific to the variant (if used), test name, and
+  finally file name.  For more information, please refer to the
+  section :ref:`accessing-test-data-files`.
+
+* The output check feature will now use the to the most specific data
+  source location available, which is a consequence of the switch to
+  the use of the ``get_data()`` API discussed previously.  This means
+  that two tests in a single file can generate different output,
+  generate different ``stdout.expected`` or ``stderr.expected``.
+
+* When the output check feature finds a mismatch between expected and
+  actual output, will now produce a unified diff of those, instead of
+  printing out their full content.  This makes it a lot easier to
+  read the logs and quickly spot the differences and possibly the
+  failure cause(s).
+
+* Sysinfo collection can now be enabled on a test level basis.
 
 Complete list of changes
 ========================

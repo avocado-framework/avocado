@@ -1,0 +1,99 @@
+====================
+55.0 Never Let Me Go
+====================
+
+The Avocado team is proud to present another release: Avocado version
+55.0, aka, "Never Let Me Go" is now available!
+
+Release documentation: `Avocado 55.0
+<http://avocado-framework.readthedocs.io/en/55.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* Improvements in the serialization of TestIDs allow test result
+  directories to be properly stored and accessed on Windows based
+  filesystems.
+
+* Support for listing and running golang tests has been introduced.
+  Avocado can now discover tests written in Go, and if Go is properly
+  installed, Avocado can run them.
+
+* The support for test data files has been improved to support more
+  specific sources of data.  For instance, when a test file used to
+  contain more than one test, all of them shared the same ``datadir``
+  property value, thus the same directory which contained data files.
+  Now, tests should use the newly introduced :meth:`get_data()
+  <avocado.core.test.TestData.get_data>` API, which will attempt to
+  locate data files specific to the variant (if used), test name, and
+  finally file name.  For more information, please refer to the
+  section :ref:`accessing-test-data-files`.
+
+* The output check feature will now use the to the most specific data
+  source location available, which is a consequence of the switch to
+  the use of the ``get_data()`` API discussed previously.  This means
+  that two tests in a single file can generate different output,
+  generate different ``stdout.expected`` or ``stderr.expected``.
+
+* When the output check feature finds a mismatch between expected and
+  actual output, will now produce a unified diff of those, instead of
+  printing out their full content.  This makes it a lot easier to
+  read the logs and quickly spot the differences and possibly the
+  failure cause(s).
+
+* Sysinfo collection can now be enabled on a test level basis.
+
+* Progress towards Python 3 support.  Avocado can now run most
+  commands on a Python 3 environment, including listing and running
+  tests.  The goal is to make Python 3 a "top tier" environment in the
+  next release, being supported in the same way that Python 2 is.
+
+Bug Fixes
+=========
+
+* Avocado logs its own version as part of a job log.  In some
+  situations Avocado could log the version of a source repository,
+  if the current working directory was an Avocado git source repo.
+  That means that even when running, say, from RPM packages, the
+  version number based on the source code would be registered.
+
+* The output check record feature used to mistakenly add a newline
+  to the end of the record stdout/stderr files.
+
+* Problems with newline based buffering prevented Avocado from
+  properly recording test stdout/stderr.  If no newline was given
+  at the end of a line, it would never show up in the stdout/stderr
+  files.
+
+Internal Changes
+================
+
+* The reference to ``examples/*.yaml``, which isn't a valid set of
+  files, was removed from the package manifest.
+
+* The flexmock library requirement, used on some unittests, has been
+  removed.  Those tests were rewritten using ``mock``, which is
+  standard on Python 3 (``unittest.mock``) and available on Python 2
+  as a standalone module.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/55.0...54.1>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=Zk4B8H6L53Y>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/Oplm42c0/1132-sprint-theme-never-let-me-go
