@@ -97,7 +97,7 @@ with::
     class MyTest(Test):
 
         def setUp(self):
-            vmimage.IMAGE_PROVIDERS.append(MyProvider)
+            vmimage.IMAGE_PROVIDERS.add(MyProvider)
             image = vmimage.get('MyDistro')
             ...
 
