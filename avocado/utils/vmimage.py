@@ -322,7 +322,6 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
     if cache_dir is None:
         cache_dir = tempfile.gettempdir()
 
-    providers_list = list_providers()
     provider_args = {}
     if version is not None:
         provider_args['version'] = version
@@ -331,7 +330,7 @@ def get(name=None, version=None, build=None, arch=None, checksum=None,
     if arch is not None:
         provider_args['arch'] = arch
 
-    for provider in providers_list:
+    for provider in IMAGE_PROVIDERS:
         if name is None or name == provider.name.lower():
             cls = provider(**provider_args)
             try:
@@ -356,3 +355,7 @@ def list_providers():
             if (_ != ImageProviderBase and
                 isinstance(_, type) and
                 issubclass(_, ImageProviderBase))]
+
+
+#: List of available providers classes
+IMAGE_PROVIDERS = list_providers()

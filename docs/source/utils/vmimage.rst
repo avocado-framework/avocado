@@ -57,3 +57,49 @@ external snapshot created out of the base image::
     >>> i2 = vmimage.get()
     >>> i1.path == i2.path
     False
+
+Custom Image Provider
+=====================
+
+If you need your own Image Provider, you can extend the
+``vmimage.IMAGE_PROVIDERS`` list, including your provider class. For instance,
+using the ``vmimage`` utility in an Avocado test, we could add our own provider
+with::
+
+    from avocado import Test
+
+    from avocado.utils import vmimage
+
+    class MyProvider(vmimage.ImageProviderBase):
+
+        name = 'MyDistro'
+
+        def __init__(self, version='[0-9]+', build='[0-9]+.[0-9]+',
+                     arch=os.uname()[4]):
+            """
+            :params version: The regular expression that represents
+                             your distro version numbering.
+            :params build: The regular expression that represents
+                           your build version numbering.
+            :params arch: The default architecture to look images for.
+            """
+            super(MyProvider, self).__init__(version, build, arch)
+
+            # The URL which contains a list of the distro versions
+            self.url_versions = 'https://dl.fedoraproject.org/pub/fedora/linux/releases/'
+
+            # The URL which contains a list of distro images
+            self.url_images = self.url_versions + '{version}/CloudImages/{arch}/images/'
+
+            # The images naming pattern
+            self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
+
+    class MyTest(Test):
+
+        def setUp(self):
+            vmimage.IMAGE_PROVIDERS.append(MyProvider)
+            image = vmimage.get('MyDistro')
+            ...
+
+        def test(self):
+            ...
