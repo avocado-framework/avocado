@@ -141,21 +141,6 @@ class MultipleMethods(Test):
         pass
 """
 
-AVOCADO_FOREIGN_TAGGED_ENABLE = """from foreignlib import Base
-
-class First(Base):
-    '''
-    First actual test based on library base class
-
-    This Base class happens to, fictionally, inherit from avocado.Test. Because
-    Avocado can't tell that, a tag is necessary to signal that.
-
-    :avocado: enable
-    '''
-    def test(self):
-        pass
-"""
-
 AVOCADO_TEST_NESTED_TAGGED = """from avocado import Test
 import avocado
 import fmaslkfdsaf
@@ -232,9 +217,6 @@ from avocado import Test
 from recursive_discovery_test1 import SecondChild
 
 class ThirdChild(Test, SecondChild):
-    '''
-    :avocado: recursive
-    '''
     def test_third_child(self):
         pass
 """
@@ -382,16 +364,6 @@ class LoaderTest(unittest.TestCase):
         self.assertEqual(len(suite), 1)
         self.assertEqual(suite[0][1]["methodName"], 'test')
         avocado_multiple_tests.remove()
-
-    def test_load_foreign(self):
-        avocado_pass_test = script.TemporaryScript('foreign.py',
-                                                   AVOCADO_FOREIGN_TAGGED_ENABLE,
-                                                   'avocado_loader_unittest')
-        avocado_pass_test.save()
-        test_class, test_parameters = (
-            self.loader.discover(avocado_pass_test.path, loader.ALL)[0])
-        self.assertTrue(test_class == 'First', test_class)
-        avocado_pass_test.remove()
 
     def test_load_pass_disable(self):
         avocado_pass_test = script.TemporaryScript('disable.py',
