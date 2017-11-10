@@ -355,7 +355,7 @@ class RemoteTestRunner(TestRunner):
         if result.exit_status == 127:
             return (False, None)
 
-        match = self.remote_version_re.findall(result.stderr)
+        match = self.remote_version_re.findall(result.stderr + result.stdout)
         if match is None:
             return (False, None)
 
