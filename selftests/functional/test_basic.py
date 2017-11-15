@@ -507,15 +507,18 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     'examples/tests/passtest.py' % (AVOCADO, self.tmpdir))
         avocado_process = process.SubProcess(cmd_line)
-        avocado_process.start()
-        link = os.path.join(self.tmpdir, 'latest')
-        for trial in range(0, 50):
-            time.sleep(0.1)
-            if os.path.exists(link) and os.path.islink(link):
-                avocado_process.wait()
-                break
-        self.assertTrue(os.path.exists(link))
-        self.assertTrue(os.path.islink(link))
+        try:
+            avocado_process.start()
+            link = os.path.join(self.tmpdir, 'latest')
+            for trial in range(0, 50):
+                time.sleep(0.1)
+                if os.path.exists(link) and os.path.islink(link):
+                    avocado_process.wait()
+                    break
+            self.assertTrue(os.path.exists(link))
+            self.assertTrue(os.path.islink(link))
+        finally:
+            avocado_process.wait()
 
     def test_dry_run(self):
         cmd = ("%s run --sysinfo=off passtest.py failtest.py "
