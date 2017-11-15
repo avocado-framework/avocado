@@ -36,17 +36,47 @@ parallel_selftests() {
         python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP &
         PIDS+=("$!")
     done
+    FAILED_ONCE=()
     for I in $(seq 0 $((${#PIDS[@]} - 1))); do
         wait ${PIDS[$I]}
         RET=$?
         if [ $RET -ne 0 ]; then
-            ERR=1
-            echo python -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
-            cat ${TMPS[$I]}
+            for FAILURE in $(cat "${TMPS[$I]}" | sed -n 's/\(ERROR\|FAIL\): \([^ ]*\) (\([^)]*\)).*/\3.\2/p'); do
+                FAILED_ONCE+=("$FAILURE")
+            done
+        else
+            rm ${TMPS[$I]}
         fi
-        rm ${TMPS[$I]}
     done
-    echo
+    if [ ${#FAILED_ONCE[@]} -gt 0 ]; then
+        if [ ${#FAILED_ONCE[@]} -le 10 ]; then
+            echo ${#FAILED_ONCE[@]} failed during parallel execution, trying them in series
+            echo "python -m unittest --failfast ${FAILED_ONCE[@]}"
+            if python -m unittest --failfast ${FAILED_ONCE[@]}; then
+                echo "All failed tests passed when executed in series"
+                echo
+                for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+                    [ -e "${TMPS[$I]}" ] && rm "${TMPS[$I]}"
+                done
+            else
+                echo
+                echo "Some test(s) failed in series as well, showing failures from parallel run:"
+                ERR=1
+            fi
+        else
+            echo "${#FAILED_ONCE[@]} tests failed during execution, not trying to re-run them."
+            ERR=1
+        fi
+    fi
+    # Remove all tmp files
+    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+        if [ -e "${TMPS[$I]}" ]; then
+            echo
+            echo python -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
+            cat "${TMPS[$I]}"
+            rm "${TMPS[$I]}"
+        fi
+    done
     echo ----------------------------------------------------------------------
     echo Ran ${#ALL[@]} tests in $(($(date +%s) - START))s
     return $ERR
