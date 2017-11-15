@@ -45,6 +45,11 @@ EOF
 }
 
 
+cleanup() {
+    [ "$tmp" ] && rm "$tmp"
+    [ "$BRANCH" ] && git checkout $BRANCH &>/dev/null
+}
+
 set_status() {
     # Sets status to given commit on github
     local base_url="$1"; shift      # base github repo url
@@ -74,12 +79,19 @@ check() {
         status=0
     elif [ $INTERACTIVE ]; then
         cat $tmp
-        echo -ne "\e[33mUse 'y' to ignore this failure: \e[0m"
+        echo -ne "\e[33mUse 'y' to ignore this failure or 'a' to abort execution: \e[0m"
         read RES
-        if [ "$RES" == "y" ]; then
-            echo -e "\e[33mForce-updating results to PASS\e[0m"
-            status=1
-        fi
+        case $RES in
+            "y")
+                echo -e "\e[33mForce-updating results to PASS\e[0m"
+                status=1
+                ;;
+            "a")
+                echo -e "\e[33mAborting execution\e[0m"
+                cleanup
+                exit -1
+                ;;
+        esac
     fi
     if [ $status -eq -1 ]; then
         echo >> "$outfile"
@@ -268,5 +280,4 @@ else
     exit -1
 fi
 
-rm "$tmp"
-git checkout $BRANCH &>/dev/null
+cleanup
