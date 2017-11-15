@@ -33,8 +33,9 @@ parallel_selftests() {
     for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
         TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
         TMPS+=("$TMP")
-        python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP &
+        ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
         PIDS+=("$!")
+        sleep 0.1
     done
     FAILED_ONCE=()
     for I in $(seq 0 $((${#PIDS[@]} - 1))); do
