@@ -33,7 +33,14 @@ script:
         # Run the "make check" per each commit in PR (TRAVIS_COMMIT_RANGE)
         ERR=""
         echo Branch is $TRAVIS_BRANCH
-        for COMMIT in $(git rev-list $TRAVIS_COMMIT_RANGE); do
+        if [ "$TRAVIS_PULL_REQUEST_SHA" ]; then
+            # It's pull request, check only PR commits
+            COMMITS="$(git cherry origin/master | sed -n 's/+ \(.*\)/\1/p')"
+        else
+            # push check, try to check everything
+            COMMITS=$(git rev-list $TRAVIS_COMMIT_RANGE)
+        fi
+        for COMMIT in $COMMITS; do
             echo
             echo "--------------------< $(git log -1 --oneline $COMMIT) >--------------------"
             echo
