@@ -291,6 +291,95 @@ class CmdResult(object):
         return cmd_rep
 
 
+class FDDrainer(object):
+
+    def __init__(self, fd, result, name=None, logger=None, logger_prefix='',
+                 stream_logger=None, ignore_bg_processes=False, verbose=False):
+        """
+        Reads data from a file descriptor in a thread, storing locally in
+        a file-like :attr:`data` object.
+
+        :param fd: a file descriptor that will be read (drained) from
+        :type fd: int
+        :param result: a :class:`CmdResult` instance associated with the process
+                       used to detect if the process is still running and
+                       if there's still data to be read.
+        :type result: a :class:`CmdResult` instance
+        :param name: a descriptive name that will be passed to the Thread name
+        :type name: str
+        :param logger_prefix: the prefix used when logging the data
+        :type logger_prefix: str
+        :param ignore_bg_processes: When True the process does not wait for
+                    child processes which keep opened stdout/stderr streams
+                    after the main process finishes (eg. forked daemon which
+                    did not closed the stdout/stderr). Note this might result
+                    in missing output produced by those daemons after the
+                    main thread finishes and also it allows those daemons
+                    to be running after the process finishes.
+        :type ignore_bg_processes: boolean
+        :param verbose: wether to log in both the logger and stream_logger
+        :type verbose: boolean
+        """
+        self.fd = fd
+        self.name = name
+        self.data = StringIO()
+        # TODO: check if, when the process finishes, the FD doesn't
+        # automatically close.  This may be used as the detection
+        # instead.
+        self._result = result
+        self._lock = threading.Lock()
+        self._thread = None
+        self._logger = logger
+        self._logger_prefix = logger_prefix
+        self._stream_logger = stream_logger
+        self._ignore_bg_processes = ignore_bg_processes
+        self._verbose = verbose
+
+    def _drainer(self):
+        """
+        Read from fd, storing and optionally logging the output
+        """
+        bfr = ''
+        while True:
+            if self._ignore_bg_processes:
+                has_io = select.select([self.fd], [], [], 1)[0]
+                if (not has_io and self._result.exit_status is not None):
+                    # Exit if no new data and main process has finished
+                    break
+                if not has_io:
+                    # Don't read unless there are new data available
+                    continue
+            tmp = os.read(self.fd, 8192)
+            if tmp == '':
+                break
+            with self._lock:
+                self.data.write(tmp)
+                if self._verbose:
+                    bfr += tmp
+                    if tmp.endswith('\n'):
+                        for line in bfr.splitlines():
+                            if self._logger is not None:
+                                self._logger.debug(self._logger_prefix, line)
+                            if self._stream_logger is not None:
+                                self._stream_logger.debug('%s\n', line)
+                        bfr = ''
+        # Write the rest of the bfr unfinished by \n
+        if self._verbose and bfr:
+            for line in bfr.splitlines():
+                if self._logger is not None:
+                    self._logger.debug(self._logger_prefix, line)
+                if self._stream_logger is not None:
+                    self._stream_logger.debug(line)
+
+    def start(self):
+        self._thread = threading.Thread(target=self._drainer, name=self.name)
+        self._thread.daemon = True
+        self._thread.start()
+
+    def join(self):
+        self._thread.join()
+
+
 class SubProcess(object):
 
     """
@@ -352,13 +441,10 @@ class SubProcess(object):
             self.env = None
         self._popen = None
 
-        # Locks used when reading from the PIPEs and writing to files
-        self._output_stdout_lock = None
-        self._output_stderr_lock = None
-
-        # Threads that drain content from the PIPEs given to processes
-        self._output_stdout_thread = None
-        self._output_stderr_thread = None
+        # Drainers used when reading from the PIPEs and writing to
+        # files and logs
+        self._stdout_drainer = None
+        self._stderr_drainer = None
 
         self._ignore_bg_processes = ignore_bg_processes
 
@@ -417,27 +503,29 @@ class SubProcess(object):
 
             self.start_time = time.time()
 
-            # prepare stdout handling, including output "file", lock and thread
-            self.stdout_file = StringIO()
-            self._output_stdout_lock = threading.Lock()
-            self._output_stdout_thread = threading.Thread(
-                target=self._fd_drainer,
+            # prepare fd drainers
+            self._stdout_drainer = FDDrainer(
+                self._popen.stdout.fileno(),
+                self.result,
                 name="%s-stdout" % self.cmd,
-                args=[self._popen.stdout])
-            self._output_stdout_thread.daemon = True
-
-            # preapre stderr handling, including output "file", lock and thread
-            self.stderr_file = StringIO()
-            self._output_stderr_lock = threading.Lock()
-            self._output_stderr_thread = threading.Thread(
-                target=self._fd_drainer,
+                logger=log,
+                logger_prefix="[stdout] %s",
+                stream_logger=stdout_log,
+                ignore_bg_processes=self._ignore_bg_processes,
+                verbose=self.verbose)
+            self._stderr_drainer = FDDrainer(
+                self._popen.stderr.fileno(),
+                self.result,
                 name="%s-stderr" % self.cmd,
-                args=[self._popen.stderr])
-            self._output_stderr_thread.daemon = True
+                logger=log,
+                logger_prefix="[stderr] %s",
+                stream_logger=stderr_log,
+                ignore_bg_processes=self._ignore_bg_processes,
+                verbose=self.verbose)
 
             # start stdout/stderr threads
-            self._output_stdout_thread.start()
-            self._output_stderr_thread.start()
+            self._stdout_drainer.start()
+            self._stderr_drainer.start()
 
             def signal_handler(signum, frame):
                 self.result.interrupted = "signal/ctrl+c"
@@ -448,61 +536,6 @@ class SubProcess(object):
             except ValueError:
                 if self.verbose:
                     log.info("Command %s running on a thread", self.cmd)
-
-    def _fd_drainer(self, input_pipe):
-        """
-        Read from input_pipe, storing and logging output.
-
-        :param input_pipe: File like object to the stream.
-        """
-        if input_pipe == self._popen.stdout:
-            prefix = '[stdout] %s'
-            if self.allow_output_check in ['none', 'stderr']:
-                stream_logger = None
-            else:
-                stream_logger = stdout_log
-            output_file = self.stdout_file
-            lock = self._output_stdout_lock
-        elif input_pipe == self._popen.stderr:
-            prefix = '[stderr] %s'
-            if self.allow_output_check in ['none', 'stdout']:
-                stream_logger = None
-            else:
-                stream_logger = stderr_log
-            output_file = self.stderr_file
-            lock = self._output_stderr_lock
-
-        fileno = input_pipe.fileno()
-
-        bfr = ''
-        while True:
-            if self._ignore_bg_processes:
-                has_io = select.select([fileno], [], [], 1)[0]
-                if (not has_io and self.result.exit_status is not None):
-                    # Exit if no new data and main process has finished
-                    break
-                if not has_io:
-                    # Don't read unless there are new data available
-                    continue
-            tmp = os.read(fileno, 8192)
-            if tmp == '':
-                break
-            with lock:
-                output_file.write(tmp)
-                if self.verbose:
-                    bfr += tmp
-                    if tmp.endswith('\n'):
-                        for line in bfr.splitlines():
-                            log.debug(prefix, line)
-                            if stream_logger is not None:
-                                stream_logger.debug('%s\n', line)
-                        bfr = ''
-        # Write the rest of the bfr unfinished by \n
-        if self.verbose and bfr:
-            for line in bfr.splitlines():
-                log.debug(prefix, line)
-                if stream_logger is not None:
-                    stream_logger.debug(line)
 
     def _fill_results(self, rc):
         self._init_subprocess()
@@ -520,11 +553,9 @@ class SubProcess(object):
         Close subprocess stdout and stderr, and put values into result obj.
         """
         # Cleaning up threads
-        self._output_stdout_thread.join()
-        self._output_stderr_thread.join()
+        self._stdout_drainer.join()
+        self._stderr_drainer.join()
         # Clean subprocess pipes and populate stdout/err
-        self._popen.stdout.close()
-        self._popen.stderr.close()
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
@@ -549,9 +580,7 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        with self._output_stdout_lock:
-            stdout = self.stdout_file.getvalue()
-        return stdout
+        return self._stdout_drainer.data.getvalue()
 
     def get_stderr(self):
         """
@@ -561,9 +590,7 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        with self._output_stderr_lock:
-            stderr = self.stderr_file.getvalue()
-        return stderr
+        return self._stderr_drainer.data.getvalue()
 
     def terminate(self):
         """

@@ -1,3 +1,4 @@
+import logging
 import os
 import unittest
 
@@ -228,6 +229,51 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual("1st_binary", res)
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
         self.assertEqual("./bin", res)
+
+
+class FDDrainerTests(unittest.TestCase):
+
+    def test_drain_from_pipe_fd(self):
+        read_fd, write_fd = os.pipe()
+        result = process.CmdResult()
+        fd_drainer = process.FDDrainer(read_fd, result, "test")
+        fd_drainer.start()
+        for content in ("foo", "bar", "baz", "foo\nbar\nbaz\n\n"):
+            os.write(write_fd, content)
+        os.write(write_fd, "finish")
+        os.close(write_fd)
+        fd_drainer.join()
+        self.assertEqual(fd_drainer.data.getvalue(),
+                         "foobarbazfoo\nbar\nbaz\n\nfinish")
+
+    def test_log(self):
+        class CatchHandler(logging.NullHandler):
+            """
+            Handler used just to confirm that a logging event happened
+            """
+            def __init__(self, *args, **kwargs):
+                super(CatchHandler, self).__init__(*args, **kwargs)
+                self.caught_record = False
+
+            def handle(self, record):
+                self.caught_record = True
+
+        read_fd, write_fd = os.pipe()
+        result = process.CmdResult()
+        logger = logging.getLogger("FDDrainerTests.test_log")
+        handler = CatchHandler()
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+        fd_drainer = process.FDDrainer(read_fd, result, "test",
+                                       logger=logger, verbose=True)
+        fd_drainer.start()
+        os.write(write_fd, "should go to the log\n")
+        os.close(write_fd)
+        fd_drainer.join()
+        self.assertEqual(fd_drainer.data.getvalue(),
+                         "should go to the log\n")
+        self.assertTrue(handler.caught_record)
 
 
 if __name__ == "__main__":
