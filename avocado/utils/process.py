@@ -488,8 +488,7 @@ class SubProcess(object):
             tmp = os.read(fileno, 8192)
             if tmp == '':
                 break
-            lock.acquire()
-            try:
+            with lock:
                 output_file.write(tmp)
                 if self.verbose:
                     bfr += tmp
@@ -499,8 +498,6 @@ class SubProcess(object):
                             if stream_logger is not None:
                                 stream_logger.debug(stream_prefix, '%s\n' % line)
                         bfr = ''
-            finally:
-                lock.release()
         # Write the rest of the bfr unfinished by \n
         if self.verbose and bfr:
             for line in bfr.splitlines():
@@ -553,9 +550,8 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        self._output_stdout_lock.acquire()
-        stdout = self.stdout_file.getvalue()
-        self._output_stdout_lock.release()
+        with self._output_stdout_lock:
+            stdout = self.stdout_file.getvalue()
         return stdout
 
     def get_stderr(self):
@@ -566,9 +562,8 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        self._output_stderr_lock.acquire()
-        stderr = self.stderr_file.getvalue()
-        self._output_stderr_lock.release()
+        with self._output_stderr_lock:
+            stderr = self.stderr_file.getvalue()
         return stderr
 
     def terminate(self):
