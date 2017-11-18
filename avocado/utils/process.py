@@ -461,12 +461,12 @@ class SubProcess(object):
         bfr = ''
         while True:
             if self._ignore_bg_processes:
-                # Exit if there are no new data and the main process finished
-                if (not select.select([fileno], [], [], 1)[0] and
-                        self.result.exit_status is not None):
+                has_io = select.select([fileno], [], [], 1)[0]
+                if (not has_io and self.result.exit_status is not None):
+                    # Exit if no new data and main process has finished
                     break
-                # Don't read unless there are new data available:
-                if not select.select([fileno], [], [], 1)[0]:
+                if not has_io:
+                    # Don't read unless there are new data available
                     continue
             tmp = os.read(fileno, 8192)
             if tmp == '':
