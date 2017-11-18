@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 
 VERSION = open('VERSION', 'r').read().strip()
-VIRTUAL_ENV = hasattr(sys, 'real_prefix')
+VIRTUAL_ENV = (hasattr(sys, 'real_prefix') or 'VIRTUAL_ENV' in os.environ)
 
 
 def get_dir(system_path=None, virtual_path=None):
