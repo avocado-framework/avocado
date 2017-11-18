@@ -44,4 +44,4 @@ if __name__ == '__main__':
             result += ["%s.%s.%s" % (test_module_name, klass, method)
                        for method in methods]
     if result:
-        print "\n".join(result)
+        print("\n".join(result))
