@@ -20,8 +20,8 @@ import sys
 
 from setuptools import setup, find_packages
 
-
-VERSION = open('VERSION', 'r').read().strip()
+BASE_PATH = os.path.dirname(__file__)
+VERSION = open(os.path.join(BASE_PATH, 'VERSION'), 'r').read().strip()
 VIRTUAL_ENV = (hasattr(sys, 'real_prefix') or 'VIRTUAL_ENV' in os.environ)
 
 
@@ -125,7 +125,7 @@ def _get_resource_files(path, base):
 
 
 def get_long_description():
-    with open('README.rst', 'r') as req:
+    with open(os.path.join(BASE_PATH, 'README.rst'), 'r') as req:
         req_contents = req.read()
     return req_contents
 
