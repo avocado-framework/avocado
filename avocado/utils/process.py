@@ -455,7 +455,6 @@ class SubProcess(object):
 
         :param input_pipe: File like object to the stream.
         """
-        stream_prefix = "%s"
         if input_pipe == self._popen.stdout:
             prefix = '[stdout] %s'
             if self.allow_output_check in ['none', 'stderr']:
@@ -496,14 +495,14 @@ class SubProcess(object):
                         for line in bfr.splitlines():
                             log.debug(prefix, line)
                             if stream_logger is not None:
-                                stream_logger.debug(stream_prefix, '%s\n' % line)
+                                stream_logger.debug('%s\n', line)
                         bfr = ''
         # Write the rest of the bfr unfinished by \n
         if self.verbose and bfr:
             for line in bfr.splitlines():
                 log.debug(prefix, line)
                 if stream_logger is not None:
-                    stream_logger.debug(stream_prefix, line)
+                    stream_logger.debug(line)
 
     def _fill_results(self, rc):
         self._init_subprocess()
