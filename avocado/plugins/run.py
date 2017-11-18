@@ -29,6 +29,7 @@ from avocado.core.dispatcher import ResultDispatcher
 from avocado.core.dispatcher import JobPrePostDispatcher
 from avocado.core.settings import settings
 from avocado.utils.data_structures import time_to_seconds
+from avocado.utils import process
 
 
 class Run(CLICmd):
@@ -133,7 +134,8 @@ class Run(CLICmd):
         out_check = parser.add_argument_group('output check arguments')
 
         out_check.add_argument('--output-check-record',
-                               choices=('none', 'all', 'stdout', 'stderr'),
+                               choices=('none', 'all', 'stdout', 'stderr',
+                                        'both', 'combined'),
                                default='none',
                                help="Record output streams of your tests "
                                "to reference files (valid options: none (do "
@@ -171,6 +173,9 @@ class Run(CLICmd):
 
         :param args: Command line args received from the run subparser.
         """
+        if 'output_check_record' in args:
+            process.OUTPUT_CHECK_RECORD_MODE = getattr(args, 'output_check_record')
+
         if args.unique_job_id is not None:
             try:
                 int(args.unique_job_id, 16)
