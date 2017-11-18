@@ -410,17 +410,14 @@ class SubProcess(object):
             self.stdout_file = StringIO()
             self.stderr_file = StringIO()
             self.stdout_lock = threading.Lock()
-            ignore_bg_processes = self._ignore_bg_processes
             self.stdout_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stdout" % self.cmd,
-                                                  args=[self._popen.stdout,
-                                                        ignore_bg_processes])
+                                                  args=[self._popen.stdout])
             self.stdout_thread.daemon = True
             self.stderr_lock = threading.Lock()
             self.stderr_thread = threading.Thread(target=self._fd_drainer,
                                                   name="%s-stderr" % self.cmd,
-                                                  args=[self._popen.stderr,
-                                                        ignore_bg_processes])
+                                                  args=[self._popen.stderr])
             self.stderr_thread.daemon = True
             self.stdout_thread.start()
             self.stderr_thread.start()
@@ -435,7 +432,7 @@ class SubProcess(object):
                 if self.verbose:
                     log.info("Command %s running on a thread", self.cmd)
 
-    def _fd_drainer(self, input_pipe, ignore_bg_processes=False):
+    def _fd_drainer(self, input_pipe):
         """
         Read from input_pipe, storing and logging output.
 
@@ -463,7 +460,7 @@ class SubProcess(object):
 
         bfr = ''
         while True:
-            if ignore_bg_processes:
+            if self._ignore_bg_processes:
                 # Exit if there are no new data and the main process finished
                 if (not select.select([fileno], [], [], 1)[0] and
                         self.result.exit_status is not None):
