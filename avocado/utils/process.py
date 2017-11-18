@@ -351,6 +351,15 @@ class SubProcess(object):
         else:
             self.env = None
         self._popen = None
+
+        # Locks used when reading from the PIPEs and writing to files
+        self._output_stdout_lock = None
+        self._output_stderr_lock = None
+
+        # Threads that drain content from the PIPEs given to processes
+        self._output_stdout_thread = None
+        self._output_stderr_thread = None
+
         self._ignore_bg_processes = ignore_bg_processes
 
     def __repr__(self):
@@ -407,20 +416,28 @@ class SubProcess(object):
                 raise details
 
             self.start_time = time.time()
+
+            # prepare stdout handling, including output "file", lock and thread
             self.stdout_file = StringIO()
+            self._output_stdout_lock = threading.Lock()
+            self._output_stdout_thread = threading.Thread(
+                target=self._fd_drainer,
+                name="%s-stdout" % self.cmd,
+                args=[self._popen.stdout])
+            self._output_stdout_thread.daemon = True
+
+            # preapre stderr handling, including output "file", lock and thread
             self.stderr_file = StringIO()
-            self.stdout_lock = threading.Lock()
-            self.stdout_thread = threading.Thread(target=self._fd_drainer,
-                                                  name="%s-stdout" % self.cmd,
-                                                  args=[self._popen.stdout])
-            self.stdout_thread.daemon = True
-            self.stderr_lock = threading.Lock()
-            self.stderr_thread = threading.Thread(target=self._fd_drainer,
-                                                  name="%s-stderr" % self.cmd,
-                                                  args=[self._popen.stderr])
-            self.stderr_thread.daemon = True
-            self.stdout_thread.start()
-            self.stderr_thread.start()
+            self._output_stderr_lock = threading.Lock()
+            self._output_stderr_thread = threading.Thread(
+                target=self._fd_drainer,
+                name="%s-stderr" % self.cmd,
+                args=[self._popen.stderr])
+            self._output_stderr_thread.daemon = True
+
+            # start stdout/stderr threads
+            self._output_stdout_thread.start()
+            self._output_stderr_thread.start()
 
             def signal_handler(signum, frame):
                 self.result.interrupted = "signal/ctrl+c"
@@ -446,7 +463,7 @@ class SubProcess(object):
             else:
                 stream_logger = stdout_log
             output_file = self.stdout_file
-            lock = self.stdout_lock
+            lock = self._output_stdout_lock
         elif input_pipe == self._popen.stderr:
             prefix = '[stderr] %s'
             if self.allow_output_check in ['none', 'stdout']:
@@ -454,7 +471,7 @@ class SubProcess(object):
             else:
                 stream_logger = stderr_log
             output_file = self.stderr_file
-            lock = self.stderr_lock
+            lock = self._output_stderr_lock
 
         fileno = input_pipe.fileno()
 
@@ -507,8 +524,8 @@ class SubProcess(object):
         Close subprocess stdout and stderr, and put values into result obj.
         """
         # Cleaning up threads
-        self.stdout_thread.join()
-        self.stderr_thread.join()
+        self._output_stdout_thread.join()
+        self._output_stderr_thread.join()
         # Clean subprocess pipes and populate stdout/err
         self._popen.stdout.close()
         self._popen.stderr.close()
@@ -536,9 +553,9 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        self.stdout_lock.acquire()
+        self._output_stdout_lock.acquire()
         stdout = self.stdout_file.getvalue()
-        self.stdout_lock.release()
+        self._output_stdout_lock.release()
         return stdout
 
     def get_stderr(self):
@@ -549,9 +566,9 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        self.stderr_lock.acquire()
+        self._output_stderr_lock.acquire()
         stderr = self.stderr_file.getvalue()
-        self.stderr_lock.release()
+        self._output_stderr_lock.release()
         return stderr
 
     def terminate(self):
