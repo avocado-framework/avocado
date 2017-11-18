@@ -19,6 +19,7 @@ Contents:
    Replay
    Diff
    RunningTestsRemotely
+   SubclassingAvocado
    DebuggingWithGDB
    WrapProcess
    Plugins
