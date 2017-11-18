@@ -333,10 +333,15 @@ class SubProcess(object):
                     in missing output produced by those daemons after the
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
+        :raises: ValueError if incorrect values are given to parameters
         """
         # Now assemble the final command considering the need for sudo
         self.cmd = self._prepend_sudo(cmd, sudo, shell)
         self.verbose = verbose
+        if allow_output_check not in ('none', 'stderr', 'stdout', 'all'):
+            msg = ("Invalid value (%s) set in allow_output_check" %
+                   allow_output_check)
+            raise ValueError(msg)
         self.allow_output_check = allow_output_check
         self.result = CmdResult(self.cmd)
         self.shell = shell

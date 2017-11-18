@@ -14,6 +14,13 @@ from avocado.utils import path
 TRUE_CMD = path.find_command('true')
 
 
+class TestSubProcess(unittest.TestCase):
+
+    def test_allow_output_check_parameter(self):
+        self.assertRaises(ValueError, process.SubProcess,
+                          TRUE_CMD, False, "invalid")
+
+
 class TestGDBProcess(unittest.TestCase):
 
     def setUp(self):
