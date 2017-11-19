@@ -13,5 +13,6 @@ optional plugins:
    results
    robot
    varianter_yaml_to_mux
+   varianter_pict
    yaml_loader
    golang
