@@ -26,15 +26,9 @@ import shlex
 import shutil
 import signal
 import stat
+import subprocess
 import threading
 import time
-
-try:
-    import subprocess32 as subprocess
-    SUBPROCESS32_SUPPORT = True
-except ImportError:
-    import subprocess
-    SUBPROCESS32_SUPPORT = False
 
 try:
     from StringIO import StringIO
