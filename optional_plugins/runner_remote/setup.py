@@ -13,7 +13,15 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Cleber Rosa <crosa@redhat.com>
 
+import sys
+
 from setuptools import setup, find_packages
+
+
+if sys.version_info[0] == 3:
+    fabric = 'Fabric3'
+else:
+    fabric = 'fabric'
 
 
 setup(name='avocado-framework-plugin-runner-remote',
@@ -24,7 +32,7 @@ setup(name='avocado-framework-plugin-runner-remote',
       url='http://avocado-framework.github.io/',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['avocado-framework', 'fabric'],
+      install_requires=['avocado-framework', fabric],
       entry_points={
           'avocado.plugins.cli': [
               'remote = avocado_runner_remote:RemoteCLI',

@@ -18,6 +18,14 @@ import sys
 import subprocess
 import tempfile
 
+# it doesn't make sense to go any further on Python 3 because snakefood
+# won't be available anyway.  it's not fair to say this check failed, so
+# let's exit successfully.  the check should be performend when running
+# on Python 2.
+if sys.version_info[0] == 3:
+    sys.exit(0)
+
+
 try:
     import networkx as nx
 except ImportError:

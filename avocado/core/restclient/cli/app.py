@@ -116,7 +116,7 @@ class App(object):
             self.args = self.parser.parse_args()
             action_result = self.dispatch_action()
         except KeyboardInterrupt:
-            print 'Interrupted'
+            print('Interrupted')
 
         if isinstance(action_result, int):
             sys.exit(action_result)
