@@ -26,15 +26,9 @@ import shlex
 import shutil
 import signal
 import stat
+import subprocess
 import threading
 import time
-
-try:
-    import subprocess32 as subprocess
-    SUBPROCESS32_SUPPORT = True
-except ImportError:
-    import subprocess
-    SUBPROCESS32_SUPPORT = False
 
 try:
     from StringIO import StringIO
@@ -48,6 +42,7 @@ from . import path
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
 stderr_log = logging.getLogger('avocado.test.stderr')
+output_log = logging.getLogger('avocado.test.output')
 
 #: The active wrapper utility script.
 CURRENT_WRAPPER = None
@@ -69,6 +64,11 @@ WRAP_PROCESS_NAMES_EXPR = []
 #: undefined, this situation will be flagged by an exception.
 UNDEFINED_BEHAVIOR_EXCEPTION = None
 
+#: The current output record mode.  It's not possible to record
+#: both the 'stdout' and 'stderr' streams, and at the same time
+#: in the right order, the combined 'output' stream.  So this
+#: setting defines the mode.
+OUTPUT_CHECK_RECORD_MODE = None
 
 # variable=value bash assignment
 _RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
@@ -291,13 +291,102 @@ class CmdResult(object):
         return cmd_rep
 
 
+class FDDrainer(object):
+
+    def __init__(self, fd, result, name=None, logger=None, logger_prefix='',
+                 stream_logger=None, ignore_bg_processes=False, verbose=False):
+        """
+        Reads data from a file descriptor in a thread, storing locally in
+        a file-like :attr:`data` object.
+
+        :param fd: a file descriptor that will be read (drained) from
+        :type fd: int
+        :param result: a :class:`CmdResult` instance associated with the process
+                       used to detect if the process is still running and
+                       if there's still data to be read.
+        :type result: a :class:`CmdResult` instance
+        :param name: a descriptive name that will be passed to the Thread name
+        :type name: str
+        :param logger_prefix: the prefix used when logging the data
+        :type logger_prefix: str
+        :param ignore_bg_processes: When True the process does not wait for
+                    child processes which keep opened stdout/stderr streams
+                    after the main process finishes (eg. forked daemon which
+                    did not closed the stdout/stderr). Note this might result
+                    in missing output produced by those daemons after the
+                    main thread finishes and also it allows those daemons
+                    to be running after the process finishes.
+        :type ignore_bg_processes: boolean
+        :param verbose: wether to log in both the logger and stream_logger
+        :type verbose: boolean
+        """
+        self.fd = fd
+        self.name = name
+        self.data = StringIO()
+        # TODO: check if, when the process finishes, the FD doesn't
+        # automatically close.  This may be used as the detection
+        # instead.
+        self._result = result
+        self._lock = threading.Lock()
+        self._thread = None
+        self._logger = logger
+        self._logger_prefix = logger_prefix
+        self._stream_logger = stream_logger
+        self._ignore_bg_processes = ignore_bg_processes
+        self._verbose = verbose
+
+    def _drainer(self):
+        """
+        Read from fd, storing and optionally logging the output
+        """
+        bfr = ''
+        while True:
+            if self._ignore_bg_processes:
+                has_io = select.select([self.fd], [], [], 1)[0]
+                if (not has_io and self._result.exit_status is not None):
+                    # Exit if no new data and main process has finished
+                    break
+                if not has_io:
+                    # Don't read unless there are new data available
+                    continue
+            tmp = os.read(self.fd, 8192)
+            if tmp == '':
+                break
+            with self._lock:
+                self.data.write(tmp)
+                if self._verbose:
+                    bfr += tmp
+                    if tmp.endswith('\n'):
+                        for line in bfr.splitlines():
+                            if self._logger is not None:
+                                self._logger.debug(self._logger_prefix, line)
+                            if self._stream_logger is not None:
+                                self._stream_logger.debug('%s\n', line)
+                        bfr = ''
+        # Write the rest of the bfr unfinished by \n
+        if self._verbose and bfr:
+            for line in bfr.splitlines():
+                if self._logger is not None:
+                    self._logger.debug(self._logger_prefix, line)
+                if self._stream_logger is not None:
+                    self._stream_logger.debug(line)
+
+    def start(self):
+        self._thread = threading.Thread(target=self._drainer, name=self.name)
+        self._thread.daemon = True
+        self._thread.start()
+
+    def join(self):
+        self._thread.join()
+
+
 class SubProcess(object):
 
     """
     Run a subprocess in the background, collecting stdout/stderr streams.
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all',
+    def __init__(self, cmd, verbose=True, allow_output_check=None,
                  shell=False, env=None, sudo=False,
                  ignore_bg_processes=False):
         """
@@ -307,14 +396,17 @@ class SubProcess(object):
         :type cmd: str
         :param verbose: Whether to log the command run and stdout/stderr.
         :type verbose: bool
-        :param allow_output_check: Whether to log the command stream outputs
-                                   (stdout and stderr) in the test stream
-                                   files. Valid values: 'stdout', for
-                                   allowing only standard output, 'stderr',
-                                   to allow only standard error, 'all',
-                                   to allow both standard output and error
-                                   (default), and 'none', to allow
-                                   none to be recorded.
+        :param allow_output_check: Whether to record the output from this
+                                   process (from stdout and stderr) in the
+                                   test's output record files. Valid values:
+                                   'stdout', for standard output *only*,
+                                   'stderr' for standard error *only*,
+                                   'both' for both standard output and error
+                                   in separate files (default), 'combined' for
+                                   standard output and error in a single file,
+                                   and 'none' to disable all recording. 'all'
+                                   is also a valid, but deprecated, option that
+                                   is a synonym of 'both'.
         :type allow_output_check: str
         :param shell: Whether to run the subprocess in a subshell.
         :type shell: bool
@@ -333,10 +425,20 @@ class SubProcess(object):
                     in missing output produced by those daemons after the
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
+        :raises: ValueError if incorrect values are given to parameters
         """
         # Now assemble the final command considering the need for sudo
         self.cmd = self._prepend_sudo(cmd, sudo, shell)
         self.verbose = verbose
+        if allow_output_check is None:
+            allow_output_check = OUTPUT_CHECK_RECORD_MODE
+        if allow_output_check is None:
+            allow_output_check = 'both'
+        if allow_output_check not in ('stdout', 'stderr', 'both',
+                                      'combined', 'none', 'all'):
+            msg = ("Invalid value (%s) set in allow_output_check" %
+                   allow_output_check)
+            raise ValueError(msg)
         self.allow_output_check = allow_output_check
         self.result = CmdResult(self.cmd)
         self.shell = shell
@@ -346,6 +448,13 @@ class SubProcess(object):
         else:
             self.env = None
         self._popen = None
+
+        # Drainers used when reading from the PIPEs and writing to
+        # files and logs
+        self._stdout_drainer = None
+        self._stderr_drainer = None
+        self._combined_drainer = None
+
         self._ignore_bg_processes = ignore_bg_processes
 
     def __repr__(self):
@@ -392,9 +501,13 @@ class SubProcess(object):
             else:
                 cmd = self.cmd
             try:
+                if self.allow_output_check == 'combined':
+                    stderr = subprocess.STDOUT
+                else:
+                    stderr = subprocess.PIPE
                 self._popen = subprocess.Popen(cmd,
                                                stdout=subprocess.PIPE,
-                                               stderr=subprocess.PIPE,
+                                               stderr=stderr,
                                                shell=self.shell,
                                                env=self.env)
             except OSError as details:
@@ -402,23 +515,44 @@ class SubProcess(object):
                 raise details
 
             self.start_time = time.time()
-            self.stdout_file = StringIO()
-            self.stderr_file = StringIO()
-            self.stdout_lock = threading.Lock()
-            ignore_bg_processes = self._ignore_bg_processes
-            self.stdout_thread = threading.Thread(target=self._fd_drainer,
-                                                  name="%s-stdout" % self.cmd,
-                                                  args=[self._popen.stdout,
-                                                        ignore_bg_processes])
-            self.stdout_thread.daemon = True
-            self.stderr_lock = threading.Lock()
-            self.stderr_thread = threading.Thread(target=self._fd_drainer,
-                                                  name="%s-stderr" % self.cmd,
-                                                  args=[self._popen.stderr,
-                                                        ignore_bg_processes])
-            self.stderr_thread.daemon = True
-            self.stdout_thread.start()
-            self.stderr_thread.start()
+
+            # prepare fd drainers
+            if self.allow_output_check == 'combined':
+                self._combined_drainer = FDDrainer(
+                    self._popen.stdout.fileno(),
+                    self.result,
+                    name="%s-combined" % self.cmd,
+                    logger=log,
+                    logger_prefix="[output] %s",
+                    # FIXME, in fact, a new log has to be used here
+                    stream_logger=output_log,
+                    ignore_bg_processes=self._ignore_bg_processes,
+                    verbose=self.verbose)
+                self._combined_drainer.start()
+
+            else:
+                self._stdout_drainer = FDDrainer(
+                    self._popen.stdout.fileno(),
+                    self.result,
+                    name="%s-stdout" % self.cmd,
+                    logger=log,
+                    logger_prefix="[stdout] %s",
+                    stream_logger=stdout_log,
+                    ignore_bg_processes=self._ignore_bg_processes,
+                    verbose=self.verbose)
+                self._stderr_drainer = FDDrainer(
+                    self._popen.stderr.fileno(),
+                    self.result,
+                    name="%s-stderr" % self.cmd,
+                    logger=log,
+                    logger_prefix="[stderr] %s",
+                    stream_logger=stderr_log,
+                    ignore_bg_processes=self._ignore_bg_processes,
+                    verbose=self.verbose)
+
+                # start stdout/stderr threads
+                self._stdout_drainer.start()
+                self._stderr_drainer.start()
 
             def signal_handler(signum, frame):
                 self.result.interrupted = "signal/ctrl+c"
@@ -429,65 +563,6 @@ class SubProcess(object):
             except ValueError:
                 if self.verbose:
                     log.info("Command %s running on a thread", self.cmd)
-
-    def _fd_drainer(self, input_pipe, ignore_bg_processes=False):
-        """
-        Read from input_pipe, storing and logging output.
-
-        :param input_pipe: File like object to the stream.
-        """
-        stream_prefix = "%s"
-        if input_pipe == self._popen.stdout:
-            prefix = '[stdout] %s'
-            if self.allow_output_check in ['none', 'stderr']:
-                stream_logger = None
-            else:
-                stream_logger = stdout_log
-            output_file = self.stdout_file
-            lock = self.stdout_lock
-        elif input_pipe == self._popen.stderr:
-            prefix = '[stderr] %s'
-            if self.allow_output_check in ['none', 'stdout']:
-                stream_logger = None
-            else:
-                stream_logger = stderr_log
-            output_file = self.stderr_file
-            lock = self.stderr_lock
-
-        fileno = input_pipe.fileno()
-
-        bfr = ''
-        while True:
-            if ignore_bg_processes:
-                # Exit if there are no new data and the main process finished
-                if (not select.select([fileno], [], [], 1)[0] and
-                        self.result.exit_status is not None):
-                    break
-                # Don't read unless there are new data available:
-                if not select.select([fileno], [], [], 1)[0]:
-                    continue
-            tmp = os.read(fileno, 8192)
-            if tmp == '':
-                break
-            lock.acquire()
-            try:
-                output_file.write(tmp)
-                if self.verbose:
-                    bfr += tmp
-                    if tmp.endswith('\n'):
-                        for line in bfr.splitlines():
-                            log.debug(prefix, line)
-                            if stream_logger is not None:
-                                stream_logger.debug(stream_prefix, '%s\n' % line)
-                        bfr = ''
-            finally:
-                lock.release()
-        # Write the rest of the bfr unfinished by \n
-        if self.verbose and bfr:
-            for line in bfr.splitlines():
-                log.debug(prefix, line)
-                if stream_logger is not None:
-                    stream_logger.debug(stream_prefix, line)
 
     def _fill_results(self, rc):
         self._init_subprocess()
@@ -505,11 +580,11 @@ class SubProcess(object):
         Close subprocess stdout and stderr, and put values into result obj.
         """
         # Cleaning up threads
-        self.stdout_thread.join()
-        self.stderr_thread.join()
+        if self._stdout_drainer is not None:
+            self._stdout_drainer.join()
+        if self._stderr_drainer is not None:
+            self._stderr_drainer.join()
         # Clean subprocess pipes and populate stdout/err
-        self._popen.stdout.close()
-        self._popen.stderr.close()
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
 
@@ -534,10 +609,9 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        self.stdout_lock.acquire()
-        stdout = self.stdout_file.getvalue()
-        self.stdout_lock.release()
-        return stdout
+        if self._combined_drainer is not None:
+            return self._combined_drainer.data.getvalue()
+        return self._stdout_drainer.data.getvalue()
 
     def get_stderr(self):
         """
@@ -547,10 +621,9 @@ class SubProcess(object):
         :rtype: str
         """
         self._init_subprocess()
-        self.stderr_lock.acquire()
-        stderr = self.stderr_file.getvalue()
-        self.stderr_lock.release()
-        return stderr
+        if self._combined_drainer is not None:
+            return ''
+        return self._stderr_drainer.data.getvalue()
 
     def terminate(self):
         """
@@ -670,7 +743,8 @@ class WrapSubProcess(SubProcess):
     Wrap subprocess inside an utility program.
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all',
+    def __init__(self, cmd, verbose=True,
+                 allow_output_check=None,
                  shell=False, env=None, wrapper=None, sudo=False,
                  ignore_bg_processes=False):
         if wrapper is None and CURRENT_WRAPPER is not None:
@@ -691,8 +765,9 @@ class GDBSubProcess(object):
     Runs a subprocess inside the GNU Debugger
     """
 
-    def __init__(self, cmd, verbose=True, allow_output_check='all',
-                 shell=False, env=None, sudo=False, ignore_bg_processes=False):
+    def __init__(self, cmd, verbose=True,
+                 allow_output_check=None, shell=False,
+                 env=None, sudo=False, ignore_bg_processes=False):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -1067,8 +1142,8 @@ def get_sub_process_klass(cmd):
 
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
-        allow_output_check='all', shell=False, env=None, sudo=False,
-        ignore_bg_processes=False):
+        allow_output_check=None, shell=False,
+        env=None, sudo=False, ignore_bg_processes=False):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -1119,8 +1194,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
 
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
-           allow_output_check='all', shell=False, env=None, sudo=False,
-           ignore_bg_processes=False):
+           allow_output_check=None, shell=False,
+           env=None, sudo=False, ignore_bg_processes=False):
     """
     Run a subprocess, returning its exit code.
 
@@ -1167,8 +1242,9 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
 
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
-                  allow_output_check='all', shell=False, env=None, sudo=False,
-                  ignore_bg_processes=False, strip_trail_nl=True):
+                  allow_output_check=None, shell=False,
+                  env=None, sudo=False, ignore_bg_processes=False,
+                  strip_trail_nl=True):
     """
     Run a subprocess, returning its output.
 

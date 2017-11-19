@@ -662,6 +662,7 @@ class Test(unittest.TestCase, TestData):
 
         log_test_stdout = LOG_JOB.getChild("stdout")
         log_test_stderr = LOG_JOB.getChild("stderr")
+        log_test_output = LOG_JOB.getChild("output")
 
         self._register_log_file_handler(log_test_stdout,
                                         stream_formatter,
@@ -671,19 +672,14 @@ class Test(unittest.TestCase, TestData):
                                         stream_formatter,
                                         self._stderr_file,
                                         raw=True)
+        self._register_log_file_handler(log_test_output,
+                                        stream_formatter,
+                                        self._output_file,
+                                        raw=True)
+
         self._register_log_file_handler(logging.getLogger('paramiko'),
                                         formatter,
                                         self._ssh_logfile)
-
-        # combined output logging
-        self._register_log_file_handler(log_test_stdout,
-                                        stream_formatter,
-                                        self._output_file,
-                                        raw=True)
-        self._register_log_file_handler(log_test_stderr,
-                                        stream_formatter,
-                                        self._output_file,
-                                        raw=True)
 
         if isinstance(sys.stdout, output.LoggingFile):
             sys.stdout.add_logger(log_test_stdout)
@@ -713,6 +709,12 @@ class Test(unittest.TestCase, TestData):
         if stderr_expected is not None:
             utils_path.init_dir(os.path.dirname(stderr_expected))
             shutil.copyfile(self._stderr_file, stderr_expected)
+
+    def _record_reference_combined(self):
+        expected = self.get_data('output.expected', must_exist=False)
+        if expected is not None:
+            utils_path.init_dir(os.path.dirname(expected))
+            shutil.copyfile(self._output_file, expected)
 
     def _check_reference_stdout(self):
         expected_path = self.get_data('stdout.expected')
@@ -878,10 +880,13 @@ class Test(unittest.TestCase, TestData):
                                                 logger=LOG_JOB)
                         stderr_check_exception = details
             elif not job_standalone:
-                if output_check_record in ['all', 'stdout']:
-                    self._record_reference_stdout()
-                if output_check_record in ['all', 'stderr']:
-                    self._record_reference_stderr()
+                if output_check_record == 'combined':
+                    self._record_reference_combined()
+                else:
+                    if output_check_record in ['all', 'both', 'stdout']:
+                        self._record_reference_stdout()
+                    if output_check_record in ['all', 'both', 'stderr']:
+                        self._record_reference_stderr()
 
         # pylint: disable=E0702
         if test_exception is not None:

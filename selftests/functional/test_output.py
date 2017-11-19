@@ -58,6 +58,9 @@ class OutputTest(Test):
         sys.stdout.write("test_stdout\\n")
         sys.stderr.write("test_stderr\\n")
         process.run("/bin/echo -n test_process")
+        process.run("/bin/echo -n __test_stderr__ > /dev/stderr",
+                    shell=True)
+        process.run("/bin/echo -n __test_stdout__")
 
     def __del__(self):
         print "del_print"
@@ -145,12 +148,23 @@ class OutputTest(unittest.TestCase):
                 "[stderr] test_stderr", "[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
-        self.assertEqual("test_print\ntest_stdout\ntest_process",
+        self.assertEqual("test_print\ntest_stdout\ntest_process__test_stdout__",
                          open(os.path.join(testdir, "stdout")).read())
-        self.assertEqual("test_stderr\n",
+        self.assertEqual("test_stderr\n__test_stderr__",
                          open(os.path.join(testdir, "stderr")).read())
-        self.assertEqual("test_print\ntest_stdout\ntest_stderr\n"
-                         "test_process",
+
+        # Now run the same test, but with combined output
+        # combined output can not keep track of sys.stdout and sys.stdout
+        # writes, as they will eventually be out of sync.  In fact,
+        # the correct fix is to run the entire test process with redirected
+        # stdout and stderr, and *not* play with sys.stdout and sys.stderr.
+        # But this change will come later
+        result = process.run("%s run --job-results-dir %s --sysinfo=off "
+                             "--output-check-record=combined "
+                             "--json - -- %s" % (AVOCADO, self.tmpdir, test))
+        res = json.loads(result.stdout)
+        testdir = res["tests"][0]["logdir"]
+        self.assertEqual("test_process__test_stderr____test_stdout__",
                          open(os.path.join(testdir, "output")).read())
 
     def tearDown(self):
