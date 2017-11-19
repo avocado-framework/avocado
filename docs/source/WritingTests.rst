@@ -1177,6 +1177,20 @@ below:
 | html   | CANCEL (warning)     |
 +--------+----------------------+
 
+Test Inheritance
+================
+
+Avocado uses static analysis to examine the files, but it's capable of discover
+the chain of inheritance and execute the inherited tests, as one would expect.
+
+Dynamic Test Methods Generation
+===============================
+
+Due to the same principle of test discovery through static analysis, dynamic
+test methods generation is not supported.
+
+.. _docstring-directive-recursive:
+
 Docstring Directives
 ====================
 
@@ -1199,172 +1213,12 @@ Now let's follow with some docstring directives examples.
 
 .. _docstring-directive-enable-disable:
 
-Explicitly enabling or disabling tests
---------------------------------------
+Explicitly disabling tests
+--------------------------
 
-If your test is a method in a class that directly inherits from
-:class:`avocado.Test`, then Avocado will find it as one would expect.
-
-Now, the need may arise for more complex tests, to use more advanced
-Python features such as inheritance.  For those tests that are written
-in a class not directly inherting from :class:`avocado.Test`, Avocado
-may need your help, because Avocado uses only static analysis to examine
-the files.
-
-For example, suppose that you define a new test class that inherits
-from the Avocado base test class, that is, :class:`avocado.Test`, and
-put it in ``mylibrary.py``::
-
-    from avocado import Test
-
-
-    class MyOwnDerivedTest(Test):
-        def __init__(self, methodName='test', name=None, params=None,
-                     base_logdir=None, job=None, runner_queue=None):
-            super(MyOwnDerivedTest, self).__init__(methodName, name, params,
-                                                   base_logdir, job,
-                                                   runner_queue)
-            self.log('Derived class example')
-
-
-Then you implement your actual test using that derived class, in
-``mytest.py``::
-
-    import mylibrary
-
-
-    class MyTest(mylibrary.MyOwnDerivedTest):
-
-        def test1(self):
-            self.log('Testing something important')
-
-        def test2(self):
-            self.log('Testing something even more important')
-
-
-If you try to list the tests in that file, this is what you'll get::
-
-    scripts/avocado list mytest.py -V
-    Type       Test      Tag(s)
-    NOT_A_TEST mytest.py
-
-    TEST TYPES SUMMARY
-    ==================
-    ACCESS_DENIED: 0
-    BROKEN_SYMLINK: 0
-    EXTERNAL: 0
-    FILTERED: 0
-    INSTRUMENTED: 0
-    MISSING: 0
-    NOT_A_TEST: 1
-    SIMPLE: 0
-    VT: 0
-
-You need to give avocado a little help by adding a docstring
-directive. That docstring directive is ``:avocado: enable``. It tells
-the Avocado safe test detection code to consider it as an avocado
-test, regardless of what the (admittedly simple) detection code thinks
-of it. Let's see how that works out. Add the docstring, as you can see
-the example below::
-
-    import mylibrary
-
-
-    class MyTest(mylibrary.MyOwnDerivedTest):
-        """
-        :avocado: enable
-        """
-        def test1(self):
-            self.log('Testing something important')
-
-        def test2(self):
-            self.log('Testing something even more important')
-
-
-Now, trying to list the tests on the ``mytest.py`` file again::
-
-    scripts/avocado list mytest.py -V
-    Type         Test                   Tag(s)
-    INSTRUMENTED mytest.py:MyTest.test1
-    INSTRUMENTED mytest.py:MyTest.test2
-
-    TEST TYPES SUMMARY
-    ==================
-    ACCESS_DENIED: 0
-    BROKEN_SYMLINK: 0
-    EXTERNAL: 0
-    FILTERED: 0
-    INSTRUMENTED: 2
-    MISSING: 0
-    NOT_A_TEST: 0
-    SIMPLE: 0
-    VT: 0
-
-You can also use the ``:avocado: disable`` docstring directive, that
-works the opposite way: something that would be considered an Avocado
-test, but we force it to not be listed as one.
-
-The docstring ``:avocado: disable`` is evaluated first by Avocado,
-meaning that if both ``:avocado: disable`` and ``:avocado: enable`` are
-present in the same docstring, the test will not be listed.
-
-.. _docstring-directive-recursive:
-
-Recursively Discovering Tests
------------------------------
-
-In addition to the ``:avocado: enable`` and ``:avocado: disable``
-docstring directives, Avocado has support for the ``:avocado: recursive``
-directive. It is intended to be used in inherited classes when you want
-to tell Avocado to also discover the ancestor classes.
-
-The ``:avocado: recursive`` directive will direct Avocado to evaluate all
-the ancestors of the class until the base class, the one derived from
-from ``avocado.Test``.
-
-Example:
-
-File `/usr/share/avocado/tests/test_base_class.py`::
-
-    from avocado import Test
-
-
-    class BaseClass(Test):
-
-        def test_basic(self):
-            pass
-
-
-File `/usr/share/avocado/tests/test_first_child.py`::
-
-    from test_base_class import BaseClass
-
-
-    class FirstChild(BaseClass):
-
-        def test_first_child(self):
-            pass
-
-
-File `/usr/share/avocado/tests/test_second_child.py`::
-
-    from test_first_child import FirstChild
-
-
-    class SecondChild(FirstChild):
-        """
-        :avocado: recursive
-        """
-
-        def test_second_child(self):
-            pass
-
-Using only `test_second_child.py` as a test reference will result in::
-
-    $ avocado list test_second_child.py
-    INSTRUMENTED test_second_child.py:SecondChild.test_second_child
-    INSTRUMENTED test_second_child.py:SecondChild.test_first_child
-    INSTRUMENTED test_second_child.py:SecondChild.test_basic
+You can use the ``:avocado: disable`` docstring directive to mark something
+that would be considered an Avocado test, but we force it to not be listed
+as one.
 
 Notice that the ``:avocado: disable`` docstring will be ignored in
 ancestors during the recursive discovery. What means that even if an
