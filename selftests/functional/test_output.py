@@ -57,10 +57,12 @@ class OutputTest(Test):
         print "test_print"
         sys.stdout.write("test_stdout\\n")
         sys.stderr.write("test_stderr\\n")
-        process.run("/bin/echo -n test_process")
+        process.run("/bin/echo -n test_process > /dev/stdout",
+                    shell=True)
         process.run("/bin/echo -n __test_stderr__ > /dev/stderr",
                     shell=True)
-        process.run("/bin/echo -n __test_stdout__")
+        process.run("/bin/echo -n __test_stdout__ > /dev/stdout",
+                    shell=True)
 
     def __del__(self):
         print "del_print"
