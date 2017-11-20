@@ -293,7 +293,7 @@ class CmdResult(object):
 
 class FDDrainer(object):
 
-    def __init__(self, fd, result, name=None, logger=None, logger_prefix='',
+    def __init__(self, fd, result, name=None, logger=None, logger_prefix='%s',
                  stream_logger=None, ignore_bg_processes=False, verbose=False):
         """
         Reads data from a file descriptor in a thread, storing locally in
@@ -308,7 +308,7 @@ class FDDrainer(object):
         :param name: a descriptive name that will be passed to the Thread name
         :type name: str
         :param logger_prefix: the prefix used when logging the data
-        :type logger_prefix: str
+        :type logger_prefix: str with one %-style string formatter
         :param ignore_bg_processes: When True the process does not wait for
                     child processes which keep opened stdout/stderr streams
                     after the main process finishes (eg. forked daemon which
