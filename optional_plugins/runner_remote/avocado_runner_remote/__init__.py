@@ -411,7 +411,7 @@ class RemoteTestRunner(TestRunner):
         :return: a dictionary with test results.
         """
         extra_params = []
-        mux_files = getattr(self.job.args, 'mux_yaml') or []
+        mux_files = getattr(self.job.args, 'mux_yaml', [])
         if mux_files:
             extra_params.append("-m %s" % " ".join(mux_files))
 
