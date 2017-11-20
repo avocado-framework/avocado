@@ -28,15 +28,13 @@ is not as convenient as having it on your ``$PATH``.
 Using the PICT Varianter Plugin
 -------------------------------
 
-The following listing is a sample (simple) PICT file.
+The following listing is a sample (simple) PICT file::
 
-.. code-block:: ini
-
-     1  arch: intel, amd
-     2  block_driver: scsi, ide, virtio
-     3  net_driver: rtl8139, e1000, virtio
-     4  guest: windows, linux
-     5  host: rhel6, rhel7, rhel8
+    arch: intel, amd
+    block_driver: scsi, ide, virtio
+    net_driver: rtl8139, e1000, virtio
+    guest: windows, linux
+    host: rhel6, rhel7, rhel8
 
 To list the variants generated with the default combination order (2,
 that is, do a pairwise idenpendent combinatorial testing)::
