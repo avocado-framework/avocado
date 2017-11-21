@@ -1,0 +1,89 @@
+======================
+56.0 The Second Mother
+======================
+
+The Avocado team is proud to present another release: Avocado version
+56.0, AKA "The Second Mother", is now available!
+
+Release documentation: `Avocado 56.0
+<http://avocado-framework.readthedocs.io/en/56.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The :mod:`avocado.core.utils.vmimage` library now allows users to
+  expand the builtin list of image providers.  If you have a local
+  cache of public images, or your own images, you can quickly and
+  easily register your own providers and thus use your images on your
+  tests.
+
+* A documentation on how to create your own base classes for your
+  tests, kind of like you own Avocado-based test framework, was
+  introduced.  This should help users put common tasks into base
+  classes and get even more productive test development.
+
+* Avocado can record the output generated from a test, which can then
+  be used to determine if the test passed or failed.  This feature is
+  commonly known as "output check".  Traditionally, users would choose
+  to record the output from ``STDOUT`` and/or ``STDERR`` into separate
+  streams, which would be saved into different files.  Some tests suites
+  actually put all content of ``STDOUT`` and ``STDERR`` together, and
+  unless we record them together, it'd be impossible to record them in
+  the right order.  This version introduces the ``combined`` option
+  to ``--output-check-record`` option, which does exactly that: it
+  records both ``STDOUT`` and ``STDERR`` into a single stream and
+  into a single file (named ``output`` in the test results, and
+  ``output.expected`` in the test data directory).
+
+* A new varianter plugin has been introduced, based on PICT.  PICT is
+  a "Pair Wise" combinatorial tool, that can generate optimal
+  combination of parameters to tests, so that (by default) at least a
+  unique pair of parameter values will be tested at once.
+
+* Further progress towards Python 3 support.  While this version does
+  not yet advertise full Python 3 support, the next development cycle
+  will tackle any Python 3 issue as a critical bug.  On this release,
+  some optional plugins, including the remote and docker runner
+  plugins, received attention and now execute correctly on a Python 3
+  stack.
+
+Bug Fixes
+=========
+
+* The remote plugin had a broken check for the timeout when executing
+  commands remotely.  It meant that the out-most timeout loop would
+  never reach a second iteration.
+
+* The remote and docker plugins had issues on how they were checking
+  the installed Avocado versions.
+
+Internal Changes
+================
+
+* The CI checks on Travis received a lot of attention, and a new script
+  that and should be used by maintainers was introduced.
+  ``contrib/scripts/avocado-check-pr.sh`` runs tests on all commits in
+  a PR, and sends the result over to GitHub, showing other developers
+  that no regression was introduced within the series.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/56.0...55.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=PPFzrbA9AF0>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/s1WobkdE/1157-sprint-theme-the-second-mother-2015

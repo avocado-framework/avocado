@@ -10,10 +10,10 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		4ecbf18580fa5205a79c9742cbe1219537975045
+        %global commit		4aabc6a21ddfe741ba914b24902f24a23a9cda65
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date	20170518
+        %global commit_date	20171020
     %endif
     %global shortcommit	%(c=%{commit};echo ${c:0:8})
     %global gitrel		.%{commit_date}git%{shortcommit}
@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 55.0
-Release: 1%{?gitrel}%{?dist}
+Version: 56.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -417,6 +417,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/varianter_pict
 
 %changelog
+* Tue Nov 21 2017 Cleber Rosa <cleber@redhat.com> - 56.0-0
+- New upstream release
+
 * Thu Nov 16 2017 Cleber Rosa <cleber@redhat.com> - 55.0-1
 - Introduced sub-package plugins-varianter-pict
 
