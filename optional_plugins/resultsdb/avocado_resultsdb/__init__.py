@@ -23,13 +23,14 @@ import time
 import resultsdb_api
 from six import iteritems
 
-from avocado.core.plugin_interfaces import CLI, ResultEvents
+from avocado.core.plugin_interfaces import CLI, ResultEvents, Result
 from avocado.core.settings import settings
 from avocado.core import exceptions
 from avocado.utils import stacktrace
+from avocado.core.output import LOG_UI
 
 
-class ResultsdbResult(ResultEvents):
+class ResultsdbResultEvent(ResultEvents):
 
     """
     ResultsDB output class
@@ -140,6 +141,21 @@ class ResultsdbResult(ResultEvents):
             return mapping[status]
 
         return 'NEEDS_INSPECTION'
+
+
+class ResultsdbResult(Result):
+
+    """
+    ResultsDB render class
+    """
+
+    name = 'resultsdb'
+    description = 'Resultsdb result support'
+
+    def render(self, result, job):
+        if getattr(job.args, 'resultsdb_logs', None) is not None:
+            LOG_UI.info("JOB URL    : %s/%s" % (job.args.resultsdb_logs,
+                                                os.path.basename(job.logdir)))
 
 
 class ResultsdbCLI(CLI):

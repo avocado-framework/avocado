@@ -30,5 +30,8 @@ setup(name='avocado-framework-plugin-resultsdb',
               'resultsdb = avocado_resultsdb:ResultsdbCLI',
               ],
           'avocado.plugins.result_events': [
+              'resultsdb = avocado_resultsdb:ResultsdbResultEvent',
+              ],
+          'avocado.plugins.result': [
               'resultsdb = avocado_resultsdb:ResultsdbResult',
               ]})
