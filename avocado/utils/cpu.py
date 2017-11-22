@@ -22,6 +22,7 @@ Get information from the current's machine CPU.
 
 import re
 import os
+import platform
 
 
 def _list_matches(lst, pattern):
@@ -136,10 +137,15 @@ def cpu_online_list():
     Reports a list of indexes of the online cpus
     """
     cpus = []
+    search_str = 'processor'
+    index = 2
+    if platform.machine() == 's390x':
+        search_str = 'cpu number'
+        index = 3
     with open('/proc/cpuinfo', 'r') as proc_cpuinfo:
         for line in proc_cpuinfo:
-            if line.startswith('processor'):
-                cpus.append(int(line.split()[2]))  # grab cpu number
+            if line.startswith(search_str):
+                cpus.append(int(line.split()[index]))  # grab cpu number
     return cpus
 
 
