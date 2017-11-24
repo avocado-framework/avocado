@@ -162,6 +162,36 @@ def get_path_status(disk_path):
                     return(paths['dm_st'], paths['dev_st'], paths['chk_st'])
 
 
+def fail_path(path):
+    """
+    failing the individual paths
+    :param disk_path: disk path. Example: sda, sdb.
+    :return: True or False
+    """
+    cmd = 'multipathd -k"fail path %s"' % path
+    if process.system(cmd) == 0:
+        time.sleep(10)
+        path_stat = get_path_status(path)
+        if path_stat[0] == 'failed' and path_stat[2] == 'faulty':
+            return True
+    return False
+
+
+def reinstate_path(path):
+    """
+    reinstating the individual paths
+    :param disk_path: disk path. Example: sda, sdb.
+    :return: True or False
+    """
+    cmd = 'multipathd -k"reinstate path %s"' % path
+    if process.system(cmd) == 0:
+        time.sleep(10)
+        path_stat = get_path_status(path)
+        if path_stat[0] == 'active' and path_stat[2] == 'ready':
+            return True
+    return False
+
+
 def get_policy(wwid):
     """
     Gets path_checker policy, given a multipath wwid.
