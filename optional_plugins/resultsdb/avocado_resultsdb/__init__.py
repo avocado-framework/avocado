@@ -23,13 +23,14 @@ import time
 import resultsdb_api
 from six import iteritems
 
-from avocado.core.plugin_interfaces import CLI, ResultEvents
+from avocado.core.plugin_interfaces import CLI, ResultEvents, Result
 from avocado.core.settings import settings
 from avocado.core import exceptions
 from avocado.utils import stacktrace
+from avocado.core.output import LOG_UI
 
 
-class ResultsdbResult(ResultEvents):
+class ResultsdbResultEvent(ResultEvents):
 
     """
     ResultsDB output class
@@ -46,6 +47,10 @@ class ResultsdbResult(ResultEvents):
         self.rdblogs = None
         if getattr(args, 'resultsdb_logs', None) is not None:
             self.rdblogs = args.resultsdb_logs
+
+        self.rdbnote_limit = 0
+        if getattr(args, 'resultsdb_note_limit', None) is not None:
+            self.rdbnote_limit = int(args.resultsdb_note_limit)
 
         self.job_id = None
         self.job_logdir = None
@@ -86,6 +91,8 @@ class ResultsdbResult(ResultEvents):
         note = None
         if state['fail_reason'] is not None:
             note = str(state['fail_reason'])
+            if self.rdbnote_limit > 0 and len(note) > self.rdbnote_limit:
+                note = note[0:self.rdbnote_limit] + '...'
 
         ref_url = None
         if self.rdblogs is not None:
@@ -134,12 +141,28 @@ class ResultsdbResult(ResultEvents):
                    'FAIL': 'FAILED',
                    'SKIP': 'INFO',
                    'CANCEL': 'INFO',
+                   'INTERRUPTED': 'INFO',
                    'WARN': 'INFO'}
 
         if status in mapping:
             return mapping[status]
 
         return 'NEEDS_INSPECTION'
+
+
+class ResultsdbResult(Result):
+
+    """
+    ResultsDB render class
+    """
+
+    name = 'resultsdb'
+    description = 'Resultsdb result support'
+
+    def render(self, result, job):
+        if getattr(job.args, 'resultsdb_logs', None) is not None:
+            LOG_UI.info("JOB URL    : %s/%s" % (job.args.resultsdb_logs,
+                                                os.path.basename(job.logdir)))
 
 
 class ResultsdbCLI(CLI):
@@ -164,6 +187,10 @@ class ResultsdbCLI(CLI):
         parser.add_argument('--resultsdb-logs',
                             dest='resultsdb_logs', default=None,
                             help='Specify the URL where the logs are published')
+        parser.add_argument('--resultsdb-note-limit',
+                            dest='resultsdb_note_limit', default=None,
+                            help='Maximum note size limit')
+
         self.configured = True
 
     def run(self, args):
@@ -182,3 +209,11 @@ class ResultsdbCLI(CLI):
                                                 default=None)
             if resultsdb_logs is not None:
                 args.resultsdb_logs = resultsdb_logs
+
+        resultsdb_note_limit = getattr(args, 'resultsdb_note_limit', None)
+        if resultsdb_note_limit is None:
+            resultsdb_note_limit = settings.get_value('plugins.resultsdb',
+                                                      'note_size_limit',
+                                                      default=None)
+            if resultsdb_note_limit is not None:
+                args.resultsdb_note_limit = resultsdb_note_limit
