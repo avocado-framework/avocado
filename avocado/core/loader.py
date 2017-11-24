@@ -877,7 +877,8 @@ class FileLoader(TestLoader):
                 if os.access(test_path, os.X_OK):
                     # Module does not have an avocado test class inside but
                     # it's executable, let's execute it.
-                    return self._make_test(test.SimpleTest, test_path)
+                    return self._make_test(test.SimpleTest, test_path,
+                                           subtests_filter=subtests_filter)
                 else:
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
@@ -893,18 +894,23 @@ class FileLoader(TestLoader):
             if os.access(test_path, os.X_OK):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
-                return self._make_test(test.SimpleTest, test_path)
+                return self._make_test(test.SimpleTest, test_path,
+                                       subtests_filter=subtests_filter)
             else:
                 return make_broken(NotATest, test_path, self.__not_test_str)
 
     @staticmethod
-    def _make_test(klass, uid, description=None):
+    def _make_test(klass, uid, description=None, subtests_filter=None):
         """
         Create test template
         :param klass: test class
         :param uid: test uid (by default used as id and name)
         :param description: Description appended to "uid" (for listing purpose)
+        :param subtests_filter: optional filter of methods for avocado tests
         """
+        if subtests_filter and not subtests_filter.search(uid):
+            return []
+
         if description:
             uid = "%s: %s" % (uid, description)
         return [(klass, {'name': uid})]
@@ -934,8 +940,8 @@ class FileLoader(TestLoader):
                                                       subtests_filter)
             else:
                 if os.access(test_path, os.X_OK):
-                    return self._make_test(test.SimpleTest,
-                                           test_path)
+                    return self._make_test(test.SimpleTest, test_path,
+                                           subtests_filter=subtests_filter)
                 else:
                     return make_broken(NotATest, test_path,
                                        self.__not_test_str)
