@@ -615,7 +615,8 @@ class FileLoader(TestLoader):
                             break
                     else:
                         pth = os.path.join(dirpath, file_name)
-                        tests.extend(self._make_tests(pth, which_tests))
+                        tests.extend(self._make_tests(pth, which_tests,
+                                                      subtests_filter))
         return tests
 
     def _find_avocado_tests(self, path, class_name=None):
