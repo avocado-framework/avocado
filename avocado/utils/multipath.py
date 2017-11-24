@@ -122,7 +122,7 @@ def get_multipath_details():
 
     :return: Dictionary of multipath output in json format.
     """
-    mpath_op = process.system_output("multipathd show maps jsons", sudo=True)
+    mpath_op = process.system_output("multipathd show maps json", sudo=True)
     if 'multipath-tools v' in mpath_op:
         return ''
     mpath_op = ast.literal_eval(mpath_op.replace("\n", '').replace(' ', ''))
