@@ -350,6 +350,19 @@ class LoaderTestFunctional(unittest.TestCase):
         self.assertFalse(exps, "Some expected result not matched to actual"
                          "results:\n%s\n\nexps = %s" % (result, exps))
 
+    def test_list_subtests_filter(self):
+        """
+        Check whether the subtests filter works for both INSTRUMENTED
+        and SIMPLE in a directory list.
+        """
+        cmd = "%s list examples/tests/:fail" % AVOCADO
+        result = process.run(cmd)
+        expected = ("INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"
+                    "INSTRUMENTED examples/tests/fail_on_exception.py:FailOnException.test\n"
+                    "INSTRUMENTED examples/tests/failtest.py:FailTest.test\n"
+                    "SIMPLE       examples/tests/failtest.sh\n")
+        self.assertEqual(expected, result.stdout)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
