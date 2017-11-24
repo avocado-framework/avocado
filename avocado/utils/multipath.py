@@ -23,6 +23,7 @@ import ast
 from . import distro
 from . import process
 from . import service
+from . import wait
 
 
 def get_svc_name():
@@ -149,8 +150,7 @@ def get_path_status(disk_path):
 
     :param disk_path: disk path. Example: sda, sdb.
 
-    :return: Tuple in the format of (device mapper status, dev status,
-             checker status)
+    :return: Tuple in the format of (dm status, dev status, checker status)
     """
     mpath_op = get_multipath_details()
     if not mpath_op:
@@ -160,6 +160,39 @@ def get_path_status(disk_path):
             for paths in path_groups['paths']:
                 if paths['dev'] == disk_path:
                     return(paths['dm_st'], paths['dev_st'], paths['chk_st'])
+
+
+def fail_path(path):
+    """
+    failing the individual paths
+    :param disk_path: disk path. Example: sda, sdb.
+    :return: True or False
+    """
+    def is_failed():
+        path_stat = get_path_status(path)
+        if path_stat[0] == 'failed' and path_stat[2] == 'faulty':
+            return True
+        return False
+
+    cmd = 'multipathd -k"fail path %s"' % path
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_failed, timeout=10) or False
+
+
+def reinstate_path(path):
+    """
+    reinstating the individual paths
+    :param disk_path: disk path. Example: sda, sdb.
+    :return: True or False
+    """
+    def is_reinstated():
+        path_stat = get_path_status(path)
+        if path_stat[0] == 'active' and path_stat[2] == 'ready':
+            return True
+        return False
+    cmd = 'multipathd -k"reinstate path %s"' % path
+    if process.system(cmd) == 0:
+        return wait.wait_for(is_reinstated, timeout=10) or False
 
 
 def get_policy(wwid):
