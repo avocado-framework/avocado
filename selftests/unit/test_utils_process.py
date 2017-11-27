@@ -242,7 +242,7 @@ class FDDrainerTests(unittest.TestCase):
             os.write(write_fd, content)
         os.write(write_fd, "finish")
         os.close(write_fd)
-        fd_drainer.join()
+        fd_drainer.flush()
         self.assertEqual(fd_drainer.data.getvalue(),
                          "foobarbazfoo\nbar\nbaz\n\nfinish")
 
@@ -270,7 +270,7 @@ class FDDrainerTests(unittest.TestCase):
         fd_drainer.start()
         os.write(write_fd, "should go to the log\n")
         os.close(write_fd)
-        fd_drainer.join()
+        fd_drainer.flush()
         self.assertEqual(fd_drainer.data.getvalue(),
                          "should go to the log\n")
         self.assertTrue(handler.caught_record)
