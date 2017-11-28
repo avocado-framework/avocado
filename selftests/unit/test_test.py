@@ -127,6 +127,42 @@ class TestClassTestUnit(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, test, "name", "whatever")
         self.assertRaises(AttributeError, setattr, test, "status", "whatever")
 
+    def test_check_reference_success(self):
+        '''
+        Tests that a check is made, and is successful
+        '''
+        class GetDataTest(test.Test):
+            def test(self):
+                pass
+
+            def get_data(self, filename, source=None, must_exist=True):
+                # return the filename (path, really) unchanged
+                return filename
+
+        tst = GetDataTest("test", test.TestID(1, "test"),
+                          base_logdir=self.tmpdir)
+        content = 'expected content\n'
+        content_path = os.path.join(tst.logdir, 'content')
+        with open(content_path, 'w') as produced:
+            produced.write(content)
+        self.assertTrue(tst._check_reference(content_path,
+                                             content_path,
+                                             'content.diff',
+                                             'content_diff',
+                                             'Content'))
+
+    def test_check_reference_does_not_exist(self):
+        '''
+        Tests that a check is not made for a file that does not exist
+        '''
+        tst = self.DummyTest("test", test.TestID(1, "test"),
+                             base_logdir=self.tmpdir)
+        self.assertFalse(tst._check_reference('does_not_exist',
+                                              'stdout.expected',
+                                              'stdout.diff',
+                                              'stdout_diff',
+                                              'Stdout'))
+
 
 class TestClassTest(unittest.TestCase):
 
