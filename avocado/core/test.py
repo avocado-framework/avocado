@@ -726,61 +726,54 @@ class Test(unittest.TestCase, TestData):
             utils_path.init_dir(os.path.dirname(reference_path))
             shutil.copyfile(produced_file_path, reference_path)
 
-    def _check_reference_stdout(self):
-        expected_path = self.get_data('stdout.expected')
-        if expected_path is not None:
-            expected = genio.read_file(expected_path)
-            actual = genio.read_file(self._stdout_file)
+    def _check_reference(self, produced_file_path, reference_file_name,
+                         diff_file_name, child_log_name, name='Content'):
+        '''
+        Compares the file produced by the test with the reference file
 
-            stdout_diff = os.path.join(self.logdir, 'stdout.diff')
+        :param produced_file_path: the location of the file that was produced
+                                   by this test execution
+        :type produced_file_path: str
+        :param reference_file_name: the name of the file that will compared
+                                    with the content produced by this test
+        :type reference_file_name: str
+        :param diff_file_name: in case of differences between the produced
+                               and reference file, a file with this name will
+                               be saved to the test results directory, with
+                               the differences in unified diff format
+        :type diff_file_name: str
+        :param child_log_name: the name of a logger, child of :data:`LOG_JOB`,
+                               to be used when logging the content differences
+        :type child_log_name: str
+        :param name: optional parameter for a descriptive name of the type of
+                     content being checked here
+        :type name: str
+        '''
+        reference_path = self.get_data(reference_file_name)
+        if reference_path is not None:
+            expected = genio.read_file(reference_path)
+            actual = genio.read_file(produced_file_path)
+            diff_path = os.path.join(self.logdir, diff_file_name)
 
             fmt = '%(message)s'
             formatter = logging.Formatter(fmt=fmt)
-            log_stdout_diff = LOG_JOB.getChild("stdout_diff")
-            self._register_log_file_handler(log_stdout_diff,
+            log_diff = LOG_JOB.getChild(child_log_name)
+            self._register_log_file_handler(log_diff,
                                             formatter,
-                                            stdout_diff)
+                                            diff_path)
 
             diff = unified_diff(expected.splitlines(), actual.splitlines(),
-                                fromfile=expected_path,
-                                tofile=self._stdout_file)
+                                fromfile=reference_path,
+                                tofile=produced_file_path)
             diff_content = []
             for diff_line in diff:
                 diff_content.append(diff_line.rstrip('\n'))
 
             if diff_content:
-                self.log.debug('Stdout Diff:')
+                self.log.debug('%s Diff:', name)
                 for line in diff_content:
-                    log_stdout_diff.debug(line)
-                self.fail('Actual test sdtout differs from expected one')
-
-    def _check_reference_stderr(self):
-        expected_path = self.get_data('stderr.expected')
-        if expected_path is not None:
-            expected = genio.read_file(expected_path)
-            actual = genio.read_file(self._stderr_file)
-
-            stderr_diff = os.path.join(self.logdir, 'stderr.diff')
-
-            fmt = '%(message)s'
-            formatter = logging.Formatter(fmt=fmt)
-            log_stderr_diff = LOG_JOB.getChild("stderr_diff")
-            self._register_log_file_handler(log_stderr_diff,
-                                            formatter,
-                                            stderr_diff)
-
-            diff = unified_diff(expected.splitlines(), actual.splitlines(),
-                                fromfile=expected_path,
-                                tofile=self._stderr_file)
-            diff_content = []
-            for diff_line in diff:
-                diff_content.append(diff_line.rstrip('\n'))
-
-            if diff_content:
-                self.log.debug('Stderr Diff:')
-                for line in diff_content:
-                    log_stderr_diff.debug(line)
-                self.fail('Actual test sdterr differs from expected one')
+                    log_diff.debug(line)
+                self.fail('Actual test %s differs from expected one' % name)
 
     def _run_avocado(self):
         """
@@ -878,13 +871,21 @@ class Test(unittest.TestCase, TestData):
             if job_standalone or no_record_mode:
                 if not disable_output_check:
                     try:
-                        self._check_reference_stdout()
+                        self._check_reference(self._stdout_file,
+                                              'stdout.expected',
+                                              'stdout.diff',
+                                              'stdout_diff',
+                                              'Stdout')
                     except Exception as details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger=LOG_JOB)
                         stdout_check_exception = details
                     try:
-                        self._check_reference_stderr()
+                        self._check_reference(self._stderr_file,
+                                              'stderr.expected',
+                                              'stderr.diff',
+                                              'stderr_diff',
+                                              'Stderr')
                     except Exception as details:
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger=LOG_JOB)
