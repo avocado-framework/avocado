@@ -879,60 +879,58 @@ class Test(unittest.TestCase, TestData):
             job_standalone = getattr(self.job.args, 'standalone', False)
             output_check_record = getattr(self.job.args,
                                           'output_check_record', 'none')
-            no_record_mode = (not job_standalone and
-                              output_check_record == 'none')
-            disable_output_check = (not job_standalone and
-                                    getattr(self.job.args,
-                                            'output_check', 'on') == 'off')
+            output_check = getattr(self.job.args, 'output_check', 'on')
 
-            if job_standalone or no_record_mode:
-                if not disable_output_check:
-                    output_checked = False
+            # record the output if the modes are valid
+            if output_check_record == 'combined':
+                self._record_reference(self._output_file,
+                                       "output.expected")
+            else:
+                if output_check_record in ['all', 'both', 'stdout']:
+                    self._record_reference(self._stdout_file,
+                                           "stdout.expected")
+                if output_check_record in ['all', 'both', 'stderr']:
+                    self._record_reference(self._stderr_file,
+                                           "stderr.expected")
+
+            # check the output and produce test failures
+            if ((not job_standalone or
+                 output_check_record != 'none') and output_check == 'on'):
+                output_checked = False
+                try:
+                    output_checked = self._check_reference(
+                        self._output_file,
+                        'output.expected',
+                        'output.diff',
+                        'output_diff',
+                        'Output')
+                except Exception as details:
+                    stacktrace.log_exc_info(sys.exc_info(),
+                                            logger=LOG_JOB)
+                    output_check_exception = details
+                if not output_checked:
                     try:
-                        output_checked = self._check_reference(
-                            self._output_file,
-                            'output.expected',
-                            'output.diff',
-                            'output_diff',
-                            'Output')
+                        self._check_reference(self._stdout_file,
+                                              'stdout.expected',
+                                              'stdout.diff',
+                                              'stdout_diff',
+                                              'Stdout')
                     except Exception as details:
                         # output check was performed (and failed)
                         output_checked = True
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger=LOG_JOB)
-                        output_check_exception = details
-                    if not output_checked:
-                        try:
-                            self._check_reference(self._stdout_file,
-                                                  'stdout.expected',
-                                                  'stdout.diff',
-                                                  'stdout_diff',
-                                                  'Stdout')
-                        except Exception as details:
-                            stacktrace.log_exc_info(sys.exc_info(),
-                                                    logger=LOG_JOB)
-                            stdout_check_exception = details
-                        try:
-                            self._check_reference(self._stderr_file,
-                                                  'stderr.expected',
-                                                  'stderr.diff',
-                                                  'stderr_diff',
-                                                  'Stderr')
-                        except Exception as details:
-                            stacktrace.log_exc_info(sys.exc_info(),
-                                                    logger=LOG_JOB)
-                            stderr_check_exception = details
-            elif not job_standalone:
-                if output_check_record == 'combined':
-                    self._record_reference(self._output_file,
-                                           "output.expected")
-                else:
-                    if output_check_record in ['all', 'both', 'stdout']:
-                        self._record_reference(self._stdout_file,
-                                               "stdout.expected")
-                    if output_check_record in ['all', 'both', 'stderr']:
-                        self._record_reference(self._stderr_file,
-                                               "stderr.expected")
+                        stdout_check_exception = details
+                    try:
+                        self._check_reference(self._stderr_file,
+                                              'stderr.expected',
+                                              'stderr.diff',
+                                              'stderr_diff',
+                                              'Stderr')
+                    except Exception as details:
+                        stacktrace.log_exc_info(sys.exc_info(),
+                                                logger=LOG_JOB)
+                        stderr_check_exception = details
 
         # pylint: disable=E0702
         if test_exception is not None:
