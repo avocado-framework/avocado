@@ -136,13 +136,11 @@ class Run(CLICmd):
         out_check.add_argument('--output-check-record',
                                choices=('none', 'all', 'stdout', 'stderr',
                                         'both', 'combined'),
-                               default='none',
                                help="Record output streams of your tests "
                                "to reference files (valid options: none (do "
                                "not record output streams), all (record both "
                                "stdout and stderr), stdout (record only "
-                               "stderr), stderr (record only stderr). "
-                               'Current: %(default)s')
+                               "stderr), stderr (record only stderr). ")
 
         out_check.add_argument('--output-check', choices=('on', 'off'),
                                default='on',
@@ -174,7 +172,9 @@ class Run(CLICmd):
         :param args: Command line args received from the run subparser.
         """
         if 'output_check_record' in args:
-            process.OUTPUT_CHECK_RECORD_MODE = getattr(args, 'output_check_record')
+            process.OUTPUT_CHECK_RECORD_MODE = getattr(args,
+                                                       'output_check_record',
+                                                       None)
 
         if args.unique_job_id is not None:
             try:

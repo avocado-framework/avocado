@@ -413,11 +413,17 @@ class SubProcess(object):
                                    'stdout', for standard output *only*,
                                    'stderr' for standard error *only*,
                                    'both' for both standard output and error
-                                   in separate files (default), 'combined' for
+                                   in separate files, 'combined' for
                                    standard output and error in a single file,
                                    and 'none' to disable all recording. 'all'
                                    is also a valid, but deprecated, option that
-                                   is a synonym of 'both'.
+                                   is a synonym of 'both'.  If an explicit value
+                                   is not given to this parameter, that is, if
+                                   None is given, it defaults to using the module
+                                   level configuration, as set by
+                                   :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
+                                   module level configuration itself is not set,
+                                   it defaults to 'none'.
         :type allow_output_check: str
         :param shell: Whether to run the subprocess in a subshell.
         :type shell: bool
@@ -542,13 +548,19 @@ class SubProcess(object):
                 self._combined_drainer.start()
 
             else:
+                if self.allow_output_check == 'none':
+                    stdout_stream_logger = None
+                    stderr_stream_logger = None
+                else:
+                    stdout_stream_logger = stdout_log
+                    stderr_stream_logger = stderr_log
                 self._stdout_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
                     name="%s-stdout" % self.cmd,
                     logger=log,
                     logger_prefix="[stdout] %s",
-                    stream_logger=stdout_log,
+                    stream_logger=stdout_stream_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
                     verbose=self.verbose)
                 self._stderr_drainer = FDDrainer(
@@ -557,7 +569,7 @@ class SubProcess(object):
                     name="%s-stderr" % self.cmd,
                     logger=log,
                     logger_prefix="[stderr] %s",
-                    stream_logger=stderr_log,
+                    stream_logger=stderr_stream_logger,
                     ignore_bg_processes=self._ignore_bg_processes,
                     verbose=self.verbose)
 
