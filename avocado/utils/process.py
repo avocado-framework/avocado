@@ -376,8 +376,19 @@ class FDDrainer(object):
         self._thread.daemon = True
         self._thread.start()
 
-    def join(self):
+    def flush(self):
         self._thread.join()
+        if self._stream_logger is not None:
+            for handler in self._stream_logger.handlers:
+                # FileHandler has a close() method, which we expect will
+                # flush the file on disk.  SocketHandler, MemoryHandler
+                # and other logging handlers (custom ones?) also have
+                # the same interface, so let's try to use it if available
+                stream = getattr(handler, 'stream', None)
+                if stream is not None:
+                    os.fsync(stream.fileno())
+                if hasattr(handler, 'close'):
+                    handler.close()
 
 
 class SubProcess(object):
@@ -580,10 +591,12 @@ class SubProcess(object):
         Close subprocess stdout and stderr, and put values into result obj.
         """
         # Cleaning up threads
+        if self._combined_drainer is not None:
+            self._combined_drainer.flush()
         if self._stdout_drainer is not None:
-            self._stdout_drainer.join()
+            self._stdout_drainer.flush()
         if self._stderr_drainer is not None:
-            self._stderr_drainer.join()
+            self._stderr_drainer.flush()
         # Clean subprocess pipes and populate stdout/err
         self.result.stdout = self.get_stdout()
         self.result.stderr = self.get_stderr()
