@@ -786,12 +786,22 @@ class Test(unittest.TestCase, TestData):
         """
         Auxiliary method to run_avocado.
         """
+        # If the test contains an output.expected file, it requires
+        # changing the mode of operation of the process.* utility
+        # methods, so that after the test finishes, the output
+        # produced can be compared to the expected one.  This runs in
+        # its own process, so the change should not effect other
+        # components using process.* functions.
+        if self.get_data('output.expected') is not None:
+            process.OUTPUT_CHECK_RECORD_MODE = 'combined'
+
         testMethod = getattr(self, self._testMethodName)
         self._start_logging()
         if self.__sysinfo_enabled:
             self.__sysinfo_logger.start_test_hook()
         test_exception = None
         cleanup_exception = None
+        output_check_exception = None
         stdout_check_exception = None
         stderr_check_exception = None
         skip_test = getattr(testMethod, '__skip_test_decorator__', False)
@@ -877,26 +887,41 @@ class Test(unittest.TestCase, TestData):
 
             if job_standalone or no_record_mode:
                 if not disable_output_check:
+                    output_checked = False
                     try:
-                        self._check_reference(self._stdout_file,
-                                              'stdout.expected',
-                                              'stdout.diff',
-                                              'stdout_diff',
-                                              'Stdout')
+                        output_checked = self._check_reference(
+                            self._output_file,
+                            'output.expected',
+                            'output.diff',
+                            'output_diff',
+                            'Output')
                     except Exception as details:
+                        # output check was performed (and failed)
+                        output_checked = True
                         stacktrace.log_exc_info(sys.exc_info(),
                                                 logger=LOG_JOB)
-                        stdout_check_exception = details
-                    try:
-                        self._check_reference(self._stderr_file,
-                                              'stderr.expected',
-                                              'stderr.diff',
-                                              'stderr_diff',
-                                              'Stderr')
-                    except Exception as details:
-                        stacktrace.log_exc_info(sys.exc_info(),
-                                                logger=LOG_JOB)
-                        stderr_check_exception = details
+                        output_check_exception = details
+                    if not output_checked:
+                        try:
+                            self._check_reference(self._stdout_file,
+                                                  'stdout.expected',
+                                                  'stdout.diff',
+                                                  'stdout_diff',
+                                                  'Stdout')
+                        except Exception as details:
+                            stacktrace.log_exc_info(sys.exc_info(),
+                                                    logger=LOG_JOB)
+                            stdout_check_exception = details
+                        try:
+                            self._check_reference(self._stderr_file,
+                                                  'stderr.expected',
+                                                  'stderr.diff',
+                                                  'stderr_diff',
+                                                  'Stderr')
+                        except Exception as details:
+                            stacktrace.log_exc_info(sys.exc_info(),
+                                                    logger=LOG_JOB)
+                            stderr_check_exception = details
             elif not job_standalone:
                 if output_check_record == 'combined':
                     self._record_reference(self._output_file,
@@ -914,6 +939,8 @@ class Test(unittest.TestCase, TestData):
             raise test_exception
         elif cleanup_exception is not None:
             raise cleanup_exception
+        elif output_check_exception is not None:
+            raise output_check_exception
         elif stdout_check_exception is not None:
             raise stdout_check_exception
         elif stderr_check_exception is not None:
