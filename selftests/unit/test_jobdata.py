@@ -17,7 +17,7 @@ class JobdataTest(unittest.TestCase):
 
         # pwd
         self.assertEqual(jobdata.retrieve_pwd(pth),
-                         "/home/medic/Work/Projekty/avocado/avocado",
+                         "/home/user/avocado",
                          "pwd mismatch")
 
         # references
@@ -31,10 +31,10 @@ class JobdataTest(unittest.TestCase):
             self.fail("variants: Unable to retrieve: %s" % details)
         act = variants.to_str(0, 99)
         self.assertTrue(act)
-        exp = ("\nVariant variant1-6ec4:    /run/variant1\n"
-               "    /run/variant1:foo => bar\n\n"
-               "Variant variant2-a6fe:    /run/variant2\n"
-               "    /run/variant2:foo => baz")
+        exp = ("\nVariant first-febe:    /run/first\n"
+               "    /run/first:variable_one => 1\n\n"
+               "Variant second-bafe:    /run/second\n"
+               "    /run/second:variable_two => 2")
         self.assertIn(exp, act, "variants mismatch")
 
         # args
@@ -70,7 +70,8 @@ class JobdataTest(unittest.TestCase):
         # cmdline
         act = jobdata.retrieve_cmdline(pth)
         exp = ['/usr/local/bin/avocado', 'run', '--external-runner',
-               '/bin/echo', '-m', 'examples/mux-0.yaml', '--', 'yes', 'no']
+               '/bin/echo', '-m', 'examples/yaml_to_mux/simple_vars.yaml',
+               '--', 'yes', 'no']
         self.assertEqual(exp, act,
                          "cmdline: Invalid cmdline '%s' (%s)" % (act, exp))
 
@@ -78,29 +79,8 @@ class JobdataTest(unittest.TestCase):
     def setUp(self):
         os.chdir(BASEDIR)
 
-    def test_36_0_lts(self):
-        self._check_results("results-36.0lts")
-
-    def test_36_4(self):
-        self._check_results("results-36.4")
-
-    def test_37_0(self):
-        self._check_results("results-37.0")
-
-    def test_38_0(self):
-        self._check_results("results-38.0")
-
-    def test_39_0(self):
-        self._check_results("results-39.0")
-
-    def test_40_0(self):
-        self._check_results("results-40.0")
-
-    def test_41_0(self):
-        self._check_results("results-41.0")
-
-    def test_51_0(self):
-        self._check_results("results-51.0")
+    def test_52_0(self):
+        self._check_results("results-52.0")
 
 
 if __name__ == "__main__":

@@ -185,18 +185,6 @@ class ReplayTests(unittest.TestCase):
                "test references given on the command line.")
         self.assertIn(msg, result.stderr)
 
-    def test_run_replay_fallbackdir(self):
-        """
-        Runs a replay job with the fallback job data directory name.
-        """
-        shutil.move(os.path.join(self.jobdir, 'jobdata'),
-                    os.path.join(self.jobdir, 'replay'))
-        cmd_line = ('%s run --replay %s '
-                    '--job-results-dir %s --sysinfo=off'
-                    % (AVOCADO, self.jobid, self.tmpdir))
-        expected_rc = exit_codes.AVOCADO_ALL_OK
-        self.run_and_check(cmd_line, expected_rc)
-
     def test_run_replay_and_mux(self):
         """
         Runs a replay job and specifies multiplex file (which should be

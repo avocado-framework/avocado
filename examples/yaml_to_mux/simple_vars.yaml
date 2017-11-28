@@ -1,0 +1,6 @@
+# Simple example with 2 variants key/values in them
+!mux
+first:
+  variable_one: 1
+second:
+  variable_two: 2
