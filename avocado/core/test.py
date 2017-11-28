@@ -698,23 +698,33 @@ class Test(unittest.TestCase, TestData):
         for name, handler in iteritems(self._logging_handlers):
             logging.getLogger(name).removeHandler(handler)
 
-    def _record_reference_stdout(self):
-        stdout_expected = self.get_data('stdout.expected', must_exist=False)
-        if stdout_expected is not None:
-            utils_path.init_dir(os.path.dirname(stdout_expected))
-            shutil.copyfile(self._stdout_file, stdout_expected)
+    def _record_reference(self, produced_file_path, reference_file_name):
+        '''
+        Saves a copy of a file produced by the test into a reference file
 
-    def _record_reference_stderr(self):
-        stderr_expected = self.get_data('stderr.expected', must_exist=False)
-        if stderr_expected is not None:
-            utils_path.init_dir(os.path.dirname(stderr_expected))
-            shutil.copyfile(self._stderr_file, stderr_expected)
+        This utility method will copy the produced file into the expected
+        reference file location, which can later be used for comparison
+        on subsequent test runs.
 
-    def _record_reference_combined(self):
-        expected = self.get_data('output.expected', must_exist=False)
-        if expected is not None:
-            utils_path.init_dir(os.path.dirname(expected))
-            shutil.copyfile(self._output_file, expected)
+        Note: A reference file is a "golden" file with content that is
+        expected to match what was produced during the test.  If the
+        produced content matches the reference file content, the test
+        performed correctly.
+
+        :param produced_file_path: the location of the file that was produced
+                                   by this test execution
+        :type produced_file_path: str
+        :param reference_file_name: the name of the file that will be used on
+                                    subsequent runs to check the test produced
+                                    the correct content.  This file will be
+                                    saved into a location obtained by
+                                    calling :meth:`get_data()`.
+        :type reference_file_name: str
+        '''
+        reference_path = self.get_data(reference_file_name, must_exist=False)
+        if reference_path is not None:
+            utils_path.init_dir(os.path.dirname(reference_path))
+            shutil.copyfile(produced_file_path, reference_path)
 
     def _check_reference_stdout(self):
         expected_path = self.get_data('stdout.expected')
@@ -881,12 +891,15 @@ class Test(unittest.TestCase, TestData):
                         stderr_check_exception = details
             elif not job_standalone:
                 if output_check_record == 'combined':
-                    self._record_reference_combined()
+                    self._record_reference(self._output_file,
+                                           "output.expected")
                 else:
                     if output_check_record in ['all', 'both', 'stdout']:
-                        self._record_reference_stdout()
+                        self._record_reference(self._stdout_file,
+                                               "stdout.expected")
                     if output_check_record in ['all', 'both', 'stderr']:
-                        self._record_reference_stderr()
+                        self._record_reference(self._stderr_file,
+                                               "stderr.expected")
 
         # pylint: disable=E0702
         if test_exception is not None:
