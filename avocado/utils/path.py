@@ -16,6 +16,7 @@
 Avocado path related functions.
 """
 
+import ctypes
 import os
 import stat
 import tempfile
@@ -191,3 +192,21 @@ def usable_ro_dir(directory):
             pass
 
     return False
+
+
+def sync_attempt():
+    """
+    Attempts (best-effort) to synchronize file buffers into disk
+
+    This method attempts to to call the native Python standard library
+    method where available, and then falls back to a ctypes wrapper when
+    necessary.
+    """
+    if hasattr(os, 'sync'):
+        os.sync()
+    else:
+        try:
+            libc = ctypes.CDLL('libc.so.6')
+            libc.sync()
+        except OSError:
+            pass
