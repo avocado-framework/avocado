@@ -71,6 +71,21 @@ class OutputTest(Test):
         process.run("/bin/echo -n del_process")
 """
 
+OUTPUT_MODE_NONE_CONTENT = r"""
+import sys
+
+from avocado import Test
+from avocado.utils import process
+
+
+class OutputCheckNone(Test):
+
+    def test(self):
+        cmd = "%s -c \"import sys; sys.%%s.write('%%s')\"" % sys.executable
+        process.run(cmd % ('stdout', '__STDOUT_DONT_RECORD_CONTENT__'))
+        process.run(cmd % ('stderr', '__STDERR_DONT_RECORD_CONTENT__'))
+"""
+
 
 def image_output_uncapable():
     try:
@@ -168,6 +183,35 @@ class OutputTest(unittest.TestCase):
         testdir = res["tests"][0]["logdir"]
         self.assertEqual("test_process__test_stderr____test_stdout__",
                          open(os.path.join(testdir, "output")).read())
+
+    def test_check_record_no_module_default(self):
+        """
+        Checks that the `avocado.utils.process` module won't have a output
+        check record mode (`OUTPUT_CHECK_RECORD_MODE`) set by default.
+
+        The reason is that, if this is always set from the command
+        line runner, we can't distinguish from a situation where the
+        module level configuration should be applied as a fallback to
+        the API parameter.  By leaving it unset by default, the command line
+        option parameter value `none` will slightly change its behavior,
+        meaning that it will explicitly disable output check record when
+        asked to do so.
+        """
+        with script.Script(os.path.join(self.tmpdir, "output_mode_none.py"),
+                           OUTPUT_MODE_NONE_CONTENT,
+                           script.READ_ONLY_MODE) as test:
+            cmd = ("%s run --job-results-dir %s --sysinfo=off "
+                   "--json - --output-check-record none -- %s") % (AVOCADO,
+                                                                   self.tmpdir,
+                                                                   test.path)
+            result = process.run(cmd)
+            res = json.loads(result.stdout)
+            testdir = res["tests"][0]["logdir"]
+            for output_file in ('stdout', 'stderr', 'output'):
+                output_file_path = os.path.join(testdir, output_file)
+                self.assertTrue(os.path.exists(output_file_path))
+                with open(output_file_path, 'r') as output:
+                    self.assertEqual(output.read(), '')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
