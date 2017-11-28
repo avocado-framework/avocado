@@ -748,6 +748,10 @@ class Test(unittest.TestCase, TestData):
         :param name: optional parameter for a descriptive name of the type of
                      content being checked here
         :type name: str
+        :returns: True if the check was performed (there was a reference file) and
+                  was successfull, and False otherwise (there was no such reference
+                  file and thus no check was performed).
+        :raises: :class:`exceptions.TestFail` when the check is performed and fails
         '''
         reference_path = self.get_data(reference_file_name)
         if reference_path is not None:
@@ -774,6 +778,9 @@ class Test(unittest.TestCase, TestData):
                 for line in diff_content:
                     log_diff.debug(line)
                 self.fail('Actual test %s differs from expected one' % name)
+            else:
+                return True
+        return False
 
     def _run_avocado(self):
         """
