@@ -149,22 +149,6 @@ class AvocadoParams(object):
         else:
             return False
 
-    def __getattr__(self, attr):
-        """
-        Compatibility to old Params
-        :warning: This will be removed soon. Use params.get() instead
-        """
-        if attr == '__getnewargs__':    # pickling uses this attr
-            raise AttributeError
-        elif attr in self.__dict__:
-            return self.__dict__[attr]
-        else:
-            msg = ("You're probably retrieving param %s via attributes "
-                   " (self.params.$key) which is obsoleted. Use "
-                   "self.params.get($key) instead." % attr)
-            output.LOG_JOB.warn(msg)
-            return self.get(attr)
-
     def get(self, key, path=None, default=None):
         """
         Retrieve value associated with key from params
