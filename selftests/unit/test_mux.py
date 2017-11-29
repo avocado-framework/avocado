@@ -8,7 +8,8 @@ import yaml
 from six import iteritems
 
 import avocado_varianter_yaml_to_mux as yaml_to_mux
-from avocado.core import mux, tree, varianter
+from avocado_varianter_yaml_to_mux import mux
+from avocado.core import tree, varianter
 
 BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 BASEDIR = os.path.abspath(BASEDIR)
