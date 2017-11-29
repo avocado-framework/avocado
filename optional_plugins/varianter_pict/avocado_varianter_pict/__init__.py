@@ -22,7 +22,6 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.plugin_interfaces import Varianter
 from avocado.core.tree import TreeNode
-from avocado.core.varianter import AvocadoParams
 from avocado.utils import path as utils_path
 from avocado.utils import process
 

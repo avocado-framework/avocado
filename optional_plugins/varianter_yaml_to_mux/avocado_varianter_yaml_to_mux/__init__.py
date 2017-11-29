@@ -22,7 +22,7 @@ import sys
 
 from six import iteritems
 
-from avocado.core import tree, exit_codes, varianter
+from avocado.core import tree, exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
