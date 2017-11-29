@@ -506,8 +506,12 @@ class TestRunner(object):
         """
         Applies test params from variant to the test template
 
-        :param template: a test template
-        :param variant: variant to be applied
+        :param template: a test template, containing the class name,
+                         followed by parameters to the class
+        :type template: tuple
+        :param variant: variant to be applied, usually containing
+                        the keys: mux_path, variant and variant_id
+        :type variant: dict
         :return: tuple(new_test_factory, applied_variant)
         """
         params = variant.get("variant"), variant.get("mux_path")
