@@ -33,9 +33,9 @@ from six import string_types, iteritems
 
 from . import data_dir
 from . import exceptions
-from . import varianter
-from . import sysinfo
 from . import output
+from . import parameters
+from . import sysinfo
 from ..utils import asset
 from ..utils import astring
 from ..utils import data_structures
@@ -372,9 +372,9 @@ class Test(unittest.TestCase, TestData):
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.__params = varianter.AvocadoParams(params, self.name,
-                                                mux_path,
-                                                self.default_params)
+        self.__params = parameters.AvocadoParams(params, self.name,
+                                                 mux_path,
+                                                 self.default_params)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 

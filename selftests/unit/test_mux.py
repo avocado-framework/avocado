@@ -9,7 +9,7 @@ from six import iteritems
 
 import avocado_varianter_yaml_to_mux as yaml_to_mux
 from avocado_varianter_yaml_to_mux import mux
-from avocado.core import tree, varianter
+from avocado.core import tree, parameters
 
 BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 BASEDIR = os.path.abspath(BASEDIR)
@@ -293,12 +293,12 @@ class TestAvocadoParams(unittest.TestCase):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                               'selftests/.data/mux-selftest-params.yaml'])
         self.yamls = iter(mux.MuxTree(yamls))
-        self.params1 = varianter.AvocadoParams(next(self.yamls), 'Unittest1',
-                                               ['/ch0/*', '/ch1/*'], {})
+        self.params1 = parameters.AvocadoParams(next(self.yamls), 'Unittest1',
+                                                ['/ch0/*', '/ch1/*'], {})
         next(self.yamls)    # Skip 2nd
         next(self.yamls)    # and 3rd
-        self.params2 = varianter.AvocadoParams(next(self.yamls), 'Unittest2',
-                                               ['/ch1/*', '/ch0/*'], {})
+        self.params2 = parameters.AvocadoParams(next(self.yamls), 'Unittest2',
+                                                ['/ch1/*', '/ch0/*'], {})
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_pickle(self):
@@ -312,7 +312,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertNotEqual(self.params1, self.params2)
         repr(self.params1)
         str(self.params1)
-        str(varianter.AvocadoParams([], 'Unittest', [], {}))
+        str(parameters.AvocadoParams([], 'Unittest', [], {}))
         self.assertEqual(15, sum([1 for _ in iteritems(self.params1)]))
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
