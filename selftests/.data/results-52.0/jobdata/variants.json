@@ -1,0 +1,1 @@
+[{"mux_path": ["/run/*"], "variant": [["/run/first", [["/run/first", "variable_one", 1]]]], "variant_id": "first-febe"}, {"mux_path": ["/run/*"], "variant": [["/run/second", [["/run/second", "variable_two", 2]]]], "variant_id": "second-bafe"}]

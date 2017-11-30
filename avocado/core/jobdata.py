@@ -20,10 +20,7 @@ import ast
 import glob
 import json
 import os
-import pickle
-import sys
 
-from . import jobdata_compat_36_to_52
 from . import varianter
 from .output import LOG_UI, LOG_JOB
 from .settings import settings
@@ -31,36 +28,12 @@ from ..utils.path import init_dir
 
 
 JOB_DATA_DIR = 'jobdata'
-JOB_DATA_FALLBACK_DIR = 'replay'
 CONFIG_FILENAME = 'config'
 TEST_REFERENCES_FILENAME = 'test_references'
-VARIANTS_FILENAME = 'variants'
-# TODO: Remove when 36lts is discontinued
-VARIANTS_FILENAME_LEGACY = 'multiplex'
+VARIANTS_FILENAME = 'variants.json'
 PWD_FILENAME = 'pwd'
-ARGS_FILENAME = 'args'
+ARGS_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
-
-
-def _find_class(module, name):
-    """
-    Look for a class including compatibility workarounds
-    """
-    try:
-        mod = __import__(module)
-        mod = sys.modules[module]
-        return getattr(mod, name)
-    except ImportError:
-        if module == "avocado.core.multiplexer":
-            mod = __import__("avocado.core.jobdata_compat_36_to_52",
-                             fromlist=[module])
-            return getattr(mod, name)
-        elif module == "avocado.plugins.yaml_to_mux":
-            mod = __import__("avocado_varianter_yaml_to_mux",
-                             fromlist=[module])
-            return getattr(mod, name)
-        else:
-            raise
 
 
 def record(args, logdir, mux, references=None, cmdline=None):
@@ -74,9 +47,9 @@ def record(args, logdir, mux, references=None, cmdline=None):
     base_dir = init_dir(logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
-    path_mux = os.path.join(base_dir, VARIANTS_FILENAME + ".json")
+    path_mux = os.path.join(base_dir, VARIANTS_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
-    path_args = os.path.join(base_dir, ARGS_FILENAME + ".json")
+    path_args = os.path.join(base_dir, ARGS_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
 
     if references:
@@ -114,9 +87,7 @@ def record(args, logdir, mux, references=None, cmdline=None):
 def _retrieve(resultsdir, resource):
     path = os.path.join(resultsdir, JOB_DATA_DIR, resource)
     if not os.path.exists(path):
-        path = os.path.join(resultsdir, JOB_DATA_FALLBACK_DIR, resource)
-        if not os.path.exists(path):
-            return None
+        return None
     return path
 
 
@@ -136,10 +107,6 @@ def retrieve_references(resultsdir):
     Retrieves the job test references from the results directory.
     """
     recorded_references = _retrieve(resultsdir, TEST_REFERENCES_FILENAME)
-    # TODO: Remove if support for replaying jobs generated under older
-    # versions is also removed
-    if recorded_references is None:
-        recorded_references = _retrieve(resultsdir, 'urls')
     if recorded_references is None:
         return None
     with open(recorded_references, 'r') as references_file:
@@ -150,63 +117,20 @@ def retrieve_variants(resultsdir):
     """
     Retrieves the job Mux object from the results directory.
     """
-    def _apply_36_to_52_workarounds(variants):
-        """
-        The 36.x version of TreeNode did not contain `filters`. Let's
-        re-initialize it per each child.
-        """
-        def get_fingerprint_meth(fingerprint):
-            """
-            36.x TreeNode used to actually be equivalent of MuxTreeNode,
-            let's adjust the fingerprint to also contain self.ctrl
-            """
-            def get():
-                return fingerprint
-            return get
-        for node in variants.variants.root.iter_children_preorder():
-            node.filters = [[], []]
-            node._environment = None
-            fingerprint = node.fingerprint()
-            node.fingerprint = get_fingerprint_meth("%s%s" % (fingerprint,
-                                                              node.ctrl))
-
-    recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME + ".json")
-    if recorded_mux:    # new json-based dump
+    recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME)
+    if recorded_mux:
         with open(recorded_mux, 'r') as mux_file:
             return varianter.Varianter(state=json.load(mux_file))
-    recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME)
-    if recorded_mux is None:
-        recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME_LEGACY)
-    if recorded_mux is None:
-        return None
-    # old pickle-based dump
-    # TODO: Remove when 36lts is discontinued
-    with open(recorded_mux, 'r') as mux_file:
-        unpickler = pickle.Unpickler(mux_file)
-        unpickler.find_class = _find_class
-        variants = unpickler.load()
-        if isinstance(variants, jobdata_compat_36_to_52.Mux):
-            LOG_UI.warn("Using outdated 36.x variants file.")
-            _apply_36_to_52_workarounds(variants)
-        state = varianter.dump_ivariants(variants.itertests)
-        return varianter.Varianter(state=state)
 
 
 def retrieve_args(resultsdir):
     """
     Retrieves the job args from the results directory.
     """
-    recorded_args = _retrieve(resultsdir, ARGS_FILENAME + ".json")
+    recorded_args = _retrieve(resultsdir, ARGS_FILENAME)
     if recorded_args:
         with open(recorded_args, 'r') as args_file:
             return json.load(args_file)
-    recorded_args = _retrieve(resultsdir, ARGS_FILENAME)
-    if recorded_args is None:
-        return None
-    # old pickle-based dump
-    # TODO: Remove when 36lts is discontinued
-    with open(recorded_args, 'r') as args_file:
-        return pickle.load(args_file)
 
 
 def retrieve_config(resultsdir):
