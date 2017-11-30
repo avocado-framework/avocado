@@ -66,7 +66,8 @@ def add_runner_failure(test_state, new_status, message):
     else:
         test_state["text_output"] = message + "\n"
     if test_log:
-        open(test_log, "a").write('\n' + message + '\n')
+        with open(test_log, "a") as log_file:
+            log_file.write('\n' + message + '\n')
     # Update the results
     if test_state.get("fail_reason"):
         test_state["fail_reason"] = "%s\n%s" % (test_state["fail_reason"],

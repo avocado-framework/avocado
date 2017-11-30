@@ -1151,11 +1151,12 @@ class SimpleTest(Test):
         except process.CmdError as details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
-        for line in open(self.logfile):
-            if self.re_avocado_log.match(line):
-                raise exceptions.TestWarn("Test passed but there were warnings"
-                                          " on stdout during execution. Check "
-                                          "the log for details.")
+        with open(self.logfile) as logfile:
+            for line in logfile:
+                if self.re_avocado_log.match(line):
+                    raise exceptions.TestWarn("Test passed but there were warnings"
+                                              " on stdout during execution. Check "
+                                              "the log for details.")
 
     def test(self):
         """
