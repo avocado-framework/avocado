@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import signal
 import sys
 
 from avocado import Test
@@ -41,15 +40,14 @@ class DoubleFreeTest(Test):
         Execute 'doublefree'.
         """
         cmd = os.path.join(self.srcdir, 'doublefree')
-        cmd_result = process.run(cmd, ignore_status=True)
+        cmd_result = process.run(cmd, ignore_status=True,
+                                 env={'MALLOC_CHECK_': '1'})
         self.log.info(cmd_result)
-        expected_exit_status = -signal.SIGABRT
         output = cmd_result.stdout + cmd_result.stderr
-        self.assertEqual(cmd_result.exit_status, expected_exit_status)
         if sys.platform.startswith('darwin'):
             pattern = 'pointer being freed was not allocated'
         else:
-            pattern = 'double free or corruption'
+            pattern = 'free(): invalid pointer'
         self.assertTrue(pattern in output,
                         msg='Could not find pattern %s in output %s' %
                             (pattern, output))
