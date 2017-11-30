@@ -14,7 +14,7 @@ class TimeoutTest(Test):
     :param sleep_time: How long should the test sleep
     """
 
-    default_params = {'timeout': 3}
+    timeout = 3
 
     def test(self):
         """

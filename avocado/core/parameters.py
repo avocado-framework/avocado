@@ -47,14 +47,11 @@ class AvocadoParams(object):
 
     # TODO: Use "test" to log params.get()
 
-    def __init__(self, leaves, test_id, mux_path, default_params):
+    def __init__(self, leaves, test_id, mux_path):
         """
         :param leaves: List of TreeNode leaves defining current variant
         :param test_id: test id
         :param mux_path: list of entry points
-        :param default_params: dict of params used when no matches found
-
-        .. note:: `default_params` will be deprecated by the end of 2017.
         """
         self._rel_paths = []
         leaves = list(leaves)
@@ -67,8 +64,6 @@ class AvocadoParams(object):
         self._abs_path = AvocadoParam(path_leaves, '*: *')
         self.id = test_id
         self._cache = {}     # TODO: Implement something more efficient
-        # TODO: Get rid of this and prepare something better
-        self._default_params = default_params
 
     def __eq__(self, other):
         if set(iterkeys(self.__dict__)) != set(iterkeys(other.__dict__)):
@@ -191,7 +186,7 @@ class AvocadoParams(object):
                 return self._abs_path.get_or_die(path, key)
             except NoMatchError:
                 pass
-        return self._default_params.get(key, default)
+        return default
 
     def objects(self, key, path=None):
         """
