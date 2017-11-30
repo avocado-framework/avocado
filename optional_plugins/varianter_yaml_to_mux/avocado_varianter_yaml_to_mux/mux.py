@@ -27,8 +27,8 @@ import re
 
 from six.moves import xrange as range
 
-from . import tree
-from . import varianter
+from avocado.core import tree
+from avocado.core import varianter
 
 
 #
