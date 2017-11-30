@@ -514,9 +514,11 @@ class TestRunner(object):
         :type variant: dict
         :return: tuple(new_test_factory, applied_variant)
         """
-        params = variant.get("variant"), variant.get("mux_path")
-        if "params" in template[1]:
-            if not varianter.is_empty_variant(params[0]):
+        var = variant.get("variant")
+        mux_path = variant.get("mux_path")
+        klass, klass_parameters = template
+        if "params" in klass_parameters:
+            if not varianter.is_empty_variant(var):
                 msg = ("Specifying test params from test loader and "
                        "from varianter at the same time is not yet "
                        "supported. Please remove either variants defined"
@@ -524,14 +526,15 @@ class TestRunner(object):
                        "test %s to not to fill variants."
                        % (variant, template))
                 raise NotImplementedError(msg)
-            params = template[1]["params"]
-            variant_id = varianter.generate_variant_id(params[0])
-            return template, {"variant": params[0],
+            params = klass_parameters["params"]
+            variant_id = varianter.generate_variant_id(var)
+            return template, {"variant": var,
                               "variant_id": variant_id,
-                              "mux_path": params[1]}
-        factory = [template[0], template[1].copy()]
-        factory[1]["params"] = params
-        return factory, variant
+                              "mux_path": mux_path}
+        else:
+            factory = [klass, klass_parameters.copy()]
+            factory[1]["params"] = (var, mux_path)
+            return factory, variant
 
     def _iter_suite(self, test_suite, variants, execution_order):
         """
