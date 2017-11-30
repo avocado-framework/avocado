@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import unittest
 
+from avocado.utils import genio
 from avocado.utils import process
 
 
@@ -183,7 +184,7 @@ class TestStatuses(unittest.TestCase):
         self.assertEqual(expected[0], test['status'],
                          "Status error: '%s' != '%s' (%s)" %
                          (expected[0], test['status'], variant))
-        debug_log = open(test['logfile'], 'r').read()
+        debug_log = genio.read_file(test['logfile'])
         for msg in expected[1]:
             self.assertIn(msg, debug_log,
                           "Message '%s' should be in the log (%s)."

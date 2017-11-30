@@ -10,6 +10,7 @@ import pkg_resources
 
 from avocado.core import exit_codes
 from avocado.core.output import TermSupport
+from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
@@ -165,15 +166,18 @@ class OutputTest(unittest.TestCase):
         def _check_output(path, exps, name):
             i = 0
             end = len(exps)
-            for line in open(path):
-                if exps[i] in line:
-                    i += 1
-                    if i == end:
-                        break
-            self.assertEqual(i, end, "Failed to find %sth message from\n%s\n"
-                             "\nin the %s. Either it's missing or in wrong "
-                             "order.\n%s" % (i, "\n".join(exps), name,
-                                             open(path).read()))
+            with open(path) as output_file:
+                output_file_content = output_file.read()
+                output_file.seek(0)
+                for line in output_file:
+                    if exps[i] in line:
+                        i += 1
+                        if i == end:
+                            break
+                self.assertEqual(i, end, "Failed to find %sth message from\n%s\n"
+                                 "\nin the %s. Either it's missing or in wrong "
+                                 "order.\n%s" % (i, "\n".join(exps), name,
+                                                 output_file_content))
         test = script.Script(os.path.join(self.tmpdir, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
@@ -189,10 +193,12 @@ class OutputTest(unittest.TestCase):
                 "[stderr] test_stderr", "[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
-        self.assertEqual("test_print\ntest_stdout\ntest_process__test_stdout__",
-                         open(os.path.join(testdir, "stdout")).read())
-        self.assertEqual("test_stderr\n__test_stderr__",
-                         open(os.path.join(testdir, "stderr")).read())
+        with open(os.path.join(testdir, "stdout")) as stdout_file:
+            self.assertEqual("test_print\ntest_stdout\ntest_process__test_stdout__",
+                             stdout_file.read())
+        with open(os.path.join(testdir, "stderr")) as stderr_file:
+            self.assertEqual("test_stderr\n__test_stderr__",
+                             stderr_file.read())
 
         # Now run the same test, but with combined output
         # combined output can not keep track of sys.stdout and sys.stdout
@@ -205,8 +211,9 @@ class OutputTest(unittest.TestCase):
                              "--json - -- %s" % (AVOCADO, self.tmpdir, test))
         res = json.loads(result.stdout)
         testdir = res["tests"][0]["logdir"]
-        self.assertEqual("test_process__test_stderr____test_stdout__",
-                         open(os.path.join(testdir, "output")).read())
+        with open(os.path.join(testdir, "output")) as output_file:
+            self.assertEqual("test_process__test_stderr____test_stdout__",
+                             output_file.read())
 
     def test_check_record_no_module_default(self):
         """
@@ -276,20 +283,21 @@ class OutputPluginTest(unittest.TestCase):
 
     def check_output_files(self, debug_log):
         base_dir = os.path.dirname(debug_log)
-        json_output = os.path.join(base_dir, 'results.json')
-        self.assertTrue(os.path.isfile(json_output))
-        with open(json_output, 'r') as fp:
+        json_output_path = os.path.join(base_dir, 'results.json')
+        self.assertTrue(os.path.isfile(json_output_path))
+        with open(json_output_path, 'r') as fp:
             json.load(fp)
-        xunit_output = os.path.join(base_dir, 'results.xml')
-        self.assertTrue(os.path.isfile(json_output))
+        xunit_output_path = os.path.join(base_dir, 'results.xml')
+        self.assertTrue(os.path.isfile(json_output_path))
         try:
-            minidom.parse(xunit_output)
+            minidom.parse(xunit_output_path)
         except Exception as details:
+            xunit_output_content = genio.read_file(xunit_output_path)
             raise AssertionError("Unable to parse xunit output: %s\n\n%s"
-                                 % (details, open(xunit_output).read()))
+                                 % (details, xunit_output_content))
         tap_output = os.path.join(base_dir, "results.tap")
         self.assertTrue(os.path.isfile(tap_output))
-        tap = open(tap_output).read()
+        tap = genio.read_file(tap_output)
         self.assertIn("..", tap)
         self.assertIn("\n# debug.log of ", tap)
 

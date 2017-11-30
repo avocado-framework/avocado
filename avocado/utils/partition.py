@@ -137,11 +137,12 @@ class Partition(object):
         """
         # Try to match this device/mountpoint
         if filename:
-            for line in open(filename):
-                parts = line.split()
-                if parts[0] == self.device or parts[1] == self.mountpoint:
-                    return parts[1]    # The mountpoint where it's mounted
-            return None
+            with open(filename) as open_file:
+                for line in open_file:
+                    parts = line.split()
+                    if parts[0] == self.device or parts[1] == self.mountpoint:
+                        return parts[1]    # The mountpoint where it's mounted
+                return None
 
         # no specific file given, look in /proc/mounts
         res = self.get_mountpoint(filename='/proc/mounts')

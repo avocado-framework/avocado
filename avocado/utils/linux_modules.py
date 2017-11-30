@@ -222,17 +222,18 @@ def check_kernel_config(config_name):
     kernel_version = platform.uname()[2]
 
     config_file = '/boot/config-' + kernel_version
-    for line in open(config_file, 'r'):
-        line = line.split('=')
+    with open(config_file, 'r') as kernel_config:
+        for line in kernel_config:
+            line = line.split('=')
 
-        if len(line) != 2:
-            continue
+            if len(line) != 2:
+                continue
 
-        config = line[0].strip()
-        if config == config_name:
-            option = line[1].strip()
-            if option == "m":
-                return MODULE
-            else:
-                return BUILTIN
+            config = line[0].strip()
+            if config == config_name:
+                option = line[1].strip()
+                if option == "m":
+                    return MODULE
+                else:
+                    return BUILTIN
     return NOT_SET

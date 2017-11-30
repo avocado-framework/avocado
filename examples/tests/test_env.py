@@ -2,6 +2,7 @@ import os
 import sys
 
 from avocado import Test
+from avocado.utils import genio
 
 
 class Env(Test):
@@ -15,7 +16,7 @@ class Env(Test):
 
         def get_proc_content(rel_path):
             try:
-                return open(os.path.join(p_dir, rel_path)).read().strip()
+                return genio.read_file(os.path.join(p_dir, rel_path)).strip()
             except:
                 return "<NOT AVAILABLE>"
 

@@ -67,11 +67,8 @@ def url_download(url, filename, data=None, timeout=300):
 
     src_file = url_open(url, data=data, timeout=timeout)
     try:
-        dest_file = open(filename, 'wb')
-        try:
+        with open(filename, 'wb') as dest_file:
             shutil.copyfileobj(src_file, dest_file)
-        finally:
-            dest_file.close()
     finally:
         src_file.close()
 
@@ -90,31 +87,29 @@ def url_download_interactive(url, output_file, title='', chunk_size=102400):
     :param chunk_size: amount of data to read at a time
     """
     output_dir = os.path.dirname(output_file)
-    output_file = open(output_file, 'w+b')
-    input_file = urlopen(url)
+    with open(output_file, 'w+b') as open_output_file:
+        input_file = urlopen(url)
 
-    try:
-        file_size = int(input_file.headers['Content-Length'])
-    except KeyError:
-        raise ValueError('Could not find file size in HTTP headers')
+        try:
+            file_size = int(input_file.headers['Content-Length'])
+        except KeyError:
+            raise ValueError('Could not find file size in HTTP headers')
 
-    logging.info('Downloading %s, %s to %s', os.path.basename(url),
-                 output.display_data_size(file_size), output_dir)
+        logging.info('Downloading %s, %s to %s', os.path.basename(url),
+                     output.display_data_size(file_size), output_dir)
 
-    progress_bar = output.ProgressBar(maximum=file_size, title=title)
+        progress_bar = output.ProgressBar(maximum=file_size, title=title)
 
-    # Download the file, while interactively updating the progress
-    progress_bar.draw()
-    while True:
-        data = input_file.read(chunk_size)
-        if data:
-            progress_bar.append_amount(len(data))
-            output_file.write(data)
-        else:
-            progress_bar.update_amount(file_size)
-            break
-
-    output_file.close()
+        # Download the file, while interactively updating the progress
+        progress_bar.draw()
+        while True:
+            data = input_file.read(chunk_size)
+            if data:
+                progress_bar.append_amount(len(data))
+                open_output_file.write(data)
+            else:
+                progress_bar.update_amount(file_size)
+                break
 
 
 def _get_file(src, dst, permissions=None):

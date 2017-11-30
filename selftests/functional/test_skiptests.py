@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 from avocado.core import exit_codes
+from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 
@@ -119,9 +120,10 @@ class TestSkipDecorators(unittest.TestCase):
 
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(json_results['skip'], 3)
-        self.assertFalse('setup executed' in open(debuglog, 'r').read())
-        self.assertFalse('test executed' in open(debuglog, 'r').read())
-        self.assertFalse('teardown executed' in open(debuglog, 'r').read())
+        debuglog_contents = genio.read_file(debuglog)
+        self.assertFalse('setup executed' in debuglog_contents)
+        self.assertFalse('test executed' in debuglog_contents)
+        self.assertFalse('teardown executed' in debuglog_contents)
 
     def test_skip_setup(self):
         os.chdir(basedir)

@@ -173,8 +173,8 @@ class Asset(object):
         if not os.path.isfile(self.hashfile):
             self._compute_hash()
 
-        with open(self.hashfile, 'r') as f:
-            for line in f.readlines():
+        with open(self.hashfile, 'r') as asset_file:
+            for line in asset_file:
                 # md5 is 32 chars big and sha512 is 128 chars big.
                 # others supported algorithms are between those.
                 pattern = '%s [a-f0-9]{32,128}' % self.algorithm

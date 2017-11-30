@@ -4,6 +4,7 @@ import os
 
 from avocado import Test
 from avocado import main
+from avocado.utils import genio
 
 
 class GenDataTest(Test):
@@ -23,8 +24,7 @@ class GenDataTest(Test):
         dmesg_path = os.path.join(self.job.logdir, "sysinfo", "pre", "dmesg_-c")
         self.log.info("dmesg_path: %s", dmesg_path)
         if os.path.exists(dmesg_path):
-            dmesg = open(dmesg_path)
-            text = dmesg.readlines()[0:50]
+            text = genio.read_all_lines(dmesg_path)[0:50]
 
         bsod = Image.new("RGB", (640, 480), "blue")
         draw = ImageDraw.Draw(bsod)
@@ -39,7 +39,8 @@ class GenDataTest(Test):
         output_path = os.path.join(self.outputdir, "test.json")
         output = {"basedir": self.basedir,
                   "outputdir": self.outputdir}
-        json.dump(output, open(output_path, "w"))
+        with open(output_path, "w") as output_file:
+            json.dump(output, output_file)
 
 
 if __name__ == "__main__":

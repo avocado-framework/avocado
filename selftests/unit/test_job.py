@@ -110,8 +110,9 @@ class JobTest(unittest.TestCase):
             myjob.run_tests()
         finally:
             myjob.post_tests()
-        self.assertEqual(myjob.unique_id[::-1],
-                         open(os.path.join(myjob.logdir, "reversed_id")).read())
+        with open(os.path.join(myjob.logdir, "reversed_id")) as reverse_id_file:
+            self.assertEqual(myjob.unique_id[::-1],
+                             reverse_id_file.read())
 
     def test_job_run(self):
         class JobFilterLog(job.Job):
@@ -135,8 +136,9 @@ class JobTest(unittest.TestCase):
         self.assertEqual(myjob.run(),
                          exit_codes.AVOCADO_ALL_OK)
         self.assertLessEqual(len(myjob.test_suite), 1)
-        self.assertEqual(myjob.unique_id[::-1],
-                         open(os.path.join(myjob.logdir, "reversed_id")).read())
+        with open(os.path.join(myjob.logdir, "reversed_id")) as reverse_id_file:
+            self.assertEqual(myjob.unique_id[::-1],
+                             reverse_id_file.read())
 
     def test_job_run_account_time(self):
         args = argparse.Namespace(base_logdir=self.tmpdir)

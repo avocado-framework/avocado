@@ -21,7 +21,8 @@ import sys
 from setuptools import setup, find_packages
 
 BASE_PATH = os.path.dirname(__file__)
-VERSION = open(os.path.join(BASE_PATH, 'VERSION'), 'r').read().strip()
+with open(os.path.join(BASE_PATH, 'VERSION'), 'r') as version_file:
+    VERSION = version_file.read().strip()
 VIRTUAL_ENV = (hasattr(sys, 'real_prefix') or 'VIRTUAL_ENV' in os.environ)
 
 

@@ -164,9 +164,10 @@ class Probe(object):
         """
         if self.check_name_for_file_contains():
             if os.path.exists(self.CHECK_FILE):
-                for line in open(self.CHECK_FILE).readlines():
-                    if self.CHECK_FILE_CONTAINS in line:
-                        return self.CHECK_FILE_DISTRO_NAME
+                with open(self.CHECK_FILE) as check_file:
+                    for line in check_file:
+                        if self.CHECK_FILE_CONTAINS in line:
+                            return self.CHECK_FILE_DISTRO_NAME
 
     def check_version(self):
         """
@@ -185,12 +186,12 @@ class Probe(object):
         Returns the match result for the version regex on the file content
         """
         if self.check_version():
-            if os.path.exists(self.CHECK_FILE):
-                version_file_content = open(self.CHECK_FILE).read()
-            else:
+            if not os.path.exists(self.CHECK_FILE):
                 return None
 
-            return self.CHECK_VERSION_REGEX.match(version_file_content)
+            with open(self.CHECK_FILE) as version_file:
+                version_file_content = version_file.read()
+                return self.CHECK_VERSION_REGEX.match(version_file_content)
 
     def version(self):
         """
@@ -366,10 +367,11 @@ class SUSEProbe(Probe):
         version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
         version_id = None
 
-        for line in open(self.CHECK_FILE).readlines():
-            match = version_id_re.match(line)
-            if match:
-                version_id = match.group(1)
+        with open(self.check_file) as check_file:
+            for line in check_file:
+                match = version_id_re.match(line)
+                if match:
+                    version_id = match.group(1)
 
         if version_id:
             version_parts = version_id.split('.')

@@ -23,6 +23,7 @@ from six.moves import xrange as range
 
 from avocado.core import exit_codes
 from avocado.utils import astring
+from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 from avocado.utils import path as utils_path
@@ -526,7 +527,7 @@ class RunnerOperationTest(unittest.TestCase):
                " foo:bar:b foo:baz:c bar:bar:bar --dry-run" % AVOCADO)
         result = json.loads(process.run(cmd).stdout)
         debuglog = result['debuglog']
-        log = open(debuglog, 'r').read()
+        log = genio.read_file(debuglog)
         # Remove the result dir
         shutil.rmtree(os.path.dirname(os.path.dirname(debuglog)))
         self.assertIn(tempfile.gettempdir(), debuglog)   # Use tmp dir, not default location
@@ -839,9 +840,10 @@ class RunnerSimpleTest(unittest.TestCase):
                          "1.")
 
         sleep_dir = astring.string_to_safe_path("1-60")
-        debug_log = os.path.join(self.tmpdir, "latest", "test-results",
-                                 sleep_dir, "debug.log")
-        debug_log = open(debug_log).read()
+        debug_log_path = os.path.join(self.tmpdir, "latest", "test-results",
+                                      sleep_dir, "debug.log")
+
+        debug_log = genio.read_file(debug_log_path)
         self.assertIn("Runner error occurred: Timeout reached", debug_log,
                       "Runner error occurred: Timeout reached message not "
                       "in the test's debug.log:\n%s" % debug_log)
