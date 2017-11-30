@@ -134,15 +134,31 @@ class Run(CLICmd):
         out_check = parser.add_argument_group('output check arguments')
 
         out_check.add_argument('--output-check-record',
-                               choices=('none', 'all', 'stdout', 'stderr',
-                                        'both', 'combined'),
-                               default='none',
-                               help="Record output streams of your tests "
-                               "to reference files (valid options: none (do "
-                               "not record output streams), all (record both "
-                               "stdout and stderr), stdout (record only "
-                               "stderr), stderr (record only stderr). "
-                               'Current: %(default)s')
+                               choices=('none', 'stdout', 'stderr',
+                                        'both', 'combined', 'all'),
+                               help="Record the output produced by each test "
+                                    "(from stdout and stderr) into both the "
+                                    "current executing result and into  "
+                                    "reference files.  Reference files are "
+                                    "used on subsequent runs to determine if "
+                                    "the test produced the expected output or "
+                                    "not, and the current executing result is "
+                                    "used to check against a previously "
+                                    "recorded reference file.  Valid values: "
+                                    "'none' (to explicitly disable all "
+                                    "recording) 'stdout' (to record standard "
+                                    "output *only*), 'stderr' (to record "
+                                    "standard error *only*), 'both' (to record"
+                                    " standard output and error in separate "
+                                    "files), 'combined' (for standard output "
+                                    "and error in a single file). 'all' is "
+                                    "also a valid but deprecated option that "
+                                    "is a synonym of 'both'.  This option "
+                                    "does not have a default value, but the "
+                                    "Avocado test runner will record the "
+                                    "test under execution in the most suitable"
+                                    " way unless it's explicitly disabled with"
+                                    " value 'none'")
 
         out_check.add_argument('--output-check', choices=('on', 'off'),
                                default='on',
@@ -174,7 +190,9 @@ class Run(CLICmd):
         :param args: Command line args received from the run subparser.
         """
         if 'output_check_record' in args:
-            process.OUTPUT_CHECK_RECORD_MODE = getattr(args, 'output_check_record')
+            process.OUTPUT_CHECK_RECORD_MODE = getattr(args,
+                                                       'output_check_record',
+                                                       None)
 
         if args.unique_job_id is not None:
             try:

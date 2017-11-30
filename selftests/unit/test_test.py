@@ -112,10 +112,10 @@ class TestClassTestUnit(unittest.TestCase):
         above_limit_name = os.path.join(self.tmpdir, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
         self.assertFalse(tst.datadir)
-        tst._record_reference_stdout       # Should do nothing
-        tst._record_reference_stderr       # Should do nothing
-        tst._record_reference_stdout()
-        tst._record_reference_stderr()
+        tst._record_reference       # Should do nothing
+        tst._record_reference('stdout', 'stdout.expected')
+        tst._record_reference('stderr', 'stderr.expected')
+        tst._record_reference('output', 'output.expected')
 
     def test_all_dirs_exists_no_hang(self):
         with mock.patch('os.path.exists', return_value=True):
@@ -126,6 +126,42 @@ class TestClassTestUnit(unittest.TestCase):
         test = self.DummyTest(base_logdir=self.tmpdir)
         self.assertRaises(AttributeError, setattr, test, "name", "whatever")
         self.assertRaises(AttributeError, setattr, test, "status", "whatever")
+
+    def test_check_reference_success(self):
+        '''
+        Tests that a check is made, and is successful
+        '''
+        class GetDataTest(test.Test):
+            def test(self):
+                pass
+
+            def get_data(self, filename, source=None, must_exist=True):
+                # return the filename (path, really) unchanged
+                return filename
+
+        tst = GetDataTest("test", test.TestID(1, "test"),
+                          base_logdir=self.tmpdir)
+        content = 'expected content\n'
+        content_path = os.path.join(tst.logdir, 'content')
+        with open(content_path, 'w') as produced:
+            produced.write(content)
+        self.assertTrue(tst._check_reference(content_path,
+                                             content_path,
+                                             'content.diff',
+                                             'content_diff',
+                                             'Content'))
+
+    def test_check_reference_does_not_exist(self):
+        '''
+        Tests that a check is not made for a file that does not exist
+        '''
+        tst = self.DummyTest("test", test.TestID(1, "test"),
+                             base_logdir=self.tmpdir)
+        self.assertFalse(tst._check_reference('does_not_exist',
+                                              'stdout.expected',
+                                              'stdout.diff',
+                                              'stdout_diff',
+                                              'Stdout'))
 
 
 class TestClassTest(unittest.TestCase):

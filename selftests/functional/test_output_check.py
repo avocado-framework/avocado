@@ -30,6 +30,34 @@ class RunnerSimpleTest(unittest.TestCase):
             'avocado_output_check_functional')
         self.output_script.save()
 
+    def _check_output_record_all(self):
+        os.chdir(basedir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record all'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
+        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
+        self.assertTrue(os.path.isfile(stdout_file))
+        self.assertTrue(os.path.isfile(stderr_file))
+
+    def _check_output_record_combined(self):
+        os.chdir(basedir)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
+                    '--output-check-record combined'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_ALL_OK
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        output_file = os.path.join("%s.data/output.expected" % self.output_script)
+        self.assertTrue(os.path.isfile(output_file))
+
     def test_output_record_none(self):
         os.chdir(basedir)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
@@ -60,23 +88,18 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(stdout_file))
         self.assertFalse(os.path.isfile(stderr_file))
 
-    def test_output_record_all(self):
-        os.chdir(basedir)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
-                    '--output-check-record all'
+    def test_output_record_and_check(self):
+        self._check_output_record_all()
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script)
-        stderr_file = os.path.join("%s.data/stderr.expected" % self.output_script)
-        self.assertTrue(os.path.isfile(stdout_file))
-        self.assertTrue(os.path.isfile(stderr_file))
 
-    def test_output_record_and_check(self):
-        self.test_output_record_all()
+    def test_output_record_and_check_combined(self):
+        self._check_output_record_combined()
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -86,7 +109,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
 
     def test_output_tamper_stdout(self):
-        self.test_output_record_all()
+        self._check_output_record_all()
         tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
@@ -100,8 +123,23 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn(tampered_msg, result.stdout)
 
+    def test_output_tamper_combined(self):
+        self._check_output_record_combined()
+        tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
+        output_file = os.path.join("%s.data/output.expected" % self.output_script.path)
+        with open(output_file, 'w') as output_file_obj:
+            output_file_obj.write(tampered_msg)
+        cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
+                    % (AVOCADO, self.tmpdir, self.output_script.path))
+        result = process.run(cmd_line, ignore_status=True)
+        expected_rc = exit_codes.AVOCADO_TESTS_FAIL
+        self.assertEqual(result.exit_status, expected_rc,
+                         "Avocado did not return rc %d:\n%s" %
+                         (expected_rc, result))
+        self.assertIn(tampered_msg, result.stdout)
+
     def test_output_diff(self):
-        self.test_output_record_all()
+        self._check_output_record_all()
         tampered_msg_stdout = "I PITY THE FOOL THAT STANDS ON STDOUT!"
         tampered_msg_stderr = "I PITY THE FOOL THAT STANDS ON STDERR!"
 
@@ -150,7 +188,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertIn('+Hello, stderr!', job_log_content)
 
     def test_disable_output_check(self):
-        self.test_output_record_all()
+        self._check_output_record_all()
         tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
         with open(stdout_file, 'w') as stdout_file_obj:
