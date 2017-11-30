@@ -515,25 +515,22 @@ class TestRunner(object):
         :return: tuple(new_test_factory, applied_variant)
         """
         params = variant.get("variant"), variant.get("mux_path")
-        if params:
-            if "params" in template[1]:
-                if not varianter.is_empty_variant(params[0]):
-                    msg = ("Specifying test params from test loader and "
-                           "from varianter at the same time is not yet "
-                           "supported. Please remove either variants defined"
-                           "by the varianter (%s) or make the test loader of"
-                           "test %s to not to fill variants."
-                           % (variant, template))
-                    raise NotImplementedError(msg)
-                params = template[1]["params"]
-                variant_id = varianter.generate_variant_id(params[0])
-                return template, {"variant": params[0],
-                                  "variant_id": variant_id,
-                                  "mux_path": params[1]}
-            factory = [template[0], template[1].copy()]
-            factory[1]["params"] = params
-        else:
-            factory = template
+        if "params" in template[1]:
+            if not varianter.is_empty_variant(params[0]):
+                msg = ("Specifying test params from test loader and "
+                       "from varianter at the same time is not yet "
+                       "supported. Please remove either variants defined"
+                       "by the varianter (%s) or make the test loader of"
+                       "test %s to not to fill variants."
+                       % (variant, template))
+                raise NotImplementedError(msg)
+            params = template[1]["params"]
+            variant_id = varianter.generate_variant_id(params[0])
+            return template, {"variant": params[0],
+                              "variant_id": variant_id,
+                              "mux_path": params[1]}
+        factory = [template[0], template[1].copy()]
+        factory[1]["params"] = params
         return factory, variant
 
     def _iter_suite(self, test_suite, variants, execution_order):
