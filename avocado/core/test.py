@@ -33,9 +33,9 @@ from six import string_types, iteritems
 
 from . import data_dir
 from . import exceptions
-from . import varianter
-from . import sysinfo
 from . import output
+from . import parameters
+from . import sysinfo
 from ..utils import asset
 from ..utils import astring
 from ..utils import data_structures
@@ -286,8 +286,6 @@ class Test(unittest.TestCase, TestData):
     You'll inherit from this to write your own tests. Typically you'll want
     to implement setUp(), test*() and tearDown() methods on your own tests.
     """
-    #: `default_params` will be deprecated by the end of 2017.
-    default_params = {}
     #: Arbitrary string which will be stored in `$logdir/whiteboard` location
     #: when the test finishes.
     whiteboard = ''
@@ -364,17 +362,12 @@ class Test(unittest.TestCase, TestData):
         self.log.warn = self.log.warning = record_and_warn
 
         mux_path = ['/test/*']
-        if isinstance(params, dict):
-            self.default_params = self.default_params.copy()
-            self.default_params.update(params)
-            params = []
-        elif params is None:
+        if params is None:
             params = []
         elif isinstance(params, tuple):
             params, mux_path = params[0], params[1]
-        self.__params = varianter.AvocadoParams(params, self.name,
-                                                mux_path,
-                                                self.default_params)
+        self.__params = parameters.AvocadoParams(params, self.name,
+                                                 mux_path)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 

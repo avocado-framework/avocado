@@ -274,6 +274,10 @@ class TestRunner(object):
     """
     DEFAULT_TIMEOUT = 86400
 
+    #: Mode in which this runner should iterate through tests and variants.
+    #: The allowed values are "variants-per-test" or "tests-per-variant"
+    DEFAULT_EXECUTION_ORDER = "variants-per-test"
+
     def __init__(self, job, result):
         """
         Creates an instance of TestRunner class.
@@ -506,31 +510,35 @@ class TestRunner(object):
         """
         Applies test params from variant to the test template
 
-        :param template: a test template
-        :param variant: variant to be applied
+        :param template: a test template, containing the class name,
+                         followed by parameters to the class
+        :type template: tuple
+        :param variant: variant to be applied, usually containing
+                        the keys: mux_path, variant and variant_id
+        :type variant: dict
         :return: tuple(new_test_factory, applied_variant)
         """
-        params = variant.get("variant"), variant.get("mux_path")
-        if params:
-            if "params" in template[1]:
-                if not varianter.is_empty_variant(params[0]):
-                    msg = ("Specifying test params from test loader and "
-                           "from varianter at the same time is not yet "
-                           "supported. Please remove either variants defined"
-                           "by the varianter (%s) or make the test loader of"
-                           "test %s to not to fill variants."
-                           % (variant, template))
-                    raise NotImplementedError(msg)
-                params = template[1]["params"]
-                variant_id = varianter.generate_variant_id(params[0])
-                return template, {"variant": params[0],
-                                  "variant_id": variant_id,
-                                  "mux_path": params[1]}
-            factory = [template[0], template[1].copy()]
-            factory[1]["params"] = params
+        var = variant.get("variant")
+        mux_path = variant.get("mux_path")
+        klass, klass_parameters = template
+        if "params" in klass_parameters:
+            if not varianter.is_empty_variant(var):
+                msg = ("Specifying test params from test loader and "
+                       "from varianter at the same time is not yet "
+                       "supported. Please remove either variants defined"
+                       "by the varianter (%s) or make the test loader of"
+                       "test %s to not to fill variants."
+                       % (variant, template))
+                raise NotImplementedError(msg)
+            params = klass_parameters["params"]
+            variant_id = varianter.generate_variant_id(var)
+            return template, {"variant": var,
+                              "variant_id": variant_id,
+                              "mux_path": mux_path}
         else:
-            factory = template
-        return factory, variant
+            factory = [klass, klass_parameters.copy()]
+            factory[1]["params"] = (var, mux_path)
+            return factory, variant
 
     def _iter_suite(self, test_suite, variants, execution_order):
         """
@@ -541,7 +549,7 @@ class TestRunner(object):
         :param execution_order: way of iterating through tests/variants
         :return: generator yielding tuple(test_factory, variant)
         """
-        if execution_order in ("variants-per-test", None):
+        if execution_order == "variants-per-test":
             return (self._template_to_factory(template, variant)
                     for template in test_suite
                     for variant in variants.itertests())
@@ -564,7 +572,8 @@ class TestRunner(object):
         :param replay_map: optional list to override test class based on test
                            index.
         :param execution_order: Mode in which we should iterate through tests
-                            resp. variants.
+                                and variants.  If not provided, will default to
+                                :attr:`DEFAULT_EXECUTION_ORDER`.
         :return: a set with types of test failures.
         """
         summary = set()
@@ -591,6 +600,8 @@ class TestRunner(object):
             for test_template in test_suite:
                 test_template[1]["base_logdir"] = self.job.logdir
                 test_template[1]["job"] = self.job
+            if execution_order is None:
+                execution_order = self.DEFAULT_EXECUTION_ORDER
             for test_factory, variant in self._iter_suite(test_suite, variants,
                                                           execution_order):
                 index += 1
