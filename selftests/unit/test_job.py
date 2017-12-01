@@ -24,7 +24,9 @@ class JobTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_" + __name__)
 
     @staticmethod
-    def _find_simple_test_candidates(candidates=['true', 'time', 'uptime']):
+    def _find_simple_test_candidates(candidates=None):
+        if candidates is None:
+            candidates = ['true', 'time', 'uptime']
         found = []
         for candidate in candidates:
             try:

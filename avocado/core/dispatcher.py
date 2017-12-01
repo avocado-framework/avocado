@@ -34,7 +34,9 @@ class Dispatcher(EnabledExtensionManager):
     #: Default namespace prefix for Avocado extensions
     NAMESPACE_PREFIX = 'avocado.plugins.'
 
-    def __init__(self, namespace, invoke_kwds={}):
+    def __init__(self, namespace, invoke_kwds=None):
+        if invoke_kwds is None:
+            invoke_kwds = {}
         self.load_failures = []
         super(Dispatcher, self).__init__(namespace=namespace,
                                          check_func=self.enabled,

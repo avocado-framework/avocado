@@ -543,7 +543,7 @@ class GDB(object):
             raise UnexpectedResponseError
         return r
 
-    def run(self, args=[]):
+    def run(self, args=None):
         """
         Runs the application inside the debugger
 

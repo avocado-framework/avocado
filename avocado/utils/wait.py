@@ -4,7 +4,7 @@ import time
 log = logging.getLogger('avocado.test')
 
 
-def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=[], kwargs={}):
+def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=None, kwargs=None):
     """
     Wait until func() evaluates to True.
 
@@ -18,6 +18,10 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None, args=[], kwargs={}):
     :param args: Positional arguments to func
     :param kwargs: Keyword arguments to func
     """
+    if args is None:
+        args = []
+    if kwargs is None:
+        kwargs = {}
     start_time = time.time()
     end_time = time.time() + timeout
 
