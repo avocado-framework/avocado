@@ -160,7 +160,8 @@ class ResultsdbResult(Result):
     description = 'Resultsdb result support'
 
     def render(self, result, job):
-        if getattr(job.args, 'resultsdb_logs', None) is not None:
+        if (getattr(job.args, 'resultsdb_logs', None) is not None and
+                getattr(job.args, 'stdout_claimed_by', None) is None):
             LOG_UI.info("JOB URL    : %s/%s" % (job.args.resultsdb_logs,
                                                 os.path.basename(job.logdir)))
 
