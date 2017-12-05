@@ -349,19 +349,15 @@ class LogWatcher(Collectible):
             self.inode = current_inode
             self.size = current_size
 
-            in_messages = open(self.path)
-            out_messages = gzip.GzipFile(dstpath, "w")
-            try:
-                in_messages.seek(bytes_to_skip)
-                while True:
-                    # Read data in manageable chunks rather than all at once.
-                    in_data = in_messages.read(200000)
-                    if not in_data:
-                        break
-                    out_messages.write(in_data)
-            finally:
-                out_messages.close()
-                in_messages.close()
+            with open(self.path) as in_messages:
+                with gzip.GzipFile(dstpath, "w") as out_messages:
+                    in_messages.seek(bytes_to_skip)
+                    while True:
+                        # Read data in manageable chunks rather than all at once.
+                        in_data = in_messages.read(200000)
+                        if not in_data:
+                            break
+                        out_messages.write(in_data)
         except ValueError as e:
             log.info(e)
         except (IOError, OSError):
