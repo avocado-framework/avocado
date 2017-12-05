@@ -70,18 +70,6 @@ Overall picture of how the params handling works is:
 
 Let's introduce the basic keywords.
 
-Test's default params
-~~~~~~~~~~~~~~~~~~~~~
-
-:data:`avocado.core.test.Test.default_params`
-
-Every (instrumented) test can hardcode default params by storing a dict
-in ``self.default_params``. This attribute is checked during
-:class:`avocado.core.test.Test`'s ``__init__`` phase and if present it's
-used by `AvocadoParams`_.
-
-.. warning:: Don't confuse `Test's default params`_ with `Default params`
-
 TreeNode
 ~~~~~~~~
 
@@ -99,11 +87,11 @@ AvocadoParams
 
 :class:`avocado.core.varianter.AvocadoParams`
 
-Is a "database" of params present in every (instrumented) avocado test.
-It's produced during :class:`avocado.core.test.Test`'s ``__init__``
-from a `variant`_. It accepts a list of `TreeNode`_ objects; test name
-:class:`avocado.core.test.TestID` (for logging purposes); list of
-default paths (`Mux path`_) and the `Test's default params`_.
+Is a "database" of params present in every (instrumented) avocado
+test.  It's produced during :class:`avocado.core.test.Test`'s
+``__init__`` from a `variant`_. It accepts a list of `TreeNode`_
+objects; test name :class:`avocado.core.test.TestID` (for logging
+purposes) and a list of default paths (`Mux path`_).
 
 In test it allows querying for data by using::
 
@@ -143,13 +131,11 @@ More practical overview of mux path is in :ref:`yaml-to-mux-plugin` in
 Variant
 ~~~~~~~
 
-Variant is a set of params produced by `Varianter`_s and passed to
-the test by the test runner as ``params`` argument. The simplest variant
-is ``None``, which still produces `AvocadoParams`_ with only the
-`Test's default params`_. If dict is used as a `Variant`_, it (safely)
-updates the default params. Last but not least the `Variant`_ can also
-be a ``tuple(list, mux_path)`` or just the ``list`` of
-:class:`avocado.core.tree.TreeNode` with the params.
+Variant is a set of params produced by `Varianter`_s and passed to the
+test by the test runner as ``params`` argument. The simplest variant
+is ``None``, which still produces an empty `AvocadoParams`_. Also, the
+`Variant`_ can also be a ``tuple(list, mux_path)`` or just the
+``list`` of :class:`avocado.core.tree.TreeNode` with the params.
 
 Varianter
 ~~~~~~~~~
@@ -216,14 +202,14 @@ of them reports variants it yields them instead of the default variant.
 Default params
 ~~~~~~~~~~~~~~
 
-Unlike `Test's default params`_ the `Default params`_ is a mechanism to
-specify default values in `Varianter`_ or `Varianter plugins`_. Their
-purpose is usually to define values dependent on the system which should
-not affect the test's results. One example is a qemu binary location
-which might differ from one host to another host, but in the end
-they should result in qemu being executable in test. For this reason
-the `Default params`_ do not affects the test's variant-id (at least
-not in the official `Varianter plugins`_).
+The `Default params`_ is a mechanism to specify default values in
+`Varianter`_ or `Varianter plugins`_. Their purpose is usually to
+define values dependent on the system which should not affect the
+test's results. One example is a qemu binary location which might
+differ from one host to another host, but in the end they should
+result in qemu being executable in test. For this reason the `Default
+params`_ do not affects the test's variant-id (at least not in the
+official `Varianter plugins`_).
 
 These params can be set from plugin/core by getting ``default_avocado_params``
 from ``args`` and using::

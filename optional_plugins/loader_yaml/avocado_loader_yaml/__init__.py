@@ -18,7 +18,7 @@ import copy
 from six import iteritems
 
 from avocado.core import loader
-from avocado.core import varianter
+from avocado.core import parameters
 from avocado.core.plugin_interfaces import CLI
 from avocado_varianter_yaml_to_mux import create_from_yaml
 from avocado_varianter_yaml_to_mux import mux
@@ -100,8 +100,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
             return []
         mux_tree = mux.MuxTree(root)
         for variant in mux_tree:
-            params = varianter.AvocadoParams(variant, "YamlTestsuiteLoader",
-                                             ["/run/*"], {})
+            params = parameters.AvocadoParams(variant, "YamlTestsuiteLoader",
+                                              ["/run/*"])
             reference = params.get("test_reference")
             test_loader = self._get_loader(params)
             if not test_loader:
