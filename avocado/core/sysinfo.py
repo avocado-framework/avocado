@@ -18,12 +18,8 @@ import logging
 import os
 import shlex
 import shutil
+import subprocess
 import time
-
-try:
-    import subprocess32 as subprocess
-except ImportError:
-    import subprocess
 
 from . import output
 from .settings import settings
