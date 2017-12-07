@@ -369,13 +369,13 @@ class Test(unittest.TestCase, TestData):
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
 
-        mux_path = ['/test/*']
+        paths = ['/test/*']
         if params is None:
             params = []
         elif isinstance(params, tuple):
-            params, mux_path = params[0], params[1]
+            params, paths = params[0], params[1]
         self.__params = parameters.AvocadoParams(params, self.name,
-                                                 mux_path, self.__log.name)
+                                                 paths, self.__log.name)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 

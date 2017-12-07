@@ -513,12 +513,12 @@ class TestRunner(object):
                          followed by parameters to the class
         :type template: tuple
         :param variant: variant to be applied, usually containing
-                        the keys: mux_path, variant and variant_id
+                        the keys: paths, variant and variant_id
         :type variant: dict
         :return: tuple(new_test_factory, applied_variant)
         """
         var = variant.get("variant")
-        mux_path = variant.get("mux_path")
+        paths = variant.get("paths")
         klass, klass_parameters = template
         if "params" in klass_parameters:
             if not varianter.is_empty_variant(var):
@@ -533,10 +533,10 @@ class TestRunner(object):
             variant_id = varianter.generate_variant_id(var)
             return template, {"variant": var,
                               "variant_id": variant_id,
-                              "mux_path": mux_path}
+                              "paths": paths}
         else:
             factory = [klass, klass_parameters.copy()]
-            factory[1]["params"] = (var, mux_path)
+            factory[1]["params"] = (var, paths)
             return factory, variant
 
     def _iter_suite(self, test_suite, variants, execution_order):
