@@ -75,14 +75,15 @@ class ReportModel(object):
     def tests_total(self):
         return self.result.tests_total
 
-    def passed(self):
-        return self.result.passed
+    def succeeded(self):
+        return self.result.passed + self.result.warned
 
-    def pass_rate(self):
+    def success_rate(self):
         total = float(self.result.tests_total)
-        passed = float(self.result.passed)
+        succeeded = float(self.result.passed)
+        succeeded += float(self.result.warned)
         if total > 0:
-            pr = 100 * (passed / total)
+            pr = 100 * (succeeded / total)
         else:
             pr = 0
         return "%.2f" % pr
