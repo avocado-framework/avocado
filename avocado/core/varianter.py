@@ -106,8 +106,8 @@ def dump_ivariants(ivariants):
     variants = []
     for variant in ivariants():
         safe_variant = {}
-        safe_variant["mux_path"] = [str(pth)
-                                    for pth in variant.get("mux_path")]
+        safe_variant["paths"] = [str(pth)
+                                 for pth in variant.get("paths")]
         safe_variant["variant_id"] = variant.get("variant_id")
         safe_variant["variant"] = [dump_tree_node(_)
                                    for _ in variant.get("variant", [])]
@@ -172,9 +172,9 @@ class Varianter(object):
 
     def __init__(self, debug=False, state=None):
         """
-        :param debug: Store whether this instance should debug the mux
+        :param debug: Store whether this instance should debug varianter
         :param state: Force-varianter state
-        :note: people need to check whether mux uses debug and reflect that
+        :note: it's necessary to check whether variants debug is enable
                in order to provide the right results.
         """
         self.default_params = {}
@@ -285,13 +285,13 @@ class Varianter(object):
         This is lossy representation which takes all yielded variants and
         replaces the list of nodes with TreeNodeEnvOnly representations::
 
-            [{'mux_path': mux_path,
+            [{'path': path,
               'variant_id': variant_id,
               'variant': dump_tree_nodes(original_variant)},
-             {'mux_path': [str, str, ...],
+             {'path': [str, str, ...],
               'variant_id': str,
               'variant': [(str, [(str, str, object), ...])],
-             {'mux_path': ['/run/*'],
+             {'path': ['/run/*'],
               'variant_id': 'cat-26c0'
               'variant': [('/pig/cat',
                            [('/pig', 'ant', 'fox'),
@@ -335,7 +335,7 @@ class Varianter(object):
          * variant - AvocadoParams-compatible variant (usually a list of
                      TreeNodes but dict or simply None are also possible
                      values)
-         * mux_path - default path(s)
+         * paths - default path(s)
 
         :yield variant
         """
@@ -349,4 +349,4 @@ class Varianter(object):
         else:   # No variants, use template
             yield {"variant": self._default_params.get_leaves(),
                    "variant_id": None,
-                   "mux_path": ["/run/*"]}
+                   "paths": ["/run/*"]}
