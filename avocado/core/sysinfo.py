@@ -249,7 +249,7 @@ class JournalctlWatcher(Collectible):
                 cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
                 log_diff = process.system_output(cmd, verbose=False)
                 dstpath = os.path.join(logdir, self.logf)
-                with gzip.GzipFile(dstpath, "w")as out_journalctl:
+                with gzip.GzipFile(dstpath, "w") as out_journalctl:
                     out_journalctl.write(log_diff)
             except IOError:
                 log.debug("Not logging journalctl (lack of permissions): %s",
