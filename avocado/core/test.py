@@ -54,6 +54,14 @@ from .output import LOG_JOB
 #: one job)
 COMMON_TMPDIR_NAME = 'AVOCADO_TESTS_COMMON_TMPDIR'
 
+#: The list of test attributes that are used as the test state, which
+#: is given to the test runner via the queue they share
+TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
+                         'status', 'running', 'paused',
+                         'time_start', 'time_elapsed', 'time_end',
+                         'fail_reason', 'fail_class', 'traceback',
+                         'params', 'timeout')
+
 
 class RawFileHandler(logging.FileHandler):
 
@@ -614,13 +622,7 @@ class Test(unittest.TestCase, TestData):
         """
         if self.running and self.time_start:
             self._update_time_elapsed()
-        preserve_attr = ['basedir', 'fail_reason',
-                         'logdir', 'logfile', 'name', 'srcdir',
-                         'status', 'time_elapsed',
-                         'traceback', 'workdir', 'whiteboard', 'time_start',
-                         'time_end', 'running', 'paused', 'paused_msg',
-                         'fail_class', 'params', "timeout"]
-        state = {key: getattr(self, key, None) for (key) in preserve_attr}
+        state = {key: getattr(self, key, None) for (key) in TEST_STATE_ATTRIBUTES}
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
         state['job_unique_id'] = self.job.unique_id
