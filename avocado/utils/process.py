@@ -308,6 +308,9 @@ class FDDrainer(object):
         :type result: a :class:`CmdResult` instance
         :param name: a descriptive name that will be passed to the Thread name
         :type name: str
+        :param logger: the logger that will be used to (interactively) write
+                       the content from the file descriptor
+        :type logger: :class:`logging.Logger`
         :param logger_prefix: the prefix used when logging the data
         :type logger_prefix: str with one %-style string formatter
         :param ignore_bg_processes: When True the process does not wait for
