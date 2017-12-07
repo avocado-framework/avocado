@@ -101,8 +101,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
             return []
         mux_tree = mux.MuxTree(root)
         for variant in mux_tree:
-            params = parameters.AvocadoParams(variant, "YamlTestsuiteLoader",
-                                              ["/run/*"], output.LOG_UI.name)
+            params = parameters.AvocadoParams(variant, ["/run/*"],
+                                              output.LOG_UI.name)
             reference = params.get("test_reference")
             test_loader = self._get_loader(params)
             if not test_loader:
