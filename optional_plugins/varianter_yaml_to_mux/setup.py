@@ -25,6 +25,7 @@ setup(name='avocado-framework-plugin-varianter-yaml-to-mux',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['avocado-framework', 'PyYAML'],
+      test_suite='tests',
       entry_points={
           "avocado.plugins.cli": [
               "yaml_to_mux = avocado_varianter_yaml_to_mux:YamlToMuxCLI",
