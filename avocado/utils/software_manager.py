@@ -286,6 +286,46 @@ class RpmBackend(BaseBackend):
         except process.CmdError:
             return []
 
+    def rpm_install(self, file_path):
+        """
+        Install the rpm file [file_path] provided.
+
+        :param file_path: Rpm file path.
+        :return True: if file is installed properly
+        """
+        if os.path.isfile(file_path):
+            cmd = 'rpm -i %s' % file_path
+        else:
+            log.warning('Please provide proper rpm path')
+            return False
+        try:
+            process.system(cmd)
+            return True
+        except process.CmdError, details:
+            log.error(details)
+            return False
+
+    def prepare_source(self, spec_file, dest_path=None):
+        """
+        Rpmbuild the spec path and return build dir
+
+        :param spec_path: spec path to install
+        :return path: build directory
+        """
+
+        build_option = "-bp"
+        if dest_path is not None:
+            build_option += " --define '_builddir %s'" % dest_path
+        else:
+            log.error("Please provide a valid path")
+            return ""
+        try:
+            process.system("rpmbuild %s %s" % (build_option, spec_file))
+            return os.path.join(dest_path, os.listdir(dest_path)[0])
+        except process.CmdError as details:
+            log.error(details)
+            return ""
+
 
 class DpkgBackend(BaseBackend):
 
@@ -517,6 +557,63 @@ class YumBackend(RpmBackend):
         else:
             return None
 
+    def build_dep(self, name):
+        """
+        Install build-dependencies for package [name]
+
+        :param name: name of the package
+
+        :return True: If build dependencies are installed properly
+        """
+
+        try:
+            process.system('yum-builddep -y --tolerant %s' % name, sudo=True)
+            return True
+        except process.CmdError, details:
+            log.error(details)
+            return False
+
+    def get_source(self, name, dest_path):
+        """
+        Downloads the source package and prepares it in the given dest_path
+        to be ready to build.
+
+        :param name: name of the package
+        :param dest_path: destination_path
+
+        :return final_dir: path of ready-to-build directory
+        """
+        path = tempfile.mkdtemp(prefix='avocado_software_manager')
+        if dest_path is None:
+            log.error("Please provide a valid path")
+            return ""
+        for pkg in ["rpm-build", "yum-utils"]:
+            if not self.check_installed(pkg):
+                if not self.install(pkg):
+                    log.error("SoftwareManager (YumBackend) can't get packages"
+                              "with dependency resolution: Package '%s'"
+                              "could not be installed", pkg)
+                    return ""
+        try:
+            src_rpm = process.system_output('yumdownloader --urls --source'
+                                            ' %s' % name).splitlines()[-1]
+            src_rpm = src_rpm.split("/")[-1]
+            process.system_output('yumdownloader --source %s --destdir %s' % (name, path))
+            src_rpm = os.path.join(path, src_rpm)
+            if self.rpm_install(src_rpm):
+                if self.build_dep(name):
+                    return self.prepare_source(
+                        "%s/rpmbuild/SPECS/%s.spec" % (os.environ['HOME'], name), dest_path)
+                else:
+                    log.error("Installing build dependencies failed")
+                    return ""
+            else:
+                log.error("Installing source rpm failed")
+                return ""
+        except process.CmdError, details:
+            log.error(details)
+            return ""
+
 
 class DnfBackend(YumBackend):
 
@@ -657,6 +754,53 @@ class ZypperBackend(RpmBackend):
             return None
         except process.CmdError:
             return None
+
+    def _source_install(self, name):
+        """
+        Source install the given package [name]
+        Returns the SPEC file of the package
+
+        :param name: name of the package
+
+        :return path: path of the spec file
+        """
+        s_cmd = '%s source-install %s' % (self.base_command, name)
+
+        try:
+            process.system(s_cmd, sudo=True)
+            s_cmd = '%s source-install -d %s' % (self.base_command, name)
+            process.system(s_cmd, sudo=True)
+            return '/usr/src/packages/SPECS/%s.spec' % name
+        except process.CmdError:
+            log.error('Installing source failed')
+            return ""
+
+    def get_source(self, name, dest_path):
+        """
+        Downloads the source package and prepares it in the given dest_path
+        to be ready to build
+
+        :param name: name of the package
+        :param dest_path: destination_path
+
+        :return final_dir: path of ready-to-build directory
+        """
+        if not self.check_installed("rpm-build"):
+            if not self.install("rpm-build"):
+                log.error("SoftwareManager (RpmBackend) can't get packages"
+                          "with dependency resolution: Package 'rpm-build'"
+                          "could not be installed")
+                return ""
+        try:
+            spec_path = self._source_install(name)
+            if spec_path:
+                return self.prepare_source(spec_path, dest_path)
+            else:
+                log.error("Source not installed properly")
+                return ""
+        except process.CmdError, details:
+            log.error(details)
+            return ""
 
 
 class AptBackend(DpkgBackend):
@@ -847,6 +991,55 @@ class AptBackend(DpkgBackend):
             return None
         except process.CmdError:
             return None
+
+    def get_source(self, name, path):
+        """
+        Download source for provided package. Returns the path with source placed.
+
+        :param name: parameter wildcard package to get the source for
+
+        :return path: path of ready-to-build source
+        """
+        if not self.check_installed('dpkg-dev'):
+            if not self.install('dpkg-dev'):
+                log.info("SoftwareManager (AptBackend) can't install packages "
+                         "from local .deb files with dependency resolution: "
+                         "Package 'dpkg-dev' could not be installed")
+        src_cmd = '%s source %s' % (self.base_command, name)
+        try:
+            if self.build_dep(name):
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                os.chdir(path)
+                process.system_output(src_cmd)
+                for subdir in os.listdir(path):
+                    if subdir.startswith(name) and os.path.isdir(subdir):
+                        return os.path.join(path, subdir)
+        except process.CmdError, details:
+            log.error("Apt package source failed %s", details)
+            return ""
+
+    def build_dep(self, name):
+        """
+        Installed build-dependencies of a given package [name].
+
+        :param name: parameter package to install build-dep for.
+
+        :return True: If pacakges are installed properly
+        """
+        if not self.check_installed('dpkg-dev'):
+            if not self.install('dpkg-dev'):
+                log.info("SoftwareManager (AptBackend) can't install packages "
+                         "from local .deb files with dependency resolution: "
+                         "Package 'dpkg-dev' could not be installed")
+
+        src_cmd = '%s build-dep %s' % (self.base_command, name)
+        try:
+            process.system_output(src_cmd)
+            return True
+        except process.CmdError, details:
+            log.error("Apt package build-dep failed %s", details)
+            return False
 
 
 def install_distro_packages(distro_pkg_map, interactive=False):
