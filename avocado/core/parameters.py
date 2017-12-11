@@ -15,12 +15,11 @@
 Module related to test parameters
 """
 
+import logging
 import re
 
 from six import iterkeys, iteritems
 from six.moves import xrange as range
-
-from . import output
 
 
 class NoMatchError(KeyError):
@@ -45,25 +44,26 @@ class AvocadoParams(object):
     This is subject of change (separate file, perhaps)
     """
 
-    # TODO: Use "test" to log params.get()
-
-    def __init__(self, leaves, test_id, mux_path):
+    def __init__(self, leaves, paths, logger_name=None):
         """
         :param leaves: List of TreeNode leaves defining current variant
         :param test_id: test id
-        :param mux_path: list of entry points
+        :param paths: list of entry points
+        :param logger_name: the name of a logger to use to record attempts
+                            to get parameters
+        :type logger_name: str
         """
         self._rel_paths = []
         leaves = list(leaves)
-        for i, path in enumerate(mux_path):
+        for i, path in enumerate(paths):
             path_leaves = self._get_matching_leaves(path, leaves)
             self._rel_paths.append(AvocadoParam(path_leaves,
                                                 '%d: %s' % (i, path)))
         # Don't use non-mux-path params for relative paths
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
-        self.id = test_id
         self._cache = {}     # TODO: Implement something more efficient
+        self._logger_name = logger_name
 
     def __eq__(self, other):
         if set(iterkeys(self.__dict__)) != set(iterkeys(other.__dict__)):
@@ -97,11 +97,6 @@ class AvocadoParams(object):
             return self._abs_path.str_leaves_variant + ',' + out
         else:
             return self._abs_path.str_leaves_variant
-
-    def log(self, key, path, default, value):
-        """ Predefined format for displaying params query """
-        output.LOG_JOB.debug("PARAMS (key=%s, path=%s, default=%s) => %r", key,
-                             path, default, value)
 
     def _get_matching_leaves(self, path, leaves):
         """
@@ -160,7 +155,10 @@ class AvocadoParams(object):
             # KeyError - first query
             # TypeError - unable to hash
             value = self._get(key, path, default)
-            self.log(key, path, default, value)
+            if self._logger_name is not None:
+                logger = logging.getLogger(self._logger_name)
+                logger.debug("PARAMS (key=%s, path=%s, default=%s) => %r",
+                             key, path, default, value)
             try:
                 self._cache[(key, path, default)] = value
             except TypeError:
