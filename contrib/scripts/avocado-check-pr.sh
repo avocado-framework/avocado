@@ -209,7 +209,7 @@ BASE_URL="https://api.github.com/repos/${GIT_URL:19}"
 # Commits that should be part of the PR
 GIT_PR_COMMITS=$(git cherry $GIT_REMOTE/$REMOTE_BRANCH | sed -n 's/+ \(.*\)/\1/p')
 # All commits between first-1 commit and HEAD
-GIT_RANGE=$(git rev-list --reverse $(echo "$GIT_PR_COMMITS" | head -n 1)..HEAD)
+GIT_RANGE=$(git rev-list --reverse $(echo "$GIT_PR_COMMITS" | head -n 1)~1..HEAD)
 [ "$?" -ne 0 ] && { echo "Error parsing git range using $GIT_REMOTE/$REMOTE_BRANCH"; exit -1; }
 
 echo "Checking $BRANCH..$GIT_REMOTE/$REMOTE_BRANCH ($(echo "$GIT_PR_COMMITS" | wc -l | xargs)/$(echo "$GIT_RANGE" | wc -l | xargs))"
