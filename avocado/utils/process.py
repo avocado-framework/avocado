@@ -308,6 +308,9 @@ class FDDrainer(object):
         :type result: a :class:`CmdResult` instance
         :param name: a descriptive name that will be passed to the Thread name
         :type name: str
+        :param logger: the logger that will be used to (interactively) write
+                       the content from the file descriptor
+        :type logger: :class:`logging.Logger`
         :param logger_prefix: the prefix used when logging the data
         :type logger_prefix: str with one %-style string formatter
         :param ignore_bg_processes: When True the process does not wait for
@@ -436,6 +439,7 @@ class SubProcess(object):
                      has a sudo configuration such that a password won't be
                      prompted. If that's not the case, the command will
                      straight out fail.
+        :type sudo: bool
         :param ignore_bg_processes: When True the process does not wait for
                     child processes which keep opened stdout/stderr streams
                     after the main process finishes (eg. forked daemon which
@@ -445,8 +449,10 @@ class SubProcess(object):
                     to be running after the process finishes.
         :raises: ValueError if incorrect values are given to parameters
         """
-        # Now assemble the final command considering the need for sudo
-        self.cmd = self._prepend_sudo(cmd, sudo, shell)
+        if sudo:
+            self.cmd = self._prepend_sudo(cmd, shell)
+        else:
+            self.cmd = cmd
         self.verbose = verbose
         if allow_output_check is None:
             allow_output_check = OUTPUT_CHECK_RECORD_MODE
@@ -494,8 +500,8 @@ class SubProcess(object):
         return '%s %s' % (self.cmd, rc)
 
     @staticmethod
-    def _prepend_sudo(cmd, sudo, shell):
-        if sudo and os.getuid() != 0:
+    def _prepend_sudo(cmd, shell):
+        if os.getuid() != 0:
             try:
                 sudo_cmd = '%s -n' % path.find_command('sudo')
             except path.CmdNotFoundError as details:
