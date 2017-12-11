@@ -170,10 +170,12 @@ class VarianterPict(Varianter):
         :param kwargs: Other free-form arguments
         :rtype: str
         """
+        if not self.variants:
+            return ""
+
         out = []
-        if variants:
-            out.append("Pict Variants (%i):" % len(self))
-            for variant in self:
-                out.append('Variant %s:    %s' % (variant["variant_id"],
-                                                  self.parameter_path))
+        out.append("Pict Variants (%i):" % len(self))
+        for variant in self:
+            out.append('Variant %s:    %s' % (variant["variant_id"],
+                                              self.parameter_path))
         return "\n".join(out)
