@@ -38,6 +38,7 @@ except ImportError:
 from . import gdb
 from . import runtime
 from . import path
+from . import genio
 
 log = logging.getLogger('avocado.test')
 stdout_log = logging.getLogger('avocado.test.stdout')
@@ -853,9 +854,8 @@ class GDBSubProcess(object):
         :rtype: str
         """
         os.mkfifo(path)
-        f = open(path, 'r')
-        c = f.read(1)
-        f.close()
+        with open(path, 'r') as fifo_file:
+            c = fifo_file.read(1)
         os.unlink(path)
         return c
 
@@ -865,10 +865,9 @@ class GDBSubProcess(object):
             binary_name = os.path.basename(self.binary)
             script_name = '%s.gdb.connect_commands' % binary_name
             path = os.path.join(current_test.outputdir, script_name)
-            cmds = open(path, 'w')
-            cmds.write('file %s\n' % os.path.abspath(self.binary))
-            cmds.write('target extended-remote :%s\n' % self.gdb_server.port)
-            cmds.close()
+            with open(path, 'w') as cmds_file:
+                cmds_file('file %s\n' % os.path.abspath(self.binary))
+                cmds_file('target extended-remote :%s\n' % self.gdb_server.port)
             return path
 
     def generate_gdb_connect_sh(self):
@@ -886,11 +885,10 @@ class GDBSubProcess(object):
             script_name = '%s.gdb.sh' % binary_name
             script_path = os.path.join(current_test.outputdir, script_name)
 
-            script = open(script_path, 'w')
-            script.write("#!/bin/sh\n")
-            script.write("%s -x %s\n" % (gdb.GDB_PATH, cmds))
-            script.write("echo -n 'C' > %s\n" % fifo_path)
-            script.close()
+            with open(script_path, 'w') as script_file:
+                script_file.write("#!/bin/sh\n")
+                script_file.write("%s -x %s\n" % (gdb.GDB_PATH, cmds))
+                script_file.write("echo -n 'C' > %s\n" % fifo_path)
             os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
             return (script_path, fifo_path)
 
@@ -1043,8 +1041,7 @@ class GDBSubProcess(object):
             gdb.GDB_PRERUN_COMMANDS.get('', None))
 
         if prerun_commands_path is not None:
-            prerun_commands = open(prerun_commands_path).readlines()
-            for command in prerun_commands:
+            for command in genio.read_all_lines(prerun_commands_path):
                 self.gdb.cmd(command)
 
     def run(self, timeout=None):
@@ -1073,10 +1070,10 @@ class GDBSubProcess(object):
                 if current_test is not None:
                     if os.path.exists(self.gdb_server.stdout_path):
                         shutil.copy(self.gdb_server.stdout_path, stdout_path)
-                        self.result.stdout = open(stdout_path, 'r').read()
+                        self.result.stdout = genio.read_file(stdout_path)
                     if os.path.exists(self.gdb_server.stderr_path):
                         shutil.copy(self.gdb_server.stderr_path, stderr_path)
-                        self.result.stderr = open(stderr_path, 'r').read()
+                        self.result.stderr = genio.read_file(stderr_path)
 
                 self.gdb_server.exit()
                 return self.result

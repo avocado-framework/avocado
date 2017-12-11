@@ -91,9 +91,11 @@ def can_mount():
         logging.debug('Can not use mount: missing "mount" tool')
         return False
 
-    if 'iso9660' not in open('/proc/filesystems').read():
-        process.system("modprobe iso9660", ignore_status=True, sudo=True)
-        if 'iso9660' not in open('/proc/filesystems').read():
+    with open('/proc/filesystems') as proc_filesystems:
+        if 'iso9660' not in proc_filesystems.read():
+            process.system("modprobe iso9660", ignore_status=True, sudo=True)
+    with open('/proc/filesystems') as proc_filesystems:
+        if 'iso9660' not in proc_filesystems.read():
             logging.debug('Can not use mount: lack of iso9660 kernel support')
             return False
 
@@ -150,9 +152,8 @@ class BaseIso9660(object):
         :rtype: None
         """
         content = self.read(src)
-        output = open(dst, 'w+b')
-        output.write(content)
-        output.close()
+        with open(dst, 'w+b') as output:
+            output.write(content)
 
     def mnt_dir(self):
         """
@@ -283,10 +284,11 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
         self.temp_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
 
     def read(self, path):
-        temp_file = os.path.join(self.temp_dir, path)
-        cmd = 'iso-read -i %s -e %s -o %s' % (self.path, path, temp_file)
+        temp_path = os.path.join(self.temp_dir, path)
+        cmd = 'iso-read -i %s -e %s -o %s' % (self.path, path, temp_path)
         process.run(cmd)
-        return open(temp_file).read()
+        with open(temp_path) as temp_file:
+            return temp_file.read()
 
     def copy(self, src, dst):
         cmd = 'iso-read -i %s -e %s -o %s' % (self.path, src, dst)
@@ -329,7 +331,8 @@ class Iso9660Mount(BaseIso9660):
         :rtype: str
         """
         full_path = os.path.join(self.mnt_dir, path)
-        return open(full_path).read()
+        with open(full_path) as file_to_read:
+            return file_to_read.read()
 
     def copy(self, src, dst):
         """

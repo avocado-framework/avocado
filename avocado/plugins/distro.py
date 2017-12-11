@@ -245,7 +245,9 @@ def load_distro(path):
     :return: a dict with the distro definition data
     :rtype: dict
     """
-    return json.loads(bz2.decompress(open(path).read()))
+    with open(path, 'rb') as distro_file:
+        json_data = json.loads(bz2.decompress(distro_file.read()))
+    return json_data
 
 
 def load_from_tree(name, version, release, arch, package_type, path):

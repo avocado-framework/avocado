@@ -56,21 +56,21 @@ def hash_file(filename, size=None, algorithm="md5"):
 
     if not size or size > fsize:
         size = fsize
-    f = open(filename, 'rb')
 
     try:
         hash_obj = hash_wrapper(algorithm=algorithm)
     except ValueError:
         logging.error("Unknown hash algorithm %s, returning None", algorithm)
 
-    while size > 0:
-        if chunksize > size:
-            chunksize = size
-        data = f.read(chunksize)
-        if len(data) == 0:
-            logging.debug("Nothing left to read but size=%d", size)
-            break
-        hash_obj.update(data)
-        size -= len(data)
-    f.close()
+    with open(filename, 'rb') as file_to_hash:
+        while size > 0:
+            if chunksize > size:
+                chunksize = size
+                data = file_to_hash.read(chunksize)
+                if len(data) == 0:
+                    logging.debug("Nothing left to read but size=%d", size)
+                    break
+                hash_obj.update(data)
+                size -= len(data)
+
     return hash_obj.hexdigest()

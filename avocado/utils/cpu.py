@@ -44,10 +44,11 @@ def _get_cpu_info():
     :rtype: `list`
     """
     cpuinfo = []
-    for line in open('/proc/cpuinfo').readlines():
-        if line == '\n':
-            break
-        cpuinfo.append(line)
+    with open('/proc/cpuinfo') as proc_cpuinfo:
+        for line in proc_cpuinfo:
+            if line == '\n':
+                break
+            cpuinfo.append(line)
     return cpuinfo
 
 
@@ -60,8 +61,9 @@ def _get_cpu_status(cpu):
     :returns: `bool` True if online or False if not
     :rtype: 'bool'
     """
-    if '1' in open('/sys/devices/system/cpu/cpu%s/online' % cpu).read():
-        return True
+    with open('/sys/devices/system/cpu/cpu%s/online' % cpu) as online:
+        if '1' in online.read():
+            return True
     return False
 
 
@@ -134,9 +136,10 @@ def cpu_online_list():
     Reports a list of indexes of the online cpus
     """
     cpus = []
-    for line in open('/proc/cpuinfo', 'r'):
-        if line.startswith('processor'):
-            cpus.append(int(line.split()[2]))  # grab cpu number
+    with open('/proc/cpuinfo', 'r') as proc_cpuinfo:
+        for line in proc_cpuinfo:
+            if line.startswith('processor'):
+                cpus.append(int(line.split()[2]))  # grab cpu number
     return cpus
 
 

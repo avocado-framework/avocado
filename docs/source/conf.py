@@ -13,6 +13,7 @@ sys.path.insert(0, root_path)
 
 from avocado.utils import path
 from avocado.utils import process
+from avocado.utils import genio
 
 # Flag that tells if the docs are being built on readthedocs.org
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
@@ -40,7 +41,7 @@ API_SECTIONS = {"Test APIs": (None,
                               ("modules.rst", )),
 
                 "Utilities APIs": ("utils",
-                                   open("api_utils_heading", "r").read(),
+                                   genio.read_file("api_utils_heading"),
                                    "utils",
                                    ("core", "plugins"),
                                    ("avocado.rst", "modules.rst")),
@@ -93,14 +94,14 @@ for (section, params) in API_SECTIONS.iteritems():
             if not details.errno == errno.EEXIST:
                 raise
     else:
-        main_rst_content = open(main_rst).readlines()
+        with open(main_rst) as main_rst_file:
+            main_rst_content = main_rst_file.readlines()
 
     new_main_rst_content = [section, "=" * len(section), "",
                             params[1], ""]
-    new_main_rst = open(main_rst, "w")
-    new_main_rst.write("\n".join(new_main_rst_content))
-    new_main_rst.write("".join(main_rst_content[2:]))
-    new_main_rst.close()
+    with open(main_rst, "w") as new_main_rst:
+        new_main_rst.write("\n".join(new_main_rst_content))
+        new_main_rst.write("".join(main_rst_content[2:]))
 
 # Generate optional-plugins
 optional_plugins_path = os.path.join(root_path, "optional_plugins")
@@ -150,7 +151,7 @@ project = u'Avocado'
 copyright = u'2014-2015, Red Hat'
 
 version_file = os.path.join(root_path, 'VERSION')
-VERSION = open(version_file, 'r').read().strip()
+VERSION = genio.read_file(version_file).strip()
 version = VERSION
 release = VERSION
 

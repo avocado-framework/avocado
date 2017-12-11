@@ -111,9 +111,8 @@ class PathInspector(object):
     def get_first_line(self):
         first_line = ""
         if os.path.isfile(self.path):
-            checked_file = open(self.path, "r")
-            first_line = checked_file.readline()
-            checked_file.close()
+            with open(self.path, 'r') as open_file:
+                first_line = open_file.readline()
         return first_line
 
     def has_exec_permission(self):

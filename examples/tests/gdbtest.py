@@ -7,6 +7,7 @@ from six.moves import xrange as range
 from avocado import Test
 from avocado import main
 from avocado.utils import gdb
+from avocado.utils import genio
 from avocado.utils import process
 
 
@@ -358,7 +359,7 @@ class GdbTest(Test):
         s.exit()
         self.assertTrue(os.path.exists(s.stderr_path))
 
-        stderr_lines = open(s.stderr_path, 'r').readlines()
+        stderr_lines = genio.read_all_lines(s.stderr_path)
         listening_line = "Listening on port %s\n" % s.port
         self.assertIn(listening_line, stderr_lines)
 
@@ -374,7 +375,7 @@ class GdbTest(Test):
         self.assertTrue(os.path.exists(s.stdout_path))
         self.assertTrue(os.path.exists(s.stderr_path))
 
-        stdout_lines = open(s.stdout_path, 'r').readlines()
+        stdout_lines = genio.read_all_lines(s.stdout_path)
         self.assertIn("return 99\n", stdout_lines)
 
     def test_interactive_stdout(self):

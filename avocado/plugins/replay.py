@@ -103,27 +103,28 @@ class Replay(CLI):
         max_index = 0
         no_tests = 0
         _tests = {}
-        for line in open(path):
-            line = line.strip()
-            if line.startswith("#"):
-                continue
-            result = re_result.match(line)
-            if result:
-                if result.group(1) is None:
-                    res = result.group(5)
-                    if res is None:
-                        res = "PASS"
-                else:
-                    res = "ERROR"
-                index = int(result.group(2))
-                _tests[index] = {"status": res,
-                                 "test": result.group(3).rstrip()}
-                max_index = max(max_index, index)
-                continue
-            _no_tests = re_no_tests.match(line)
-            if _no_tests:
-                no_tests = int(_no_tests.group(1))
-                continue
+        with open(path) as tapfile:
+            for line in tapfile:
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+                result = re_result.match(line)
+                if result:
+                    if result.group(1) is None:
+                        res = result.group(5)
+                        if res is None:
+                            res = "PASS"
+                    else:
+                        res = "ERROR"
+                    index = int(result.group(2))
+                    _tests[index] = {"status": res,
+                                     "test": result.group(3).rstrip()}
+                    max_index = max(max_index, index)
+                    continue
+                _no_tests = re_no_tests.match(line)
+                if _no_tests:
+                    no_tests = int(_no_tests.group(1))
+                    continue
 
         if not (no_tests or max_index):
             return None

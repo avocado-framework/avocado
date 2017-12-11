@@ -25,9 +25,9 @@ class WhiteBoard(Test):
         if data_file:
             self.log.info('Writing data to whiteboard from file: %s',
                           data_file)
-            whiteboard_file = open(data_file, 'r')
-            size = int(data_size)
-            data = whiteboard_file.read(size)
+            with open(data_file, 'r') as whiteboard_file:
+                size = int(data_size)
+                data = whiteboard_file.read(size)
         else:
             offset = int(data_size) - 1
             data = self.params.get('whiteboard_data_text',

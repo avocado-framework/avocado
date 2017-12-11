@@ -46,10 +46,10 @@ def _check_memory_state(block):
     :rtype: bool
     """
     def _is_online():
-        with open('/sys/devices/system/memory/memory%s/state' % block, 'r') as state_file:
-            if state_file.read() == 'online\n':
-                return True
-            return False
+        path = '/sys/devices/system/memory/memory%s/state' % block
+        if genio.read_file(path) == 'online\n':
+            return True
+        return False
 
     return wait.wait_for(_is_online, timeout=120, step=1) or False
 
@@ -75,8 +75,8 @@ def is_hot_pluggable(block):
     :return: True if hotpluggable, else False
     :rtype: 'bool'
     """
-    with open('/sys/devices/system/memory/memory%s/removable' % block, 'r') as file_obj:
-        return bool(int(file_obj.read()))
+    path = '/sys/devices/system/memory/memory%s/removable' % block
+    return bool(int(genio.read_file(path)))
 
 
 def hotplug(block):
@@ -136,11 +136,11 @@ def memtotal_sys():
     no_memblocks = 0
     for directory in os.listdir(sys_mempath):
         if directory.startswith('memory'):
-            if open(os.path.join(sys_mempath, directory, 'online'), "r").read().strip() == '1':
+            path = os.path.join(sys_mempath, directory, 'online')
+            if genio.read_file(path).strip() == '1':
                 no_memblocks += 1
-    block_size = int(open(os.path.join(sys_mempath,
-                                       'block_size_bytes'),
-                          "r").read().strip(), 16)
+    path = os.path.join(sys_mempath, 'block_size_bytes')
+    block_size = int(genio.read_file(path).strip(), 16)
     return (no_memblocks * block_size)/1024.0
 
 
@@ -266,10 +266,9 @@ def read_from_vmstat(key):
     :return: The value of the item
     :rtype: int
     """
-    vmstat = open("/proc/vmstat")
-    vmstat_info = vmstat.read()
-    vmstat.close()
-    return int(re.findall("%s\s+(\d+)" % key, vmstat_info)[0])
+    with open("/proc/vmstat") as vmstat:
+        vmstat_info = vmstat.read()
+        return int(re.findall("%s\s+(\d+)" % key, vmstat_info)[0])
 
 
 def read_from_smaps(pid, key):
@@ -283,15 +282,14 @@ def read_from_smaps(pid, key):
     :return: The value of the item in kb
     :rtype: int
     """
-    smaps = open("/proc/%s/smaps" % pid)
-    smaps_info = smaps.read()
-    smaps.close()
+    with open("/proc/%s/smaps" % pid) as smaps:
+        smaps_info = smaps.read()
 
-    memory_size = 0
-    for each_number in re.findall("%s:\s+(\d+)" % key, smaps_info):
-        memory_size += int(each_number)
+        memory_size = 0
+        for each_number in re.findall("%s:\s+(\d+)" % key, smaps_info):
+            memory_size += int(each_number)
 
-    return memory_size
+        return memory_size
 
 
 def read_from_numa_maps(pid, key):
@@ -306,16 +304,15 @@ def read_from_numa_maps(pid, key):
     :return: A dict using the address as the keys
     :rtype: dict
     """
-    numa_maps = open("/proc/%s/numa_maps" % pid)
-    numa_map_info = numa_maps.read()
-    numa_maps.close()
+    with open("/proc/%s/numa_maps" % pid) as numa_maps:
+        numa_map_info = numa_maps.read()
 
-    numa_maps_dict = {}
-    numa_pattern = r"(^[\dabcdfe]+)\s+.*%s[=:](\d+)" % key
-    for address, number in re.findall(numa_pattern, numa_map_info, re.M):
-        numa_maps_dict[address] = number
+        numa_maps_dict = {}
+        numa_pattern = r"(^[\dabcdfe]+)\s+.*%s[=:](\d+)" % key
+        for address, number in re.findall(numa_pattern, numa_map_info, re.M):
+            numa_maps_dict[address] = number
 
-    return numa_maps_dict
+        return numa_maps_dict
 
 
 def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
@@ -346,46 +343,45 @@ def get_buddy_info(chunk_sizes, nodes="all", zones="all"):
     :return: A dict using the chunk_size as the keys
     :rtype: dict
     """
-    buddy_info = open("/proc/buddyinfo")
-    buddy_info_content = buddy_info.read()
-    buddy_info.close()
+    with open("/proc/buddyinfo") as buddy_info:
+        buddy_info_content = buddy_info.read()
 
-    re_buddyinfo = "Node\s+"
-    if nodes == "all":
-        re_buddyinfo += "(\d+)"
-    else:
-        re_buddyinfo += "(%s)" % "|".join(nodes.split())
+        re_buddyinfo = "Node\s+"
+        if nodes == "all":
+            re_buddyinfo += "(\d+)"
+        else:
+            re_buddyinfo += "(%s)" % "|".join(nodes.split())
 
-    if not re.findall(re_buddyinfo, buddy_info_content):
-        logging.warn("Can not find Nodes %s" % nodes)
-        return None
-    re_buddyinfo += ".*?zone\s+"
-    if zones == "all":
-        re_buddyinfo += "(\w+)"
-    else:
-        re_buddyinfo += "(%s)" % "|".join(zones.split())
-    if not re.findall(re_buddyinfo, buddy_info_content):
-        logging.warn("Can not find zones %s" % zones)
-        return None
-    re_buddyinfo += "\s+([\s\d]+)"
+        if not re.findall(re_buddyinfo, buddy_info_content):
+            logging.warn("Can not find Nodes %s" % nodes)
+            return None
+        re_buddyinfo += ".*?zone\s+"
+        if zones == "all":
+            re_buddyinfo += "(\w+)"
+        else:
+            re_buddyinfo += "(%s)" % "|".join(zones.split())
+        if not re.findall(re_buddyinfo, buddy_info_content):
+            logging.warn("Can not find zones %s" % zones)
+            return None
+        re_buddyinfo += "\s+([\s\d]+)"
 
-    buddy_list = re.findall(re_buddyinfo, buddy_info_content)
+        buddy_list = re.findall(re_buddyinfo, buddy_info_content)
 
-    if re.findall("[<>=]", chunk_sizes) and buddy_list:
-        size_list = range(len(buddy_list[-1][-1].strip().split()))
-        chunk_sizes = [str(_) for _ in size_list if eval("%s %s" % (_,
-                                                                    chunk_sizes))]
+        if re.findall("[<>=]", chunk_sizes) and buddy_list:
+            size_list = range(len(buddy_list[-1][-1].strip().split()))
+            chunk_sizes = [str(_) for _ in size_list if eval("%s %s" % (_,
+                                                                        chunk_sizes))]
 
-        chunk_sizes = ' '.join(chunk_sizes)
+            chunk_sizes = ' '.join(chunk_sizes)
 
-    buddyinfo_dict = {}
-    for chunk_size in chunk_sizes.split():
-        buddyinfo_dict[chunk_size] = 0
-        for _, _, chunk_info in buddy_list:
-            chunk_info = chunk_info.strip().split()[int(chunk_size)]
-            buddyinfo_dict[chunk_size] += int(chunk_info)
+        buddyinfo_dict = {}
+        for chunk_size in chunk_sizes.split():
+            buddyinfo_dict[chunk_size] = 0
+            for _, _, chunk_info in buddy_list:
+                chunk_info = chunk_info.strip().split()[int(chunk_size)]
+                buddyinfo_dict[chunk_size] += int(chunk_info)
 
-    return buddyinfo_dict
+        return buddyinfo_dict
 
 
 def set_thp_value(feature, value):

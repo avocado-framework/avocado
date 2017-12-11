@@ -6,6 +6,7 @@ import xml.dom.minidom
 import unittest
 
 from avocado.core import exit_codes
+from avocado.utils import genio
 from avocado.utils import process
 from avocado.utils import script
 
@@ -98,8 +99,8 @@ class JobTimeOutTest(unittest.TestCase):
 
     def _check_timeout_msg(self, idx):
         res_dir = os.path.join(self.tmpdir, "latest", "test-results")
-        debug_log = glob.glob(os.path.join(res_dir, "%s-*" % idx, "debug.log"))
-        debug_log = open(debug_log[0]).read()
+        debug_log_paths = glob.glob(os.path.join(res_dir, "%s-*" % idx, "debug.log"))
+        debug_log = genio.read_file(debug_log_paths[0])
         self.assertIn("Runner error occurred: Timeout reached", debug_log,
                       "Runner error occurred: Timeout reached message not "
                       "in the %sst test's debug.log:\n%s"
