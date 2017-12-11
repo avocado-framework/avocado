@@ -264,9 +264,14 @@ class Varianter(object):
                 out.append("\n".join(variant_to_str(variant, variants - 1,
                                                     kwargs, self.debug)))
             return "\n\n".join(out)
-        return "\n\n".join(self._variant_plugins.map_method("to_str", summary,
-                                                            variants,
-                                                            **kwargs))
+
+        out = [item for item in self._variant_plugins.map_method("to_str",
+                                                                 summary,
+                                                                 variants,
+                                                                 **kwargs)
+               if item]
+
+        return "\n\n".join(out)
 
     def get_number_of_tests(self, test_suite):
         """
