@@ -872,8 +872,8 @@ class GDBSubProcess(object):
             script_name = '%s.gdb.connect_commands' % binary_name
             path = os.path.join(current_test.outputdir, script_name)
             with open(path, 'w') as cmds_file:
-                cmds_file('file %s\n' % os.path.abspath(self.binary))
-                cmds_file('target extended-remote :%s\n' % self.gdb_server.port)
+                cmds_file.write('file %s\n' % os.path.abspath(self.binary))
+                cmds_file.write('target extended-remote :%s\n' % self.gdb_server.port)
             return path
 
     def generate_gdb_connect_sh(self):
