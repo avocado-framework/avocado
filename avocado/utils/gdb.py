@@ -23,12 +23,8 @@ import os
 import time
 import fcntl
 import socket
+import subprocess
 import tempfile
-
-try:
-    import subprocess32 as subprocess
-except ImportError:
-    import subprocess
 
 from . import network
 from .external import gdbmi_parser
