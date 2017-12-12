@@ -20,6 +20,11 @@ import os
 import re
 import sys
 
+import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 from six import iteritems
 
 from avocado.core import tree, exit_codes
@@ -27,18 +32,6 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
 from . import mux
-
-
-try:
-    import yaml
-except ImportError:
-    MULTIPLEX_CAPABLE = False
-else:
-    MULTIPLEX_CAPABLE = True
-    try:
-        from yaml import CLoader as Loader
-    except ImportError:
-        from yaml import Loader
 
 
 # Mapping for yaml flags
@@ -342,8 +335,6 @@ class YamlToMuxCLI(CLI):
         """
         Configures "run" and "variants" subparsers
         """
-        if not MULTIPLEX_CAPABLE:
-            return
         for name in ("run", "multiplex", "variants"):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
