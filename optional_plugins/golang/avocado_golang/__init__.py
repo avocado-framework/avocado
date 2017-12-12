@@ -119,7 +119,9 @@ class GolangLoader(loader.TestLoader):
                 avocado_suite.append((GolangTest, {'name': test_name,
                                                    'subtest': subtest}))
 
-            return avocado_suite or self._no_tests(which_tests, url)
+            return avocado_suite or self._no_tests(which_tests, url,
+                                                   'No test matching this '
+                                                   'reference.')
 
         # When a directory is provided
         if os.path.isdir(url):
@@ -131,7 +133,9 @@ class GolangLoader(loader.TestLoader):
                     avocado_suite.append((GolangTest, {'name': test_name,
                                                        'subtest': subtest}))
 
-            return avocado_suite or self._no_tests(which_tests, url)
+            return avocado_suite or self._no_tests(which_tests, url,
+                                                   'No test matching this '
+                                                   'reference.')
 
         # When a package is provided
         go_root = os.environ.get('GOROOT')
@@ -168,12 +172,13 @@ class GolangLoader(loader.TestLoader):
                                           {'name': test_name,
                                            'subtest': subtest}))
 
-        return avocado_suite or self._no_tests(which_tests, url)
+        return avocado_suite or self._no_tests(which_tests, url,
+                                               'No test matching this '
+                                               'reference.')
 
     @staticmethod
-    def _no_tests(which_tests, url):
+    def _no_tests(which_tests, url, msg):
         if which_tests == loader.ALL:
-            msg = ('No test matching this reference.')
             return [(NotGolangTest, {"name": "%s: %s" % (url, msg)})]
         return []
 
