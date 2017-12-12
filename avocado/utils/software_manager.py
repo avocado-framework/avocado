@@ -595,12 +595,15 @@ class YumBackend(RpmBackend):
                               "could not be installed", pkg)
                     return ""
         try:
-            src_rpm = process.system_output('yumdownloader --urls --source'
-                                            ' %s' % name).splitlines()[-1]
-            src_rpm = src_rpm.split("/")[-1]
-            process.system_output('yumdownloader --source %s --destdir %s' % (name, path))
-            src_rpm = os.path.join(path, src_rpm)
-            if self.rpm_install(src_rpm):
+            process.run('yumdownloader --verbose --source %s '
+                        '--destdir %s' % (name, path))
+            src_rpms = [_ for _ in os.walk(path).next()[2]
+                        if _.endswith(".src.rpm")]
+            if len(src_rpms) != 1:
+                log.error("Failed to get downloaded src.rpm from %s:\n%s",
+                          path, os.walk(path).next()[2])
+                return ""
+            if self.rpm_install(os.path.join(path, src_rpms[-1])):
                 if self.build_dep(name):
                     return self.prepare_source(
                         "%s/rpmbuild/SPECS/%s.spec" % (os.environ['HOME'], name), dest_path)
