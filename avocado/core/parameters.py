@@ -41,18 +41,18 @@ class AvocadoParams(object):
     false values, though.
     """
 
-    def __init__(self, leaves, test_id, mux_path, logger_name=None):
+    def __init__(self, leaves, test_id, paths, logger_name=None):
         """
         :param leaves: List of TreeNode leaves defining current variant
         :param test_id: test id
-        :param mux_path: list of entry points
+        :param paths: list of entry points
         :param logger_name: the name of a logger to use to record attempts
                             to get parameters
         :type logger_name: str
         """
         self._rel_paths = []
         leaves = list(leaves)
-        for i, path in enumerate(mux_path):
+        for i, path in enumerate(paths):
             path_leaves = self._get_matching_leaves(path, leaves)
             self._rel_paths.append(AvocadoParam(path_leaves,
                                                 '%d: %s' % (i, path)))

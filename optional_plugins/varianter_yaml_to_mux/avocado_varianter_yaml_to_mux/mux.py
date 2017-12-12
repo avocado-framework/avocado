@@ -152,10 +152,10 @@ class MuxPlugin(object):
     root = None
     variants = None
     default_params = None
-    mux_path = None
+    paths = None
     debug = None
 
-    def initialize_mux(self, root, mux_path, debug):
+    def initialize_mux(self, root, paths, debug):
         """
         Initialize the basic values
 
@@ -163,7 +163,7 @@ class MuxPlugin(object):
                via dispatcher with no __init__ arguments.
         """
         self.root = root
-        self.mux_path = mux_path
+        self.paths = paths
         self.debug = debug
         self.variant_ids = self._get_variant_ids()
 
@@ -184,7 +184,7 @@ class MuxPlugin(object):
         for vid, variant in itertools.izip(self.variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": variant,
-                   "mux_path": self.mux_path}
+                   "paths": self.paths}
 
     def update_defaults(self, defaults):
         """
