@@ -17,6 +17,8 @@ import itertools
 import os
 import sys
 
+from six import iteritems
+
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
@@ -171,9 +173,23 @@ class VarianterPict(Varianter):
         :rtype: str
         """
         out = []
+        verbose = variants > 1
         if variants:
             out.append("Pict Variants (%i):" % len(self))
             for variant in self:
-                out.append('Variant %s:    %s' % (variant["variant_id"],
-                                                  self.parameter_path))
+                out.append('%sVariant %s:    %s' % ('\n' if verbose else '',
+                                                    variant["variant_id"],
+                                                    self.parameter_path))
+                if not verbose:
+                    continue
+                env = set()
+                for node in variant["variant"]:
+                    for key, value in iteritems(node.environment):
+                        origin = node.environment.origin[key].path
+                        env.add(("%s:%s" % (origin, key), str(value)))
+                if not env:
+                    return out
+                fmt = '    %%-%ds => %%s' % max([len(_[0]) for _ in env])
+                for record in sorted(env):
+                    out.append(fmt % record)
         return "\n".join(out)
