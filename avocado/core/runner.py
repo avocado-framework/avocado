@@ -187,10 +187,9 @@ class TestStatus(object):
                 self.status = msg
                 self.job._result_events_dispatcher.map_method('test_progress',
                                                               False)
-                if msg['paused']:
-                    reason = msg['paused_msg']
-                    if reason:
-                        self.job.log.warning(reason)
+                paused_msg = msg['paused']
+                if paused_msg:
+                    self.job.log.warning(paused_msg)
             else:       # test_status
                 self.status = msg
 

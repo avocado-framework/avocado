@@ -918,15 +918,14 @@ class GDBSubProcess(object):
                "NOTE: please use *disconnect* command in gdb before exiting, "
                "or else the debugged process will be KILLED\n" % script_path)
 
-        runtime.CURRENT_TEST.paused = True
-        runtime.CURRENT_TEST.paused_msg = msg
+        runtime.CURRENT_TEST.paused = msg
         runtime.CURRENT_TEST.report_state()
-        runtime.CURRENT_TEST.paused_msg = ''
+        runtime.CURRENT_TEST.paused = ''
 
         ret = self.create_and_wait_on_resume_fifo(fifo_path)
-        runtime.CURRENT_TEST.paused_msg = ("\rResuming ...")
+        runtime.CURRENT_TEST.paused = ("\rResuming ...")
         runtime.CURRENT_TEST.report_state()
-        runtime.CURRENT_TEST.paused_msg = ''
+        runtime.CURRENT_TEST.paused = ''
         return ret
 
     def handle_fatal_signal(self, response):
@@ -942,15 +941,14 @@ class GDBSubProcess(object):
 
         self.gdb.disconnect()
 
-        runtime.CURRENT_TEST.paused = True
-        runtime.CURRENT_TEST.paused_msg = msg
+        runtime.CURRENT_TEST.paused = msg
         runtime.CURRENT_TEST.report_state()
-        runtime.CURRENT_TEST.paused_msg = ''
+        runtime.CURRENT_TEST.paused = ''
 
         ret = self.create_and_wait_on_resume_fifo(fifo_path)
-        runtime.CURRENT_TEST.paused_msg = ("\rResuming ...")
+        runtime.CURRENT_TEST.paused = ("\rResuming ...")
         runtime.CURRENT_TEST.report_state()
-        runtime.CURRENT_TEST.paused_msg = ''
+        runtime.CURRENT_TEST.paused = ''
         return ret
 
     def _is_thread_stopped(self):
