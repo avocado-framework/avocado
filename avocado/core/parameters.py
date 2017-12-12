@@ -41,10 +41,9 @@ class AvocadoParams(object):
     false values, though.
     """
 
-    def __init__(self, leaves, test_id, paths, logger_name=None):
+    def __init__(self, leaves, paths, logger_name=None):
         """
         :param leaves: List of TreeNode leaves defining current variant
-        :param test_id: test id
         :param paths: list of entry points
         :param logger_name: the name of a logger to use to record attempts
                             to get parameters
@@ -59,7 +58,6 @@ class AvocadoParams(object):
         # Don't use non-mux-path params for relative paths
         path_leaves = self._get_matching_leaves('/*', leaves)
         self._abs_path = AvocadoParam(path_leaves, '*: *')
-        self.id = test_id
         self._cache = {}     # TODO: Implement something more efficient
         self._logger_name = logger_name
 

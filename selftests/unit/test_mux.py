@@ -293,11 +293,11 @@ class TestAvocadoParams(unittest.TestCase):
         yamls = yaml_to_mux.create_from_yaml(["/:" + PATH_PREFIX +
                                               'selftests/.data/mux-selftest-params.yaml'])
         self.yamls = iter(mux.MuxTree(yamls))
-        self.params1 = parameters.AvocadoParams(next(self.yamls), 'Unittest1',
+        self.params1 = parameters.AvocadoParams(next(self.yamls),
                                                 ['/ch0/*', '/ch1/*'])
         next(self.yamls)    # Skip 2nd
         next(self.yamls)    # and 3rd
-        self.params2 = parameters.AvocadoParams(next(self.yamls), 'Unittest2',
+        self.params2 = parameters.AvocadoParams(next(self.yamls),
                                                 ['/ch1/*', '/ch0/*'])
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
@@ -312,7 +312,7 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertNotEqual(self.params1, self.params2)
         repr(self.params1)
         str(self.params1)
-        str(parameters.AvocadoParams([], 'Unittest', []))
+        str(parameters.AvocadoParams([], []))
         self.assertEqual(15, sum([1 for _ in iteritems(self.params1)]))
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")

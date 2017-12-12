@@ -374,8 +374,8 @@ class Test(unittest.TestCase, TestData):
             params = []
         elif isinstance(params, tuple):
             params, paths = params[0], params[1]
-        self.__params = parameters.AvocadoParams(params, self.name,
-                                                 paths, self.__log.name)
+        self.__params = parameters.AvocadoParams(params, paths,
+                                                 self.__log.name)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
 
