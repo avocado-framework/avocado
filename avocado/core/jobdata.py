@@ -36,18 +36,18 @@ ARGS_FILENAME = 'args.json'
 CMDLINE_FILENAME = 'cmdline'
 
 
-def record(args, logdir, mux, references=None, cmdline=None):
+def record(args, logdir, variants, references=None, cmdline=None):
     """
     Records all required job information.
     """
-    def json_bad_mux_obj(item):
+    def json_bad_variants_obj(item):
         for log in [LOG_UI, LOG_JOB]:
             log.warning("jobdata.variants: Unable to serialize '%s'", item)
         return str(item)
     base_dir = init_dir(logdir, JOB_DATA_DIR)
     path_cfg = os.path.join(base_dir, CONFIG_FILENAME)
     path_references = os.path.join(base_dir, TEST_REFERENCES_FILENAME)
-    path_mux = os.path.join(base_dir, VARIANTS_FILENAME)
+    path_variants = os.path.join(base_dir, VARIANTS_FILENAME)
     path_pwd = os.path.join(base_dir, PWD_FILENAME)
     path_args = os.path.join(base_dir, ARGS_FILENAME)
     path_cmdline = os.path.join(base_dir, CMDLINE_FILENAME)
@@ -63,10 +63,10 @@ def record(args, logdir, mux, references=None, cmdline=None):
         config_file.flush()
         os.fsync(config_file)
 
-    with open(path_mux, 'w') as mux_file:
-        json.dump(mux.dump(), mux_file, default=json_bad_mux_obj)
-        mux_file.flush()
-        os.fsync(mux_file)
+    with open(path_variants, 'w') as variants_file:
+        json.dump(variants.dump(), variants_file, default=json_bad_variants_obj)
+        variants_file.flush()
+        os.fsync(variants_file)
 
     with open(path_pwd, 'w') as pwd_file:
         pwd_file.write('%s' % os.getcwd())
@@ -115,12 +115,12 @@ def retrieve_references(resultsdir):
 
 def retrieve_variants(resultsdir):
     """
-    Retrieves the job Mux object from the results directory.
+    Retrieves the job variants object from the results directory.
     """
-    recorded_mux = _retrieve(resultsdir, VARIANTS_FILENAME)
-    if recorded_mux:
-        with open(recorded_mux, 'r') as mux_file:
-            return varianter.Varianter(state=json.load(mux_file))
+    recorded_variants = _retrieve(resultsdir, VARIANTS_FILENAME)
+    if recorded_variants:
+        with open(recorded_variants, 'r') as variants_file:
+            return varianter.Varianter(state=json.load(variants_file))
 
 
 def retrieve_args(resultsdir):

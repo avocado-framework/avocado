@@ -218,7 +218,7 @@ class Varianter(Plugin):
         The variant is defined as dictionary with at least:
          * variant_id - name of the current variant
          * variant - AvocadoParams-compatible variant (usually a list)
-         * mux_path - default path(s)
+         * paths - default path(s)
 
         :yield variant
         """
