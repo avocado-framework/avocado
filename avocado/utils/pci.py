@@ -182,7 +182,7 @@ def get_slot_from_sysfs(full_pci_address):
     if not os.path.isfile("/proc/device-tree/%s/ibm,loc-code" % devspec):
         return
     slot = genio.read_file("/proc/device-tree/%s/ibm,loc-code" % devspec)
-    slot = re.match(r'((\w+)[.])+(\w+)-P(\d+)-C(\d+)|Slot(\d+)', slot).group()
+    slot = re.match(r'((\w+)[.])+(\w+)-P(\d+)-C(\d+)|S(\w+)', slot).group()
     return slot
 
 
