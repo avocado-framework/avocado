@@ -61,6 +61,7 @@ def hash_file(filename, size=None, algorithm="md5"):
         hash_obj = hash_wrapper(algorithm=algorithm)
     except ValueError:
         logging.error("Unknown hash algorithm %s, returning None", algorithm)
+        return None
 
     with open(filename, 'rb') as file_to_hash:
         while size > 0:
