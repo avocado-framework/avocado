@@ -20,6 +20,11 @@ import os
 import re
 import sys
 
+import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 from six import iteritems
 
 from avocado.core import tree, exit_codes
@@ -27,18 +32,6 @@ from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
 from . import mux
-
-
-try:
-    import yaml
-except ImportError:
-    MULTIPLEX_CAPABLE = False
-else:
-    MULTIPLEX_CAPABLE = True
-    try:
-        from yaml import CLoader as Loader
-    except ImportError:
-        from yaml import Loader
 
 
 # Mapping for yaml flags
@@ -342,8 +335,6 @@ class YamlToMuxCLI(CLI):
         """
         Configures "run" and "variants" subparsers
         """
-        if not MULTIPLEX_CAPABLE:
-            return
         for name in ("run", "multiplex", "variants"):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
@@ -357,6 +348,7 @@ class YamlToMuxCLI(CLI):
             agroup.add_argument('--mux-filter-out', nargs='*', default=[],
                                 help='Filter out path(s) from multiplexing')
             agroup.add_argument('--mux-path', nargs='*', default=None,
+                                dest='mux_parameter_paths',
                                 help="List of default paths used to determine "
                                 "path priority when querying for parameters")
             agroup.add_argument('--mux-inject', default=[], nargs='*',
@@ -418,7 +410,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             else:
                 args.mux_filter_out = out
 
-        debug = getattr(args, "mux_debug", False)
+        debug = getattr(args, "debug", False)
         if debug:
             data = mux.MuxTreeNodeDebug()
         else:
@@ -467,7 +459,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
         mux_filter_out = getattr(args, 'mux_filter_out', None)
         data = mux.apply_filters(data, mux_filter_only, mux_filter_out)
         if data != mux.MuxTreeNode():
-            mux_path = getattr(args, "mux_path", ["/run/*"])
-            if mux_path is None:
-                mux_path = ["/run/*"]
-            self.initialize_mux(data, mux_path, debug)
+            paths = getattr(args, "mux_parameter_paths", ["/run/*"])
+            if paths is None:
+                paths = ["/run/*"]
+            self.initialize_mux(data, paths, debug)
