@@ -66,11 +66,11 @@ def hash_file(filename, size=None, algorithm="md5"):
         while size > 0:
             if chunksize > size:
                 chunksize = size
-                data = file_to_hash.read(chunksize)
-                if len(data) == 0:
-                    logging.debug("Nothing left to read but size=%d", size)
-                    break
-                hash_obj.update(data)
-                size -= len(data)
+            data = file_to_hash.read(chunksize)
+            if len(data) == 0:
+                logging.debug("Nothing left to read but size=%d", size)
+                break
+            hash_obj.update(data)
+            size -= len(data)
 
     return hash_obj.hexdigest()
