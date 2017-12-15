@@ -142,6 +142,20 @@ class TreeNode(object):
     """
 
     def __init__(self, name='', value=None, parent=None, children=None):
+        """
+        :param name: a name for this node that will be used to define its
+                     path according to the name of its parents
+        :type name: str
+        :param value: a collection of keys and values that will be made into
+                      this node environment.
+        :type value: dict
+        :param parent: the node that is directly above this one in the tree
+                       structure
+        :type parent: :class:`TreeNode`
+        :param children: the nodes that are directly beneath this one in the
+                         tree structure
+        :type children: builtin.list
+        """
         if value is None:
             value = {}
         if children is None:
