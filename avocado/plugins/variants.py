@@ -67,7 +67,7 @@ class Variants(CLICmd):
                             "Shows the node content (variables)")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
-                                dest="debug", default=False,
+                                dest="varianter_debug", default=False,
                                 help="Use debug implementation to gather more"
                                 " information.")
         tree_parser = parser.add_argument_group("tree view options")
@@ -80,7 +80,7 @@ class Variants(CLICmd):
 
     def run(self, args):
         err = None
-        if args.tree and args.debug:
+        if args.tree and args.varianter_debug:
             err = "Option --tree is incompatible with --debug."
         elif not args.tree and args.inherit:
             err = "Option --inherit can be only used with --tree"

@@ -133,7 +133,7 @@ class Parser(object):
         self.subcommands.required = True
 
         # Allow overriding default params by plugins
-        variants = varianter.Varianter(getattr(self.args, "debug", False))
+        variants = varianter.Varianter(getattr(self.args, "varianter_debug", False))
         self.args.avocado_variants = variants
         # FIXME: Backward compatibility params, to be removed when 36 LTS is
         # discontinued
