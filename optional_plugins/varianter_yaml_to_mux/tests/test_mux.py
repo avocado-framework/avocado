@@ -420,7 +420,7 @@ class TestMultipleLoaders(unittest.TestCase):
         debug = yaml_to_mux.create_from_yaml([yaml_url], debug=True)
         self.assertEqual(type(debug), mux.MuxTreeNodeDebug)
         # Debug nodes are of generated "NamedTreeNodeDebug" type
-        self.assertEqual("<class 'avocado.core.tree.NamedTreeNodeDebug'>",
+        self.assertEqual("<class 'avocado_varianter_yaml_to_mux.NamedTreeNodeDebug'>",
                          str(type(debug.children[0])))
         plain = yaml.load("foo: bar")
         self.assertEqual(type(plain), dict)
