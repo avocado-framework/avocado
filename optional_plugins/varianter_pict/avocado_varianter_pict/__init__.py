@@ -152,7 +152,7 @@ class VarianterPict(Varianter):
 
             yield {"variant_id": vid,
                    "variant": variant_tree_nodes,
-                   "mux_path": self.parameter_path}
+                   "paths": self.parameter_path}
 
     def __len__(self):
         return sum(1 for _ in self)

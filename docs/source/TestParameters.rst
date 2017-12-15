@@ -91,7 +91,7 @@ Is a "database" of params present in every (instrumented) avocado
 test.  It's produced during :class:`avocado.core.test.Test`'s
 ``__init__`` from a `variant`_. It accepts a list of `TreeNode`_
 objects; test name :class:`avocado.core.test.TestID` (for logging
-purposes) and a list of default paths (`Mux path`_).
+purposes) and a list of default paths (`Parameter Paths`_).
 
 In test it allows querying for data by using::
 
@@ -106,8 +106,8 @@ Where:
 Each `variant`_ defines a hierarchy, which is preserved so `AvocadoParams`_
 follows it to return the most appropriate value or raise Exception on error.
 
-Mux path
-~~~~~~~~
+Parameter Paths
+~~~~~~~~~~~~~~~
 
 As test params are organized in trees, it's possible to have the same
 variant in several locations. When they are produced from the same
@@ -121,12 +121,12 @@ For example let's say we have upstream values in ``/upstream/sleeptest``
 and our values in ``/downstream/sleeptest``. If we asked for a value using
 path ``"*"``, it'd raise an exception being unable to distinguish whether
 we want the value from ``/downstream`` or ``/upstream``. We can set the
-mux path to ``["/downstream/*", "/upstream/*"]`` to make all relative
+parameter paths to ``["/downstream/*", "/upstream/*"]`` to make all relative
 calls (path starting with ``*``) to first look in nodes in ``/downstream``
 and if not found look into ``/upstream``.
 
-More practical overview of mux path is in :ref:`yaml-to-mux-plugin` in
-:ref:`yaml-to-mux-resolution-order` section.
+More practical overview of parameter paths is in :ref:`yaml-to-mux-plugin`
+in :ref:`yaml-to-mux-resolution-order` section.
 
 Variant
 ~~~~~~~
@@ -134,7 +134,7 @@ Variant
 Variant is a set of params produced by `Varianter`_s and passed to the
 test by the test runner as ``params`` argument. The simplest variant
 is ``None``, which still produces an empty `AvocadoParams`_. Also, the
-`Variant`_ can also be a ``tuple(list, mux_path)`` or just the
+`Variant`_ can also be a ``tuple(list, paths)`` or just the
 ``list`` of :class:`avocado.core.tree.TreeNode` with the params.
 
 Varianter
@@ -401,13 +401,13 @@ Defines the full interface required by
 should inherit from this ``MuxPlugin``, then from the ``Varianter``
 and call the::
 
-   self.initialize_mux(root, mux_path, debug)
+   self.initialize_mux(root, paths, debug)
 
 Where:
 
 * root - is the root of your params tree (compound of `TreeNode`_ -like
   nodes)
-* mux_path - is the `Mux path`_ to be used in test with all variants
+* paths - is the `Parameter paths`_ to be used in test with all variants
 * debug - whether to use debug mode (requires the passed tree to be
   compound of ``TreeNodeDebug``-like nodes which stores the origin
   of the variant/value/environment as the value for listing purposes
