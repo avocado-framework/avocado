@@ -419,7 +419,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
             else:
                 args.mux_filter_out = out
 
-        debug = getattr(args, "debug", False)
+        debug = getattr(args, "varianter_debug", False)
         if debug:
             data = mux.MuxTreeNodeDebug()
         else:
