@@ -2,6 +2,7 @@ import copy
 import itertools
 import os
 import pickle
+import pkg_resources
 import unittest
 import yaml
 
@@ -15,6 +16,14 @@ BASEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 BASEDIR = os.path.abspath(BASEDIR)
 
 PATH_PREFIX = os.path.relpath(BASEDIR) + os.path.sep
+
+
+def plugin_available(plugin_name):
+    try:
+        pkg_resources.require(plugin_name)
+        return True
+    except pkg_resources.DistributionNotFound:
+        return False
 
 
 def combine(leaves_pools):
@@ -235,8 +244,8 @@ class TestMuxTree(unittest.TestCase):
 
 class TestMultiplex(unittest.TestCase):
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE,
-                     "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def setUp(self):
         self.mux_tree = yaml_to_mux.create_from_yaml(['/:' + PATH_PREFIX +
                                                       'selftests/.data/mux-selftest.'
@@ -300,13 +309,15 @@ class TestAvocadoParams(unittest.TestCase):
         self.params2 = parameters.AvocadoParams(next(self.yamls),
                                                 ['/ch1/*', '/ch0/*'])
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_pickle(self):
         params = pickle.dumps(self.params1, 2)  # protocol == 2
         params = pickle.loads(params)
         self.assertEqual(self.params1, params)
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_basic(self):
         self.assertEqual(self.params1, self.params1)
         self.assertNotEqual(self.params1, self.params2)
@@ -315,7 +326,8 @@ class TestAvocadoParams(unittest.TestCase):
         str(parameters.AvocadoParams([], []))
         self.assertEqual(15, sum([1 for _ in iteritems(self.params1)]))
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_unhashable(self):
         """ Verifies that unhashable arguments can be passed to params.get """
         self.assertEqual(self.params1.get("root", "/ch0/", ["foo"]), ["foo"])
@@ -323,7 +335,8 @@ class TestAvocadoParams(unittest.TestCase):
                                           '/ch0/ch0.1/ch0.1.1/ch0.1.1.1/',
                                           ['bar']), 'unique1')
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_get_abs_path(self):
         # /ch0/ is not leaf thus it's not queryable
         self.assertEqual(self.params1.get('root', '/ch0/', 'bbb'), 'bbb')
@@ -345,7 +358,8 @@ class TestAvocadoParams(unittest.TestCase):
                                           '/ch0/ch0.1/ch0.1.1/ch0.1.1.1/',
                                           'hhh'), 'hhh')
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_get_greedy_path(self):
         self.assertEqual(self.params1.get('unique1', '/*/*/*/ch0.1.1.1/',
                                           111), 'unique1')
@@ -369,7 +383,8 @@ class TestAvocadoParams(unittest.TestCase):
         # path matches nothing
         self.assertEqual(self.params1.get('root', '', 999), 999)
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_get_rel_path(self):
         self.assertEqual(self.params1.get('root', default='iii'), 'root')
         self.assertEqual(self.params1.get('unique1', '*', 'jjj'), 'unique1')
@@ -384,7 +399,8 @@ class TestAvocadoParams(unittest.TestCase):
         self.assertEqual(self.params2.get('unique1', '*/ch0.1.1.1/', 'ooo'),
                          'ooo')
 
-    @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
+    @unittest.skipUnless(plugin_available("avocado-framework-plugin-varianter-yaml-to-mux"),
+                         "Plugin avocado_varianter_yaml_to_mux not available")
     def test_get_clashes(self):
         # One inherited, the other is new
         self.assertRaisesRegexp(ValueError, r"'clash1'.* \['/ch0/ch0.1/ch0.1.1"
