@@ -33,11 +33,15 @@ def test_suite():
     for section in ('unit', 'functional', 'doc'):
         suite.addTests(loader.discover(start_dir=os.path.join(selftests_dir, section),
                                        top_level_dir=basedir))
-    # when other plugins get their own tests, make this a generic loop
-    if plugin_available('avocado-framework-plugin-varianter-yaml-to-mux'):
-        path = os.path.join(basedir, 'optional_plugins',
-                            'varianter_yaml_to_mux', 'tests')
-        suite.addTests(loader.discover(start_dir=path, top_level_dir=path))
+    plugins = (('avocado-framework-plugin-varianter-yaml-to-mux',
+                'varianter_yaml_to_mux'),
+               ('avocado-framework-plugin-runner-remote',
+                'runner_remote'))
+    for plugin_name, plugin_dir in plugins:
+        if plugin_available(plugin_name):
+            path = os.path.join(basedir, 'optional_plugins',
+                                plugin_dir, 'tests')
+            suite.addTests(loader.discover(start_dir=path, top_level_dir=path))
     return suite
 
 
