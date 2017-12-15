@@ -115,7 +115,8 @@ if [ "$TRAVIS" == "true" ]; then
 else
     run_rc lint 'inspekt lint --exclude=.git --enable W0102,W0611'
 fi
-run_rc indent 'inspekt indent --exclude=.git'
+# Skip checking test_utils_cpu.py due to inspektor bug
+run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
 run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
 run_rc boundaries 'selftests/modules_boundaries'
 run_rc signed-off-by signed_off_check
