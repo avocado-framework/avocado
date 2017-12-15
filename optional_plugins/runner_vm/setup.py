@@ -25,6 +25,7 @@ setup(name='avocado-framework-plugin-runner-vm',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['avocado-framework-plugin-runner-remote', 'libvirt-python'],
+      test_suite='tests',
       entry_points={
           'avocado.plugins.cli': [
               'vm = avocado_runner_vm:VMCLI',

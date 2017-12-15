@@ -36,7 +36,9 @@ def test_suite():
     plugins = (('avocado-framework-plugin-varianter-yaml-to-mux',
                 'varianter_yaml_to_mux'),
                ('avocado-framework-plugin-runner-remote',
-                'runner_remote'))
+                'runner_remote'),
+               ('avocado-framework-plugin-runner-vm',
+                'runner_vm'))
     for plugin_name, plugin_dir in plugins:
         if plugin_available(plugin_name):
             path = os.path.join(basedir, 'optional_plugins',
