@@ -26,6 +26,7 @@ def is_port_free(port, address):
     Return True if the given port is available for use.
 
     :param port: Port number
+    :param address: Socket address to bind or connect
     """
     try:
         s = socket.socket()
@@ -50,6 +51,7 @@ def find_free_port(start_port, end_port, address="localhost"):
 
     :param start_port: First port that will be checked.
     :param end_port: Port immediately after the last one that will be checked.
+    :param address: Socket address to bind or connect
     """
     for i in range(start_port, end_port):
         if is_port_free(i, address):
@@ -64,6 +66,7 @@ def find_free_ports(start_port, end_port, count, address="localhost"):
     :param start_port: First port that will be checked.
     :param end_port: Port immediately after the last one that will be checked.
     :param count: Initial number of ports known to be free in the range.
+    :param address: Socket address to bind or connect
     """
     ports = []
     i = start_port
