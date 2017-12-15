@@ -61,9 +61,9 @@ def find_free_ports(start_port, end_port, count, address="localhost"):
     """
     Return count of host free ports in the range [start_port, end_port].
 
-    :param count: Initial number of ports known to be free in the range.
     :param start_port: First port that will be checked.
     :param end_port: Port immediately after the last one that will be checked.
+    :param count: Initial number of ports known to be free in the range.
     """
     ports = []
     i = start_port
