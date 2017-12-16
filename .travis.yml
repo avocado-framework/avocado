@@ -10,6 +10,7 @@ branches:
     only:
         - master
         - 36lts
+        - 52lts
 
 cache:
     directories:
