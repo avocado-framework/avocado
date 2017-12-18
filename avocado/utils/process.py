@@ -30,10 +30,7 @@ import subprocess
 import threading
 import time
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 from . import gdb
 from . import runtime
