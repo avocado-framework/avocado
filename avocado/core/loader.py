@@ -18,6 +18,7 @@ Test loader module.
 """
 
 import ast
+import collections
 import imp
 import inspect
 import os
@@ -642,7 +643,7 @@ class FileLoader(TestLoader):
         # The name used, in case of 'import avocado as avocadolib'
         mod_import_name = None
         # The resulting test classes
-        result = {}
+        result = collections.OrderedDict()
         disabled = set()
 
         if os.path.isdir(path):
