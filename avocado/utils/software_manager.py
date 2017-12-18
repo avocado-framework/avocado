@@ -301,7 +301,7 @@ class RpmBackend(BaseBackend):
         try:
             process.system(cmd)
             return True
-        except process.CmdError, details:
+        except process.CmdError as details:
             log.error(details)
             return False
 
@@ -569,7 +569,7 @@ class YumBackend(RpmBackend):
         try:
             process.system('yum-builddep -y --tolerant %s' % name, sudo=True)
             return True
-        except process.CmdError, details:
+        except process.CmdError as details:
             log.error(details)
             return False
 
@@ -610,7 +610,7 @@ class YumBackend(RpmBackend):
             else:
                 log.error("Installing source rpm failed")
                 return ""
-        except process.CmdError, details:
+        except process.CmdError as details:
             log.error(details)
             return ""
 
@@ -798,7 +798,7 @@ class ZypperBackend(RpmBackend):
             else:
                 log.error("Source not installed properly")
                 return ""
-        except process.CmdError, details:
+        except process.CmdError as details:
             log.error(details)
             return ""
 
@@ -1015,7 +1015,7 @@ class AptBackend(DpkgBackend):
                 for subdir in os.listdir(path):
                     if subdir.startswith(name) and os.path.isdir(subdir):
                         return os.path.join(path, subdir)
-        except process.CmdError, details:
+        except process.CmdError as details:
             log.error("Apt package source failed %s", details)
             return ""
 
@@ -1037,7 +1037,7 @@ class AptBackend(DpkgBackend):
         try:
             process.system_output(src_cmd)
             return True
-        except process.CmdError, details:
+        except process.CmdError as details:
             log.error("Apt package build-dep failed %s", details)
             return False
 
