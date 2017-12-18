@@ -326,6 +326,11 @@ class Varianter(object):
 
         :param state: loadable Varianter representation
         """
+        # TODO: Remove when 52.0 is deprecated
+        # In 52.0 the "paths" was called "mux_path"
+        for variant in state:
+            if "mux_path" in variant and "paths" not in variant:
+                variant["paths"] = variant["mux_path"]
         self.debug = False
         self.node_class = tree.TreeNode
         self._variant_plugins = FakeVariantDispatcher(state)
