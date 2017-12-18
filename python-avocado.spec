@@ -10,10 +10,10 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		4aabc6a21ddfe741ba914b24902f24a23a9cda65
+        %global commit		cf93b03d1b5693f9853bcf123c218074e90ae3f9
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date	20171020
+        %global commit_date	20171215
     %endif
     %global shortcommit	%(c=%{commit};echo ${c:0:8})
     %global gitrel		.%{commit_date}git%{shortcommit}
@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 56.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -144,6 +144,9 @@ popd
 pushd optional_plugins/varianter_pict
 %{__python} setup.py build
 popd
+pushd optional_plugins/result_upload
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -173,6 +176,9 @@ pushd optional_plugins/golang
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/varianter_pict
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/result_upload
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -208,6 +214,9 @@ pushd optional_plugins/golang
 %{__python} setup.py develop --user
 popd
 pushd optional_plugins/varianter_pict
+%{__python} setup.py develop --user
+popd
+pushd optional_plugins/result_upload
 %{__python} setup.py develop --user
 popd
 # Package build environments have the least amount of resources
@@ -249,6 +258,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_golang*
 %exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_varianter_pict*
+%exclude %{python_sitelib}/avocado_result_upload*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
@@ -258,6 +268,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_varianter_pict*
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python_sitelib}/avocado_framework_plugin_golang*
+%exclude %{python_sitelib}/avocado_framework_plugin_result_upload*
 %{_libexecdir}/avocado/avocado-bash-utils
 %{_libexecdir}/avocado/avocado_debug
 %{_libexecdir}/avocado/avocado_error
@@ -398,6 +409,18 @@ Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 %{python_sitelib}/avocado_varianter_pict*
 %{python_sitelib}/avocado_framework_plugin_varianter_pict*
 
+%package plugins-result-upload
+Summary: Avocado Plugin to propagate Job results to a remote host
+Requires: %{name} == %{version}
+
+%description plugins-result-upload
+This optional plugin is intended to upload the Avocado Job results to
+a dedicated sever.
+
+%files plugins-result-upload
+%{python_sitelib}/avocado_result_upload*
+%{python_sitelib}/avocado_framework_plugin_result_upload*
+
 %package examples
 Summary: Avocado Test Framework Example Tests
 Requires: %{name} == %{version}
@@ -417,6 +440,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/varianter_pict
 
 %changelog
+* Fri Dec 15 2017 Cleber Rosa <cleber@redhat.com> - 56.0-1
+- Added result_upload plugin
+
 * Tue Nov 21 2017 Cleber Rosa <cleber@redhat.com> - 56.0-0
 - New upstream release
 

@@ -30,6 +30,50 @@ specify a custom location via --html . Last but not least
 the job finishes.
 
 
+Results Upload Plugin
+=====================
+
+This optional plugin is intended to upload the Avocado Job results to
+a dedicated sever.
+
+To install the Result Upload plugin from pip, use::
+
+    pip install avocado-framework-plugin-result-upload
+
+Usage::
+
+    avocado run passtest.py --result-upload-url www@avocadologs.example.com:/var/www/html
+
+Avocado logs will be available at following URL:
+
+- ssh ::
+
+    www@avocadologs.example.com:/var/www/html/job-2017-04-21T12.54-1cefe11
+
+- html (If web server is enabled) ::
+
+    http://avocadologs.example.com/job-2017-04-21T12.54-1cefe11/
+
+Such links may be refered by other plugins, such as the ResultsDB plugin
+
+By default upload will be handled by following command ::
+
+    rsync -arz -e 'ssh -o LogLevel=error -o stricthostkeychecking=no -o userknownhostsfile=/dev/null -o batchmode=yes -o passwordauthentication=no'
+
+Optionally, you can customize uploader command, for example following command upload logs to Google storage: ::
+
+    avocado run passtest.py --result-upload-url='gs://avocadolog' --result-upload-cmd='gsutil -m cp -r'
+
+You can also set the ResultUpload URL and command using a config file::
+
+    [plugins.result_upload]
+    url = www@avocadologs.example.com:/var/www/htmlavocado/job-results
+    command='rsync -arzq'
+
+And then run the Avocado command without the explicit cmd options. Notice
+that the command line options will have precedence over the
+configuration file.
+
 ResultsDB Plugin
 ================
 
