@@ -1023,9 +1023,9 @@ class AptBackend(DpkgBackend):
         """
         Installed build-dependencies of a given package [name].
 
-        :param name: parameter package to install build-dep for.
+        :param name: parameter package to install build-dependencies for.
 
-        :return True: If pacakges are installed properly
+        :return True: If packages are installed properly
         """
         if not self.check_installed('dpkg-dev'):
             if not self.install('dpkg-dev'):
