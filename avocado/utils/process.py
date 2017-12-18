@@ -321,7 +321,7 @@ class FDDrainer(object):
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
         :type ignore_bg_processes: boolean
-        :param verbose: wether to log in both the logger and stream_logger
+        :param verbose: whether to log in both the logger and stream_logger
         :type verbose: boolean
         """
         self.fd = fd

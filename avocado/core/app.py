@@ -93,5 +93,5 @@ class AvocadoApp(object):
             # This makes sure we cleanup the console (stty echo). The only way
             # to avoid cleaning it is to kill the less (paginator) directly
             STD_OUTPUT.close()
-            # Force-close tmpdir
+            # Force-close tmp dir
             data_dir.clean_tmp_files()

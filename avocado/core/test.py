@@ -744,7 +744,7 @@ class Test(unittest.TestCase, TestData):
                      content being checked here
         :type name: str
         :returns: True if the check was performed (there was a reference file) and
-                  was successfull, and False otherwise (there was no such reference
+                  was successful, and False otherwise (there was no such reference
                   file and thus no check was performed).
         :raises: :class:`exceptions.TestFail` when the check is performed and fails
         '''
