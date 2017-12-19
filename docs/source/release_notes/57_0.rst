@@ -1,0 +1,106 @@
+=========================
+57.0 Star Trek: Discovery
+=========================
+
+The Avocado team is proud to present another release: Avocado version
+57.0, AKA "Star Trek: Discovery", is now available!
+
+Release documentation: `Avocado 57.0
+<http://avocado-framework.readthedocs.io/en/57.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* A new (optional) plugin is avaiable, the "result uploader".  It
+  allows job results to be copied over to a centralized results server
+  at the end of job execution.  Please refer to
+  :ref:`results-upload-plugin` for more information.
+
+* The :mod:`avocado.utils.cpu` functions, such as
+  :func:`avocado.utils.cpu.cpu_oneline_list` now support the S390X
+  architecture.
+
+* The ``default_parameters`` mechanism for setting default parameters
+  on tests has been removed.  This was introduced quite early in the
+  Avocado development, and allowed users to set a dictionary at the
+  class level with keys/values that would serve as default parameter
+  values.  The recommended approach now, is to just provide default
+  values when calling ``self.parameters.get`` within a test method,
+  such as ``self.parameters.get("key",
+  default="default_value_for_key")``.
+
+* The ``__getattr__`` interface for ``self.params`` has been removed.  It
+  used to allow users to use a syntax such as ``self.params.key`` when
+  attempting to access the value for key ``key``.  The supported syntax
+  is ``self.params.get("key")`` to achieve the same thing.
+
+* Yet another batch of progress towards Python 3 support.  On this release,
+  we have only 3 unittests that FAIL on a Python 3 environment.  We even got
+  bug reports of Avocado on Python 3, which makes us believe that it's
+  already being used.  Still, keep in mind that *there are still issues*,
+  which will hopefully be iron out on the upcoming release(s).
+
+Bug Fixes
+=========
+
+* The :func:`avocado.utils.crypto.hash_file` function received fixes
+  for a bug caused by a badly indented block.
+
+* The :ref:`golang-plugin` now won't report a test as found if the GO
+  binary is not available to subsequently run those tests.
+
+* The output record functionality receives fixes at the API level, so
+  that it's now possible to enable and disable at the each API call.
+
+* The subtests filter, that can be added to test references, was fixed
+  and now works properly when added to directories and SIMPLE tests.
+
+* The :class:`avocado.utils.process.FDDrainer` now properly flushes its
+  contents and the once ocurring data loss (last line read) is now
+  fixed.
+
+Internal Changes
+================
+
+* The "multiplexer" related code is being moved outside of the core
+  Avocado.  Only the variant plugin interface and support code (but
+  not such an implementation) will remain in core Avocado.
+
+* A new core :mod:`avocado.core.parameter` module was added and it's
+  supposed to contain just the implementation of parameters, but no
+  variants and/or multiplexer related code.
+
+* The ``sysinfo`` feature implementation received a code clean up and
+  now relies on the common :mod:`avocado.utils.process` code, to run the
+  commands that will be collected, instead of having its own custom code
+  for handling with output, timeouts, etc.
+
+Other Changes
+=============
+
+* The Avocado project now has a new server that hosts its RPM package
+  repository and some other assets, including the JeOS images used
+  on Avocado-VT.  The documentation now points towards the new server
+  and its updated URLs.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/56.0..57.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=TSE0q4OXG6U>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/fJ1ilSuA/1198-sprint-theme-star-trek-discovery

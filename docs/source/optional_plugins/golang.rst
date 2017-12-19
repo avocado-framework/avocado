@@ -1,3 +1,5 @@
+.. _golang-plugin:
+
 =============
 Golang Plugin
 =============

@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 56.0
-Release: 1%{?gitrel}%{?dist}
+Version: 57.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -440,6 +440,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/varianter_pict
 
 %changelog
+* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-0
+- New upstream release
+
 * Fri Dec 15 2017 Cleber Rosa <cleber@redhat.com> - 56.0-1
 - Added result_upload plugin
 

@@ -29,6 +29,7 @@ specify a custom location via --html . Last but not least
 --open-browser can be used to start browser automatically once
 the job finishes.
 
+.. _results-upload-plugin:
 
 Results Upload Plugin
 =====================
