@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 57.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -38,6 +38,7 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{version}.tar.
 %else
 Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.gz#/%{gittar}
 %endif
+Patch0: 0001-selftests-unit-test_utils_cpu.py-skip-tests-on-older.patch
 BuildArch: noarch
 BuildRequires: fabric
 BuildRequires: procps-ng
@@ -110,6 +111,7 @@ these days a framework) to perform automated testing.
 %else
 %setup -q -n %{srcname}-%{commit}
 %endif
+%patch0 -p1
 # package plugins-runner-vm requires libvirt-python, but the RPM
 # version of libvirt-python does not publish the egg info and this
 # causes that dep to be attempted to be installed by pip
@@ -440,6 +442,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/varianter_pict
 
 %changelog
+* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-1
+- Add patch to skip tests on EPEL 7 due to mock version
+
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-0
 - New upstream release
 
