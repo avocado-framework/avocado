@@ -39,6 +39,7 @@ import locale
 import os
 
 from six import string_types, iterkeys, iteritems, PY2
+from six.moves import zip
 
 from . import output
 
@@ -397,8 +398,8 @@ class OutputList(list):  # only container pylint: disable=R0903
         cend = output.TERM_SUPPORT.ENDC
         return ' + '.join("%s%s@%s:%s%s"
                           % (_[0], color, _[1], _[2].path, cend)
-                          for _ in itertools.izip(self, self.yamls,
-                                                  self.nodes))
+                          for _ in zip(self, self.yamls,
+                                       self.nodes))
 
 
 class ValueDict(dict):  # only container pylint: disable=R0903

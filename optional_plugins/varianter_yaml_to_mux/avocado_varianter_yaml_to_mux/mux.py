@@ -27,6 +27,7 @@ import re
 
 from six import iterkeys
 from six.moves import xrange as range
+from six.moves import zip
 
 from avocado.core import tree
 from avocado.core import varianter
@@ -182,7 +183,7 @@ class MuxPlugin(object):
         # TODO: Remove when 36lts is discontinued
         if not hasattr(self, "variant_ids"):
             self.variant_ids = self._get_variant_ids()
-        for vid, variant in itertools.izip(self.variant_ids, self.variants):
+        for vid, variant in zip(self.variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": variant,
                    "paths": self.paths}
