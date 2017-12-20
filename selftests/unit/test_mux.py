@@ -5,8 +5,6 @@ import pickle
 import unittest
 import yaml
 
-from six import iteritems
-
 import avocado_varianter_yaml_to_mux as yaml_to_mux
 from avocado_varianter_yaml_to_mux import mux
 from avocado.core import tree, parameters
@@ -313,7 +311,7 @@ class TestAvocadoParams(unittest.TestCase):
         repr(self.params1)
         str(self.params1)
         str(parameters.AvocadoParams([], []))
-        self.assertEqual(15, sum([1 for _ in iteritems(self.params1)]))
+        self.assertEqual(15, sum([1 for _ in self.params1.iteritems()]))
 
     @unittest.skipIf(not yaml_to_mux.MULTIPLEX_CAPABLE, "Not multiplex capable")
     def test_unhashable(self):
