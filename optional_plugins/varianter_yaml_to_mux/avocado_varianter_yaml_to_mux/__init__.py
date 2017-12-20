@@ -20,25 +20,19 @@ import os
 import re
 import sys
 
+import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
 from six import iteritems
 
-from avocado.core import tree, exit_codes
+from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Varianter
 
 from . import mux
-
-
-try:
-    import yaml
-except ImportError:
-    MULTIPLEX_CAPABLE = False
-else:
-    MULTIPLEX_CAPABLE = True
-    try:
-        from yaml import CLoader as Loader
-    except ImportError:
-        from yaml import Loader
 
 
 # Mapping for yaml flags
@@ -288,6 +282,20 @@ def _create_from_yaml(path, cls_node=mux.MuxTreeNode):
     return loaded_tree
 
 
+def get_named_tree_cls(path, klass):
+    """ Return TreeNodeDebug class with hardcoded yaml path """
+    class NamedTreeNodeDebug(klass):    # pylint: disable=R0903
+
+        """ Fake class with hardcoded yaml path """
+
+        def __init__(self, name='', value=None, parent=None,
+                     children=None):
+            super(NamedTreeNodeDebug, self).__init__(name, value, parent,
+                                                     children,
+                                                     path.split(':', 1)[-1])
+    return NamedTreeNodeDebug
+
+
 def create_from_yaml(paths, debug=False):
     """
     Create tree structure from yaml-like file
@@ -303,7 +311,7 @@ def create_from_yaml(paths, debug=False):
 
     def _merge_debug(data, path):
         """Use NamedTreeNodeDebug magic"""
-        node_cls = tree.get_named_tree_cls(path, mux.MuxTreeNodeDebug)
+        node_cls = get_named_tree_cls(path, mux.MuxTreeNodeDebug)
         tmp = _create_from_yaml(path, node_cls)
         if tmp:
             data.merge(tmp)
@@ -342,8 +350,6 @@ class YamlToMuxCLI(CLI):
         """
         Configures "run" and "variants" subparsers
         """
-        if not MULTIPLEX_CAPABLE:
-            return
         for name in ("run", "multiplex", "variants"):
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
