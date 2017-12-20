@@ -38,7 +38,7 @@ def handle_exception(*exc_info):
     try:
         import time
         prefix += time.strftime("%F_%T") + "-"
-        from avocado.core import data_dir
+        from avocado.core import data_dir    # pylint: disable=E0611
         _crash_dir = os.path.join(data_dir.get_data_dir(), "crashes")
         os.makedirs(_crash_dir)
         crash_dir = _crash_dir
@@ -58,7 +58,7 @@ def handle_exception(*exc_info):
 
 if __name__ == '__main__':
     sys.excepthook = handle_exception
-    from avocado.core.app import AvocadoApp
+    from avocado.core.app import AvocadoApp    # pylint: disable=E0611
 
     # Override tmp in case it's not set in env
     for attr in ("TMP", "TEMP", "TMPDIR"):
