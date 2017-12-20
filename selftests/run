@@ -50,7 +50,7 @@ class MyResult(unittest.TextTestResult):
 
 
 if __name__ == '__main__':
-    runner = unittest.TextTestRunner(failfast=not os.environ.get("SELF_CHECK_CONTINUOUS"),
+    runner = unittest.TextTestRunner(failfast=False,
                                      verbosity=1, resultclass=MyResult)
     result = runner.run(test_suite())
     if result.failures or result.errors:
