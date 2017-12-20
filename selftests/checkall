@@ -164,7 +164,6 @@ fi
 run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
 run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
 run_rc boundaries 'selftests/modules_boundaries'
-run_rc signed-off-by signed_off_check
 if [ "$AVOCADO_PARALLEL_CHECK" ]; then
     run_rc selftests parallel_selftests
 elif [ -z "$AVOCADO_SELF_CHECK" ]; then
