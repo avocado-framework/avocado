@@ -1,12 +1,21 @@
 language: python
 
+virtualenv:
+  system_site_packages: true
+
 python:
-    - "2.7_with_system_site_packages"
+    - "2.7"
+    - "3.4"
+
+matrix:
+  allow_failures:
+    - python: "3.4"
 
 branches:
     only:
         - master
         - 36lts
+        - 52lts
 
 cache:
     directories:
