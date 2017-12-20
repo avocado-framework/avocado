@@ -38,7 +38,7 @@ import itertools
 import locale
 import os
 
-from six import string_types, iterkeys, iteritems
+from six import string_types, iterkeys, iteritems, PY2
 
 from . import output
 
@@ -605,5 +605,8 @@ def tree_view(root, verbose=None, use_utf8=None):
         lines = process_node(root.children[-1])
         out.append(right + lines[0])
         out.extend(' ' * len(down_right) + line for line in lines[1:])
-    # When not on TTY we need to force the encoding
-    return '\n'.join(out).encode('utf-8' if use_utf8 else 'ascii')
+    if PY2:
+        # When not on TTY we need to force the encoding
+        return '\n'.join(out).encode('utf-8' if use_utf8 else 'ascii')
+    else:
+        return '\n'.join(out)
