@@ -21,7 +21,7 @@ Base classes for implementing the varianter interface
 
 import hashlib
 
-from six import iteritems, itervalues
+from six import iteritems, itervalues, PY3
 
 from . import tree
 from . import dispatcher
@@ -48,6 +48,8 @@ def generate_variant_id(variant):
     """
     variant = sorted(variant, key=lambda x: x.path)
     fingerprint = "-".join(_.fingerprint() for _ in variant)
+    if PY3:
+        fingerprint = fingerprint.encode("utf-8")
     return ("-".join(node.name for node in variant) + '-' +
             hashlib.sha1(fingerprint).hexdigest()[:4])
 
