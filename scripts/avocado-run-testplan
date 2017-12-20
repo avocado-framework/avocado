@@ -31,13 +31,13 @@ class Parser(argparse.ArgumentParser):
             prog='avocado-run-testplan',
             description='Tracks manual test plans progress and results')
 
-        self.add_argument('-t', '--template', type=file,
+        self.add_argument('-t', '--template', type=argparse.FileType('r'),
                           help='Template file with the predefined test plan')
 
         self.add_argument('-o', '--output',
                           help='Output (test plan results) file location')
 
-        self.add_argument('-i', '--input', type=file,
+        self.add_argument('-i', '--input', type=argparse.FileType('r'),
                           help=('A previously saved result file to use. This '
                                 'will show a human readable report for the '
                                 'given result file'))
