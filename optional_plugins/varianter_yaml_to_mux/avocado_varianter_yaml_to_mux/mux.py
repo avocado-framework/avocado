@@ -25,6 +25,7 @@ import collections
 import itertools
 import re
 
+from six import iterkeys
 from six.moves import xrange as range
 
 from avocado.core import tree
@@ -281,7 +282,7 @@ class MuxTreeNode(tree.TreeNode):
                 elif ctrl.code == REMOVE_VALUE:
                     remove = []
                     regexp = re.compile(ctrl.value)
-                    for key in self.value.iterkeys():
+                    for key in iterkeys(self.value):
                         if regexp.match(key):
                             remove.append(key)
                     for key in remove:
