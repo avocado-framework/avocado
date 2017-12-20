@@ -243,7 +243,7 @@ class AvocadoParam(object):
         """
         Get a value or raise exception if not present
         :raise NoMatchError: When no matches
-        :raise KeyError: When value is not certain (multiple matches)
+        :raise ValueError: When value is not certain (multiple matches)
         """
         leaves = self._get_leaves(path)
         ret = [(leaf.environment[key], leaf.environment.origin[key])
