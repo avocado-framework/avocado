@@ -30,6 +30,10 @@ import pprint
 from . import spark
 
 
+def compare(a, b):
+    return (a > b) - (a < b)
+
+
 def __private():
     class Token:
 
@@ -38,7 +42,7 @@ def __private():
             self.value = value
 
         def __cmp__(self, o):
-            return cmp(self.type, o)
+            return compare(self.type, o)
 
         def __repr__(self):
             return self.value or self.type
@@ -59,7 +63,7 @@ def __private():
             self._kids[low:high] = seq
 
         def __cmp__(self, o):
-            return cmp(self.type, o)
+            return compare(self.type, o)
 
     class GdbMiScannerBase(spark.GenericScanner):
 
