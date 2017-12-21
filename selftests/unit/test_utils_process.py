@@ -238,13 +238,13 @@ class FDDrainerTests(unittest.TestCase):
         result = process.CmdResult()
         fd_drainer = process.FDDrainer(read_fd, result, "test")
         fd_drainer.start()
-        for content in ("foo", "bar", "baz", "foo\nbar\nbaz\n\n"):
+        for content in (b"foo", b"bar", b"baz", b"foo\nbar\nbaz\n\n"):
             os.write(write_fd, content)
-        os.write(write_fd, "finish")
+        os.write(write_fd, b"finish")
         os.close(write_fd)
         fd_drainer.flush()
         self.assertEqual(fd_drainer.data.getvalue(),
-                         "foobarbazfoo\nbar\nbaz\n\nfinish")
+                         b"foobarbazfoo\nbar\nbaz\n\nfinish")
 
     def test_log(self):
         class CatchHandler(logging.NullHandler):
@@ -268,11 +268,11 @@ class FDDrainerTests(unittest.TestCase):
         fd_drainer = process.FDDrainer(read_fd, result, "test",
                                        logger=logger, verbose=True)
         fd_drainer.start()
-        os.write(write_fd, "should go to the log\n")
+        os.write(write_fd, b"should go to the log\n")
         os.close(write_fd)
         fd_drainer.flush()
         self.assertEqual(fd_drainer.data.getvalue(),
-                         "should go to the log\n")
+                         b"should go to the log\n")
         self.assertTrue(handler.caught_record)
 
 
