@@ -488,16 +488,16 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
         # and attempt to reactivate the volume.
         active_lv_pattern = re.escape("%s [active]" % lv_snapshot_name)
         lvdisplay_output = process.system_output("lvdisplay", sudo=True)
-        if ('Snapshot could not be found' in ex and
+        if ('Snapshot could not be found' in ex.result.stderr and
                 re.search(active_lv_pattern, lvdisplay_output) or
-                "The Logical volume %s is still active" % lv_name in ex):
+                "The Logical volume %s is still active" % lv_name in ex.result.stderr):
             LOGGER.debug(("Logical volume %s is still active! " +
                           "Attempting to deactivate..."), lv_name)
             lv_reactivate(vg_name, lv_name)
             LOGGER.error("Continuing after reactivation")
-        elif 'Snapshot could not be found' in ex:
-            LOGGER.error(ex)
-            LOGGER.error("Could not revert to snapshot")
+        elif 'Snapshot could not be found' in ex.result.stderr:
+            LOGGER.error("Could not revert to snapshot:")
+            LOGGER.error(ex.result)
         else:
             raise ex
 
