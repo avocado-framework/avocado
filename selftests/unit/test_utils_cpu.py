@@ -10,6 +10,11 @@ except ImportError:
 from avocado.utils import cpu
 
 
+def recent_mock():
+    major = int(mock.__version__.split('.')[0])
+    return major >= 2
+
+
 class Cpu(unittest.TestCase):
 
     @staticmethod
@@ -19,6 +24,8 @@ class Cpu(unittest.TestCase):
         file_mock.__exit__ = mock.Mock()
         return file_mock
 
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
     def test_s390x(self):
         s390x = u"""vendor_id       : IBM/S390
 # processors    : 2
@@ -87,6 +94,8 @@ cpu MHz static  : 5504
                             return_value=self._get_file_mock(s390x_2)):
                 self.assertEqual(len(cpu.cpu_online_list()), 4)
 
+    @unittest.skipUnless(recent_mock(),
+                         "mock library version cannot (easily) patch open()")
     def test_x86_64(self):
         x86_64 = u"""processor	: 0
 vendor_id	: GenuineIntel

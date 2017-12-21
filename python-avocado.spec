@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 57.0
-Release: 0%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -440,6 +440,12 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/varianter_pict
 
 %changelog
+* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
+- Removed patch added on release 1, considering it's upstream
+
+* Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-1
+- Add patch to skip tests on EPEL 7 due to mock version
+
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-0
 - New upstream release
 
