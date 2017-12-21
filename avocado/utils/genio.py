@@ -20,6 +20,8 @@ import logging
 import os
 import time
 
+from six.moves import input
+
 from . import path as utils_path
 
 log = logging.getLogger('avocado.test')
@@ -99,7 +101,7 @@ def ask(question, auto=False):
     if auto:
         log.info("%s (y/n) y" % question)
         return "y"
-    return raw_input("%s (y/n) " % question)
+    return input("%s (y/n) " % question)
 
 
 def read_file(filename):
