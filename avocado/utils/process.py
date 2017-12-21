@@ -337,7 +337,6 @@ class FDDrainer(object):
         # automatically close.  This may be used as the detection
         # instead.
         self._result = result
-        self._lock = threading.Lock()
         self._thread = None
         self._logger = logger
         self._logger_prefix = logger_prefix
@@ -362,17 +361,16 @@ class FDDrainer(object):
             tmp = os.read(self.fd, 8192)
             if tmp == '':
                 break
-            with self._lock:
-                self.data.write(tmp)
-                if self._verbose:
-                    bfr += tmp
-                    if tmp.endswith('\n'):
-                        for line in bfr.splitlines():
-                            if self._logger is not None:
-                                self._logger.debug(self._logger_prefix, line)
-                            if self._stream_logger is not None:
-                                self._stream_logger.debug('%s\n', line)
-                        bfr = ''
+            self.data.write(tmp)
+            if self._verbose:
+                bfr += tmp
+                if tmp.endswith('\n'):
+                    for line in bfr.splitlines():
+                        if self._logger is not None:
+                            self._logger.debug(self._logger_prefix, line)
+                        if self._stream_logger is not None:
+                            self._stream_logger.debug('%s\n', line)
+                    bfr = ''
         # Write the rest of the bfr unfinished by \n
         if self._verbose and bfr:
             for line in bfr.splitlines():
