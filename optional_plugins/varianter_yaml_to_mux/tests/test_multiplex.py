@@ -7,20 +7,20 @@ from avocado.core import exit_codes
 from avocado.utils import process
 
 
-basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..')
 basedir = os.path.abspath(basedir)
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
-
-DEBUG_OUT = """Variant mint-debug-amd-virtio-07c6:    amd@selftests/.data/mux-environment.yaml, virtio@selftests/.data/mux-environment.yaml, mint@selftests/.data/mux-environment.yaml, debug@selftests/.data/mux-environment.yaml
-    /distro/mint:init         => systemv@selftests/.data/mux-environment.yaml:/distro/mint
-    /env/debug:opt_CFLAGS     => -O0 -g@selftests/.data/mux-environment.yaml:/env/debug
-    /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@selftests/.data/mux-environment.yaml:/hw/cpu/amd
-    /hw/cpu/amd:joinlist      => ['first_item']@selftests/.data/mux-selftest.yaml:/hw/cpu + ['second', 'third']@selftests/.data/mux-selftest.yaml:/hw/cpu/amd
-    /hw/disk/virtio:disk_type => virtio@selftests/.data/mux-environment.yaml:/hw/disk/virtio
-    /hw/disk:corruptlist      => nonlist@selftests/.data/mux-selftest.yaml:/hw/disk
-    /hw:corruptlist           => ['upper_node_list']@selftests/.data/mux-selftest.yaml:/hw
+DEBUG_OUT = """
+Variant mint-debug-amd-virtio-935e:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
+    /distro/mint:init         => systemv@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/distro/mint
+    /env/debug:opt_CFLAGS     => -O0 -g@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/env/debug
+    /hw/cpu/amd:cpu_CFLAGS    => -march=athlon64@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/cpu/amd
+    /hw/cpu/amd:joinlist      => ['first_item']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/cpu + ['second', 'third']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/cpu/amd
+    /hw/disk/virtio:disk_type => virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/hw/disk/virtio
+    /hw/disk:corruptlist      => nonlist@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw/disk
+    /hw:corruptlist           => ['upper_node_list']@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml:/hw
 """
 
 
@@ -56,10 +56,11 @@ class MultiplexTests(unittest.TestCase):
 
     def test_mplex_debug(self):
         cmd_line = ('%s variants -c -d -m '
-                    '/:selftests/.data/mux-selftest.yaml '
-                    '/:selftests/.data/mux-environment.yaml '
-                    '/:selftests/.data/mux-selftest.yaml '
-                    '/:selftests/.data/mux-environment.yaml' % AVOCADO)
+                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
+                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml '
+                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-selftest.yaml '
+                    '/:optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml'
+                    % AVOCADO)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(DEBUG_OUT, result.stdout)
@@ -133,9 +134,9 @@ class MultiplexTests(unittest.TestCase):
         self.run_and_check(cmd_line, expected_rc, (4, 0))
 
     def test_empty_file(self):
-        cmd_line = ("%s run --job-results-dir %s -m selftests/.data/empty_file"
-                    " -- passtest.py"
-                    % (AVOCADO, self.tmpdir))
+        cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
+                    "varianter_yaml_to_mux/tests/.data/empty_file -- "
+                    "passtest.py" % (AVOCADO, self.tmpdir))
         result = self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK,
                                     (1, 0))
 
