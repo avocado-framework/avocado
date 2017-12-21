@@ -22,64 +22,109 @@ run_rc() {
 parallel_selftests() {
     local START=$(date +%s)
     local ERR=0
-    # Use sort -R to randomize the order as longer tests seems to be likely in the same file
-    local ALL=($(./contrib/scripts/avocado-find-unittests selftests/*/*.py | sort -R))
-    [ ${#ALL[@]} -eq 0 ] && return 0
+    local FIND_UNITTESTS=$(realpath ./contrib/scripts/avocado-find-unittests)
     local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
-    local PER_SLICE=$((${#ALL[@]} / $NO_WORKERS))
-    [ $PER_SLICE -eq 0 ] && PER_SLICE=1
-    local PIDS=()
-    local TMPS=()
-    for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
-        TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
-        TMPS+=("$TMP")
-        ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
-        PIDS+=("$!")
-        sleep 0.1
-    done
-    FAILED_ONCE=()
-    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
-        wait ${PIDS[$I]}
-        RET=$?
-        if [ $RET -ne 0 ]; then
-            for FAILURE in $(cat "${TMPS[$I]}" | sed -n 's/\(ERROR\|FAIL\): \([^ ]*\) (\([^)]*\)).*/\3.\2/p'); do
-                FAILED_ONCE+=("$FAILURE")
-            done
-        else
-            rm ${TMPS[$I]}
+
+    # The directories that may contain files with tests, from the Avocado core
+    # and from all optional plugins
+    declare -A DIR_GLOB_MAP
+    DIR_GLOB_MAP[selftests]="selftests/unit/test_*.py selftests/functional/test_*.py selftests/doc/test_*.py"
+    for PLUGIN in $(find optional_plugins -mindepth 1 -maxdepth 1 -type d); do
+        DIR_GLOB_MAP[$PLUGIN]="tests/test_*.py"
+    done;
+
+    declare -A TESTS
+    for TEST_DIR in "${!DIR_GLOB_MAP[@]}"; do
+        # tests in core, that is "selftests" expect the regular path, while
+        # python -m unittest module.class.test_name won't work for tests on
+        # plugins without a change of directory because the full path is
+        # not a valid python module (would need __init__.py) in places where
+        # it doesn't make sense
+        if [ "x$TEST_DIR" != "xselftests" ]; then
+            OLD_PWD=$PWD
+            cd $TEST_DIR
+        fi
+        # Use sort -R to randomize the order as longer tests
+        # seems to be likely in the same file
+        THIS_DIR_TESTS=$(${FIND_UNITTESTS} ${DIR_GLOB_MAP[$TEST_DIR]} | sort -R)
+        if [ -n "$THIS_DIR_TESTS" ]; then
+            TESTS[$TEST_DIR]=${THIS_DIR_TESTS};
+        fi
+        if [ -n $TEST_DIR ]; then
+            cd $OLD_PWD
         fi
     done
-    if [ ${#FAILED_ONCE[@]} -gt 0 ]; then
-        if [ ${#FAILED_ONCE[@]} -le 10 ]; then
-            echo ${#FAILED_ONCE[@]} failed during parallel execution, trying them in series
-            echo "python -m unittest --failfast ${FAILED_ONCE[@]}"
-            if python -m unittest --failfast ${FAILED_ONCE[@]}; then
-                echo "All failed tests passed when executed in series"
-                echo
-                for I in $(seq 0 $((${#PIDS[@]} - 1))); do
-                    [ -e "${TMPS[$I]}" ] && rm "${TMPS[$I]}"
+
+    for TEST_DIR in "${!TESTS[@]}"; do
+        if [ "x$TEST_DIR" != "xselftests" ]; then
+            OLD_PWD=$PWD
+            cd $TEST_DIR
+        fi
+
+        declare -a ALL
+        ALL=(${TESTS[$TEST_DIR]})
+
+        local PER_SLICE=$((${#ALL[@]} / $NO_WORKERS))
+        [ $PER_SLICE -eq 0 ] && PER_SLICE=1
+        local PIDS=()
+        local TMPS=()
+
+        for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
+            TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
+            TMPS+=("$TMP")
+            ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+            PIDS+=("$!")
+            sleep 0.1
+        done
+
+        FAILED_ONCE=()
+        for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+            wait ${PIDS[$I]}
+            RET=$?
+            if [ $RET -ne 0 ]; then
+                for FAILURE in $(cat "${TMPS[$I]}" | sed -n 's/\(ERROR\|FAIL\): \([^ ]*\) (\([^)]*\)).*/\3.\2/p'); do
+                    FAILED_ONCE+=("$FAILURE")
                 done
             else
-                echo
-                echo "Some test(s) failed in series as well, showing failures from parallel run:"
+                rm ${TMPS[$I]}
+            fi
+        done
+        if [ ${#FAILED_ONCE[@]} -gt 0 ]; then
+            if [ ${#FAILED_ONCE[@]} -le 10 ]; then
+                echo ${#FAILED_ONCE[@]} failed during parallel execution, trying them in series
+                echo "python -m unittest --failfast ${FAILED_ONCE[@]}"
+                if python -m unittest --failfast ${FAILED_ONCE[@]}; then
+                    echo "All failed tests passed when executed in series"
+                    echo
+                    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+                        [ -e "${TMPS[$I]}" ] && rm "${TMPS[$I]}"
+                    done
+                else
+                    echo
+                    echo "Some test(s) failed in series as well, showing failures from parallel run:"
+                    ERR=1
+                fi
+            else
+                echo "${#FAILED_ONCE[@]} tests failed during execution, not trying to re-run them."
                 ERR=1
             fi
-        else
-            echo "${#FAILED_ONCE[@]} tests failed during execution, not trying to re-run them."
-            ERR=1
         fi
-    fi
-    # Remove all tmp files
-    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
-        if [ -e "${TMPS[$I]}" ]; then
-            echo
-            echo python -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
-            cat "${TMPS[$I]}"
-            rm "${TMPS[$I]}"
+
+        # Remove all tmp files
+        for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+            if [ -e "${TMPS[$I]}" ]; then
+                echo
+                echo python -m unittest ${ALL[@]:$(($I * $PER_SLICE)):$PER_SLICE}
+                cat "${TMPS[$I]}"
+                rm "${TMPS[$I]}"
+            fi
+        done
+        echo ----------------------------------------------------------------------
+        echo Ran ${#ALL[@]} tests for $TEST_DIR in $(($(date +%s) - START))s
+        if [ -n $TEST_DIR ]; then
+            cd $OLD_PWD
         fi
-    done
-    echo ----------------------------------------------------------------------
-    echo Ran ${#ALL[@]} tests in $(($(date +%s) - START))s
+    done;
     return $ERR
 }
 
