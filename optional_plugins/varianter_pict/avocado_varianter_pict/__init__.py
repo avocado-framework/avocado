@@ -18,6 +18,7 @@ import os
 import sys
 
 from six import iteritems
+from six.moves import zip
 
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
@@ -145,7 +146,7 @@ class VarianterPict(Varianter):
             variant_ids.append(base_id + '-' +
                                hashlib.sha1(base_id).hexdigest()[:4])
 
-        for vid, variant in itertools.izip(variant_ids, self.variants):
+        for vid, variant in zip(variant_ids, self.variants):
             variant_tree_nodes = []
             for key, val in variant.items():
                 variant_tree_nodes.append(TreeNode(key, {key: val}))

@@ -32,34 +32,4 @@ install:
     - pip install -r requirements-travis.txt
 
 script:
-    - |
-        # First cleanup the previously installed files
-        python setup.py develop --uninstall
-        BINDIR=$(dirname $(which python))
-        for FILE in scripts/*; do
-            rm $BINDIR/$(basename $FILE)
-        done
-        # Run the "make check" per each commit in PR (TRAVIS_COMMIT_RANGE)
-        ERR=""
-        echo Branch is $TRAVIS_BRANCH
-        if [ "$TRAVIS_PULL_REQUEST_SHA" ]; then
-            # It's pull request, check only PR commits
-            COMMITS="$(git cherry origin/master | sed -n 's/+ \(.*\)/\1/p')"
-        else
-            # push check, try to check everything
-            COMMITS=$(git rev-list $TRAVIS_COMMIT_RANGE)
-        fi
-        for COMMIT in $COMMITS; do
-            echo
-            echo "--------------------< $(git log -1 --oneline $COMMIT) >--------------------"
-            echo
-            echo
-            git checkout $COMMIT || ERR=$(echo -e "$ERR\nUnable to checkout $(git log -1 --oneline $COMMIT)")
-            AVOCADO_LOG_DEBUG=yes AVOCADO_RESULTSDIR_CHECK=y SELF_CHECK_CONTINUOUS=y AVOCADO_CHECK_LEVEL=1 make check || ERR=$(echo -e "$ERR\nmake check of $(git log -1 --oneline) failed")
-            make clean
-        done
-        if [ "$ERR" ]; then
-            echo
-            echo "Incremental smokecheck failed: $ERR"
-            exit -1
-        fi
+    - make check

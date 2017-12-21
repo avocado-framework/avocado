@@ -3,13 +3,18 @@ import os
 import shutil
 import tempfile
 import unittest
-from lxml import etree
 from xml.dom import minidom
 
 try:
     from io import BytesIO
 except:
     from BytesIO import BytesIO
+
+try:
+    from lxml import etree
+    SCHEMA_CAPABLE = True
+except ImportError:
+    SCHEMA_CAPABLE = False
 
 from avocado import Test
 from avocado.core import job
@@ -56,6 +61,8 @@ class xUnitSucceedTest(unittest.TestCase):
         os.remove(self.tmpfile[1])
         shutil.rmtree(self.tmpdir)
 
+    @unittest.skipUnless(SCHEMA_CAPABLE,
+                         'Unable to validate schema due to missing lxml.etree library')
     def test_add_success(self):
         self.test_result.start_test(self.test1)
         self.test_result.end_test(self.test1.get_state())

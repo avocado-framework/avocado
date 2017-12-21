@@ -31,13 +31,13 @@ class Parser(argparse.ArgumentParser):
             prog='avocado-run-testplan',
             description='Tracks manual test plans progress and results')
 
-        self.add_argument('-t', '--template', type=file,
+        self.add_argument('-t', '--template', type=argparse.FileType('r'),
                           help='Template file with the predefined test plan')
 
         self.add_argument('-o', '--output',
                           help='Output (test plan results) file location')
 
-        self.add_argument('-i', '--input', type=file,
+        self.add_argument('-i', '--input', type=argparse.FileType('r'),
                           help=('A previously saved result file to use. This '
                                 'will show a human readable report for the '
                                 'given result file'))
@@ -89,9 +89,9 @@ class App(object):
 
             result = None
             while True:
-                result = raw_input("Result ([P]ass, [F]ail, [S]kip): ")
+                result = input("Result ([P]ass, [F]ail, [S]kip): ")
                 if result in RESULT_MAP.keys():
-                    notes = raw_input("Additional Notes: ")
+                    notes = input("Additional Notes: ")
                     break
             print("")
 
@@ -99,7 +99,7 @@ class App(object):
                                  "result": RESULT_MAP.get(result),
                                  "notes": notes.strip()})
 
-        user = raw_input("Your identification [%s]: " % getpass.getuser())
+        user = input("Your identification [%s]: " % getpass.getuser())
         if not user:
             user = getpass.getuser()
         self.user_identification = user
