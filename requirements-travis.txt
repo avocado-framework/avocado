@@ -1,5 +1,6 @@
 # All pip installable requirements pinned for Travis CI
-fabric==1.11.1
+fabric==1.11.1; python_version <= '2.7'
+Fabric3==1.13.1.post1; python_version >= '3.4'
 Sphinx==1.3b1
 inspektor==0.4.5
 pep8==1.6.2
@@ -10,7 +11,7 @@ snakefood==1.4; python_version <= '2.7'
 networkx==1.9.1; python_version <= '2.7'
 pygraphviz==1.3rc2; python_version <= '2.7'
 mock==1.2.0; python_version <= '2.7'
-aexpect==1.0.0
+aexpect==1.4.0
 psutil==3.1.1
 # six is a stevedore depedency, but we also use it directly
 six==1.9.0
