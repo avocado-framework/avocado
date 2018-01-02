@@ -584,7 +584,7 @@ class TestRunner(object):
             ctx = multiprocessing.get_context('spawn')
             queue = queues.SimpleQueue(ctx=ctx)     # pylint: disable=E1123
         else:
-            queue = queues.SimpleQueue()
+            queue = queues.SimpleQueue()     # pylint: disable=E1125
 
         if timeout > 0:
             deadline = time.time() + timeout

@@ -196,7 +196,7 @@ class GdbTest(Test):
         g = gdb.GDB()
 
         # Do 100 cycle of target (kind of connects) and disconnects
-        for i in xrange(0, 100):
+        for i in range(0, 100):
             cmd = '-target-select extended-remote :%s' % s.port
             r = g.cmd(cmd)
             self.assertEqual(r.result.class_, 'connected')
