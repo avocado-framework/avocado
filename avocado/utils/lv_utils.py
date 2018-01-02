@@ -157,7 +157,7 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
     errs = []
     if vg_name is not None:
         loop_device = re.search(r"([/\w-]+) +%s +lvm2" % vg_name,
-                                process.run("pvs", sudo=True).stdout)
+                                process.system_output("pvs", sudo=True))
         if loop_device is not None:
             loop_device = loop_device.group(1)
         process.run("vgremove -f %s" %
@@ -170,10 +170,10 @@ def vg_ramdisk_cleanup(ramdisk_filename=None, vg_ramdisk_dir=None,
             errs.append("wipe pv")
             LOGGER.error("Failed to wipe pv from %s: %s", loop_device, result)
 
-        if loop_device in process.run("losetup --all").stdout:
+        if loop_device in process.system_output("losetup --all"):
             ramdisk_filename = re.search(r"%s: \[\d+\]:\d+ \(([/\w]+)\)" %
                                          loop_device,
-                                         process.run("losetup --all").stdout)
+                                         process.system_output("losetup --all"))
             if ramdisk_filename is not None:
                 ramdisk_filename = ramdisk_filename.group(1)
 
@@ -444,7 +444,7 @@ def lv_take_snapshot(vg_name, lv_name,
         process.run(cmd, sudo=True)
     except process.CmdError as ex:
         if ('Logical volume "%s" already exists in volume group "%s"'
-            % (lv_snapshot_name, vg_name) in ex.result_obj.stderr and
+            % (lv_snapshot_name, vg_name) in ex.result.stderr and
             re.search(re.escape(lv_snapshot_name + " [active]"),
                       process.run("lvdisplay", sudo=True).stdout)):
             # the above conditions detect if merge of snapshot was postponed
@@ -487,17 +487,17 @@ def lv_revert(vg_name, lv_name, lv_snapshot_name):
         # detect if merge of snapshot was postponed
         # and attempt to reactivate the volume.
         active_lv_pattern = re.escape("%s [active]" % lv_snapshot_name)
-        lvdisplay_output = process.run("lvdisplay", sudo=True).stdout
-        if ('Snapshot could not be found' in ex and
+        lvdisplay_output = process.system_output("lvdisplay", sudo=True)
+        if ('Snapshot could not be found' in ex.result.stderr and
                 re.search(active_lv_pattern, lvdisplay_output) or
-                "The Logical volume %s is still active" % lv_name in ex):
+                "The Logical volume %s is still active" % lv_name in ex.result.stderr):
             LOGGER.debug(("Logical volume %s is still active! " +
                           "Attempting to deactivate..."), lv_name)
             lv_reactivate(vg_name, lv_name)
             LOGGER.error("Continuing after reactivation")
-        elif 'Snapshot could not be found' in ex:
-            LOGGER.error(ex)
-            LOGGER.error("Could not revert to snapshot")
+        elif 'Snapshot could not be found' in ex.result.stderr:
+            LOGGER.error("Could not revert to snapshot:")
+            LOGGER.error(ex.result)
         else:
             raise ex
 
