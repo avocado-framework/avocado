@@ -23,6 +23,8 @@ import sys
 
 import argparse
 
+from six.moves import input
+
 
 class Parser(argparse.ArgumentParser):
 
@@ -89,9 +91,9 @@ class App(object):
 
             result = None
             while True:
-                result = raw_input("Result ([P]ass, [F]ail, [S]kip): ")
+                result = input("Result ([P]ass, [F]ail, [S]kip): ")
                 if result in RESULT_MAP.keys():
-                    notes = raw_input("Additional Notes: ")
+                    notes = input("Additional Notes: ")
                     break
             print("")
 
@@ -99,7 +101,7 @@ class App(object):
                                  "result": RESULT_MAP.get(result),
                                  "notes": notes.strip()})
 
-        user = raw_input("Your identification [%s]: " % getpass.getuser())
+        user = input("Your identification [%s]: " % getpass.getuser())
         if not user:
             user = getpass.getuser()
         self.user_identification = user
