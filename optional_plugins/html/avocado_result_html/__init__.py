@@ -222,7 +222,7 @@ class HTMLResult(Result):
         setsid = getattr(os, 'setsid', None)
         if not setsid:
             setsid = getattr(os, 'setpgrp', None)
-        inout = file(os.devnull, "r+")
+        inout = open(os.devnull, "r+")
         cmd = ['xdg-open', html_path]
         subprocess.Popen(cmd, close_fds=True, stdin=inout,
                          stdout=inout, stderr=inout,
