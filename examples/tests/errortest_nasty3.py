@@ -27,7 +27,7 @@ class FailTest(Test):
         """
         Avocado should report this as TestError.
         """
-        raise NastyException("Nasty-string-like-exception")
+        raise NastyException("Nasty-string-like-exception")   # pylint: disable=E0710
 
 
 if __name__ == "__main__":
