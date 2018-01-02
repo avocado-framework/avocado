@@ -30,10 +30,7 @@ import subprocess
 import threading
 import time
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import BytesIO
 
 from . import gdb
 from . import runtime
@@ -326,12 +323,11 @@ class FDDrainer(object):
         """
         self.fd = fd
         self.name = name
-        self.data = StringIO()
+        self.data = BytesIO()
         # TODO: check if, when the process finishes, the FD doesn't
         # automatically close.  This may be used as the detection
         # instead.
         self._result = result
-        self._lock = threading.Lock()
         self._thread = None
         self._logger = logger
         self._logger_prefix = logger_prefix
@@ -343,7 +339,7 @@ class FDDrainer(object):
         """
         Read from fd, storing and optionally logging the output
         """
-        bfr = ''
+        bfr = b''
         while True:
             if self._ignore_bg_processes:
                 has_io = select.select([self.fd], [], [], 1)[0]
@@ -354,19 +350,18 @@ class FDDrainer(object):
                     # Don't read unless there are new data available
                     continue
             tmp = os.read(self.fd, 8192)
-            if tmp == '':
+            if not tmp:
                 break
-            with self._lock:
-                self.data.write(tmp)
-                if self._verbose:
-                    bfr += tmp
-                    if tmp.endswith('\n'):
-                        for line in bfr.splitlines():
-                            if self._logger is not None:
-                                self._logger.debug(self._logger_prefix, line)
-                            if self._stream_logger is not None:
-                                self._stream_logger.debug('%s\n', line)
-                        bfr = ''
+            self.data.write(tmp)
+            if self._verbose:
+                bfr += tmp
+                if tmp.endswith(b'\n'):
+                    for line in bfr.splitlines():
+                        if self._logger is not None:
+                            self._logger.debug(self._logger_prefix, line)
+                        if self._stream_logger is not None:
+                            self._stream_logger.debug('%s\n', line)
+                    bfr = b''
         # Write the rest of the bfr unfinished by \n
         if self._verbose and bfr:
             for line in bfr.splitlines():
