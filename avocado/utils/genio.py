@@ -99,7 +99,7 @@ def ask(question, auto=False):
     if auto:
         log.info("%s (y/n) y" % question)
         return "y"
-    return raw_input("%s (y/n) " % question)
+    return input("%s (y/n) " % question)
 
 
 def read_file(filename):
