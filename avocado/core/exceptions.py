@@ -110,7 +110,7 @@ class TestAbortError(TestBaseException):
 class TestSkipError(TestBaseException):
 
     """
-    Indictates that the test is skipped.
+    Indicates that the test is skipped.
 
     Should be thrown when various conditions are such that the test is
     inappropriate. For example, inappropriate architecture, wrong OS version,
@@ -122,7 +122,7 @@ class TestSkipError(TestBaseException):
 class TestSetupSkip(TestBaseException):
 
     """
-    Indictates that the test is skipped in setUp().
+    Indicates that the test is skipped in setUp().
 
     Should be thrown when skip() is used in setUp().
     """

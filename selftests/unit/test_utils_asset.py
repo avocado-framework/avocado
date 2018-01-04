@@ -58,7 +58,7 @@ class TestAsset(unittest.TestCase):
         with open(new_localpath, 'w') as f:
             f.write('Changed!')
 
-        # Dont expire cached file
+        # Don't expire cached file
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
