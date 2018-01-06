@@ -188,6 +188,14 @@ popd
 %{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
 %{__install} -d -m 0755 %{buildroot}%{_libexecdir}/avocado
 %{__install} -m 0755 libexec/avocado* %{buildroot}%{_libexecdir}/avocado
+%{__install} -d -m 0755 %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/plugins %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/tests %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/wrappers %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
 
 %check
 %if %{with_tests}
@@ -459,6 +467,7 @@ Again Shell code (and possibly other similar shells).
 - Add missing configuration files for sub packages
 - Remove man pages source files from package
 - Add bash subpackage
+- Add back examples files into examples package
 
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
