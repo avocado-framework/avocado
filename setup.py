@@ -102,18 +102,6 @@ def get_data_files():
     return data_files
 
 
-def _get_resource_files(path, base):
-    """
-    Given a path, return all the files in there to package
-    """
-    flist = []
-    for root, _, files in sorted(os.walk(path)):
-        for name in files:
-            fullname = os.path.join(root, name)
-            flist.append(fullname[len(base):])
-    return flist
-
-
 def get_long_description():
     with open(os.path.join(BASE_PATH, 'README.rst'), 'r') as req:
         req_contents = req.read()
