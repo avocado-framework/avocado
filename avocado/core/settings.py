@@ -25,6 +25,7 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+from pkg_resources import resource_exists, resource_filename
 from six import string_types
 
 from ..utils import path
@@ -172,10 +173,15 @@ class Settings(object):
             config_local = os.path.exists(config_path_local)
             config_intree = os.path.exists(config_path_intree)
             config_intree_extra = os.path.exists(_config_path_intree_extra)
-            if (not config_system) and (not config_local) and (not config_intree):
+            config_pkg_base = os.path.join('etc', config_filename)
+            config_pkg_exists = resource_exists('avocado', config_pkg_base)
+            config_pkg = resource_filename('avocado', config_pkg_base)
+            if not (config_system or config_local or
+                    config_intree or config_pkg_exists):
                 raise ConfigFileNotFound([config_path_system,
                                           config_path_local,
-                                          config_path_intree])
+                                          config_path_intree,
+                                          config_pkg])
             if config_intree:
                 # In this case, respect only the intree config
                 self.process_config_path(config_path_intree)
