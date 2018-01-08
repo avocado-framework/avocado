@@ -54,7 +54,7 @@ def find_free_port(start_port, end_port, address="localhost", sequent=True):
 
     :param start_port: header of candidate port range
     :param end_port: ender of candidate port range
-    :param sequent: Find port sequently, random order if it's False
+    :param sequent: Find port sequentially, random order if it's False
     :param address: Socket address to bind or connect
     """
     port_range = range(start_port, end_port)
@@ -75,7 +75,7 @@ def find_free_ports(start_port, end_port, count, address="localhost", sequent=Tr
     :param end_port: ender of candidate port range
     :param count: Initial number of ports known to be free in the range.
     :param address: Socket address to bind or connect
-    :param sequent: Find port sequently, random order if it's False
+    :param sequent: Find port sequentially, random order if it's False
     """
     ports = []
 

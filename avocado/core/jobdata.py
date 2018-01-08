@@ -149,7 +149,7 @@ def retrieve_cmdline(resultsdir):
     """
     recorded_cmdline = _retrieve(resultsdir, CMDLINE_FILENAME)
     if recorded_cmdline is None:
-        # Attemp to restore cmdline from log
+        # Attempt to restore cmdline from log
         try:
             with open(os.path.join(resultsdir, "job.log"), "r") as log:
                 import re

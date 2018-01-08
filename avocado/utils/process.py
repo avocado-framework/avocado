@@ -1100,7 +1100,7 @@ def split_gdb_expr(expr):
 
 def should_run_inside_gdb(cmd):
     """
-    Wether the given command should be run inside the GNU debugger
+    Whether the given command should be run inside the GNU debugger
 
     :param cmd: the command arguments, from where we extract the binary name
     """
@@ -1124,7 +1124,7 @@ def should_run_inside_gdb(cmd):
 
 def should_run_inside_wrapper(cmd):
     """
-    Wether the given command should be run inside the wrapper utility.
+    Whether the given command should be run inside the wrapper utility.
 
     :param cmd: the command arguments, from where we extract the binary name
     """

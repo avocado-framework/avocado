@@ -112,7 +112,7 @@ class Command(Collectible):
 
     :param cmd: String with the command.
     :param logf: Basename of the file where output is logged (optional).
-    :param compress_logf: Wether to compress the output of the command.
+    :param compress_logf: Whether to compress the output of the command.
     """
 
     def __init__(self, cmd, logf=None, compress_log=False):
@@ -184,7 +184,7 @@ class Daemon(Command):
 
     :param cmd: String with the daemon command.
     :param logf: Basename of the file where output is logged (optional).
-    :param compress_logf: Wether to compress the output of the command.
+    :param compress_logf: Whether to compress the output of the command.
     """
 
     def run(self, logdir):
@@ -364,7 +364,7 @@ class SysInfo(object):
                              logging packages is a costly operation). If not
                              given explicitly, tries to look in the config
                              files, and if not found, defaults to False.
-        :param profiler: Wether to use the profiler. If not given explicitly,
+        :param profiler: Whether to use the profiler. If not given explicitly,
                          tries to look in the config files.
         """
         if basedir is None:
