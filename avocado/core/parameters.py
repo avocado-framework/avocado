@@ -91,23 +91,21 @@ class AvocadoParams(object):
         :param path: Path (str)
         :param leaves: list of TreeNode leaves
         """
-        path = self._greedy_path(path)
-        path_leaves = [leaf for leaf in leaves if path.search(leaf.path + '/')]
+        path_re = self._greedy_path_to_re(path)
+        path_leaves = [leaf for leaf in leaves if path_re.search(leaf.path + '/')]
         for leaf in path_leaves:
             leaves.remove(leaf)
         return path_leaves
 
     @staticmethod
-    def _greedy_path(path):
+    def _greedy_path_to_re(path):
         """
-        converts user-friendly asterisk path to python regexp and compiles it:
-        path = ""             => ^$
-        path = "/"            => /
-        path = "/foo/bar"     => /foo/bar
-        path = "foo/bar"      => $MUX_ENTRY/?.*/foo/bar
-        path = "/*/foo"       => /[^/]*/foo
-        path = "foo/*"        => $MUX_ENTRY/?.*/foo/.*
-        path = "/foo/*"       => /foo/.*
+        Converts user-friendly path with asterisk to a regex and compiles it
+
+        :param path: a more natural, file-system-like/glob-like
+                     expression for the paths
+        :type path: builtin.str
+        :returns: a compiled regex
         """
         if not path:
             return re.compile('^$')
@@ -160,15 +158,15 @@ class AvocadoParams(object):
         :param default: default value when not found
         :raise KeyError: In case of multiple different values (params clash)
         """
-        path = self._greedy_path(path)
+        path_re = self._greedy_path_to_re(path)
         for param in self._rel_paths:
             try:
-                return param.get_or_die(path, key)
+                return param.get_or_die(path_re, key)
             except NoMatchError:
                 pass
-        if self._is_abspath(path):
+        if self._is_abspath(path_re):
             try:
-                return self._abs_path.get_or_die(path, key)
+                return self._abs_path.get_or_die(path_re, key)
             except NoMatchError:
                 pass
         return default
