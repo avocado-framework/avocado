@@ -71,7 +71,19 @@ source-pypi: clean
                 fi;\
 	done
 
-pypi: source-pypi develop
+wheel: clean
+	if test ! -d PYPI_UPLOAD; then mkdir PYPI_UPLOAD; fi
+	$(PYTHON) setup.py bdist_wheel -d PYPI_UPLOAD
+	for PLUGIN in $(AVOCADO_OPTIONAL_PLUGINS); do\
+		if test -f $$PLUGIN/setup.py; then\
+			echo ">> Creating wheel distribution for $$PLUGIN";\
+			cd $$PLUGIN;\
+			$(PYTHON) setup.py bdist_wheel -d ../../PYPI_UPLOAD;\
+			cd -;\
+                fi;\
+	done
+
+pypi: wheel source-pypi develop
 	mkdir PYPI_UPLOAD/avocado-framework
 	cp avocado_framework.egg-info/PKG-INFO PYPI_UPLOAD/avocado-framework
 	tar rf "PYPI_UPLOAD/avocado-framework-$(VERSION).tar" -C PYPI_UPLOAD avocado-framework/PKG-INFO
@@ -84,7 +96,7 @@ pypi: source-pypi develop
 	@echo " https://pypi.python.org/pypi?%3Aaction=submit_form"
 	@echo
 	@echo "Alternatively, you can also run a command like: "
-	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/avocado-framework-$(VERSION).tar.gz"
+	@echo " twine upload -u <PYPI_USERNAME> PYPI_UPLOAD/*.{tar.gz,whl}"
 	@echo
 
 install:
