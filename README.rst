@@ -220,8 +220,9 @@ To run a test, call the ``run`` command::
   RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   JOB TIME   : 0.14 s
 
-To continue exploring Avocado, check out the output of ``avocado --help``
-and the test runner man-page, accessible via ``man avocado``.
+To continue exploring Avocado, check out the output of ``avocado --help``.  When
+running Avocado out of package-based installs, its man page should also be
+accessible via ``man avocado``.
 
 Documentation
 =============
