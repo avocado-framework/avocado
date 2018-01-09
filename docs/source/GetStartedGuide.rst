@@ -17,6 +17,48 @@ The first step towards using Avocado is, quite obviously, installing it.
 Installing Avocado
 ==================
 
+Avocado is primarily written in Python, so a standard Python installation
+is possible and often preferable.
+
+Installing with standard Python tools
+-------------------------------------
+
+The simplest installation method is through ``pip``.  On most POSIX
+systems with Python 2.7 and ``pip`` available, installation can be
+performed with a single command::
+
+  pip install --user avocado-framework
+
+This will fetch the Avocado package (and possibly some of its
+dependecies) from the PyPI repository, and will attempt to install it
+in the user's home directory (usually under ``~/.local``).
+
+.. tip:: If you want to perform a system-wide installation, drop the
+         ``--user`` switch.
+
+If you want even more isolation, Avocado can also be installed in a
+Python virtual environment. with no additional steps besides creating
+and activating the "venv" itself::
+
+  python -m virtualenv /path/to/new/virtual_environment
+  . /path/to/new/virtual_environment/bin/activate
+  pip install avocado-framework
+
+Please note that this installs the Avocado core functionality.  Many
+Avocado features are distributed as non-core plugins, also available
+as additional packages on PyPI.  You should be able to find them via
+``pip search avocado-framework-plugin | grep
+avocado-framework-plugin``. Some of them are listed below:
+
+* `avocado-framework-plugin-result-html <https://pypi.python.org/pypi/avocado-framework-plugin-result-html>`_: HTML Report for Jobs
+* `avocado-framework-plugin-resultsdb <https://pypi.python.org/pypi/avocado-framework-plugin-resultsdb>`_: Propagate Job results to Resultsdb
+* `avocado-framework-plugin-runner-remote <https://pypi.python.org/pypi/avocado-framework-plugin-runner-remote>`_: Runner for Remote Execution
+* `avocado-framework-plugin-runner-vm <https://pypi.python.org/pypi/avocado-framework-plugin-runner-vm>`_: Runner for libvirt VM Execution
+* `avocado-framework-plugin-runner-docker <https://pypi.python.org/pypi/avocado-framework-plugin-runner-docker>`_: Runner for Execution on Docker Containers
+* `avocado-framework-plugin-loader-yaml <https://pypi.python.org/pypi/avocado-framework-plugin-loader-yaml>`_: Loads tests from YAML files
+* `avocado-framework-plugin-robot <https://pypi.python.org/pypi/avocado-framework-plugin-robot>`_: Execution of Robot Framework tests
+* `avocado-framework-plugin-varianter-yaml-to-mux <https://pypi.python.org/pypi/avocado-framework-plugin-varianter-yaml-to-mux>`_: Parse YAML file into variants
+
 Installing from Packages
 ------------------------
 
@@ -157,42 +199,6 @@ optional plugins.  To install say, the HTML report plugin, run::
     sudo python setup.py install
 
 If you intend to hack on Avocado, you may want to look at :ref:`hacking-and-using`.
-
-Installing from standard Python tools
--------------------------------------
-
-Avocado can also be installed by the standard Python packaging tools,
-namely ``pip``.  On most POSIX systems with Python >= 2.7 and ``pip``
-available, installation can be performed with the following commands::
-
-  pip install avocado-framework
-
-.. note:: As a design decision, only the dependencies for the core
-          Avocado test runner will be installed.  You may notice,
-          depending on your system, that some plugins will fail to load,
-          due to those missing dependencies.
-
-If you want to install all the requirements for all plugins, you may
-attempt to do so by running::
-
-  pip install -r https://raw.githubusercontent.com/avocado-framework/avocado/master/requirements.txt
-
-which installs the python dependencies, although you might still be
-missing the non-python dependencies so the use of distribution package
-is preferred.
-
-The optional plugins are also shipped via PyPI and you should be able
-to find them via ``pip search avocado-framework``. Some of them
-are listed below:
-
-* `avocado-framework-plugin-result-html <https://pypi.python.org/pypi/avocado-framework-plugin-result-html>`_: HTML Report for Jobs
-* `avocado-framework-plugin-resultsdb <https://pypi.python.org/pypi/avocado-framework-plugin-resultsdb>`_: Propagate Job results to Resultsdb
-* `avocado-framework-plugin-runner-remote <https://pypi.python.org/pypi/avocado-framework-plugin-runner-remote>`_: Runner for Remote Execution
-* `avocado-framework-plugin-runner-vm <https://pypi.python.org/pypi/avocado-framework-plugin-runner-vm>`_: Runner for libvirt VM Execution
-* `avocado-framework-plugin-runner-docker <https://pypi.python.org/pypi/avocado-framework-plugin-runner-docker>`_: Runner for Execution on Docker Containers
-* `avocado-framework-plugin-loader-yaml <https://pypi.python.org/pypi/avocado-framework-plugin-loader-yaml>`_: Loads tests from YAML files
-* `avocado-framework-plugin-robot <https://pypi.python.org/pypi/avocado-framework-plugin-robot>`_: Execution of Robot Framework tests
-* `avocado-framework-plugin-varianter-yaml-to-mux <https://pypi.python.org/pypi/avocado-framework-plugin-varianter-yaml-to-mux>`_: Parse YAML file into variants
 
 Using Avocado
 =============
