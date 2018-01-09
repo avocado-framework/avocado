@@ -32,7 +32,11 @@ try:
     import lzma
     LZMA_CAPABLE = True
 except ImportError:
-    LZMA_CAPABLE = False
+    try:
+        from backports import lzma
+        LZMA_CAPABLE = True
+    except ImportError:
+        LZMA_CAPABLE = False
 
 
 class ArchiveException(Exception):

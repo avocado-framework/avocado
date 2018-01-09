@@ -1,6 +1,6 @@
 # Avocado functional requirements
 # .tar.xz support (avocado.utils.archive)
-pyliblzma>=0.5.3
+backports.lzma>=0.0.10; python_version < '3.3'
 # REST client (avocado.core.restclient)
 requests>=1.2.3
 # six is a stevedore depedency, but we also use it directly
