@@ -605,8 +605,9 @@ class YumBackend(RpmBackend):
                 return ""
             if self.rpm_install(os.path.join(path, src_rpms[-1])):
                 if self.build_dep(name):
-                    return self.prepare_source(
-                        "%s/rpmbuild/SPECS/%s.spec" % (os.environ['HOME'], name), dest_path)
+                    spec_path = os.path.join(os.environ['HOME'], "rpmbuild",
+                                             "SPECS", "%s.spec" % name)
+                    return self.prepare_source(spec_path, dest_path)
                 else:
                     log.error("Installing build dependencies failed")
                     return ""
