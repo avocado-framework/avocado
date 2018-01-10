@@ -329,23 +329,28 @@ class Job(object):
 
     @staticmethod
     def _get_avocado_git_version():
+        # if running from git sources, there will be a ".git" directory
+        # 3 levels up
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        git_dir = os.path.join(base_dir, '.git')
+        if not os.path.isdir(git_dir):
+            return
+        if not os.path.exists(os.path.join(base_dir, 'python-avocado.spec')):
+            return
+
         try:
             git = path.find_command('git')
         except path.CmdNotFoundError:
             return
-        # We need to get git root as `py2to3` creates this file in BUILD
+
         olddir = os.getcwd()
         try:
-            os.chdir(os.path.dirname(__file__))
-            git_root = process.run('%s rev-parse --show-toplevel' % git,
-                                   ignore_status=True, verbose=False)
-            if git_root.exit_status == 0 and os.path.exists(os.path.join(
-                    git_root.stdout.strip(), 'python-avocado.spec')):
-                cmd = "%s show --summary --pretty='%%H'" % git
-                res = process.run(cmd, ignore_status=True, verbose=False)
-                if res.exit_status == 0:
-                    top_commit = res.stdout.splitlines()[0][:8]
-                    return " (GIT commit %s)" % top_commit
+            os.chdir(os.path.abspath(base_dir))
+            cmd = "%s show --summary --pretty='%%H'" % git
+            res = process.run(cmd, ignore_status=True, verbose=False)
+            if res.exit_status == 0:
+                top_commit = res.stdout.splitlines()[0][:8]
+                return " (GIT commit %s)" % top_commit
         finally:
             os.chdir(olddir)
 
