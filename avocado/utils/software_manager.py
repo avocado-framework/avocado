@@ -595,7 +595,7 @@ class YumBackend(RpmBackend):
                               "could not be installed", pkg)
                     return ""
         try:
-            process.run('yumdownloader --verbose --source %s '
+            process.run('yumdownloader --assumeyes --verbose --source %s '
                         '--destdir %s' % (name, path))
             src_rpms = [_ for _ in os.walk(path).next()[2]
                         if _.endswith(".src.rpm")]
