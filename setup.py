@@ -154,6 +154,7 @@ if __name__ == '__main__':
               "Operating System :: POSIX",
               "Topic :: Software Development :: Quality Assurance",
               "Topic :: Software Development :: Testing",
+              "Programming Language :: Python :: 2.7",
               ],
           packages=find_packages(exclude=('selftests*',)),
           data_files=get_data_files(),
