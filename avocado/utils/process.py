@@ -257,12 +257,18 @@ class CmdResult(object):
     """
     Command execution result.
 
-    :param command: String containing the command line itself
-    :param exit_status: Integer exit code of the process
-    :param stdout: String containing stdout of the process
-    :param stderr: String containing stderr of the process
-    :param duration: Elapsed wall clock time running the process
+    :param command: the command line itself
+    :type command: str
+    :param exit_status: exit code of the process
+    :type exit_status: int
+    :param stdout: content of the process stdout
+    :type stdout: str
+    :param stderr: content of the process stderr
+    :type stderr: str
+    :param duration: elapsed wall clock time running the process
+    :type duration: float
     :param pid: ID of the process
+    :type pid: int
     """
 
     def __init__(self, command="", stdout="", stderr="",
