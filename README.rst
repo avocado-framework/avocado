@@ -32,6 +32,48 @@ shortcomings.
 Installing Avocado
 ==================
 
+Avocado is primarily written in Python, so a standard Python installation
+is possible and often preferable.
+
+Installing with standard Python tools
+-------------------------------------
+
+The simplest installation method is through ``pip``.  On most POSIX
+systems with Python 2.7 and ``pip`` available, installation can be
+performed with a single command::
+
+  pip install --user avocado-framework
+
+This will fetch the Avocado package (and possibly some of its
+dependecies) from the PyPI repository, and will attempt to install it
+in the user's home directory (usually under ``~/.local``).
+
+Tip: If you want to perform a system-wide installation, drop the
+``--user`` switch.
+
+If you want even more isolation, Avocado can also be installed in a
+Python virtual environment. with no additional steps besides creating
+and activating the "venv" itself::
+
+  python -m virtualenv /path/to/new/virtual_environment
+  . /path/to/new/virtual_environment/bin/activate
+  pip install avocado-framework
+
+Please note that this installs the Avocado core functionality.  Many
+Avocado features are distributed as non-core plugins, also available
+as additional packages on PyPI.  You should be able to find them via
+``pip search avocado-framework-plugin | grep
+avocado-framework-plugin``. Some of them are listed below:
+
+* ``avocado-framework-plugin-result-html``: HTML Report for Jobs
+* ``avocado-framework-plugin-resultsdb``: Propagate Job results to Resultsdb
+* ``avocado-framework-plugin-runner-remote``: Runner for Remote Execution
+* ``avocado-framework-plugin-runner-vm``: Runner for libvirt VM Execution
+* ``avocado-framework-plugin-runner-docker``: Runner for Execution on Docker Containers
+* ``avocado-framework-plugin-loader-yaml``: Loads tests from YAML files
+* ``avocado-framework-plugin-robot``: Execution of Robot Framework tests
+* ``avocado-framework-plugin-varianter-yaml-to-mux``: Parse YAML file into variants
+
 Installing from Packages
 ------------------------
 
@@ -178,39 +220,12 @@ To run a test, call the ``run`` command::
   RESULTS    : PASS 1 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
   JOB TIME   : 0.14 s
 
-To continue exploring Avocado, check out the output of ``avocado --help``
-and the test runner man-page, accessible via ``man avocado``.
+To continue exploring Avocado, check out the output of ``avocado --help``.  When
+running Avocado out of package-based installs, its man page should also be
+accessible via ``man avocado``.
 
 Documentation
 =============
 
-Avocado comes with in tree documentation about the most advanced features and
-its API. It can be built with ``sphinx``, but a publicly available build of
-the latest master branch documentation and releases can be seen on `read the
-docs <https://readthedocs.org/>`__:
-
-http://avocado-framework.readthedocs.org/
-
-If you want to build the documentation yourself:
-
-1) Make sure you have the package ``python-sphinx`` installed. For Fedora::
-
-    $ sudo yum install python-sphinx
-
-2) For Mint/Ubuntu/Debian::
-
-    $ sudo apt-get install python-sphinx
-
-3) Optionally, you can install the read the docs theme, that will make your
-   in-tree documentation look just like the online version::
-
-    $ sudo pip install sphinx_rtd_theme
-
-4) Build the docs::
-
-    $ make -C docs html
-
-5) Once done, point your browser to::
-
-    $ [your-browser] docs/build/html/index.html
-
+Avocado's latest documentation build can be found at
+https://avocado-framework.readthedocs.io/.
