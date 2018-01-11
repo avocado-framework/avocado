@@ -186,6 +186,14 @@ popd
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 %{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
+%{__install} -d -m 0755 %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/plugins %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/tests %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/wrappers %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
 
 %check
 %if %{with_tests}
@@ -447,6 +455,7 @@ examples of how to write tests on your own.
 * Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
 - Move the avocado package config files to the system location
 - Add missing configuration files for sub packages
+- Adapt to change in example file installation
 
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
