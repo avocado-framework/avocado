@@ -1724,18 +1724,28 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 
-Simple Tests BASH extensions
+SIMPLE Tests BASH extensions
 ============================
 
-To enhance simple tests one can use supported set of libraries we created. The
-only requirement is to use::
+SIMPLE tests written in shell can use a few Avocado utilities.  In your
+shell code, check if the libraries are available with something like::
 
-    PATH=$(avocado "exec-path"):$PATH
+  AVOCADO_SHELL_EXTENSIONS_DIR=$(avocado exec-path 2>/dev/null)
 
-which injects path to Avocado utils into shell PATH. Take a look into
-``avocado exec-path`` to see list of available functions and take a look at
-``examples/tests/simplewarning.sh`` for inspiration.
+And if available, injects that directory containing those utilities
+into the PATH used by the shell, making those utilities readily
+accessible::
 
+  if [ $? == 0 ]; then
+    PATH=$AVOCADO_SHELL_EXTENSIONS_DIR:$PATH
+  fi
+
+For a full list of utilities, take a look into at the directory return
+by ``avocado exec-path`` (if any).  Also, the example test
+``examples/tests/simplewarning.sh`` can serve as further inspiration.
+
+.. tip:: These extensions may be available as a separate package.  For
+         RPM packages, look for the ``bash`` sub-package.
 
 Wrap Up
 =======
