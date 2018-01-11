@@ -59,16 +59,7 @@ def get_avocado_libexec_dir():
 
 
 def get_data_files():
-    data_files = [(get_dir(['etc', 'avocado']), ['etc/avocado/avocado.conf'])]
-    data_files += [(get_dir(['etc', 'avocado', 'conf.d']),
-                    ['etc/avocado/conf.d/README', 'etc/avocado/conf.d/gdb.conf'])]
-    data_files += [(get_dir(['etc', 'avocado', 'sysinfo']),
-                    ['etc/avocado/sysinfo/commands', 'etc/avocado/sysinfo/files',
-                     'etc/avocado/sysinfo/profilers'])]
-    data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'pre.d']),
-                    ['etc/avocado/scripts/job/pre.d/README'])]
-    data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'post.d']),
-                    ['etc/avocado/scripts/job/post.d/README'])]
+    data_files = []
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
     data_files += [(get_tests_dir(), glob.glob('examples/tests/*.sh'))]
     for data_dir in glob.glob('examples/tests/*.data'):
@@ -157,6 +148,7 @@ if __name__ == '__main__':
               "Programming Language :: Python :: 2.7",
               ],
           packages=find_packages(exclude=('selftests*',)),
+          include_package_data=True,
           data_files=get_data_files(),
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],

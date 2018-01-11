@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 57.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -151,6 +151,7 @@ popd
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
+%{__mv} %{buildroot}%{python_sitelib}/avocado/etc %{buildroot}
 pushd optional_plugins/html
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
@@ -440,6 +441,9 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/varianter_pict
 
 %changelog
+* Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
+- Move the avocado package config files to the system location
+
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
 
