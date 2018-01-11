@@ -885,15 +885,25 @@ class AptBackend(DpkgBackend):
         :param repo: Repository string. Example:
                 'deb http://archive.ubuntu.com/ubuntu/ maverick universe'
         """
-        with open(self.repo_file_path, 'r') as repo_file:
-            repo_file_contents = repo_file.read()
-            if repo not in repo_file_contents:
-                try:
-                    add_cmd = "echo '%s' > %s" % (repo, self.repo_file_path)
-                    process.system(add_cmd, shell=True, sudo=True)
-                    return True
-                except process.CmdError:
-                    return False
+        def _add_repo_file():
+            add_cmd = "bash -c \"echo '%s' > %s\"" % (repo, self.repo_file_path)
+            process.system(add_cmd, shell=True, sudo=True)
+
+        def _get_repo_file_contents():
+            with open(self.repo_file_path, 'r') as repo_file:
+                return repo_file.read()
+
+        if not os.path.isfile(self.repo_file_path):
+            _add_repo_file()
+            return True
+
+        repo_file_contents = _get_repo_file_contents()
+        if repo not in repo_file_contents:
+            try:
+                _add_repo_file()
+                return True
+            except process.CmdError:
+                return False
 
     def remove_repo(self, repo):
         """
