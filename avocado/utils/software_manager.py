@@ -932,7 +932,7 @@ class AptBackend(DpkgBackend):
         ud_command = 'update'
         ud_cmd = self.base_command + ' ' + ud_command
         try:
-            process.system(ud_cmd)
+            process.system(ud_cmd, sudo=True)
         except process.CmdError:
             log.error("Apt package update failed")
 
