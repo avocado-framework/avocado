@@ -238,6 +238,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %config(noreplace)%{_sysconfdir}/avocado/avocado.conf
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/README
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/gdb.conf
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/jobscripts.conf
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
@@ -356,6 +357,7 @@ server.
 %files plugins-resultsdb
 %{python_sitelib}/avocado_resultsdb*
 %{python_sitelib}/avocado_framework_plugin_resultsdb*
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
 
 %package plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
@@ -421,6 +423,7 @@ a dedicated sever.
 %files plugins-result-upload
 %{python_sitelib}/avocado_result_upload*
 %{python_sitelib}/avocado_framework_plugin_result_upload*
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
 
 %package examples
 Summary: Avocado Test Framework Example Tests
@@ -443,6 +446,7 @@ examples of how to write tests on your own.
 %changelog
 * Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
 - Move the avocado package config files to the system location
+- Add missing configuration files for sub packages
 
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
