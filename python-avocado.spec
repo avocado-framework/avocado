@@ -194,6 +194,8 @@ popd
 %{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
 %{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
+%{__install} -d -m 0755 %{buildroot}%{_libexecdir}/avocado
+%{__install} -m 0755 libexec/avocado* %{buildroot}%{_libexecdir}/avocado
 
 %check
 %if %{with_tests}
@@ -277,11 +279,6 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_upload*
-%{_libexecdir}/avocado/avocado-bash-utils
-%{_libexecdir}/avocado/avocado_debug
-%{_libexecdir}/avocado/avocado_error
-%{_libexecdir}/avocado/avocado_info
-%{_libexecdir}/avocado/avocado_warn
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
@@ -449,12 +446,28 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 %{_datadir}/avocado/varianter_pict
 
+%package bash
+Summary: Avocado Test Framework Bash Utilities
+Requires: %{name} == %{version}
+
+%description bash
+A small set of utilities to interact with Avocado from the Bourne
+Again Shell code (and possibly other similar shells).
+
+%files bash
+%{_libexecdir}/avocado/avocado-bash-utils
+%{_libexecdir}/avocado/avocado_debug
+%{_libexecdir}/avocado/avocado_error
+%{_libexecdir}/avocado/avocado_info
+%{_libexecdir}/avocado/avocado_warn
+
 %changelog
 * Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
 - Move the avocado package config files to the system location
 - Add missing configuration files for sub packages
 - Adapt to change in example file installation
 - Remove man pages source files from package
+- Add bash subpackage
 
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
