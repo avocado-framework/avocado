@@ -257,8 +257,6 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %{_bindir}/avocado-rest-client
 %{_mandir}/man1/avocado.1.gz
 %{_mandir}/man1/avocado-rest-client.1.gz
-%{_docdir}/avocado/avocado.rst
-%{_docdir}/avocado/avocado-rest-client.rst
 %exclude %{python_sitelib}/avocado_result_html*
 %exclude %{python_sitelib}/avocado_runner_remote*
 %exclude %{python_sitelib}/avocado_runner_vm*
@@ -456,6 +454,7 @@ examples of how to write tests on your own.
 - Move the avocado package config files to the system location
 - Add missing configuration files for sub packages
 - Adapt to change in example file installation
+- Remove man pages source files from package
 
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
