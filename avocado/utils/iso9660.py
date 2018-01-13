@@ -268,7 +268,7 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
 
         cmd.append("-x %s" % fname)
         result = process.run(" ".join(cmd), verbose=False)
-        return result.stdout
+        return result.raw_stdout
 
 
 class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
@@ -287,7 +287,7 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
         temp_path = os.path.join(self.temp_dir, path)
         cmd = 'iso-read -i %s -e %s -o %s' % (self.path, path, temp_path)
         process.run(cmd)
-        with open(temp_path) as temp_file:
+        with open(temp_path, 'r+b') as temp_file:
             return temp_file.read()
 
     def copy(self, src, dst):
@@ -331,7 +331,7 @@ class Iso9660Mount(BaseIso9660):
         :rtype: str
         """
         full_path = os.path.join(self.mnt_dir, path)
-        with open(full_path) as file_to_read:
+        with open(full_path, 'r+b') as file_to_read:
             return file_to_read.read()
 
     def copy(self, src, dst):
