@@ -3,8 +3,23 @@ import unittest
 from avocado.core import dispatcher
 
 
+def broken_crypto_libs():
+    '''
+    Check if the loading of the the remote plugin by the dispatcher
+    code will trigger a Fabric3/paramiko/cryptography issue on
+    Python 3.
+    '''
+    try:
+        from cryptography.hazmat.backends import default_backend
+    except ImportError:
+        return True
+    return False
+
+
 class DispatcherTest(unittest.TestCase):
 
+    @unittest.skipIf(broken_crypto_libs(),
+                     "Skipping on Python 3 because of Fabric3/paramiko issues")
     def test_order(self):
         namespaces = ['avocado.plugins.cli',
                       'avocado.plugins.cli.cmd',
