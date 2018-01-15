@@ -345,7 +345,7 @@ class Job(object):
 
         olddir = os.getcwd()
         try:
-            os.chdir(base_dir)
+            os.chdir(os.path.abspath(base_dir))
             cmd = "%s show --summary --pretty='%%H'" % git
             res = process.run(cmd, ignore_status=True, verbose=False)
             if res.exit_status == 0:
