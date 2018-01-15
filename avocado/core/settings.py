@@ -25,28 +25,10 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+from pkg_resources import resource_exists, resource_filename
 from six import string_types
 
 from ..utils import path
-
-if 'VIRTUAL_ENV' in os.environ:
-    CFG_DIR = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
-    USER_DIR = os.environ['VIRTUAL_ENV']
-else:
-    CFG_DIR = '/etc'
-    USER_DIR = os.path.expanduser("~")
-
-_config_dir_system = os.path.join(CFG_DIR, 'avocado')
-_config_dir_system_extra = os.path.join(CFG_DIR, 'avocado', 'conf.d')
-_config_dir_local = os.path.join(USER_DIR, '.config', 'avocado')
-_source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
-_config_path_intree = os.path.join(os.path.abspath(_source_tree_root), 'etc', 'avocado')
-_config_path_intree_extra = os.path.join(_config_path_intree, 'conf.d')
-
-config_filename = 'avocado.conf'
-config_path_system = os.path.join(_config_dir_system, config_filename)
-config_path_local = os.path.join(_config_dir_local, config_filename)
-config_path_intree = os.path.join(_config_path_intree, config_filename)
 
 
 class SettingsError(Exception):
@@ -166,15 +148,40 @@ class Settings(object):
         self.config_paths = []
         self.config_paths_failed = []
         if config_path is None:
+            if 'VIRTUAL_ENV' in os.environ:
+                cfg_dir = os.path.join(os.environ['VIRTUAL_ENV'], 'etc')
+                user_dir = os.environ['VIRTUAL_ENV']
+            else:
+                cfg_dir = '/etc'
+                user_dir = os.path.expanduser("~")
+
+            _config_dir_system = os.path.join(cfg_dir, 'avocado')
+            _config_dir_system_extra = os.path.join(cfg_dir, 'avocado', 'conf.d')
+            _config_dir_local = os.path.join(user_dir, '.config', 'avocado')
+            _source_tree_root = os.path.join(sys.modules[__name__].__file__, "..", "..", "..")
+            _config_path_intree = os.path.join(os.path.abspath(_source_tree_root),
+                                               'avocado', 'etc', 'avocado')
+            _config_path_intree_extra = os.path.join(_config_path_intree, 'conf.d')
+
+            config_filename = 'avocado.conf'
+            config_path_system = os.path.join(_config_dir_system, config_filename)
+            config_path_local = os.path.join(_config_dir_local, config_filename)
+            config_path_intree = os.path.join(_config_path_intree, config_filename)
+
             config_system = os.path.exists(config_path_system)
             config_system_extra = os.path.exists(_config_dir_system_extra)
             config_local = os.path.exists(config_path_local)
             config_intree = os.path.exists(config_path_intree)
             config_intree_extra = os.path.exists(_config_path_intree_extra)
-            if (not config_system) and (not config_local) and (not config_intree):
+            config_pkg_base = os.path.join('etc', config_filename)
+            config_pkg = resource_exists('avocado', config_pkg_base)
+            config_path_pkg = resource_filename('avocado', config_pkg_base)
+            if not (config_system or config_local or
+                    config_intree or config_pkg):
                 raise ConfigFileNotFound([config_path_system,
                                           config_path_local,
-                                          config_path_intree])
+                                          config_path_intree,
+                                          config_path_pkg])
             if config_intree:
                 # In this case, respect only the intree config
                 self.process_config_path(config_path_intree)

@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 57.0
-Release: 2%{?gitrel}%{?dist}
+Release: 3%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -151,6 +151,7 @@ popd
 
 %install
 %{__python} setup.py install --root %{buildroot} --skip-build
+%{__mv} %{buildroot}%{python_sitelib}/avocado/etc %{buildroot}
 pushd optional_plugins/html
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
@@ -185,6 +186,16 @@ popd
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 %{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
+%{__install} -d -m 0755 %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/plugins %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/tests %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/wrappers %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
+%{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
+%{__install} -d -m 0755 %{buildroot}%{_libexecdir}/avocado
+%{__install} -m 0755 libexec/avocado* %{buildroot}%{_libexecdir}/avocado
 
 %check
 %if %{with_tests}
@@ -237,6 +248,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %config(noreplace)%{_sysconfdir}/avocado/avocado.conf
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/README
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/gdb.conf
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/jobscripts.conf
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
 %config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
@@ -247,8 +259,6 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %{_bindir}/avocado-rest-client
 %{_mandir}/man1/avocado.1.gz
 %{_mandir}/man1/avocado-rest-client.1.gz
-%{_docdir}/avocado/avocado.rst
-%{_docdir}/avocado/avocado-rest-client.rst
 %exclude %{python_sitelib}/avocado_result_html*
 %exclude %{python_sitelib}/avocado_runner_remote*
 %exclude %{python_sitelib}/avocado_runner_vm*
@@ -269,11 +279,6 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_upload*
-%{_libexecdir}/avocado/avocado-bash-utils
-%{_libexecdir}/avocado/avocado_debug
-%{_libexecdir}/avocado/avocado_error
-%{_libexecdir}/avocado/avocado_info
-%{_libexecdir}/avocado/avocado_warn
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
@@ -355,6 +360,7 @@ server.
 %files plugins-resultsdb
 %{python_sitelib}/avocado_resultsdb*
 %{python_sitelib}/avocado_framework_plugin_resultsdb*
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/resultsdb.conf
 
 %package plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
@@ -420,6 +426,7 @@ a dedicated sever.
 %files plugins-result-upload
 %{python_sitelib}/avocado_result_upload*
 %{python_sitelib}/avocado_framework_plugin_result_upload*
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
 
 %package examples
 Summary: Avocado Test Framework Example Tests
@@ -439,7 +446,29 @@ examples of how to write tests on your own.
 %{_datadir}/avocado/yaml_to_mux_loader
 %{_datadir}/avocado/varianter_pict
 
+%package bash
+Summary: Avocado Test Framework Bash Utilities
+Requires: %{name} == %{version}
+
+%description bash
+A small set of utilities to interact with Avocado from the Bourne
+Again Shell code (and possibly other similar shells).
+
+%files bash
+%{_libexecdir}/avocado/avocado-bash-utils
+%{_libexecdir}/avocado/avocado_debug
+%{_libexecdir}/avocado/avocado_error
+%{_libexecdir}/avocado/avocado_info
+%{_libexecdir}/avocado/avocado_warn
+
 %changelog
+* Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
+- Move the avocado package config files to the system location
+- Add missing configuration files for sub packages
+- Adapt to change in example file installation
+- Remove man pages source files from package
+- Add bash subpackage
+
 * Tue Dec 19 2017 Cleber Rosa <cleber@redhat.com> - 57.0-2
 - Removed patch added on release 1, considering it's upstream
 
