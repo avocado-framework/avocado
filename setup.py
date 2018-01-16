@@ -13,7 +13,6 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
-import glob
 import os
 import sys
 # pylint: disable=E0611
@@ -23,109 +22,6 @@ from setuptools import setup, find_packages
 BASE_PATH = os.path.dirname(__file__)
 with open(os.path.join(BASE_PATH, 'VERSION'), 'r') as version_file:
     VERSION = version_file.read().strip()
-VIRTUAL_ENV = (hasattr(sys, 'real_prefix') or 'VIRTUAL_ENV' in os.environ)
-
-
-def get_dir(system_path=None, virtual_path=None):
-    """
-    Retrieve VIRTUAL_ENV friendly path
-    :param system_path: Relative system path
-    :param virtual_path: Overrides system_path for virtual_env only
-    :return: VIRTUAL_ENV friendly path
-    """
-    if virtual_path is None:
-        virtual_path = system_path
-    if VIRTUAL_ENV:
-        if virtual_path is None:
-            virtual_path = []
-        return os.path.join(*virtual_path)
-    else:
-        if system_path is None:
-            system_path = []
-        return os.path.join(*(['/'] + system_path))
-
-
-def get_tests_dir():
-    return get_dir(['usr', 'share', 'avocado', 'tests'], ['tests'])
-
-
-def get_avocado_libexec_dir():
-    if VIRTUAL_ENV:
-        return get_dir(['libexec'])
-    elif os.path.exists('/usr/libexec'):    # RHEL-like distro
-        return get_dir(['usr', 'libexec', 'avocado'])
-    else:                                   # Debian-like distro
-        return get_dir(['usr', 'lib', 'avocado'])
-
-
-def get_data_files():
-    data_files = [(get_dir(['etc', 'avocado']), ['etc/avocado/avocado.conf'])]
-    data_files += [(get_dir(['etc', 'avocado', 'conf.d']),
-                    ['etc/avocado/conf.d/README', 'etc/avocado/conf.d/gdb.conf'])]
-    data_files += [(get_dir(['etc', 'avocado', 'sysinfo']),
-                    ['etc/avocado/sysinfo/commands', 'etc/avocado/sysinfo/files',
-                     'etc/avocado/sysinfo/profilers'])]
-    data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'pre.d']),
-                    ['etc/avocado/scripts/job/pre.d/README'])]
-    data_files += [(get_dir(['etc', 'avocado', 'scripts', 'job', 'post.d']),
-                    ['etc/avocado/scripts/job/post.d/README'])]
-    data_files += [(get_tests_dir(), glob.glob('examples/tests/*.py'))]
-    data_files += [(get_tests_dir(), glob.glob('examples/tests/*.sh'))]
-    for data_dir in glob.glob('examples/tests/*.data'):
-        fmt_str = '%s/*' % data_dir
-        for f in glob.glob(fmt_str):
-            data_files += [(os.path.join(get_tests_dir(),
-                                         os.path.basename(data_dir)), [f])]
-    data_files.append((get_dir(['usr', 'share', 'doc', 'avocado'], ['.']),
-                       ['man/avocado.rst', 'man/avocado-rest-client.rst']))
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'wrappers'],
-                            ['wrappers']),
-                    glob.glob('examples/wrappers/*.sh'))]
-
-    data_files.append((get_avocado_libexec_dir(), glob.glob('libexec/*')))
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'gdb-prerun-scripts'],
-                            ['gdb-prerun-scripts']),
-                    glob.glob('examples/gdb-prerun-scripts/*'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'plugins',
-                             'job-pre-post'],
-                            ['plugins/job-pre-post']),
-                    glob.glob('examples/plugins/job-pre-post/README.rst'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'plugins',
-                             'job-pre-post', 'mail'],
-                            ['plugins/job-pre-post/mail']),
-                    glob.glob('examples/plugins/job-pre-post/mail/*'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'plugins',
-                             'job-pre-post', 'sleep'],
-                            ['plugins/job-pre-post/sleep']),
-                    glob.glob('examples/plugins/job-pre-post/sleep/*'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux'],
-                            ['yaml_to_mux']),
-                    glob.glob('examples/yaml_to_mux/*.yaml'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux', 'hw'],
-                            ['yaml_to_mux/hw']),
-                    glob.glob('examples/yaml_to_mux/hw/*.yaml'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux', 'os'],
-                            ['yaml_to_mux/os']),
-                    glob.glob('examples/yaml_to_mux/os/*.yaml'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'yaml_to_mux_loader'],
-                            ['yaml_to_mux_loader']),
-                    glob.glob('examples/yaml_to_mux_loader/*.yaml'))]
-    data_files += [(get_dir(['usr', 'share', 'avocado', 'varianter_pict'],
-                            ['varianter_pict']),
-                    glob.glob('examples/varianter_pict/*.pict'))]
-    return data_files
-
-
-def _get_resource_files(path, base):
-    """
-    Given a path, return all the files in there to package
-    """
-    flist = []
-    for root, _, files in sorted(os.walk(path)):
-        for name in files:
-            fullname = os.path.join(root, name)
-            flist.append(fullname[len(base):])
-    return flist
 
 
 def get_long_description():
@@ -157,7 +53,7 @@ if __name__ == '__main__':
               "Programming Language :: Python :: 2.7",
               ],
           packages=find_packages(exclude=('selftests*',)),
-          data_files=get_data_files(),
+          include_package_data=True,
           scripts=['scripts/avocado',
                    'scripts/avocado-rest-client'],
           entry_points={
