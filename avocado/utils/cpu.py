@@ -129,6 +129,8 @@ def get_cpu_arch():
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
             return arch
+    if "CPU architecture" in cpuinfo:
+        return platform.machine()
     return 'i386'
 
 
