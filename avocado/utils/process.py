@@ -269,17 +269,34 @@ class CmdResult(object):
     :type duration: float
     :param pid: ID of the process
     :type pid: int
+    :param encoding: the encoding to use for the text version
+                     of stdout and stderr
+    :type encoding: str
     """
 
     def __init__(self, command="", stdout="", stderr="",
-                 exit_status=None, duration=0, pid=None):
+                 exit_status=None, duration=0, pid=None,
+                 encoding=None):
         self.command = command
         self.exit_status = exit_status
-        self.stdout = stdout
-        self.stderr = stderr
+        #: The raw stdout (bytes)
+        self.raw_stdout = stdout
+        #: The raw stderr (bytes)
+        self.raw_stderr = stderr
         self.duration = duration
         self.interrupted = False
         self.pid = pid
+        if encoding is None:
+            encoding = os.environ.get("PYTHONENCODING", "utf-8")
+        self.encoding = encoding
+
+    @property
+    def stdout(self):
+        return self.raw_stdout.decode(self.encoding)
+
+    @property
+    def stderr(self):
+        return self.raw_stderr.decode(self.encoding)
 
     def __repr__(self):
         cmd_rep = ("Command: %s\n"
@@ -618,8 +635,8 @@ class SubProcess(object):
         if self._stderr_drainer is not None:
             self._stderr_drainer.flush()
         # Clean subprocess pipes and populate stdout/err
-        self.result.stdout = self.get_stdout()
-        self.result.stderr = self.get_stderr()
+        self.result.raw_stdout = self.get_stdout()
+        self.result.raw_stderr = self.get_stderr()
 
     def start(self):
         """
