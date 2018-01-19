@@ -22,7 +22,7 @@ run_rc() {
 parallel_selftests() {
     local START=$(date +%s)
     local ERR=0
-    local FIND_UNITTESTS=$(realpath ./contrib/scripts/avocado-find-unittests)
+    local FIND_UNITTESTS=$(readlink -f ./contrib/scripts/avocado-find-unittests)
     local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
 
     # The directories that may contain files with tests, from the Avocado core
@@ -90,7 +90,7 @@ parallel_selftests() {
             fi
         done
         if [ ${#FAILED_ONCE[@]} -gt 0 ]; then
-            if [ ${#FAILED_ONCE[@]} -le 10 ]; then
+            if [ ${#FAILED_ONCE[@]} -le 24 ]; then
                 echo ${#FAILED_ONCE[@]} failed during parallel execution, trying them in series
                 echo "python -m unittest --failfast ${FAILED_ONCE[@]}"
                 if python -m unittest --failfast ${FAILED_ONCE[@]}; then
