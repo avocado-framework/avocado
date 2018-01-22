@@ -194,8 +194,8 @@ popd
 %{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
 %{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
-%{__install} -d -m 0755 %{buildroot}%{_libexecdir}/avocado
-%{__install} -m 0755 libexec/avocado* %{buildroot}%{_libexecdir}/avocado
+%{__mkdir} -p %{buildroot}%{_libexecdir}/
+ln -s %{python_sitelib}/avocado/libexec/ %{buildroot}%{_libexecdir}/avocado
 
 %check
 %if %{with_tests}
@@ -279,6 +279,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_upload*
+%exclude %{python_sitelib}/avocado/libexec*
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
@@ -455,11 +456,8 @@ A small set of utilities to interact with Avocado from the Bourne
 Again Shell code (and possibly other similar shells).
 
 %files bash
-%{_libexecdir}/avocado/avocado-bash-utils
-%{_libexecdir}/avocado/avocado_debug
-%{_libexecdir}/avocado/avocado_error
-%{_libexecdir}/avocado/avocado_info
-%{_libexecdir}/avocado/avocado_warn
+%{python_sitelib}/avocado/libexec*
+%{_libexecdir}/avocado*
 
 %changelog
 * Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
