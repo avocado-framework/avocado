@@ -2,5 +2,6 @@ include README.rst
 include LICENSE
 include Makefile
 recursive-include avocado/etc *
+recursive-include avocado/libexec *
 recursive-include selftests *
 recursive-include examples *
