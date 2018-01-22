@@ -10,6 +10,7 @@ optional plugins:
 .. toctree::
    :maxdepth: 1
 
+   remote_runners
    results
    robot
    varianter_yaml_to_mux
