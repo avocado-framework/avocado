@@ -57,9 +57,17 @@ class xUnitSucceedTest(unittest.TestCase):
         self.junit = os.path.abspath(junit_xsd)
 
     def tearDown(self):
-        os.close(self.tmpfile[0])
-        os.remove(self.tmpfile[1])
-        shutil.rmtree(self.tmpdir)
+        errs = []
+        cleanups = (lambda: os.close(self.tmpfile[0]),
+                    lambda: os.remove(self.tmpfile[1]),
+                    lambda: shutil.rmtree(self.tmpdir))
+        for cleanup in cleanups:
+            try:
+                cleanup()
+            except Exception as exc:
+                errs.append(str(exc))
+        self.assertFalse(errs, "Failures occurred during cleanup:\n%s"
+                         % "\n".join(errs))
 
     @unittest.skipUnless(SCHEMA_CAPABLE,
                          'Unable to validate schema due to missing lxml.etree library')
