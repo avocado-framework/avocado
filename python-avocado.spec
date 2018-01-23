@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 57.0
-Release: 3%{?gitrel}%{?dist}
+Version: 58.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -460,6 +460,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jan 23 2018 Cleber Rosa <cleber@redhat.com> - 58.0-0
+- New upstream release
+
 * Sat Jan  6 2018 Cleber Rosa <cleber@redhat.com> - 57.0-3
 - Move the avocado package config files to the system location
 - Add missing configuration files for sub packages

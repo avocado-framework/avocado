@@ -1,0 +1,76 @@
+==================================
+58.0 Journey to the Christmas Star
+==================================
+
+The Avocado team is proud to present another release: Avocado version
+58.0, AKA "Journey to the Christmas Star", is now available!
+
+Release documentation: `Avocado 58.0
+<http://avocado-framework.readthedocs.io/en/58.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The :mod:`avocado.utils.vmimage` library now contains support for
+  Avocado's own JeOS image.  A nice addition given the fact that
+  it's the default image used in Avocado-VT and the latest version
+  is available in the following architectures: x86_64, aarch64, ppc64,
+  ppc64le and s390x.
+
+* Avocado packages are now available in binary "wheel" format on PyPI.
+  This brings faster, more convenient and reliable installs via
+  ``pip``.  Previously, the source-only tarballs would require the
+  source to be built on the target system, but the wheel package
+  install is mostly an unpack of the already compiled files.
+
+* The installation of Avocado from sources has improved and moved
+  towards a more "Pythonic" approach.  Installation of files in
+  "non-Pythonic locations" such as ``/etc`` are no longer attempted by
+  the Python ``setup.py`` code.  Configuration files, for instance,
+  are now considered package data files of the ``avocado`` package.
+  The end result is that installation from source works fine outside
+  virtual environments (in addition to installations *inside* virtual
+  environments).
+
+* Python 3 has been enabled, in "allow failures mode" in Avocado's CI
+  environment.  All static source code checks pass, and most of the
+  unittests (*not* the functional tests) also pass.  It's yet another
+  incremental steps towards full Python 3 support.
+
+Bug Fixes
+=========
+
+* The :mod:`avocado.utils.software_manager` library received
+  improvements with regards to downloads of source packages,
+  working around bugs in older ``yumdownloader`` versions.
+
+Internal Changes
+================
+
+* Spelling exceptions and fixes were added throughout and now ``make
+  spell`` is back to a good shape.
+
+* The Avocado CI checks (Travis-CI) are now run in parallel, similar
+  to the stock ``make check`` behavior.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/57.0...58.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=kjWilUSdEnw>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/lHnzJT06/1208-sprint-theme-journey-to-the-christmas-star

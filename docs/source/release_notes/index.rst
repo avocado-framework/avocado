@@ -16,6 +16,7 @@ released.
 .. toctree::
    :maxdepth: 1
 
+   58_0
    57_0
    56_0
    55_0
