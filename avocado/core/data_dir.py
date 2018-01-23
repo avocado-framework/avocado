@@ -27,6 +27,7 @@ The general reasoning to find paths is:
 """
 import os
 import shutil
+import sys
 import time
 import tempfile
 
@@ -34,7 +35,8 @@ from six.moves import xrange as range
 
 from . import job_id
 from . import settings
-from .output import LOG_JOB
+from . import exit_codes
+from .output import LOG_JOB, LOG_UI
 from ..utils import path as utils_path
 from ..utils.data_structures import Borg
 
@@ -167,6 +169,11 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
     start_time = time.strftime('%Y-%m-%dT%H.%M')
     if base_dir is None:
         base_dir = get_logs_dir()
+        if not base_dir:
+            LOG_UI.error("No writable location for logs found, use "
+                         "'avocado config --datadir' to get the "
+                         "locations and check system permissions.")
+            sys.exit(exit_codes.AVOCADO_FAIL)
     if not os.path.exists(base_dir):
         utils_path.init_dir(base_dir)
     # Stand alone tests handling
