@@ -185,8 +185,8 @@ Accessing test data files
 =========================
 
 Some tests can depend on data files, external to the test file itself.
-Avocado provides an mechanism an a test API that makes it really easy
-to access such files: :meth:`get_data() <avocado.core.test.TestData.get_data>`.
+Avocado provides a test API that makes it really easy to access such
+files: :meth:`get_data() <avocado.core.test.TestData.get_data>`.
 
 For Avocado tests (that is, ``INSTRUMENTED`` tests)
 :meth:`get_data() <avocado.core.test.TestData.get_data>` allows test data files
@@ -753,7 +753,9 @@ Test Output Check and Output Record Mode
 
 In a lot of occasions, you want to go simpler: just check if the output of a
 given test matches an expected output.  In order to help with this common
-use case, Avocado provides the ``--output-check-record`` option::
+use case, Avocado provides the ``--output-check-record`` option:
+
+.. code-block:: none
 
   --output-check-record {none,stdout,stderr,both,combined,all}
                         Record the output produced by each test (from stdout
@@ -1278,7 +1280,9 @@ Then you implement your actual test using that derived class, in
             self.log('Testing something even more important')
 
 
-If you try to list the tests in that file, this is what you'll get::
+If you try to list the tests in that file, this is what you'll get:
+
+.. code-block:: none
 
     scripts/avocado list mytest.py -V
     Type       Test      Tag(s)
@@ -1317,7 +1321,9 @@ the example below::
             self.log('Testing something even more important')
 
 
-Now, trying to list the tests on the ``mytest.py`` file again::
+Now, trying to list the tests on the ``mytest.py`` file again:
+
+.. code-block:: none
 
     scripts/avocado list mytest.py -V
     Type         Test                   Tag(s)

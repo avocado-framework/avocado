@@ -80,6 +80,14 @@ introduced by the next LTS version are:
 
 * Sysinfo collection can now be enabled on a test level basis.
 
+* The locations of ``/etc`` (config) and ``/usr/libexec`` (libexec)
+  files changed to live within the pkg_data (eg.
+  ``/usr/lib/python2.7/site-packages/avocado/etc``) by default
+  in order to not to modify files outside the package dir, which
+  allowes shipping wheel packages and user installation. Distributions
+  might still modify this to better follow their conventions (eg.
+  for RPM the original locations are used)
+
 Complete list of changes
 ========================
 
