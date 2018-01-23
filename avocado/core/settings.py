@@ -198,10 +198,16 @@ class Settings(object):
                         for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
                             self.process_config_path(extra_file)
             if not config_local:
-                path.init_dir(_config_dir_local)
-                with open(config_path_local, 'w') as config_local_fileobj:
-                    config_local_fileobj.write('# You can use this file to override configuration values from '
-                                               '%s and %s\n' % (config_path_system, _config_dir_system_extra))
+                try:
+                    path.init_dir(_config_dir_local)
+                    with open(config_path_local, 'w') as config_local_fileobj:
+                        content = ("# You can use this file to override "
+                                   "configuration values from '%s and %s\n"
+                                   % (config_path_system,
+                                      _config_dir_system_extra))
+                        config_local_fileobj.write(content)
+                except IOError:     # Some users can't write it (docker)
+                    pass
             else:
                 self.process_config_path(config_path_local)
         else:
