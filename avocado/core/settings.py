@@ -182,21 +182,20 @@ class Settings(object):
                                           config_path_local,
                                           config_path_intree,
                                           config_path_pkg])
+            # First try in-tree config
             if config_intree:
-                # In this case, respect only the intree config
                 self.process_config_path(config_path_intree)
                 if config_intree_extra:
                     for extra_file in glob.glob(os.path.join(_config_path_intree_extra, '*.conf')):
                         self.process_config_path(extra_file)
                 self.intree = True
-            else:
-                # In this case, load first the global config, then the
-                # local config overrides the global one
-                if config_system:
-                    self.process_config_path(config_path_system)
-                    if config_system_extra:
-                        for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
-                            self.process_config_path(extra_file)
+            # Override with system config
+            if config_system:
+                self.process_config_path(config_path_system)
+                if config_system_extra:
+                    for extra_file in glob.glob(os.path.join(_config_dir_system_extra, '*.conf')):
+                        self.process_config_path(extra_file)
+            # And the local config
             if not config_local:
                 path.init_dir(_config_dir_local)
                 with open(config_path_local, 'w') as config_local_fileobj:
