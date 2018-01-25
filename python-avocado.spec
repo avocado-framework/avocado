@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 58.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -116,6 +116,9 @@ these days a framework) to perform automated testing.
 sed -e "s/'libvirt-python'//" -i optional_plugins/runner_vm/setup.py
 
 %build
+%if 0%{?rhel} == 7
+sed -e "s/'six>=1.10.0'/'six>=1.9.0'/" -i setup.py
+%endif
 %{__python} setup.py build
 pushd optional_plugins/html
 %{__python} setup.py build
@@ -460,6 +463,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jan 23 2018 Cleber Rosa <cleber@redhat.com> - 58.0-1
+- Require a lower six version on EL7
+
 * Tue Jan 23 2018 Cleber Rosa <cleber@redhat.com> - 58.0-0
 - New upstream release
 
