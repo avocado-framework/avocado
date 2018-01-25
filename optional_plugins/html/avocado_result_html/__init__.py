@@ -82,7 +82,8 @@ class ReportModel(object):
         return self.result.warned
 
     def rate(self):
-        total = float(self.result.tests_total)
+        total = float(self.result.tests_total - self.result.skipped -
+                      self.result.cancelled)
         succeeded = float(self.result.passed + self.result.warned)
         if total > 0:
             pr = 100 * (succeeded / total)
