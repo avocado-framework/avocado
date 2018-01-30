@@ -38,7 +38,7 @@ class MultiplexTests(unittest.TestCase):
         if tests:
             exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "
                    "INTERRUPT 0" % tests)
-            self.assertIn(exp, result.stdout, "%s not in stdout:\n%s"
+            self.assertIn(exp, result.stdout_text, "%s not in stdout:\n%s"
                           % (exp, result))
         return result
 
@@ -52,7 +52,7 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = '%s variants -m nonexist' % AVOCADO
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn('No such file or directory', result.stderr)
+        self.assertIn('No such file or directory', result.stderr_text)
 
     def test_mplex_debug(self):
         cmd_line = ('%s variants -c -d -m '
@@ -63,7 +63,7 @@ class MultiplexTests(unittest.TestCase):
                     % AVOCADO)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn(DEBUG_OUT, result.stdout)
+        self.assertIn(DEBUG_OUT, result.stdout_text)
 
     def test_run_mplex_noid(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -106,10 +106,10 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn("(2/8) passtest.py:PassTest.test;medium", result.stdout)
+        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout_text)
+        self.assertIn("(2/8) passtest.py:PassTest.test;medium", result.stdout_text)
         self.assertIn("(8/8) failtest.py:FailTest.test;longest",
-                      result.stdout)
+                      result.stdout_text)
 
     def test_run_mplex_failtest_tests_per_variant(self):
         cmd_line = ("%s run --job-results-dir %s --sysinfo=off "
@@ -119,10 +119,10 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn("(2/8) failtest.py:FailTest.test;short", result.stdout)
+        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout_text)
+        self.assertIn("(2/8) failtest.py:FailTest.test;short", result.stdout_text)
         self.assertIn("(8/8) failtest.py:FailTest.test;longest",
-                      result.stdout)
+                      result.stdout_text)
 
     def test_run_double_mplex(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -155,15 +155,15 @@ class MultiplexTests(unittest.TestCase):
 
             msg_lines = msg.splitlines()
             msg_header = '[stdout] Custom variable: %s' % msg_lines[0]
-            self.assertIn(msg_header, result.stdout,
+            self.assertIn(msg_header, result.stdout_text,
                           "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
-                          % (msg_header, "\n  ".join(result.stdout.splitlines())))
+                          % (msg_header, "\n  ".join(result.stdout_text.splitlines())))
             for msg_remain in msg_lines[1:]:
-                self.assertIn('[stdout] %s' % msg_remain, result.stdout,
+                self.assertIn('[stdout] %s' % msg_remain, result.stdout_text,
                               "Multiplexed variable should produce:"
                               "\n  %s\nwhich is not present in the output:\n  %s"
-                              % (msg_remain, "\n  ".join(result.stdout.splitlines())))
+                              % (msg_remain, "\n  ".join(result.stdout_text.splitlines())))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
