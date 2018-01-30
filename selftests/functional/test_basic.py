@@ -858,6 +858,51 @@ class RunnerSimpleTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
+class RunnerSimpleTestStatus(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+
+        self.config_file = script.TemporaryScript('avocado.conf',
+                                                  "[simpletests.status]\n"
+                                                  "warn_regex = ^WARN$\n"
+                                                  "skip_regex = ^SKIP$\n")
+        self.config_file.save()
+
+        self.warn_script = script.TemporaryScript('avocado_warn.sh',
+                                                  "#!/bin/sh\necho WARN",
+                                                  'avocado_simpletest_'
+                                                  'functional')
+        self.warn_script.save()
+
+        self.skip_script = script.TemporaryScript('avocado_warn.sh',
+                                                  "#!/bin/sh\necho SKIP",
+                                                  'avocado_simpletest_'
+                                                  'functional')
+        self.skip_script.save()
+
+        os.chdir(basedir)
+
+    def test_simpletest_warn(self):
+        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+                    ' %s --json -' % (AVOCADO, self.config_file.path,
+                                      self.tmpdir, self.warn_script.path))
+        result = process.system_output(cmd_line, ignore_status=True)
+        json_results = json.loads(result)
+        self.assertEquals(json_results['tests'][0]['status'], 'WARN')
+
+    def test_simpletest_skip(self):
+        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+                    ' %s --json -' % (AVOCADO, self.config_file.path,
+                                      self.tmpdir, self.skip_script.path))
+        result = process.system_output(cmd_line, ignore_status=True)
+        json_results = json.loads(result)
+        self.assertEquals(json_results['tests'][0]['status'], 'SKIP')
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+
 class ExternalRunnerTest(unittest.TestCase):
 
     def setUp(self):
