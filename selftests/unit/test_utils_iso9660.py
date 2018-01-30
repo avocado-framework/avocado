@@ -30,7 +30,7 @@ class BaseIso9660(unittest.TestCase):
                   due to ast loader we can't just define a base-class.
         """
         self.assertEqual(self.iso.read("file"),
-                         "file content\n")
+                         b"file content\n")
         dst = os.path.join(self.tmpdir, "file")
         self.iso.copy(os.path.join("Dir", "in_dir_file"), dst)
         self.assertEqual(open(dst).read(), "content of in-dir-file\n")
@@ -49,10 +49,11 @@ class BaseIso9660(unittest.TestCase):
         base = self.iso.mnt_dir
         dir_path = os.path.join(base, "Dir")
         self.assertTrue(os.path.isdir(dir_path))
-        self.assertEqual(open(os.path.join(base, "file")).read(),
-                         "file content\n")
-        self.assertEqual(open(os.path.join(base, "Dir", "in_dir_file")).read(),
-                         "content of in-dir-file\n")
+        self.assertEqual(bytes(open(os.path.join(base, "file"), 'rb').read()),
+                         b"file content\n")
+        in_dir_file_path = os.path.join(base, "Dir", "in_dir_file")
+        self.assertEqual(bytes(open(in_dir_file_path, 'rb').read()),
+                         b"content of in-dir-file\n")
         self.iso.close()
         self.assertFalse(os.path.exists(base), "the mnt_dir is suppose to be "
                          "destroyed after iso.close()")
