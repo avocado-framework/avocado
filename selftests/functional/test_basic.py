@@ -858,6 +858,50 @@ class RunnerSimpleTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
 
+class RunnerSimpleTestStatus(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
+
+        self.config_file = script.TemporaryScript('avocado.conf',
+                                                  "[simpletests.status]\n"
+                                                  "warn_regex = ^WARN$\n"
+                                                  "skip_regex = ^SKIP$\n")
+        self.config_file.save()
+        os.chdir(basedir)
+
+    def test_simpletest_status(self):
+        warn_script = script.TemporaryScript('avocado_warn.sh',
+                                             "#!/bin/sh\necho WARN",
+                                             'avocado_simpletest_'
+                                             'functional')
+        warn_script.save()
+        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+                    ' %s --json -' % (AVOCADO, self.config_file.path,
+                                      self.tmpdir, warn_script.path))
+        result = process.system_output(cmd_line, ignore_status=True)
+        json_results = json.loads(result)
+        self.assertEquals(json_results['tests'][0]['status'], 'WARN')
+        warn_script.remove()
+
+        skip_script = script.TemporaryScript('avocado_skip.sh',
+                                             "#!/bin/sh\necho SKIP",
+                                             'avocado_simpletest_'
+                                             'functional')
+        skip_script.save()
+        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+                    ' %s --json -' % (AVOCADO, self.config_file.path,
+                                      self.tmpdir, skip_script.path))
+        result = process.system_output(cmd_line, ignore_status=True)
+        json_results = json.loads(result)
+        self.assertEquals(json_results['tests'][0]['status'], 'SKIP')
+        skip_script.remove()
+
+    def tearDown(self):
+        self.config_file.remove()
+        shutil.rmtree(self.tmpdir)
+
+
 class ExternalRunnerTest(unittest.TestCase):
 
     def setUp(self):
