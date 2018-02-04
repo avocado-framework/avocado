@@ -57,6 +57,9 @@ class FilterSet(set):
         return super(FilterSet, self).update([self.__normalize(item)
                                               for item in items])
 
+    def __str__(self):
+        return 'FilterSet([%s])' % ', '.join(["'%s'" % i for i in self])
+
 
 class TreeEnvironment(dict):
 
