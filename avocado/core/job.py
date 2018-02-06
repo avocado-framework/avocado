@@ -68,11 +68,15 @@ class Job(object):
     along with setup operations and event recording.
     """
 
-    def __init__(self, args=None):
+    def __init__(self, args=None, base_tmpdir=None):
         """
         Creates an instance of Job class.
 
         :param args: an instance of :class:`argparse.Namespace`.
+        :param base_tmpdir: base location for job tmpdir, only used when
+                            keep_tmp is off. In case it's base_tmpdir is None
+                            new one will be created and cleaned after
+                            execution, otherwise it's preserved.
         """
         if args is None:
             args = argparse.Namespace()
@@ -145,15 +149,15 @@ class Job(object):
         self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
         output.log_plugin_failures(self._result_events_dispatcher.load_failures)
 
-        # Checking whether we will keep the Job tmp_dir or not.
-        # If yes, we set the basedir for a stable location.
-        basedir = None
-        keep_tmp = getattr(self.args, "keep_tmp", None)
-        if keep_tmp == 'on':
-            basedir = self.logdir
-        # Calling get_tmp_dir() early as the basedir will be set
-        # in the first call.
-        data_dir.get_tmp_dir(basedir)
+        self.__remove_tmpdir = False
+        # Ignore the base_tmpdir in case keep_tmp is enabled
+        if getattr(self.args, "keep_tmp", None) == "on":
+            base_tmpdir = self.logdir
+        elif base_tmpdir is None:
+            # We are creating new base tmpdir, we have to remove it
+            self.__remove_tmpdir = True
+        self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
+                                       dir=base_tmpdir)
 
     def _setup_job_results(self):
         """
@@ -400,9 +404,8 @@ class Job(object):
         for line in lines.splitlines():
             LOG_JOB.info(line)
 
-    @staticmethod
-    def _log_tmp_dir():
-        LOG_JOB.info('Temporary dir: %s', data_dir.get_tmp_dir())
+    def _log_tmp_dir(self):
+        LOG_JOB.info('Temporary dir: %s', self.tmpdir)
         LOG_JOB.info('')
 
     def _log_job_debug_info(self, variants):
@@ -550,6 +553,20 @@ class Job(object):
                 self.time_end = time.time()
                 self.time_elapsed = self.time_end - self.time_start
             self.__stop_job_logging()
+            self.cleanup()
+
+    def cleanup(self):
+        """
+        Cleanup the not-persistent environment created by this job
+        """
+        if self.__remove_tmpdir and os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+
+    def __del__(self):
+        """
+        Make sure we cleanup after not-executed jobs.
+        """
+        self.cleanup()
 
 
 class TestProgram(object):
