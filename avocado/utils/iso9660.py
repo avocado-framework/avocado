@@ -223,11 +223,11 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         cmd = 'isoinfo -i %s -d' % path
         output = process.system_output(cmd)
 
-        if re.findall("\nJoliet", output):
+        if b"\nJoliet" in output:
             self.joliet = True
-        if re.findall("\nRock Ridge signatures", output):
+        if b"\nRock Ridge signatures" in output:
             self.rock_ridge = True
-        if re.findall("\nEl Torito", output):
+        if b"\nEl Torito" in output:
             self.el_torito = True
 
     @staticmethod
@@ -287,8 +287,8 @@ class Iso9660IsoRead(MixInMntDirMount, BaseIso9660):
         temp_path = os.path.join(self.temp_dir, path)
         cmd = 'iso-read -i %s -e %s -o %s' % (self.path, path, temp_path)
         process.run(cmd)
-        with open(temp_path) as temp_file:
-            return temp_file.read()
+        with open(temp_path, 'rb') as temp_file:
+            return bytes(temp_file.read())
 
     def copy(self, src, dst):
         cmd = 'iso-read -i %s -e %s -o %s' % (self.path, src, dst)
@@ -331,8 +331,8 @@ class Iso9660Mount(BaseIso9660):
         :rtype: str
         """
         full_path = os.path.join(self.mnt_dir, path)
-        with open(full_path) as file_to_read:
-            return file_to_read.read()
+        with open(full_path, 'rb') as file_to_read:
+            return bytes(file_to_read.read())
 
     def copy(self, src, dst):
         """
