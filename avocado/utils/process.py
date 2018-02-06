@@ -531,7 +531,6 @@ class SubProcess(object):
                 else:
                     stderr = subprocess.PIPE
                 self._popen = subprocess.Popen(cmd,
-                                               stdin=subprocess.PIPE,
                                                stdout=subprocess.PIPE,
                                                stderr=stderr,
                                                shell=self.shell,
@@ -701,16 +700,6 @@ class SubProcess(object):
         if rc is not None:
             self._fill_results(rc)
         return rc
-
-    def stdin_write(self, value, flush=False):
-        """
-        Call the subprocess stdin.write() method for any input to subprocess
-        Optionally flush the input buffer
-        """
-        self._init_subprocess()
-        self._popen.stdin.write(value)
-        if flush:
-            self._popen.stdin.flush()
 
     def stop(self):
         """
