@@ -128,7 +128,7 @@ publish_results() {
             description="ALL PASS"
         fi
     fi
-    [ "$DRY" ] || url=$(fpaste --rawurl -x 604800 $tmp)
+    [ "$DRY" ] || url=$(fpaste -x 604800 $tmp | tail -n 1)
     set_status "$BASE_URL" "$commit" "$status" "${url%%/raw/}" "$description"
 }
 
