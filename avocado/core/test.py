@@ -60,7 +60,7 @@ TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'status', 'running', 'paused',
                          'time_start', 'time_elapsed', 'time_end',
                          'fail_reason', 'fail_class', 'traceback',
-                         'params', 'timeout')
+                         'params', 'timeout', 'whiteboard')
 
 
 class RawFileHandler(logging.FileHandler):
