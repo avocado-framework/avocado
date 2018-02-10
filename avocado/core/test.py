@@ -1101,9 +1101,6 @@ class SimpleTest(Test):
 
     DATA_SOURCES = ["variant", "file"]
 
-    re_avocado_log = re.compile(r'^\d\d:\d\d:\d\d DEBUG\| \[stdout\]'
-                                r' \d\d:\d\d:\d\d WARN \|')
-
     def __init__(self, name, params=None, base_logdir=None, job=None):
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, job=job)
@@ -1146,12 +1143,51 @@ class SimpleTest(Test):
         except process.CmdError as details:
             self._log_detailed_cmd_info(details.result)
             raise exceptions.TestFail(details)
-        with open(self.logfile) as logfile:
-            for line in logfile:
-                if self.re_avocado_log.match(line):
-                    raise exceptions.TestWarn("Test passed but there were warnings"
-                                              " on stdout during execution. Check "
-                                              "the log for details.")
+
+        warn_regex = settings.get_value('simpletests.status',
+                                        'warn_regex',
+                                        key_type='str',
+                                        default=None)
+
+        warn_location = settings.get_value('simpletests.status',
+                                           'warn_location',
+                                           default='all')
+
+        skip_regex = settings.get_value('simpletests.status',
+                                        'skip_regex',
+                                        key_type='str',
+                                        default=None)
+
+        skip_location = settings.get_value('simpletests.status',
+                                           'skip_location',
+                                           default='all')
+
+        # Keeping compatibility with 'avocado_warn' libexec
+        for regex in [warn_regex, r'^\d\d:\d\d:\d\d WARN \|']:
+            warn_msg = ("Test passed but there were warnings on %s during "
+                        "execution. Check the log for details.")
+            if regex is not None:
+                re_warn = re.compile(regex)
+                if warn_location in ['all', 'stdout']:
+                    if re_warn.search(result.stdout):
+                        raise exceptions.TestWarn(warn_msg % 'stdout')
+
+                if warn_location in ['all', 'stderr']:
+                    if re_warn.search(result.stderr):
+                        raise exceptions.TestWarn(warn_msg % 'stderr')
+
+        if skip_regex is not None:
+            re_skip = re.compile(skip_regex)
+            skip_msg = ("Test passed but %s indicates test was skipped. "
+                        "Check the log for details.")
+
+            if skip_location in ['all', 'stdout']:
+                if re_skip.search(result.stdout):
+                    raise exceptions.TestSkipError(skip_msg % 'stdout')
+
+            if warn_location in ['all', 'stderr']:
+                if re_skip.search(result.stderr):
+                    raise exceptions.TestSkipError(skip_msg % 'stderr')
 
     def test(self):
         """

@@ -1753,6 +1753,42 @@ by ``avocado exec-path`` (if any).  Also, the example test
 .. tip:: These extensions may be available as a separate package.  For
          RPM packages, look for the ``bash`` sub-package.
 
+SIMPLE Tests Status
+===================
+
+With SIMPLE tests, Avocado checks the exit code of the test to determine
+whether the test PASSed or FAILed.
+
+If your test exits with exit code 0 but you still want to set a different test
+status in some conditions, Avocado can search a given regular expression in
+the test outputs and, based on that, set the status to WARN or SKIP.
+
+To use that feature, you have to set the proper keys in the configuration
+file. For instance, to set the test status to SKIP when the test outputs
+a line like this: '11:08:24 Test Skipped'::
+
+    [simpletests.output]
+    skip_regex = ^\d\d:\d\d:\d\d Test Skipped$
+
+That configuration will make avocado to search the
+`Python Regular Expression <http://docs.python.org/2.7/howto/regex.html>`__
+on  both stdout and stderr. If you want to limit the search for only one of
+them, there's another key for that configuration, resulting in::
+
+    [simpletests.output]
+    skip_regex = ^\d\d:\d\d:\d\d Test Skipped$
+    skip_location = stderr
+
+The equivalent settings can be present for the WARN status. For instance,
+if you want to set the test status to WARN when the test outputs a line
+starting with string ``WARNING:``, the configuration file will look like this::
+
+    [simpletests.output]
+    skip_regex = ^\d\d:\d\d:\d\d Test Skipped$
+    skip_location = stderr
+    warn_regex = ^WARNING:
+    warn_location = all
+
 Wrap Up
 =======
 
