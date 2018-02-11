@@ -41,7 +41,7 @@ import sys
 from avocado import Test
 from avocado.utils import process
 
-print "top_print"
+print("top_print")
 sys.stdout.write("top_stdout\\n")
 sys.stderr.write("top_stderr\\n")
 process.run("/bin/echo top_process")
@@ -49,13 +49,13 @@ process.run("/bin/echo top_process")
 class OutputTest(Test):
     def __init__(self, *args, **kwargs):
         super(OutputTest, self).__init__(*args, **kwargs)
-        print "init_print"
+        print("init_print")
         sys.stdout.write("init_stdout\\n")
         sys.stderr.write("init_stderr\\n")
         process.run("/bin/echo init_process")
 
     def test(self):
-        print "test_print"
+        print("test_print")
         sys.stdout.write("test_stdout\\n")
         sys.stderr.write("test_stderr\\n")
         process.run("/bin/echo -n test_process > /dev/stdout",
@@ -66,7 +66,7 @@ class OutputTest(Test):
                     shell=True)
 
     def __del__(self):
-        print "del_print"
+        print("del_print")
         sys.stdout.write("del_stdout\\n")
         sys.stderr.write("del_stderr\\n")
         process.run("/bin/echo -n del_process")
