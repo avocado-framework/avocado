@@ -2,8 +2,7 @@ import argparse
 import shutil
 import tempfile
 import unittest
-
-from multiprocessing import queues
+import multiprocessing
 
 from avocado.core.job import Job
 from avocado.core.result import Result
@@ -28,7 +27,11 @@ class TestRunnerQueue(unittest.TestCase):
         :param factory: the Avocado Test factory
         :return: the last queue message from the test
         """
-        queue = queues.SimpleQueue()
+        if hasattr(multiprocessing, 'get_context'):
+            ctx = multiprocessing.get_context('spawn')
+            queue = multiprocessing.queues.SimpleQueue(ctx=ctx)     # pylint: disable=E1123
+        else:
+            queue = multiprocessing.queues.SimpleQueue()
         runner = TestRunner(job=self.job, result=self.result)
         runner._run_test(factory, queue)
         while not queue.empty():
