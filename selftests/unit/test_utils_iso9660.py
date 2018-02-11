@@ -47,7 +47,8 @@ class BaseIso9660(unittest.TestCase):
                   due to ast loader we can't just define a base-class.
         """
         base = self.iso.mnt_dir
-        os.path.isdir(os.path.join(base, "Dir"))
+        dir_path = os.path.join(base, "Dir")
+        self.assertTrue(os.path.isdir(dir_path))
         self.assertEqual(open(os.path.join(base, "file")).read(),
                          "file content\n")
         self.assertEqual(open(os.path.join(base, "Dir", "in_dir_file")).read(),
