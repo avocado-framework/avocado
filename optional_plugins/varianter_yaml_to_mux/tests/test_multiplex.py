@@ -35,7 +35,7 @@ class MultiplexTests(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Command %s did not return rc "
                          "%d:\n%s" % (cmd_line, expected_rc, result))
-        if tests:
+        if tests is not None:
             exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "
                    "INTERRUPT 0" % tests)
             self.assertIn(exp, result.stdout, "%s not in stdout:\n%s"
