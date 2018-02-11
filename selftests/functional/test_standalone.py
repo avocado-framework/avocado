@@ -1,4 +1,5 @@
 import os
+import sys
 import unittest
 
 from avocado.core import exit_codes
@@ -45,7 +46,10 @@ class StandaloneTests(unittest.TestCase):
         cmd_line = './examples/tests/errortest_nasty.py -r'
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
-        exc = "NastyException: Nasty-string-like-exception"
+        if sys.version_info[0] == 3:
+            exc = "errortest_nasty.NastyException: Nasty-string-like-exception"
+        else:
+            exc = "NastyException: Nasty-string-like-exception"
         count = result.stdout.count("\n%s" % exc)
         self.assertEqual(count, 2, "Exception \\n%s should be present twice in"
                          "the log (once from the log, second time when parsing"
@@ -62,8 +66,11 @@ class StandaloneTests(unittest.TestCase):
         cmd_line = './examples/tests/errortest_nasty3.py -r'
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty3')
-        self.assertIn("TestError: <errortest_nasty3.NastyException instance at ",
-                      result.stdout)
+        if sys.version_info[0] == 3:
+            exc = "TypeError: exceptions must derive from BaseException"
+        else:
+            exc = "TestError: <errortest_nasty3.NastyException instance at "
+        self.assertIn(exc, result.stdout)
 
     def test_errortest(self):
         cmd_line = './examples/tests/errortest.py -r'
