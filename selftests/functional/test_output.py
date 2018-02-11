@@ -166,7 +166,7 @@ class OutputTest(unittest.TestCase):
         def _check_output(path, exps, name):
             i = 0
             end = len(exps)
-            with open(path) as output_file:
+            with open(path, 'rb') as output_file:
                 output_file_content = output_file.read()
                 output_file.seek(0)
                 for line in output_file:
@@ -193,11 +193,11 @@ class OutputTest(unittest.TestCase):
                 "[stderr] test_stderr", "[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
-        with open(os.path.join(testdir, "stdout")) as stdout_file:
-            self.assertEqual("test_print\ntest_stdout\ntest_process__test_stdout__",
+        with open(os.path.join(testdir, "stdout"), 'rb') as stdout_file:
+            self.assertEqual(b"test_print\ntest_stdout\ntest_process__test_stdout__",
                              stdout_file.read())
-        with open(os.path.join(testdir, "stderr")) as stderr_file:
-            self.assertEqual("test_stderr\n__test_stderr__",
+        with open(os.path.join(testdir, "stderr"), 'rb') as stderr_file:
+            self.assertEqual(b"test_stderr\n__test_stderr__",
                              stderr_file.read())
 
         # Now run the same test, but with combined output
