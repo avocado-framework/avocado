@@ -1225,8 +1225,8 @@ class ExternalRunnerTest(SimpleTest):
         pre_cwd = os.getcwd()
         new_cwd = None
         try:
-            self.log.info('Running test with the external level test '
-                          'runner: "%s"', self.external_runner.runner)
+            self.log.info('Running test with the external test runner: "%s"',
+                          self.external_runner.runner)
 
             # Change work directory if needed by the external runner
             if self.external_runner.chdir == 'runner':
