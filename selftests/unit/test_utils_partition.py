@@ -31,7 +31,7 @@ class TestPartition(unittest.TestCase):
     Unit tests for avocado.utils.partition
     """
 
-    @unittest.skipIf(not os.path.isdir('/proc/mounts'),
+    @unittest.skipIf(not os.path.isfile('/proc/mounts'),
                      'system does not have /proc/mounts')
     @unittest.skipIf(not process.can_sudo('mount'),
                      'current user must be allowed to run "mount" under sudo')
