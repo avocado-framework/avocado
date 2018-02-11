@@ -235,31 +235,6 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skipIf(not CC_BINARY,
-                     "C compiler is required by the underlying datadir.py test")
-    def test_datadir_alias(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
-                    'datadir.py' % (AVOCADO, self.tmpdir))
-        process.run(cmd_line)
-
-    def test_shell_alias(self):
-        """ Tests that .sh files are also executable via alias """
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
-                    'env_variables.sh' % (AVOCADO, self.tmpdir))
-        process.run(cmd_line)
-
-    @unittest.skipIf(not CC_BINARY,
-                     "C compiler is required by the underlying datadir.py test")
-    def test_datadir_noalias(self):
-        cmd_line = ('%s run --sysinfo=off --job-results-dir %s examples/tests/datadir.py '
-                    'examples/tests/datadir.py' % (AVOCADO, self.tmpdir))
-        process.run(cmd_line)
-
-    def test_runner_noalias(self):
-        cmd_line = ("%s run --sysinfo=off --job-results-dir %s examples/tests/passtest.py "
-                    "examples/tests/passtest.py" % (AVOCADO, self.tmpdir))
-        process.run(cmd_line)
-
     def test_runner_test_with_local_imports(self):
         mylib = script.TemporaryScript(
             'mylib.py',
