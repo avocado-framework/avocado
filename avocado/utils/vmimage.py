@@ -240,7 +240,7 @@ class JeosImageProvider(ImageProviderBase):
             arch = '64'
 
         super(JeosImageProvider, self).__init__(version, build, arch)
-        self.url_versions = 'http://avocado-project.org/data/assets/jeos/'
+        self.url_versions = 'https://avocado-project.org/data/assets/jeos/'
         self.url_images = self.url_versions + '{version}/'
         self.image_pattern = 'jeos-{version}-{arch}.qcow2.xz$'
 

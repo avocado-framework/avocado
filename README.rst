@@ -104,7 +104,7 @@ Term Stability) releases available from its own package repository.
 To use it, first get the package repositories configuration file by
 running the following command::
 
-    sudo curl http://avocado-project.org/data/repos/avocado-fedora.repo -o /etc/yum.repos.d/avocado.repo
+    sudo curl https://avocado-project.org/data/repos/avocado-fedora.repo -o /etc/yum.repos.d/avocado.repo
 
 Now check if you have the ``avocado`` and ``avocado-lts`` repositories configured by running::
 
@@ -149,11 +149,11 @@ following command should do it::
     yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 Then you must use the Avocado project RHEL repo
-(http://avocado-project.org/data/repos/avocado-el.repo).
+(https://avocado-project.org/data/repos/avocado-el.repo).
 Running the following command should give you the basic Avocado
 installation ready::
 
-    curl http://avocado-project.org/data/repos/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
+    curl https://avocado-project.org/data/repos/avocado-el.repo -o /etc/yum.repos.d/avocado.repo
     yum install python-avocado
 
 Other available packages (depending on the Avocado version) may include:
