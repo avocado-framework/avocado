@@ -170,10 +170,10 @@ class Command(Collectible):
                              env=env)
         logf_path = os.path.join(logdir, self.logf)
         if self._compress_log:
-            with gzip.GzipFile(logf_path, 'w') as logf:
+            with gzip.GzipFile(logf_path, 'wb') as logf:
                 logf.write(result.stdout)
         else:
-            with open(logf_path, 'w') as logf:
+            with open(logf_path, 'wb') as logf:
                 logf.write(result.stdout)
 
 
