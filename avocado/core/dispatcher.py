@@ -115,6 +115,61 @@ class Dispatcher(EnabledExtensionManager):
     def store_load_failure(manager, entrypoint, exception):
         manager.load_failures.append((entrypoint, exception))
 
+    def map_method_with_return(self, method_name, *args, **kwargs):
+        """
+        The same as `map_method` but additionally reports the list of returned
+        values and optionally deepcopies the passed arguments
+
+        :param method_name: Name of the method to be called on each ext
+        :param args: Arguments to be passed to all called functions
+        :param kwargs: Key-wordarguments to be passed to all called functions
+                        if `"deepcopy" == True` is present in kwargs the
+                        args and kwargs are deepcopied before passing it
+                        to each called function.
+        """
+        deepcopy = kwargs.pop("deepcopy", False)
+        ret = []
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    if deepcopy:
+                        copied_args = [copy.deepcopy(arg) for arg in args]
+                        copied_kwargs = copy.deepcopy(kwargs)
+                        ret.append(method(*copied_args, **copied_kwargs))
+                    else:
+                        ret.append(method(*args, **kwargs))
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:     # catch any exception pylint: disable=W0702
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
+                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
+                             method_name, ext.name, sys.exc_info()[1])
+        return ret
+
+    def map_method(self, method_name, *args):
+        """
+        Maps method_name on each extension in case the extension has the attr
+
+        :param method_name: Name of the method to be called on each ext
+        :param args: Arguments to be passed to all called functions
+        """
+        for ext in self.extensions:
+            try:
+                if hasattr(ext.obj, method_name):
+                    method = getattr(ext.obj, method_name)
+                    method(*args)
+            except SystemExit:
+                raise
+            except KeyboardInterrupt:
+                raise
+            except:     # catch any exception pylint: disable=W0702
+                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
+                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
+                             method_name, ext.name, sys.exc_info()[1])
+
 
 class CLIDispatcher(Dispatcher):
 
@@ -154,39 +209,11 @@ class JobPrePostDispatcher(Dispatcher):
     def __init__(self):
         super(JobPrePostDispatcher, self).__init__('avocado.plugins.job.prepost')
 
-    def map_method(self, method_name, job):
-        for ext in self.extensions:
-            try:
-                if hasattr(ext.obj, method_name):
-                    method = getattr(ext.obj, method_name)
-                    method(job)
-            except SystemExit:
-                raise
-            except KeyboardInterrupt:
-                raise
-            except:
-                job.log.error('Error running method "%s" of plugin "%s": %s',
-                              method_name, ext.name, sys.exc_info()[1])
-
 
 class ResultDispatcher(Dispatcher):
 
     def __init__(self):
         super(ResultDispatcher, self).__init__('avocado.plugins.result')
-
-    def map_method(self, method_name, result, job):
-        for ext in self.extensions:
-            try:
-                if hasattr(ext.obj, method_name):
-                    method = getattr(ext.obj, method_name)
-                    method(result, job)
-            except SystemExit:
-                raise
-            except KeyboardInterrupt:
-                raise
-            except:
-                job.log.error('Error running method "%s" of plugin "%s": %s',
-                              method_name, ext.name, sys.exc_info()[1])
 
 
 class ResultEventsDispatcher(Dispatcher):
@@ -195,20 +222,6 @@ class ResultEventsDispatcher(Dispatcher):
         super(ResultEventsDispatcher, self).__init__(
             'avocado.plugins.result_events',
             invoke_kwds={'args': args})
-
-    def map_method(self, method_name, *args):
-        for ext in self.extensions:
-            try:
-                if hasattr(ext.obj, method_name):
-                    method = getattr(ext.obj, method_name)
-                    method(*args)
-            except SystemExit:
-                raise
-            except KeyboardInterrupt:
-                raise
-            except:
-                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
-                             method_name, ext.name, sys.exc_info()[1])
 
 
 class VarianterDispatcher(Dispatcher):
@@ -235,35 +248,13 @@ class VarianterDispatcher(Dispatcher):
         self.__init__()
         self.extensions = state.get("extensions")
 
-    def _map_method(self, method_name, deepcopy=False, *args, **kwargs):
-        """
-        :warning: **kwargs are not supported for deepcopy=True
-        """
-        ret = []
-        for ext in self.extensions:
-            try:
-                if hasattr(ext.obj, method_name):
-                    method = getattr(ext.obj, method_name)
-                    if deepcopy:
-                        copied_args = [copy.deepcopy(arg) for arg in args]
-                        ret.append(method(*copied_args))
-                    else:
-                        ret.append(method(*args, **kwargs))
-            except SystemExit:
-                raise
-            except KeyboardInterrupt:
-                raise
-            except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
-                LOG_UI.error('Error running method "%s" of plugin "%s": %s',
-                             method_name, ext.name, sys.exc_info()[1])
-        return ret
-
     def map_method(self, method_name, *args, **kwargs):
-        return self._map_method(method_name, False, *args, **kwargs)
+        return self.map_method_with_return(method_name, deepcopy=False, *args,
+                                           **kwargs)
 
-    def map_method_copy(self, method_name, *args):
+    def map_method_copy(self, method_name, *args, **kwargs):
         """
         The same as map_method, but use copy.deepcopy on each passed arg
         """
-        return self._map_method(method_name, True, *args)
+        return self.map_method_with_return(method_name, deepcopy=True, *args,
+                                           **kwargs)
