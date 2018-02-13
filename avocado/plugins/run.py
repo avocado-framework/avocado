@@ -17,12 +17,14 @@ Base Test Runner Plugins.
 """
 
 import argparse
+import json
 import sys
 
 from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
 from avocado.core import output
+from avocado.core import varianter
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
 from avocado.core.dispatcher import ResultDispatcher
@@ -89,6 +91,10 @@ class Run(CLICmd):
         parser.add_argument('--ignore-missing-references', choices=('on', 'off'),
                             help="Force the job execution, even if some of "
                             "the test references are not resolved to tests.")
+        parser.add_argument("--dump-variants", default=None,
+                            help="Dump the Variants to a JSON file")
+        parser.add_argument("--load-variants", default=None,
+                            help="Load the Variants from a JSON file")
 
         sysinfo_default = settings.get_value('sysinfo.collect',
                                              'enabled',
@@ -189,6 +195,16 @@ class Run(CLICmd):
 
         :param args: Command line args received from the run subparser.
         """
+        load_variants = getattr(args, 'load_variants', None)
+        if load_variants is not None:
+            try:
+                with open(load_variants, 'r') as var_file:
+                    setattr(args, "avocado_variants",
+                            varianter.Varianter(state=json.load(var_file)))
+            except IOError:
+                LOG_UI.error('Cannot read %s', load_variants)
+                sys.exit(exit_codes.AVOCADO_FAIL)
+
         if 'output_check_record' in args:
             process.OUTPUT_CHECK_RECORD_MODE = getattr(args,
                                                        'output_check_record',
@@ -224,4 +240,13 @@ class Run(CLICmd):
             result_dispatcher.map_method('render',
                                          job_instance.result,
                                          job_instance)
+        # Export the serialized avocado_variants
+        if args.dump_variants is not None:
+            try:
+                with open(args.dump_variants, 'w') as variants_file:
+                    json.dump(args.avocado_variants.dump(), variants_file)
+            except IOError:
+                LOG_UI.error("Cannot write %s", args.dump_variants)
+                sys.exit(exit_codes.AVOCADO_FAIL)
+
         return job_run
