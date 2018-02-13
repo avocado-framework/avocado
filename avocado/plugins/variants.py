@@ -13,6 +13,7 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Lukas Doktor <ldoktor@redhat.com>
 
+import json
 import sys
 
 from avocado.core import exit_codes
@@ -65,6 +66,8 @@ class Variants(CLICmd):
         parser.add_argument('-c', '--contents', action='store_true',
                             default=False, help="[obsoleted by --variants] "
                             "Shows the node content (variables)")
+        parser.add_argument('--json-variants-dump', default=None,
+                            help="Dump the Variants to a JSON serialized file")
         env_parser = parser.add_argument_group("environment view options")
         env_parser.add_argument('-d', '--debug', action='store_true',
                                 dest="varianter_debug", default=False,
@@ -109,6 +112,15 @@ class Variants(CLICmd):
         else:
             if args.contents:
                 variants += 2
+
+        # Export the serialized avocado_variants
+        if args.json_variants_dump is not None:
+            try:
+                with open(args.json_variants_dump, 'w') as variants_file:
+                    json.dump(args.avocado_variants.dump(), variants_file)
+            except IOError:
+                LOG_UI.error("Cannot write %s", args.json_variants_dump)
+                sys.exit(exit_codes.AVOCADO_FAIL)
 
         # Produce the output
         lines = args.avocado_variants.to_str(summary=summary,

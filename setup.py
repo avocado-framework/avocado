@@ -67,6 +67,7 @@ if __name__ == '__main__':
                   'replay = avocado.plugins.replay:Replay',
                   'tap = avocado.plugins.tap:TAP',
                   'zip_archive = avocado.plugins.archive:ArchiveCLI',
+                  'json_variants = avocado.plugins.json_variants:JsonVariantsCLI',
                   ],
               'avocado.plugins.cli.cmd': [
                   'config = avocado.plugins.config:Config',
@@ -95,6 +96,9 @@ if __name__ == '__main__':
                   'tap = avocado.plugins.tap:TAPResult',
                   'journal = avocado.plugins.journal:JournalResult',
                   ],
+              'avocado.plugins.varianter': [
+                  'json_variants = avocado.plugins.json_variants:JsonVariants',
+                 ],
               },
           zip_safe=False,
           test_suite='selftests',
