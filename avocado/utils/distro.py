@@ -367,7 +367,7 @@ class SUSEProbe(Probe):
         version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
         version_id = None
 
-        with open(self.check_file) as check_file:
+        with open(self.CHECK_FILE) as check_file:
             for line in check_file:
                 match = version_id_re.match(line)
                 if match:
