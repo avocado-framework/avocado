@@ -15,9 +15,17 @@ import unittest
 import psutil
 import pkg_resources
 
-from StringIO import StringIO
+try:
+    from io import BytesIO
+except:
+    from BytesIO import BytesIO
 
-from lxml import etree
+try:
+    from lxml import etree
+    SCHEMA_CAPABLE = True
+except ImportError:
+    SCHEMA_CAPABLE = False
+
 from six import iteritems
 from six.moves import xrange as range
 
@@ -1141,6 +1149,8 @@ class ParseXMLError(Exception):
 
 class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
 
+    @unittest.skipUnless(SCHEMA_CAPABLE,
+                         'Unable to validate schema due to missing lxml.etree library')
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         junit_xsd = os.path.join(os.path.dirname(__file__),
@@ -1163,10 +1173,10 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
             raise ParseXMLError("Failed to parse content: %s\n%s" %
                                 (detail, xml_output))
 
-        with open(self.junit, 'r') as f:
+        with open(self.junit, 'rb') as f:
             xmlschema = etree.XMLSchema(etree.parse(f))
 
-        self.assertTrue(xmlschema.validate(etree.parse(StringIO(xml_output))),
+        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml_output))),
                         "Failed to validate against %s, message:\n%s" %
                         (self.junit,
                          xmlschema.error_log.filter_from_errors()))
