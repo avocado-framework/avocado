@@ -35,7 +35,7 @@ class SysInfoTest(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
-        output = result.stdout + result.stderr
+        output = result.stdout_text + result.stderr_text
         sysinfo_dir = None
         for line in output.splitlines():
             if 'JOB LOG' in line:
@@ -61,7 +61,7 @@ class SysInfoTest(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
-        output = result.stdout + result.stderr
+        output = result.stdout_text + result.stderr_text
         sysinfo_dir = None
         for line in output.splitlines():
             if 'JOB LOG' in line:

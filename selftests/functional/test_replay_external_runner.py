@@ -47,8 +47,8 @@ class ReplayExtRunnerTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = "Overriding the replay external-runner with the "\
-              "--external-runner value given on the command line."
+        msg = (b"Overriding the replay external-runner with the "
+               b"--external-runner value given on the command line.")
         self.assertIn(msg, result.stderr)
 
     def tearDown(self):

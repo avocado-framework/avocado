@@ -91,23 +91,23 @@ class UnittestCompat(unittest.TestCase):
         cmd_line = '%s %s' % (sys.executable, self.unittest_script_good)
         result = process.run(cmd_line)
         self.assertEqual(0, result.exit_status)
-        self.assertIn('Ran 1 test in', result.stderr)
+        self.assertIn(b'Ran 1 test in', result.stderr)
 
     def test_run_fail(self):
         cmd_line = '%s %s' % (sys.executable, self.unittest_script_fail)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(1, result.exit_status)
-        self.assertIn('Ran 1 test in', result.stderr)
-        self.assertIn('This test is supposed to fail', result.stderr)
-        self.assertIn('FAILED (failures=1)', result.stderr)
+        self.assertIn(b'Ran 1 test in', result.stderr)
+        self.assertIn(b'This test is supposed to fail', result.stderr)
+        self.assertIn(b'FAILED (failures=1)', result.stderr)
 
     def test_run_error(self):
         cmd_line = '%s %s' % (sys.executable, self.unittest_script_error)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(1, result.exit_status)
-        self.assertIn('Ran 1 test in', result.stderr)
-        self.assertIn('This test is supposed to error', result.stderr)
-        self.assertIn('FAILED (errors=1)', result.stderr)
+        self.assertIn(b'Ran 1 test in', result.stderr)
+        self.assertIn(b'This test is supposed to error', result.stderr)
+        self.assertIn(b'FAILED (errors=1)', result.stderr)
 
     def tearDown(self):
         self.unittest_script_error.remove()
