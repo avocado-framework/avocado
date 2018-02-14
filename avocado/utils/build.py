@@ -23,10 +23,11 @@ def run_make(path, make='make', env=None, extra_args='', ignore_status=None,
     """
     Run make, adding MAKEOPTS to the list of options.
 
+    :param path: directory from where to run make
     :param make: what make command name to use.
     :param env: dictionary with environment variables to be set before
                 calling make (e.g.: CFLAGS).
-    :param extra: extra command line arguments to pass to make.
+    :param extra_args: extra command line arguments to pass to make.
     :param allow_output_check: Whether to log the command stream outputs
                                (stdout and stderr) of the make process in
                                the test stream files. Valid values: 'stdout',
