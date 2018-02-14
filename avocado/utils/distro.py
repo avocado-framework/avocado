@@ -316,7 +316,8 @@ class CentosProbe(RedHatProbe):
     CHECK_FILE = '/etc/redhat-release'
     CHECK_FILE_CONTAINS = 'CentOS'
     CHECK_FILE_DISTRO_NAME = 'centos'
-    CHECK_VERSION_REGEX = re.compile(r'CentOS.* release (\d{1,2})\.(\d{1,2}).*')
+    CHECK_VERSION_REGEX = re.compile(r'CentOS.* release '
+                                     r'(\d{1,2})\.(\d{1,2}).*')
 
 
 class FedoraProbe(RedHatProbe):
@@ -367,7 +368,7 @@ class SUSEProbe(Probe):
         version_id_re = re.compile(r'VERSION_ID="([\d\.]*)"')
         version_id = None
 
-        with open(self.check_file) as check_file:
+        with open(self.CHECK_FILE) as check_file:
             for line in check_file:
                 match = version_id_re.match(line)
                 if match:
