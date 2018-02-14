@@ -270,7 +270,6 @@ The output might look like this::
     INSTRUMENTED /usr/share/avocado/tests/sleeptest.py
     INSTRUMENTED /usr/share/avocado/tests/synctest.py
     INSTRUMENTED /usr/share/avocado/tests/timeouttest.py
-    INSTRUMENTED /usr/share/avocado/tests/trinity.py
     INSTRUMENTED /usr/share/avocado/tests/warntest.py
     INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
     ...
