@@ -110,9 +110,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_tamper_stdout(self):
         self._check_output_record_all()
-        tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
+        tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
-        with open(stdout_file, 'w') as stdout_file_obj:
+        with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
@@ -125,9 +125,9 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_tamper_combined(self):
         self._check_output_record_combined()
-        tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
+        tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
         output_file = os.path.join("%s.data/output.expected" % self.output_script.path)
-        with open(output_file, 'w') as output_file_obj:
+        with open(output_file, 'wb') as output_file_obj:
             output_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --xunit -'
                     % (AVOCADO, self.tmpdir, self.output_script.path))
@@ -140,15 +140,15 @@ class RunnerSimpleTest(unittest.TestCase):
 
     def test_output_diff(self):
         self._check_output_record_all()
-        tampered_msg_stdout = "I PITY THE FOOL THAT STANDS ON STDOUT!"
-        tampered_msg_stderr = "I PITY THE FOOL THAT STANDS ON STDERR!"
+        tampered_msg_stdout = b"I PITY THE FOOL THAT STANDS ON STDOUT!"
+        tampered_msg_stderr = b"I PITY THE FOOL THAT STANDS ON STDERR!"
 
         stdout_file = "%s.data/stdout.expected" % self.output_script.path
-        with open(stdout_file, 'w') as stdout_file_obj:
+        with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg_stdout)
 
         stderr_file = "%s.data/stderr.expected" % self.output_script.path
-        with open(stderr_file, 'w') as stderr_file_obj:
+        with open(stderr_file, 'wb') as stderr_file_obj:
             stderr_file_obj.write(tampered_msg_stderr)
 
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s --json -'
@@ -166,32 +166,32 @@ class RunnerSimpleTest(unittest.TestCase):
         stderr_diff = os.path.join(json_result['tests'][0]['logdir'],
                                    'stderr.diff')
 
-        with open(stdout_diff, 'r') as stdout_diff_obj:
+        with open(stdout_diff, 'rb') as stdout_diff_obj:
             stdout_diff_content = stdout_diff_obj.read()
-        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDOUT!',
+        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!',
                       stdout_diff_content)
-        self.assertIn('+Hello, avocado!', stdout_diff_content)
+        self.assertIn(b'+Hello, avocado!', stdout_diff_content)
 
-        with open(stderr_diff, 'r') as stderr_diff_obj:
+        with open(stderr_diff, 'rb') as stderr_diff_obj:
             stderr_diff_content = stderr_diff_obj.read()
-        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDERR!',
+        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!',
                       stderr_diff_content)
-        self.assertIn('+Hello, stderr!', stderr_diff_content)
+        self.assertIn(b'+Hello, stderr!', stderr_diff_content)
 
-        with open(job_log, 'r') as job_log_obj:
+        with open(job_log, 'rb') as job_log_obj:
             job_log_content = job_log_obj.read()
-        self.assertIn('Stdout Diff:', job_log_content)
-        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
-        self.assertIn('+Hello, avocado!', job_log_content)
-        self.assertIn('Stdout Diff:', job_log_content)
-        self.assertIn('-I PITY THE FOOL THAT STANDS ON STDERR!', job_log_content)
-        self.assertIn('+Hello, stderr!', job_log_content)
+        self.assertIn(b'Stdout Diff:', job_log_content)
+        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDOUT!', job_log_content)
+        self.assertIn(b'+Hello, avocado!', job_log_content)
+        self.assertIn(b'Stdout Diff:', job_log_content)
+        self.assertIn(b'-I PITY THE FOOL THAT STANDS ON STDERR!', job_log_content)
+        self.assertIn(b'+Hello, stderr!', job_log_content)
 
     def test_disable_output_check(self):
         self._check_output_record_all()
-        tampered_msg = "I PITY THE FOOL THAT STANDS ON MY WAY!"
+        tampered_msg = b"I PITY THE FOOL THAT STANDS ON MY WAY!"
         stdout_file = os.path.join("%s.data/stdout.expected" % self.output_script.path)
-        with open(stdout_file, 'w') as stdout_file_obj:
+        with open(stdout_file, 'wb') as stdout_file_obj:
             stdout_file_obj.write(tampered_msg)
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off %s '
                     '--output-check=off --xunit -'
