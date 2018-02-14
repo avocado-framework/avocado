@@ -123,7 +123,7 @@ class XUnitResult(Result):
         xunit_path = getattr(job.args, 'xunit_output', 'None')
         if xunit_path is not None:
             if xunit_path == '-':
-                LOG_UI.debug(content)
+                LOG_UI.debug(content.decode('UTF-8'))
             else:
                 with open(xunit_path, 'wb') as xunit_file:
                     xunit_file.write(content)
