@@ -113,8 +113,11 @@ class TAPResult(ResultEvents):
         if state.get('text_output'):
             for line in state['text_output'].splitlines():
                 self.__write("#   %s", line)
-        if status in ("PASS", "WARN"):
+        if status == "PASS":
             self.__write("ok %s %s", result.tests_run, name)
+        elif status == "WARN":
+            self.__write("ok %s %s  # Warnings were printed into warn log",
+                         result.tests_run, name)
         elif status in ("SKIP", "CANCEL"):
             self.__write("ok %s %s  # SKIP %s", result.tests_run, name,
                          state.get("fail_reason"))
