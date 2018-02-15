@@ -18,7 +18,7 @@
 import datetime
 import os
 import string
-from xml.dom.minidom import Document, Element
+from xml.dom.minidom import Document
 
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.output import LOG_UI
@@ -54,13 +54,13 @@ class XUnitResult(Result):
         return testcase
 
     def _create_failure_or_error(self, document, test, element_type):
-        element = Element(element_type)
+        element = document.createElement(element_type)
         element.setAttribute('type', self._get_attr(test, 'fail_class'))
         element.setAttribute('message', self._get_attr(test, 'fail_reason'))
         traceback_content = self._escape_cdata(test.get('traceback', self.UNKNOWN))
         traceback = document.createCDATASection(traceback_content)
         element.appendChild(traceback)
-        system_out = Element('system-out')
+        system_out = document.createElement('system-out')
         try:
             with open(test.get("logfile"), "r") as logfile_obj:
                 text_output = logfile_obj.read()
@@ -88,7 +88,7 @@ class XUnitResult(Result):
             if status in ('PASS', 'WARN'):
                 pass
             elif status == 'SKIP':
-                testcase.appendChild(Element('skipped'))
+                testcase.appendChild(document.createElement('skipped'))
             elif status == 'FAIL':
                 element, system_out = self._create_failure_or_error(document,
                                                                     test,
@@ -96,7 +96,7 @@ class XUnitResult(Result):
                 testcase.appendChild(element)
                 testcase.appendChild(system_out)
             elif status == 'CANCEL':
-                testcase.appendChild(Element('skipped'))
+                testcase.appendChild(document.createElement('skipped'))
             else:
                 element, system_out = self._create_failure_or_error(document,
                                                                     test,
