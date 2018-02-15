@@ -405,7 +405,7 @@ def tree_view(root, verbose=None, use_utf8=None):
             down_right = charset['DownRight']
             right = charset['Right']
         out = [node.name]
-        if verbose >= 2 and node.is_leaf:
+        if verbose is not None and verbose >= 2 and node.is_leaf:
             values = itertools.chain(iteritems(node.environment),
                                      [("filter-only", _)
                                       for _ in node.environment.filter_only],
@@ -466,7 +466,7 @@ def tree_view(root, verbose=None, use_utf8=None):
         down_right = charset['DownRight']
         right = charset['Right']
     out = []
-    if (verbose >= 2) and root.is_leaf:
+    if verbose is not None and verbose >= 2 and root.is_leaf:
         values = iteritems(root.environment)
     elif verbose in (1, 3):
         values = iteritems(root.value)

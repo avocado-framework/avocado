@@ -49,7 +49,8 @@ class ReplayFailfastTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = 'Overriding the replay failfast with the --failfast value given on the command line.'
+        msg = (b'Overriding the replay failfast with the --failfast value '
+               b'given on the command line.')
         self.assertIn(msg, result.stderr)
 
     def tearDown(self):

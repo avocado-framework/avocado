@@ -39,8 +39,8 @@ class ArgumentParsingTest(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          'Avocado did not return rc %d:\n%s' % (expected_rc, result))
-        subcommand_error_msg = 'avocado run: error: unrecognized arguments: '\
-                               '--whacky-argument'
+        subcommand_error_msg = (b'avocado run: error: unrecognized arguments: '
+                                b'--whacky-argument')
         self.assertIn(subcommand_error_msg, result.stderr)
 
 

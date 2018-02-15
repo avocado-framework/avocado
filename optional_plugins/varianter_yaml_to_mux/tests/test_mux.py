@@ -2,9 +2,10 @@ import copy
 import itertools
 import os
 import pickle
+import sys
 import unittest
-import yaml
 
+import yaml
 from six import iteritems
 
 import avocado_varianter_yaml_to_mux as yaml_to_mux
@@ -420,8 +421,13 @@ class TestMultipleLoaders(unittest.TestCase):
         debug = yaml_to_mux.create_from_yaml([yaml_url], debug=True)
         self.assertEqual(type(debug), mux.MuxTreeNodeDebug)
         # Debug nodes are of generated "NamedTreeNodeDebug" type
-        self.assertEqual("<class 'avocado_varianter_yaml_to_mux.NamedTreeNodeDebug'>",
-                         str(type(debug.children[0])))
+        if sys.version_info[0] == 3:
+            children_type = ("<class 'avocado_varianter_yaml_to_mux."
+                             "get_named_tree_cls.<locals>.NamedTreeNodeDebug'>")
+        else:
+            children_type = ("<class 'avocado_varianter_yaml_to_mux."
+                             "NamedTreeNodeDebug'>")
+        self.assertEqual(children_type, str(type(debug.children[0])))
         plain = yaml.load("foo: bar")
         self.assertEqual(type(plain), dict)
 

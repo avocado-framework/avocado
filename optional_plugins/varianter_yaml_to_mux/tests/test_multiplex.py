@@ -12,7 +12,7 @@ basedir = os.path.abspath(basedir)
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
 
-DEBUG_OUT = """
+DEBUG_OUT = b"""
 Variant mint-debug-amd-virtio-935e:    amd@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, virtio@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, mint@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml, debug@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml
     /distro/mint:init         => systemv@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/distro/mint
     /env/debug:opt_CFLAGS     => -O0 -g@optional_plugins/varianter_yaml_to_mux/tests/.data/mux-environment.yaml:/env/debug
@@ -38,7 +38,7 @@ class MultiplexTests(unittest.TestCase):
         if tests is not None:
             exp = ("PASS %s | ERROR 0 | FAIL %s | SKIP 0 | WARN 0 | "
                    "INTERRUPT 0" % tests)
-            self.assertIn(exp, result.stdout, "%s not in stdout:\n%s"
+            self.assertIn(exp, result.stdout_text, "%s not in stdout:\n%s"
                           % (exp, result))
         return result
 
@@ -52,7 +52,7 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = '%s variants -m nonexist' % AVOCADO
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        self.assertIn('No such file or directory', result.stderr)
+        self.assertIn('No such file or directory', result.stderr_text)
 
     def test_mplex_debug(self):
         cmd_line = ('%s variants -c -d -m '
@@ -106,9 +106,9 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn("(2/8) passtest.py:PassTest.test;medium", result.stdout)
-        self.assertIn("(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
+        self.assertIn(b"(2/8) passtest.py:PassTest.test;medium", result.stdout)
+        self.assertIn(b"(8/8) failtest.py:FailTest.test;longest",
                       result.stdout)
 
     def test_run_mplex_failtest_tests_per_variant(self):
@@ -119,9 +119,9 @@ class MultiplexTests(unittest.TestCase):
                     % (AVOCADO, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, (4, 4))
-        self.assertIn("(1/8) passtest.py:PassTest.test;short", result.stdout)
-        self.assertIn("(2/8) failtest.py:FailTest.test;short", result.stdout)
-        self.assertIn("(8/8) failtest.py:FailTest.test;longest",
+        self.assertIn(b"(1/8) passtest.py:PassTest.test;short", result.stdout)
+        self.assertIn(b"(2/8) failtest.py:FailTest.test;short", result.stdout)
+        self.assertIn(b"(8/8) failtest.py:FailTest.test;longest",
                       result.stdout)
 
     def test_run_double_mplex(self):
@@ -155,15 +155,15 @@ class MultiplexTests(unittest.TestCase):
 
             msg_lines = msg.splitlines()
             msg_header = '[stdout] Custom variable: %s' % msg_lines[0]
-            self.assertIn(msg_header, result.stdout,
+            self.assertIn(msg_header, result.stdout_text,
                           "Multiplexed variable should produce:"
                           "\n  %s\nwhich is not present in the output:\n  %s"
-                          % (msg_header, "\n  ".join(result.stdout.splitlines())))
+                          % (msg_header, "\n  ".join(result.stdout_text.splitlines())))
             for msg_remain in msg_lines[1:]:
-                self.assertIn('[stdout] %s' % msg_remain, result.stdout,
+                self.assertIn('[stdout] %s' % msg_remain, result.stdout_text,
                               "Multiplexed variable should produce:"
                               "\n  %s\nwhich is not present in the output:\n  %s"
-                              % (msg_remain, "\n  ".join(result.stdout.splitlines())))
+                              % (msg_remain, "\n  ".join(result.stdout_text.splitlines())))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

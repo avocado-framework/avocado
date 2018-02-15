@@ -45,9 +45,9 @@ class DoubleFreeTest(Test):
         self.log.info(cmd_result)
         output = cmd_result.stdout + cmd_result.stderr
         if sys.platform.startswith('darwin'):
-            pattern = 'pointer being freed was not allocated'
+            pattern = b'pointer being freed was not allocated'
         else:
-            pattern = 'free(): invalid pointer'
+            pattern = b'free(): invalid pointer'
         self.assertTrue(pattern in output,
                         msg='Could not find pattern %s in output %s' %
                             (pattern, output))
