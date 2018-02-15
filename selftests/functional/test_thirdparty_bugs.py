@@ -46,6 +46,21 @@ class TestThirdPartyBugs(unittest.TestCase):
         except URLError as details:
             raise unittest.SkipTest(details)
 
+    def test_gtester_duplicates_bug(self):
+        # https://bugzilla.gnome.org/show_bug.cgi?id=793749
+        # "gtester -l" is listing tests twice
+        try:
+            issue_url = 'https://bugzilla.gnome.org/show_bug.cgi?id=793749'
+            issue_content = download.url_open(issue_url)
+            self.assertIn('<span id="static_bug_status">NEW',
+                          issue_content.read(), 'The issue %s is not NEW '
+                          'anymore. Please double check and, if already '
+                          'fixed, remove the "Avoiding duplicates" code '
+                          'from  gtester optional_plugin.' %
+                          issue_url)
+        except URLError as details:
+            raise unittest.SkipTest(details)
+
 
 if __name__ == '__main__':
     unittest.main()
