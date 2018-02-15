@@ -79,9 +79,9 @@ class JobScriptsTest(unittest.TestCase):
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertNotIn('Pre job script "%s" exited with status "1"' % touch_script,
-                         result.stderr)
+                         result.stderr_text)
         self.assertNotIn('Post job script "%s" exited with status "1"' % rm_script,
-                         result.stderr)
+                         result.stderr_text)
 
     def test_status_non_zero(self):
         """
@@ -102,7 +102,7 @@ class JobScriptsTest(unittest.TestCase):
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual('Pre job script "%s" exited with status "1"\n' % non_zero_script,
-                         result.stderr)
+                         result.stderr_text)
 
     def test_non_existing_dir(self):
         """
@@ -124,9 +124,9 @@ class JobScriptsTest(unittest.TestCase):
 
         # Pre/Post scripts failures do not (currently?) alter the exit status
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertIn('-job scripts has not been found', result.stderr)
+        self.assertIn(b'-job scripts has not been found', result.stderr)
         self.assertNotIn('Pre job script "%s" exited with status "1"' % non_zero_script,
-                         result.stderr)
+                         result.stderr_text)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

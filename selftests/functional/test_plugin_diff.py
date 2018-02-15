@@ -50,20 +50,16 @@ class DiffTests(unittest.TestCase):
                     (AVOCADO, self.jobdir, self.jobdir2))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = "# COMMAND LINE"
-        self.assertIn(msg, result.stdout)
-        msg = "-./scripts/avocado run"
-        self.assertIn(msg, result.stdout)
-        msg = "+./scripts/avocado run"
-        self.assertIn(msg, result.stdout)
+        self.assertIn(b"# COMMAND LINE", result.stdout)
+        self.assertIn(b"-./scripts/avocado run", result.stdout)
+        self.assertIn(b"+./scripts/avocado run", result.stdout)
 
     def test_diff_nocmdline(self):
         cmd_line = ('%s diff %s %s --diff-filter nocmdline' %
                     (AVOCADO, self.jobdir, self.jobdir2))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = "# COMMAND LINE"
-        self.assertNotIn(msg, result.stdout)
+        self.assertNotIn(b"# COMMAND LINE", result.stdout)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

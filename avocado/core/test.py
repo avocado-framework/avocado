@@ -1169,11 +1169,11 @@ class SimpleTest(Test):
             if regex is not None:
                 re_warn = re.compile(regex)
                 if warn_location in ['all', 'stdout']:
-                    if re_warn.search(result.stdout):
+                    if re_warn.search(result.stdout_text):
                         raise exceptions.TestWarn(warn_msg % 'stdout')
 
                 if warn_location in ['all', 'stderr']:
-                    if re_warn.search(result.stderr):
+                    if re_warn.search(result.stderr_text):
                         raise exceptions.TestWarn(warn_msg % 'stderr')
 
         if skip_regex is not None:
@@ -1182,11 +1182,11 @@ class SimpleTest(Test):
                         "Check the log for details.")
 
             if skip_location in ['all', 'stdout']:
-                if re_skip.search(result.stdout):
+                if re_skip.search(result.stdout_text):
                     raise exceptions.TestSkipError(skip_msg % 'stdout')
 
             if warn_location in ['all', 'stderr']:
-                if re_skip.search(result.stderr):
+                if re_skip.search(result.stderr_text):
                     raise exceptions.TestSkipError(skip_msg % 'stderr')
 
     def test(self):
