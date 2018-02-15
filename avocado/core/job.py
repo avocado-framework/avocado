@@ -349,7 +349,7 @@ class Job(object):
             cmd = "%s show --summary --pretty='%%H'" % git
             res = process.run(cmd, ignore_status=True, verbose=False)
             if res.exit_status == 0:
-                top_commit = res.stdout.splitlines()[0][:8]
+                top_commit = res.stdout_text.splitlines()[0][:8]
                 return " (GIT commit %s)" % top_commit
         finally:
             os.chdir(olddir)

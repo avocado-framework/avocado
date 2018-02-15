@@ -106,8 +106,8 @@ class ReplayTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = 'Invalid --replay-ignore option. Valid options are ' \
-              '(more than one allowed): variants,config'
+        msg = (b'Invalid --replay-ignore option. Valid options are '
+               b'(more than one allowed): variants,config')
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_ignorevariants(self):
@@ -119,7 +119,7 @@ class ReplayTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = 'Ignoring variants from source job with --replay-ignore.'
+        msg = b'Ignoring variants from source job with --replay-ignore.'
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_invalidstatus(self):
@@ -131,8 +131,8 @@ class ReplayTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = 'Invalid --replay-test-status option. Valid options are (more ' \
-              'than one allowed): SKIP,ERROR,FAIL,WARN,PASS,INTERRUPTED'
+        msg = (b'Invalid --replay-test-status option. Valid options are (more '
+               b'than one allowed): SKIP,ERROR,FAIL,WARN,PASS,INTERRUPTED')
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_statusfail(self):
@@ -144,7 +144,8 @@ class ReplayTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = 'RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 4 | WARN 0 | INTERRUPT 0'
+        msg = (b'RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 4 | WARN 0 | '
+               b'INTERRUPT 0')
         self.assertIn(msg, result.stdout)
 
     def test_run_replay_remotefail(self):
@@ -156,7 +157,7 @@ class ReplayTests(unittest.TestCase):
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = "Currently we don't replay jobs in remote hosts."
+        msg = b"Currently we don't replay jobs in remote hosts."
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_variants(self):
@@ -168,8 +169,8 @@ class ReplayTests(unittest.TestCase):
                     '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = ("Option `--replay-test-status` is incompatible with "
-               "`--replay-ignore variants`")
+        msg = (b"Option `--replay-test-status` is incompatible with "
+               b"`--replay-ignore variants`")
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_status_and_references(self):
@@ -181,8 +182,8 @@ class ReplayTests(unittest.TestCase):
                     '--sysinfo=off' % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_FAIL
         result = self.run_and_check(cmd_line, expected_rc)
-        msg = ("Option --replay-test-status is incompatible with "
-               "test references given on the command line.")
+        msg = (b"Option --replay-test-status is incompatible with "
+               b"test references given on the command line.")
         self.assertIn(msg, result.stderr)
 
     def test_run_replay_and_mux(self):

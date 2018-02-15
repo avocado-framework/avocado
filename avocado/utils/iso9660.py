@@ -222,12 +222,11 @@ class Iso9660IsoInfo(MixInMntDirMount, BaseIso9660):
         """
         cmd = 'isoinfo -i %s -d' % path
         output = process.system_output(cmd)
-
-        if re.findall("\nJoliet", output):
+        if b"\nJoliet" in output:
             self.joliet = True
-        if re.findall("\nRock Ridge signatures", output):
+        if b"\nRock Ridge signatures" in output:
             self.rock_ridge = True
-        if re.findall("\nEl Torito", output):
+        if b"\nEl Torito" in output:
             self.el_torito = True
 
     @staticmethod

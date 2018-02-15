@@ -25,8 +25,8 @@ class StreamsTest(unittest.TestCase):
         """
         result = process.run('%s distro' % AVOCADO)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertIn('Detected distribution', result.stdout)
-        self.assertEqual('', result.stderr)
+        self.assertIn(b'Detected distribution', result.stdout)
+        self.assertEqual(b'', result.stderr)
 
     def test_app_error_stderr(self):
         """
@@ -35,12 +35,12 @@ class StreamsTest(unittest.TestCase):
         result = process.run('%s unknown-whacky-command' % AVOCADO,
                              ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        self.assertIn("invalid choice: 'unknown-whacky-command'",
+        self.assertIn(b"invalid choice: 'unknown-whacky-command'",
                       result.stderr)
-        self.assertNotIn("invalid choice: 'unknown-whacky-command'",
+        self.assertNotIn(b"invalid choice: 'unknown-whacky-command'",
                          result.stdout)
-        self.assertIn("Avocado Test Runner", result.stdout)
-        self.assertNotIn("Avocado Test Runner", result.stderr)
+        self.assertIn(b"Avocado Test Runner", result.stdout)
+        self.assertNotIn(b"Avocado Test Runner", result.stderr)
 
     def test_other_stream_early_stdout(self):
         """
@@ -58,11 +58,11 @@ class StreamsTest(unittest.TestCase):
         for cmd, env in cmds:
             result = process.run(cmd, env=env, shell=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertIn("stevedore.extension: found extension EntryPoint.parse",
+            self.assertIn(b"stevedore.extension: found extension EntryPoint.parse",
                           result.stdout)
             self.assertIn("avocado.test: Command line: %s" % cmd,
-                          result.stdout)
-            self.assertEqual('', result.stderr)
+                          result.stdout_text)
+            self.assertEqual(b'', result.stderr)
 
     def test_test(self):
         """
@@ -76,16 +76,16 @@ class StreamsTest(unittest.TestCase):
                      ' passtest.py' % (AVOCADO, self.tmpdir))):
             result = process.run(cmd)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertNotIn("stevedore.extension: found extension EntryPoint.parse",
+            self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
                              result.stdout)
-            self.assertNotIn("stevedore.extension: found extension EntryPoint.parse",
+            self.assertNotIn(b"stevedore.extension: found extension EntryPoint.parse",
                              result.stderr)
             self.assertIn("Command line: %s" % cmd,
+                          result.stdout_text)
+            self.assertIn(b"\nSTART 1-passtest.py:PassTest.test",
                           result.stdout)
-            self.assertIn("\nSTART 1-passtest.py:PassTest.test",
-                          result.stdout)
-            self.assertIn("PASS 1-passtest.py:PassTest.test", result.stdout)
-            self.assertEqual('', result.stderr)
+            self.assertIn(b"PASS 1-passtest.py:PassTest.test", result.stdout)
+            self.assertEqual(b'', result.stderr)
 
     def test_none_success(self):
         """
@@ -99,8 +99,8 @@ class StreamsTest(unittest.TestCase):
                      'passtest.py' % (AVOCADO, self.tmpdir))):
             result = process.run(cmd)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-            self.assertEqual('', result.stdout)
-            self.assertEqual('', result.stderr)
+            self.assertEqual(b'', result.stdout)
+            self.assertEqual(b'', result.stderr)
 
     def test_none_error(self):
         """
@@ -112,8 +112,8 @@ class StreamsTest(unittest.TestCase):
                     '%s --silent unknown-whacky-command' % AVOCADO):
             result = process.run(cmd, ignore_status=True)
             self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-            self.assertEqual('', result.stdout)
-            self.assertNotEqual('', result.stderr)
+            self.assertEqual(b'', result.stdout)
+            self.assertNotEqual(b'', result.stderr)
 
     def test_custom_stream_and_level(self):
         """
