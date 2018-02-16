@@ -184,7 +184,7 @@ class RunnerOperationTest(unittest.TestCase):
                    'test_dir': os.path.join(base_dir, 'test'),
                    'data_dir': os.path.join(base_dir, 'data'),
                    'logs_dir': os.path.join(base_dir, 'logs')}
-        config = '[datadir.paths]'
+        config = '[datadir.paths]\n'
         for key, value in iteritems(mapping):
             if not os.path.isdir(value):
                 os.mkdir(value)
