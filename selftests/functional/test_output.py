@@ -157,7 +157,7 @@ class OutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        bad_string = 'double free or corruption'
+        bad_string = b'double free or corruption'
         self.assertNotIn(bad_string, output,
                          "Libc double free can be seen in avocado "
                          "doublefree output:\n%s" % output)
@@ -313,7 +313,7 @@ class OutputPluginTest(unittest.TestCase):
                                  '(--xunit)): Options ((--xunit --json)|'
                                  '(--json --xunit)) are trying to use stdout '
                                  'simultaneously\n')
-        self.assertIsNotNone(error_regex.match(result.stderr),
+        self.assertIsNotNone(error_regex.match(result.stderr_text),
                              "Missing error message from output:\n%s" %
                              result.stderr)
 
@@ -328,7 +328,7 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        error_excerpt = "HTML to stdout not supported"
+        error_excerpt = b"HTML to stdout not supported"
         self.assertIn(error_excerpt, output,
                       "Missing excerpt error message from output:\n%s" % output)
 
@@ -427,7 +427,7 @@ class OutputPluginTest(unittest.TestCase):
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
-            self.assertEqual(output, "", "Output is not empty:\n%s" % output)
+            self.assertEqual(output, b"", "Output is not empty:\n%s" % output)
             # Check if we are producing valid outputs
             with open(tmpfile2, 'r') as fp:
                 json_results = json.load(fp)
@@ -447,7 +447,7 @@ class OutputPluginTest(unittest.TestCase):
                     "--job-results-dir %s --sysinfo=off"
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
+        output = result.stdout_text + result.stderr_text
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
@@ -469,7 +469,7 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        job_id_list = re.findall('Job ID: (.*)', result.stdout,
+        job_id_list = re.findall('Job ID: (.*)', result.stdout_text,
                                  re.MULTILINE)
         self.assertTrue(job_id_list, 'No Job ID in stdout:\n%s' %
                         result.stdout)
@@ -487,7 +487,7 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertEqual(output, "")
+        self.assertEqual(output, b"")
 
     def test_default_enabled_plugins(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -588,7 +588,7 @@ class OutputPluginTest(unittest.TestCase):
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
-            self.assertEqual(output, '',
+            self.assertEqual(output, b'',
                              'After redirecting to file, output is not empty: %s' % output)
             with open(redirected_output_path, 'r') as redirected_output_file_obj:
                 redirected_output = redirected_output_file_obj.read()
@@ -617,7 +617,7 @@ class OutputPluginTest(unittest.TestCase):
                     "--job-results-dir %s "
                     "--tap -" % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line)
-        expr = '1..4'
+        expr = b'1..4'
         self.assertIn(expr, result.stdout, "'%s' not found in:\n%s"
                       % (expr, result.stdout))
 
@@ -630,9 +630,9 @@ class OutputPluginTest(unittest.TestCase):
                          ("avocado run to broken pipe did not return "
                           "rc %d:\n%s" % (expected_rc, result)))
         self.assertEqual(len(result.stderr.splitlines()), 1)
-        self.assertIn("whacky-unknown-command", result.stderr)
-        self.assertIn("not found", result.stderr)
-        self.assertNotIn("Avocado crashed", result.stderr)
+        self.assertIn(b"whacky-unknown-command", result.stderr)
+        self.assertIn(b"not found", result.stderr)
+        self.assertNotIn(b"Avocado crashed", result.stderr)
 
     def test_results_plugins_no_tests(self):
         cmd_line = ("%s run UNEXISTING --job-results-dir %s"
@@ -650,11 +650,11 @@ class OutputPluginTest(unittest.TestCase):
         self.assertFalse(os.path.exists(tap_results))
 
         # Check that no UI output was generated
-        self.assertNotIn("RESULTS    : PASS ", result.stdout)
-        self.assertNotIn("JOB TIME   :", result.stdout)
+        self.assertNotIn(b"RESULTS    : PASS ", result.stdout)
+        self.assertNotIn(b"JOB TIME   :", result.stdout)
 
         # Check that plugins do not produce errors
-        self.assertNotIn("Error running method ", result.stderr)
+        self.assertNotIn(b"Error running method ", result.stderr)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

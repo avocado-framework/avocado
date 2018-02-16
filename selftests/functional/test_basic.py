@@ -140,7 +140,7 @@ GNU_ECHO_BINARY = probe_binary('echo')
 if GNU_ECHO_BINARY is not None:
     if probe_binary('man') is not None:
         echo_manpage = process.run('man %s' % os.path.basename(GNU_ECHO_BINARY)).stdout
-        if '-e' not in echo_manpage:
+        if b'-e' not in echo_manpage:
             GNU_ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
 SLEEP_BINARY = probe_binary('sleep')
@@ -163,9 +163,9 @@ class RunnerOperationTest(unittest.TestCase):
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
-        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", result.stderr),
+        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", result.stderr_text),
                         "Version string does not match 'Avocado \\d\\.\\d:'\n"
-                        "%r" % (result.stderr))
+                        "%r" % (result.stderr_text))
 
     def test_alternate_config_datadir(self):
         """
@@ -195,9 +195,9 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('    base     ' + mapping['base_dir'], result.stdout)
-        self.assertIn('    data     ' + mapping['data_dir'], result.stdout)
-        self.assertIn('    logs     ' + mapping['logs_dir'], result.stdout)
+        self.assertIn('    base     ' + mapping['base_dir'], result.stdout_text)
+        self.assertIn('    data     ' + mapping['data_dir'], result.stdout_text)
+        self.assertIn('    logs     ' + mapping['logs_dir'], result.stdout_text)
 
     def test_runner_all_ok(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -214,8 +214,8 @@ class RunnerOperationTest(unittest.TestCase):
                     'passtest.py failtest.py passtest.py --failfast on'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn('Interrupting job (failfast).', result.stdout)
-        self.assertIn('PASS 1 | ERROR 0 | FAIL 1 | SKIP 1', result.stdout)
+        self.assertIn(b'Interrupting job (failfast).', result.stdout)
+        self.assertIn(b'PASS 1 | ERROR 0 | FAIL 1 | SKIP 1', result.stdout)
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
@@ -225,8 +225,8 @@ class RunnerOperationTest(unittest.TestCase):
                     'passtest.py badtest.py --ignore-missing-references on'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn("Unable to resolve reference(s) 'badtest.py'", result.stderr)
-        self.assertIn('PASS 1 | ERROR 0 | FAIL 0 | SKIP 0', result.stdout)
+        self.assertIn(b"Unable to resolve reference(s) 'badtest.py'", result.stderr)
+        self.assertIn(b'PASS 1 | ERROR 0 | FAIL 0 | SKIP 0', result.stdout)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
@@ -236,9 +236,9 @@ class RunnerOperationTest(unittest.TestCase):
                     'badtest.py badtest2.py --ignore-missing-references on'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        self.assertIn("Unable to resolve reference(s) 'badtest.py', 'badtest2.py'",
+        self.assertIn(b"Unable to resolve reference(s) 'badtest.py', 'badtest2.py'",
                       result.stderr)
-        self.assertEqual('', result.stdout)
+        self.assertEqual(b'', result.stdout)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
@@ -336,18 +336,16 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     '--xunit - doublefail.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         unexpected_rc = exit_codes.AVOCADO_FAIL
         self.assertNotEqual(result.exit_status, unexpected_rc,
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("TestError: Failing during tearDown. Yay!", output,
+        self.assertIn(b"TestError: Failing during tearDown. Yay!", result.stdout,
                       "Cleanup exception not printed to log output")
-        self.assertIn("TestFail: This test is supposed to fail",
-                      output,
-                      "Test did not fail with action exception:\n%s" % output)
+        self.assertIn(b"TestFail: This test is supposed to fail", result.stdout,
+                      "Test did not fail with action exception:\n%s" % result.stdout)
 
     def test_uncaught_exception(self):
         cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
@@ -357,7 +355,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
-        self.assertIn('"status": "ERROR"', result.stdout)
+        self.assertIn(b'"status": "ERROR"', result.stdout)
 
     def test_fail_on_exception(self):
         cmd_line = ("%s run --sysinfo=off --job-results-dir %s "
@@ -367,7 +365,7 @@ class RunnerOperationTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc,
                                                                 result))
-        self.assertIn('"status": "FAIL"', result.stdout)
+        self.assertIn(b'"status": "FAIL"', result.stdout)
 
     def test_exception_not_in_path(self):
         os.mkdir(os.path.join(self.tmpdir, "shared_lib"))
@@ -383,10 +381,10 @@ class RunnerOperationTest(unittest.TestCase):
         result = process.run("%s --show test run --sysinfo=off "
                              "--job-results-dir %s %s"
                              % (AVOCADO, self.tmpdir, mytest))
-        self.assertIn("mytest.py:SharedLibTest.test -> CancelExc: This "
-                      "should not crash on unpickling in runner",
+        self.assertIn(b"mytest.py:SharedLibTest.test -> CancelExc: This "
+                      b"should not crash on unpickling in runner",
                       result.stdout)
-        self.assertNotIn("Failed to read queue", result.stdout)
+        self.assertNotIn(b"Failed to read queue", result.stdout)
 
     def test_runner_timeout(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -399,10 +397,10 @@ class RunnerOperationTest(unittest.TestCase):
                             "Avocado crashed (rc %d):\n%s" % (unexpected_rc, result))
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
-        self.assertIn("Runner error occurred: Timeout reached", output,
+        self.assertIn(b"Runner error occurred: Timeout reached", output,
                       "Timeout reached message not found in the output:\n%s" % output)
         # Ensure no test aborted error messages show up
-        self.assertNotIn("TestAbortedError: Test aborted unexpectedly", output)
+        self.assertNotIn(b"TestAbortedError: Test aborted unexpectedly", output)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
@@ -411,7 +409,7 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
                     '--xunit - abort.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        excerpt = 'Test died without reporting the status.'
+        excerpt = b'Test died without reporting the status.'
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         unexpected_rc = exit_codes.AVOCADO_FAIL
         self.assertNotEqual(result.exit_status, unexpected_rc,
@@ -425,37 +423,37 @@ class RunnerOperationTest(unittest.TestCase):
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertEqual(result.stdout, '')
+        self.assertEqual(result.stdout, b'')
 
     def test_empty_args_list(self):
         cmd_line = AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        self.assertIn('error: too few arguments', result.stderr)
+        self.assertIn(b'error: too few arguments', result.stderr)
 
     def test_empty_test_list(self):
         cmd_line = '%s run --sysinfo=off --job-results-dir %s' % (AVOCADO,
                                                                   self.tmpdir)
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
-        self.assertIn('No test references provided nor any other arguments '
-                      'resolved into tests', result.stderr)
+        self.assertIn(b'No test references provided nor any other arguments '
+                      b'resolved into tests', result.stderr)
 
     def test_not_found(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s sbrubles'
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_JOB_FAIL)
-        self.assertIn('Unable to resolve reference', result.stderr)
-        self.assertNotIn('Unable to resolve reference', result.stdout)
+        self.assertIn(b'Unable to resolve reference', result.stderr)
+        self.assertNotIn(b'Unable to resolve reference', result.stdout)
 
     def test_invalid_unique_id(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s --force-job-id '
                     'foobar passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         self.assertNotEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertIn('needs to be a 40 digit hex', result.stderr)
-        self.assertNotIn('needs to be a 40 digit hex', result.stdout)
+        self.assertIn(b'needs to be a 40 digit hex', result.stderr)
+        self.assertNotIn(b'needs to be a 40 digit hex', result.stdout)
 
     def test_valid_unique_id(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -463,8 +461,8 @@ class RunnerOperationTest(unittest.TestCase):
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        self.assertNotIn('needs to be a 40 digit hex', result.stderr)
-        self.assertIn('PASS', result.stdout)
+        self.assertNotIn(b'needs to be a 40 digit hex', result.stderr)
+        self.assertIn(b'PASS', result.stdout)
 
     def test_automatic_unique_id(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
@@ -530,7 +528,7 @@ class RunnerOperationTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         self.assertIn('1-%s:MyTest.test_my_name -> TestError' % test,
-                      result.stdout)
+                      result.stdout_text)
 
     @unittest.skipIf(not READ_BINARY, "read binary not available.")
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
@@ -563,7 +561,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('passtest.py:PassTest.test:  PASS', result.stdout)
+        self.assertIn(b'passtest.py:PassTest.test:  PASS', result.stdout)
 
     def test_output_fail(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -573,7 +571,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('failtest.py:FailTest.test:  FAIL', result.stdout)
+        self.assertIn(b'failtest.py:FailTest.test:  FAIL', result.stdout)
 
     def test_output_error(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -583,7 +581,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('errortest.py:ErrorTest.test:  ERROR', result.stdout)
+        self.assertIn(b'errortest.py:ErrorTest.test:  ERROR', result.stdout)
 
     def test_output_cancel(self):
         cmd_line = ('%s run --sysinfo=off --job-results-dir %s '
@@ -593,7 +591,8 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn('PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 1',
+        self.assertIn(b'PASS 0 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | '
+                      b'INTERRUPT 0 | CANCEL 1',
                       result.stdout)
 
     @unittest.skipIf(not GNU_ECHO_BINARY,
@@ -608,10 +607,10 @@ class RunnerHumanOutputTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %s:\n%s" %
                          (expected_rc, result))
-        self.assertIn('[stdout] foo', result.stdout, result)
-        self.assertIn('[stdout] \'"', result.stdout, result)
-        self.assertIn('[stdout] bar/baz', result.stdout, result)
-        self.assertIn('PASS 1-foo\\\\n\\\'\\"\\\\nbar/baz',
+        self.assertIn(b'[stdout] foo', result.stdout, result)
+        self.assertIn(b'[stdout] \'"', result.stdout, result)
+        self.assertIn(b'[stdout] bar/baz', result.stdout, result)
+        self.assertIn(b'PASS 1-foo\\\\n\\\'\\"\\\\nbar/baz',
                       result.stdout, result)
         # logdir name should escape special chars (/)
         test_dirs = glob.glob(os.path.join(self.tmpdir, 'latest',
@@ -729,12 +728,12 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %s:\n%s" %
                          (expected_rc, result))
-        self.assertIn('DEBUG| Debug message', result.stdout, result)
-        self.assertIn('INFO | Info message', result.stdout, result)
-        self.assertIn('WARN | Warning message (should cause this test to '
-                      'finish with warning)', result.stdout, result)
-        self.assertIn('ERROR| Error message (ordinary message not changing '
-                      'the results)', result.stdout, result)
+        self.assertIn(b'DEBUG| Debug message', result.stdout, result)
+        self.assertIn(b'INFO | Info message', result.stdout, result)
+        self.assertIn(b'WARN | Warning message (should cause this test to '
+                      b'finish with warning)', result.stdout, result)
+        self.assertIn(b'ERROR| Error message (ordinary message not changing '
+                      b'the results)', result.stdout, result)
 
     @unittest.skipIf(not GNU_ECHO_BINARY, "Uses echo as test")
     def test_fs_unfriendly_run(self):
@@ -917,8 +916,8 @@ class ExternalRunnerTest(unittest.TestCase):
                     '--external-runner=/bin/sh --external-runner-chdir=test %s'
                     % (AVOCADO, self.tmpdir, self.pass_script.path))
         result = process.run(cmd_line, ignore_status=True)
-        expected_output = ('Option "--external-runner-chdir=test" requires '
-                           '"--external-runner-testdir" to be set')
+        expected_output = (b'Option "--external-runner-chdir=test" requires '
+                           b'"--external-runner-testdir" to be set')
         self.assertIn(expected_output, result.stderr)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -929,8 +928,8 @@ class ExternalRunnerTest(unittest.TestCase):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     '--external-runner=%s' % (AVOCADO, self.tmpdir, TRUE_CMD))
         result = process.run(cmd_line, ignore_status=True)
-        expected_output = ('No test references provided nor any other '
-                           'arguments resolved into tests')
+        expected_output = (b'No test references provided nor any other '
+                           b'arguments resolved into tests')
         self.assertIn(expected_output, result.stderr)
         expected_rc = exit_codes.AVOCADO_JOB_FAIL
         self.assertEqual(result.exit_status, expected_rc,
@@ -972,7 +971,8 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertNotIn('No tests were found on current tests dir', result.stdout)
+        self.assertNotIn(b'No tests were found on current tests dir',
+                         result.stdout)
 
     def test_list_error_output(self):
         cmd_line = '%s list sbrubles' % AVOCADO
@@ -981,7 +981,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn("Unable to resolve reference", result.stderr)
+        self.assertIn(b"Unable to resolve reference", result.stderr)
 
     def test_list_no_file_loader(self):
         cmd_line = ("%s list --loaders external --verbose -- "
@@ -990,12 +990,12 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
                          % (exit_codes.AVOCADO_ALL_OK, result))
-        exp = ("Type    Test                 Tag(s)\n"
-               "MISSING this-wont-be-matched \n\n"
-               "TEST TYPES SUMMARY\n"
-               "==================\n"
-               "EXTERNAL: 0\n"
-               "MISSING: 1\n")
+        exp = (b"Type    Test                 Tag(s)\n"
+               b"MISSING this-wont-be-matched \n\n"
+               b"TEST TYPES SUMMARY\n"
+               b"==================\n"
+               b"EXTERNAL: 0\n"
+               b"MISSING: 1\n")
         self.assertEqual(exp, result.stdout, "Stdout mismatch:\n%s\n\n%s"
                          % (exp, result))
 
@@ -1011,7 +1011,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK,
                          "Avocado did not return rc %d:\n%s"
                          % (exit_codes.AVOCADO_ALL_OK, result))
-        stdout_lines = result.stdout.splitlines()
+        stdout_lines = result.stdout_text.splitlines()
         self.assertIn("Tag(s)", stdout_lines[0])
         full_test_name = "%s:MyTest.test" % test
         self.assertEqual("INSTRUMENTED %s BIG_TAG_NAME" % full_test_name,
@@ -1029,7 +1029,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         if sys.version_info[:2] >= (2, 7, 0):
-            self.assertNotIn('Disabled', result.stdout)
+            self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin(self):
         cmd_line = '%s config --paginator off' % AVOCADO
@@ -1038,7 +1038,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertNotIn('Disabled', result.stdout)
+        self.assertNotIn(b'Disabled', result.stdout)
 
     def test_config_plugin_datadir(self):
         cmd_line = '%s config --datadir --paginator off' % AVOCADO
@@ -1047,7 +1047,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertNotIn('Disabled', result.stdout)
+        self.assertNotIn(b'Disabled', result.stdout)
 
     def test_disable_plugin(self):
         cmd_line = '%s plugins' % AVOCADO
@@ -1056,7 +1056,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertIn("Collect system information", result.stdout)
+        self.assertIn(b"Collect system information", result.stdout)
 
         config_content = "[plugins]\ndisable=['cli.cmd.sysinfo',]"
         config = script.TemporaryScript("disable_sysinfo_cmd.conf",
@@ -1068,7 +1068,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
             self.assertEqual(result.exit_status, expected_rc,
                              "Avocado did not return rc %d:\n%s" %
                              (expected_rc, result))
-            self.assertNotIn("Collect system information", result.stdout)
+            self.assertNotIn(b"Collect system information", result.stdout)
 
     def test_plugin_order(self):
         """
@@ -1104,7 +1104,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
         for result_plugin in result_plugins:
-            self.assertIn(result_plugin, result.stdout)
+            self.assertIn(result_plugin, result.stdout_text)
 
         config_content_zip_first = "[plugins.result]\norder=['zip_archive']"
         config_zip_first = script.TemporaryScript("zip_first.conf",
@@ -1140,7 +1140,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
-        self.assertNotIn("'Namespace' object has no attribute", result.stderr)
+        self.assertNotIn(b"'Namespace' object has no attribute", result.stderr)
 
 
 class ParseXMLError(Exception):

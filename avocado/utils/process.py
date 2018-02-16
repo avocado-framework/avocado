@@ -27,6 +27,7 @@ import shutil
 import signal
 import stat
 import subprocess
+import sys
 import threading
 import time
 
@@ -269,17 +270,35 @@ class CmdResult(object):
     :type duration: float
     :param pid: ID of the process
     :type pid: int
+    :param encoding: the encoding to use for the text version
+                     of stdout and stderr, with the default being
+                     Python's own (:func:`sys.getdefaultencoding`).
+    :type encoding: str
     """
 
     def __init__(self, command="", stdout="", stderr="",
-                 exit_status=None, duration=0, pid=None):
+                 exit_status=None, duration=0, pid=None,
+                 encoding=None):
         self.command = command
         self.exit_status = exit_status
+        #: The raw stdout (bytes)
         self.stdout = stdout
+        #: The raw stderr (bytes)
         self.stderr = stderr
         self.duration = duration
         self.interrupted = False
         self.pid = pid
+        if encoding is None:
+            encoding = sys.getdefaultencoding()
+        self.encoding = encoding
+
+    @property
+    def stdout_text(self):
+        return self.stdout.decode(self.encoding)
+
+    @property
+    def stderr_text(self):
+        return self.stderr.decode(self.encoding)
 
     def __repr__(self):
         cmd_rep = ("Command: %s\n"
@@ -1312,12 +1331,12 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type strip_trail_nl: bool
 
     :return: Command output.
-    :rtype: str
+    :rtype: bytes
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
                      sudo=sudo, ignore_bg_processes=ignore_bg_processes)
     if strip_trail_nl:
-        return cmd_result.stdout.rstrip('\n\r')
+        return cmd_result.stdout.rstrip(b'\n\r')
     return cmd_result.stdout

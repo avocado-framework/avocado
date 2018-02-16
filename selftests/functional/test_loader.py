@@ -164,7 +164,7 @@ class LoaderTestFunctional(unittest.TestCase):
         test_script.save()
         cmd_line = ('%s list -V %s' % (AVOCADO, test_script.path))
         result = process.run(cmd_line)
-        self.assertIn('%s: %s' % (exp_str, count), result.stdout)
+        self.assertIn('%s: %s' % (exp_str, count), result.stdout_text)
         test_script.remove()
 
     def _run_with_timeout(self, cmd_line, timeout):
@@ -213,7 +213,7 @@ class LoaderTestFunctional(unittest.TestCase):
                         ("Took more than 3 seconds to list tests. Loader "
                          "probably loaded/executed Python code and slept for "
                          "eleven seconds."))
-        self.assertIn('INSTRUMENTED: 2', result.stdout)
+        self.assertIn(b'INSTRUMENTED: 2', result.stdout)
 
     def test_multiple_class(self):
         self._test('multipleclasses.py', AVOCADO_TEST_MULTIPLE_CLASSES,
@@ -246,7 +246,7 @@ class LoaderTestFunctional(unittest.TestCase):
         mytest.save()
         cmd_line = "%s list -V %s" % (AVOCADO, mytest)
         result = process.run(cmd_line)
-        self.assertIn('SIMPLE: 1', result.stdout)
+        self.assertIn(b'SIMPLE: 1', result.stdout)
         # job should be able to finish under 5 seconds. If this fails, it's
         # possible that we hit the "simple test fork bomb" bug
         cmd_line = ("%s run --sysinfo=off --job-results-dir '%s' -- '%s'"
@@ -357,10 +357,10 @@ class LoaderTestFunctional(unittest.TestCase):
         """
         cmd = "%s list examples/tests/:fail" % AVOCADO
         result = process.run(cmd)
-        expected = ("INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"
-                    "INSTRUMENTED examples/tests/fail_on_exception.py:FailOnException.test\n"
-                    "INSTRUMENTED examples/tests/failtest.py:FailTest.test\n"
-                    "SIMPLE       examples/tests/failtest.sh\n")
+        expected = (b"INSTRUMENTED examples/tests/doublefail.py:DoubleFail.test\n"
+                    b"INSTRUMENTED examples/tests/fail_on_exception.py:FailOnException.test\n"
+                    b"INSTRUMENTED examples/tests/failtest.py:FailTest.test\n"
+                    b"SIMPLE       examples/tests/failtest.sh\n")
         self.assertEqual(expected, result.stdout)
 
     def tearDown(self):

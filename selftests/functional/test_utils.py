@@ -152,7 +152,7 @@ class ProcessTest(unittest.TestCase):
         proc = process.SubProcess(self.fake_uptime)
         result = proc.run()
         self.assertEqual(result.exit_status, 0, 'result: %s' % result)
-        self.assertIn('load average', result.stdout)
+        self.assertIn(b'load average', result.stdout)
 
     def tearDown(self):
         shutil.rmtree(self.base_logdir)

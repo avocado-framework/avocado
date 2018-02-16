@@ -148,10 +148,10 @@ class InterruptTest(unittest.TestCase):
 
         output = self.proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
-        self.assertIn('Interrupt requested. Waiting 2 seconds for test to '
-                      'finish (ignoring new Ctrl+C until then)', output)
+        self.assertIn(b'Interrupt requested. Waiting 2 seconds for test to '
+                      b'finish (ignoring new Ctrl+C until then)', output)
         # Make sure the Killing test subprocess message did appear
-        self.assertIn('Killing test subprocess', output)
+        self.assertIn(b'Killing test subprocess', output)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
@@ -191,7 +191,7 @@ class InterruptTest(unittest.TestCase):
                         timeout=10), 'Avocado left processes behind.')
 
         # Make sure the Interrupted test sentence is there
-        self.assertIn('Terminated\n', self.proc.stdout.read())
+        self.assertIn(b'Terminated\n', self.proc.stdout.read())
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
                      "Skipping test that take a long time to run, are "
@@ -232,10 +232,10 @@ class InterruptTest(unittest.TestCase):
 
         output = self.proc.stdout.read()
         # Make sure the Interrupted requested sentence is there
-        self.assertIn('Interrupt requested. Waiting 2 seconds for test to '
-                      'finish (ignoring new Ctrl+C until then)', output)
+        self.assertIn(b'Interrupt requested. Waiting 2 seconds for test to '
+                      b'finish (ignoring new Ctrl+C until then)', output)
         # Make sure the Killing test subprocess message is not there
-        self.assertNotIn('Killing test subprocess', output)
+        self.assertNotIn(b'Killing test subprocess', output)
 
     @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
                      "Skipping test that take a long time to run, are "
@@ -275,7 +275,7 @@ class InterruptTest(unittest.TestCase):
                         timeout=10), 'Avocado left processes behind.')
 
         # Make sure the Interrupted test sentence is there
-        self.assertIn('Terminated\n', self.proc.stdout.read())
+        self.assertIn(b'Terminated\n', self.proc.stdout.read())
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
