@@ -163,9 +163,13 @@ class RunnerOperationTest(unittest.TestCase):
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
-        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", result.stderr_text),
+        if sys.version_info[0] == 3:
+            content = result.stdout_text
+        else:
+            content = result.stderr_text
+        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", content),
                         "Version string does not match 'Avocado \\d\\.\\d:'\n"
-                        "%r" % (result.stderr_text))
+                        "%r" % (content))
 
     def test_alternate_config_datadir(self):
         """
