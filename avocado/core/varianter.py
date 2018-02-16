@@ -193,23 +193,14 @@ class Varianter(object):
 
         :param args: Parsed cmdline arguments
         """
-        defaults = self._process_default_params(args)
-        self._variant_plugins.map_method_copy("initialize", args)
-        self._variant_plugins.map_method_copy("update_defaults", defaults)
-        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
-
-    def _process_default_params(self, args):
-        """
-        Process the default params
-
-        :param args: Parsed cmdline arguments
-        """
         default_params = self.node_class()
         for default_param in itervalues(self.default_params):
             default_params.merge(default_param)
         self._default_params = default_params
-        self.default_params.clear()     # We don't need these anymore
-        return self._default_params
+        self.default_params.clear()
+        self._variant_plugins.map_method_copy("initialize", args)
+        self._variant_plugins.map_method_copy("update_defaults", self._default_params)
+        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
 
     def is_parsed(self):
         """
