@@ -186,7 +186,7 @@ class RunnerOperationTest(unittest.TestCase):
                 os.mkdir(value)
             config += "%s = %s\n" % (key, value)
         fd, config_file = tempfile.mkstemp(dir=self.tmpdir)
-        os.write(fd, config)
+        os.write(fd, config.encode())
         os.close(fd)
 
         cmd = '%s --config %s config --datadir' % (AVOCADO, config_file)
