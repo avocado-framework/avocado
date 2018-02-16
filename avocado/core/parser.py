@@ -23,7 +23,6 @@ from six import iteritems
 from . import exit_codes
 from . import varianter
 from . import settings
-from . import tree
 from .output import BUILTIN_STREAMS, BUILTIN_STREAM_SETS, LOG_UI
 from .version import VERSION
 
@@ -135,9 +134,6 @@ class Parser(object):
         # Allow overriding default params by plugins
         variants = varianter.Varianter(getattr(self.args, "varianter_debug", False))
         self.args.avocado_variants = variants
-        # FIXME: Backward compatibility params, to be removed when 36 LTS is
-        # discontinued
-        self.args.default_avocado_params = tree.TreeNode()
 
     def finish(self):
         """
