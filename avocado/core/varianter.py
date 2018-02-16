@@ -209,11 +209,6 @@ class Varianter(object):
             default_params.merge(default_param)
         self._default_params = default_params
         self.default_params.clear()     # We don't need these anymore
-        # FIXME: Backward compatibility params, to be removed when 36 LTS is
-        # discontinued
-        if (not getattr(args, "variants-skip-defaults", False) and
-                hasattr(args, "default_avocado_params")):
-            self._default_params.merge(args.default_avocado_params)
         return self._default_params
 
     def is_parsed(self):

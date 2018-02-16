@@ -181,9 +181,6 @@ class MuxPlugin(object):
         if self.root is None:
             return
 
-        # TODO: Remove when 36lts is discontinued
-        if not hasattr(self, "variant_ids"):
-            self.variant_ids = self._get_variant_ids()
         for vid, variant in itertools.izip(self.variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": variant,
