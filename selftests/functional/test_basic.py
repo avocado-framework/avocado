@@ -429,7 +429,11 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        self.assertIn(b'error: too few arguments', result.stderr)
+        if sys.version_info[0] == 3:
+            exp = b'avocado: error: the following arguments are required'
+        else:
+            exp = b'error: too few arguments'
+        self.assertIn(exp, result.stderr)
 
     def test_empty_test_list(self):
         cmd_line = '%s run --sysinfo=off --job-results-dir %s' % (AVOCADO,
