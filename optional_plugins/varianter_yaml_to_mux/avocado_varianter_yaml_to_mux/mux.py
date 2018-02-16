@@ -168,11 +168,8 @@ class MuxPlugin(object):
         self.root = root
         self.paths = paths
         self.debug = debug
-        self.variant_ids = self._get_variant_ids()
-
-    def _get_variant_ids(self):
-        return [varianter.generate_variant_id(variant)
-                for variant in MuxTree(self.root)]
+        self.variant_ids = [varianter.generate_variant_id(variant)
+                            for variant in MuxTree(self.root)]
 
     def __iter__(self):
         """
