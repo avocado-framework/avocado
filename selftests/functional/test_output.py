@@ -554,9 +554,9 @@ class OutputPluginTest(unittest.TestCase):
                 bsod_dir = None
                 json_dir = None
                 for test in json_results['tests']:
-                    if "test_bsod" in test['url']:
+                    if "test_bsod" in test['id']:
                         bsod_dir = test['logfile']
-                    elif "test_json" in test['url']:
+                    elif "test_json" in test['id']:
                         json_dir = test['logfile']
                 self.assertTrue(bsod_dir, "Failed to get test_bsod output "
                                 "directory")
