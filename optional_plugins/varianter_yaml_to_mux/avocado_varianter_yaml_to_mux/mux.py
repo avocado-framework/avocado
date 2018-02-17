@@ -168,11 +168,8 @@ class MuxPlugin(object):
         self.root = root
         self.paths = paths
         self.debug = debug
-        self.variant_ids = self._get_variant_ids()
-
-    def _get_variant_ids(self):
-        return [varianter.generate_variant_id(variant)
-                for variant in MuxTree(self.root)]
+        self.variant_ids = [varianter.generate_variant_id(variant)
+                            for variant in MuxTree(self.root)]
 
     def __iter__(self):
         """
@@ -181,9 +178,6 @@ class MuxPlugin(object):
         if self.root is None:
             return
 
-        # TODO: Remove when 36lts is discontinued
-        if not hasattr(self, "variant_ids"):
-            self.variant_ids = self._get_variant_ids()
         for vid, variant in itertools.izip(self.variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": variant,
