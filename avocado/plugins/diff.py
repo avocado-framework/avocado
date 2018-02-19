@@ -146,12 +146,12 @@ class Diff(CLICmd):
         if 'results' in args.diff_filter:
             results1 = []
             for test in job1_data['tests']:
-                test_result = '%s: %s\n' % (str(test['url']),
+                test_result = '%s: %s\n' % (str(test['id']),
                                             str(test['status']))
                 results1.append(test_result)
             results2 = []
             for test in job2_data['tests']:
-                test_result = '%s: %s\n' % (str(test['url']),
+                test_result = '%s: %s\n' % (str(test['id']),
                                             str(test['status']))
                 results2.append(test_result)
 

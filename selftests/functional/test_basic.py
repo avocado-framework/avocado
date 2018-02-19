@@ -1297,7 +1297,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
                                   'nbar/baz"', exit_codes.AVOCADO_ALL_OK, 1, 0,
                                   0, 0, external_runner=GNU_ECHO_BINARY)
         # The executed test should be this
-        self.assertEqual(data['tests'][0]['url'],
+        self.assertEqual(data['tests'][0]['id'],
                          '1--ne foo\\\\n\\\'\\"\\\\nbar/baz')
         # logdir name should escape special chars (/)
         self.assertEqual(os.path.basename(data['tests'][0]['logdir']),
