@@ -19,6 +19,7 @@ Base Test Runner Plugins.
 import argparse
 import sys
 
+from avocado.core import data_dir
 from avocado.core import exit_codes
 from avocado.core import job
 from avocado.core import loader
@@ -207,7 +208,8 @@ class Run(CLICmd):
         except ValueError as e:
             LOG_UI.error(e.message)
             sys.exit(exit_codes.AVOCADO_FAIL)
-        job_instance = job.Job(args)
+        tmpdir = data_dir.get_tmp_dir()
+        job_instance = job.Job(args, base_tmpdir=tmpdir)
         pre_post_dispatcher = JobPrePostDispatcher()
         try:
             # Run JobPre plugins
