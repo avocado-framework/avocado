@@ -17,3 +17,4 @@ optional plugins:
    varianter_pict
    yaml_loader
    golang
+   gtester
