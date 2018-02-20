@@ -25,6 +25,7 @@ import pipes
 import re
 import shutil
 import sys
+import tempfile
 import time
 import unittest
 
@@ -393,10 +394,16 @@ class Test(unittest.TestCase, TestData):
 
         self.__runner_queue = runner_queue
 
-        self.__workdir = None
+        basename = (os.path.basename(self.logdir).replace(':', '_')
+                    .replace(';', '_'))
+        base_tmpdir = getattr(job, "tmpdir", None)
+        # When tmpdir not specified by job, use logdir to preserve all data
+        if base_tmpdir is None:
+            base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
+        self.__workdir = utils_path.init_dir(base_tmpdir, basename)
         self.__srcdir_internal_access = False
         self.__srcdir_warning_logged = False
-        self.__srcdir = None
+        self.__srcdir = utils_path.init_dir(self.workdir, 'src')
 
         if self.filename:
             self.log.debug("Test metadata:")
@@ -522,11 +529,6 @@ class Test(unittest.TestCase, TestData):
 
     @property
     def workdir(self):
-        if self.__workdir is None:
-            base_logdir = os.path.basename(self.logdir)
-            safe_base_logdir = base_logdir.replace(':', '_').replace(';', '_')
-            self.__workdir = os.path.join(data_dir.get_tmp_dir(),
-                                          safe_base_logdir)
         return self.__workdir
 
     @property
@@ -541,8 +543,6 @@ class Test(unittest.TestCase, TestData):
                          "than May 11 2018. Please use the \"workdir\" "
                          "property instead.")
             self.__srcdir_warning_logged = True
-        if self.__srcdir is None:
-            self.__srcdir = utils_path.init_dir(self.workdir, 'src')
         return self.__srcdir
 
     @property
