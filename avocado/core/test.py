@@ -25,6 +25,7 @@ import pipes
 import re
 import shutil
 import sys
+import tempfile
 import time
 import unittest
 
@@ -395,8 +396,11 @@ class Test(unittest.TestCase, TestData):
 
         basename = (os.path.basename(logdir).replace(':', '_')
                     .replace(';', '_'))
-        self.__workdir = os.path.join(data_dir.get_tmp_dir(),
-                                      basename)
+        base_tmpdir = getattr(job, "tmpdir", None)
+        # When tmpdir not specified by job, use logdir to preserve all data
+        if base_tmpdir is None:
+            base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
+        self.__workdir = utils_path.init_dir(base_tmpdir, basename)
         self.__srcdir_warning_logged = False
         self.__srcdir = utils_path.init_dir(self.workdir, 'src')
 
