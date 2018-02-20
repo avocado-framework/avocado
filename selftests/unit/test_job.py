@@ -39,7 +39,37 @@ class JobTest(unittest.TestCase):
     def test_job_empty_suite(self):
         args = argparse.Namespace(base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        # Job without setup called
+        self.assertIsNone(self.job.logdir)
+        self.assertIsNone(self.job.logfile)
+        self.assertIsNone(self.job.replay_sourcejob)
+        self.assertIsNone(self.job.result)
+        self.assertIsNone(self.job.sysinfo)
+        self.assertIsNone(self.job.test_runner)
         self.assertIsNone(self.job.test_suite)
+        self.assertIsNone(self.job.tmpdir)
+        self.assertFalse(self.job._Job__remove_tmpdir)
+        self.assertEquals(self.job.args, args)
+        self.assertEquals(self.job.exitcode, exit_codes.AVOCADO_ALL_OK)
+        self.assertEquals(self.job.references, [])
+        self.assertEquals(self.job.status, "RUNNING")
+        uid = self.job.unique_id
+
+        # Job with setup called
+        self.job.setup()
+        self.assertIsNotNone(self.job.logdir)
+        self.assertIsNotNone(self.job.logfile)
+        self.assertIsNotNone(self.job.result)
+        self.assertIsNotNone(self.job.tmpdir)
+        self.assertTrue(self.job._Job__remove_tmpdir)
+        self.assertEquals(uid, self.job.unique_id)
+        self.assertEquals(self.job.status, "RUNNING")
+
+        # Calling setup twice
+        self.assertRaises(AssertionError, self.job.setup)
+
+        # Job with cleanup called
+        self.job.cleanup()
 
     def test_job_empty_has_id(self):
         args = argparse.Namespace(base_logdir=self.tmpdir)
@@ -54,6 +84,7 @@ class JobTest(unittest.TestCase):
     def test_job_create_test_suite_empty(self):
         args = argparse.Namespace(base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        self.job.setup()
         self.assertRaises(exceptions.OptionValidationError,
                           self.job.create_test_suite)
 
@@ -62,6 +93,7 @@ class JobTest(unittest.TestCase):
         args = argparse.Namespace(reference=simple_tests_found,
                                   base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        self.job.setup()
         self.job.create_test_suite()
         self.assertEqual(len(simple_tests_found), len(self.job.test_suite))
 
@@ -79,6 +111,7 @@ class JobTest(unittest.TestCase):
         args = argparse.Namespace(reference=simple_tests_found,
                                   base_logdir=self.tmpdir)
         self.job = JobFilterTime(args)
+        self.job.setup()
         self.job.create_test_suite()
         try:
             self.job.pre_tests()
@@ -91,6 +124,7 @@ class JobTest(unittest.TestCase):
         args = argparse.Namespace(reference=simple_tests_found,
                                   base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        self.job.setup()
         self.job.create_test_suite()
         self.assertEqual(self.job.run_tests(),
                          exit_codes.AVOCADO_ALL_OK)
@@ -105,6 +139,7 @@ class JobTest(unittest.TestCase):
         args = argparse.Namespace(reference=simple_tests_found,
                                   base_logdir=self.tmpdir)
         self.job = JobLogPost(args)
+        self.job.setup()
         self.job.create_test_suite()
         try:
             self.job.pre_tests()
@@ -134,6 +169,7 @@ class JobTest(unittest.TestCase):
         args = argparse.Namespace(reference=simple_tests_found,
                                   base_logdir=self.tmpdir)
         self.job = JobFilterLog(args)
+        self.job.setup()
         self.assertEqual(self.job.run(),
                          exit_codes.AVOCADO_ALL_OK)
         self.assertLessEqual(len(self.job.test_suite), 1)
@@ -144,6 +180,7 @@ class JobTest(unittest.TestCase):
     def test_job_run_account_time(self):
         args = argparse.Namespace(base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        self.job.setup()
         self.job.run()
         self.assertNotEqual(self.job.time_start, -1)
         self.assertNotEqual(self.job.time_end, -1)
@@ -152,6 +189,7 @@ class JobTest(unittest.TestCase):
     def test_job_self_account_time(self):
         args = argparse.Namespace(base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        self.job.setup()
         self.job.time_start = 10.0
         self.job.run()
         self.job.time_end = 20.0
@@ -165,6 +203,7 @@ class JobTest(unittest.TestCase):
     def test_job_dryrun_no_unique_job_id(self):
         args = argparse.Namespace(dry_run=True, base_logdir=self.tmpdir)
         self.job = job.Job(args)
+        self.job.setup()
         self.assertIsNotNone(self.job.args.unique_job_id)
 
     def test_job_no_base_logdir(self):
@@ -172,6 +211,7 @@ class JobTest(unittest.TestCase):
         with mock.patch('avocado.core.job.data_dir.get_logs_dir',
                         return_value=self.tmpdir):
             self.job = job.Job(args)
+            self.job.setup()
         self.assertTrue(os.path.isdir(self.job.logdir))
         self.assertEqual(os.path.dirname(self.job.logdir), self.tmpdir)
         self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))
@@ -179,6 +219,7 @@ class JobTest(unittest.TestCase):
     def test_job_dryrun_no_base_logdir(self):
         args = argparse.Namespace(dry_run=True)
         self.job = job.Job(args)
+        self.job.setup()
         try:
             self.assertTrue(os.path.isdir(self.job.logdir))
             self.assertTrue(os.path.isfile(os.path.join(self.job.logdir, 'id')))

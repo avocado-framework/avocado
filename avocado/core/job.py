@@ -85,9 +85,6 @@ class Job(object):
             if unique_id is None:
                 self.args.unique_job_id = "0" * 40
             self.args.sysinfo = False
-            base_logdir = getattr(self.args, "base_logdir", None)
-            if base_logdir is None:
-                self.args.base_logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
 
         unique_id = getattr(self.args, 'unique_job_id', None)
         if unique_id is None:
@@ -98,7 +95,8 @@ class Job(object):
         #: directory has not yet been created.
         self.logdir = None
         self.logfile = None
-        self._setup_job_results()
+        self.tmpdir = None
+        self.__remove_tmpdir = False
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
         mapping = {'info': logging.INFO,
@@ -112,7 +110,7 @@ class Job(object):
             self.loglevel = logging.DEBUG
 
         self.status = "RUNNING"
-        self.result = result.Result(self)
+        self.result = None
         self.sysinfo = None
         self.timeout = getattr(self.args, 'job_timeout', 0)
         #: The time at which the job has started or `-1` if it has not been
@@ -125,7 +123,6 @@ class Job(object):
         #: or `-1` if it has not been started by means of the `run()` method
         self.time_elapsed = -1
         self.__logging_handlers = {}
-        self.__start_job_logging()
         self.funcatexit = data_structures.CallbackRegister("JobExit %s"
                                                            % self.unique_id,
                                                            LOG_JOB)
@@ -146,10 +143,28 @@ class Job(object):
         self._result_events_dispatcher = dispatcher.ResultEventsDispatcher(self.args)
         output.log_plugin_failures(self._result_events_dispatcher.load_failures)
 
+    def __enter__(self):
+        self.setup()
+        return self
+
+    def __exit__(self, _exc_type, _exc_value, _traceback):
+        self.cleanup()
+
+    def setup(self):
+        """
+        Setup the temporary job handlers (dirs, global setting, ...)
+        """
+        assert self.tmpdir is None, "Job.setup() already called"
+        if getattr(self.args, "dry_run", False):  # Create the dry-run dirs
+            base_logdir = getattr(self.args, "base_logdir", None)
+            if base_logdir is None:
+                self.args.base_logdir = tempfile.mkdtemp(prefix="avocado-dry-run-")
+        self._setup_job_results()
+        self.result = result.Result(self)
+        self.__start_job_logging()
         # Use "logdir" in case "keep_tmp" is set enabled
         if getattr(self.args, "keep_tmp", None) == "on":
             base_tmpdir = self.logdir
-            self.__remove_tmpdir = False
         else:
             base_tmpdir = data_dir.get_tmp_dir()
             self.__remove_tmpdir = True
@@ -512,6 +527,7 @@ class Job(object):
         :return: Integer with overall job status. See
                  :mod:`avocado.core.exit_codes` for more information.
         """
+        assert self.tmpdir is not None, "Job.setup() not called"
         if self.time_start == -1:
             self.time_start = time.time()
         runtime.CURRENT_JOB = self
@@ -549,12 +565,12 @@ class Job(object):
             if self.time_end == -1:
                 self.time_end = time.time()
                 self.time_elapsed = self.time_end - self.time_start
-            self.__stop_job_logging()
 
     def cleanup(self):
         """
-        Cleanup the not-persistent environment created by this job
+        Cleanup the temporary job handlers (dirs, global setting, ...)
         """
+        self.__stop_job_logging()
         if self.__remove_tmpdir and os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
 
@@ -598,10 +614,10 @@ class TestProgram(object):
         self.args.standalone = True
         self.args.show = ["test"]
         output.reconfigure(self.args)
-        self.job = Job(self.args)
-        exit_status = self.job.run()
-        if self.args.remove_test_results is True:
-            shutil.rmtree(self.job.logdir)
+        with Job(self.args) as self.job:
+            exit_status = self.job.run()
+            if self.args.remove_test_results is True:
+                shutil.rmtree(self.job.logdir)
         sys.exit(exit_status)
 
     def __del__(self):
