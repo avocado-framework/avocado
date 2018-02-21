@@ -113,9 +113,8 @@ plugin::
                 "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/1-sleeptest.py:SleepTest.test/debug.log",
                 "start": 1470761622.174918,
                 "status": "PASS",
-                "test": "1-sleeptest.py:SleepTest.test",
+                "id": "1-sleeptest.py:SleepTest.test",
                 "time": 1.0020360946655273,
-                "url": "1-sleeptest.py:SleepTest.test",
                 "whiteboard": ""
             },
             {
@@ -125,9 +124,8 @@ plugin::
                 "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/2-failtest.py:FailTest.test/debug.log",
                 "start": 1470761623.192334,
                 "status": "FAIL",
-                "test": "2-failtest.py:FailTest.test",
+                "id": "2-failtest.py:FailTest.test",
                 "time": 0.0011379718780517578,
-                "url": "2-failtest.py:FailTest.test",
                 "whiteboard": ""
             },
             {
@@ -137,9 +135,8 @@ plugin::
                 "logfile": "/home/cleber/avocado/job-results/job-2016-08-09T13.53-10715c4/test-results/3-synctest.py:SyncTest.test/debug.log",
                 "start": 1470761623.208165,
                 "status": "PASS",
-                "test": "3-synctest.py:SyncTest.test",
+                "id": "3-synctest.py:SyncTest.test",
                 "time": 2.4478960037231445,
-                "url": "3-synctest.py:SyncTest.test",
                 "whiteboard": ""
             }
         ],
