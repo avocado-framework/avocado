@@ -1213,13 +1213,16 @@ class ExternalRunnerSpec(object):
 class ExternalRunnerTest(SimpleTest):
 
     def __init__(self, name, params=None, base_logdir=None, job=None,
-                 external_runner=None):
+                 external_runner=None, external_runner_argument=None):
+        if external_runner_argument is None:
+            external_runner_argument = name.name
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  job)
-        self._command = external_runner.runner + " " + self.name.name
+        self._command = "%s %s" % (external_runner.runner,
+                                   external_runner_argument)
 
     @property
     def filename(self):
@@ -1257,11 +1260,12 @@ class PythonUnittest(ExternalRunnerTest):
     Python unittest test
     """
     def __init__(self, name, params=None, base_logdir=None, job=None,
-                 test_dir=None):
+                 test_dir=None, python_unittest_module=None):
         runner = "%s -m unittest -q -c" % sys.executable
         external_runner = ExternalRunnerSpec(runner, "test", test_dir)
         super(PythonUnittest, self).__init__(name, params, base_logdir, job,
-                                             external_runner=external_runner)
+                                             external_runner=external_runner,
+                                             external_runner_argument=python_unittest_module)
 
     def _find_result(self, status="OK"):
         status_line = "[stderr] %s" % status

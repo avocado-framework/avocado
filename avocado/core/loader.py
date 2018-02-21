@@ -1044,7 +1044,9 @@ class ExternalLoader(TestLoader):
         if (not self._external_runner) or (reference is None):
             return []
         return [(test.ExternalRunnerTest, {'name': reference, 'external_runner':
-                                           self._external_runner})]
+                                           self._external_runner,
+                                           'external_runner_argument':
+                                           reference})]
 
     @staticmethod
     def get_type_label_mapping():
