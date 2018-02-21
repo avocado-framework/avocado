@@ -1101,7 +1101,11 @@ class SimpleTest(Test):
 
     DATA_SOURCES = ["variant", "file"]
 
-    def __init__(self, name, params=None, base_logdir=None, job=None):
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 executable=None):
+        if executable is None:
+            executable = name.name
+        self._filename = executable
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, job=job)
         self._data_sources_mapping = {"variant": [lambda: self.datadir,
@@ -1116,7 +1120,7 @@ class SimpleTest(Test):
         """
         Returns the name of the file (path) that holds the current test
         """
-        return os.path.abspath(self.name.name)
+        return os.path.abspath(self._filename)
 
     def _log_detailed_cmd_info(self, result):
         """

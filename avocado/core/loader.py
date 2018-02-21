@@ -879,7 +879,8 @@ class FileLoader(TestLoader):
                     # Module does not have an avocado test class inside but
                     # it's executable, let's execute it.
                     return self._make_test(test.SimpleTest, test_path,
-                                           subtests_filter=subtests_filter)
+                                           subtests_filter=subtests_filter,
+                                           executable=test_path)
                 else:
                     # Module does not have an avocado test class inside, and
                     # it's not executable. Not a Test.
@@ -896,25 +897,29 @@ class FileLoader(TestLoader):
                 # Module can't be imported, and it's executable. Let's try to
                 # execute it.
                 return self._make_test(test.SimpleTest, test_path,
-                                       subtests_filter=subtests_filter)
+                                       subtests_filter=subtests_filter,
+                                       executable=test_path)
             else:
                 return make_broken(NotATest, test_path, self.__not_test_str)
 
     @staticmethod
-    def _make_test(klass, uid, description=None, subtests_filter=None):
+    def _make_test(klass, uid, description=None, subtests_filter=None,
+                   **test_arguments):
         """
         Create test template
         :param klass: test class
         :param uid: test uid (by default used as id and name)
         :param description: Description appended to "uid" (for listing purpose)
         :param subtests_filter: optional filter of methods for avocado tests
+        :param test_arguments: arguments to be passed to the klass(test_arguments)
         """
         if subtests_filter and not subtests_filter.search(uid):
             return []
 
         if description:
             uid = "%s: %s" % (uid, description)
-        return [(klass, {'name': uid})]
+        test_arguments["name"] = uid
+        return [(klass, test_arguments)]
 
     def _make_tests(self, test_path, list_non_tests, subtests_filter=None):
         """
@@ -942,7 +947,8 @@ class FileLoader(TestLoader):
             else:
                 if os.access(test_path, os.X_OK):
                     return self._make_test(test.SimpleTest, test_path,
-                                           subtests_filter=subtests_filter)
+                                           subtests_filter=subtests_filter,
+                                           executable=test_path)
                 else:
                     return make_broken(NotATest, test_path,
                                        self.__not_test_str)
