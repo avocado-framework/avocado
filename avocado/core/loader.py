@@ -1049,26 +1049,4 @@ class ExternalLoader(TestLoader):
         return {test.ExternalRunnerTest: output.TERM_SUPPORT.healthy_str}
 
 
-class DummyLoader(TestLoader):
-
-    """
-    Dummy-runner loader class
-    """
-    name = 'dummy'
-
-    def __init__(self, args, extra_params):
-        super(DummyLoader, self).__init__(args, extra_params)
-
-    def discover(self, url, which_tests=DEFAULT):
-        return [(test.MockingTest, {'name': url})]
-
-    @staticmethod
-    def get_type_label_mapping():
-        return {test.MockingTest: 'DUMMY'}
-
-    @staticmethod
-    def get_decorator_mapping():
-        return {test.MockingTest: output.TERM_SUPPORT.healthy_str}
-
-
 loader = TestLoaderProxy()
