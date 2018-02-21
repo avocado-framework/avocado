@@ -37,7 +37,7 @@ from avocado.core.output import LOG_JOB, LOG_UI
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.runner import TestRunner
 from avocado.core.settings import settings
-from avocado.core.test import TestID
+from avocado.core.test import TestID, MockingTest
 from avocado.utils import archive
 from avocado.utils import astring
 from avocado.utils import process
@@ -180,6 +180,28 @@ def _update_fabric_env(method):
                               port=args[0].port)
         return method(*args, **kwargs)
     return wrapper
+
+
+class DummyLoader(loader.TestLoader):
+
+    """
+    Dummy-runner loader class
+    """
+    name = 'dummy'
+
+    def __init__(self, args, extra_params):
+        super(DummyLoader, self).__init__(args, extra_params)
+
+    def discover(self, url, which_tests=loader.DEFAULT):
+        return [(MockingTest, {'name': url})]
+
+    @staticmethod
+    def get_type_label_mapping():
+        return {MockingTest: 'DUMMY'}
+
+    @staticmethod
+    def get_decorator_mapping():
+        return {MockingTest: output.TERM_SUPPORT.healthy_str}
 
 
 class Remote(object):
@@ -631,5 +653,5 @@ class RemoteCLI(CLI):
         if self._check_required_args(args, 'remote_hostname',
                                      ('remote_hostname',)):
             loader.loader.clear_plugins()
-            loader.loader.register_plugin(loader.DummyLoader)
+            loader.loader.register_plugin(DummyLoader)
             args.test_runner = RemoteTestRunner
