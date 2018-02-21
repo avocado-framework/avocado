@@ -23,6 +23,9 @@ Currently supported special keys are:
    resolver args will be modified)
  * ``test_reference_resolver_extra`` - extra_params to be passed to the
    ``test_resolver_class``.
+ * ``mux_suite_test_name_prefix`` - test name prefix to be added to each
+   discovered test (is useful to distinguish between different variants
+   of the same test)
 
 Keep in mind YAML files (in Avocado) are ordered, therefor variant name won't
 re-arrange the test order. The only exception is when you use the same variant

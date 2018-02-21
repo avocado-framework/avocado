@@ -5,8 +5,10 @@
 
 timeout: !mux
     short:
+        mux_suite_test_name_prefix: "short/"
         timeout: 2
     longer:
+        mux_suite_test_name_prefix: "longer/"
         timeout: 6
     no_timeout:
 tests: !mux

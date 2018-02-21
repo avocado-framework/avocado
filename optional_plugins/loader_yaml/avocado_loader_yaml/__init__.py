@@ -112,8 +112,11 @@ class YamlTestsuiteLoader(loader.TestLoader):
                 test_loader.get_full_type_label_mapping())
             self._extra_decorator_mapping.update(
                 test_loader.get_full_decorator_mapping())
+            name_prefix = params.get("mux_suite_test_name_prefix")
             if _tests:
                 for tst in _tests:
+                    if name_prefix:
+                        tst[1]["name"] = name_prefix + tst[1]["name"]
                     tst[1]["params"] = (variant, ["/run/*"])
                 tests.extend(_tests)
         return tests
