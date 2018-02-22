@@ -360,7 +360,7 @@ class MuxTreeNode(tree.TreeNode):
                 elif ctrl.code == REMOVE_VALUE:
                     remove = []
                     regexp = re.compile(ctrl.value)
-                    for key in self.value.iterkeys():
+                    for key in iterkeys(self.value):
                         if regexp.match(key):
                             remove.append(key)
                     for key in remove:
