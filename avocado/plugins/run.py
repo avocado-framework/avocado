@@ -205,7 +205,7 @@ class Run(CLICmd):
         try:
             args.job_timeout = time_to_seconds(args.job_timeout)
         except ValueError as e:
-            LOG_UI.error(e.message)
+            LOG_UI.error(e.args[0])
             sys.exit(exit_codes.AVOCADO_FAIL)
         job_instance = job.Job(args)
         pre_post_dispatcher = JobPrePostDispatcher()
