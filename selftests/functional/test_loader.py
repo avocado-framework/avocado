@@ -280,7 +280,7 @@ class LoaderTestFunctional(unittest.TestCase):
                              % AVOCADO)
         # This has to be defined like this as pep8 complains about tailing
         # empty spaces when using """
-        self.assertRegexpMatches(result.stdout, r"Type *Test *Tag\(s\)\n"
+        self.assertRegexpMatches(result.stdout_text, r"Type *Test *Tag\(s\)\n"
                                  r"INSTRUMENTED *passtest.py:PassTest.test *"
                                  "fast\n"
                                  r"SIMPLE.*passtest.sh *\n"
