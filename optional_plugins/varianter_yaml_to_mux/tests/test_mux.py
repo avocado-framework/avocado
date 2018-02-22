@@ -127,9 +127,9 @@ class TestMuxTree(unittest.TestCase):
                   'prod']
         self.assertEqual(leaves, self.tree.get_leaves())
         # ascii contain all leaves and doesn't raise any exceptions
-        ascii = tree.tree_view(self.tree, 0, False)
+        ascii = tree.tree_view(self.tree, 0, False).decode('ascii')
         for leaf in leaves:
-            self.assertIn(leaf, ascii, "Leaf %s not in asci:\n%s"
+            self.assertIn(leaf, ascii, "Leaf %s not in ascii:\n%s"
                           % (leaf, ascii))
 
     def test_filters(self):
