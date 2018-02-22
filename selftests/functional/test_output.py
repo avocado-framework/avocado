@@ -493,7 +493,7 @@ class OutputPluginTest(unittest.TestCase):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
+        output = result.stdout_text + result.stderr_text
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
