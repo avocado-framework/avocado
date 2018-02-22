@@ -163,9 +163,13 @@ class RunnerOperationTest(unittest.TestCase):
     def test_show_version(self):
         result = process.run('%s -v' % AVOCADO, ignore_status=True)
         self.assertEqual(result.exit_status, 0)
-        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", result.stderr_text),
+        if sys.version_info[0] == 3:
+            content = result.stdout_text
+        else:
+            content = result.stderr_text
+        self.assertTrue(re.match(r"^Avocado \d+\.\d+$", content),
                         "Version string does not match 'Avocado \\d\\.\\d:'\n"
-                        "%r" % (result.stderr_text))
+                        "%r" % (content))
 
     def test_alternate_config_datadir(self):
         """
@@ -180,13 +184,13 @@ class RunnerOperationTest(unittest.TestCase):
                    'test_dir': os.path.join(base_dir, 'test'),
                    'data_dir': os.path.join(base_dir, 'data'),
                    'logs_dir': os.path.join(base_dir, 'logs')}
-        config = '[datadir.paths]'
+        config = '[datadir.paths]\n'
         for key, value in iteritems(mapping):
             if not os.path.isdir(value):
                 os.mkdir(value)
             config += "%s = %s\n" % (key, value)
         fd, config_file = tempfile.mkstemp(dir=self.tmpdir)
-        os.write(fd, config)
+        os.write(fd, config.encode())
         os.close(fd)
 
         cmd = '%s --config %s config --datadir' % (AVOCADO, config_file)
@@ -429,7 +433,11 @@ class RunnerOperationTest(unittest.TestCase):
         cmd_line = AVOCADO
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_FAIL)
-        self.assertIn(b'error: too few arguments', result.stderr)
+        if sys.version_info[0] == 3:
+            exp = b'avocado: error: the following arguments are required'
+        else:
+            exp = b'error: too few arguments'
+        self.assertIn(exp, result.stderr)
 
     def test_empty_test_list(self):
         cmd_line = '%s run --sysinfo=off --job-results-dir %s' % (AVOCADO,

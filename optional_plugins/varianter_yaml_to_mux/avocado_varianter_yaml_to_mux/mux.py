@@ -28,6 +28,7 @@ import os
 
 from six import iterkeys, iteritems
 from six.moves import xrange as range
+from six.moves import zip
 
 from avocado.core import tree
 from avocado.core import varianter
@@ -178,7 +179,7 @@ class MuxPlugin(object):
         if self.root is None:
             return
 
-        for vid, variant in itertools.izip(self.variant_ids, self.variants):
+        for vid, variant in zip(self.variant_ids, self.variants):
             yield {"variant_id": vid,
                    "variant": variant,
                    "paths": self.paths}
@@ -267,8 +268,8 @@ class OutputList(list):  # only container pylint: disable=R0903
         cend = output.TERM_SUPPORT.ENDC
         return ' + '.join("%s%s@%s:%s%s"
                           % (_[0], color, _[1], _[2].path, cend)
-                          for _ in itertools.izip(self, self.yamls,
-                                                  self.nodes))
+                          for _ in zip(self, self.yamls,
+                                       self.nodes))
 
 
 class ValueDict(dict):  # only container pylint: disable=R0903
