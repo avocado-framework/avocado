@@ -4,6 +4,7 @@ import tempfile
 import unittest
 import multiprocessing
 import multiprocessing.queues
+import os
 
 from avocado.core.job import Job
 from avocado.core.result import Result
@@ -42,12 +43,15 @@ class TestRunnerQueue(unittest.TestCase):
         """
         Tests if the whiteboard content is the expected one
         """
+        this = os.path.abspath(__file__)
+        base = os.path.dirname(os.path.dirname(os.path.dirname(this)))
+        module = os.path.join(base, 'examples', 'tests', 'whiteboard.py')
         factory = ['WhiteBoard',
                    {'methodName': 'test',
                     'tags': set([]),
                     'params': ([TreeNode(name='')], ['/run/*']),
                     'job': self.job,
-                    'modulePath': 'examples/tests/whiteboard.py',
+                    'modulePath': module,
                     'base_logdir': self.tmpdir}]
         msg = self._run_test(factory)
 
