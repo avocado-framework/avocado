@@ -346,3 +346,6 @@ class Varianter(object):
             yield {"variant": self._default_params.get_leaves(),
                    "variant_id": None,
                    "paths": ["/run/*"]}
+
+    def __len__(self):
+        return self._no_variants
