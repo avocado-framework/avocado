@@ -200,7 +200,9 @@ class Varianter(object):
         self.default_params.clear()
         self._variant_plugins.map_method_copy("initialize", args)
         self._variant_plugins.map_method_copy("update_defaults", self._default_params)
-        self._no_variants = sum(self._variant_plugins.map_method("__len__"))
+        self._no_variants = sum([nvar for nvar
+                                 in self._variant_plugins.map_method("__len__")
+                                 if nvar is not None])
 
     def is_parsed(self):
         """
