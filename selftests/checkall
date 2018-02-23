@@ -24,14 +24,19 @@ parallel_selftests() {
     local ERR=0
     local FIND_UNITTESTS=$(readlink -f ./contrib/scripts/avocado-find-unittests)
     local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
+    local PY3=$(python --version 2>&1 | grep -q "$Python 3\.")$?
 
     # The directories that may contain files with tests, from the Avocado core
     # and from all optional plugins
     declare -A DIR_GLOB_MAP
-    DIR_GLOB_MAP[selftests]="selftests/unit/test_*.py selftests/functional/test_*.py selftests/doc/test_*.py"
-    for PLUGIN in $(find optional_plugins -mindepth 1 -maxdepth 1 -type d); do
-        DIR_GLOB_MAP[$PLUGIN]="tests/test_*.py"
-    done;
+    if [ $PY3 -eq 1 ]; then
+        DIR_GLOB_MAP[selftests]="selftests/unit/test_*.py selftests/functional/test_*.py selftests/doc/test_*.py"
+        for PLUGIN in $(find optional_plugins -mindepth 1 -maxdepth 1 -type d); do
+            DIR_GLOB_MAP[$PLUGIN]="tests/test_*.py"
+        done;
+    else
+        DIR_GLOB_MAP[selftests]="selftests/unit/test_*.py selftests/doc/test_*.py"
+    fi
 
     declare -A TESTS
     for TEST_DIR in "${!DIR_GLOB_MAP[@]}"; do
