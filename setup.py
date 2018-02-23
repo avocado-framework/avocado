@@ -99,4 +99,4 @@ if __name__ == '__main__':
           zip_safe=False,
           test_suite='selftests',
           python_requires='>=2.7',
-          install_requires=['stevedore>=0.14', 'six>=1.10.0'])
+          install_requires=['stevedore>=0.14', 'six>=1.10.0', 'setuptools'])
