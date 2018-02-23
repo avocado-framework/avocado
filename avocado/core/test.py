@@ -1338,7 +1338,7 @@ class DryRunTest(MockingTest):
 
     def setUp(self):
         self.log.info("Test params:")
-        for path, key, value in iteritems(self.params):
+        for path, key, value in self.params.iteritems():
             self.log.info("%s:%s ==> %s", path, key, value)
         self.cancel('Test cancelled due to --dry-run')
 

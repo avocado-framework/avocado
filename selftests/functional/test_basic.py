@@ -768,10 +768,16 @@ class RunnerSimpleTest(unittest.TestCase):
                                    "results.html")) as html_res:
                 html_results = html_res.read()
             # test results should replace odd chars with "_"
-            self.assertIn(os.path.join("test-results", "1-'________'"),
-                          html_results)
+            # HTML could contain either the literal char, or an entity reference
+            test1_href = (os.path.join("test-results",
+                                       "1-'________'") in html_results or
+                          os.path.join("test-results",
+                                       "1-&#x27;________&#x27;") in html_results)
+            self.assertTrue(test1_href)
             # sysinfo replaces "_" with " "
-            self.assertIn("echo '________'", html_results)
+            sysinfo = ("echo '________'" in html_results or
+                       "echo &#x27;________&#x27;" in html_results)
+            self.assertTrue(sysinfo)
 
     def test_non_absolute_path(self):
         avocado_path = os.path.join(basedir, 'scripts', 'avocado')

@@ -302,7 +302,7 @@ class LoaderTestFunctional(unittest.TestCase):
         exp_timeout = None
         exp_sleep_lengths = [0.5, 1, 5, 10] * 3
         exp_sleep_length = None
-        for line in result.stdout.splitlines():
+        for line in result.stdout_text.splitlines():
             if line.startswith("START "):
                 self.assertFalse(exp_timeout, "%s was not found in test %ss "
                                  "output:\n%s" % (exp_timeout, test, result))

@@ -174,10 +174,12 @@ class OutputTest(unittest.TestCase):
                         i += 1
                         if i == end:
                             break
-                self.assertEqual(i, end, "Failed to find %sth message from\n%s\n"
-                                 "\nin the %s. Either it's missing or in wrong "
-                                 "order.\n%s" % (i, "\n".join(exps), name,
-                                                 output_file_content))
+                exps_text = "\n".join([exp.decode() for exp in exps])
+                error_msg = ("Failed to find message in position %s from\n%s\n"
+                             "\nin the %s. Either it's missing or in wrong "
+                             "order.\n%s" % (i, exps_text, name,
+                                             output_file_content))
+                self.assertEqual(i, end, error_msg)
         test = script.Script(os.path.join(self.tmpdir, "output_test.py"),
                              OUTPUT_TEST_CONTENT)
         test.save()
@@ -185,12 +187,12 @@ class OutputTest(unittest.TestCase):
                              "--json - -- %s" % (AVOCADO, self.tmpdir, test))
         res = json.loads(result.stdout)
         joblog = res["debuglog"]
-        exps = ["[stdout] top_print", "[stdout] top_stdout",
-                "[stderr] top_stderr", "[stdout] top_process",
-                "[stdout] init_print", "[stdout] init_stdout",
-                "[stderr] init_stderr", "[stdout] init_process",
-                "[stdout] test_print", "[stdout] test_stdout",
-                "[stderr] test_stderr", "[stdout] test_process"]
+        exps = [b"[stdout] top_print", b"[stdout] top_stdout",
+                b"[stderr] top_stderr", b"[stdout] top_process",
+                b"[stdout] init_print", b"[stdout] init_stdout",
+                b"[stderr] init_stderr", b"[stdout] init_process",
+                b"[stdout] test_print", b"[stdout] test_stdout",
+                b"[stderr] test_stderr", b"[stdout] test_process"]
         _check_output(joblog, exps, "job.log")
         testdir = res["tests"][0]["logdir"]
         with open(os.path.join(testdir, "stdout"), 'rb') as stdout_file:
@@ -493,7 +495,7 @@ class OutputPluginTest(unittest.TestCase):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                     'passtest.py' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
+        output = result.stdout_text + result.stderr_text
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
