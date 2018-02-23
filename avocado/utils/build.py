@@ -33,17 +33,17 @@ def run_make(path, make='make', extra_args='', process_kwargs=None):
     os.chdir(path)
     cmd = make
 
-    env = {}
+    if process_kwargs is None:
+        process_kwargs = {}
     # Set default number of jobs as ncpus + 1
-    if "-j" not in os.environ.get("MAKEFLAGS", ""):
-        jobs = multiprocessing.cpu_count() + 1
-        env = process_kwargs.get('env', {})
-        if not env:
-            env = {"MAKEFLAGS": "-j%s" % jobs}
-        elif "-j" not in env:
-            env["MAKEFLAGS"] = "-j%s" % jobs
-    if env and process_kwargs['env'] is not None:
-        process_kwargs['env'].update(env)
+    os_makeflags = os.environ.get('MAKEFLAGS', '')
+    if process_kwargs.get('env') is None:
+        process_kwargs['env'] = {}
+    args_makeflags = process_kwargs['env'].get('MAKEFLAGS', '')
+
+    if '-j' not in os_makeflags and '-j' not in args_makeflags:
+        args_makeflags += ' -j%s' % (multiprocessing.cpu_count() + 1)
+        process_kwargs['env'].update({'MAKEFLAGS': args_makeflags})
 
     makeopts = os.environ.get('MAKEOPTS', '')
     if makeopts:
