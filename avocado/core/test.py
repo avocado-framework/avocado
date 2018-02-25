@@ -393,11 +393,8 @@ class Test(unittest.TestCase, TestData):
 
         self.__runner_queue = runner_queue
 
-        basename = (os.path.basename(self.logdir).replace(':', '_')
-                    .replace(';', '_'))
-        self.__workdir = utils_path.init_dir(data_dir.get_tmp_dir(),
-                                             basename)
-        self.__srcdir = utils_path.init_dir(self.workdir, 'src')
+        self.__workdir = None
+        self.__srcdir = None
 
         if self.filename:
             self.log.debug("Test metadata:")
@@ -523,10 +520,17 @@ class Test(unittest.TestCase, TestData):
 
     @property
     def workdir(self):
+        if self.__workdir is None:
+            base_logdir = os.path.basename(self.logdir)
+            safe_base_logdir = base_logdir.replace(':', '_').replace(';', '_')
+            self.__workdir = os.path.join(data_dir.get_tmp_dir(),
+                                          safe_base_logdir)
         return self.__workdir
 
     @property
     def srcdir(self):
+        if self.__srcdir is None:
+            self.__srcdir = utils_path.init_dir(self.workdir, 'src')
         return self.__srcdir
 
     @property
