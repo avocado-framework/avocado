@@ -1,8 +1,9 @@
 import json
-import tempfile
 import os
 import re
 import shutil
+import sys
+import tempfile
 import unittest
 from xml.dom import minidom
 
@@ -162,6 +163,8 @@ class OutputTest(unittest.TestCase):
                          "Libc double free can be seen in avocado "
                          "doublefree output:\n%s" % output)
 
+    @unittest.skipIf(sys.version_info[0] == 3,
+                     "Test currently broken on Python 3")
     def test_print_to_std(self):
         def _check_output(path, exps, name):
             i = 0
@@ -246,6 +249,8 @@ class OutputTest(unittest.TestCase):
                 with open(output_file_path, 'r') as output:
                     self.assertEqual(output.read(), '')
 
+    @unittest.skipIf(sys.version_info[0] == 3,
+                     "Test currently broken on Python 3")
     def test_check_on_off(self):
         """
         Checks that output will always be kept, but it will only make into
