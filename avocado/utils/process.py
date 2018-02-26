@@ -220,7 +220,7 @@ def get_children_pids(ppid, recursive=False):
     cmd = "ps -L --ppid=%d -o lwp"
 
     # Getting first level of sub-processes
-    children = system_output(cmd % ppid, verbose=False).split('\n')[1:]
+    children = system_output(cmd % ppid, verbose=False).split(b'\n')[1:]
     if not recursive:
         return children
 
@@ -228,7 +228,7 @@ def get_children_pids(ppid, recursive=False):
     for child in children:
         children.extend(system_output(cmd % int(child),
                                       verbose=False,
-                                      ignore_status=True).split('\n')[1:])
+                                      ignore_status=True).split(b'\n')[1:])
 
     return children
 
