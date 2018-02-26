@@ -32,21 +32,23 @@ class GLibTest(test.SimpleTest):
     Run a GLib test command as a SIMPLE test.
     """
 
-    def __init__(self, name, params=None, base_logdir=None, job=None):
-        super(GLibTest, self).__init__(name, params, base_logdir, job)
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 executable=None):
+        super(GLibTest, self).__init__(name, params, base_logdir, job,
+                                       executable)
 
     @property
     def filename(self):
         """
         Returns the path of the GLib test suite.
         """
-        return self.name.name.split(':')[0]
+        return self._filename.split(':')[0]
 
     def test(self):
         """
         Create the GLib command and execute it.
         """
-        test_name = self.name.name.split(':')[1]
+        test_name = self._filename.split(':')[1]
         cmd = '%s -p=%s' % (self.filename, test_name)
         result = process.run(cmd, ignore_status=True)
         if result.exit_status != 0:
@@ -85,14 +87,16 @@ class GLibLoader(loader.TestLoader):
             result = process.run(cmd)
         except Exception as details:
             if which_tests == loader.ALL:
-                return [(NotGLibTest, {"name": "%s: %s" % (reference, details)})]
+                return [(NotGLibTest,
+                         {"name": "%s: %s" % (reference, details)})]
             return []
 
         for test in result.stdout.splitlines():
             test_name = "%s:%s" % (reference, test)
             if subtests_filter and not subtests_filter.search(test_name):
                 continue
-            avocado_suite.append((GLibTest, {'name': test_name}))
+            avocado_suite.append((GLibTest, {'name': test_name,
+                                             'executable': test_name}))
 
         if which_tests is loader.ALL and not avocado_suite:
             return [(NotGLibTest,
