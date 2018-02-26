@@ -90,10 +90,6 @@ class GLibLoader(loader.TestLoader):
 
         for test in result.stdout.splitlines():
             test_name = "%s:%s" % (reference, test)
-            for item in avocado_suite:
-                if item[1]['name'] == test_name:
-                    raise ValueError
-
             if subtests_filter and not subtests_filter.search(test_name):
                 continue
             avocado_suite.append((GLibTest, {'name': test_name}))
