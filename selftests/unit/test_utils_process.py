@@ -12,6 +12,9 @@ from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path
 
+from six import string_types
+
+
 TRUE_CMD = path.find_command('true')
 
 
@@ -229,6 +232,33 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual("1st_binary", res)
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
         self.assertEqual("./bin", res)
+
+
+class CmdResultTests(unittest.TestCase):
+
+    def test_cmd_result_stdout_stderr_bytes(self):
+        result = process.CmdResult()
+        self.assertTrue(isinstance(result.stdout, bytes))
+        self.assertTrue(isinstance(result.stderr, bytes))
+
+    def test_cmd_result_stdout_stderr_text(self):
+        result = process.CmdResult()
+        self.assertTrue(isinstance(result.stdout_text, string_types))
+        self.assertTrue(isinstance(result.stderr_text, string_types))
+
+    def test_cmd_result_stdout_stderr_already_text(self):
+        result = process.CmdResult()
+        result.stdout = "supposed command output, but not as bytes"
+        result.stderr = "supposed command error, but not as bytes"
+        self.assertEqual(result.stdout, result.stdout_text)
+        self.assertEqual(result.stderr, result.stderr_text)
+
+    def test_cmd_result_stdout_stderr_other_type(self):
+        result = process.CmdResult()
+        result.stdout = None
+        result.stderr = None
+        self.assertRaises(TypeError, lambda x: result.stdout_text)
+        self.assertRaises(TypeError, lambda x: result.stderr_text)
 
 
 class FDDrainerTests(unittest.TestCase):

@@ -32,6 +32,7 @@ import threading
 import time
 
 from io import BytesIO
+from six import string_types
 
 from . import gdb
 from . import runtime
@@ -294,11 +295,19 @@ class CmdResult(object):
 
     @property
     def stdout_text(self):
-        return self.stdout.decode(self.encoding)
+        if type(self.stdout) in string_types:
+            return self.stdout
+        if hasattr(self.stdout, 'decode'):
+            return self.stdout.decode(self.encoding)
+        raise TypeError("Unable to decode stdout into a string-like type")
 
     @property
     def stderr_text(self):
-        return self.stderr.decode(self.encoding)
+        if type(self.stderr) in string_types:
+            return self.stderr
+        if hasattr(self.stderr, 'decode'):
+            return self.stderr.decode(self.encoding)
+        raise TypeError("Unable to decode stderr into a string-like type")
 
     def __repr__(self):
         cmd_rep = ("Command: %s\n"
