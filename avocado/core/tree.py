@@ -34,6 +34,7 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 """
 
 import collections
+import copy
 import itertools
 import locale
 
@@ -74,9 +75,9 @@ class TreeEnvironment(dict):
     def copy(self):
         cpy = TreeEnvironment()
         cpy.update(self)
-        cpy.origin = self.origin.copy()
-        cpy.filter_only = self.filter_only.copy()
-        cpy.filter_out = self.filter_out.copy()
+        cpy.origin = copy.copy(self.origin)
+        cpy.filter_only = copy.copy(self.filter_only)
+        cpy.filter_out = copy.copy(self.filter_out)
         return cpy
 
     def __str__(self):
