@@ -32,6 +32,7 @@ import threading
 import time
 
 from io import BytesIO
+from six import string_types
 
 from . import gdb
 from . import runtime
@@ -219,7 +220,7 @@ def get_children_pids(ppid, recursive=False):
     cmd = "ps -L --ppid=%d -o lwp"
 
     # Getting first level of sub-processes
-    children = system_output(cmd % ppid, verbose=False).split('\n')[1:]
+    children = system_output(cmd % ppid, verbose=False).split(b'\n')[1:]
     if not recursive:
         return children
 
@@ -227,7 +228,7 @@ def get_children_pids(ppid, recursive=False):
     for child in children:
         children.extend(system_output(cmd % int(child),
                                       verbose=False,
-                                      ignore_status=True).split('\n')[1:])
+                                      ignore_status=True).split(b'\n')[1:])
 
     return children
 
@@ -263,9 +264,9 @@ class CmdResult(object):
     :param exit_status: exit code of the process
     :type exit_status: int
     :param stdout: content of the process stdout
-    :type stdout: str
+    :type stdout: bytes
     :param stderr: content of the process stderr
-    :type stderr: str
+    :type stderr: bytes
     :param duration: elapsed wall clock time running the process
     :type duration: float
     :param pid: ID of the process
@@ -276,7 +277,7 @@ class CmdResult(object):
     :type encoding: str
     """
 
-    def __init__(self, command="", stdout="", stderr="",
+    def __init__(self, command="", stdout=b"", stderr=b"",
                  exit_status=None, duration=0, pid=None,
                  encoding=None):
         self.command = command
@@ -294,11 +295,19 @@ class CmdResult(object):
 
     @property
     def stdout_text(self):
-        return self.stdout.decode(self.encoding)
+        if type(self.stdout) in string_types:
+            return self.stdout
+        if hasattr(self.stdout, 'decode'):
+            return self.stdout.decode(self.encoding)
+        raise TypeError("Unable to decode stdout into a string-like type")
 
     @property
     def stderr_text(self):
-        return self.stderr.decode(self.encoding)
+        if type(self.stderr) in string_types:
+            return self.stderr
+        if hasattr(self.stderr, 'decode'):
+            return self.stderr.decode(self.encoding)
+        raise TypeError("Unable to decode stderr into a string-like type")
 
     def __repr__(self):
         cmd_rep = ("Command: %s\n"

@@ -446,8 +446,9 @@ class TestInternalFilters(unittest.TestCase):
         variant = []
         # Turn scenario into variant
         for arg in args:
-            variant.append(tree.TreeNode().get_node(arg[0], True))
-            variant[-1].filters = [arg[1], arg[2]]
+            node = tree.TreeNode().get_node(arg[0], True)
+            node.filters = [arg[1], arg[2]]
+            variant.append(node)
         # Check directly the MuxTree._valid_variant function
         return mux.MuxTree._valid_variant(variant)  # pylint: disable=W0212
 
