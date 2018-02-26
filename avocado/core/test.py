@@ -1101,7 +1101,11 @@ class SimpleTest(Test):
 
     DATA_SOURCES = ["variant", "file"]
 
-    def __init__(self, name, params=None, base_logdir=None, job=None):
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 executable=None):
+        if executable is None:
+            executable = name.name
+        self._filename = executable
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, job=job)
         self._data_sources_mapping = {"variant": [lambda: self.datadir,
@@ -1116,7 +1120,7 @@ class SimpleTest(Test):
         """
         Returns the name of the file (path) that holds the current test
         """
-        return os.path.abspath(self.name.name)
+        return os.path.abspath(self._filename)
 
     def _log_detailed_cmd_info(self, result):
         """
@@ -1209,13 +1213,16 @@ class ExternalRunnerSpec(object):
 class ExternalRunnerTest(SimpleTest):
 
     def __init__(self, name, params=None, base_logdir=None, job=None,
-                 external_runner=None):
+                 external_runner=None, external_runner_argument=None):
+        if external_runner_argument is None:
+            external_runner_argument = name.name
         self.assertIsNotNone(external_runner, "External runner test requires "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
                                                  job)
-        self._command = external_runner.runner + " " + self.name.name
+        self._command = "%s %s" % (external_runner.runner,
+                                   external_runner_argument)
 
     @property
     def filename(self):
@@ -1253,11 +1260,12 @@ class PythonUnittest(ExternalRunnerTest):
     Python unittest test
     """
     def __init__(self, name, params=None, base_logdir=None, job=None,
-                 test_dir=None):
+                 test_dir=None, python_unittest_module=None):
         runner = "%s -m unittest -q -c" % sys.executable
         external_runner = ExternalRunnerSpec(runner, "test", test_dir)
         super(PythonUnittest, self).__init__(name, params, base_logdir, job,
-                                             external_runner=external_runner)
+                                             external_runner=external_runner,
+                                             external_runner_argument=python_unittest_module)
 
     def _find_result(self, status="OK"):
         status_line = "[stderr] %s" % status
