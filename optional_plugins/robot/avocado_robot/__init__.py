@@ -39,21 +39,23 @@ class RobotTest(test.SimpleTest):
                  name,
                  params=None,
                  base_logdir=None,
-                 job=None):
-        super(RobotTest, self).__init__(name, params, base_logdir, job)
+                 job=None,
+                 executable=None):
+        super(RobotTest, self).__init__(name, params, base_logdir, job,
+                                        executable)
 
     @property
     def filename(self):
         """
         Returns the path of the robot test suite.
         """
-        return self.name.name.split(':')[0]
+        return self._filename.split(':')[0]
 
     def test(self):
         """
         Create the Robot command and execute it.
         """
-        suite_name, test_name = self.name.name.split(':')[1].split('.')
+        suite_name, test_name = self._filename.split(':')[1].split('.')
         log_stdout = output.LoggingFile(loggers=[self.log], level=logging.INFO)
         log_stderr = output.LoggingFile(loggers=[self.log], level=logging.ERROR)
         result = run(self.filename,
@@ -110,7 +112,8 @@ class RobotLoader(loader.TestLoader):
                                           robot_test['test_name'])
                 if subtests_filter and not subtests_filter.search(test_name):
                     continue
-                avocado_suite.append((RobotTest, {'name': test_name}))
+                avocado_suite.append((RobotTest, {'name': test_name,
+                                                  'executable': test_name}))
         if which_tests is loader.ALL and not avocado_suite:
             return [(NotRobotTest, {"name": "%s: No robot-like tests found"
                                     % url})]
