@@ -263,9 +263,9 @@ class CmdResult(object):
     :param exit_status: exit code of the process
     :type exit_status: int
     :param stdout: content of the process stdout
-    :type stdout: str
+    :type stdout: bytes
     :param stderr: content of the process stderr
-    :type stderr: str
+    :type stderr: bytes
     :param duration: elapsed wall clock time running the process
     :type duration: float
     :param pid: ID of the process
@@ -276,7 +276,7 @@ class CmdResult(object):
     :type encoding: str
     """
 
-    def __init__(self, command="", stdout="", stderr="",
+    def __init__(self, command="", stdout=b"", stderr=b"",
                  exit_status=None, duration=0, pid=None,
                  encoding=None):
         self.command = command
