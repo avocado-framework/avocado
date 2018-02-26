@@ -597,5 +597,8 @@ class TestProgram(object):
             shutil.rmtree(self.job.logdir)
         sys.exit(exit_status)
 
+    def __del__(self):
+        data_dir.clean_tmp_files()
+
 
 main = TestProgram
