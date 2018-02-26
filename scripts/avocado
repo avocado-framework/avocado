@@ -31,7 +31,7 @@ def handle_exception(*exc_info):
     # Print traceback if AVOCADO_LOG_DEBUG environment variable is set
     msg = "Avocado crashed:\n" + "".join(traceback.format_exception(*exc_info))
     if os.environ.get("AVOCADO_LOG_DEBUG"):
-        os.write(2, msg + '\n')
+        os.write(2, (msg + '\n').encode('utf-8'))
     # Store traceback in data_dir or TMPDIR
     crash_dir = None
     prefix = "avocado-traceback-"
@@ -50,7 +50,7 @@ def handle_exception(*exc_info):
     # Print friendly message in console-like output
     msg = ("Avocado crashed unexpectedly: %s\nYou can find details in %s"
            % (exc_info[1], name))
-    os.write(2, msg + '\n')
+    os.write(2, (msg + '\n').encode('utf-8'))
     # This exit code is replicated from avocado/core/exit_codes.py and not
     # imported because we are dealing with import failures
     sys.exit(-1)
