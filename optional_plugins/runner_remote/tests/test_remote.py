@@ -14,7 +14,7 @@ import avocado_runner_remote
 
 
 JSON_RESULTS = ('Something other than json\n'
-                '{"tests": [{"test": "1-sleeptest;0",'
+                '{"tests": [{"id": "1-sleeptest;0",'
                 '"reference": "sleeptest", '
                 '"fail_reason": "None", '
                 '"status": "PASS", "time": 1.23, "start": 0, "end": 1.23}],'
