@@ -463,7 +463,7 @@ class RemoteTestRunner(TestRunner):
 
         for t_dict in json_result['tests']:
             logdir = os.path.join(self.job.logdir, 'test-results')
-            relative_path = astring.string_to_safe_path(str(t_dict['test']))
+            relative_path = astring.string_to_safe_path(str(t_dict['id']))
             logdir = os.path.join(logdir, relative_path)
             t_dict['logdir'] = logdir
             t_dict['logfile'] = os.path.join(logdir, 'debug.log')
@@ -525,7 +525,7 @@ class RemoteTestRunner(TestRunner):
             self.result.tests_total = results['total']
             local_log_dir = self.job.logdir
             for tst in results['tests']:
-                name = tst['test'].split('-', 1)
+                name = tst['id'].split('-', 1)
                 name = [name[0]] + name[1].split(';')
                 if len(name) == 3:
                     name[2] = {"variant_id": name[2]}
