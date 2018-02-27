@@ -134,7 +134,7 @@ class GdbTest(Test):
 
     def test_load_set_breakpoint_run_exit(self):
         """
-        Test a common GDB cycle: load, set break, del break, run, exit
+        Test a common GDB cycle: load, set break, delete break, run, exit
         """
         self.log.info("Testing a common GDB cycle")
         g = gdb.GDB()

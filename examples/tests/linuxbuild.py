@@ -13,7 +13,7 @@ class LinuxBuildTest(Test):
     :avocado: tags=requires_c_compiler
 
     :param linux_version: kernel version to be built
-    :param linux_config: name of the config file located in deps path
+    :param linux_config: name of the config file located in a data directory
     """
 
     def setUp(self):

@@ -181,13 +181,6 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-# Older python-sphinx cannot handle newer inventory files (objects.inv)
-# this is not failproof, as there can be newer python-sphinx on older
-# Python, but it seems to be good enough.
-if sys.version_info[0] == 2 and sys.version_info[1] == 6:
-    intersphinx_python_url = 'http://docs.python.org/2.6/'
-else:
-    intersphinx_python_url = 'http://docs.python.org/'
-intersphinx_mapping = {intersphinx_python_url: None}
+intersphinx_mapping = {'http://docs.python.org/': None}
 
 autoclass_content = 'both'
