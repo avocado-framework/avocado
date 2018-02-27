@@ -549,3 +549,9 @@ nosuchprocess
 macos
 errno
 greek
+hasattr
+getdefaultencoding
+deepcopies
+deepcopied
+simplequeue
+ctx
