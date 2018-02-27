@@ -42,12 +42,10 @@ class GolangTest(test.SimpleTest):
     Run a Golang Test command as a SIMPLE test.
     """
 
-    def __init__(self, name,
-                 params=None,
-                 base_logdir=None,
-                 job=None,
-                 subtest=None):
-        super(GolangTest, self).__init__(name, params, base_logdir, job)
+    def __init__(self, name, params=None, base_logdir=None, job=None,
+                 subtest=None, executable=None):
+        super(GolangTest, self).__init__(name, params, base_logdir, job,
+                                         executable)
         self.subtest = subtest
 
     @property
@@ -55,7 +53,7 @@ class GolangTest(test.SimpleTest):
         """
         Returns the path of the golang test suite.
         """
-        return self.name.name.split(':')[0]
+        return self._filename.split(':')[0]
 
     def test(self):
         """
@@ -64,7 +62,7 @@ class GolangTest(test.SimpleTest):
         if _GO_BIN is None:
             raise exceptions.TestError("go binary not found")
 
-        test_name = '%s$' % self.name.name.split(':')[1]
+        test_name = '%s$' % self._filename.split(':')[1]
         if self.subtest is not None:
             test_name += '/%s' % self.subtest
 
@@ -120,7 +118,8 @@ class GolangLoader(loader.TestLoader):
                 if tests_filter and not tests_filter.search(test_name):
                     continue
                 avocado_suite.append((GolangTest, {'name': test_name,
-                                                   'subtest': subtest}))
+                                                   'subtest': subtest,
+                                                   'executable': test_name}))
 
             return avocado_suite or self._no_tests(which_tests, url,
                                                    'No test matching this '
@@ -134,7 +133,8 @@ class GolangLoader(loader.TestLoader):
                     if tests_filter and not tests_filter.search(test_name):
                         continue
                     avocado_suite.append((GolangTest, {'name': test_name,
-                                                       'subtest': subtest}))
+                                                       'subtest': subtest,
+                                                       'executable': test_name}))
 
             return avocado_suite or self._no_tests(which_tests, url,
                                                    'No test matching this '
@@ -173,7 +173,8 @@ class GolangLoader(loader.TestLoader):
                         continue
                     avocado_suite.append((GolangTest,
                                           {'name': test_name,
-                                           'subtest': subtest}))
+                                           'subtest': subtest,
+                                           'executable': test_name}))
 
         return avocado_suite or self._no_tests(which_tests, url,
                                                'No test matching this '
