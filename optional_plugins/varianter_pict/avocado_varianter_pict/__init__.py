@@ -43,7 +43,7 @@ class VarianterPictCLI(CLI):
         except utils_path.CmdNotFoundError:
             pict_binary = None
 
-        for name in ("run", "variants"):  # intentionally ommiting "multiplex"
+        for name in ("run", "variants"):  # intentionally omitting "multiplex"
             subparser = parser.subcommands.choices.get(name, None)
             if subparser is None:
                 continue
