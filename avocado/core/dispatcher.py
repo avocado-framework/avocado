@@ -122,7 +122,7 @@ class Dispatcher(EnabledExtensionManager):
 
         :param method_name: Name of the method to be called on each ext
         :param args: Arguments to be passed to all called functions
-        :param kwargs: Key-wordarguments to be passed to all called functions
+        :param kwargs: Key-word arguments to be passed to all called functions
                         if `"deepcopy" == True` is present in kwargs the
                         args and kwargs are deepcopied before passing it
                         to each called function.
