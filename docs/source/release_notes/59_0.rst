@@ -1,0 +1,140 @@
+================
+59.0 The Lobster
+================
+
+The Avocado team is proud to present another release: Avocado version
+59.0, AKA "The Lobster", is now available!
+
+Release documentation: `Avocado 59.0
+<http://avocado-framework.readthedocs.io/en/59.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* A :ref:`new plugin <glib-plugin>` enables users to list and execute
+  tests based on the `GLib test framework
+  <https://developer.gnome.org/glib/stable/glib-Testing.html>`_.  This
+  plugin allows individual tests inside a single binary to be listed
+  and executed.
+
+* Users of the YAML test loader have now access to a few special keys
+  that can tweak test attributes, including adding prefixes to test
+  names.  This allows users to easily differentiate among execution of
+  the same test, but executed different configurations.  For more
+  information, look for "special keys" in the :ref:`YAML Loader plugin
+  documentation <yaml_loader>`.
+
+* Users can now dump variants to a (JSON) file, and also reuse a
+  previously created file in their future jobs execution.  This allows
+  users to avoid recomputing the variants on every job, which might
+  bring significant speed ups in job execution or simply better
+  control of the variants used during a job.  Also notice that even
+  when users do not manually dump a variants file to a specific
+  location, Avocado will automatically save a suitable file at
+  ``jobdata/variants.json`` as part of a Job results directory
+  structure.
+
+* SIMPLE tests were limited to returning PASS, FAIL and WARN statuses.
+  Now SIMPLE tests can now also return SKIP status.  At the same time,
+  SIMPLE tests were previously limited in how they would flag a WARN
+  or SKIP from the underlying executable.  This is now configurable by
+  means of regular expressions.
+
+* The :mod:`avocado.utils.process` has seen a number of changes
+  related to how it handles data from the executed processes.  In a
+  nutshell, process output (on both ``stdout`` and ``stderr``) is now
+  considered binary data.  Users that need to deal with text instead,
+  should use the newly added
+  :attr:`avocado.utils.process.CmdResult.stdout_text` and
+  :attr:`avocado.utils.process.CmdResult.stderr_text`, which are
+  convenience properties that will attempt to decode the ``stdout`` or
+  ``stderr`` data into a string-like type using the encoding set, and
+  if none is set, falling back to the system default encoding.  This
+  change of behavior was needed to accommodate Python's 2 and Python's
+  3 differences in bytes and string-like types and handling.
+
+* The TAP result format plugin received improvements, including
+  support for reporting Avocado tests with CANCEL status as SKIP
+  (which is the closest status available in the TAP specification),
+  and providing more visible warning information in case Avocado tests
+  finish with WARN status (while maintaining the test as a PASS, since
+  TAP doesn't define a WARN status).
+
+* Removal of a number of already deprecated features related to the
+  36.0 LTS series, which reached End-Of-Life during this sprint.
+
+* Redundant (and deprecated) fields in the test sections of the JSON
+  result output were removed.  Now, instead of ``url``, ``test`` and
+  ``id`` carrying the same information, only ``id`` remains.
+
+* Python 3 (beta) support.  After too many changes to mention
+  individually, Avocado can now run satisfactorily on Python 3.  The
+  Avocado team is aware of a small number of issues, which maps to a
+  couple of functional tests, and is conscientious of the fact that
+  many other issues may come up as users deploy and run it on
+  Python 3.  Please notice that all code on Avocado already goes
+  through the Python 3 versions of ``inspekt lint``, ``inspekt style``
+  and runs all unittests.  Because of the few issues mentioned
+  earlier, functional tests do yet run on Avocado's own CI, but are
+  expected to be enable shortly after this release.  For this release,
+  expect packages to be available on PyPI (and consequently
+  installable via ``pip``).  RPM packages should be available in the
+  next release.
+
+Bug Fixes
+=========
+
+* Avocado won't crash when attempting, and not succeeding, to create a
+  user-level configuration file ``~/.config/avocado.conf``.  This is
+  useful in restricted environments such as in containers, where the
+  user may not have its own home directory.  Avocado also won't crash,
+  but will report failure and exit, when it's not able to create the
+  job results directory.
+
+* Avocado will now properly respect the configuration files shipped in
+  the Python module location, then the system wide (usually in
+  ``/etc``) configuration file, and finally the user level
+  configuration files.
+
+* The YAML test loader will now correctly log messages intended to go
+  the log files, instead of printing them in the UI.
+
+* Linux distributions detection code has been fixed for SuSE systems.
+
+* The :mod:`avocado.utils.kernel` library now supports fetching all
+  major versions of the Linux kernel, and not only kernels from the
+  3.x series.
+
+Internal Changes
+================
+
+* Tests that perform checks on core Avocado features should not rely
+  on upper level Avocado code.  The ``functional/test_statuses.py``
+  selftest was changed in such a way, and doesn't require the
+  ``varianter_yaml_to_mux`` plugin anymore.
+
+* The Avocado assets and repository server now supports HTTPS
+  connections.  The documentation and code that refers to these
+  services have been updated to use secure connections.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/58.0...59.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=uL8ZW_WopDM>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/OTRQpSs7/1228-sprint-theme-the-lobster

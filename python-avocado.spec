@@ -10,10 +10,10 @@
     %global gittar		%{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		cf93b03d1b5693f9853bcf123c218074e90ae3f9
+        %global commit		ef2b6f3b14716ef76912bd71feb582f0226fa217
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date	20171215
+        %global commit_date	20180227
     %endif
     %global shortcommit	%(c=%{commit};echo ${c:0:8})
     %global gitrel		.%{commit_date}git%{shortcommit}
@@ -28,8 +28,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 58.0
-Release: 1%{?gitrel}%{?dist}
+Version: 59.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -150,6 +150,9 @@ popd
 pushd optional_plugins/result_upload
 %{__python} setup.py build
 popd
+pushd optional_plugins/glib
+%{__python} setup.py build
+popd
 %{__make} man
 
 %install
@@ -183,6 +186,9 @@ pushd optional_plugins/varianter_pict
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 pushd optional_plugins/result_upload
+%{__python} setup.py install --root %{buildroot} --skip-build
+popd
+pushd optional_plugins/glib
 %{__python} setup.py install --root %{buildroot} --skip-build
 popd
 %{__mkdir} -p %{buildroot}%{_mandir}/man1
@@ -233,6 +239,9 @@ popd
 pushd optional_plugins/result_upload
 %{__python} setup.py develop --user
 popd
+pushd optional_plugins/glib
+%{__python} setup.py develop --user
+popd
 # Package build environments have the least amount of resources
 # we have observed so far.  Let's avoid tests that require too
 # much resources or are time sensitive
@@ -272,6 +281,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_varianter_yaml_to_mux*
 %exclude %{python_sitelib}/avocado_varianter_pict*
 %exclude %{python_sitelib}/avocado_result_upload*
+%exclude %{python_sitelib}/avocado_glib*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_html*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_remote*
 %exclude %{python_sitelib}/avocado_framework_plugin_runner_vm*
@@ -282,6 +292,7 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_loader_yaml*
 %exclude %{python_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python_sitelib}/avocado_framework_plugin_result_upload*
+%exclude %{python_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python_sitelib}/avocado/libexec*
 
 %package plugins-output-html
@@ -432,6 +443,18 @@ a dedicated sever.
 %{python_sitelib}/avocado_framework_plugin_result_upload*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
 
+%package plugins-glib
+Summary: Avocado Plugin for Execution of GLib Test Framework tests
+Requires: %{name} == %{version}
+
+%description plugins-glib
+This optional plugin is intended to list and run tests written in the
+GLib Test Framework.
+
+%files plugins-glib
+%{python_sitelib}/avocado_glib*
+%{python_sitelib}/avocado_framework_plugin_glib*
+
 %package examples
 Summary: Avocado Test Framework Example Tests
 Requires: %{name} == %{version}
@@ -463,6 +486,10 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
+- New upstream release
+- Added glib plugin subpackage
+
 * Tue Jan 23 2018 Cleber Rosa <cleber@redhat.com> - 58.0-1
 - Require a lower six version on EL7
 
