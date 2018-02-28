@@ -201,9 +201,9 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
 
 class _TmpDirTracker(Borg):
 
-    def __init__(self):
+    def __init__(self, basedir=None):
         Borg.__init__(self)
-        self.basedir = None
+        self.basedir = basedir
 
     def get(self, basedir):
         if not hasattr(self, 'tmp_dir'):
