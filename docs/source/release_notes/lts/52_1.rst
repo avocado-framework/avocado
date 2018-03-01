@@ -1,0 +1,28 @@
+.. _lts_52_1:
+
+========
+52.1 LTS
+========
+
+The Avocado team is proud to present another release: Avocado version
+52.1, a minor release in the second Avocado LTS major version.
+
+What's new?
+===========
+
+When compared to the previous minor release, there was a single bufxix
+introduced here:
+
+* Avocado won't crash when attempting, and not succeeding, to create a
+  user-level configuration file ``~/.config/avocado.conf``.  This is
+  useful in restricted environments such as in containers, where the
+  user may not have its own home directory.  Avocado also won't crash,
+  but will report failure and exit, when it's not able to create the
+  job results directory.
+
+Complete list of changes
+========================
+
+For a complete list of changes between the last 52 LTS release (52.0) and
+this release, please check out `the Avocado commit changelog
+<https://github.com/avocado-framework/avocado/compare/52.0...52.1>`_.
