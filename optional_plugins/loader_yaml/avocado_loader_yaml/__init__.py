@@ -114,6 +114,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
                 test_loader.get_full_decorator_mapping())
             name_prefix = params.get("mux_suite_test_name_prefix")
             if _tests:
+                if isinstance(name_prefix, list):
+                    name_prefix = "".join(name_prefix)
                 for tst in _tests:
                     if name_prefix:
                         tst[1]["name"] = name_prefix + tst[1]["name"]
