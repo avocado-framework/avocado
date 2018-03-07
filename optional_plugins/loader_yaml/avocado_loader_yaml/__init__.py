@@ -89,6 +89,8 @@ class YamlTestsuiteLoader(loader.TestLoader):
             for key, value in iteritems(_args):
                 setattr(args, key, value)
         extra_params = params.get("test_reference_resolver_extra", default={})
+        if extra_params:
+            extra_params = copy.deepcopy(extra_params)
         return loader_class(args, extra_params)
 
     def discover(self, reference, which_tests=loader.DEFAULT):
