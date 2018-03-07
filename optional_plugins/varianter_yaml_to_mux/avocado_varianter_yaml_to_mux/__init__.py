@@ -369,19 +369,6 @@ class YamlToMuxCLI(CLI):
             agroup.add_argument('--mux-inject', default=[], nargs='*',
                                 help="Inject [path:]key:node values into the "
                                 "final multiplex tree.")
-            agroup = subparser.add_argument_group("yaml to mux options "
-                                                  "[deprecated]")
-            agroup.add_argument("--multiplex", nargs='*',
-                                default=None, metavar="FILE",
-                                help="DEPRECATED: Location of one or more "
-                                "Avocado multiplex (.yaml) FILE(s) (order "
-                                "dependent)")
-            agroup.add_argument("--filter-only", nargs='*', default=[],
-                                help="DEPRECATED: Filter only path(s) from "
-                                "multiplexing (use --mux-filter-only instead)")
-            agroup.add_argument("--filter-out", nargs='*', default=[],
-                                help="DEPRECATED: Filter out path(s) from "
-                                "multiplexing (use --mux-filter-out instead)")
 
     def run(self, args):
         """
@@ -398,33 +385,7 @@ class YamlToMux(mux.MuxPlugin, Varianter):
     name = 'yaml_to_mux'
     description = 'Multiplexer plugin to parse yaml files to params'
 
-    @staticmethod
-    def _log_deprecation_msg(deprecated, current):
-        """
-        Log a message into the avocado.LOG_UI warning log
-        """
-        msg = "The use of '%s' is deprecated, please use '%s' instead"
-        LOG_UI.warning(msg, deprecated, current)
-
     def initialize(self, args):
-        # Deprecated filters
-        only = getattr(args, "filter_only", None)
-        if only:
-            self._log_deprecation_msg("--filter-only", "--mux-filter-only")
-            mux_filter_only = getattr(args, "mux_filter_only")
-            if mux_filter_only:
-                args.mux_filter_only = mux_filter_only + only
-            else:
-                args.mux_filter_only = only
-        out = getattr(args, "filter_out", None)
-        if out:
-            self._log_deprecation_msg("--filter-out", "--mux-filter-out")
-            mux_filter_out = getattr(args, "mux_filter_out")
-            if mux_filter_out:
-                args.mux_filter_out = mux_filter_out + out
-            else:
-                args.mux_filter_out = out
-
         debug = getattr(args, "varianter_debug", False)
         if debug:
             data = mux.MuxTreeNodeDebug()
@@ -436,22 +397,6 @@ class YamlToMux(mux.MuxPlugin, Varianter):
         if multiplex_files:
             try:
                 data.merge(create_from_yaml(multiplex_files, debug))
-            except IOError as details:
-                error_msg = "%s : %s" % (details.strerror, details.filename)
-                LOG_UI.error(error_msg)
-                if args.subcommand == 'run':
-                    sys.exit(exit_codes.AVOCADO_JOB_FAIL)
-                else:
-                    sys.exit(exit_codes.AVOCADO_FAIL)
-
-        # Deprecated --multiplex option
-        multiplex_files = getattr(args, "multiplex", None)
-        if multiplex_files:
-            self._log_deprecation_msg("--multiplex", "--mux-yaml")
-            try:
-                data.merge(create_from_yaml(multiplex_files, debug))
-                from_yaml = create_from_yaml(multiplex_files, debug)
-                args.avocado_variants.data_merge(from_yaml)
             except IOError as details:
                 error_msg = "%s : %s" % (details.strerror, details.filename)
                 LOG_UI.error(error_msg)

@@ -148,7 +148,7 @@ class MultiplexTests(unittest.TestCase):
             cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
                         'examples/tests/env_variables.sh '
                         '-m examples/tests/env_variables.sh.data/env_variables.yaml '
-                        '--filter-only %s --show-job-log'
+                        '--mux-filter-only %s --show-job-log'
                         % (AVOCADO, self.tmpdir, variant))
             expected_rc = exit_codes.AVOCADO_ALL_OK
             result = self.run_and_check(cmd_line, expected_rc)

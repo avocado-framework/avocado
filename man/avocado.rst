@@ -291,17 +291,6 @@ Options for subcommand `run` (`avocado run --help`)::
                             Inject [path:]key:node values into the final multiplex
                             tree.
 
-    yaml to mux options [deprecated]:
-      --multiplex [FILE [FILE ...]]
-                            DEPRECATED: Location of one or more Avocado multiplex
-                            (.yaml) FILE(s) (order dependent)
-      --filter-only [FILTER_ONLY [FILTER_ONLY ...]]
-                            DEPRECATED: Filter only path(s) from multiplexing (use
-                            --mux-filter-only instead)
-      --filter-out [FILTER_OUT [FILTER_OUT ...]]
-                            DEPRECATED: Filter out path(s) from multiplexing (use
-                            --mux-filter-out instead)
-
 Options for subcommand `config` (`avocado config --help`)::
 
     optional arguments:
@@ -446,17 +435,6 @@ Options for subcommand `multiplex` (`avocado multiplex --help`)::
       --mux-inject [MUX_INJECT [MUX_INJECT ...]]
                             Inject [path:]key:node values into the final multiplex
                             tree.
-
-    yaml to mux options [deprecated]:
-      --multiplex [FILE [FILE ...]]
-                            DEPRECATED: Location of one or more Avocado multiplex
-                            (.yaml) FILE(s) (order dependent)
-      --filter-only [FILTER_ONLY [FILTER_ONLY ...]]
-                            DEPRECATED: Filter only path(s) from multiplexing (use
-                            --mux-filter-only instead)
-      --filter-out [FILTER_OUT [FILTER_OUT ...]]
-                            DEPRECATED: Filter out path(s) from multiplexing (use
-                            --mux-filter-out instead)
 
 Options for subcommand `plugins` (`avocado plugins --help`)::
 
