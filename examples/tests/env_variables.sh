@@ -5,6 +5,7 @@ echo "Avocado Version: $AVOCADO_VERSION"
 echo "Avocado Test basedir: $AVOCADO_TEST_BASEDIR"
 echo "Avocado Test datadir: $AVOCADO_TEST_DATADIR"
 echo "Avocado Test workdir: $AVOCADO_TEST_WORKDIR"
+# Warning: srcdir is deprecated and will be removed soon
 echo "Avocado Test srcdir: $AVOCADO_TEST_SRCDIR"
 echo "Avocado Test logdir: $AVOCADO_TEST_LOGDIR"
 echo "Avocado Test logfile: $AVOCADO_TEST_LOGFILE"
