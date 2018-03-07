@@ -88,5 +88,29 @@ class TestDataStructures(unittest.TestCase):
         self.assertIn("incorrect_twice", str(log.msgs[2]))
 
 
+class TestDataSize(unittest.TestCase):
+
+    def test_valid(self):
+        data_structures.DataSize('0')
+        data_structures.DataSize('0t')
+        data_structures.DataSize('10')
+
+    def test_invalid(self):
+        self.assertRaises(data_structures.InvalidDataSize,
+                          data_structures.DataSize, 'megabyte')
+        self.assertRaises(data_structures.InvalidDataSize,
+                          data_structures.DataSize, '-100t')
+        self.assertRaises(data_structures.InvalidDataSize,
+                          data_structures.DataSize, '0.5g')
+        self.assertRaises(data_structures.InvalidDataSize,
+                          data_structures.DataSize, '10Mb')
+
+    def test_values(self):
+        self.assertEqual(data_structures.DataSize('0b').b, 0)
+        self.assertEqual(data_structures.DataSize('0t').b, 0)
+        self.assertEqual(data_structures.DataSize('10m').b, 10485760)
+        self.assertEqual(data_structures.DataSize('10M').b, 10485760)
+
+
 if __name__ == "__main__":
     unittest.main()

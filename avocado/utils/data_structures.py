@@ -22,10 +22,18 @@ avocado core code or plugins.
 """
 
 
+import re
 import sys
 import math
 
 from six.moves import zip
+from collections import OrderedDict
+
+
+class InvalidDataSize(ValueError):
+    """
+    Signals that the value given to :class:`DataSize` is not valid.
+    """
 
 
 def ordered_list_unique(object_list):
@@ -243,3 +251,59 @@ def time_to_seconds(time):
     else:
         seconds = 0
     return seconds
+
+
+class DataSize(object):
+    """
+    Data Size object with builtin unit-converted attributes.
+
+    :param data: Data size plus optional unit string. i.e. '10m'. No
+                 unit string means the data size is in bytes.
+    :type data: str
+    """
+
+    MULTIPLIERS = OrderedDict([('b', 1),  # 2**0
+                               ('k', 1024),  # 2**10
+                               ('m', 1048576),  # 2**20
+                               ('g', 1073741824),  # 2**30
+                               ('t', 1099511627776)])  # 2**40
+
+    def __init__(self, data):
+        pattern = r"^(\d+)([bkmgt])?$"  # Number and optional string
+        match = re.match(pattern, data, re.IGNORECASE)
+
+        if match is None:
+            raise InvalidDataSize('String not in size+unit format (i.e. '
+                                  '"10M", "100k", ...)')
+
+        self._value, unit = match.groups()
+        if unit is None:
+            self._unit = 'b'
+        else:
+            self._unit = unit.lower()
+
+    @property
+    def value(self):
+        return int(self._value)
+
+    @property
+    def unit(self):
+        return self._unit
+
+    def __getattr__(self, attr):
+        """
+        Creates one extra attribute per available conversion unit,
+        which will return the converted value.
+        """
+        if attr not in self.MULTIPLIERS:
+            raise AttributeError('Attribute %s does not exist.' % attr)
+        return (self.value * self.MULTIPLIERS[self.unit] /
+                self.MULTIPLIERS[attr])
+
+    def __dir__(self):
+        """
+        Makes the extra attributes visible when calling dir().
+        """
+        listing = dir(type(self)) + list(self.__dict__.keys())
+        listing.extend(['%s' % item for item in self.MULTIPLIERS])
+        return listing
