@@ -103,24 +103,27 @@ class YamlTestsuiteLoader(loader.TestLoader):
         for variant in mux_tree:
             params = parameters.AvocadoParams(variant, ["/run/*"],
                                               output.LOG_JOB.name)
-            reference = params.get("test_reference")
-            test_loader = self._get_loader(params)
-            if not test_loader:
-                continue
-            _tests = test_loader.discover(reference, which_tests)
-            self._extra_type_label_mapping.update(
-                test_loader.get_full_type_label_mapping())
-            self._extra_decorator_mapping.update(
-                test_loader.get_full_decorator_mapping())
-            name_prefix = params.get("mux_suite_test_name_prefix")
-            if _tests:
-                if isinstance(name_prefix, list):
-                    name_prefix = "".join(name_prefix)
-                for tst in _tests:
-                    if name_prefix:
-                        tst[1]["name"] = name_prefix + tst[1]["name"]
-                    tst[1]["params"] = (variant, ["/run/*"])
-                tests.extend(_tests)
+            references = params.get("test_reference")
+            if not isinstance(references, (list, tuple)):
+                references = [references]
+            for reference in references:
+                test_loader = self._get_loader(params)
+                if not test_loader:
+                    continue
+                _tests = test_loader.discover(reference, which_tests)
+                self._extra_type_label_mapping.update(
+                    test_loader.get_full_type_label_mapping())
+                self._extra_decorator_mapping.update(
+                    test_loader.get_full_decorator_mapping())
+                name_prefix = params.get("mux_suite_test_name_prefix")
+                if _tests:
+                    if isinstance(name_prefix, list):
+                        name_prefix = "".join(name_prefix)
+                    for tst in _tests:
+                        if name_prefix:
+                            tst[1]["name"] = name_prefix + tst[1]["name"]
+                        tst[1]["params"] = (variant, ["/run/*"])
+                    tests.extend(_tests)
         return tests
 
 
