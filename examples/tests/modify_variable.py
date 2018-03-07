@@ -32,9 +32,9 @@ class PrintVariableTest(Test):
         c_file = self.get_data(source)
         if c_file is None:
             self.cancel('Test is missing data file %s' % source)
-        shutil.copy(c_file, self.srcdir)
+        shutil.copy(c_file, self.workdir)
         self.__binary = source.rsplit('.', 1)[0]
-        build.make(self.srcdir,
+        build.make(self.workdir,
                    env={'CFLAGS': '-g -O0'},
                    extra_args=self.__binary)
 
@@ -42,7 +42,7 @@ class PrintVariableTest(Test):
         """
         Execute 'print_variable'.
         """
-        path = os.path.join(self.srcdir, self.__binary)
+        path = os.path.join(self.workdir, self.__binary)
         app = gdb.GDB()
         app.set_file(path)
         app.set_break(6)

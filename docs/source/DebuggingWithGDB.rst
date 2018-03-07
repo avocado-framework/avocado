@@ -165,7 +165,7 @@ Take a look at ``examples/tests/modify_variable.py`` test::
         """
         Execute 'print_variable'.
         """
-        path = os.path.join(self.srcdir, 'print_variable')
+        path = os.path.join(self.workdir, 'print_variable')
         app = gdb.GDB()
         app.set_file(path)
         app.set_break(6)
