@@ -22,10 +22,12 @@ avocado core code or plugins.
 """
 
 
+import re
 import sys
 import math
 
 from six.moves import zip
+from collections import OrderedDict
 
 
 def ordered_list_unique(object_list):
@@ -243,3 +245,58 @@ def time_to_seconds(time):
     else:
         seconds = 0
     return seconds
+
+
+class DataSize(object):
+    """
+    Data Size object with builtin unit-converted attributes.
+
+    :param data: Data size plus optional unit string. i.e. '10Mb'. No
+                 unit string means the data size is in bytes.
+    """
+
+    def __init__(self, data):
+        self.__multipliers = OrderedDict([('b', 1),  # 2**0
+                                          ('k', 1024),  # 2**10
+                                          ('m', 1048576),  # 2**20
+                                          ('g', 1073741824),  # 2**30
+                                          ('t', 1099511627776)])  # 2**40
+
+        pattern = r"([0-9]+)([a-z]+)?"  # Number and optional string
+        self._value, unit = re.match(pattern,
+                                     data,
+                                     re.IGNORECASE).groups()
+        if unit is None:
+            self._unit = 'b'
+        else:
+            self._unit = unit.lower()[0]
+
+        if self._unit not in self.__multipliers:
+            raise AttributeError('Data unit is not valid. Use %s.' %
+                                 ', '.join(self.__multipliers.keys()))
+
+    @property
+    def value(self):
+        return int(self._value)
+
+    @property
+    def unit(self):
+        return self._unit
+
+    def __getattr__(self, attr):
+        """
+        Creates one extra attribute per available conversion unit,
+        which will return the converted value.
+        """
+        if attr not in self.__multipliers:
+            raise AttributeError('Attribute %s does not exist.' % attr)
+        return (self.value * self.__multipliers[self.unit] /
+                self.__multipliers[attr])
+
+    def __dir__(self):
+        """
+        Makes the extra attributes visible when calling dir().
+        """
+        listing = dir(type(self)) + list(self.__dict__.keys())
+        listing.extend(['%s' % item for item in self.__multipliers])
+        return listing
