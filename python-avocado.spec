@@ -41,20 +41,36 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.g
 BuildArch: noarch
 BuildRequires: fabric
 BuildRequires: procps-ng
+%if 0%{?rhel} == 7
 BuildRequires: pystache
-BuildRequires: python-docutils
 BuildRequires: python-lxml
-BuildRequires: python-mock
-BuildRequires: python-psutil
-BuildRequires: python-requests
-BuildRequires: python-resultsdb_api
 BuildRequires: python-setuptools
-BuildRequires: python-sphinx
-BuildRequires: python-six
 BuildRequires: python-stevedore
+BuildRequires: python2-aexpect
 BuildRequires: python2-devel
+BuildRequires: python2-docutils
+BuildRequires: python2-mock
+BuildRequires: python2-psutil
+BuildRequires: python2-requests
+BuildRequires: python2-resultsdb_api
+BuildRequires: python2-six
+BuildRequires: python2-sphinx
 BuildRequires: yum
-BuildRequires: python-aexpect
+%else
+BuildRequires: pystache
+BuildRequires: python2-aexpect
+BuildRequires: python2-devel
+BuildRequires: python2-docutils
+BuildRequires: python2-lxml
+BuildRequires: python2-mock
+BuildRequires: python2-psutil
+BuildRequires: python2-requests
+BuildRequires: python2-resultsdb_api
+BuildRequires: python2-setuptools
+BuildRequires: python2-six
+BuildRequires: python2-sphinx
+BuildRequires: python2-stevedore
+%endif
 
 %if %{with_tests}
 BuildRequires: libvirt-python
@@ -70,10 +86,17 @@ Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
 Requires: pyliblzma
+%if 0%{?rhel} == 7
 Requires: python
-Requires: python-requests
 Requires: python-setuptools
 Requires: python-stevedore
+Requires: python2-requests
+%else
+Requires: python2
+Requires: python2-requests
+Requires: python2-setuptools
+Requires: python2-stevedore
+%endif
 
 %if 0%{?fedora} >= 25
 BuildRequires: kmod
@@ -472,6 +495,7 @@ Again Shell code (and possibly other similar shells).
 - Remove backward compatibility with name avocado
 - Remove hack to workaround fabric bugs on Fedora 24
 - Use real package name for python YAML package on EL
+- Use exact package names on requires
 
 * Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
 - New upstream release
