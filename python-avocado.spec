@@ -75,15 +75,6 @@ Requires: python-requests
 Requires: python-setuptools
 Requires: python-stevedore
 
-# For some strange reason, fabric on Fedora 24 does not require the
-# python-crypto package, but the fabric code always imports it.  Newer
-# fabric versions, such from Fedora 25 do conditional imports (try:
-# from Crypto import Random; except: Random = None) and thus do not
-# need this requirement.
-%if 0%{?fedora} == 24
-BuildRequires: python-crypto
-%endif
-
 %if 0%{?fedora} >= 25
 BuildRequires: kmod
 %endif
@@ -479,6 +470,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
+- Remove hack to workaround fabric bugs on Fedora 24
 
 * Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
 - New upstream release
