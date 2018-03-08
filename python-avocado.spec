@@ -60,7 +60,7 @@ BuildRequires: python-aexpect
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
 %if 0%{?rhel}
-BuildRequires: python-yaml
+BuildRequires: PyYAML
 %else
 BuildRequires: python2-yaml
 %endif
@@ -363,7 +363,7 @@ server.
 Summary: Avocado plugin to generate variants out of yaml files
 Requires: %{name} == %{version}
 %if 0%{?rhel}
-Requires: python-yaml
+Requires: PyYAML
 %else
 Requires: python2-yaml
 %endif
@@ -471,6 +471,7 @@ Again Shell code (and possibly other similar shells).
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
 - Remove hack to workaround fabric bugs on Fedora 24
+- Use real package name for python YAML package on EL
 
 * Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
 - New upstream release
