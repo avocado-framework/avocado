@@ -60,10 +60,10 @@ set_status() {
     data="\"state\": \"$status\", \"description\": \"$description\", \"context\": \"manual/$GITHUB_USER\""
     [ "$result_url" ] && data+=", \"target_url\": \"$result_url\""
     if [ "$DEBUG" ]; then
-        echo curl -u $GITHUB_USER:$GITHUB_TOKEN --data "{$data}" "$base_url/statuses/$commit"
-        [ "$DRY" ] || curl -u $GITHUB_USER:$GITHUB_TOKEN --data "{$data}" "$base_url/statuses/$commit"
+        echo curl -u $GITHUB_USER:$GITHUB_TOKEN --data "{$data}" -H "Accept: application/vnd.github.v3+json" "$base_url/statuses/$commit"
+        [ "$DRY" ] || curl -u $GITHUB_USER:$GITHUB_TOKEN --data "{$data}" -H "Accept: application/vnd.github.v3+json" "$base_url/statuses/$commit"
     else
-        [ "$DRY" ] || curl -u $GITHUB_USER:$GITHUB_TOKEN --data "{$data}" "$base_url/statuses/$commit" &>/dev/null
+        [ "$DRY" ] || curl -u $GITHUB_USER:$GITHUB_TOKEN --data "{$data}" -H "Accept: application/vnd.github.v3+json" "$base_url/statuses/$commit" &>/dev/null
     fi
 }
 
