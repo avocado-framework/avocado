@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 59.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -74,15 +74,6 @@ Requires: python
 Requires: python-requests
 Requires: python-setuptools
 Requires: python-stevedore
-
-# For compatibility reasons, let's mark this package as one that
-# provides the same functionality as the old package name and also
-# one that obsoletes the old package name, so that the new name is
-# favored.  These could (and should) be removed in the future.
-# These changes are backed by the following guidelines:
-# https://fedoraproject.org/wiki/Upgrade_paths_%E2%80%94_renaming_or_splitting_packages
-Obsoletes: %{srcname} < 47.0-1
-Provides: %{srcname} = %{version}-%{release}
 
 # For some strange reason, fabric on Fedora 24 does not require the
 # python-crypto package, but the fabric code always imports it.  Newer
@@ -486,6 +477,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
+- Remove backward compatibility with name avocado
+
 * Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
 - New upstream release
 - Added glib plugin subpackage
