@@ -41,6 +41,7 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.g
 BuildArch: noarch
 BuildRequires: fabric
 BuildRequires: procps-ng
+BuildRequires: kmod
 %if 0%{?rhel} == 7
 BuildRequires: pystache
 BuildRequires: python-lxml
@@ -96,13 +97,6 @@ Requires: python2
 Requires: python2-requests
 Requires: python2-setuptools
 Requires: python2-stevedore
-%endif
-
-%if 0%{?fedora} >= 25
-BuildRequires: kmod
-%endif
-%if 0%{?rhel} >= 7
-BuildRequires: kmod
 %endif
 
 %description
@@ -496,6 +490,7 @@ Again Shell code (and possibly other similar shells).
 - Remove hack to workaround fabric bugs on Fedora 24
 - Use real package name for python YAML package on EL
 - Use exact package names on requires
+- Remove unecessary conditional for kmod
 
 * Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
 - New upstream release
