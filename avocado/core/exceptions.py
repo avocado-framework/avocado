@@ -119,16 +119,6 @@ class TestSkipError(TestBaseException):
     status = "SKIP"
 
 
-class TestSetupSkip(TestBaseException):
-
-    """
-    Indicates that the test is skipped in setUp().
-
-    Should be thrown when skip() is used in setUp().
-    """
-    status = "SKIP"
-
-
 class TestFail(TestBaseException, AssertionError):
 
     """

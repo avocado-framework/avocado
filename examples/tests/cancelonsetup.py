@@ -11,10 +11,6 @@ class CancelOnSetupTest(Test):
     """
 
     def setUp(self):
-        """
-        self.skip() is under deprecation process. This should
-        end with CANCEL instead.
-        """
         self.cancel('This should end with CANCEL.')
 
     def test_wont_be_executed(self):

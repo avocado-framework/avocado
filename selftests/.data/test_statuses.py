@@ -1,14 +1,14 @@
 import os
 import sys
 
-from avocado import Test
+from avocado import Test, skip
 
 
 class SkipSetup(Test):
 
+    @skip("from setUp()")
     def setUp(self):
         self.log.info('setup pre')
-        self.skip()
         self.log.info('setup post')
 
     def test(self):
@@ -26,9 +26,9 @@ class Skip(Test):
         self.log.info('setup pre')
         self.log.info('setup post')
 
+    @skip("from test()")
     def test(self):
         self.log.info('test pre')
-        self.skip()
         self.log.info('test post')
 
     def tearDown(self):
@@ -46,9 +46,9 @@ class SkipTeardown(Test):
         self.log.info('test pre')
         self.log.info('test post')
 
+    @skip("from tearDown()")
     def tearDown(self):
         self.log.info('teardown pre')
-        self.skip()
         self.log.info('teardown post')
 
 
