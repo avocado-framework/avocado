@@ -397,9 +397,17 @@ class Test(unittest.TestCase, TestData):
         self.__workdir = None
         self.__srcdir = None
 
+        self.log.debug("Test metadata:")
         if self.filename:
-            self.log.debug("Test metadata:")
             self.log.debug("  filename: %s", self.filename)
+        try:
+            teststmpdir = self.teststmpdir
+        except EnvironmentError:
+            pass
+        else:
+            self.log.debug("  teststmpdir: %s", self.teststmpdir)
+        self.log.debug("  workdir: %s", self.workdir)
+
         unittest.TestCase.__init__(self, methodName=methodName)
         TestData.__init__(self)
 
