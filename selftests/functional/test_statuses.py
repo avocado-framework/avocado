@@ -24,30 +24,19 @@ ALL_MESSAGES = ['setup pre',
 #                              [msg_in, ...]),
 #          ...}
 EXPECTED_RESULTS = {'SkipSetup.test': ('SKIP',
-                                       ['setup pre',
-                                        "[WARNING: self.skip() will be "
-                                        "deprecated. Use 'self.cancel()' "
-                                        "or the skip decorators]"]),
-                    'Skip.test': ('ERROR',
-                                  ['setup pre',
-                                   'setup post',
-                                   'test pre',
-                                   'teardown pre',
-                                   'teardown post',
-                                   "Calling skip() in places other "
-                                   "than setUp() is not allowed in "
-                                   "avocado, you must fix your "
-                                   "test."]),
+                                       ['TestSkipError: from setUp()']),
+                    'Skip.test': ('SKIP',
+                                  ['TestSkipError: from test()']),
                     'SkipTeardown.test': ('ERROR',
                                           ['setup pre',
                                            'setup post',
                                            'test pre',
                                            'test post',
-                                           'teardown pre',
-                                           "Calling skip() in places other "
-                                           "than setUp() is not allowed in "
-                                           "avocado, you must fix your "
-                                           "test."]),
+                                           'TestError: Using skip decorators '
+                                           'in tearDown() is not allowed in '
+                                           'avocado, you must fix your test. '
+                                           'Original skip exception: from '
+                                           'tearDown()']),
                     'CancelSetup.test': ('CANCEL',
                                          ['setup pre',
                                           'teardown pre',

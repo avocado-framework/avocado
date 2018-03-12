@@ -52,9 +52,9 @@ class VMCleanup(Test):
         vm_domain = self.params.get("vm_domain", default=None)
         vm_host = self.params.get("vm_host", default=None)
         if vm_domain is None or vm_host is None:
-            self.skip('Either "vm_domain" or "vm_host" parameters have not '
-                      'been given. Please edit the "vm-cleanup.yaml" file '
-                      'with the appropriate parameters')
+            self.cancel('Either "vm_domain" or "vm_host" parameters have not '
+                        'been given. Please edit the "vm-cleanup.yaml" file '
+                        'with the appropriate parameters')
 
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         clean_test = os.path.join(self.tmpdir, 'clean.py')

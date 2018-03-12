@@ -28,7 +28,7 @@ def fail_on(exceptions=None):
 
     :param exceptions: Tuple or single exception to be assumed as
                        test fail [Exception]
-    :note: self.error and self.skip behavior remains intact
+    :note: self.error and self.cancel behavior remains intact
     :note: To allow simple usage param "exceptions" must not be callable
     """
     func = False

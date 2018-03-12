@@ -106,9 +106,8 @@ test. To support you Avocado supports several methods:
 Test methods
 ------------
 
-The simplest way to set the status is to use ``self.fail`` or
-``self.error`` directly from test. One can also use ``self.skip``
-but only from the ``setUp`` method.
+The simplest way to set the status is to use ``self.fail``,
+``self.error`` or ``self.cancel`` directly from test.
 
 To remember a warning, one simply writes to ``self.log.warning``
 logger. This won't interrupt the test execution, but it will
@@ -1051,53 +1050,8 @@ sending a class:`signal.SIGTERM` to the test, making it raise a
 Skipping Tests
 ==============
 
-Avocado offers some options for the test writers to skip a test:
-
-Test ``skip()`` Method
-----------------------
-
-.. warning:: `self.skip()` will be deprecated at the end of 2017.
-   Please adjust your tests to use the `self.cancel()` or the skip
-   decorators instead.
-
-Using the ``skip()`` method available in the Test API is only allowed
-inside the ``setUp()`` method. Calling ``skip()`` from inside the test is not
-allowed as, by concept, you cannot skip a test after it's already initiated.
-
-The test below::
-
-    import avocado
-
-    class MyTestClass(avocado.Test):
-
-        def setUp(self):
-            if self.check_condition():
-                self.skip('Test skipped due to the condition.')
-
-        def test(self):
-            pass
-
-        def check_condition(self):
-            return True
-
-Will produce the following result::
-
-    $ avocado run test_skip_method.py 
-    JOB ID     : 1bd8642400e3b6c584979504cafc4318f7a5fb65
-    JOB LOG    : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/job.log
-     (1/1) test_skip_method.py:MyTestClass.test: SKIP
-    RESULTS    : PASS 0 | ERROR 0 | FAIL 0 | SKIP 1 | WARN 0 | INTERRUPT 0
-    JOB TIME   : 0.10 s
-    JOB HTML   : $HOME/avocado/job-results/job-2017-02-03T17.16-1bd8642/html/results.html
-
-Notice that the ``tearDown()`` will not be executed when ``skip()`` is used.
-Any cleanup treatment has to be handled by the ``setUp()``, before the
-call to ``skip()``.
-
-Avocado Skip Decorators
------------------------
-
-Another way to skip tests is by using the Avocado skip decorators:
+To skip tests is in Avocado, you must use one of the Avocado skip
+decorators:
 
 - ``@avocado.skip(reason)``: Skips a test.
 - ``@avocado.skipIf(condition, reason)``: Skips a test if the condition is
@@ -1141,6 +1095,10 @@ not ``False``.
 
 Using the skip decorators, nothing is actually executed. We will skip
 the  `setUp()` method, the test method and the `tearDown()` method.
+
+.. note:: It's an erroneous condition, reported with test status
+          ``ERROR``, to use any of the skip decorators on the
+          ``tearDown()`` method.
 
 Cancelling Tests
 ================

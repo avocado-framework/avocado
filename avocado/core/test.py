@@ -807,7 +807,7 @@ class Test(unittest.TestCase, TestData):
         try:
             if skip_test is False:
                 self.setUp()
-        except (exceptions.TestSetupSkip, exceptions.TestSkipError) as details:
+        except exceptions.TestSkipError as details:
             skip_test = True
             stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
             raise exceptions.TestSkipError(details)
@@ -821,16 +821,6 @@ class Test(unittest.TestCase, TestData):
         else:
             try:
                 testMethod()
-            except exceptions.TestSetupSkip as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-                skip_illegal_msg = ('Calling skip() in places other than '
-                                    'setUp() is not allowed in avocado, you '
-                                    'must fix your test. Original skip exception: '
-                                    '%s' % details)
-                raise exceptions.TestError(skip_illegal_msg)
-            except exceptions.TestSkipError as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-                raise
             except exceptions.TestCancel as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 raise
@@ -848,13 +838,6 @@ class Test(unittest.TestCase, TestData):
             try:
                 if skip_test is False:
                     self.tearDown()
-            except exceptions.TestSetupSkip as details:
-                stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
-                skip_illegal_msg = ('Calling skip() in places other than '
-                                    'setUp() is not allowed in avocado, '
-                                    'you must fix your test. Original skip '
-                                    'exception: %s' % details)
-                raise exceptions.TestError(skip_illegal_msg)
             except exceptions.TestSkipError as details:
                 stacktrace.log_exc_info(sys.exc_info(), logger=LOG_JOB)
                 skip_illegal_msg = ('Using skip decorators in tearDown() '
@@ -1043,23 +1026,6 @@ class Test(unittest.TestCase, TestData):
         :type message: str
         """
         raise exceptions.TestError(message)
-
-    def skip(self, message=None):
-        """
-        Skips the currently running test.
-
-        This method should only be called from a test's setUp() method, not
-        anywhere else, since by definition, if a test gets to be executed, it
-        can't be skipped anymore. If you call this method outside setUp(),
-        avocado will mark your test status as ERROR, and instruct you to
-        fix your test in the error message.
-
-        :param message: an optional message that will be recorded in the logs
-        :type message: str
-        """
-        dep_msg = "WARNING: self.skip() will be deprecated. " \
-                  "Use 'self.cancel()' or the skip decorators"
-        raise exceptions.TestSetupSkip("[%s] %s" % (dep_msg, message))
 
     def cancel(self, message=None):
         """
