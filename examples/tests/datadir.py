@@ -26,9 +26,9 @@ class DataDirTest(Test):
         if c_file is None:
             self.cancel('Test is missing data file %s' % source)
         c_file_name = os.path.basename(c_file)
-        dest_c_file = os.path.join(self.srcdir, c_file_name)
+        dest_c_file = os.path.join(self.workdir, c_file_name)
         shutil.copy(c_file, dest_c_file)
-        build.make(self.srcdir,
+        build.make(self.workdir,
                    env={'CFLAGS': '-g -O0'},
                    extra_args='datadir')
 
@@ -36,7 +36,7 @@ class DataDirTest(Test):
         """
         Execute 'datadir'.
         """
-        cmd = os.path.join(self.srcdir, 'datadir')
+        cmd = os.path.join(self.workdir, 'datadir')
         cmd_result = process.run(cmd)
         self.log.info(cmd_result)
 

@@ -27,9 +27,9 @@ class Raise(Test):
         if c_file is None:
             self.cancel('Test is missing data file %s' % source)
         c_file_name = os.path.basename(c_file)
-        dest_c_file = os.path.join(self.srcdir, c_file_name)
+        dest_c_file = os.path.join(self.workdir, c_file_name)
         shutil.copy(c_file, dest_c_file)
-        build.make(self.srcdir,
+        build.make(self.workdir,
                    env={'CFLAGS': '-g -O0'},
                    extra_args='raise')
 
@@ -38,7 +38,7 @@ class Raise(Test):
         Execute 'raise'.
         """
         signum = self.params.get('signal_number', default=15)
-        cmd = os.path.join(self.srcdir, 'raise %d' % signum)
+        cmd = os.path.join(self.workdir, 'raise %d' % signum)
         cmd_result = process.run(cmd, ignore_status=True)
         self.log.info(cmd_result)
         if signum == 0:

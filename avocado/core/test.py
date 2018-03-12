@@ -529,6 +529,13 @@ class Test(unittest.TestCase, TestData):
 
     @property
     def srcdir(self):
+        """
+        This property is deprecated and will be removed in the future.
+        The :meth:`workdir` function should be used instead.
+        """
+        LOG_JOB.info("DEPRECATION NOTICE: the test's \"srcdir\" property is "
+                     "deprecated and will be removed in the future.  Please "
+                     "use the \"workdir\" property instead.")
         if self.__srcdir is None:
             self.__srcdir = utils_path.init_dir(self.workdir, 'src')
         return self.__srcdir
