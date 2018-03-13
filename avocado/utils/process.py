@@ -32,7 +32,7 @@ import threading
 import time
 
 from io import BytesIO, UnsupportedOperation
-from six import string_types
+from six import PY2, string_types
 
 from . import gdb
 from . import runtime
@@ -99,10 +99,28 @@ class CmdError(Exception):
             return "CmdError"
 
 
+def normalize_cmd(cmd):
+    """
+    Normalize cmd to be safe for ``shlex.split``
+    """
+    # FIXME: Use https://trello.com/c/wsd2z7WS/
+    # 1265-unify-py3-py2-default-encoding-handling when becomes
+    # available. For now hardcode "utf-8" as most suitable
+    # alternative.
+    if PY2:
+        if not isinstance(cmd, str):
+            cmd = cmd.encode("utf-8")
+    else:
+        if isinstance(cmd, bytes):
+            cmd = cmd.decode("utf-8")
+    return cmd
+
+
 def can_sudo(cmd=None):
     """
     Check whether sudo is available (or running as root)
     """
+    cmd = normalize_cmd(cmd)
     if os.getuid() == 0:    # Root
         return True
 
@@ -242,6 +260,7 @@ def binary_from_shell_cmd(cmd):
     :param cmd: simple shell-like binary
     :return: first found binary from the cmd
     """
+    cmd = normalize_cmd(cmd)
     try:
         cmds = shlex.split(cmd)
     except ValueError:
@@ -483,6 +502,7 @@ class SubProcess(object):
                     to be running after the process finishes.
         :raises: ValueError if incorrect values are given to parameters
         """
+        cmd = normalize_cmd(cmd)
         if sudo:
             self.cmd = self._prepend_sudo(cmd, shell)
         else:
@@ -859,7 +879,7 @@ class GDBSubProcess(object):
                      implementation, since the GDB wrapping code does not have
                      support to run commands in that way.
         """
-
+        cmd = normalize_cmd(cmd)
         self.cmd = cmd
 
         self.args = shlex.split(cmd)
@@ -1193,6 +1213,7 @@ def get_sub_process_klass(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
+    cmd = normalize_cmd(cmd)
     if should_run_inside_gdb(cmd):
         return GDBSubProcess
     elif should_run_inside_wrapper(cmd):
