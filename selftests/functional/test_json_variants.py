@@ -21,14 +21,16 @@ class VariantsDumpLoadTests(unittest.TestCase):
         os.chdir(basedir)
 
     def test_variants_dump(self):
-        content = ('[{"paths": ["/run/*"], '
-                   '"variant": [["/", []]], '
-                   '"variant_id": null}]')
         cmd_line = ('%s variants --json-variants-dump %s' %
                     (AVOCADO, self.variants_file))
         process.run(cmd_line)
         with open(self.variants_file, 'r') as file_obj:
-            self.assertEqual(file_obj.read(), content)
+            file_content = file_obj.read()
+            self.assertEqual(file_content[0:2], '[{')
+            self.assertIn('"paths": ["/run/*"]', file_content)
+            self.assertIn('"variant": [["/", []]]', file_content)
+            self.assertIn('"variant_id": null', file_content)
+            self.assertEqual(file_content[-2:], '}]')
 
     def test_run_load(self):
         content = ('[{"paths": ["/run/*"],'
