@@ -291,8 +291,10 @@ class CmdResult(object):
     :param pid: ID of the process
     :type pid: int
     :param encoding: the encoding to use for the text version
-                     of stdout and stderr, with the default being
-                     Python's own (:func:`sys.getdefaultencoding`).
+                     of stdout and stderr. Usually
+                     :func:`sys.getdefaultencoding` is used but on python2
+                     we override "ascii" for "utf-8" as standard py2 does
+                     not report encoding properly and "utf-8" usually fits.
     :type encoding: str
     """
 
@@ -310,6 +312,12 @@ class CmdResult(object):
         self.pid = pid
         if encoding is None:
             encoding = sys.getdefaultencoding()
+            if PY2 and encoding == "ascii":
+                # FIXME: Use https://trello.com/c/wsd2z7WS/
+                # 1265-unify-py3-py2-default-encoding-handling when becomes
+                # available. For now hardcode "utf-8" as most suitable
+                # alternative.
+                encoding = "utf-8"
         self.encoding = encoding
 
     @property

@@ -24,6 +24,7 @@ def probe_binary(binary):
 
 
 TRUE_CMD = probe_binary('true')
+ECHO_CMD = probe_binary('echo')
 
 
 class TestSubProcess(unittest.TestCase):
@@ -250,6 +251,16 @@ class TestProcessRun(unittest.TestCase):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    def test_run_unicode_output(self):
+        # Using encoded string as shlex does not support decoding
+        # but the behavior is exactly the same as if shell binary
+        # produced unicode
+        text = u"Avok\xe1do"
+        result = process.run("%s %s" % (ECHO_CMD, text))
+        self.assertEqual(result.stdout, text.encode('utf-8') + b'\n')
+        self.assertEqual(result.stdout_text, text + '\n')
 
 
 class MiscProcessTests(unittest.TestCase):
