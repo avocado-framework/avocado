@@ -307,6 +307,9 @@ class CmdResult(object):
         self.pid = pid
         if encoding is None:
             encoding = sys.getdefaultencoding()
+            if PY2 and encoding == "ascii":
+                # python2 fails to getdefaultencoding, let's assume utf-8
+                encoding = "utf-8"
         self.encoding = encoding
 
     @property
