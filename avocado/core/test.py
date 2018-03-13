@@ -394,7 +394,8 @@ class Test(unittest.TestCase, TestData):
 
         self.__runner_queue = runner_queue
 
-        self.__workdir = None
+        self.__workdir = os.path.join(data_dir.get_tmp_dir(),
+                                      self.name.str_filesystem)
         self.__srcdir_internal_access = False
         self.__srcdir_warning_logged = False
         self.__srcdir = None
@@ -531,9 +532,6 @@ class Test(unittest.TestCase, TestData):
 
     @property
     def workdir(self):
-        if self.__workdir is None:
-            self.__workdir = os.path.join(data_dir.get_tmp_dir(),
-                                          self.name.str_filesystem)
         return self.__workdir
 
     @property
