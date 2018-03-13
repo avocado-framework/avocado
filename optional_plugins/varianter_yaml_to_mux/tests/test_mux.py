@@ -228,9 +228,11 @@ class TestMuxTree(unittest.TestCase):
         variant1 = next(iter(mux1))
         variant2 = next(iter(mux2))
         self.assertNotEqual(variant1, variant2)
-        self.assertEqual(str(variant1), "{'paths': '', 'variant': "
-                         "[TreeNode(name='child1'), TreeNode(name="
-                         "'child2')], 'variant_id': 'child1-child2-9154'}")
+        str_variant = str(variant1)
+        self.assertIn("'paths': ''",  str_variant)
+        self.assertIn(("'variant': [TreeNode(name='child1'), "
+                       "TreeNode(name='child2')]"), str_variant)
+        self.assertIn("'variant_id': 'child1-child2-9154'", str_variant)
 
 
 class TestMultiplex(unittest.TestCase):
