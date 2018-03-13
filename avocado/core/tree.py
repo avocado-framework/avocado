@@ -200,6 +200,21 @@ class TreeNode(object):
         """ Inverted eq """
         return not self == other
 
+    def __hash__(self):
+        values = []
+        for item in self.value:
+            try:
+                values.append(hash(item))
+            except TypeError:
+                values.append(hash(str(item)))
+        children = []
+        for item in self.children:
+            try:
+                children.append(hash(item))
+            except TypeError:
+                children.append(hash(str(item)))
+        return hash((self.name, ) + tuple(values) + tuple(children))
+
     def fingerprint(self):
         """
         Reports string which represents the value of this node.
