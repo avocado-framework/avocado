@@ -418,7 +418,7 @@ class FDDrainer(object):
                 # and other logging handlers (custom ones?) also have
                 # the same interface, so let's try to use it if available
                 stream = getattr(handler, 'stream', None)
-                if stream is not None:
+                if (stream is not None) and (not stream.closed):
                     os.fsync(stream.fileno())
                 if hasattr(handler, 'close'):
                     handler.close()
