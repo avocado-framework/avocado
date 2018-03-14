@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import unittest
@@ -304,6 +305,41 @@ class FDDrainerTests(unittest.TestCase):
         self.assertEqual(fd_drainer.data.getvalue(),
                          b"should go to the log\n")
         self.assertTrue(handler.caught_record)
+
+    def test_flush_on_closed_handler(self):
+        handler = logging.StreamHandler(io.StringIO())
+        log = logging.getLogger("test_flush_on_closed_handler")
+        log.addHandler(handler)
+        read_fd, write_fd = os.pipe()
+        result = process.CmdResult()
+        fd_drainer = process.FDDrainer(read_fd, result, name="test",
+                                       stream_logger=log)
+        fd_drainer.start()
+        os.close(write_fd)
+        self.assertIsNotNone(fd_drainer._stream_logger)
+        one_stream_closed = False
+        for handler in fd_drainer._stream_logger.handlers:
+            stream = getattr(handler, 'stream', None)
+            if stream is not None:
+                if hasattr(stream, 'close'):
+                    # force closing the handler's stream to check if
+                    # flush will adapt to it
+                    stream.close()
+                    one_stream_closed = True
+        self.assertTrue(one_stream_closed)
+        fd_drainer.flush()
+
+    def test_flush_on_handler_with_no_fileno(self):
+        handler = logging.StreamHandler(io.StringIO())
+        log = logging.getLogger("test_flush_on_handler_with_no_fileno")
+        log.addHandler(handler)
+        read_fd, write_fd = os.pipe()
+        result = process.CmdResult()
+        fd_drainer = process.FDDrainer(read_fd, result, name="test",
+                                       stream_logger=log)
+        fd_drainer.start()
+        os.close(write_fd)
+        fd_drainer.flush()
 
 
 if __name__ == "__main__":
