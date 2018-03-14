@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 59.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -41,26 +41,43 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.g
 BuildArch: noarch
 BuildRequires: fabric
 BuildRequires: procps-ng
+BuildRequires: kmod
+%if 0%{?rhel} == 7
 BuildRequires: pystache
-BuildRequires: python-docutils
 BuildRequires: python-lxml
-BuildRequires: python-mock
-BuildRequires: python-psutil
-BuildRequires: python-requests
-BuildRequires: python-resultsdb_api
 BuildRequires: python-setuptools
-BuildRequires: python-sphinx
-BuildRequires: python-six
 BuildRequires: python-stevedore
+BuildRequires: python2-aexpect
 BuildRequires: python2-devel
+BuildRequires: python2-docutils
+BuildRequires: python2-mock
+BuildRequires: python2-psutil
+BuildRequires: python2-requests
+BuildRequires: python2-resultsdb_api
+BuildRequires: python2-six
+BuildRequires: python2-sphinx
 BuildRequires: yum
-BuildRequires: python-aexpect
+%else
+BuildRequires: pystache
+BuildRequires: python2-aexpect
+BuildRequires: python2-devel
+BuildRequires: python2-docutils
+BuildRequires: python2-lxml
+BuildRequires: python2-mock
+BuildRequires: python2-psutil
+BuildRequires: python2-requests
+BuildRequires: python2-resultsdb_api
+BuildRequires: python2-setuptools
+BuildRequires: python2-six
+BuildRequires: python2-sphinx
+BuildRequires: python2-stevedore
+%endif
 
 %if %{with_tests}
 BuildRequires: libvirt-python
 BuildRequires: perl-Test-Harness
 %if 0%{?rhel}
-BuildRequires: python-yaml
+BuildRequires: PyYAML
 %else
 BuildRequires: python2-yaml
 %endif
@@ -70,34 +87,16 @@ Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
 Requires: pyliblzma
+%if 0%{?rhel} == 7
 Requires: python
-Requires: python-requests
 Requires: python-setuptools
 Requires: python-stevedore
-
-# For compatibility reasons, let's mark this package as one that
-# provides the same functionality as the old package name and also
-# one that obsoletes the old package name, so that the new name is
-# favored.  These could (and should) be removed in the future.
-# These changes are backed by the following guidelines:
-# https://fedoraproject.org/wiki/Upgrade_paths_%E2%80%94_renaming_or_splitting_packages
-Obsoletes: %{srcname} < 47.0-1
-Provides: %{srcname} = %{version}-%{release}
-
-# For some strange reason, fabric on Fedora 24 does not require the
-# python-crypto package, but the fabric code always imports it.  Newer
-# fabric versions, such from Fedora 25 do conditional imports (try:
-# from Crypto import Random; except: Random = None) and thus do not
-# need this requirement.
-%if 0%{?fedora} == 24
-BuildRequires: python-crypto
-%endif
-
-%if 0%{?fedora} >= 25
-BuildRequires: kmod
-%endif
-%if 0%{?rhel} >= 7
-BuildRequires: kmod
+Requires: python2-requests
+%else
+Requires: python2
+Requires: python2-requests
+Requires: python2-setuptools
+Requires: python2-stevedore
 %endif
 
 %description
@@ -381,7 +380,7 @@ server.
 Summary: Avocado plugin to generate variants out of yaml files
 Requires: %{name} == %{version}
 %if 0%{?rhel}
-Requires: python-yaml
+Requires: PyYAML
 %else
 Requires: python2-yaml
 %endif
@@ -486,6 +485,13 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
+- Remove backward compatibility with name avocado
+- Remove hack to workaround fabric bugs on Fedora 24
+- Use real package name for python YAML package on EL
+- Use exact package names on requires
+- Remove unecessary conditional for kmod
+
 * Wed Feb 28 2018 Cleber Rosa <cleber@redhat.com> - 59.0-0
 - New upstream release
 - Added glib plugin subpackage
