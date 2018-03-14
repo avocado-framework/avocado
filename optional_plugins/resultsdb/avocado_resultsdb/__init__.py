@@ -114,9 +114,8 @@ class ResultsdbResultEvent(ResultEvents):
                 'status': state['status']}
 
         params = {}
-        for param in iteritems(state['params']):
-            params['param %s' % param[1]] = '%s (path: %s)' % (param[2],
-                                                               param[0])
+        for path, key, value in state['params']:
+            params['param %s' % key] = '%s (path: %s)' % (value, path)
         data.update(params)
 
         self.rdbapi.create_result(outcome, name, group, note, ref_url, **data)
