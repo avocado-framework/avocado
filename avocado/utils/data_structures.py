@@ -297,8 +297,8 @@ class DataSize(object):
         """
         if attr not in self.MULTIPLIERS:
             raise AttributeError('Attribute %s does not exist.' % attr)
-        return (self.value * self.MULTIPLIERS[self.unit] /
-                self.MULTIPLIERS[attr])
+        return int(self.value * self.MULTIPLIERS[self.unit] /
+                   self.MULTIPLIERS[attr])
 
     def __dir__(self):
         """

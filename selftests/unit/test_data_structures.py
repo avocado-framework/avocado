@@ -105,9 +105,11 @@ class TestDataSize(unittest.TestCase):
         self.assertRaises(data_structures.InvalidDataSize,
                           data_structures.DataSize, '10Mb')
 
+    def test_value_and_type(self):
+        self.assertIs(data_structures.DataSize('0b').b, 0)
+        self.assertIs(data_structures.DataSize('0t').b, 0)
+
     def test_values(self):
-        self.assertEqual(data_structures.DataSize('0b').b, 0)
-        self.assertEqual(data_structures.DataSize('0t').b, 0)
         self.assertEqual(data_structures.DataSize('10m').b, 10485760)
         self.assertEqual(data_structures.DataSize('10M').b, 10485760)
 
