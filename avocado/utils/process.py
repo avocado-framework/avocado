@@ -31,7 +31,7 @@ import sys
 import threading
 import time
 
-from io import BytesIO
+from io import BytesIO, UnsupportedOperation
 from six import string_types
 
 from . import gdb
@@ -419,7 +419,12 @@ class FDDrainer(object):
                 # the same interface, so let's try to use it if available
                 stream = getattr(handler, 'stream', None)
                 if (stream is not None) and (not stream.closed):
-                    os.fsync(stream.fileno())
+                    if hasattr(stream, 'fileno'):
+                        try:
+                            fileno = stream.fileno()
+                            os.fsync(fileno)
+                        except UnsupportedOperation:
+                            pass
                 if hasattr(handler, 'close'):
                     handler.close()
 
