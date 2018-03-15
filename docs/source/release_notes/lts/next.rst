@@ -88,6 +88,12 @@ introduced by the next LTS version are:
   might still modify this to better follow their conventions (eg.
   for RPM the original locations are used)
 
+* The exception raised by the utility functions in
+  :mod:`avocado.utils.memory` has been renamed from ``MemoryError``
+  and became :class:`avocado.utils.memory.MemError`.  The reason is
+  that ``MemoryError`` is a Python standard exception, that is
+  intended to be used on different situations.
+
 Complete list of changes
 ========================
 
