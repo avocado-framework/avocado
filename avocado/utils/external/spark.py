@@ -358,7 +358,7 @@ class GenericParser:
         return self._NULLABLE == sym[0:len(self._NULLABLE)]
 
     def skip(self, lhs_rhs, pos=0):
-        lhs, rhs = lhs_rhs
+        _, rhs = lhs_rhs
         n = len(rhs)
         while pos < n:
             if not self.isnullable(rhs[pos]):
@@ -374,7 +374,7 @@ class GenericParser:
         #
         kitems = []
         for rule, pos in self.states[state].items:
-            lhs, rhs = rule
+            _, rhs = rule
             if rhs[pos:pos + 1] == (sym,):
                 kitems.append((rule, self.skip(rule, pos + 1)))
         core = kitems
@@ -398,7 +398,7 @@ class GenericParser:
             worklist = X.items
             for item in worklist:
                 rule, pos = item
-                lhs, rhs = rule
+                _, rhs = rule
                 if pos == len(rhs):
                     X.complete.append(rule)
                     continue
@@ -474,19 +474,19 @@ class GenericParser:
                 rv.append(self.goto(state, t))
         return rv
 
-    def add(self, set, item, i=None, predecessor=None, causal=None):
+    def add(self, input_set, item, i=None, predecessor=None, causal=None):
         if predecessor is None:
-            if item not in set:
-                set.append(item)
+            if item not in input_set:
+                input_set.append(item)
         else:
             key = (item, i)
-            if item not in set:
+            if item not in input_set:
                 self.links[key] = []
-                set.append(item)
+                input_set.append(item)
             self.links[key].append((predecessor, causal))
 
     def makeSet(self, token, sets, i):
-        cur, next = sets[i], sets[i + 1]
+        cur, next_item = sets[i], sets[i + 1]
 
         ttype = token is not None and self.typestring(token) or None
         if ttype is not None:
@@ -500,16 +500,16 @@ class GenericParser:
             add = fn(state, arg)
             for k in add:
                 if k is not None:
-                    self.add(next, (k, parent), i + 1, ptr)
+                    self.add(next_item, (k, parent), i + 1, ptr)
                     nk = self.goto(k, None)
                     if nk is not None:
-                        self.add(next, (nk, i + 1))
+                        self.add(next_item, (nk, i + 1))
 
             if parent == i:
                 continue
 
             for rule in self.states[state].complete:
-                lhs, rhs = rule
+                lhs, _ = rule
                 for pitem in sets[parent]:
                     pstate, pparent = pitem
                     k = self.goto(pstate, lhs)
@@ -529,7 +529,7 @@ class GenericParser:
         #  then duplicates and inlines code to boost speed at the
         #  cost of extreme ugliness.
         #
-        cur, next = sets[i], sets[i + 1]
+        cur, next_item = sets[i], sets[i + 1]
         ttype = token is not None and self.typestring(token) or None
 
         for item in cur:
@@ -542,9 +542,9 @@ class GenericParser:
                     #INLINED --v
                     new = (k, parent)
                     key = (new, i + 1)
-                    if new not in next:
+                    if new not in next_item:
                         self.links[key] = []
-                        next.append(new)
+                        next_item.append(new)
                     self.links[key].append((ptr, None))
                     #INLINED --^
                     #nk = self.goto(k, None)
@@ -553,24 +553,24 @@ class GenericParser:
                         #self.add(next, (nk, i+1))
                         #INLINED --v
                         new = (nk, i + 1)
-                        if new not in next:
-                            next.append(new)
+                        if new not in next_item:
+                            next_item.append(new)
                         #INLINED --^
             else:
                 add = self.gotoST(state, token)
                 for k in add:
                     if k is not None:
-                        self.add(next, (k, parent), i + 1, ptr)
+                        self.add(next_item, (k, parent), i + 1, ptr)
                         #nk = self.goto(k, None)
                         nk = self.edges.get((k, None), None)
                         if nk is not None:
-                            self.add(next, (nk, i + 1))
+                            self.add(next_item, (nk, i + 1))
 
             if parent == i:
                 continue
 
             for rule in self.states[state].complete:
-                lhs, rhs = rule
+                lhs, _ = rule
                 for pitem in sets[parent]:
                     pstate, pparent = pitem
                     #k = self.goto(pstate, lhs)
@@ -610,7 +610,7 @@ class GenericParser:
             return links[0][1]
         choices = []
         rule2cause = {}
-        for p, c in links:
+        for _, c in links:
             rule = c[2]
             choices.append(rule)
             rule2cause[rule] = c
@@ -631,7 +631,7 @@ class GenericParser:
         return self.rule2func[self.new2old[rule]](attr)
 
     def buildTree(self, nt, item, tokens, k):
-        state, parent = item
+        state, _ = item
 
         choices = []
         for rule in self.states[state].complete:
@@ -672,21 +672,21 @@ class GenericParser:
         sortlist = []
         name2index = {}
         for i in range(len(rules)):
-            lhs, rhs = rule = rules[i]
+            _, rhs = rule = rules[i]
             name = self.rule2name[self.new2old[rule]]
             sortlist.append((len(rhs), name))
             name2index[name] = i
         sortlist.sort()
-        list = map(lambda a, b: b, sortlist)
-        return rules[name2index[self.resolve(list)]]
+        result_list = map(lambda a, b: b, sortlist)
+        return rules[name2index[self.resolve(result_list)]]
 
-    def resolve(self, list):
+    def resolve(self, input_list):
         #
         #  Resolve ambiguity in favor of the shortest RHS.
         #  Since we walk the tree from the top down, this
         #  should effectively resolve in favor of a "shift".
         #
-        return list[0]
+        return input_list[0]
 
 #
 #  GenericASTBuilder automagically constructs a concrete/abstract syntax tree
@@ -706,7 +706,7 @@ class GenericASTBuilder(GenericParser):
     def preprocess(self, rule, func):
         rebind = (lambda lhs, self=self:
                   lambda args, lhs=lhs, self=self: self.buildASTNode(args, lhs))
-        lhs, rhs = rule
+        lhs, _ = rule
         return rule, rebind(lhs)
 
     def buildASTNode(self, args, lhs):
@@ -721,8 +721,8 @@ class GenericASTBuilder(GenericParser):
     def terminal(self, token):
         return token
 
-    def nonterminal(self, type, args):
-        rv = self.AST(type)
+    def nonterminal(self, token_type, args):
+        rv = self.AST(token_type)
         rv[:len(args)] = args
         return rv
 
@@ -840,11 +840,11 @@ class GenericASTMatcher(GenericParser):
         self.match_r(ast)
         self.parse(self.input)
 
-    def resolve(self, list):
+    def resolve(self, input_list):
         #
         #  Resolve ambiguity in favor of the longest RHS.
         #
-        return list[-1]
+        return input_list[-1]
 
 
 def _dump(tokens, sets, states):

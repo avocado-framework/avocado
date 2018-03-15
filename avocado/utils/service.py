@@ -356,7 +356,7 @@ class _ServiceResultParser(object):
         :type command_list: list
         """
         self.commands = command_list
-        for command, requires_root in self.commands:
+        for command, _ in self.commands:
             setattr(self, command, result_parser(command))
 
     @staticmethod
@@ -391,7 +391,7 @@ class _ServiceCommandGenerator(object):
             :type command_list: list
         """
         self.commands = command_list
-        for command, requires_root in self.commands:
+        for command, _ in self.commands:
             setattr(self, command, command_generator(command))
 
 

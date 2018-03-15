@@ -529,7 +529,6 @@ class TestRunner(object):
                        "test %s to not to fill variants."
                        % (variant, template))
                 raise NotImplementedError(msg)
-            params = klass_parameters["params"]
             variant_id = varianter.generate_variant_id(var)
             return template, {"variant": var,
                               "variant_id": variant_id,

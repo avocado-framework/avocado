@@ -164,7 +164,6 @@ class Asset(object):
 
     def _compute_hash(self):
         result = crypto.hash_file(self.asset_file, algorithm=self.algorithm)
-        basename = os.path.basename(self.asset_file)
         with open(self.hashfile, 'w') as f:
             f.write('%s %s\n' % (self.algorithm, result))
 

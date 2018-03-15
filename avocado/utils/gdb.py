@@ -221,19 +221,20 @@ def string_to_hex(text):
     return "".join(map(format_as_hex, text))
 
 
-def remote_checksum(input):
+def remote_checksum(input_message):
     """
     Calculates a remote message checksum
 
-    :param input: the message input payload, without the start and end markers
-    :type input: str
+    :param input_message: the message input payload, without the start and end
+                          markers
+    :type input_message: str
     :returns: two digit checksum
     :rtype: str
     """
-    sum = 0
-    for i in input:
-        sum += ord(i)
-    result = sum % 256
+    total = 0
+    for i in input_message:
+        total += ord(i)
+    result = total % 256
 
     hexa = "%2x" % result
     return hexa.lower()
@@ -775,7 +776,7 @@ class GDBRemote(object):
             raise NotConnectedError
 
         data = remote_encode(command_data)
-        sent = self._socket.send(data)
+        self._socket.send(data)
 
         if not self.no_ack_mode:
             transmission_result = self._socket.recv(1)

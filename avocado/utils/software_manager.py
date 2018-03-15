@@ -1142,8 +1142,7 @@ def main():
     parser.add_option('--verbose', dest="debug", action='store_true',
                       help='include debug messages in console output')
 
-    options, args = parser.parse_args()
-    debug = options.debug
+    _, args = parser.parse_args()
     software_manager = SoftwareManager()
     if args:
         action = args[0]
