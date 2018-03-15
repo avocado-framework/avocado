@@ -401,7 +401,6 @@ class Test(unittest.TestCase, TestData):
         if base_tmpdir is None:
             base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
         self.__workdir = utils_path.init_dir(base_tmpdir, basename)
-        self.__srcdir_internal_access = False
         self.__srcdir_warning_logged = False
         self.__srcdir = utils_path.init_dir(self.workdir, 'src')
 
@@ -537,7 +536,7 @@ class Test(unittest.TestCase, TestData):
         This property is deprecated and will be removed in the future.
         The :meth:`workdir` function should be used instead.
         """
-        if not (self.__srcdir_internal_access or self.__srcdir_warning_logged):
+        if not self.__srcdir_warning_logged:
             LOG_JOB.warn("DEPRECATION NOTICE: the test's \"srcdir\" property "
                          "is deprecated and is planned to be removed no later "
                          "than May 11 2018. Please use the \"workdir\" "
@@ -958,14 +957,7 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
         if self.__sysinfo_enabled:
             os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
-        # srcdir is deprecated and will cause a test warning when
-        # accessed.  It seems unfair to return a warning for all
-        # tests because Avocado itself will access that property.
-        # this is a hack to be removed when srcdir is also removed
-        # for good.
-        self.__srcdir_internal_access = True
-        os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
-        self.__srcdir_internal_access = False
+        os.environ['AVOCADO_TEST_SRCDIR'] = self.__srcdir
 
     def run_avocado(self):
         """
