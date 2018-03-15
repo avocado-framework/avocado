@@ -18,3 +18,4 @@ optional plugins:
    yaml_loader
    golang
    glib
+   Cit
