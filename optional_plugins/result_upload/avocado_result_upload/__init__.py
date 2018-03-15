@@ -84,7 +84,7 @@ class ResultUploadCLI(CLI):
             def_ssh = ('ssh -oLogLevel=error -o stricthostkeychecking=no'
                        ' -o userknownhostsfile=/dev/null'
                        ' -o batchmode=yes -o passwordauthentication=no')
-            def_upload_cmd = 'rsync -arz -e \'%s \'' % def_ssh
+            def_upload_cmd = '%s -arz -e \'%s \'' % (rsync_bin, def_ssh)
         except utils_path.CmdNotFoundError:
             def_upload_cmd = None
 
