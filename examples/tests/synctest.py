@@ -29,8 +29,8 @@ class SyncTest(Test):
         tarball_path = self.get_data(sync_tarball)
         if tarball_path is None:
             self.cancel('Test is missing data file %s' % tarball_path)
-        archive.extract(tarball_path, self.srcdir)
-        srcdir = os.path.join(self.srcdir, 'synctest')
+        archive.extract(tarball_path, self.workdir)
+        srcdir = os.path.join(self.workdir, 'synctest')
         os.chdir(srcdir)
         if self.params.get('debug_symbols', default=True):
             build.make(srcdir,

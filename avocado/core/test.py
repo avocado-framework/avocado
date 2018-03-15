@@ -394,6 +394,8 @@ class Test(unittest.TestCase, TestData):
         self.__runner_queue = runner_queue
 
         self.__workdir = None
+        self.__srcdir_internal_access = False
+        self.__srcdir_warning_logged = False
         self.__srcdir = None
 
         if self.filename:
@@ -529,6 +531,16 @@ class Test(unittest.TestCase, TestData):
 
     @property
     def srcdir(self):
+        """
+        This property is deprecated and will be removed in the future.
+        The :meth:`workdir` function should be used instead.
+        """
+        if not (self.__srcdir_internal_access or self.__srcdir_warning_logged):
+            LOG_JOB.warn("DEPRECATION NOTICE: the test's \"srcdir\" property "
+                         "is deprecated and is planned to be removed no later "
+                         "than May 11 2018. Please use the \"workdir\" "
+                         "property instead.")
+            self.__srcdir_warning_logged = True
         if self.__srcdir is None:
             self.__srcdir = utils_path.init_dir(self.workdir, 'src')
         return self.__srcdir
@@ -941,12 +953,19 @@ class Test(unittest.TestCase, TestData):
         if self.datadir is not None:
             os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
         os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
-        os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
         if self.__sysinfo_enabled:
             os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
+        # srcdir is deprecated and will cause a test warning when
+        # accessed.  It seems unfair to return a warning for all
+        # tests because Avocado itself will access that property.
+        # this is a hack to be removed when srcdir is also removed
+        # for good.
+        self.__srcdir_internal_access = True
+        os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
+        self.__srcdir_internal_access = False
 
     def run_avocado(self):
         """

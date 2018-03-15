@@ -621,15 +621,15 @@ an example that does that::
             # Build the synctest suite
             self.cwd = os.getcwd()
             tarball_path = self.get_data(sync_tarball)
-            archive.extract(tarball_path, self.srcdir)
-            self.srcdir = os.path.join(self.srcdir, 'synctest')
-            build.make(self.srcdir)
+            archive.extract(tarball_path, self.workdir)
+            self.workdir = os.path.join(self.workdir, 'synctest')
+            build.make(self.workdir)
 
         def test(self):
             """
             Execute synctest with the appropriate params.
             """
-            os.chdir(self.srcdir)
+            os.chdir(self.workdir)
             cmd = ('./synctest %s %s' %
                    (self.sync_length, self.sync_loop))
             process.system(cmd)
@@ -677,7 +677,7 @@ inside the avocado ``data_dir`` location to put the fetched files in.
         def setUp(self):
             stress = 'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz'
             tarball = self.fetch_asset(stress)
-            archive.extract(tarball, self.srcdir)
+            archive.extract(tarball, self.workdir)
     ...
 
   In this case, ``fetch_asset()`` will download the file from the url provided,
@@ -690,7 +690,7 @@ inside the avocado ``data_dir`` location to put the fetched files in.
         def setUp(self):
             stress = 'http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz'
             tarball = self.fetch_asset(stress)
-            archive.extract(tarball, self.srcdir)
+            archive.extract(tarball, self.workdir)
     ...
 
   In this case, we try to find ``stress-1.0.4.tar.gz`` file in ``/mnt/files``
@@ -708,7 +708,7 @@ inside the avocado ``data_dir`` location to put the fetched files in.
                       'ftp://foo.bar/stress-1.0.4.tar.gz']
             tarball = self.fetch_asset(st_name, asset_hash=st_hash,
                                        locations=st_loc)
-            archive.extract(tarball, self.srcdir)
+            archive.extract(tarball, self.workdir)
     ...
 
   In this case, we try to download ``stress-1.0.4.tar.gz`` from the provided
@@ -1669,8 +1669,6 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/avocado_Bjr_rd/my_test.sh                                                                  |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_SRCDIR         | Source directory for the test         | /var/tmp/avocado_Bjr_rd/my-test.sh/src                                                              |
-+-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_XhEdo/                                                                             |
 |                             | `teststmpdir` plugin. The directory   |                                                                                                     |
 |                             | is persistent throughout the tests    |                                                                                                     |
@@ -1686,6 +1684,11 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AVOCADO_TEST_SRCDIR         | Source directory for the test         | /var/tmp/avocado_Bjr_rd/my-test.sh/src                                                              |
++-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
+
+.. warning:: ``AVOCADO_TEST_SRCDIR`` is deprecated and will be removed
+             soon.  Please use ``AVOCADO_TEST_WORKDIR`` instead.
 
 
 SIMPLE Tests BASH extensions
