@@ -115,7 +115,7 @@ class TestSkipDecorators(unittest.TestCase):
                     '%s' % self.test_module,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout)
+        json_results = json.loads(result.stdout_text)
         debuglog = json_results['debuglog']
 
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
@@ -135,7 +135,7 @@ class TestSkipDecorators(unittest.TestCase):
                     '%s' % self.skip_setup,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout)
+        json_results = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
         self.assertEqual(json_results['skip'], 1)
 
@@ -149,7 +149,7 @@ class TestSkipDecorators(unittest.TestCase):
                     '%s' % self.bad_teardown,
                     '--json -']
         result = process.run(' '.join(cmd_line), ignore_status=True)
-        json_results = json.loads(result.stdout)
+        json_results = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
         self.assertEqual(json_results['errors'], 1)
 

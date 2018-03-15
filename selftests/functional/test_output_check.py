@@ -159,7 +159,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          "Avocado did not return rc %d:\n%s" %
                          (expected_rc, result))
 
-        json_result = json.loads(result.stdout)
+        json_result = json.loads(result.stdout_text)
         job_log = json_result['debuglog']
         stdout_diff = os.path.join(json_result['tests'][0]['logdir'],
                                    'stdout.diff')

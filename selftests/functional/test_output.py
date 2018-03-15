@@ -185,7 +185,7 @@ class OutputTest(unittest.TestCase):
         test.save()
         result = process.run("%s run --job-results-dir %s --sysinfo=off "
                              "--json - -- %s" % (AVOCADO, self.tmpdir, test))
-        res = json.loads(result.stdout)
+        res = json.loads(result.stdout_text)
         joblog = res["debuglog"]
         exps = [b"[stdout] top_print", b"[stdout] top_stdout",
                 b"[stderr] top_stderr", b"[stdout] top_process",
@@ -211,7 +211,7 @@ class OutputTest(unittest.TestCase):
         result = process.run("%s run --job-results-dir %s --sysinfo=off "
                              "--output-check-record=combined "
                              "--json - -- %s" % (AVOCADO, self.tmpdir, test))
-        res = json.loads(result.stdout)
+        res = json.loads(result.stdout_text)
         testdir = res["tests"][0]["logdir"]
         with open(os.path.join(testdir, "output")) as output_file:
             self.assertEqual("test_process__test_stderr____test_stdout__",
@@ -238,7 +238,7 @@ class OutputTest(unittest.TestCase):
                                                                    self.tmpdir,
                                                                    test.path)
             result = process.run(cmd)
-            res = json.loads(result.stdout)
+            res = json.loads(result.stdout_text)
             testdir = res["tests"][0]["logdir"]
             for output_file in ('stdout', 'stderr', 'output'):
                 output_file_path = os.path.join(testdir, output_file)
@@ -260,7 +260,7 @@ class OutputTest(unittest.TestCase):
             cmd = ("%s run --job-results-dir %s --sysinfo=off "
                    "--json - -- %s") % (AVOCADO, self.tmpdir, test.path)
             result = process.run(cmd)
-            res = json.loads(result.stdout)
+            res = json.loads(result.stdout_text)
             testdir = res["tests"][0]["logdir"]
             stdout_path = os.path.join(testdir, 'stdout')
             self.assertTrue(os.path.exists(stdout_path))
@@ -340,7 +340,7 @@ class OutputPluginTest(unittest.TestCase):
                     '--journal --xunit %s --json - passtest.py' %
                     (AVOCADO, self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
-        output = result.stdout + result.stderr
+        output = result.stdout_text + result.stderr_text
         expected_rc = exit_codes.AVOCADO_ALL_OK
         try:
             self.assertEqual(result.exit_status, expected_rc,

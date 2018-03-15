@@ -269,7 +269,7 @@ class RunnerOperationTest(unittest.TestCase):
                               " --json -" % (AVOCADO, self.tmpdir, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-            results = json.loads(res.stdout)
+            results = json.loads(res.stdout_text)
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              "%s != %s\n%s" % (results["tests"][0]["status"],
                                                "ERROR", res))
@@ -288,7 +288,7 @@ class RunnerOperationTest(unittest.TestCase):
                               "--json - --job-timeout 1" % (AVOCADO, self.tmpdir, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-            results = json.loads(res.stdout)
+            results = json.loads(res.stdout_text)
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              "%s != %s\n%s" % (results["tests"][0]["status"],
                                                "ERROR", res))
@@ -310,7 +310,7 @@ class RunnerOperationTest(unittest.TestCase):
                               "--json -" % (AVOCADO, self.tmpdir, tst),
                               ignore_status=True)
             self.assertEqual(res.exit_status, exit_codes.AVOCADO_TESTS_FAIL)
-            results = json.loads(res.stdout)
+            results = json.loads(res.stdout_text)
             self.assertEqual(results["tests"][0]["status"], "ERROR",
                              "%s != %s\n%s" % (results["tests"][0]["status"],
                                                "ERROR", res))
@@ -477,7 +477,7 @@ class RunnerOperationTest(unittest.TestCase):
                     'passtest.py --json -' % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         self.assertEqual(result.exit_status, exit_codes.AVOCADO_ALL_OK)
-        r = json.loads(result.stdout)
+        r = json.loads(result.stdout_text)
         int(r['job_id'], 16)  # it's an hex number
         self.assertEqual(len(r['job_id']), 40)
 
@@ -505,7 +505,7 @@ class RunnerOperationTest(unittest.TestCase):
         cmd = ("%s run --sysinfo=off passtest.py failtest.py "
                "gendata.py --json - --mux-inject foo:1 bar:2 baz:3 foo:foo:a"
                " foo:bar:b foo:baz:c bar:bar:bar --dry-run" % AVOCADO)
-        result = json.loads(process.run(cmd).stdout)
+        result = json.loads(process.run(cmd).stdout_text)
         debuglog = result['debuglog']
         log = genio.read_file(debuglog)
         # Remove the result dir
@@ -633,7 +633,7 @@ class RunnerHumanOutputTest(unittest.TestCase):
         cmd = ("%s run --job-results-dir %s --json - "
                "cancelonsetup.py" % (AVOCADO, self.tmpdir))
         result = process.run(cmd)
-        result = json.loads(result.stdout)
+        result = json.loads(result.stdout_text)
         jobid = str(result["job_id"])
         cmd = ("%s run --job-results-dir %s --replay %s "
                "--replay-test-status PASS" % (AVOCADO, self.tmpdir, jobid))
@@ -866,8 +866,8 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
                     ' %s --json -' % (AVOCADO, self.config_file.path,
                                       self.tmpdir, warn_script.path))
-        result = process.system_output(cmd_line, ignore_status=True)
-        json_results = json.loads(result)
+        result = process.run(cmd_line, ignore_status=True)
+        json_results = json.loads(result.stdout_text)
         self.assertEquals(json_results['tests'][0]['status'], 'WARN')
         warn_script.remove()
 
@@ -879,8 +879,8 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
                     ' %s --json -' % (AVOCADO, self.config_file.path,
                                       self.tmpdir, skip_script.path))
-        result = process.system_output(cmd_line, ignore_status=True)
-        json_results = json.loads(result)
+        result = process.run(cmd_line, ignore_status=True)
+        json_results = json.loads(result.stdout_text)
         self.assertEquals(json_results['tests'][0]['status'], 'SKIP')
         skip_script.remove()
 
@@ -1261,7 +1261,7 @@ class PluginsJSONTest(AbsPluginsTest, unittest.TestCase):
         if external_runner is not None:
             cmd_line += " --external-runner '%s'" % external_runner
         result = process.run(cmd_line, ignore_status=True)
-        json_output = result.stdout
+        json_output = result.stdout_text
         self.assertEqual(result.exit_status, e_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (e_rc, result))

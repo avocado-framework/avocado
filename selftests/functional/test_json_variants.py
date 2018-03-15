@@ -49,7 +49,7 @@ class VariantsDumpLoadTests(unittest.TestCase):
                     '--job-results-dir %s --json -' %
                     (AVOCADO, self.variants_file, self.tmpdir))
         result = process.run(cmd_line)
-        json_result = json.loads(result.stdout)
+        json_result = json.loads(result.stdout_text)
         self.assertEqual(json_result["pass"], 2)
         self.assertEqual(json_result["tests"][0]["id"],
                          "1-passtest.py:PassTest.test;foo-0ead")
