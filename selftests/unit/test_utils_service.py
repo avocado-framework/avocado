@@ -36,9 +36,9 @@ class TestSystemd(unittest.TestCase):
             command_generator)
 
     def test_all_commands(self):
-        for cmd, requires_root in ((c, r) for (c, r) in
-                                   self.service_command_generator.commands if
-                                   c not in ["list", "set_target"]):
+        for cmd, _ in ((c, r) for (c, r) in
+                       self.service_command_generator.commands if
+                       c not in ["list", "set_target"]):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
@@ -62,9 +62,9 @@ class TestSysVInit(unittest.TestCase):
 
     def test_all_commands(self):
         command_name = "service"
-        for cmd, requires_root in ((c, r) for (c, r) in
-                                   self.service_command_generator.commands if
-                                   c not in ["list", "set_target"]):
+        for cmd, _ in ((c, r) for (c, r) in
+                       self.service_command_generator.commands if
+                       c not in ["list", "set_target"]):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":

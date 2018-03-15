@@ -496,7 +496,6 @@ class RemoteTestRunner(TestRunner):
         paramiko_logger = logging.getLogger('paramiko')
         fabric_logger = logging.getLogger('avocado.fabric')
         remote_logger = logging.getLogger('avocado.remote')
-        app_logger = logging.getLogger('avocado.debug')
         fmt = ('%(asctime)s %(module)-10.10s L%(lineno)-.4d %('
                'levelname)-5.5s| %(message)s')
         formatter = logging.Formatter(fmt=fmt, datefmt='%H:%M:%S')

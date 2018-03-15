@@ -160,7 +160,6 @@ class ProcessTest(unittest.TestCase):
 
 def file_lock_action(args):
     path, players, max_individual_timeout = args
-    start = time.time()
     max_timeout = max_individual_timeout * players
     with FileLock(path, max_timeout):
         sleeptime = random.random() / 100

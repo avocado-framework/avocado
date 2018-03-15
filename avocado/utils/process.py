@@ -1087,7 +1087,7 @@ class GDBSubProcess(object):
             self.gdb.set_break(b, ignore_error=True)
 
         self._run_pre_commands()
-        result = self.gdb.run(self.args[1:])
+        self.gdb.run(self.args[1:])
 
         # Collect gdbserver stdout and stderr file information for debugging
         # based on its process ID and stream (stdout or stderr)

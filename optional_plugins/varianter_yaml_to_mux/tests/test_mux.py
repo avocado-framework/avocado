@@ -228,7 +228,8 @@ class TestMuxTree(unittest.TestCase):
         variant1 = next(iter(mux1))
         variant2 = next(iter(mux2))
         self.assertNotEqual(variant1, variant2)
-        str_variant = str(variant1)
+        # test variant __str__()
+        str(variant1)
         variant_list = []
         for item in variant1:
             variant_list.append("'%s': '%s'" % (item, variant1[item]))

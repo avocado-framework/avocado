@@ -148,7 +148,7 @@ extensions = ['sphinx.ext.autodoc',
 
 master_doc = 'index'
 project = u'Avocado'
-copyright = u'2014-2015, Red Hat'
+copyright = u'2014-2015, Red Hat'   # pylint: disable=W0622
 
 version_file = os.path.join(root_path, 'VERSION')
 VERSION = genio.read_file(version_file).strip()

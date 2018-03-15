@@ -136,7 +136,6 @@ def find_class_and_methods(path, method_pattern=None, base_class=None):
     result = {}
     with open(path) as source_file:
         mod = ast.parse(source_file.read(), path)
-    modules = modules_imported_as(mod)
 
     for statement in mod.body:
         if isinstance(statement, ast.ClassDef):

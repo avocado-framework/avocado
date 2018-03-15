@@ -21,7 +21,7 @@ class ResultTest(unittest.TestCase):
 
     def test_result_job_without_id(self):
         args = argparse.Namespace()
-        result = Result(FakeJob(args))
+        Result(FakeJob(args))
         self.assertRaises(AttributeError, Result, FakeJobMissingUniqueId(args))
 
 
