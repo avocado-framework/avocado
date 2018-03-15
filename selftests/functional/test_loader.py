@@ -331,7 +331,7 @@ class LoaderTestFunctional(unittest.TestCase):
         cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"
                % (AVOCADO, self.tmpdir, test_path))
         result = process.run(cmd, ignore_status=True)
-        jres = json.loads(result.stdout)
+        jres = json.loads(result.stdout_text)
         self.assertEqual(result.exit_status, 1, result)
         exps = [("unittests.Second.test_fail", "FAIL"),
                 ("unittests.Second.test_error", "ERROR"),

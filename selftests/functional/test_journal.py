@@ -23,7 +23,7 @@ class JournalPluginTests(unittest.TestCase):
                          '--journal examples/tests/passtest.py'
                          % (AVOCADO, self.tmpdir))
         self.result = process.run(self.cmd_line, ignore_status=True)
-        data = json.loads(self.result.stdout)
+        data = json.loads(self.result.stdout_text)
         self.job_id = data['job_id']
         jfile = os.path.join(os.path.dirname(data['debuglog']), '.journal.sqlite')
         self.db = sqlite3.connect(jfile)

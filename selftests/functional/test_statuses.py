@@ -144,7 +144,7 @@ class TestStatuses(unittest.TestCase):
                (AVOCADO, test_file, self.tmpdir))
 
         results = process.run(cmd, ignore_status=True)
-        self.results = json.loads(results.stdout)
+        self.results = json.loads(results.stdout_text)
 
     def test(self):
         missing_tests = []
