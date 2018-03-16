@@ -369,6 +369,8 @@ class Test(unittest.TestCase, TestData):
         self.__log_warn_used = False
         self.log.warn = self.log.warning = record_and_warn
 
+        self.log.info('INIT %s', self.name)
+
         paths = ['/test/*']
         if params is None:
             params = []
@@ -378,8 +380,6 @@ class Test(unittest.TestCase, TestData):
                                                  self.__log.name)
         default_timeout = getattr(self, "timeout", None)
         self.timeout = self.params.get("timeout", default=default_timeout)
-
-        self.log.info('START %s', self.name)
 
         self.__status = None
         self.__fail_reason = None
@@ -608,6 +608,7 @@ class Test(unittest.TestCase, TestData):
         return "Test(%r)" % self.name
 
     def _tag_start(self):
+        self.log.info('START %s', self.name)
         self.__running = True
         self.time_start = time.time()
 
