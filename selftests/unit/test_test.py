@@ -90,7 +90,7 @@ class TestClassTestUnit(unittest.TestCase):
         tst = check("a" * 255, "whatever", {"variant_id": "whatever-else"},
                     "a" * 255)
         # Impossible to store (uid does not fit
-        self.assertRaises(AssertionError, check, "a" * 256, "whatever",
+        self.assertRaises(RuntimeError, check, "a" * 256, "whatever",
                           {"variant_id": "else"}, None)
 
         self.assertEqual(os.path.basename(tst.workdir),
@@ -347,7 +347,7 @@ class TestID(unittest.TestCase):
         raised.
         """
         test_id = test.TestID(1, 'test', no_digits=256)
-        self.assertRaises(AssertionError, lambda: test_id.str_filesystem)
+        self.assertRaises(RuntimeError, lambda: test_id.str_filesystem)
 
     def test_uid_large_name(self):
         """

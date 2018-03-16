@@ -153,7 +153,8 @@ class TestID(object):
         For Test ID "001-mytest;foo", examples of shortened file
         system versions include "001-mytest;f" or "001-myte;foo".
 
-        :raises: AssertionError
+        :raises: RuntimeError if the test ID cannot be converted to a
+                 filesystem representation.
         """
         test_id = str(self)
         test_id_fs = astring.string_to_safe_path(test_id)
@@ -166,9 +167,9 @@ class TestID(object):
         elif len(self.str_uid) <= len(test_id_fs):   # full uid
             return astring.string_to_safe_path(self.str_uid + self.str_variant)
         else:       # not even uid could be stored in fs
-            raise AssertionError('Test uid is too long to be stored on the '
-                                 'filesystem: "%s"\nFull Test ID: "%s"'
-                                 % (self.str_uid, str(self)))
+            raise RuntimeError('Test ID is too long to be stored on the '
+                               'filesystem: "%s"\nFull Test ID: "%s"'
+                               % (self.str_uid, str(self)))
 
 
 class TestData(object):
@@ -570,9 +571,10 @@ class Test(unittest.TestCase, TestData):
         """
         Override the runner_queue
         """
-        self.assertTrue(self.__runner_queue is None, "Overriding of runner_"
-                        "queue multiple times is not allowed -> old=%s new=%s"
-                        % (self.__runner_queue, runner_queue))
+        if self.__runner_queue is not None:
+            raise RuntimeError("Overriding of runner_queue multiple "
+                               "times is not allowed -> old=%s new=%s"
+                               % (self.__runner_queue, runner_queue))
         self.__runner_queue = runner_queue
 
     @property
@@ -1206,7 +1208,8 @@ class ExternalRunnerTest(SimpleTest):
                  external_runner=None, external_runner_argument=None):
         if external_runner_argument is None:
             external_runner_argument = name.name
-        self.assertIsNotNone(external_runner, "External runner test requires "
+        if external_runner is None:
+            raise ValueError("External runner test requires a valid "
                              "external_runner parameter, got None instead.")
         self.external_runner = external_runner
         super(ExternalRunnerTest, self).__init__(name, params, base_logdir,
