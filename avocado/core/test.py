@@ -532,10 +532,8 @@ class Test(unittest.TestCase, TestData):
     @property
     def workdir(self):
         if self.__workdir is None:
-            base_logdir = os.path.basename(self.logdir)
-            safe_base_logdir = base_logdir.replace(':', '_').replace(';', '_')
             self.__workdir = os.path.join(data_dir.get_tmp_dir(),
-                                          safe_base_logdir)
+                                          self.name.str_filesystem)
         return self.__workdir
 
     @property
