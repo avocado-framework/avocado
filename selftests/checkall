@@ -92,12 +92,12 @@ parallel_selftests() {
         local TMPS=()
 
         for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
-            TMP=$(mktemp /tmp/avocad_parallel_unittest_output_XXXXXX)
-            TMPS+=("$TMP")
+            LOG=$(mktemp /tmp/avocad_parallel_unittest_output_XXXXXX)
+            TMPS+=("$LOG")
             if [ "$AVOCADO_PARALLEL_CHECK" == "SYNCHRONIZED" ]; then
-                ( run_slice_selftests "$LOCK_DIR" ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+                ( run_slice_selftests "$LOCK_DIR" ${ALL[@]:$I:$PER_SLICE} &> $LOG ) &
             else
-                ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+                ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $LOG ) &
             fi
             PIDS+=("$!")
             sleep 0.1
