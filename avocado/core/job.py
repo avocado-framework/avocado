@@ -97,6 +97,7 @@ class Job(object):
         #: directory.  If it's set to None, it means that the job results
         #: directory has not yet been created.
         self.logdir = None
+        self.logfile = None
         self._setup_job_results()
         raw_log_level = settings.get_value('job.output', 'loglevel',
                                            default='debug')
