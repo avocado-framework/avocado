@@ -8,7 +8,7 @@ run_rc() {
     CHECK=$1
     shift
     echo -e "\n\e[32mRunning '$1'\e[0m"
-    eval $*
+    time eval $*
     if [ $? != 0 ]; then
         echo -e "\e[31m$CHECK FAILED\e[0m"
         ERR+=("$CHECK")
@@ -19,12 +19,27 @@ run_rc() {
 }
 
 
+run_slice_selftests() {
+    LOCK_DIR="$1"; shift
+    for TEST in $*; do
+        python -m unittest -v "$TEST"
+        LOCK=$(mktemp "$LOCK_DIR/XXXXXX")
+        while [ -e "$LOCK" ]; do
+            sleep 0.01
+        done
+    done
+}
+
+
 parallel_selftests() {
     local START=$(date +%s)
     local ERR=0
     local FIND_UNITTESTS=$(readlink -f ./contrib/scripts/avocado-find-unittests)
     local NO_WORKERS=$(($(cat /proc/cpuinfo | grep -c processor) * 2))
+    NO_WORKERS=7
     local PY3=$(python --version 2>&1 | grep -q "$Python 3\.")$?
+    local LOCK_DIR=$(mktemp -d /tmp/avocad_selftest_XXXXXX)
+    local check_dir_script="$PWD/selftests/check_tmp_dirs"
 
     # The directories that may contain files with tests, from the Avocado core
     # and from all optional plugins
@@ -39,6 +54,7 @@ parallel_selftests() {
     fi
 
     declare -A TESTS
+    unset OLD_PWD
     for TEST_DIR in "${!DIR_GLOB_MAP[@]}"; do
         # tests in core, that is "selftests" expect the regular path, while
         # python -m unittest module.class.test_name won't work for tests on
@@ -55,8 +71,9 @@ parallel_selftests() {
         if [ -n "$THIS_DIR_TESTS" ]; then
             TESTS[$TEST_DIR]=${THIS_DIR_TESTS};
         fi
-        if [ -n $TEST_DIR ]; then
+        if [ "$OLD_PWD" ]; then
             cd $OLD_PWD
+            unset OLD_PWD
         fi
     done
 
@@ -68,19 +85,58 @@ parallel_selftests() {
 
         declare -a ALL
         ALL=(${TESTS[$TEST_DIR]})
-
         local PER_SLICE=$((${#ALL[@]} / $NO_WORKERS))
+        [ $((${#ALL[@]} % $NO_WORKERS)) -ne 0 ] && PER_SLICE=$(($PER_SLICE + 1))
         [ $PER_SLICE -eq 0 ] && PER_SLICE=1
         local PIDS=()
         local TMPS=()
 
         for I in $(seq 0 $PER_SLICE $((${#ALL[@]} - 1))); do
-            TMP=$(mktemp /tmp/avocado_parallel_unittest_output_XXXXXX)
+            TMP=$(mktemp /tmp/avocad_parallel_unittest_output_XXXXXX)
             TMPS+=("$TMP")
-            ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+            if [ "$AVOCADO_PARALLEL_CHECK" == "SYNCHRONIZED" ]; then
+                ( run_slice_selftests "$LOCK_DIR" ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+            else
+                ( python -m unittest ${ALL[@]:$I:$PER_SLICE} &> $TMP ) &
+            fi
             PIDS+=("$!")
             sleep 0.1
         done
+        # Update number of used workers
+        actual_workers=$(($I / $PER_SLICE + 1))
+        echo actual_workers: $actual_workers
+        last=$((${#ALL[@]} - $actual_workers * $PER_SLICE + $PER_SLICE))
+
+        if [ "$AVOCADO_PARALLEL_CHECK" == "SYNCHRONIZED" ]; then
+            for I in $(seq $PER_SLICE); do
+                [ $I -gt $last ] && active_workers=$(($actual_workers - 1)) || active_workers=$actual_workers
+                echo WAIT_FOR: $active_workers
+                while [ "$(ls -1 $LOCK_DIR/* 2>/dev/null | wc -l)" -ne "$active_workers" ]; do
+                    sleep 0.01
+                done
+                if ! $check_dir_script; then
+                    for I in $(seq 0 $((${#PIDS[@]} - 1))); do
+                        kill ${PIDS[$I]}
+                        echo
+                        echo
+                        echo "################################################"
+                        echo "# LOG OF WORKER $I"
+                        echo "################################################"
+                        cat ${TMPS[$I]}
+                        rm ${TMPS[$I]}
+                    done
+                    echo
+                    echo
+                    echo "################################################"
+                    echo "# Check interrupted due to check_tmp_dirs failure."
+                    echo "################################################"
+                    echo
+                    echo "Tests were executed in synchronized manner so check only last tests on each worker."
+                    exit -1
+                fi
+                rm $LOCK_DIR/*
+            done
+        fi
 
         FAILED_ONCE=()
         for I in $(seq 0 $((${#PIDS[@]} - 1))); do
@@ -160,25 +216,26 @@ results_dir_content() {
 }
 
 [ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR 2> /dev/null)"
-if [ "$TRAVIS" == "true" ]; then
-    run_rc lint 'RESULT=$(mktemp); inspekt lint --exclude=.git --enable W0102,W0611 &>$RESULT || { cat $RESULT; rm $RESULT; exit -1; }; rm $RESULT'
-else
-    run_rc lint 'inspekt lint --exclude=.git --enable W0102,W0611'
-fi
+#if [ "$TRAVIS" == "true" ]; then
+#    run_rc lint 'RESULT=$(mktemp); inspekt lint --exclude=.git --enable W0102,W0611 &>$RESULT || { cat $RESULT; rm $RESULT; exit -1; }; rm $RESULT'
+#else
+#    run_rc lint 'inspekt lint --exclude=.git --enable W0102,W0611'
+#fi
 # Skip checking test_utils_cpu.py due to inspektor bug
-run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
-run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
-run_rc boundaries 'selftests/modules_boundaries'
-run_rc signed-off-by signed_off_check
-if [ "$AVOCADO_PARALLEL_CHECK" ]; then
-    run_rc selftests parallel_selftests
-elif [ -z "$AVOCADO_SELF_CHECK" ]; then
-    run_rc selftests selftests/run
-else
-    CMD='scripts/avocado run --job-results-dir=$(mktemp -d) selftests/{unit,functional,doc}'
-    [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
-    run_rc selftests "$CMD"
-fi
+#run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'
+#run_rc style 'inspekt style --exclude=.git --disable E501,E265,W601,E402,E722'
+#run_rc boundaries 'selftests/modules_boundaries'
+#run_rc signed-off-by signed_off_check
+AVOCADO_PARALLEL_CHECK=SYNCHRONIZED run_rc selftests parallel_selftests
+#if [ "$AVOCADO_PARALLEL_CHECK" ]; then
+#    run_rc selftests parallel_selftests
+#elif [ -z "$AVOCADO_SELF_CHECK" ]; then
+#    run_rc selftests selftests/run
+#else
+#    CMD='scripts/avocado run --job-results-dir=$(mktemp -d) selftests/{unit,functional,doc}'
+#    [ ! $SELF_CHECK_CONTINUOUS ] && CMD+=" --failfast on"
+#    run_rc selftests "$CMD"
+#fi
 [ "$SKIP_RESULTSDIR_CHECK" ] || run_rc job-results results_dir_content "$RESULTS_DIR_CONTENT"
 
 if [ "$ERR" ]; then
