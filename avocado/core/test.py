@@ -60,7 +60,7 @@ TEST_STATE_ATTRIBUTES = ('name', 'logdir', 'logfile',
                          'status', 'running', 'paused',
                          'time_start', 'time_elapsed', 'time_end',
                          'fail_reason', 'fail_class', 'traceback',
-                         'params', 'timeout', 'whiteboard')
+                         'timeout', 'whiteboard')
 
 
 class RawFileHandler(logging.FileHandler):
@@ -642,6 +642,9 @@ class Test(unittest.TestCase, TestData):
         state['class_name'] = self.__class__.__name__
         state['job_logdir'] = self.job.logdir
         state['job_unique_id'] = self.job.unique_id
+        state['params'] = [(path, key, value)
+                           for path, key, value
+                           in self.params.iteritems()]
         return state
 
     def _register_log_file_handler(self, logger, formatter, filename,
