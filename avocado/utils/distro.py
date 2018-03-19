@@ -218,7 +218,7 @@ class Probe(object):
         release = UNKNOWN_DISTRO_RELEASE
         match = self._get_version_match()
         if match is not None:
-            if match.groups() > 1:
+            if len(match.groups()) > 1:
                 release = match.groups()[1]
         return release
 
