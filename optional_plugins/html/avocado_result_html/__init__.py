@@ -129,8 +129,9 @@ class ReportModel(object):
             params = ''
             try:
                 parameters = 'Params:\n'
-                for path, key, value in tst['params']:
-                    parameters += '  %s:%s => %s\n' % (path, key, value)
+                if tst['params']:
+                    for path, key, value in tst['params']:
+                        parameters += '  %s:%s => %s\n' % (path, key, value)
             except KeyError:
                 pass
             else:
