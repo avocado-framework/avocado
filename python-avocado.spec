@@ -29,7 +29,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 59.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -297,8 +297,6 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %package plugins-output-html
 Summary: Avocado HTML report plugin
 Requires: %{name} == %{version}, pystache
-Obsoletes: %{srcname}-plugins-output-html < 47.0-1
-Provides: %{srcname}-plugins-output-html = %{version}-%{release}
 
 %description plugins-output-html
 Adds to avocado the ability to generate an HTML report at every job results
@@ -317,8 +315,6 @@ Requires: fabric
 Requires: python-crypto
 BuildRequires: python-crypto
 %endif
-Obsoletes: %{srcname}-plugins-runner-remote < 47.0-1
-Provides: %{srcname}-plugins-runner-remote = %{version}-%{release}
 
 %description plugins-runner-remote
 Allows Avocado to run jobs on a remote machine, by means of an SSH
@@ -333,8 +329,6 @@ Summary: Avocado Runner for libvirt VM Execution
 Requires: %{name} == %{version}
 Requires: %{name}-plugins-runner-remote == %{version}
 Requires: libvirt-python
-Obsoletes: %{srcname}-plugins-runner-vm < 47.0-1
-Provides: %{srcname}-plugins-runner-vm = %{version}-%{release}
 
 %description plugins-runner-vm
 Allows Avocado to run jobs on a libvirt based VM, by means of
@@ -350,8 +344,6 @@ Summary: Avocado Runner for Execution on Docker Containers
 Requires: %{name} == %{version}
 Requires: %{name}-plugins-runner-remote == %{version}
 Requires: python-aexpect
-Obsoletes: %{srcname}-plugins-runner-docker < 47.0-1
-Provides: %{srcname}-plugins-runner-docker = %{version}-%{release}
 
 %description plugins-runner-docker
 Allows Avocado to run jobs on a Docker container by interacting with a
@@ -485,6 +477,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Mon Mar 19 2018 Cleber Rosa <cleber@redhat.com> - 59.0-2
+- Removed backward compatibility with name avocado on plugins
+
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
 - Remove hack to workaround fabric bugs on Fedora 24
