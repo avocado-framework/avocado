@@ -1714,6 +1714,8 @@ by ``avocado exec-path`` (if any).  Also, the example test
 .. tip:: These extensions may be available as a separate package.  For
          RPM packages, look for the ``bash`` sub-package.
 
+.. _test_type_simple_status:
+
 SIMPLE Tests Status
 ===================
 

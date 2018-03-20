@@ -158,6 +158,8 @@ is reported as CANCEL in Avocado as SKIP test meaning differs from our
 definition. Apart from that there should be no surprises when running
 unittests via Avocado.
 
+.. _test_type_simple:
+
 Simple
 ------
 

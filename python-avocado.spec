@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      ef2b6f3b14716ef76912bd71feb582f0226fa217
+        %global commit      6c9fb563adf92581fb9368dff68c447bea4364a4
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20180227
+        %global commit_date 20180424
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -39,8 +39,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 60.0
-Release: 2%{?gitrel}%{?dist}
+Version: 61.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -369,7 +369,7 @@ popd
 # Package build environments have the least amount of resources
 # we have observed so far.  Let's avoid tests that require too
 # much resources or are time sensitive
-AVOCADO_CHECK_LEVEL=0 %{__python2} selftests/run
+LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python2} selftests/run
 %if %{with_python3}
 %{__python3} setup.py develop --user
 pushd optional_plugins/html
@@ -396,7 +396,7 @@ popd
 # Package build environments have the least amount of resources
 # we have observed so far.  Let's avoid tests that require too
 # much resources or are time sensitive
-AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
+LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %endif
 %endif
 
@@ -588,6 +588,7 @@ defined in a yaml file(s).
 %package -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
 Requires: python3-%{srcname} == %{version}
+Requires: python3-yaml
 
 %description -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 Can be used to produce multiple test variants with test parameters
@@ -762,6 +763,11 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Apr 24 2018 Cleber Rosa <cleber@redhat.com> - 61.0-0
+- New release
+- Added python3-yaml require to varianter-yaml-to-mux package
+- Force a locale with utf-8 encoding to run tests
+
 * Wed Apr  4 2018 Cleber Rosa <cleber@redhat.com> - 60.0-2
 - Moved all requirements to python2-avocado and python3-avocado
 - Added python_provides macro on Python 3 package
