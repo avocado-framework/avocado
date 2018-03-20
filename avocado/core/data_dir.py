@@ -231,7 +231,8 @@ class _TmpDirTracker(Borg):
             try:
                 if os.path.isdir(tmp_dir):
                     shutil.rmtree(tmp_dir)
-            except AttributeError:
+            # Need catch AttributeError and TypeError.
+            except (AttributeError, TypeError):
                 pass
 
 
