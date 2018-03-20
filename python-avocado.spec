@@ -395,6 +395,7 @@ similar to the one used in the yaml_to_mux varianter plugin.
 
 %package plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
+Requires: %{name} == %{version}
 Requires: golang
 
 %description plugins-golang
@@ -476,6 +477,7 @@ Again Shell code (and possibly other similar shells).
 * Mon Mar 19 2018 Cleber Rosa <cleber@redhat.com> - 59.0-2
 - Removed backward compatibility with name avocado on plugins
 - Removed extra dependencies on Fedora 24 for runner-remote
+- Added python-avocado requirement for golang plugin
 
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
