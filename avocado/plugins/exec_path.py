@@ -14,6 +14,8 @@
 Libexec PATHs modifier
 """
 
+import os
+
 from pkg_resources import resource_filename
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd
@@ -34,4 +36,8 @@ class ExecPath(CLICmd):
 
         :param args: Command line args received from the run subparser.
         """
-        LOG_UI.debug(resource_filename("avocado", "libexec"))
+        system_wide = '/usr/libexec/avocado'
+        if os.path.isdir(system_wide):
+            LOG_UI.debug(system_wide)
+        else:
+            LOG_UI.debug(resource_filename("avocado", "libexec"))

@@ -203,8 +203,8 @@ popd
 %{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
 %{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
 %{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
-%{__mkdir} -p %{buildroot}%{_libexecdir}/
-ln -s %{python_sitelib}/avocado/libexec/ %{buildroot}%{_libexecdir}/avocado
+%{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
+%{__mv} %{buildroot}%{python_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
 
 %check
 %if %{with_tests}
@@ -479,7 +479,6 @@ A small set of utilities to interact with Avocado from the Bourne
 Again Shell code (and possibly other similar shells).
 
 %files bash
-%{python_sitelib}/avocado/libexec*
 %{_libexecdir}/avocado*
 
 %changelog
@@ -488,6 +487,7 @@ Again Shell code (and possibly other similar shells).
 - Removed extra dependencies on Fedora 24 for runner-remote
 - Added python-avocado requirement for golang plugin
 - Added new common sub-package
+- Make bash package independent of Python version
 
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
