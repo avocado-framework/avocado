@@ -45,7 +45,7 @@ class Raise(Test):
             expected_result = 0
             self.assertIn("I'm alive!", cmd_result.stdout)
         elif 0 < signum < 65:
-            expected_result = -signum
+            expected_result = -signum   # pylint: disable=E1130
         else:
             expected_result = 255
             self.assertIn("raise: Invalid argument", cmd_result.stderr)
