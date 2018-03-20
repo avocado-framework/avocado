@@ -420,8 +420,11 @@ class _MemInfoItem(DataSize):
     Representation of one item from /proc/meminfo
     """
     def __init__(self, name):
-        super(_MemInfoItem, self).__init__('%sk' % read_from_meminfo(name))
         self.name = name
+
+    def __getattr__(self, attr):
+        datasize = DataSize('%sk' % read_from_meminfo(self.name))
+        return getattr(datasize, attr)
 
 
 class MemInfo(object):
