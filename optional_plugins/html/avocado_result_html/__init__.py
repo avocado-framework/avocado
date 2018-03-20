@@ -126,15 +126,18 @@ class ReportModel(object):
             formatted = {}
             formatted['uid'] = tst['name'].uid
             formatted['name'] = tst['name'].name
-            params = ''
-            try:
-                parameters = 'Params:\n'
-                for path, key, value in tst['params']:
-                    parameters += '  %s:%s => %s\n' % (path, key, value)
-            except KeyError:
-                pass
+            if tst['params']:
+                params = ''
+                try:
+                    parameters = 'Params:\n'
+                    for path, key, value in tst['params']:
+                        parameters += '  %s:%s => %s\n' % (path, key, value)
+                except KeyError:
+                    pass
+                else:
+                    params = parameters
             else:
-                params = parameters
+                params = "No params"
             formatted['params'] = params
             formatted['variant'] = tst['name'].variant or ''
             formatted['status'] = tst['status']
