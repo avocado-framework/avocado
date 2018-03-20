@@ -645,7 +645,7 @@ class Test(unittest.TestCase, TestData):
         try:
             state['params'] = [(path, key, value)
                                for path, key, value
-                               in self.params.iteritems()]
+                               in self.__params.iteritems()]
         except Exception:
             state['params'] = None
         return state
