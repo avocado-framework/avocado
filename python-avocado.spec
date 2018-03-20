@@ -83,6 +83,7 @@ BuildRequires: python2-yaml
 %endif
 %endif
 
+Requires: %{name}-common == %{version}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
@@ -250,21 +251,6 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %files
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
-%dir %{_sysconfdir}/avocado
-%dir %{_sysconfdir}/avocado/conf.d
-%dir %{_sysconfdir}/avocado/sysinfo
-%dir %{_sysconfdir}/avocado/scripts/job/pre.d
-%dir %{_sysconfdir}/avocado/scripts/job/post.d
-%dir %{_sharedstatedir}/avocado
-%config(noreplace)%{_sysconfdir}/avocado/avocado.conf
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/README
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/gdb.conf
-%config(noreplace)%{_sysconfdir}/avocado/conf.d/jobscripts.conf
-%config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
-%config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
-%config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
-%config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
-%config(noreplace)%{_sysconfdir}/avocado/scripts/job/post.d/README
 %{python_sitelib}/avocado*
 %{_bindir}/avocado
 %{_bindir}/avocado-rest-client
@@ -293,6 +279,29 @@ AVOCADO_CHECK_LEVEL=0 selftests/run
 %exclude %{python_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python_sitelib}/avocado/libexec*
+
+%package common
+Summary: Avocado common files
+
+%description common
+Common files (such as configuration) for the Avocado Testing Framework.
+
+%files common
+%dir %{_sysconfdir}/avocado
+%dir %{_sysconfdir}/avocado/conf.d
+%dir %{_sysconfdir}/avocado/sysinfo
+%dir %{_sysconfdir}/avocado/scripts/job/pre.d
+%dir %{_sysconfdir}/avocado/scripts/job/post.d
+%dir %{_sharedstatedir}/avocado
+%config(noreplace)%{_sysconfdir}/avocado/avocado.conf
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/README
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/gdb.conf
+%config(noreplace)%{_sysconfdir}/avocado/conf.d/jobscripts.conf
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo/commands
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo/files
+%config(noreplace)%{_sysconfdir}/avocado/sysinfo/profilers
+%config(noreplace)%{_sysconfdir}/avocado/scripts/job/pre.d/README
+%config(noreplace)%{_sysconfdir}/avocado/scripts/job/post.d/README
 
 %package plugins-output-html
 Summary: Avocado HTML report plugin
@@ -478,6 +487,7 @@ Again Shell code (and possibly other similar shells).
 - Removed backward compatibility with name avocado on plugins
 - Removed extra dependencies on Fedora 24 for runner-remote
 - Added python-avocado requirement for golang plugin
+- Added new common sub-package
 
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
