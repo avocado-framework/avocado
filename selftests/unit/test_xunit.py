@@ -88,7 +88,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.assertEqual(len(els), 1)
 
         with open(self.junit, 'r') as f:
-            xmlschema = etree.XMLSchema(etree.parse(f))
+            xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
+        # pylint: disable=I1101
         self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
                         "Failed to validate against %s, content:\n%s" %
                         (self.junit, xml))

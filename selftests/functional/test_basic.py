@@ -1188,8 +1188,9 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                                 (detail, xml_output))
 
         with open(self.junit, 'rb') as f:
-            xmlschema = etree.XMLSchema(etree.parse(f))
+            xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
 
+        # pylint: disable=I1101
         self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml_output))),
                         "Failed to validate against %s, message:\n%s" %
                         (self.junit,
