@@ -186,6 +186,7 @@ class Daemon(Command):
     :param logf: Basename of the file where output is logged (optional).
     :param compress_logf: Whether to compress the output of the command.
     """
+    pipe = None
 
     def run(self, logdir):
         """
@@ -202,22 +203,27 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin,
-                                     stdout=stdout, stderr=subprocess.STDOUT,
-                                     shell=False, env=env)
+        try:
+            self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin,
+                                         stdout=stdout, stderr=subprocess.STDOUT,
+                                         shell=False, env=env)
+        except OSError:
+            log.debug("Not logging as %s command not able to run " % self.cmd)
 
     def stop(self):
         """
         Stop daemon execution.
         """
-        retcode = self.pipe.poll()
-        if retcode is None:
-            process.kill_process_tree(self.pipe.pid)
-            retcode = self.pipe.wait()
-        else:
-            log.error("Daemon process '%s' (pid %d) terminated abnormally "
-                      "(code %d)", self.cmd, self.pipe.pid, retcode)
-        return retcode
+        if self.pipe:
+            retcode = self.pipe.poll()
+            if retcode is None:
+                process.kill_process_tree(self.pipe.pid)
+                retcode = self.pipe.wait()
+            else:
+                log.error("Daemon process '%s' (pid %d) terminated "
+                          "abnormally (code %d)", self.cmd, self.pipe.pid,
+                          retcode)
+            return retcode
 
 
 class JournalctlWatcher(Collectible):
