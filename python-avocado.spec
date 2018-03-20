@@ -311,10 +311,6 @@ arbitrary filesystem location.
 Summary: Avocado Runner for Remote Execution
 Requires: %{name} == %{version}
 Requires: fabric
-%if 0%{?fedora} == 24
-Requires: python-crypto
-BuildRequires: python-crypto
-%endif
 
 %description plugins-runner-remote
 Allows Avocado to run jobs on a remote machine, by means of an SSH
@@ -479,6 +475,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Mon Mar 19 2018 Cleber Rosa <cleber@redhat.com> - 59.0-2
 - Removed backward compatibility with name avocado on plugins
+- Removed extra dependencies on Fedora 24 for runner-remote
 
 * Thu Mar  8 2018 Cleber Rosa <cleber@redhat.com> - 59.0-1
 - Remove backward compatibility with name avocado
