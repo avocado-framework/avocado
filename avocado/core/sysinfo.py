@@ -202,8 +202,9 @@ class Daemon(Command):
         logf_path = os.path.join(logdir, self.logf)
         stdin = open(os.devnull, "r")
         stdout = open(logf_path, "w")
-        self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin, stdout=stdout,
-                                     stderr=subprocess.STDOUT, shell=False, env=env)
+        self.pipe = subprocess.Popen(shlex.split(self.cmd), stdin=stdin,
+                                     stdout=stdout, stderr=subprocess.STDOUT,
+                                     shell=False, env=env)
 
     def stop(self):
         """
@@ -214,8 +215,8 @@ class Daemon(Command):
             process.kill_process_tree(self.pipe.pid)
             retcode = self.pipe.wait()
         else:
-            log.error("Daemon process '%s' (pid %d) terminated abnormally (code %d)",
-                      self.cmd, self.pipe.pid, retcode)
+            log.error("Daemon process '%s' (pid %d) terminated abnormally "
+                      "(code %d)", self.cmd, self.pipe.pid, retcode)
         return retcode
 
 
@@ -331,7 +332,8 @@ class LogWatcher(Collectible):
                 with gzip.GzipFile(dstpath, "w") as out_messages:
                     in_messages.seek(bytes_to_skip)
                     while True:
-                        # Read data in manageable chunks rather than all at once.
+                        # Read data in manageable chunks
+                        # rather than all at once.
                         in_data = in_messages.read(200000)
                         if not in_data:
                             break
@@ -423,7 +425,8 @@ class SysInfo(object):
 
             if self.profiler is False:
                 if not self.profilers:
-                    log.info('Profiler disabled: no profiler commands configured')
+                    log.info('Profiler disabled: no profiler '
+                             'commands configured')
                 else:
                     log.info('Profiler disabled')
         else:
@@ -523,8 +526,8 @@ class SysInfo(object):
         Add a system file watcher collectible.
 
         :param filename: Path to the file to be logged.
-        :param hook: In which hook this watcher should be logged (start job, end
-                     job).
+        :param hook: In which hook this watcher should be
+                     logged (start job, end job).
         """
         collectibles = self._get_collectibles(hook)
         collectibles.add(LogWatcher(filename))
