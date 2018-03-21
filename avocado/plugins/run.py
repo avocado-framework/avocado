@@ -207,17 +207,17 @@ class Run(CLICmd):
         except ValueError as e:
             LOG_UI.error(e.args[0])
             sys.exit(exit_codes.AVOCADO_FAIL)
-        job_instance = job.Job(args)
-        pre_post_dispatcher = JobPrePostDispatcher()
-        try:
-            # Run JobPre plugins
-            output.log_plugin_failures(pre_post_dispatcher.load_failures)
-            pre_post_dispatcher.map_method('pre', job_instance)
+        with job.Job(args) as job_instance:
+            pre_post_dispatcher = JobPrePostDispatcher()
+            try:
+                # Run JobPre plugins
+                output.log_plugin_failures(pre_post_dispatcher.load_failures)
+                pre_post_dispatcher.map_method('pre', job_instance)
 
-            job_run = job_instance.run()
-        finally:
-            # Run JobPost plugins
-            pre_post_dispatcher.map_method('post', job_instance)
+                job_run = job_instance.run()
+            finally:
+                # Run JobPost plugins
+                pre_post_dispatcher.map_method('post', job_instance)
 
         result_dispatcher = ResultDispatcher()
         if result_dispatcher.extensions:
