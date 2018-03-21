@@ -811,7 +811,7 @@ class FileLoader(TestLoader):
                 mt_tags = safeloader.get_docstring_directives_tags(docstring)
                 mt_tags.update(class_tags)
 
-                methods = [method for method, tags in methods_info]
+                methods = [method for method, _ in methods_info]
                 if st.name not in methods:
                     methods_info.append((st.name, mt_tags))
 

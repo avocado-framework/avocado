@@ -29,7 +29,7 @@ from . import wait
 from .data_structures import DataSize
 
 
-class MemoryError(Exception):
+class MemError(Exception):
 
     """
     called when memory operations fails
@@ -90,7 +90,7 @@ def hotplug(block):
     with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
         state_file.write('online')
     if not _check_memory_state(block):
-        raise MemoryError(
+        raise MemError(
             "unable to hot-plug memory%s block, not supported ?" % block)
 
 
@@ -104,7 +104,7 @@ def hotunplug(block):
     with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
         state_file.write('offline')
     if _check_memory_state(block):
-        raise MemoryError(
+        raise MemError(
             "unable to hot-unplug memory%s block. Device busy?" % block)
 
 

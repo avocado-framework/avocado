@@ -135,7 +135,7 @@ class App(object):
 
                 journal = sqlite3.connect(self.args.journal_path)
                 journal_cursor = journal.cursor()
-                flush_result = journal_cursor.execute(flush_sql)
+                journal_cursor.execute(flush_sql)
                 journal.commit()
                 journal_cursor.close()
                 journal.close()

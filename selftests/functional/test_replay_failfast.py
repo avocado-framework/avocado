@@ -41,7 +41,7 @@ class ReplayFailfastTests(unittest.TestCase):
                     '--job-results-dir %s --sysinfo=off'
                     % (AVOCADO, self.jobid, self.tmpdir))
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL | exit_codes.AVOCADO_JOB_INTERRUPTED
-        result = self.run_and_check(cmd_line, expected_rc)
+        self.run_and_check(cmd_line, expected_rc)
 
     def test_run_replay_disable_failfast(self):
         cmd_line = ('%s run --replay %s --failfast off '

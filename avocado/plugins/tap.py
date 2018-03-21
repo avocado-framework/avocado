@@ -55,10 +55,6 @@ class TAPResult(ResultEvents):
     description = "TAP - Test Anything Protocol results"
 
     def __init__(self, args):
-
-        def silent(msg, *writeargs):
-            pass
-
         self.__logs = []
         self.__open_files = []
         output = getattr(args, 'tap', None)
