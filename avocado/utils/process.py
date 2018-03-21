@@ -295,7 +295,7 @@ class CmdResult(object):
 
     @property
     def stdout_text(self):
-        if type(self.stdout) in string_types:
+        if isinstance(self.stdout, string_types):
             return self.stdout
         if hasattr(self.stdout, 'decode'):
             return self.stdout.decode(self.encoding)
@@ -303,7 +303,7 @@ class CmdResult(object):
 
     @property
     def stderr_text(self):
-        if type(self.stderr) in string_types:
+        if isinstance(self.stderr, string_types):
             return self.stderr
         if hasattr(self.stderr, 'decode'):
             return self.stderr.decode(self.encoding)
