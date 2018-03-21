@@ -117,7 +117,7 @@ class DistroPkgInfoLoader(object):
         calling :meth:`load_package_info` if it's so.
         """
         packages_info = set()
-        for dirpath, dirnames, filenames in os.walk(self.path):
+        for dirpath, _, filenames in os.walk(self.path):
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 if self.is_software_package(path):

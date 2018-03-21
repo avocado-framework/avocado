@@ -244,7 +244,7 @@ def time_to_seconds(time):
                 seconds = int(time[:-1]) * mult
             else:
                 seconds = int(time)
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             raise ValueError("Invalid value '%s' for time. Use a string with "
                              "the number and optionally the time unit (s, m, "
                              "h or d)." % time)

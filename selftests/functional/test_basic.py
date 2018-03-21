@@ -491,7 +491,7 @@ class RunnerOperationTest(unittest.TestCase):
         try:
             avocado_process.start()
             link = os.path.join(self.tmpdir, 'latest')
-            for trial in range(0, 50):
+            for _ in range(0, 50):
                 time.sleep(0.1)
                 if os.path.exists(link) and os.path.islink(link):
                     avocado_process.wait()
@@ -755,7 +755,7 @@ class RunnerSimpleTest(unittest.TestCase):
         cmd_line = ("%s --show all --config %s run --job-results-dir %s "
                     "--sysinfo=on --external-runner %s -- \"'\\\"\\/|?*<>'\""
                     % (AVOCADO, config_path, self.tmpdir, GNU_ECHO_BINARY))
-        result = process.run(cmd_line)
+        process.run(cmd_line)
         self.assertTrue(os.path.exists(os.path.join(self.tmpdir, "latest",
                                                     "test-results",
                                                     "1-\'________\'/")))

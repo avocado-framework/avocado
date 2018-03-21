@@ -20,7 +20,7 @@ class SkipSetup(Test):
         self.log.info('teardown post')
 
 
-class Skip(Test):
+class SkipTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')
@@ -68,7 +68,7 @@ class CancelSetup(Test):
         self.log.info('teardown post')
 
 
-class Cancel(Test):
+class CancelTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')
@@ -116,7 +116,7 @@ class FailSetup(Test):
         self.log.info('teardown post')
 
 
-class Fail(Test):
+class FailTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')
@@ -164,7 +164,7 @@ class WarnSetup(Test):
         self.log.info('teardown post')
 
 
-class Warn(Test):
+class WarnTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')
@@ -212,7 +212,7 @@ class ExitSetup(Test):
         self.log.info('teardown post')
 
 
-class Exit(Test):
+class ExitTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')
@@ -260,7 +260,7 @@ class ExceptionSetup(Test):
         self.log.info('teardown post')
 
 
-class Exception(Test):
+class ExceptionTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')
@@ -292,7 +292,7 @@ class ExceptionTeardown(Test):
         self.log.info('teardown post')
 
 
-class Kill(Test):
+class KillTest(Test):
 
     def setUp(self):
         self.log.info('setup pre')

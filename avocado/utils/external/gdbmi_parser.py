@@ -37,8 +37,8 @@ def compare(a, b):
 def __private():
     class Token:
 
-        def __init__(self, type, value=None):
-            self.type = type
+        def __init__(self, token_type, value=None):
+            self.type = token_type
             self.value = value
 
         def __cmp__(self, o):
@@ -49,8 +49,8 @@ def __private():
 
     class AST:
 
-        def __init__(self, type):
-            self.type = type
+        def __init__(self, ast_type):
+            self.type = ast_type
             self._kids = []
 
         def __getitem__(self, i):
@@ -67,9 +67,9 @@ def __private():
 
     class GdbMiScannerBase(spark.GenericScanner):
 
-        def tokenize(self, input):
+        def tokenize(self, input_message):
             self.rv = []
-            spark.GenericScanner.tokenize(self, input)
+            spark.GenericScanner.tokenize(self, input_message)
             return self.rv
 
         def t_nl(self, s):
@@ -166,14 +166,14 @@ def __private():
             rv.value = token.value
             return rv
 
-        def nonterminal(self, type, args):
+        def nonterminal(self, token_type, args):
             #  Flatten AST a bit by not making nodes if there's only one child.
             exclude = [
                 'record_list'
             ]
             if len(args) == 1 and type not in exclude:
                 return args[0]
-            return spark.GenericASTBuilder.nonterminal(self, type, args)
+            return spark.GenericASTBuilder.nonterminal(self, token_type, args)
 
         def error(self, token, i=0, tokens=None):
             if i > 2:
@@ -189,7 +189,7 @@ def __private():
             spark.GenericASTTraversal.__init__(self, ast)
             self.postorder()
 
-        def __translate_type(self, type):
+        def __translate_type(self, token_type):
             table = {
                 '^': 'result',
                 '=': 'notify',
@@ -199,7 +199,7 @@ def __private():
                 '@': 'target',
                 '&': 'log'
             }
-            return table[type]
+            return table[token_type]
 
         def n_result(self, node):
             # result ::= variable = value
@@ -362,16 +362,16 @@ def __private():
 (__the_scanner, __the_parser, __the_interpreter, __the_output) = __private()
 
 
-def scan(input):
-    return __the_scanner.tokenize(input)
+def scan(input_message):
+    return __the_scanner.tokenize(input_message)
 
 
 def parse(tokens):
     return __the_parser.parse(tokens)
 
 
-def process(input):
-    tokens = scan(input)
+def process(input_message):
+    tokens = scan(input_message)
     ast = parse(tokens)
     __the_interpreter(ast)
     return __the_output(ast.value)

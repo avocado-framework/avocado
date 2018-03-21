@@ -197,7 +197,7 @@ def write_file_or_fail(filename, data):
     """
     fd = os.open(filename, os.O_WRONLY)
     try:
-        ret = os.write(fd, data)
+        os.write(fd, data)
     except OSError as details:
         raise GenIOError("The write to %s failed: %s" % (
                          filename, details))

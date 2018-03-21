@@ -408,7 +408,7 @@ class Test(unittest.TestCase, TestData):
         except EnvironmentError:
             pass
         else:
-            self.log.debug("  teststmpdir: %s", self.teststmpdir)
+            self.log.debug("  teststmpdir: %s", teststmpdir)
         self.log.debug("  workdir: %s", self.workdir)
 
         unittest.TestCase.__init__(self, methodName=methodName)

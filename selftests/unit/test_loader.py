@@ -388,7 +388,7 @@ class LoaderTest(unittest.TestCase):
                                                    AVOCADO_FOREIGN_TAGGED_ENABLE,
                                                    'avocado_loader_unittest')
         avocado_pass_test.save()
-        test_class, test_parameters = (
+        test_class, _ = (
             self.loader.discover(avocado_pass_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'First', test_class)
         avocado_pass_test.remove()
@@ -399,7 +399,7 @@ class LoaderTest(unittest.TestCase):
                                                    'avocado_loader_unittest',
                                                    DEFAULT_NON_EXEC_MODE)
         avocado_pass_test.save()
-        test_class, test_parameters = (
+        test_class, _ = (
             self.loader.discover(avocado_pass_test.path, loader.ALL)[0])
         self.assertTrue(test_class == loader.NotATest)
         avocado_pass_test.remove()
@@ -421,7 +421,7 @@ class LoaderTest(unittest.TestCase):
             AVOCADO_TEST_MULTIPLE_IMPORTS,
             'avocado_loader_unittest')
         avocado_multiple_imp_test.save()
-        test_class, test_parameters = (
+        test_class, _ = (
             self.loader.discover(avocado_multiple_imp_test.path, loader.ALL)[0])
         self.assertTrue(test_class == 'Second', test_class)
         avocado_multiple_imp_test.remove()

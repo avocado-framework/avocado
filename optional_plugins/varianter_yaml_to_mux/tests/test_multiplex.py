@@ -137,8 +137,7 @@ class MultiplexTests(unittest.TestCase):
         cmd_line = ("%s run --job-results-dir %s -m optional_plugins/"
                     "varianter_yaml_to_mux/tests/.data/empty_file -- "
                     "passtest.py" % (AVOCADO, self.tmpdir))
-        result = self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK,
-                                    (1, 0))
+        self.run_and_check(cmd_line, exit_codes.AVOCADO_ALL_OK, (1, 0))
 
     def test_run_mplex_params(self):
         for variant_msg in (('/run/short', 'A'),
