@@ -1,0 +1,4 @@
+linux_src_url: https://www.kernel.org/pub/linux/kernel/v4.x/
+linux_version: 4.15.1
+linux_config: /boot/config-4.13.0-31-generic
+#do_kernel_install: y

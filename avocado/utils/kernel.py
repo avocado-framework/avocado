@@ -19,7 +19,7 @@ import logging
 import tempfile
 from distutils.version import LooseVersion  # pylint: disable=E0611
 
-from . import asset, archive, build
+from . import asset, archive, build, distro, process
 
 log = logging.getLogger('avocado.test')
 
@@ -46,6 +46,7 @@ class KernelBuild(object):
         """
         self.version = version
         self.config_path = config_path
+        self.distro = distro.detect()
         if work_dir is None:
             work_dir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.work_dir = work_dir
@@ -62,13 +63,21 @@ class KernelBuild(object):
                                               self.config_path,
                                               self.work_dir)
 
-    def download(self):
+    def download(self, url=None):
         """
         Download kernel source.
+
+        :param url: override the url from where to fetch the kernel
+                    source tarball
+        :type url: str or None
         """
-        self.kernel_file = self.SOURCE.format(version=self.version)
-        base_url = self.URL.format(major=self.version.split('.', 1)[0])
-        full_url = base_url + self.kernel_file
+        kernel_file = self.SOURCE.format(version=self.version)
+        if url is not None:
+            base_url = self.URL.format(major=self.version.split('.', 1)[0])
+        else:
+            base_url = url
+        full_url = base_url + kernel_file
+
         self.asset_path = asset.Asset(full_url, asset_hash=None,
                                       algorithm=None, locations=None,
                                       cache_dirs=self.data_dirs).fetch()
@@ -85,21 +94,40 @@ class KernelBuild(object):
         Configure/prepare kernel source to build.
         """
         self.linux_dir = os.path.join(self.work_dir, 'linux-%s' % self.version)
-        build.make(self.linux_dir, extra_args='O=%s mrproper' % self.build_dir)
+        build.make(self.linux_dir, extra_args='-C %s mrproper' % self.linux_dir)
         if self.config_path is not None:
             dotconfig = os.path.join(self.linux_dir, '.config')
             shutil.copy(self.config_path, dotconfig)
 
-    def build(self):
+    def build(self, binary_package=False):
         """
         Build kernel from source.
+
+        :param binary_package: when True, the appropriate
+                                  platform package is built
+                                  for install() to use
+        :type binary_pacakge: bool
         """
         log.info("Starting build the kernel")
+        build_output_format = ""
+        if binary_package is True:
+            if self.distro.name == "Ubuntu":
+                build_output_format = "deb-pkg"
         if self.config_path is None:
-            build.make(self.linux_dir, extra_args='O=%s defconfig' % self.build_dir)
+            build.make(self.linux_dir, extra_args='-C %s defconfig' % self.linux_dir)
         else:
-            build.make(self.linux_dir, extra_args='O=%s olddefconfig' % self.build_dir)
-        build.make(self.linux_dir, extra_args='O=%s' % self.build_dir)
+            build.make(self.linux_dir, extra_args='-C %s olddefconfig' % self.linux_dir)
+        build.make(self.linux_dir, extra_args='-C %s %s' % (self.linux_dir, build_output_format))
+
+    def install(self):
+        """
+        Install built kernel.
+        """
+        log.info("Starting kernel install")
+        if self.distro.name == "Ubuntu":
+            process.run('dpkg -i %s/*.deb' % self.work_dir, shell=True, sudo=True)
+        else:
+            log.info("Skipping kernel install")
 
     def __del__(self):
         shutil.rmtree(self.work_dir)
