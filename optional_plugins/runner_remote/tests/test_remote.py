@@ -64,8 +64,10 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                                  '/tests/other/test',
                                                  'passtest.py'])
 
+        job = None
         try:
             job = Job(job_args)
+            job.setup()
             runner = avocado_runner_remote.RemoteTestRunner(job, job.result)
             return_value = (True, (version.MAJOR, version.MINOR))
             runner.check_remote_avocado = mock.Mock(return_value=return_value)
@@ -102,7 +104,8 @@ class RemoteTestRunnerTest(unittest.TestCase):
                                                  ignore_status=True,
                                                  timeout=61)
         finally:
-            shutil.rmtree(job.args.base_logdir)
+            if job:
+                shutil.rmtree(job.args.base_logdir)
 
 
 if __name__ == '__main__':
