@@ -16,7 +16,14 @@ from avocado.utils import path
 from six import string_types
 
 
-TRUE_CMD = path.find_command('true')
+def probe_binary(binary):
+    try:
+        return path.find_command(binary)
+    except path.CmdNotFoundError:
+        return None
+
+
+TRUE_CMD = probe_binary('true')
 
 
 class TestSubProcess(unittest.TestCase):
@@ -57,6 +64,8 @@ class TestGDBProcess(unittest.TestCase):
         self.assertFalse(process.should_run_inside_gdb("foo bar baz"))
         self.assertFalse(process.should_run_inside_gdb("foo ' "))
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     def test_get_sub_process_klass(self):
         gdb.GDB_RUN_BINARY_NAMES_EXPR = []
         self.assertIs(process.get_sub_process_klass(TRUE_CMD),
@@ -92,6 +101,8 @@ def mock_fail_find_cmd(cmd, default=None):
 
 class TestProcessRun(unittest.TestCase):
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid',
@@ -101,6 +112,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
@@ -109,6 +122,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid',
@@ -125,6 +140,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
@@ -133,6 +150,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
@@ -148,6 +167,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
@@ -156,6 +177,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
@@ -164,6 +187,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
@@ -172,6 +197,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
@@ -187,6 +214,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
@@ -195,6 +224,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
@@ -210,6 +241,8 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    @unittest.skipUnless(TRUE_CMD,
+                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
