@@ -218,6 +218,7 @@ class Run(CLICmd):
         finally:
             # Run JobPost plugins
             pre_post_dispatcher.map_method('post', job_instance)
+            job_instance.cleanup()
 
         result_dispatcher = ResultDispatcher()
         if result_dispatcher.extensions:
