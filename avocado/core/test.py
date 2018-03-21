@@ -25,6 +25,7 @@ import pipes
 import re
 import shutil
 import sys
+import tempfile
 import time
 import unittest
 
@@ -394,11 +395,14 @@ class Test(unittest.TestCase, TestData):
 
         self.__runner_queue = runner_queue
 
-        self.__workdir = os.path.join(data_dir.get_tmp_dir(),
+        base_tmpdir = getattr(job, "tmpdir", None)
+        # When tmpdir not specified by job, use logdir to preserve all data
+        if base_tmpdir is None:
+            base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
+        self.__workdir = os.path.join(base_tmpdir,
                                       self.name.str_filesystem)
-        self.__srcdir_internal_access = False
         self.__srcdir_warning_logged = False
-        self.__srcdir = None
+        self.__srcdir = utils_path.init_dir(self.__workdir, 'src')
 
         self.log.debug("Test metadata:")
         if self.filename:
@@ -540,14 +544,12 @@ class Test(unittest.TestCase, TestData):
         This property is deprecated and will be removed in the future.
         The :meth:`workdir` function should be used instead.
         """
-        if not (self.__srcdir_internal_access or self.__srcdir_warning_logged):
+        if not self.__srcdir_warning_logged:
             LOG_JOB.warn("DEPRECATION NOTICE: the test's \"srcdir\" property "
                          "is deprecated and is planned to be removed no later "
                          "than May 11 2018. Please use the \"workdir\" "
                          "property instead.")
             self.__srcdir_warning_logged = True
-        if self.__srcdir is None:
-            self.__srcdir = utils_path.init_dir(self.workdir, 'src')
         return self.__srcdir
 
     @property
@@ -971,14 +973,7 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
         if self.__sysinfo_enabled:
             os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
-        # srcdir is deprecated and will cause a test warning when
-        # accessed.  It seems unfair to return a warning for all
-        # tests because Avocado itself will access that property.
-        # this is a hack to be removed when srcdir is also removed
-        # for good.
-        self.__srcdir_internal_access = True
-        os.environ['AVOCADO_TEST_SRCDIR'] = self.srcdir
-        self.__srcdir_internal_access = False
+        os.environ['AVOCADO_TEST_SRCDIR'] = self.__srcdir
 
     def run_avocado(self):
         """

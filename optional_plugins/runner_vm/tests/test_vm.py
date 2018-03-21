@@ -50,8 +50,10 @@ class VMTestRunnerSetup(unittest.TestCase):
                                                  'passtest.py'],
                                       dry_run=True,
                                       env_keep=None)
+        job = None
         try:
             job = Job(job_args)
+            job.setup()
             with mock.patch('avocado_runner_vm.vm_connect',
                             return_value=mock_vm):
                 # VMTestRunner()
@@ -63,7 +65,8 @@ class VMTestRunnerSetup(unittest.TestCase):
                 mock_vm.stop.assert_called_once_with()
                 mock_vm.restore_snapshot.assert_called_once_with()
         finally:
-            shutil.rmtree(job.args.base_logdir)
+            if job:
+                shutil.rmtree(job.args.base_logdir)
 
 
 if __name__ == '__main__':
