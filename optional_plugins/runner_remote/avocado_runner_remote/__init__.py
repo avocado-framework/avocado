@@ -48,7 +48,7 @@ class RemoterError(Exception):
     pass
 
 
-class ConnectionError(RemoterError):
+class ConnectError(RemoterError):
     pass
 
 
@@ -253,7 +253,7 @@ class Remote(object):
                               connection_attempts=attempts,
                               linewise=True,
                               abort_on_prompts=True,
-                              abort_exception=ConnectionError,
+                              abort_exception=ConnectError,
                               reject_unknown_hosts=reject_unknown_hosts,
                               disable_known_hosts=disable_known_hosts)
 
