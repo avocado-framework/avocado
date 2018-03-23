@@ -8,7 +8,6 @@ import unittest
 
 from avocado.core import test
 from avocado.core import loader
-from avocado.core import test
 from avocado.utils import script
 
 # We need to access protected members pylint: disable=W0212

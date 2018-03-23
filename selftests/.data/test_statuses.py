@@ -249,6 +249,7 @@ class ExceptionSetup(Test):
     def setUp(self):
         self.log.info('setup pre')
         raise ValueError
+        # pylint: disable=W0101
         self.log.info('setup post')
 
     def test(self):
@@ -269,6 +270,7 @@ class ExceptionTest(Test):
     def test(self):
         self.log.info('test pre')
         raise ValueError
+        # pylint: disable=W0101
         self.log.info('test post')
 
     def tearDown(self):
@@ -289,6 +291,7 @@ class ExceptionTeardown(Test):
     def tearDown(self):
         self.log.info('teardown pre')
         raise ValueError
+        # pylint: disable=W0101
         self.log.info('teardown post')
 
 
