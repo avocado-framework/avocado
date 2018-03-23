@@ -1219,14 +1219,23 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
-    :param allow_output_check: Whether to log the command stream outputs
-                               (stdout and stderr) in the test stream
-                               files. Valid values: 'stdout', for
-                               allowing only standard output, 'stderr',
-                               to allow only standard error, 'all',
-                               to allow both standard output and error
-                               (default), and 'none', to allow
-                               none to be recorded.
+    :param allow_output_check: Whether to record the output from this
+                               process (from stdout and stderr) in the
+                               test's output record files. Valid values:
+                               'stdout', for standard output *only*,
+                               'stderr' for standard error *only*,
+                               'both' for both standard output and error
+                               in separate files, 'combined' for
+                               standard output and error in a single file,
+                               and 'none' to disable all recording. 'all'
+                               is also a valid, but deprecated, option that
+                               is a synonym of 'both'.  If an explicit value
+                               is not given to this parameter, that is, if
+                               None is given, it defaults to using the module
+                               level configuration, as set by
+                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
+                               module level configuration itself is not set,
+                               it defaults to 'none'.
     :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
@@ -1271,14 +1280,23 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
     :type ignore_status: bool
-    :param allow_output_check: Whether to log the command stream outputs
-                               (stdout and stderr) in the test stream
-                               files. Valid values: 'stdout', for
-                               allowing only standard output, 'stderr',
-                               to allow only standard error, 'all',
-                               to allow both standard output and error
-                               (default), and 'none', to allow
-                               none to be recorded.
+    :param allow_output_check: Whether to record the output from this
+                               process (from stdout and stderr) in the
+                               test's output record files. Valid values:
+                               'stdout', for standard output *only*,
+                               'stderr' for standard error *only*,
+                               'both' for both standard output and error
+                               in separate files, 'combined' for
+                               standard output and error in a single file,
+                               and 'none' to disable all recording. 'all'
+                               is also a valid, but deprecated, option that
+                               is a synonym of 'both'.  If an explicit value
+                               is not given to this parameter, that is, if
+                               None is given, it defaults to using the module
+                               level configuration, as set by
+                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
+                               module level configuration itself is not set,
+                               it defaults to 'none'.
     :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
@@ -1319,14 +1337,23 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type verbose: bool
     :param ignore_status: Whether to raise an exception when command returns
                           =! 0 (False), or not (True).
-    :param allow_output_check: Whether to log the command stream outputs
-                               (stdout and stderr) in the test stream
-                               files. Valid values: 'stdout', for
-                               allowing only standard output, 'stderr',
-                               to allow only standard error, 'all',
-                               to allow both standard output and error
-                               (default), and 'none', to allow
-                               none to be recorded.
+    :param allow_output_check: Whether to record the output from this
+                               process (from stdout and stderr) in the
+                               test's output record files. Valid values:
+                               'stdout', for standard output *only*,
+                               'stderr' for standard error *only*,
+                               'both' for both standard output and error
+                               in separate files, 'combined' for
+                               standard output and error in a single file,
+                               and 'none' to disable all recording. 'all'
+                               is also a valid, but deprecated, option that
+                               is a synonym of 'both'.  If an explicit value
+                               is not given to this parameter, that is, if
+                               None is given, it defaults to using the module
+                               level configuration, as set by
+                               :data:`OUTPUT_CHECK_RECORD_MODE`.  If the
+                               module level configuration itself is not set,
+                               it defaults to 'none'.
     :type allow_output_check: str
     :param shell: Whether to run the command on a subshell
     :type shell: bool
