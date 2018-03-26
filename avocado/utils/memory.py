@@ -115,7 +115,8 @@ def read_from_meminfo(key):
     :param key: Key name, such as ``MemTotal``.
     """
     cmd_result = process.run('grep %s /proc/meminfo' % key, verbose=False)
-    meminfo = cmd_result.stdout
+    # Get text mode result for compatibility.
+    meminfo = cmd_result.stdout_text
     return int(re.search(r'\d+', meminfo).group(0))
 
 
