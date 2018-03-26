@@ -126,7 +126,7 @@ class ReportModel(object):
             formatted = {}
             formatted['uid'] = tst['name'].uid
             formatted['name'] = tst['name'].name
-            if tst['params']:
+            if 'params' in tst:
                 params = ''
                 try:
                     parameters = 'Params:\n'
