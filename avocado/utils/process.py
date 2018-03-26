@@ -322,18 +322,18 @@ class CmdResult(object):
 
     @property
     def stdout_text(self):
-        if isinstance(self.stdout, string_types):
-            return self.stdout
         if hasattr(self.stdout, 'decode'):
             return self.stdout.decode(self.encoding)
+        if isinstance(self.stdout, string_types):
+            return self.stdout
         raise TypeError("Unable to decode stdout into a string-like type")
 
     @property
     def stderr_text(self):
-        if isinstance(self.stderr, string_types):
-            return self.stderr
         if hasattr(self.stderr, 'decode'):
             return self.stderr.decode(self.encoding)
+        if isinstance(self.stderr, string_types):
+            return self.stderr
         raise TypeError("Unable to decode stderr into a string-like type")
 
     def __repr__(self):

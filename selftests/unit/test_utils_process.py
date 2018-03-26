@@ -258,9 +258,16 @@ class TestProcessRun(unittest.TestCase):
         # but the behavior is exactly the same as if shell binary
         # produced unicode
         text = u"Avok\xe1do"
-        result = process.run("%s %s" % (ECHO_CMD, text), encoding='utf-8')
-        self.assertEqual(result.stdout, text.encode('utf-8') + b'\n')
-        self.assertEqual(result.stdout_text, text + '\n')
+        # Even though code point used is "LATIN SMALL LETTER A WITH ACUTE"
+        # (http://unicode.scarfboy.com/?s=u%2B00e1) when encoded to proper
+        # utf-8, it becomes two bytes because it is >= 0x80
+        # See https://en.wikipedia.org/wiki/UTF-8
+        encoded_text = b'Avok\xc3\xa1do'
+        self.assertEqual(text.encode('utf-8'), encoded_text)
+        self.assertEqual(encoded_text.decode('utf-8'), text)
+        result = process.run("%s -n %s" % (ECHO_CMD, text), encoding='utf-8')
+        self.assertEqual(result.stdout, encoded_text)
+        self.assertEqual(result.stdout_text, text)
 
 
 class MiscProcessTests(unittest.TestCase):
