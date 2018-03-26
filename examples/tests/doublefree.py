@@ -17,7 +17,8 @@ class DoubleFreeTest(Test):
 
     :avocado: tags=requires_c_compiler
 
-    :param source: name of the source file located in deps path
+    :param source: name of the source file located in a the data
+                   directory
     """
 
     def setUp(self):

@@ -564,3 +564,17 @@ virtuozzo
 pict
 golang
 virdomain
+tmpdir
+tmpdirs
+logdir
+logdirs
+workdir
+datasize
+getoutput
+doublefree
+synctest
+getstatusoutput
+rtd
+testfoo
+commandtimeout
+uids
