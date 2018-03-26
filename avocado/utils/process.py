@@ -32,7 +32,7 @@ import threading
 import time
 
 from io import BytesIO, UnsupportedOperation
-from six import string_types
+from six import PY2, string_types
 
 from . import gdb
 from . import runtime
@@ -99,10 +99,34 @@ class CmdError(Exception):
             return "CmdError"
 
 
-def can_sudo(cmd=None):
+def normalize_cmd(cmd, encoding=None):
+    """
+    Normalize a command to be safe for :func:`shlex.split`
+
+    :param cmd: the command line to be passed to :func:`shlex.split`
+    :type cmd: str or bytes
+    :param encoding: the encoding to use for encode/decode operations
+    :type encoding: str
+    """
+    if encoding is None:
+        encoding = sys.getdefaultencoding()
+    if PY2:
+        if not isinstance(cmd, str):
+            cmd = cmd.encode(encoding)
+    else:
+        if isinstance(cmd, bytes):
+            cmd = cmd.decode(encoding)
+    return cmd
+
+
+def can_sudo(cmd=None, encoding=None):
     """
     Check whether sudo is available (or running as root)
     """
+    if cmd is not None:
+        if encoding is None:
+            encoding = sys.getdefaultencoding()
+        cmd = normalize_cmd(cmd, encoding)
     if os.getuid() == 0:    # Root
         return True
 
@@ -233,7 +257,7 @@ def get_children_pids(ppid, recursive=False):
     return children
 
 
-def binary_from_shell_cmd(cmd):
+def binary_from_shell_cmd(cmd, encoding=None):
     """
     Tries to find the first binary path from a simple shell-like command.
 
@@ -242,6 +266,9 @@ def binary_from_shell_cmd(cmd):
     :param cmd: simple shell-like binary
     :return: first found binary from the cmd
     """
+    if encoding is None:
+        encoding = sys.getdefaultencoding()
+    cmd = normalize_cmd(cmd, encoding)
     try:
         cmds = shlex.split(cmd)
     except ValueError:
@@ -437,7 +464,7 @@ class SubProcess(object):
 
     def __init__(self, cmd, verbose=True, allow_output_check=None,
                  shell=False, env=None, sudo=False,
-                 ignore_bg_processes=False):
+                 ignore_bg_processes=False, encoding=None):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -481,8 +508,16 @@ class SubProcess(object):
                     in missing output produced by those daemons after the
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
+        :param encoding: the encoding to use for the text representation
+                         of the command result stdout and stderr, with the
+                         default being Python's own, that is,
+                         (:func:`sys.getdefaultencoding`).
+        :type encoding: str
         :raises: ValueError if incorrect values are given to parameters
         """
+        if encoding is None:
+            encoding = sys.getdefaultencoding()
+        cmd = normalize_cmd(cmd, encoding)
         if sudo:
             self.cmd = self._prepend_sudo(cmd, shell)
         else:
@@ -498,7 +533,7 @@ class SubProcess(object):
                    allow_output_check)
             raise ValueError(msg)
         self.allow_output_check = allow_output_check
-        self.result = CmdResult(self.cmd)
+        self.result = CmdResult(self.cmd, encoding=encoding)
         self.shell = shell
         if env:
             self.env = os.environ.copy()
@@ -812,7 +847,7 @@ class WrapSubProcess(SubProcess):
     def __init__(self, cmd, verbose=True,
                  allow_output_check=None,
                  shell=False, env=None, wrapper=None, sudo=False,
-                 ignore_bg_processes=False):
+                 ignore_bg_processes=False, encoding=None):
         if wrapper is None and CURRENT_WRAPPER is not None:
             wrapper = CURRENT_WRAPPER
         self.wrapper = wrapper
@@ -822,7 +857,7 @@ class WrapSubProcess(SubProcess):
             cmd = wrapper + ' ' + cmd
         super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
                                              shell, env, sudo,
-                                             ignore_bg_processes)
+                                             ignore_bg_processes, encoding)
 
 
 class GDBSubProcess(object):
@@ -833,7 +868,7 @@ class GDBSubProcess(object):
 
     def __init__(self, cmd, verbose=True,
                  allow_output_check=None, shell=False,
-                 env=None, sudo=False, ignore_bg_processes=False):
+                 env=None, sudo=False, ignore_bg_processes=False, encoding=None):
         """
         Creates the subprocess object, stdout/err, reader threads and locks.
 
@@ -859,13 +894,15 @@ class GDBSubProcess(object):
                      implementation, since the GDB wrapping code does not have
                      support to run commands in that way.
         """
-
+        if encoding is None:
+            encoding = sys.getdefaultencoding()
+        cmd = normalize_cmd(cmd, encoding)
         self.cmd = cmd
 
         self.args = shlex.split(cmd)
         self.binary = self.args[0]
         self.binary_path = os.path.abspath(self.cmd)
-        self.result = CmdResult(cmd)
+        self.result = CmdResult(cmd, encoding=encoding)
 
         self.gdb_server = gdb.GDBServer(gdb.GDBSERVER_PATH)
         self.gdb = gdb.GDB(gdb.GDB_PATH)
@@ -1185,7 +1222,7 @@ def should_run_inside_wrapper(cmd):
         return True
 
 
-def get_sub_process_klass(cmd):
+def get_sub_process_klass(cmd, encoding=None):
     """
     Which sub process implementation should be used
 
@@ -1193,6 +1230,9 @@ def get_sub_process_klass(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
+    if encoding is None:
+        encoding = sys.getdefaultencoding()
+    cmd = normalize_cmd(cmd, encoding)
     if should_run_inside_gdb(cmd):
         return GDBSubProcess
     elif should_run_inside_wrapper(cmd):
@@ -1203,7 +1243,8 @@ def get_sub_process_klass(cmd):
 
 def run(cmd, timeout=None, verbose=True, ignore_status=False,
         allow_output_check=None, shell=False,
-        env=None, sudo=False, ignore_bg_processes=False):
+        env=None, sudo=False, ignore_bg_processes=False,
+        encoding=None):
     """
     Run a subprocess, returning a CmdResult object.
 
@@ -1247,14 +1288,22 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
                  has a sudo configuration such that a password won't be
                  prompted. If that's not the case, the command will
                  straight out fail.
+    :param encoding: the encoding to use for the text representation
+                     of the command result stdout and stderr, with the
+                     default being Python's own, that is,
+                     (:func:`sys.getdefaultencoding`).
+    :type encoding: str
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
-    klass = get_sub_process_klass(cmd)
+    if encoding is None:
+        encoding = sys.getdefaultencoding()
+    klass = get_sub_process_klass(cmd, encoding)
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
-               sudo=sudo, ignore_bg_processes=ignore_bg_processes)
+               sudo=sudo, ignore_bg_processes=ignore_bg_processes,
+               encoding=encoding)
     cmd_result = sp.run(timeout=timeout)
     fail_condition = cmd_result.exit_status != 0 or cmd_result.interrupted
     if fail_condition and not ignore_status:
@@ -1264,7 +1313,8 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
 
 def system(cmd, timeout=None, verbose=True, ignore_status=False,
            allow_output_check=None, shell=False,
-           env=None, sudo=False, ignore_bg_processes=False):
+           env=None, sudo=False, ignore_bg_processes=False,
+           encoding=None):
     """
     Run a subprocess, returning its exit code.
 
@@ -1308,6 +1358,11 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                  has a sudo configuration such that a password won't be
                  prompted. If that's not the case, the command will
                  straight out fail.
+    :param encoding: the encoding to use for the text representation
+                     of the command result stdout and stderr, with the
+                     default being Python's own, that is,
+                     (:func:`sys.getdefaultencoding`).
+    :type encoding: str
 
     :return: Exit code.
     :rtype: int
@@ -1315,14 +1370,15 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes)
+                     sudo=sudo, ignore_bg_processes=ignore_bg_processes,
+                     encoding=encoding)
     return cmd_result.exit_status
 
 
 def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                   allow_output_check=None, shell=False,
                   env=None, sudo=False, ignore_bg_processes=False,
-                  strip_trail_nl=True):
+                  strip_trail_nl=True, encoding=None):
     """
     Run a subprocess, returning its output.
 
@@ -1370,6 +1426,11 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type ignore_bg_processes: bool
     :param strip_trail_nl: Whether to strip the trailing newline
     :type strip_trail_nl: bool
+    :param encoding: the encoding to use for the text representation
+                     of the command result stdout and stderr, with the
+                     default being Python's own, that is,
+                     (:func:`sys.getdefaultencoding`).
+    :type encoding: str
 
     :return: Command output.
     :rtype: bytes
@@ -1377,7 +1438,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
                      allow_output_check=allow_output_check, shell=shell, env=env,
-                     sudo=sudo, ignore_bg_processes=ignore_bg_processes)
+                     sudo=sudo, ignore_bg_processes=ignore_bg_processes,
+                     encoding=encoding)
     if strip_trail_nl:
         return cmd_result.stdout.rstrip(b'\n\r')
     return cmd_result.stdout

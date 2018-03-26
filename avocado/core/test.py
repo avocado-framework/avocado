@@ -33,6 +33,7 @@ from difflib import unified_diff
 from six import string_types, iteritems
 
 from . import data_dir
+from . import defaults
 from . import exceptions
 from . import output
 from . import parameters
@@ -1138,7 +1139,7 @@ class SimpleTest(Test):
 
             # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(self._command, verbose=True,
-                                 env=test_params)
+                                 env=test_params, encoding=defaults.ENCODING)
 
             self._log_detailed_cmd_info(result)
         except process.CmdError as details:
