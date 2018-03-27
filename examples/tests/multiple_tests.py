@@ -6,10 +6,9 @@ from avocado import main
 class MultipleTests(Test):
 
     """
-    Following the idea of unittest module,
-    every test method starts with a 'test' prefix,
-    so that 'test_foo' and 'testFoo' are test methods,
-    but 'division_by_zero' and 'action' are not.
+    Following the unittest module pattern, every test method starts
+    with a literal 'test' prefix, so that 'test_foo' and 'testFoo' are
+    test methods, but 'division_by_zero' and 'action' are not.
     """
 
     def setUp(self):

@@ -19,7 +19,7 @@ class PrintVariableTest(Test):
 
     :avocado: tags=requires_c_compiler
 
-    :param source: path to the source file relative to deps dir.
+    :param source: name of the source file located in a data directory
     """
 
     __binary = None    # filename of the compiled program
