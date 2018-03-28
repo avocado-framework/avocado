@@ -1168,7 +1168,7 @@ class SimpleTest(Test):
             warn_msg = ("Test passed but there were warnings on %s during "
                         "execution. Check the log for details.")
             if regex is not None:
-                re_warn = re.compile(regex)
+                re_warn = re.compile(regex, re.MULTILINE)
                 if warn_location in ['all', 'stdout']:
                     if re_warn.search(result.stdout_text):
                         raise exceptions.TestWarn(warn_msg % 'stdout')
@@ -1178,7 +1178,7 @@ class SimpleTest(Test):
                         raise exceptions.TestWarn(warn_msg % 'stderr')
 
         if skip_regex is not None:
-            re_skip = re.compile(skip_regex)
+            re_skip = re.compile(skip_regex, re.MULTILINE)
             skip_msg = ("Test passed but %s indicates test was skipped. "
                         "Check the log for details.")
 

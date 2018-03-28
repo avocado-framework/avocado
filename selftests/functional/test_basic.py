@@ -742,6 +742,8 @@ class RunnerSimpleTest(unittest.TestCase):
                       b'finish with warning)', result.stdout, result)
         self.assertIn(b'ERROR| Error message (ordinary message not changing '
                       b'the results)', result.stdout, result)
+        self.assertIn(b'Test passed but there were warnings', result.stdout,
+                      result)
 
     @unittest.skipIf(not GNU_ECHO_BINARY, "Uses echo as test")
     def test_fs_unfriendly_run(self):
@@ -859,7 +861,8 @@ class RunnerSimpleTestStatus(unittest.TestCase):
 
     def test_simpletest_status(self):
         warn_script = script.TemporaryScript('avocado_warn.sh',
-                                             "#!/bin/sh\necho WARN",
+                                             '#!/bin/sh\n'
+                                             'echo -e "\\n\\nWARN\\n"',
                                              'avocado_simpletest_'
                                              'functional')
         warn_script.save()
