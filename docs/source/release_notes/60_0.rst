@@ -1,0 +1,114 @@
+=====================
+60.0 Better Call Saul
+=====================
+
+The Avocado team is proud to present another release: Avocado version
+60.0, AKA "Better Call Saul", is now available!
+
+Release documentation: `Avocado 60.0
+<http://avocado-framework.readthedocs.io/en/60.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The legacy options ``--filter-only``, ``--filter-out`` and ``--multiplex``
+  have now been removed.  Please adjust your usage, replacing those
+  options with ``--mux-filter-only``, ``--mux-filter-out`` and
+  ``--mux-yaml`` respectively.
+
+* The deprecated ``skip`` method, previously part of the
+  :class:`avocado.Test` API, has been removed.  To skip a test,
+  you can still use the :func:`avocado.skip`, :func:`avocado.skipIf`
+  and :func:`avocado.skipUnless` decorators.
+
+* The :meth:`avocado.Test.srcdir` property has been deprecated, and
+  will be removed in the next release.  Please use
+  :meth:`avocado.Test.workdir` instead.
+
+* Python 3 RPM packages are now available for the core Avocado and for
+  many of the plugins.  Users can install both versions side by side,
+  and they'll share the same configuration.  To run the Python 3
+  version, run ``avocado-3`` (or ``avocado-3.x``, which x is the minor
+  Python version) instead of ``avocado``.
+
+* The :mod:`avocado.utils.kernel` library now supports setting the URL
+  that will be used to fetch the Linux kernel from, and can also build
+  installable packages on supported distributions (such as ``.deb``
+  packages on Ubuntu).
+
+* The :mod:`avocado.utils.process` library now contains helper
+  functions similar to the Python 2 :func:`commands.getstatusoutput`
+  and :func:`commands.getoutput` which can be of help to people porting
+  code from Python 2 to Python 3.
+
+Bug Fixes
+=========
+
+* Each job now gets its own temporary directory, which allows multiple
+  jobs to be used in a single interpreter execution.
+
+* On some situations, Avocado would, internally, attempt to operate on
+  a closed file, resulting in ``ValueError: I/O operation on closed
+  file``.  This has been fixed in the
+  :class:`avocado.utils.process.FDDrainer` class, which will not only
+  check if the file is not closed, but if the file-like object is
+  capable of operations such as ``fsync()``.
+
+* Avocado can now (again) run tests that will produce output in encoding
+  different than the Python standard one.  This has been implemented as
+  an Avocado-wide, hard-coded setting, that defines the default encoding
+  to be ``utf-8``.  This may be made configurable in the future.
+
+Internal Changes
+================
+
+* A memory optimization was applied, and allows test jobs with a large
+  number of tests to run smoothly.  Previously, Avocado would save the
+  :attr:`avocado.Test.params` attribute, a
+  :class:`avocado.core.parameters.AvocadoParams` instance to the test
+  results.  Now, it just keeps the relevant contents of the test
+  parameters instead.
+
+* A number of warnings have been enabled on Avocado's "lint" checks,
+  and consequently a number of mistakes have been fixed.
+
+* The usage of the :class:`avocado.core.job.Job` class now requires
+  the use of :meth:`avocado.core.job.Job.setup` and
+  :meth:`avocado.core.job.Job.cleanup`, either explicitly or as a
+  context manager.  This makes sure the temporary files are properly
+  cleaned up after the job finishes.
+
+* The exception raised by the utility functions in
+  :mod:`avocado.utils.memory` has been renamed from ``MemoryError``
+  and became :class:`avocado.utils.memory.MemError`.  The reason is
+  that ``MemoryError`` is a Python standard exception, that is
+  intended to be used on different situations.
+
+* A number of small improvements to the :class:`avocado.Test`
+  implementation, including making :meth:`avocado.Test.workdir`
+  creation more consistent with other test temporary directories,
+  extended logging of test metadata, logging of test initialization
+  (look for ``INIT`` in your test logs) in addition to the already
+  existing start of test execution (logged as ``START``), etc.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/59.0...60.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=NPx6swhbMUs>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/6a7jrsxA/1292-sprint-theme-better-call-saul

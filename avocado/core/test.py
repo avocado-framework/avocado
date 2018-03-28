@@ -537,13 +537,21 @@ class Test(unittest.TestCase, TestData):
 
     @property
     def workdir(self):
+        """
+        This property returns a writable directory that exists during
+        the entire test execution, but will be cleaned up once the
+        test finishes.
+
+        It can be used on tasks such as decompressing source tarballs,
+        building software, etc.
+        """
         return self.__workdir
 
     @property
     def srcdir(self):
         """
         This property is deprecated and will be removed in the future.
-        The :meth:`workdir` function should be used instead.
+        The :meth:`workdir` property should be used instead.
         """
         if not self.__srcdir_warning_logged:
             LOG_JOB.warn("DEPRECATION NOTICE: the test's \"srcdir\" property "

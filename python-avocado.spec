@@ -34,8 +34,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 59.0
-Release: 2%{?gitrel}%{?dist}
+Version: 60.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -135,6 +135,7 @@ Summary: %{summary}
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
 
+%if %{with_python3}
 %package -n python3-%{srcname}
 Summary: %{summary}
 Requires: python3
@@ -146,6 +147,7 @@ Requires: python3-stevedore
 %description -n python3-%{srcname}
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
+%endif
 
 %prep
 %if 0%{?rel_build}
@@ -420,6 +422,7 @@ AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %exclude %{python2_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python2_sitelib}/avocado/libexec*
 
+%if %{with_python3}
 %files -n python3-%{srcname}
 %defattr(-,root,root,-)
 %doc README.rst LICENSE
@@ -440,6 +443,7 @@ AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python3_sitelib}/avocado_framework_plugin_glib*
+%endif
 
 %package common
 Summary: Avocado common files
@@ -477,6 +481,7 @@ arbitrary filesystem location.
 %{python2_sitelib}/avocado_result_html*
 %{python2_sitelib}/avocado_framework_plugin_result_html*
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-output-html
 Summary: Avocado HTML report plugin
 Requires: python3-%{srcname} == %{version}, python3-pystache
@@ -489,6 +494,7 @@ arbitrary filesystem location.
 %files -n python3-%{srcname}-plugins-output-html
 %{python3_sitelib}/avocado_result_html*
 %{python3_sitelib}/avocado_framework_plugin_result_html*
+%endif
 
 %package -n python2-%{srcname}-plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
@@ -564,6 +570,7 @@ defined in a yaml file(s).
 %{python2_sitelib}/avocado_varianter_yaml_to_mux*
 %{python2_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
 Requires: python3-%{srcname} == %{version}
@@ -575,6 +582,7 @@ defined in a yaml file(s).
 %files -n python3-%{srcname}-plugins-varianter-yaml-to-mux
 %{python3_sitelib}/avocado_varianter_yaml_to_mux*
 %{python3_sitelib}/avocado_framework_plugin_varianter_yaml_to_mux*
+%endif
 
 %package -n python2-%{srcname}-plugins-loader-yaml
 Summary: Avocado Plugin that loads tests from YAML files
@@ -588,6 +596,7 @@ similar to the one used in the yaml_to_mux varianter plugin.
 %{python2_sitelib}/avocado_loader_yaml*
 %{python2_sitelib}/avocado_framework_plugin_loader_yaml*
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-loader-yaml
 Summary: Avocado Plugin that loads tests from YAML files
 Requires: python3-%{srcname}-plugins-varianter-yaml-to-mux == %{version}
@@ -599,6 +608,7 @@ similar to the one used in the yaml_to_mux varianter plugin.
 %files -n python3-%{srcname}-plugins-loader-yaml
 %{python3_sitelib}/avocado_loader_yaml*
 %{python3_sitelib}/avocado_framework_plugin_loader_yaml*
+%endif
 
 %package -n python2-%{srcname}-plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
@@ -613,6 +623,7 @@ also run them.
 %{python2_sitelib}/avocado_golang*
 %{python2_sitelib}/avocado_framework_plugin_golang*
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-golang
 Summary: Avocado Plugin for Execution of golang tests
 Requires: python3-%{srcname} == %{version}
@@ -625,6 +636,7 @@ also run them.
 %files -n python3-%{srcname}-plugins-golang
 %{python3_sitelib}/avocado_golang*
 %{python3_sitelib}/avocado_framework_plugin_golang*
+%endif
 
 %package -n python2-%{srcname}-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
@@ -638,6 +650,7 @@ Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 %{python2_sitelib}/avocado_varianter_pict*
 %{python2_sitelib}/avocado_framework_plugin_varianter_pict*
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-varianter-pict
 Summary: Varianter with combinatorial capabilities by PICT
 Requires: python3-%{srcname} == %{version}
@@ -649,6 +662,7 @@ Pair-Wise algorithms, also known as Combinatorial Independent Testing.
 %files -n python3-%{srcname}-plugins-varianter-pict
 %{python3_sitelib}/avocado_varianter_pict*
 %{python3_sitelib}/avocado_framework_plugin_varianter_pict*
+%endif
 
 %package -n python2-%{srcname}-plugins-result-upload
 Summary: Avocado Plugin to propagate Job results to a remote host
@@ -663,6 +677,7 @@ a dedicated sever.
 %{python2_sitelib}/avocado_framework_plugin_result_upload*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-result-upload
 Summary: Avocado Plugin to propagate Job results to a remote host
 Requires: python3-%{srcname} == %{version}
@@ -675,6 +690,7 @@ a dedicated sever.
 %{python3_sitelib}/avocado_result_upload*
 %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %config(noreplace)%{_sysconfdir}/avocado/conf.d/result_upload.conf
+%endif
 
 %package -n python2-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
@@ -688,6 +704,7 @@ GLib Test Framework.
 %{python2_sitelib}/avocado_glib*
 %{python2_sitelib}/avocado_framework_plugin_glib*
 
+%if %{with_python3}
 %package -n python3-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
 Requires: %{name} == %{version}
@@ -699,6 +716,7 @@ GLib Test Framework.
 %files -n python3-%{srcname}-plugins-glib
 %{python3_sitelib}/avocado_glib*
 %{python3_sitelib}/avocado_framework_plugin_glib*
+%endif
 
 %package examples
 Summary: Avocado Test Framework Example Tests
@@ -730,6 +748,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-0
+- New release
+
 * Mon Mar 19 2018 Cleber Rosa <cleber@redhat.com> - 59.0-2
 - Removed backward compatibility with name avocado on plugins
 - Removed extra dependencies on Fedora 24 for runner-remote
