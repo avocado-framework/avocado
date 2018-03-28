@@ -1186,7 +1186,7 @@ class SimpleTest(Test):
                 if re_skip.search(result.stdout_text):
                     raise exceptions.TestSkipError(skip_msg % 'stdout')
 
-            if warn_location in ['all', 'stderr']:
+            if skip_location in ['all', 'stderr']:
                 if re_skip.search(result.stderr_text):
                     raise exceptions.TestSkipError(skip_msg % 'stderr')
 
