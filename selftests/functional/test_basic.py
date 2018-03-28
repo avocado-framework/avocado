@@ -17,7 +17,7 @@ import pkg_resources
 
 try:
     from io import BytesIO
-except:
+except ImportError:
     from BytesIO import BytesIO
 
 try:
