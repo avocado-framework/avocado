@@ -51,8 +51,8 @@ class DiffTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_ALL_OK
         result = self.run_and_check(cmd_line, expected_rc)
         self.assertIn(b"# COMMAND LINE", result.stdout)
-        self.assertIn(b"-./scripts/avocado run", result.stdout)
-        self.assertIn(b"+./scripts/avocado run", result.stdout)
+        self.assertIn("-%s run" % AVOCADO, result.stdout_text)
+        self.assertIn("+%s run" % AVOCADO, result.stdout_text)
 
     def test_diff_nocmdline(self):
         cmd_line = ('%s diff %s %s --diff-filter nocmdline' %
