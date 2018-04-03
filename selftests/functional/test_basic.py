@@ -17,7 +17,7 @@ import pkg_resources
 
 try:
     from io import BytesIO
-except:
+except ImportError:
     from BytesIO import BytesIO
 
 try:
@@ -742,6 +742,8 @@ class RunnerSimpleTest(unittest.TestCase):
                       b'finish with warning)', result.stdout, result)
         self.assertIn(b'ERROR| Error message (ordinary message not changing '
                       b'the results)', result.stdout, result)
+        self.assertIn(b'Test passed but there were warnings', result.stdout,
+                      result)
 
     @unittest.skipIf(not GNU_ECHO_BINARY, "Uses echo as test")
     def test_fs_unfriendly_run(self):
@@ -853,13 +855,16 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         self.config_file = script.TemporaryScript('avocado.conf',
                                                   "[simpletests.status]\n"
                                                   "warn_regex = ^WARN$\n"
-                                                  "skip_regex = ^SKIP$\n")
+                                                  "skip_regex = ^SKIP$\n"
+                                                  "skip_location = stdout\n")
         self.config_file.save()
         os.chdir(basedir)
 
     def test_simpletest_status(self):
+        # Multi-line warning in STDERR should by default be handled
         warn_script = script.TemporaryScript('avocado_warn.sh',
-                                             "#!/bin/sh\necho WARN",
+                                             '#!/bin/sh\n'
+                                             '>&2 echo -e "\\n\\nWARN\\n"',
                                              'avocado_simpletest_'
                                              'functional')
         warn_script.save()
@@ -870,7 +875,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         json_results = json.loads(result.stdout_text)
         self.assertEquals(json_results['tests'][0]['status'], 'WARN')
         warn_script.remove()
-
+        # Skip in STDOUT should be handled because of config
         skip_script = script.TemporaryScript('avocado_skip.sh',
                                              "#!/bin/sh\necho SKIP",
                                              'avocado_simpletest_'
@@ -883,6 +888,19 @@ class RunnerSimpleTestStatus(unittest.TestCase):
         json_results = json.loads(result.stdout_text)
         self.assertEquals(json_results['tests'][0]['status'], 'SKIP')
         skip_script.remove()
+        # STDERR skip should not be handled
+        skip2_script = script.TemporaryScript('avocado_skip.sh',
+                                              "#!/bin/sh\n>&2 echo SKIP",
+                                              'avocado_simpletest_'
+                                              'functional')
+        skip2_script.save()
+        cmd_line = ('%s --config %s run --job-results-dir %s --sysinfo=off'
+                    ' %s --json -' % (AVOCADO, self.config_file.path,
+                                      self.tmpdir, skip2_script.path))
+        result = process.run(cmd_line, ignore_status=True)
+        json_results = json.loads(result.stdout_text)
+        self.assertEquals(json_results['tests'][0]['status'], 'PASS')
+        skip2_script.remove()
 
     def tearDown(self):
         self.config_file.remove()
