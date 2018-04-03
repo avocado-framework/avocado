@@ -52,9 +52,9 @@ class DiffTests(unittest.TestCase):
         result = self.run_and_check(cmd_line, expected_rc)
         msg = "# COMMAND LINE"
         self.assertIn(msg, result.stdout)
-        msg = "-./scripts/avocado run"
+        msg = "-%s run" % AVOCADO
         self.assertIn(msg, result.stdout)
-        msg = "+./scripts/avocado run"
+        msg = "+%s run" % AVOCADO
         self.assertIn(msg, result.stdout)
 
     def test_diff_nocmdline(self):
