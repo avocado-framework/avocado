@@ -32,6 +32,11 @@
 %global with_python3 1
 %endif
 
+# The Python dependencies are already tracked by the python2
+# or python3 "Requires".  This filters out the python binaries
+# from the RPM automatic requires/provides scanner.
+%global __requires_exclude ^/usr/bin/python[23]$
+
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 60.0
@@ -756,6 +761,7 @@ Again Shell code (and possibly other similar shells).
 * Wed Apr  4 2018 Cleber Rosa <cleber@redhat.com> - 60.0-2
 - Moved all requirements to python2-avocado and python3-avocado
 - Added python_provides macro on Python 3 package
+- Filter out python binaries from requirements
 
 * Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-1
 - Moved "common" dep into python2-avocado and python3-avocado
