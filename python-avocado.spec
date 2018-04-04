@@ -35,7 +35,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 60.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -106,6 +106,13 @@ BuildRequires: python3-yaml
 %endif
 %endif
 
+%description
+Avocado is a set of tools and libraries (what people call
+these days a framework) to perform automated testing.
+
+%package -n python2-%{srcname}
+Summary: %{summary}
+Requires: %{name}-common == %{version}
 Requires: gdb
 Requires: gdb-gdbserver
 Requires: procps-ng
@@ -121,14 +128,6 @@ Requires: python2-requests
 Requires: python2-setuptools
 Requires: python2-stevedore
 %endif
-
-%description
-Avocado is a set of tools and libraries (what people call
-these days a framework) to perform automated testing.
-
-%package -n python2-%{srcname}
-Summary: %{summary}
-Requires: %{name}-common == %{version}
 %{?python_provide:%python_provide python2-%{srcname}}
 
 %description -n python2-%{srcname}
@@ -138,12 +137,16 @@ these days a framework) to perform automated testing.
 %if %{with_python3}
 %package -n python3-%{srcname}
 Summary: %{summary}
+Requires: %{name}-common == %{version}
+Requires: gdb
+Requires: gdb-gdbserver
+Requires: procps-ng
+Requires: pyliblzma
 Requires: python3
 Requires: python3-requests
 Requires: python3-setuptools
 Requires: python3-six
 Requires: python3-stevedore
-Requires: %{name}-common == %{version}
 
 %description -n python3-%{srcname}
 Avocado is a set of tools and libraries (what people call
@@ -749,6 +752,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Apr  4 2018 Cleber Rosa <cleber@redhat.com> - 60.0-2
+- Moved all requirements to python2-avocado and python3-avocado
+
 * Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-1
 - Moved "common" dep into python2-avocado and python3-avocado
 
