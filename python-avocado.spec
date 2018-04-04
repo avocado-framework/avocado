@@ -128,6 +128,7 @@ these days a framework) to perform automated testing.
 
 %package -n python2-%{srcname}
 Summary: %{summary}
+Requires: python2-stevedore
 Requires: %{name}-common == %{version}
 %{?python_provide:%python_provide python2-%{srcname}}
 
