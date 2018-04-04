@@ -147,6 +147,7 @@ Requires: python3-requests
 Requires: python3-setuptools
 Requires: python3-six
 Requires: python3-stevedore
+%{?python_provide:%python_provide python3-%{srcname}}
 
 %description -n python3-%{srcname}
 Avocado is a set of tools and libraries (what people call
@@ -754,6 +755,7 @@ Again Shell code (and possibly other similar shells).
 %changelog
 * Wed Apr  4 2018 Cleber Rosa <cleber@redhat.com> - 60.0-2
 - Moved all requirements to python2-avocado and python3-avocado
+- Added python_provides macro on Python 3 package
 
 * Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-1
 - Moved "common" dep into python2-avocado and python3-avocado
