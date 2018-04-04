@@ -106,9 +106,11 @@ class TAPResult(ResultEvents):
                 name = "_" + name
         # First log the system output
         self.__write("# debug.log of %s:", name)
-        if state.get('text_output'):
-            for line in state['text_output'].splitlines():
-                self.__write("#   %s", line)
+
+        with open(state.get("logfile"), "r") as logfile_obj:
+            for line in logfile_obj:
+                self.__write("#   %s", line.rstrip())
+
         if status == "PASS":
             self.__write("ok %s %s", result.tests_run, name)
         elif status == "WARN":
