@@ -125,12 +125,14 @@ Requires: pyliblzma
 %if 0%{?rhel} == 7
 Requires: python
 Requires: python-setuptools
+Requires: python-six
 Requires: python-stevedore
 Requires: python2-requests
 %else
 Requires: python2
 Requires: python2-requests
 Requires: python2-setuptools
+Requires: python2-six
 Requires: python2-stevedore
 %endif
 %{?python_provide:%python_provide python2-%{srcname}}
@@ -762,6 +764,7 @@ Again Shell code (and possibly other similar shells).
 - Moved all requirements to python2-avocado and python3-avocado
 - Added python_provides macro on Python 3 package
 - Filter out python binaries from requirements
+- Added explicit six requirement on Python 2 packages
 
 * Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-1
 - Moved "common" dep into python2-avocado and python3-avocado
