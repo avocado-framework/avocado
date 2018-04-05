@@ -2,6 +2,11 @@ import sys
 import unittest
 
 from avocado.utils import astring
+from avocado.utils import process
+
+
+SUPPORTED_LOCALES = process.getoutput("/bin/locale -a", timeout=10,
+                                      verbose=False, ignore_status=True)
 
 
 class AstringTest(unittest.TestCase):
@@ -76,6 +81,37 @@ class AstringTest(unittest.TestCase):
         avocado = u'\u0430\u0432\u043e\u043a\u0430\u0434\xff<>'
         self.assertEqual(astring.string_to_safe_path(avocado),
                          "%s__" % avocado[:-2])
+
+    def test_system_encoding(self):
+        _cmd = ("%s -c '"
+                "import io, os, sys; "
+                "out = sys.stdout; "
+                "std = io.open(os.devnull, \"r+\", encoding=\"%%s\") if \"%%s\" != \"None\" else None;"
+                "sys.stdin, sys.stdout, sys.stderr = std, std, std; "
+                "from avocado.utils.astring import DEFAULT_ENCODING; "
+                "out.write(DEFAULT_ENCODING)'" % sys.executable)
+
+        def check(std, locale, exps, only_supported_locale=True):
+            if only_supported_locale and locale not in SUPPORTED_LOCALES:
+                return
+            cmd = _cmd % (std, std)
+            try:
+                out = process.system_output(cmd, env={'LC_ALL': locale}).strip()
+            except process.CmdError as details:
+                self.fail("Fail to run cmd: (%s, %s, %s, %s)\n%s\n%s"
+                          % (std, locale, exps, only_supported_locale,
+                             details.result, details.additional_text))
+            self.assertIn(out.decode('utf-8'), exps)
+
+        # Only locales should matter
+        check(None, 'en_GB.iso885915', ('ISO-8859-15', 'iso8859-15'))
+        check('utf-8', 'C.utf8', ('utf-8', 'UTF-8'))
+        # only std encoding should matter
+        check('cp1250', 'C', ('cp1250'))
+        check('iso8859-2', 'this_encoding_should_fallback_to_ascii', ('iso8859-2'), False)
+        # only default encoding should matter
+        check('ascii', 'C', sys.getdefaultencoding())
+        check(None, 'this_encoding_should_fallback_to_ascii', sys.getdefaultencoding())
 
 
 if __name__ == '__main__':
