@@ -77,6 +77,35 @@ class AstringTest(unittest.TestCase):
         self.assertEqual(astring.string_to_safe_path(avocado),
                          "%s__" % avocado[:-2])
 
+    def test_is_bytes(self):
+        """
+        Verifies what bytes means, basically that they are the same
+        thing accross Python 2 and 3 and can be decoded into "text"
+        """
+        binary = b''
+        text = u''
+        self.assertTrue(astring.is_bytes(binary))
+        self.assertFalse(astring.is_bytes(text))
+        self.assertTrue(hasattr(binary, 'decode'))
+        self.assertTrue(astring.is_text(binary.decode()))
+        # on Python 2, each str member is also a single byte char
+        if sys.version_info[0] < 3:
+            self.assertTrue(astring.is_bytes(str('')))
+        else:
+            self.assertFalse(astring.is_bytes(str('')))
+
+    def test_is_text(self):
+        """
+        Verifies what text means, basically that they can represent
+        extended set of characters and can be encoded into "bytes"
+        """
+        binary = b''
+        text = u''
+        self.assertTrue(astring.is_text(text))
+        self.assertFalse(astring.is_text(binary))
+        self.assertTrue(hasattr(text, 'encode'))
+        self.assertTrue(astring.is_bytes(text.encode()))
+
 
 if __name__ == '__main__':
     unittest.main()
