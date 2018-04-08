@@ -45,6 +45,7 @@ stderr_log = logging.getLogger('avocado.test.stderr')
 output_log = logging.getLogger('avocado.test.output')
 
 #: The active wrapper utility script.
+#: The active wrapper utility script.
 CURRENT_WRAPPER = None
 
 #: The global wrapper.
@@ -1442,7 +1443,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                      encoding=encoding)
     if strip_trail_nl:
         return cmd_result.stdout.rstrip(b'\n\r')
-    return cmd_result.stdout
+    return cmd_result.stdout_text
 
 
 def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
