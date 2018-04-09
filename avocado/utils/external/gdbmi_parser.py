@@ -171,7 +171,7 @@ def __private():
             exclude = [
                 'record_list'
             ]
-            if len(args) == 1 and type not in exclude:
+            if len(args) == 1 and token_type not in exclude:
                 return args[0]
             return spark.GenericASTBuilder.nonterminal(self, token_type, args)
 
