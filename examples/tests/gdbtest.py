@@ -360,7 +360,7 @@ class GdbTest(Test):
         self.assertTrue(os.path.exists(s.stderr_path))
 
         stderr_lines = genio.read_all_lines(s.stderr_path)
-        listening_line = "Listening on port %s\n" % s.port
+        listening_line = "Listening on port %s" % s.port
         self.assertIn(listening_line, stderr_lines)
 
     def test_server_stdout(self):
@@ -376,7 +376,7 @@ class GdbTest(Test):
         self.assertTrue(os.path.exists(s.stderr_path))
 
         stdout_lines = genio.read_all_lines(s.stdout_path)
-        self.assertIn("return 99\n", stdout_lines)
+        self.assertIn("return 99", stdout_lines)
 
     def test_interactive_stdout(self):
         """
