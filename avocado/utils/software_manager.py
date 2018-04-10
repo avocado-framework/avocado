@@ -658,7 +658,7 @@ class ZypperBackend(RpmBackend):
                                  verbose=False)
         out = cmd_result.stdout.strip()
         try:
-            ver = re.findall('\d.\d*.\d*', out)[0]
+            ver = re.findall(r'\d.\d*.\d*', out)[0]
         except IndexError:
             ver = out
         self.pm_version = ver

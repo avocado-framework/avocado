@@ -125,7 +125,7 @@ class GenericParser:
         self.augment(start)
         self.ruleschanged = 1
 
-    _NULLABLE = '\e_'
+    _NULLABLE = '\\e_'
     _START = 'START'
     _BOF = '|-'
 

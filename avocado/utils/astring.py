@@ -123,8 +123,8 @@ def strip_console_codes(output, custom_codes=None):
     return_str = ""
     index = 0
     output = "\x1b[m%s" % output
-    console_codes = "%[G@8]|\[[@A-HJ-MPXa-hl-nqrsu\`]"
-    console_codes += "|\[[\d;]+[HJKgqnrm]|#8|\([B0UK]|\)"
+    console_codes = "%[G@8]|\\[[@A-HJ-MPXa-hl-nqrsu\\`]"
+    console_codes += "|\\[[\\d;]+[HJKgqnrm]|#8|\\([B0UK]|\\)"
     if custom_codes is not None and custom_codes not in console_codes:
         console_codes += "|%s" % custom_codes
     while index < len(output):
