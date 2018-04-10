@@ -32,10 +32,15 @@
 %global with_python3 1
 %endif
 
+# The Python dependencies are already tracked by the python2
+# or python3 "Requires".  This filters out the python binaries
+# from the RPM automatic requires/provides scanner.
+%global __requires_exclude ^/usr/bin/python[23]$
+
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 60.0
-Release: 1%{?gitrel}%{?dist}
+Release: 2%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -106,22 +111,6 @@ BuildRequires: python3-yaml
 %endif
 %endif
 
-Requires: gdb
-Requires: gdb-gdbserver
-Requires: procps-ng
-Requires: pyliblzma
-%if 0%{?rhel} == 7
-Requires: python
-Requires: python-setuptools
-Requires: python-stevedore
-Requires: python2-requests
-%else
-Requires: python2
-Requires: python2-requests
-Requires: python2-setuptools
-Requires: python2-stevedore
-%endif
-
 %description
 Avocado is a set of tools and libraries (what people call
 these days a framework) to perform automated testing.
@@ -129,6 +118,23 @@ these days a framework) to perform automated testing.
 %package -n python2-%{srcname}
 Summary: %{summary}
 Requires: %{name}-common == %{version}
+Requires: gdb
+Requires: gdb-gdbserver
+Requires: procps-ng
+Requires: pyliblzma
+%if 0%{?rhel} == 7
+Requires: python
+Requires: python-setuptools
+Requires: python-six
+Requires: python-stevedore
+Requires: python2-requests
+%else
+Requires: python2
+Requires: python2-requests
+Requires: python2-setuptools
+Requires: python2-six
+Requires: python2-stevedore
+%endif
 %{?python_provide:%python_provide python2-%{srcname}}
 
 %description -n python2-%{srcname}
@@ -138,12 +144,17 @@ these days a framework) to perform automated testing.
 %if %{with_python3}
 %package -n python3-%{srcname}
 Summary: %{summary}
+Requires: %{name}-common == %{version}
+Requires: gdb
+Requires: gdb-gdbserver
+Requires: procps-ng
+Requires: pyliblzma
 Requires: python3
 Requires: python3-requests
 Requires: python3-setuptools
 Requires: python3-six
 Requires: python3-stevedore
-Requires: %{name}-common == %{version}
+%{?python_provide:%python_provide python3-%{srcname}}
 
 %description -n python3-%{srcname}
 Avocado is a set of tools and libraries (what people call
@@ -749,6 +760,12 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed Apr  4 2018 Cleber Rosa <cleber@redhat.com> - 60.0-2
+- Moved all requirements to python2-avocado and python3-avocado
+- Added python_provides macro on Python 3 package
+- Filter out python binaries from requirements
+- Added explicit six requirement on Python 2 packages
+
 * Wed Mar 28 2018 Cleber Rosa <cleber@redhat.com> - 60.0-1
 - Moved "common" dep into python2-avocado and python3-avocado
 
