@@ -76,7 +76,7 @@ def parse_lsmod_for_module(l_raw, module_name, escape=True):
     # having to splitlines use named matches so we can extract the dictionary
     # with groupdict
     pattern = (r"^(?P<name>%s)\s+(?P<size>\d+)\s+(?P<used>\d+)"
-               "\s*(?P<submodules>\S+)?$")
+               r"\s*(?P<submodules>\S+)?$")
     lsmod = re.search(pattern % module_search, l_raw, re.M)
     if lsmod:
         # default to empty list if no submodules

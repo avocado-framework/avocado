@@ -803,7 +803,7 @@ class RunnerSimpleTest(unittest.TestCase):
                               "--external-runner %s --sysinfo=off "
                               "--job-timeout 3"
                               % (AVOCADO, self.tmpdir, SLEEP_BINARY))
-        proc.read_until_output_matches(["\(1/1\)"], timeout=3,
+        proc.read_until_output_matches([r"\(1/1\)"], timeout=3,
                                        internal_timeout=0.01)
         # We need pid of the avocado process, not the shell executing it
         avocado_shell = psutil.Process(proc.get_pid())
