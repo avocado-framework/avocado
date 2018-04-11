@@ -94,6 +94,30 @@ class xUnitSucceedTest(unittest.TestCase):
                         "Failed to validate against %s, content:\n%s" %
                         (self.junit, xml))
 
+    def test_max_test_log_size(self):
+        log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
+        log_content = "1234567890" * 100
+        log.write(log_content)
+        log_path = log.name
+        log.close()
+        self.test1._Test__status = "ERROR"
+        self.test1._Test__logfile = log_path
+        self.test_result.start_test(self.test1)
+        self.test_result.end_test(self.test1.get_state())
+        self.test_result.end_tests()
+        xunit_result = xunit.XUnitResult()
+        xunit_result.render(self.test_result, self.job)
+        with open(self.job.args.xunit_output, 'rb') as fp:
+            unlimited = fp.read()
+        self.job.args.xunit_max_test_log_chars = 10
+        xunit_result.render(self.test_result, self.job)
+        with open(self.job.args.xunit_output, 'rb') as fp:
+            limited = fp.read()
+        self.assertLess(len(limited), len(unlimited) - 500,
+                        "Length of xunit limitted to 10 chars was greater "
+                        "than (unlimited - 500). Unlimited output:\n%s\n\n"
+                        "Limited output:\n%s" % (unlimited, limited))
+
 
 if __name__ == '__main__':
     unittest.main()
