@@ -125,15 +125,14 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid',
                        mock.Mock(return_value=1000))
     def test_subprocess_sudo(self):
-        expected_command = '%s -n ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.cmd, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -153,14 +152,13 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_subprocess_sudo_shell(self):
-        expected_command = '%s -n -s ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n -s ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.cmd, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -200,14 +198,13 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_run_sudo(self):
-        expected_command = '%s -n ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.command, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -227,14 +224,13 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_run_sudo_shell(self):
-        expected_command = '%s -n -s ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n -s ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.command, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
