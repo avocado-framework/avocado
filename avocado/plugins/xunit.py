@@ -23,6 +23,7 @@ from xml.dom.minidom import Document
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
+from avocado.utils import data_structures
 
 
 class XUnitResult(Result):
@@ -53,7 +54,8 @@ class XUnitResult(Result):
         testcase.setAttribute('time', self._get_attr(state, 'time_elapsed'))
         return testcase
 
-    def _create_failure_or_error(self, document, test, element_type):
+    def _create_failure_or_error(self, document, test, element_type,
+                                 max_log_size=None):
         element = document.createElement(element_type)
         element.setAttribute('type', self._get_attr(test, 'fail_class'))
         element.setAttribute('message', self._get_attr(test, 'fail_reason'))
@@ -63,7 +65,21 @@ class XUnitResult(Result):
         system_out = document.createElement('system-out')
         try:
             with open(test.get("logfile"), "r") as logfile_obj:
-                text_output = logfile_obj.read()
+                if max_log_size:
+                    logfile_obj.seek(0, 2)
+                    log_size = logfile_obj.tell()
+                    if log_size < max_log_size:
+                        text_output = logfile_obj.read()
+                    else:
+                        size = max_log_size / 2
+                        logfile_obj.seek(0, 0)
+                        text_output = logfile_obj.read(size)
+                        text_output += ("\n\n--[ CUT DUE TO XML PER TEST "
+                                        "LIMIT ]--\n\n")
+                        logfile_obj.seek(-size / 2, 2)
+                        text_output += logfile_obj.read()
+                else:
+                    text_output = logfile_obj.read()
         except (TypeError, IOError):
             text_output = self.UNKNOWN
         system_out_cdata_content = self._escape_cdata(text_output)
@@ -71,7 +87,7 @@ class XUnitResult(Result):
         system_out.appendChild(system_out_cdata)
         return element, system_out
 
-    def _render(self, result):
+    def _render(self, result, max_test_log_size):
         document = Document()
         testsuite = document.createElement('testsuite')
         testsuite.setAttribute('name', 'avocado')
@@ -92,7 +108,8 @@ class XUnitResult(Result):
             elif status == 'FAIL':
                 element, system_out = self._create_failure_or_error(document,
                                                                     test,
-                                                                    'failure')
+                                                                    'failure',
+                                                                    max_test_log_size)
                 testcase.appendChild(element)
                 testcase.appendChild(system_out)
             elif status == 'CANCEL':
@@ -100,7 +117,8 @@ class XUnitResult(Result):
             else:
                 element, system_out = self._create_failure_or_error(document,
                                                                     test,
-                                                                    'error')
+                                                                    'error',
+                                                                    max_test_log_size)
                 testcase.appendChild(element)
                 testcase.appendChild(system_out)
             testsuite.appendChild(testcase)
@@ -114,7 +132,8 @@ class XUnitResult(Result):
         if not result.tests_total:
             return
 
-        content = self._render(result)
+        max_test_log_size = getattr(job.args, 'xunit_max_test_log_chars', None)
+        content = self._render(result, max_test_log_size)
         if getattr(job.args, 'xunit_job_result', 'off') == 'on':
             xunit_path = os.path.join(job.logdir, 'results.xml')
             with open(xunit_path, 'wb') as xunit_file:
@@ -155,6 +174,12 @@ class XUnitCLI(CLI):
             choices=('on', 'off'), default='on',
             help=('Enables default xUnit result in the job results directory. '
                   'File will be named "results.xml".'))
+
+        run_subcommand_parser.output.add_argument(
+            '--xunit-max-test-log-chars', metavar='SIZE',
+            type=lambda x: data_structures.DataSize(x).b, help="Limit the "
+            "attached job log to given number of characters (k/m/g suffix "
+            "allowed)")
 
     def run(self, args):
         pass
