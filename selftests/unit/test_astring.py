@@ -106,6 +106,23 @@ class AstringTest(unittest.TestCase):
         self.assertTrue(hasattr(text, 'encode'))
         self.assertTrue(astring.is_bytes(text.encode()))
 
+    def test_to_text_is_text(self):
+        self.assertTrue(astring.is_text(astring.to_text(b'')))
+        self.assertTrue(astring.is_text(astring.to_text('')))
+        self.assertTrue(astring.is_text(astring.to_text(u'')))
+
+    def test_to_text_decode_is_text(self):
+        self.assertTrue(astring.is_text(astring.to_text(b'', 'ascii')))
+        self.assertTrue(astring.is_text(astring.to_text('', 'ascii')))
+        self.assertTrue(astring.is_text(astring.to_text(u'', 'ascii')))
+
+    def test_to_text_decode_utf_8(self):
+        text_1 = astring.to_text(b'\xc3\xa1', 'utf-8')
+        text_2 = astring.to_text(u'\u00e1', 'utf-8')
+        self.assertTrue(astring.is_text(text_1))
+        self.assertTrue(astring.is_text(text_1))
+        self.assertEqual(text_1, text_2)
+
 
 if __name__ == '__main__':
     unittest.main()

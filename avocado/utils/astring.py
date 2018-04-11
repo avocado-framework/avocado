@@ -304,3 +304,23 @@ def is_text(data):
     if sys.version_info[0] < 3:
         return isinstance(data, unicode)
     return isinstance(data, str)
+
+
+def to_text(data, encoding=None):
+    """
+    Convert data to text
+
+    Action is only taken if data is "bytes", in which case it's
+    decoded into the given encoding and should produce a type that
+    passes the is_text() check.
+
+    :param data: data to be transformed into text
+    :type data: either bytes or other data that will be returned
+                unchanged
+    """
+    if is_bytes(data):
+        if encoding is None:
+            return data.decode()
+        else:
+            return data.decode(encoding)
+    return data
