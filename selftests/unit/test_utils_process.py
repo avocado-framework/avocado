@@ -229,7 +229,8 @@ class TestProcessRun(unittest.TestCase):
         encoded_text = b'Avok\xc3\xa1do'
         self.assertEqual(text.encode('utf-8'), encoded_text)
         self.assertEqual(encoded_text.decode('utf-8'), text)
-        result = process.run("%s -n %s" % (ECHO_CMD, text), encoding='utf-8')
+        cmd = u"%s -n %s" % (ECHO_CMD, text)
+        result = process.run(cmd, encoding='utf-8')
         self.assertEqual(result.stdout, encoded_text)
         self.assertEqual(result.stdout_text, text)
 
