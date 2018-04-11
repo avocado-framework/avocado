@@ -94,6 +94,10 @@ introduced by the next LTS version are:
   that ``MemoryError`` is a Python standard exception, that is
   intended to be used on different situations.
 
+* Added possibility to limit the amount of characters embedded as
+  "system-out" in the xunit output plugin (``--xunit-max-test-log-chars
+  XX``).
+
 Complete list of changes
 ========================
 
