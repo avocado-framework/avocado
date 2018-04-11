@@ -34,6 +34,7 @@ import time
 from io import BytesIO, UnsupportedOperation
 from six import PY2, string_types
 
+from . import astring
 from . import gdb
 from . import runtime
 from . import path
@@ -279,6 +280,26 @@ def binary_from_shell_cmd(cmd, encoding=None):
         if not _RE_BASH_SET_VARIABLE.match(item):
             return item
     raise ValueError("Unable to parse first binary from '%s'" % cmd)
+
+
+def cmd_split(cmd):
+    """
+    Splits a command line into individual components
+
+    This is a simple wrapper around :func:`shlex.split`, which has the
+    requirement of having text (not bytes) as its argument on Python 3,
+    but bytes on Python 2.
+
+    :param cmd: text (a multi byte string) encoded as 'utf-8'
+    """
+    if sys.version_info[0] < 3:
+        data = cmd.encode('utf-8')
+        result = shlex.split(data)
+        result = [i.decode('utf-8') for i in result]
+    else:
+        data = astring.to_text(cmd, 'utf-8')
+        result = shlex.split(data)
+    return result
 
 
 class CmdResult(object):
