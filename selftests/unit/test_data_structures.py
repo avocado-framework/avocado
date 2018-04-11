@@ -94,6 +94,12 @@ class TestDataStructures(unittest.TestCase):
         self.assertRaises(ValueError, data_structures.time_to_seconds,
                           "10days")
 
+    def test_size_to_bytes(self):
+        self.assertEqual(data_structures.size_to_bytes('21'), 21)
+        self.assertEqual(data_structures.size_to_bytes('  12  M  '),
+                         12582912)
+        self.assertRaises(ValueError, data_structures.size_to_bytes, '1MB')
+
 
 class TestDataSize(unittest.TestCase):
 
