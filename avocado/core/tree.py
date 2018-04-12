@@ -129,6 +129,9 @@ class TreeNodeEnvOnly(object):
             return False
         return True
 
+    def fingerprint(self):
+        return "%s%s" % (self.path, self.environment)
+
     def get_environment(self):
         return self.environment
 
