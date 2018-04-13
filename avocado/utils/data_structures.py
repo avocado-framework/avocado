@@ -27,7 +27,14 @@ import sys
 import math
 
 from six.moves import zip
-from collections import OrderedDict
+
+
+#: Dict of size multipliers
+SIZE_MULTIPLIERS = {'b': 1,  # 2**0
+                    'k': 1024,  # 2**10
+                    'm': 1048576,  # 2**20
+                    'g': 1073741824,  # 2**30
+                    't': 1099511627776}  # 2**40
 
 
 class InvalidDataSize(ValueError):
@@ -253,6 +260,20 @@ def time_to_seconds(time):
     return seconds
 
 
+def size_to_bytes(size):
+    """
+    Convert size with suffix to bytes
+    :param size: String optionally with suffix (i.e. '1M')
+    """
+    norm_size = size.strip().lower()
+    last = norm_size[-1]
+    if last.isdigit():
+        return int(norm_size)
+    elif last in SIZE_MULTIPLIERS:
+        return int(norm_size[:-1]) * SIZE_MULTIPLIERS[last]
+    raise ValueError("Unable to convert '%s'" % size)
+
+
 class DataSize(object):
     """
     Data Size object with builtin unit-converted attributes.
@@ -261,12 +282,6 @@ class DataSize(object):
                  unit string means the data size is in bytes.
     :type data: str
     """
-
-    MULTIPLIERS = OrderedDict([('b', 1),  # 2**0
-                               ('k', 1024),  # 2**10
-                               ('m', 1048576),  # 2**20
-                               ('g', 1073741824),  # 2**30
-                               ('t', 1099511627776)])  # 2**40
 
     def __init__(self, data):
         pattern = r"^(\d+)([bkmgt])?$"  # Number and optional string
@@ -295,15 +310,15 @@ class DataSize(object):
         Creates one extra attribute per available conversion unit,
         which will return the converted value.
         """
-        if attr not in self.MULTIPLIERS:
+        if attr not in SIZE_MULTIPLIERS:
             raise AttributeError('Attribute %s does not exist.' % attr)
-        return int(self.value * self.MULTIPLIERS[self.unit] /
-                   self.MULTIPLIERS[attr])
+        return int(self.value * SIZE_MULTIPLIERS[self.unit] /
+                   SIZE_MULTIPLIERS[attr])
 
     def __dir__(self):
         """
         Makes the extra attributes visible when calling dir().
         """
         listing = dir(type(self)) + list(self.__dict__.keys())
-        listing.extend(['%s' % item for item in self.MULTIPLIERS])
+        listing.extend(['%s' % item for item in SIZE_MULTIPLIERS])
         return listing
