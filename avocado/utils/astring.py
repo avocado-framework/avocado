@@ -35,14 +35,14 @@ from six.moves import xrange as range
 
 
 #: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
-FS_UNSAFE_CHARS = '<>:"/\\|?*'
+FS_UNSAFE_CHARS = '<>:"/\\|?*;'
 
 # Translate table to replace fs-unfriendly chars
 if PY3:
     _FS_TRANSLATE = bytes.maketrans(bytes(FS_UNSAFE_CHARS, "ascii"),
-                                    b'_________')
+                                    b'__________')
 else:
-    _FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, '_________')
+    _FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, '__________')
 
 
 def bitlist_to_string(data):
