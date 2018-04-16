@@ -87,6 +87,13 @@ class TestDataStructures(unittest.TestCase):
         self.assertIn("incorrect_twice", str(log.msgs[1]))
         self.assertIn("incorrect_twice", str(log.msgs[2]))
 
+    def test_time_to_seconds(self):
+        self.assertEqual(data_structures.time_to_seconds(None), 0)
+        self.assertEqual(data_structures.time_to_seconds("31"), 31)
+        self.assertEqual(data_structures.time_to_seconds('10d'), 864000)
+        self.assertRaises(ValueError, data_structures.time_to_seconds,
+                          "10days")
+
 
 class TestDataSize(unittest.TestCase):
 
