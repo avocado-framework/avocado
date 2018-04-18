@@ -17,6 +17,8 @@ This module provides the client facilities to detect the Linux Distribution
 it's running under.
 """
 
+from __future__ import absolute_import
+
 import os
 import re
 import platform

@@ -13,6 +13,8 @@
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 # Author: Lukas Doktor <ldoktor@redhat.com>
 
+from __future__ import absolute_import
+
 import json
 import sys
 

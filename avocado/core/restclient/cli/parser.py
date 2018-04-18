@@ -16,6 +16,8 @@
 REST client application command line parsing
 """
 
+from __future__ import absolute_import
+
 import os
 import glob
 import argparse

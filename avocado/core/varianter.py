@@ -19,6 +19,8 @@
 Base classes for implementing the varianter interface
 """
 
+from __future__ import absolute_import
+
 import hashlib
 
 from six import iteritems, itervalues

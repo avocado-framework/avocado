@@ -17,6 +17,8 @@ Utility for individual file access control implemented
 via PID lock files.
 """
 
+from __future__ import absolute_import
+
 import os
 import time
 

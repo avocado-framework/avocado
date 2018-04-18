@@ -161,9 +161,9 @@ results_dir_content() {
 
 [ "$SKIP_RESULTSDIR_CHECK" ] || RESULTS_DIR_CONTENT="$(ls $RESULTS_DIR 2> /dev/null)"
 if [ "$TRAVIS" == "true" ]; then
-    run_rc lint 'RESULT=$(mktemp); inspekt lint --exclude=.git --enable W0101,W0102,W0404,W0611,W0612,W0622 &>$RESULT || { cat $RESULT; rm $RESULT; exit -1; }; rm $RESULT'
+    run_rc lint 'RESULT=$(mktemp); inspekt lint --exclude=.git --enable W0101,W0102,W0404,W0410,W0611,W0612,W0622,W1618 &>$RESULT || { cat $RESULT; rm $RESULT; exit -1; }; rm $RESULT'
 else
-    run_rc lint 'inspekt lint --exclude=.git --enable W0101,W0102,W0404,W0611,W0612,W0622'
+    run_rc lint 'inspekt lint --exclude=.git --enable W0101,W0102,W0404,W0410,W0611,W0612,W0622,W1618'
 fi
 # Skip checking test_utils_cpu.py due to inspektor bug
 run_rc indent 'inspekt indent --exclude=.git,selftests/unit/test_utils_cpu.py'

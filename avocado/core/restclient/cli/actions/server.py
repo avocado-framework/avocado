@@ -6,6 +6,8 @@ Module that implements the actions for the CLI App when the job toplevel
 command is used
 """
 
+from __future__ import absolute_import
+
 from . import base
 from ... import connection
 from ....output import LOG_UI

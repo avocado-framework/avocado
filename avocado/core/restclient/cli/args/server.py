@@ -16,6 +16,8 @@
 This module has actions for the server command
 """
 
+from __future__ import absolute_import
+
 from . import base
 
 

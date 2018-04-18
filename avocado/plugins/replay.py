@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2016
 # Author: Amador Pahim <apahim@redhat.com>
 
+from __future__ import absolute_import
+
 import argparse
 import json
 import os

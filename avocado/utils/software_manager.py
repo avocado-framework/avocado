@@ -34,6 +34,9 @@ implement the given backend class.
 :copyright: IBM 2008-2009
 :copyright: Red Hat 2009-2014
 """
+
+from __future__ import absolute_import
+
 import os
 import re
 import shutil

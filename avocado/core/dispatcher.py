@@ -14,6 +14,8 @@
 
 """Extensions/plugins dispatchers."""
 
+from __future__ import absolute_import
+
 import copy
 import sys
 

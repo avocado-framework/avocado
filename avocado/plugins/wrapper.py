@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2014
 # Author: Ruda Moura <rmoura@redhat.com>
 
+from __future__ import absolute_import
+
 import os
 import sys
 

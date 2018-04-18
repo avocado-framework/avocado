@@ -19,6 +19,8 @@ These top level commands import these definitions for uniformity and
 consistency sake
 """
 
+from __future__ import absolute_import
+
 __all__ = ['ADD', 'LIST_BRIEF', 'LIST_FULL', 'DELETE', 'NAME', 'ID']
 
 

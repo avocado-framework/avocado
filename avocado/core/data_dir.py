@@ -25,6 +25,9 @@ The general reasoning to find paths is:
 * The next best location is the default system wide one.
 * The next best location is the default user specific one.
 """
+
+from __future__ import absolute_import
+
 import os
 import shutil
 import sys

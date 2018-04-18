@@ -15,6 +15,8 @@
 Human result UI
 """
 
+from __future__ import absolute_import
+
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import ResultEvents
 from avocado.core.plugin_interfaces import JobPre, JobPost

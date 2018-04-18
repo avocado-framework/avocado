@@ -21,6 +21,7 @@ This module contains handy classes that can be used inside
 avocado core code or plugins.
 """
 
+from __future__ import absolute_import
 
 import re
 import sys

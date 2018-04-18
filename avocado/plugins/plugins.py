@@ -15,6 +15,8 @@
 Plugins information plugin
 """
 
+from __future__ import absolute_import
+
 from avocado.core import dispatcher
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLICmd

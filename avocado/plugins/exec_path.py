@@ -14,6 +14,8 @@
 Libexec PATHs modifier
 """
 
+from __future__ import absolute_import
+
 import os
 
 from pkg_resources import resource_filename

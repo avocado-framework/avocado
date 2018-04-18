@@ -17,6 +17,8 @@ Module with multipath related utility functions.
 It needs root access.
 """
 
+from __future__ import absolute_import
+
 import time
 import logging
 import ast

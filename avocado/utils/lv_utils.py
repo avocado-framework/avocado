@@ -19,6 +19,7 @@
 #
 # Source: https://github.com/autotest/autotest/blob/master/client/lv_utils.py
 
+from __future__ import absolute_import
 
 import logging
 import os

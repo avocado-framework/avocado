@@ -25,6 +25,8 @@ string. Even with the dot notation, people may try to do things like
 And not notice until their code starts failing.
 """
 
+from __future__ import absolute_import
+
 import itertools
 import re
 import string

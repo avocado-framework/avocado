@@ -16,6 +16,8 @@
 APIs to download/update git repositories from inside python scripts.
 """
 
+from __future__ import absolute_import
+
 import os
 import logging
 
