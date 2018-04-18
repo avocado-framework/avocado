@@ -16,8 +16,10 @@
 Plugin to run GLib Test Framework tests in Avocado
 """
 
+import os
 import re
 
+from avocado.utils import path
 from avocado.utils import process
 
 from avocado.core import loader
@@ -82,21 +84,24 @@ class GLibLoader(loader.TestLoader):
         if ':' in reference:
             reference, _subtests_filter = reference.split(':', 1)
             subtests_filter = re.compile(_subtests_filter)
-        try:
-            cmd = '%s -l' % (reference)
-            result = process.run(cmd)
-        except Exception as details:
-            if which_tests == loader.ALL:
-                return [(NotGLibTest,
-                         {"name": "%s: %s" % (reference, details)})]
-            return []
 
-        for test in result.stdout.splitlines():
-            test_name = "%s:%s" % (reference, test)
-            if subtests_filter and not subtests_filter.search(test_name):
-                continue
-            avocado_suite.append((GLibTest, {'name': test_name,
-                                             'executable': test_name}))
+        if (os.path.isfile(reference) and
+                path.PathInspector(reference).has_exec_permission()):
+            try:
+                cmd = '%s -l' % (reference)
+                result = process.run(cmd)
+            except Exception as details:
+                if which_tests == loader.ALL:
+                    return [(NotGLibTest,
+                             {"name": "%s: %s" % (reference, details)})]
+                return []
+
+            for test in result.stdout.splitlines():
+                test_name = "%s:%s" % (reference, test)
+                if subtests_filter and not subtests_filter.search(test_name):
+                    continue
+                avocado_suite.append((GLibTest, {'name': test_name,
+                                                 'executable': test_name}))
 
         if which_tests is loader.ALL and not avocado_suite:
             return [(NotGLibTest,
