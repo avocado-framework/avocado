@@ -30,15 +30,9 @@ def test_suite():
     loader = unittest.TestLoader()
     selftests_dir = os.path.dirname(os.path.abspath(__file__))
     basedir = os.path.dirname(selftests_dir)
-    if sys.version_info[0] == 3:
-        sections = ('unit', 'doc')
-    else:
-        sections = ('unit', 'functional', 'doc')
-    for section in sections:
+    for section in ('unit', 'functional', 'doc'):
         suite.addTests(loader.discover(start_dir=os.path.join(selftests_dir, section),
                                        top_level_dir=basedir))
-    if sys.version_info[0] == 3:
-        return suite
     plugins = (('avocado-framework-plugin-varianter-yaml-to-mux',
                 'varianter_yaml_to_mux'),
                ('avocado-framework-plugin-runner-remote',
