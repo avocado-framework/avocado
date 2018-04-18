@@ -481,6 +481,9 @@ class RunnerOperationTest(unittest.TestCase):
         int(r['job_id'], 16)  # it's an hex number
         self.assertEqual(len(r['job_id']), 40)
 
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
+                     "Skipping test that take a long time to run, are "
+                     "resource intensive or time sensitve")
     def test_early_latest_result(self):
         """
         Tests that the `latest` link to the latest job results is created early
@@ -795,7 +798,7 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
 
     @unittest.skipIf(not SLEEP_BINARY, 'sleep binary not available')
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_kill_stopped_sleep(self):
