@@ -193,7 +193,7 @@ class InterruptTest(unittest.TestCase):
         # Make sure the Interrupted test sentence is there
         self.assertIn(b'Terminated\n', self.proc.stdout.read())
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_well_behaved_sigint(self):
@@ -237,7 +237,7 @@ class InterruptTest(unittest.TestCase):
         # Make sure the Killing test subprocess message is not there
         self.assertNotIn(b'Killing test subprocess', output)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_well_behaved_sigterm(self):

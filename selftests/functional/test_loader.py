@@ -191,7 +191,7 @@ class LoaderTestFunctional(unittest.TestCase):
     def test_not_python_module(self):
         self._test('passtest', AVOCADO_TEST_OK, 'NOT_A_TEST')
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_sleep_a_lot(self):
@@ -253,7 +253,7 @@ class LoaderTestFunctional(unittest.TestCase):
                     % (AVOCADO, self.tmpdir, mytest))
         self._run_with_timeout(cmd_line, 5)
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_simple_using_main(self):
