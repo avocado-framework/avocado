@@ -37,17 +37,31 @@ class MemError(Exception):
     pass
 
 
+def get_blk_string(block):
+    """
+    Format the given block id to string
+
+    :param block: memory block id or block string.
+    :type string: like 198 or memory198
+    :return: returns string memory198 if id 198 is given
+    :rtype: string
+    """
+    if not block.startswith("memory"):
+        return "memory%s" % block
+    return block
+
+
 def _check_memory_state(block):
     """
     Check the given memory block is online or offline
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     :return: 'True' if online or 'False' if offline
     :rtype: bool
     """
     def _is_online():
-        path = '/sys/devices/system/memory/memory%s/state' % block
+        path = '/sys/devices/system/memory/%s/state' % get_blk_string(block)
         if genio.read_file(path) == 'online\n':
             return True
         return False
@@ -72,11 +86,11 @@ def is_hot_pluggable(block):
     Check if the given memory block is hotpluggable
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     :return: True if hotpluggable, else False
     :rtype: 'bool'
     """
-    path = '/sys/devices/system/memory/memory%s/removable' % block
+    path = '/sys/devices/system/memory/%s/removable' % get_blk_string(block)
     return bool(int(genio.read_file(path)))
 
 
@@ -84,14 +98,15 @@ def hotplug(block):
     """
     Online the memory for the given block id.
 
-    :param block: memory block id.
+    :param block: memory block id or or memory198
     :type string: like 198
     """
-    with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+    block = get_blk_string(block)
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
         state_file.write('online')
     if not _check_memory_state(block):
         raise MemError(
-            "unable to hot-plug memory%s block, not supported ?" % block)
+            "unable to hot-plug %s block, not supported ?" % block)
 
 
 def hotunplug(block):
@@ -99,13 +114,14 @@ def hotunplug(block):
     Offline the memory for the given block id.
 
     :param block: memory block id.
-    :type string: like 198
+    :type string: like 198 or memory198
     """
-    with open('/sys/devices/system/memory/memory%s/state' % block, 'w') as state_file:
+    block = get_blk_string(block)
+    with open('/sys/devices/system/memory/%s/state' % block, 'w') as state_file:
         state_file.write('offline')
     if _check_memory_state(block):
         raise MemError(
-            "unable to hot-unplug memory%s block. Device busy?" % block)
+            "unable to hot-unplug %s block. Device busy?" % block)
 
 
 def read_from_meminfo(key):
