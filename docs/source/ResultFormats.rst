@@ -88,6 +88,12 @@ output in the standard output of the runner, simply use::
 
 .. note:: The dash `-` in the option `--xunit`, it means that the xunit result
           should go to the standard output.
+.. note:: In case your tests produce very long outputs, you can limit the
+          number of embedded characters by
+          `--xunit-max-test-log-chars`. If the output in the log file is
+          longer it only attaches up-to max-test-log-chars characters
+          one half starting from the beginning of the content, the other
+          half from the end of the content.
 
 JSON
 ~~~~
