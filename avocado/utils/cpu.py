@@ -123,15 +123,18 @@ def get_cpu_arch():
                  ('^cpu.*POWER8', 'power8'),
                  ('^cpu.*POWER9', 'power9'),
                  ('^cpu.*PPC970', 'power970'),
-                 ('ARM', 'arm'),
-                 ('^flags.*:.* lm .*', 'x86_64')]
+                 ('(ARM|^CPU implementer|^CPU part|^CPU variant'
+                  '|^Features|^BogoMIPS|^CPU revision)', 'arm'),
+                 ('(^cpu MHz dynamic|^cpu MHz static|^features'
+                  '|^bogomips per cpu|^max thread id)', 's390'),
+                 ('^type', 'sparc64'),
+                 ('^flags.*:.* lm .*', 'x86_64'),
+                 ('^flags', 'i386')]
     cpuinfo = _get_cpu_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
             return arch
-    if "CPU architecture" in cpuinfo:
-        return platform.machine()
-    return 'i386'
+    return platform.machine()
 
 
 def cpu_online_list():
