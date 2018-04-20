@@ -77,6 +77,52 @@ class AstringTest(unittest.TestCase):
         self.assertEqual(astring.string_to_safe_path(avocado),
                          "%s__" % avocado[:-2])
 
+    def test_is_bytes(self):
+        """
+        Verifies what bytes means, basically that they are the same
+        thing accross Python 2 and 3 and can be decoded into "text"
+        """
+        binary = b''
+        text = u''
+        self.assertTrue(astring.is_bytes(binary))
+        self.assertFalse(astring.is_bytes(text))
+        self.assertTrue(hasattr(binary, 'decode'))
+        self.assertTrue(astring.is_text(binary.decode()))
+        # on Python 2, each str member is also a single byte char
+        if sys.version_info[0] < 3:
+            self.assertTrue(astring.is_bytes(str('')))
+        else:
+            self.assertFalse(astring.is_bytes(str('')))
+
+    def test_is_text(self):
+        """
+        Verifies what text means, basically that they can represent
+        extended set of characters and can be encoded into "bytes"
+        """
+        binary = b''
+        text = u''
+        self.assertTrue(astring.is_text(text))
+        self.assertFalse(astring.is_text(binary))
+        self.assertTrue(hasattr(text, 'encode'))
+        self.assertTrue(astring.is_bytes(text.encode()))
+
+    def test_to_text_is_text(self):
+        self.assertTrue(astring.is_text(astring.to_text(b'')))
+        self.assertTrue(astring.is_text(astring.to_text('')))
+        self.assertTrue(astring.is_text(astring.to_text(u'')))
+
+    def test_to_text_decode_is_text(self):
+        self.assertTrue(astring.is_text(astring.to_text(b'', 'ascii')))
+        self.assertTrue(astring.is_text(astring.to_text('', 'ascii')))
+        self.assertTrue(astring.is_text(astring.to_text(u'', 'ascii')))
+
+    def test_to_text_decode_utf_8(self):
+        text_1 = astring.to_text(b'\xc3\xa1', 'utf-8')
+        text_2 = astring.to_text(u'\u00e1', 'utf-8')
+        self.assertTrue(astring.is_text(text_1))
+        self.assertTrue(astring.is_text(text_1))
+        self.assertEqual(text_1, text_2)
+
 
 if __name__ == '__main__':
     unittest.main()
