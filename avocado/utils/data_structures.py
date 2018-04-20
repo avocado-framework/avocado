@@ -26,7 +26,6 @@ import sys
 import math
 
 from six.moves import zip
-from collections import OrderedDict
 
 
 class InvalidDataSize(ValueError):
@@ -261,13 +260,13 @@ class DataSize(object):
     :type data: str
     """
 
-    MULTIPLIERS = OrderedDict([('b', 1),  # 2**0
-                               ('k', 1024),  # 2**10
-                               ('m', 1048576),  # 2**20
-                               ('g', 1073741824),  # 2**30
-                               ('t', 1099511627776)])  # 2**40
     __slots__ = ['_value', '_unit']
 
+    MULTIPLIERS = {'b': 1,  # 2**0
+                   'k': 1024,  # 2**10
+                   'm': 1048576,  # 2**20
+                   'g': 1073741824,  # 2**30
+                   't': 1099511627776}  # 2**40
 
     def __init__(self, data):
         try:
