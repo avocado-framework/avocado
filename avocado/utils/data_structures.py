@@ -295,20 +295,26 @@ class DataSize(object):
     def unit(self):
         return self._unit
 
-    def __getattr__(self, attr):
-        """
-        Creates one extra attribute per available conversion unit,
-        which will return the converted value.
-        """
-        if attr not in self.MULTIPLIERS:
-            raise AttributeError('Attribute %s does not exist.' % attr)
-        return int(self.value * self.MULTIPLIERS[self.unit] /
-                   self.MULTIPLIERS[attr])
+    @property
+    def b(self):
+        return self._value * self.MULTIPLIERS[self._unit]
 
-    def __dir__(self):
-        """
-        Makes the extra attributes visible when calling dir().
-        """
-        listing = dir(type(self)) + list(self.__dict__.keys())
-        listing.extend(['%s' % item for item in self.MULTIPLIERS])
-        return listing
+    @property
+    def k(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['k'])
+
+    @property
+    def m(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['m'])
+
+    @property
+    def g(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['g'])
+
+    @property
+    def t(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['t'])
