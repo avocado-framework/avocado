@@ -22,7 +22,6 @@ avocado core code or plugins.
 """
 
 
-import re
 import sys
 import math
 
@@ -269,22 +268,28 @@ class DataSize(object):
                                ('t', 1099511627776)])  # 2**40
 
     def __init__(self, data):
-        pattern = r"^(\d+)([bkmgt])?$"  # Number and optional string
-        match = re.match(pattern, data, re.IGNORECASE)
+        try:
+            norm_size = data.strip().lower()
+            last = norm_size[-1]
+            if last.isdigit():
+                self._value = int(norm_size)
+                self._unit = 'b'
+            elif last in self.MULTIPLIERS:
+                self._value = int(norm_size[:-1])
+                self._unit = last
+            else:
+                raise ValueError
 
-        if match is None:
-            raise InvalidDataSize('String not in size+unit format (i.e. '
+            if self._value < 0:
+                raise ValueError
+
+        except ValueError:
+            raise InvalidDataSize('String not in size + unit format (i.e. '
                                   '"10M", "100k", ...)')
-
-        self._value, unit = match.groups()
-        if unit is None:
-            self._unit = 'b'
-        else:
-            self._unit = unit.lower()
 
     @property
     def value(self):
-        return int(self._value)
+        return self._value
 
     @property
     def unit(self):
