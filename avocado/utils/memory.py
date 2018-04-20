@@ -16,6 +16,7 @@
 # client/shared/utils.py
 # Authors: Yiqiao Pu <ypu@redhat.com>
 
+from __future__ import absolute_import
 
 import os
 import re

@@ -16,6 +16,8 @@
 Avocado path related functions.
 """
 
+from __future__ import absolute_import
+
 import os
 import stat
 import tempfile

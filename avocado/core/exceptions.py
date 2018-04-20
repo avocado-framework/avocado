@@ -16,6 +16,8 @@
 Exception classes, useful for tests, and other parts of the framework code.
 """
 
+from __future__ import absolute_import
+
 
 class JobBaseException(Exception):
 

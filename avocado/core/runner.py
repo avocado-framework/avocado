@@ -17,6 +17,8 @@
 Test runner module.
 """
 
+from __future__ import absolute_import
+
 import multiprocessing
 import multiprocessing.queues
 import os

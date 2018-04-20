@@ -14,6 +14,8 @@
 
 """Journal Plugin"""
 
+from __future__ import absolute_import
+
 import os
 import sqlite3
 import datetime

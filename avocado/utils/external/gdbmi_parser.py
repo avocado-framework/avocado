@@ -23,6 +23,7 @@
 #   Frank Laub (frank.laub@gmail.com)
 #   Michael Eddington (mike@phed.org)
 
+from __future__ import absolute_import
 
 import re
 import pprint

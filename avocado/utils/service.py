@@ -21,6 +21,8 @@
 # client/shared/service.py
 # Original author: Ross Brattain <ross.b.brattain@intel.com>
 
+from __future__ import absolute_import
+
 import os
 import re
 import logging

@@ -20,8 +20,7 @@ ISO9660 internal structure. Instead, it uses commonly available support
 either in userspace tools or on the Linux kernel itself (via mount).
 """
 
-
-__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount']
+from __future__ import absolute_import
 
 import os
 import logging
@@ -31,6 +30,9 @@ import sys
 import re
 
 from . import process
+
+
+__all__ = ['iso9660', 'Iso9660IsoInfo', 'Iso9660IsoRead', 'Iso9660Mount']
 
 
 def has_userland_tool(executable):

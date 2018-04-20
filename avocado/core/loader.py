@@ -17,6 +17,8 @@
 Test loader module.
 """
 
+from __future__ import absolute_import
+
 import ast
 import collections
 import imp

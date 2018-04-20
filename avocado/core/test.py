@@ -18,6 +18,8 @@ Contains the base test implementation, used as a base for the actual
 framework tests.
 """
 
+from __future__ import absolute_import
+
 import inspect
 import logging
 import os

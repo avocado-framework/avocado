@@ -19,11 +19,14 @@
 #  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 #  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__version__ = 'SPARK-0.7 (pre-alpha-7)'
+from __future__ import absolute_import
 
 import re
 
 from six.moves import xrange as range
+
+
+__version__ = 'SPARK-0.7 (pre-alpha-7)'
 
 
 def _namelist(instance):

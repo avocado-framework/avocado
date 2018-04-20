@@ -13,6 +13,8 @@
 # Author: Ruda Moura <rmoura@redhat.com>
 # Author: Santhosh G <santhog4@linux.vnet.ibm.com>
 
+from __future__ import absolute_import
+
 import os
 import shutil
 import logging

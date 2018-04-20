@@ -16,6 +16,8 @@
 Provides VM images acquired from official repositories
 """
 
+from __future__ import absolute_import
+
 import os
 import re
 import tempfile

@@ -15,6 +15,9 @@
 """
 Manages output and logging in avocado applications.
 """
+
+from __future__ import absolute_import
+
 import errno
 import logging
 import os

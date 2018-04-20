@@ -14,6 +14,8 @@
 
 """Result Archive Plugin"""
 
+from __future__ import absolute_import
+
 from avocado.core.plugin_interfaces import CLI, Result
 from avocado.utils import archive
 

@@ -15,6 +15,9 @@
 """
 This file contains tools for (not only) Avocado developers.
 """
+
+from __future__ import absolute_import
+
 import logging
 import time
 import os

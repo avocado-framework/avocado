@@ -17,6 +17,8 @@
 Methods to download URLs and regular files.
 """
 
+from __future__ import absolute_import
+
 import logging
 import os
 import socket

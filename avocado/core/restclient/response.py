@@ -16,6 +16,8 @@
 Module with base model functions to manipulate JSON data
 """
 
+from __future__ import absolute_import
+
 import json
 
 

@@ -12,6 +12,8 @@
 # client/shared/settings.py
 # Author: John Admanski <jadmanski@google.com>
 
+from __future__ import absolute_import
+
 import gzip
 import json
 import logging

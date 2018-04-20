@@ -14,6 +14,8 @@
 
 """Run tests with GDB goodies enabled."""
 
+from __future__ import absolute_import
+
 from avocado.core import exceptions
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings

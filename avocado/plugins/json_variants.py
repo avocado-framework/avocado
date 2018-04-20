@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2018
 # Authors: Amador Pahim <apahim@redhat.com>
 
+from __future__ import absolute_import
+
 import json
 import sys
 

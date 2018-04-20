@@ -16,6 +16,8 @@
 Safe (AST based) test loader module utilities
 """
 
+from __future__ import absolute_import
+
 import ast
 import re
 

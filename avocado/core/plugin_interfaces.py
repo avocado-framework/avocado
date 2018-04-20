@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2015
 # Author: Cleber Rosa <cleber@redhat.com>
 
+from __future__ import absolute_import
+
 
 import abc
 

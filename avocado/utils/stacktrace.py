@@ -1,6 +1,9 @@
 """
 Traceback standard module plus some additional APIs.
 """
+
+from __future__ import absolute_import
+
 from traceback import format_exception
 import logging
 import inspect

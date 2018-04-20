@@ -15,6 +15,9 @@
 """
 Reads the avocado settings from a .ini file (from python ConfigParser).
 """
+
+from __future__ import absolute_import
+
 import ast
 import os
 import sys

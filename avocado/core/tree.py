@@ -33,6 +33,8 @@ original base tree code and re-license under GPLv2+, given that GPLv3 and GPLv2
 (used in some avocado files) are incompatible.
 """
 
+from __future__ import absolute_import
+
 import collections
 import copy
 import itertools

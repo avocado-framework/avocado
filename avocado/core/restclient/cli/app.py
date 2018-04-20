@@ -15,6 +15,8 @@
 This is the main entry point for the rest client cli application
 """
 
+from __future__ import absolute_import
+
 import importlib
 import sys
 import types

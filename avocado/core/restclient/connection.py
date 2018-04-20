@@ -19,6 +19,8 @@ A connection is a simple wrapper around a HTTP request instance. It is this
 basic object that allows methods to be called on the remote server.
 """
 
+from __future__ import absolute_import
+
 import requests
 
 from ..settings import settings

@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+from __future__ import absolute_import
+
 import os
 import logging
 import hashlib

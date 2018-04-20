@@ -16,6 +16,8 @@
 The core Avocado application.
 """
 
+from __future__ import absolute_import
+
 import os
 import signal
 import sys

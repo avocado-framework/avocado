@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2017
 # Author: Amador Pahim <apahim@redhat.com>
 
+from __future__ import absolute_import
+
 from functools import wraps
 import types
 

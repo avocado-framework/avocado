@@ -12,6 +12,8 @@
 # Copyright: Red Hat Inc. 2013-2014
 # Author: Lucas Meneghel Rodrigues <lmr@redhat.com>
 
+from __future__ import absolute_import
+
 from avocado.core.output import LOG_UI
 
 from .variants import Variants

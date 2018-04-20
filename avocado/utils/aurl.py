@@ -18,6 +18,8 @@ URL related functions.
 The strange name is to avoid accidental naming collisions in code.
 """
 
+from __future__ import absolute_import
+
 try:
     import urlparse
 except ImportError:

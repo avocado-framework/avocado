@@ -15,10 +15,11 @@
 # Original author: Martin J Bligh <mbligh@google.com>
 # Original author: John Admanski <jadmanski@google.com>
 
-
 """
 Get information from the current's machine CPU.
 """
+
+from __future__ import absolute_import
 
 import re
 import os
