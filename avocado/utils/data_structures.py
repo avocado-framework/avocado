@@ -266,6 +266,7 @@ class DataSize(object):
                                ('m', 1048576),  # 2**20
                                ('g', 1073741824),  # 2**30
                                ('t', 1099511627776)])  # 2**40
+    __slots__ = ['_value', '_unit']
 
     def __init__(self, data):
         try:
