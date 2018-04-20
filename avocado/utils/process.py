@@ -380,18 +380,20 @@ class FDDrainer(object):
                 bfr += tmp
                 if tmp.endswith(b'\n'):
                     for line in bfr.splitlines():
+                        line = astring.to_text(line, self._result.encoding)
                         if self._logger is not None:
                             self._logger.debug(self._logger_prefix, line)
                         if self._stream_logger is not None:
-                            self._stream_logger.debug('%s\n', line)
+                            self._stream_logger.debug(line)
                     bfr = b''
         # Write the rest of the bfr unfinished by \n
         if self._verbose and bfr:
             for line in bfr.splitlines():
+                line = astring.to_text(line, self._result.encoding)
                 if self._logger is not None:
                     self._logger.debug(self._logger_prefix, line)
                 if self._stream_logger is not None:
-                    self._stream_logger.debug(line)
+                    self._stream_logger.debug(astring.to_text(line))
 
     def start(self):
         self._thread = threading.Thread(target=self._drainer, name=self.name)
