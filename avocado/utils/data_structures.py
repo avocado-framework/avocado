@@ -22,12 +22,10 @@ avocado core code or plugins.
 """
 
 
-import re
 import sys
 import math
 
 from six.moves import zip
-from collections import OrderedDict
 
 
 class InvalidDataSize(ValueError):
@@ -262,48 +260,62 @@ class DataSize(object):
     :type data: str
     """
 
-    MULTIPLIERS = OrderedDict([('b', 1),  # 2**0
-                               ('k', 1024),  # 2**10
-                               ('m', 1048576),  # 2**20
-                               ('g', 1073741824),  # 2**30
-                               ('t', 1099511627776)])  # 2**40
+    __slots__ = ['_value', '_unit']
+
+    MULTIPLIERS = {'b': 1,  # 2**0
+                   'k': 1024,  # 2**10
+                   'm': 1048576,  # 2**20
+                   'g': 1073741824,  # 2**30
+                   't': 1099511627776}  # 2**40
 
     def __init__(self, data):
-        pattern = r"^(\d+)([bkmgt])?$"  # Number and optional string
-        match = re.match(pattern, data, re.IGNORECASE)
+        try:
+            norm_size = data.strip().lower()
+            last = norm_size[-1]
+            if last.isdigit():
+                self._value = int(norm_size)
+                self._unit = 'b'
+            elif last in self.MULTIPLIERS:
+                self._value = int(norm_size[:-1])
+                self._unit = last
+            else:
+                raise ValueError
 
-        if match is None:
-            raise InvalidDataSize('String not in size+unit format (i.e. '
+            if self._value < 0:
+                raise ValueError
+
+        except ValueError:
+            raise InvalidDataSize('String not in size + unit format (i.e. '
                                   '"10M", "100k", ...)')
-
-        self._value, unit = match.groups()
-        if unit is None:
-            self._unit = 'b'
-        else:
-            self._unit = unit.lower()
 
     @property
     def value(self):
-        return int(self._value)
+        return self._value
 
     @property
     def unit(self):
         return self._unit
 
-    def __getattr__(self, attr):
-        """
-        Creates one extra attribute per available conversion unit,
-        which will return the converted value.
-        """
-        if attr not in self.MULTIPLIERS:
-            raise AttributeError('Attribute %s does not exist.' % attr)
-        return int(self.value * self.MULTIPLIERS[self.unit] /
-                   self.MULTIPLIERS[attr])
+    @property
+    def b(self):
+        return self._value * self.MULTIPLIERS[self._unit]
 
-    def __dir__(self):
-        """
-        Makes the extra attributes visible when calling dir().
-        """
-        listing = dir(type(self)) + list(self.__dict__.keys())
-        listing.extend(['%s' % item for item in self.MULTIPLIERS])
-        return listing
+    @property
+    def k(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['k'])
+
+    @property
+    def m(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['m'])
+
+    @property
+    def g(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['g'])
+
+    @property
+    def t(self):
+        return int(self._value * self.MULTIPLIERS[self._unit] /
+                   self.MULTIPLIERS['t'])
