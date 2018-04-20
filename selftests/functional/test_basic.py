@@ -138,7 +138,9 @@ CC_BINARY = probe_binary('cc')
 GNU_ECHO_BINARY = probe_binary('echo')
 if GNU_ECHO_BINARY is not None:
     if probe_binary('man') is not None:
-        echo_manpage = process.run('man %s' % os.path.basename(GNU_ECHO_BINARY)).stdout
+        echo_cmd = 'man %s' % os.path.basename(GNU_ECHO_BINARY)
+        echo_manpage = process.run(echo_cmd, env={'LANG': 'C'},
+                                   encoding='ascii').stdout
         if b'-e' not in echo_manpage:
             GNU_ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
