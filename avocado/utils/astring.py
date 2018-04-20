@@ -28,6 +28,7 @@ And not notice until their code starts failing.
 import itertools
 import re
 import string
+import sys
 
 from six import string_types, PY3
 from six.moves import zip
@@ -43,6 +44,35 @@ if PY3:
                                     b'__________')
 else:
     _FS_TRANSLATE = string.maketrans(FS_UNSAFE_CHARS, '__________')
+
+
+def _default_encoding():
+    """
+    Returns the default system encoding
+
+    There is not one perfect encoding so let's try to get the best suitable
+    encoding for this system and interpreter. Currently it:
+
+    1. tries to get default filesystem encoding (LC_ALL)
+    2. when it's ASCII it tries to get encoding one of the stdin|out|err
+    3. when it's ASCII it reports default python encoding
+    """
+    encoding = sys.getfilesystemencoding()
+    if encoding in ('ascii', 'ANSI_X3.4-1968'):
+        for src in (sys.stdout, sys.stdin, sys.stderr):
+            try:
+                encoding = src.encoding
+                break
+            except AttributeError:
+                pass
+    if encoding == 'ascii':
+        return sys.getdefaultencoding()
+    else:
+        return encoding
+
+
+#: Returns the default system encoding
+DEFAULT_ENCODING = _default_encoding()
 
 
 def bitlist_to_string(data):
