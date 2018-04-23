@@ -129,10 +129,17 @@ def get_cpu_arch():
                   '|^bogomips per cpu|^max thread id)', 's390'),
                  ('^type', 'sparc64'),
                  ('^flags.*:.* lm .*', 'x86_64'),
-                 ('^flags', 'i386')]
+                 ('^flags', 'i386'),
+                 ('^hart\\s*: 1$', 'riscv')]
     cpuinfo = _get_cpu_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
+            # ARM is a special situation, which matches both 32 bits
+            # (v7) and 64 bits (v8).
+            if arch == 'arm':
+                arm_v8_arch_name = 'aarch64'
+                if arm_v8_arch_name == platform.machine():
+                    return arm_v8_arch_name
             return arch
     return platform.machine()
 
