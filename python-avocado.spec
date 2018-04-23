@@ -7,17 +7,17 @@
 
 # Settings used for build from snapshots.
 %if 0%{?rel_build}
-    %global gittar		%{srcname}-%{version}.tar.gz
+    %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		ef2b6f3b14716ef76912bd71feb582f0226fa217
+        %global commit      ef2b6f3b14716ef76912bd71feb582f0226fa217
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date	20180227
+        %global commit_date 20180227
     %endif
-    %global shortcommit	%(c=%{commit};echo ${c:0:8})
-    %global gitrel		.%{commit_date}git%{shortcommit}
-    %global gittar		%{srcname}-%{shortcommit}.tar.gz
+    %global shortcommit     %(c=%{commit};echo ${c:0:8})
+    %global gitrel          .%{commit_date}git%{shortcommit}
+    %global gittar          %{srcname}-%{shortcommit}.tar.gz
 %endif
 
 # Selftests are provided but may need to be skipped because many of
