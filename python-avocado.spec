@@ -569,7 +569,7 @@ server.
 
 %package -n python2-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
-Requires: %{name} == %{version}
+Requires: python2-%{srcname} == %{version}
 %if 0%{?rhel}
 Requires: PyYAML
 %else
@@ -600,7 +600,7 @@ defined in a yaml file(s).
 
 %package -n python2-%{srcname}-plugins-loader-yaml
 Summary: Avocado Plugin that loads tests from YAML files
-Requires: %{name}-plugins-varianter-yaml-to-mux == %{version}
+Requires: python2-%{srcname}-plugins-varianter-yaml-to-mux == %{version}
 
 %description -n python2-%{srcname}-plugins-loader-yaml
 Can be used to produce a test suite from definitions in a YAML file,
@@ -708,7 +708,7 @@ a dedicated sever.
 
 %package -n python2-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: %{name} == %{version}
+Requires: python2-%{srcname} == %{version}
 
 %description -n python2-%{srcname}-plugins-glib
 This optional plugin is intended to list and run tests written in the
@@ -721,7 +721,7 @@ GLib Test Framework.
 %if %{with_python3}
 %package -n python3-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: %{name} == %{version}
+Requires: python3-%{srcname} == %{version}
 
 %description -n python3-%{srcname}-plugins-glib
 This optional plugin is intended to list and run tests written in the
