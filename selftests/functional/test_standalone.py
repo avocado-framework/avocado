@@ -10,6 +10,9 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
 
+PY_CMD = sys.executable
+
+
 class StandaloneTests(unittest.TestCase):
 
     def setUp(self):
@@ -28,22 +31,22 @@ class StandaloneTests(unittest.TestCase):
         return result
 
     def test_passtest(self):
-        cmd_line = './examples/tests/passtest.py -r'
+        cmd_line = '%s ./examples/tests/passtest.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, 'passtest')
 
     def test_warntest(self):
-        cmd_line = './examples/tests/warntest.py -r'
+        cmd_line = '%s ./examples/tests/warntest.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.run_and_check(cmd_line, expected_rc, 'warntest')
 
     def test_failtest(self):
-        cmd_line = './examples/tests/failtest.py -r'
+        cmd_line = '%s ./examples/tests/failtest.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc, 'failtest')
 
     def test_errortest_nasty(self):
-        cmd_line = './examples/tests/errortest_nasty.py -r'
+        cmd_line = '%s ./examples/tests/errortest_nasty.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
         if sys.version_info[0] == 3:
@@ -56,14 +59,14 @@ class StandaloneTests(unittest.TestCase):
                          "exception details." % (exc))
 
     def test_errortest_nasty2(self):
-        cmd_line = './examples/tests/errortest_nasty2.py -r'
+        cmd_line = '%s ./examples/tests/errortest_nasty2.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty2')
         self.assertIn(b"Exception: Unable to get exception, check the traceback"
                       b" for details.", result.stdout)
 
     def test_errortest_nasty3(self):
-        cmd_line = './examples/tests/errortest_nasty3.py -r'
+        cmd_line = '%s ./examples/tests/errortest_nasty3.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty3')
         if sys.version_info[0] == 3:
@@ -73,7 +76,7 @@ class StandaloneTests(unittest.TestCase):
         self.assertIn(exc, result.stdout)
 
     def test_errortest(self):
-        cmd_line = './examples/tests/errortest.py -r'
+        cmd_line = '%s ./examples/tests/errortest.py -r' % PY_CMD
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         self.run_and_check(cmd_line, expected_rc, 'errortest')
 

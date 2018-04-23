@@ -7,17 +7,17 @@
 
 # Settings used for build from snapshots.
 %if 0%{?rel_build}
-    %global gittar		%{srcname}-%{version}.tar.gz
+    %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit		ef2b6f3b14716ef76912bd71feb582f0226fa217
+        %global commit      ef2b6f3b14716ef76912bd71feb582f0226fa217
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date	20180227
+        %global commit_date 20180227
     %endif
-    %global shortcommit	%(c=%{commit};echo ${c:0:8})
-    %global gitrel		.%{commit_date}git%{shortcommit}
-    %global gittar		%{srcname}-%{shortcommit}.tar.gz
+    %global shortcommit     %(c=%{commit};echo ${c:0:8})
+    %global gitrel          .%{commit_date}git%{shortcommit}
+    %global gittar          %{srcname}-%{shortcommit}.tar.gz
 %endif
 
 # Selftests are provided but may need to be skipped because many of
@@ -433,6 +433,7 @@ AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %exclude %{python2_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python2_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python2_sitelib}/avocado/libexec*
+%exclude %{python2_sitelib}/tests*
 
 %if %{with_python3}
 %files -n python3-%{srcname}
@@ -455,6 +456,7 @@ AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python3_sitelib}/avocado_framework_plugin_glib*
+%exclude %{python3_sitelib}/tests*
 %endif
 
 %package common
@@ -567,7 +569,7 @@ server.
 
 %package -n python2-%{srcname}-plugins-varianter-yaml-to-mux
 Summary: Avocado plugin to generate variants out of yaml files
-Requires: %{name} == %{version}
+Requires: python2-%{srcname} == %{version}
 %if 0%{?rhel}
 Requires: PyYAML
 %else
@@ -598,7 +600,7 @@ defined in a yaml file(s).
 
 %package -n python2-%{srcname}-plugins-loader-yaml
 Summary: Avocado Plugin that loads tests from YAML files
-Requires: %{name}-plugins-varianter-yaml-to-mux == %{version}
+Requires: python2-%{srcname}-plugins-varianter-yaml-to-mux == %{version}
 
 %description -n python2-%{srcname}-plugins-loader-yaml
 Can be used to produce a test suite from definitions in a YAML file,
@@ -706,7 +708,7 @@ a dedicated sever.
 
 %package -n python2-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: %{name} == %{version}
+Requires: python2-%{srcname} == %{version}
 
 %description -n python2-%{srcname}-plugins-glib
 This optional plugin is intended to list and run tests written in the
@@ -719,7 +721,7 @@ GLib Test Framework.
 %if %{with_python3}
 %package -n python3-%{srcname}-plugins-glib
 Summary: Avocado Plugin for Execution of GLib Test Framework tests
-Requires: %{name} == %{version}
+Requires: python3-%{srcname} == %{version}
 
 %description -n python3-%{srcname}-plugins-glib
 This optional plugin is intended to list and run tests written in the

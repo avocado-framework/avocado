@@ -38,7 +38,8 @@ from avocado.utils import path as utils_path
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
-AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD",
+                         "%s ./scripts/avocado" % sys.executable)
 
 LOCAL_IMPORT_TEST_CONTENTS = '''
 from avocado import Test
@@ -790,8 +791,9 @@ class RunnerSimpleTest(unittest.TestCase):
         test_base_dir = os.path.dirname(self.pass_script.path)
         os.chdir(test_base_dir)
         test_file_name = os.path.basename(self.pass_script.path)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off'
-                    ' "%s"' % (avocado_path, self.tmpdir, test_file_name))
+        cmd_line = ('%s %s run --job-results-dir %s --sysinfo=off'
+                    ' "%s"' % (sys.executable, avocado_path, self.tmpdir,
+                               test_file_name))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
@@ -877,7 +879,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                       self.tmpdir, warn_script.path))
         result = process.run(cmd_line, ignore_status=True)
         json_results = json.loads(result.stdout_text)
-        self.assertEquals(json_results['tests'][0]['status'], 'WARN')
+        self.assertEqual(json_results['tests'][0]['status'], 'WARN')
         warn_script.remove()
         # Skip in STDOUT should be handled because of config
         skip_script = script.TemporaryScript('avocado_skip.sh',
@@ -890,7 +892,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                       self.tmpdir, skip_script.path))
         result = process.run(cmd_line, ignore_status=True)
         json_results = json.loads(result.stdout_text)
-        self.assertEquals(json_results['tests'][0]['status'], 'SKIP')
+        self.assertEqual(json_results['tests'][0]['status'], 'SKIP')
         skip_script.remove()
         # STDERR skip should not be handled
         skip2_script = script.TemporaryScript('avocado_skip.sh',
@@ -903,7 +905,7 @@ class RunnerSimpleTestStatus(unittest.TestCase):
                                       self.tmpdir, skip2_script.path))
         result = process.run(cmd_line, ignore_status=True)
         json_results = json.loads(result.stdout_text)
-        self.assertEquals(json_results['tests'][0]['status'], 'PASS')
+        self.assertEqual(json_results['tests'][0]['status'], 'PASS')
         skip2_script.remove()
 
     def tearDown(self):
