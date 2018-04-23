@@ -49,10 +49,10 @@ class JobTest(unittest.TestCase):
         self.assertIsNone(self.job.test_suite)
         self.assertIsNone(self.job.tmpdir)
         self.assertFalse(self.job._Job__remove_tmpdir)
-        self.assertEquals(self.job.args, args)
-        self.assertEquals(self.job.exitcode, exit_codes.AVOCADO_ALL_OK)
-        self.assertEquals(self.job.references, [])
-        self.assertEquals(self.job.status, "RUNNING")
+        self.assertEqual(self.job.args, args)
+        self.assertEqual(self.job.exitcode, exit_codes.AVOCADO_ALL_OK)
+        self.assertEqual(self.job.references, [])
+        self.assertEqual(self.job.status, "RUNNING")
         uid = self.job.unique_id
 
         # Job with setup called
@@ -62,8 +62,8 @@ class JobTest(unittest.TestCase):
         self.assertIsNotNone(self.job.result)
         self.assertIsNotNone(self.job.tmpdir)
         self.assertTrue(self.job._Job__remove_tmpdir)
-        self.assertEquals(uid, self.job.unique_id)
-        self.assertEquals(self.job.status, "RUNNING")
+        self.assertEqual(uid, self.job.unique_id)
+        self.assertEqual(self.job.status, "RUNNING")
 
         # Calling setup twice
         self.assertRaises(AssertionError, self.job.setup)
