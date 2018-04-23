@@ -27,6 +27,7 @@ And not notice until their code starts failing.
 
 import itertools
 import re
+import sys
 import string
 
 from six import string_types, PY3
@@ -278,3 +279,48 @@ def string_to_safe_path(input_str):
         for bad_chr in FS_UNSAFE_CHARS:
             input_str = input_str.replace(bad_chr, "_")
         return input_str
+
+
+def is_bytes(data):
+    """
+    Checks if the data given is a sequence of bytes
+
+    And not a "text" type, that can be of multi-byte characters.
+    Also, this does NOT mean a bytearray type.
+
+    :param data: the instance to be checked if it falls under the definition
+                 of an array of bytes.
+    """
+    return isinstance(data, bytes)
+
+
+def is_text(data):
+    """
+    Checks if the data given is a suitable for holding text
+
+    That is, if it can hold text that requires more than one byte for
+    each character.
+    """
+    if sys.version_info[0] < 3:
+        return isinstance(data, unicode)
+    return isinstance(data, str)
+
+
+def to_text(data, encoding=None):
+    """
+    Convert data to text
+
+    Action is only taken if data is "bytes", in which case it's
+    decoded into the given encoding and should produce a type that
+    passes the is_text() check.
+
+    :param data: data to be transformed into text
+    :type data: either bytes or other data that will be returned
+                unchanged
+    """
+    if is_bytes(data):
+        if encoding is None:
+            return data.decode()
+        else:
+            return data.decode(encoding)
+    return data

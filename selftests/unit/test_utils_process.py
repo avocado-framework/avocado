@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import shlex
 import unittest
 
 try:
@@ -9,6 +10,7 @@ except ImportError:
     import mock
 
 
+from avocado.utils import astring
 from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path
@@ -23,15 +25,15 @@ def probe_binary(binary):
         return None
 
 
-TRUE_CMD = probe_binary('true')
 ECHO_CMD = probe_binary('echo')
+FICTIONAL_CMD = '/usr/bin/fictional_cmd'
 
 
 class TestSubProcess(unittest.TestCase):
 
     def test_allow_output_check_parameter(self):
         self.assertRaises(ValueError, process.SubProcess,
-                          TRUE_CMD, False, "invalid")
+                          FICTIONAL_CMD, False, "invalid")
 
 
 class TestGDBProcess(unittest.TestCase):
@@ -65,11 +67,9 @@ class TestGDBProcess(unittest.TestCase):
         self.assertFalse(process.should_run_inside_gdb("foo bar baz"))
         self.assertFalse(process.should_run_inside_gdb("foo ' "))
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     def test_get_sub_process_klass(self):
         gdb.GDB_RUN_BINARY_NAMES_EXPR = []
-        self.assertIs(process.get_sub_process_klass(TRUE_CMD),
+        self.assertIs(process.get_sub_process_klass(FICTIONAL_CMD),
                       process.SubProcess)
 
         gdb.GDB_RUN_BINARY_NAMES_EXPR.append('/bin/false')
@@ -77,7 +77,7 @@ class TestGDBProcess(unittest.TestCase):
                       process.GDBSubProcess)
         self.assertIs(process.get_sub_process_klass('false'),
                       process.GDBSubProcess)
-        self.assertIs(process.get_sub_process_klass('true'),
+        self.assertIs(process.get_sub_process_klass(FICTIONAL_CMD),
                       process.SubProcess)
 
     def test_split_gdb_expr(self):
@@ -102,10 +102,6 @@ def mock_fail_find_cmd(cmd, default=None):
 
 class TestProcessRun(unittest.TestCase):
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid',
                        mock.Mock(return_value=1000))
     def test_subprocess_nosudo(self):
@@ -113,25 +109,20 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
     def test_subprocess_nosudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l')
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid',
                        mock.Mock(return_value=1000))
     def test_subprocess_sudo(self):
-        expected_command = '%s -n ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.cmd, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -141,24 +132,19 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
     def test_subprocess_sudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_subprocess_sudo_shell(self):
-        expected_command = '%s -n -s ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n -s ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.cmd, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -168,44 +154,31 @@ class TestProcessRun(unittest.TestCase):
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
     def test_subprocess_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
         p = process.SubProcess(cmd='ls -l', sudo=True, shell=True)
         self.assertEqual(p.cmd, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_run_nosudo(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
     def test_run_nosudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_run_sudo(self):
-        expected_command = '%s -n ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.command, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -215,24 +188,19 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
     def test_run_sudo_uid_0(self):
         expected_command = 'ls -l'
         p = process.run(cmd='ls -l', sudo=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
     @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
+                       mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))
     def test_run_sudo_shell(self):
-        expected_command = '%s -n -s ls -l' % TRUE_CMD
+        expected_command = '/bin/sudo -n -s ls -l'
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
+        path.find_command.assert_called_once_with('sudo')
         self.assertEqual(p.command, expected_command)
 
     @mock.patch.object(path, 'find_command', mock_fail_find_cmd)
@@ -242,10 +210,6 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
-    @unittest.skipUnless(TRUE_CMD,
-                         '"true" binary not available')
-    @mock.patch.object(path, 'find_command',
-                       mock.Mock(return_value=TRUE_CMD))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=0))
     def test_run_sudo_shell_uid_0(self):
         expected_command = 'ls -l'
@@ -265,7 +229,8 @@ class TestProcessRun(unittest.TestCase):
         encoded_text = b'Avok\xc3\xa1do'
         self.assertEqual(text.encode('utf-8'), encoded_text)
         self.assertEqual(encoded_text.decode('utf-8'), text)
-        result = process.run("%s -n %s" % (ECHO_CMD, text), encoding='utf-8')
+        cmd = u"%s -n %s" % (ECHO_CMD, text)
+        result = process.run(cmd, encoding='utf-8')
         self.assertEqual(result.stdout, encoded_text)
         self.assertEqual(result.stdout_text, text)
 
@@ -284,6 +249,32 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual("1st_binary", res)
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
         self.assertEqual("./bin", res)
+
+    def test_cmd_split(self):
+        plain_str = ''
+        unicode_str = u''
+        empty_bytes = b''
+        # shlex.split() can work with "plain_str" and "unicode_str" on both
+        # Python 2 and Python 3.  While we're not testing Python itself,
+        # this will help us catch possible differences in the Python
+        # standard library should they arise.
+        self.assertEqual(shlex.split(plain_str), [])
+        self.assertEqual(shlex.split(astring.to_text(plain_str)), [])
+        self.assertEqual(shlex.split(unicode_str), [])
+        self.assertEqual(shlex.split(astring.to_text(unicode_str)), [])
+        # on Python 3, shlex.split() won't work with bytes, raising:
+        # AttributeError: 'bytes' object has no attribute 'read'.
+        # To turn bytes into text (when necessary), that is, on
+        # Python 3 only, use astring.to_text()
+        self.assertEqual(shlex.split(astring.to_text(empty_bytes)), [])
+        # Now let's test our specific implementation to split commands
+        self.assertEqual(process.cmd_split(plain_str), [])
+        self.assertEqual(process.cmd_split(unicode_str), [])
+        self.assertEqual(process.cmd_split(empty_bytes), [])
+        unicode_command = u"avok\xe1do_test_runner arguments"
+        self.assertEqual(process.cmd_split(unicode_command),
+                         [u"avok\xe1do_test_runner",
+                          u"arguments"])
 
 
 class CmdResultTests(unittest.TestCase):

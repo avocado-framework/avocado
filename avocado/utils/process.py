@@ -32,8 +32,9 @@ import threading
 import time
 
 from io import BytesIO, UnsupportedOperation
-from six import PY2, string_types
+from six import string_types
 
+from . import astring
 from . import gdb
 from . import runtime
 from . import path
@@ -81,52 +82,13 @@ class CmdError(Exception):
         self.result = result
         self.additional_text = additional_text
 
-    def __str__(self):
-        if self.result is not None:
-            if self.result.interrupted:
-                msg = "Command '%s' interrupted by %s"
-                msg %= (self.command, self.result.interrupted)
-            elif self.result.exit_status is None:
-                msg = "Command '%s' failed and is not responding to signals"
-                msg %= self.command
-            else:
-                msg = "Command '%s' failed (rc=%d)"
-                msg %= (self.command, self.result.exit_status)
-            if self.additional_text:
-                msg += ", " + self.additional_text
-            return msg
-        else:
-            return "CmdError"
 
-
-def normalize_cmd(cmd, encoding=None):
-    """
-    Normalize a command to be safe for :func:`shlex.split`
-
-    :param cmd: the command line to be passed to :func:`shlex.split`
-    :type cmd: str or bytes
-    :param encoding: the encoding to use for encode/decode operations
-    :type encoding: str
-    """
-    if encoding is None:
-        encoding = sys.getdefaultencoding()
-    if PY2:
-        if not isinstance(cmd, str):
-            cmd = cmd.encode(encoding)
-    else:
-        if isinstance(cmd, bytes):
-            cmd = cmd.decode(encoding)
-    return cmd
-
-
-def can_sudo(cmd=None, encoding=None):
+def can_sudo(cmd=None):
     """
     Check whether sudo is available (or running as root)
+
+    :param cmd: unicode string with the commands
     """
-    if cmd is not None:
-        if encoding is None:
-            encoding = sys.getdefaultencoding()
-        cmd = normalize_cmd(cmd, encoding)
     if os.getuid() == 0:    # Root
         return True
 
@@ -257,28 +219,41 @@ def get_children_pids(ppid, recursive=False):
     return children
 
 
-def binary_from_shell_cmd(cmd, encoding=None):
+def binary_from_shell_cmd(cmd):
     """
     Tries to find the first binary path from a simple shell-like command.
 
     :note: It's a naive implementation, but for commands like:
            `VAR=VAL binary -args || true` gives the right result (binary)
     :param cmd: simple shell-like binary
+    :type cmd: unicode string
     :return: first found binary from the cmd
     """
-    if encoding is None:
-        encoding = sys.getdefaultencoding()
-    cmd = normalize_cmd(cmd, encoding)
-    try:
-        cmds = shlex.split(cmd)
-    except ValueError:
-        log.warning("binary_from_shell_cmd: Shlex split of %s failed, using "
-                    "using simple split.", cmd)
-        cmds = cmd.split(" ")
+    cmds = cmd_split(cmd)
     for item in cmds:
         if not _RE_BASH_SET_VARIABLE.match(item):
             return item
     raise ValueError("Unable to parse first binary from '%s'" % cmd)
+
+
+def cmd_split(cmd):
+    """
+    Splits a command line into individual components
+
+    This is a simple wrapper around :func:`shlex.split`, which has the
+    requirement of having text (not bytes) as its argument on Python 3,
+    but bytes on Python 2.
+
+    :param cmd: text (a multi byte string) encoded as 'utf-8'
+    """
+    if sys.version_info[0] < 3:
+        data = cmd.encode('utf-8')
+        result = shlex.split(data)
+        result = [i.decode('utf-8') for i in result]
+    else:
+        data = astring.to_text(cmd, 'utf-8')
+        result = shlex.split(data)
+    return result
 
 
 class CmdResult(object):
@@ -335,19 +310,6 @@ class CmdResult(object):
         if isinstance(self.stderr, string_types):
             return self.stderr
         raise TypeError("Unable to decode stderr into a string-like type")
-
-    def __repr__(self):
-        cmd_rep = ("Command: %s\n"
-                   "Exit status: %s\n"
-                   "Duration: %s\n"
-                   "Stdout:\n%s\n"
-                   "Stderr:\n%s\n"
-                   "PID:\n%s\n" % (self.command, self.exit_status,
-                                   self.duration, self.stdout, self.stderr,
-                                   self.pid))
-        if self.interrupted:
-            cmd_rep += "Command interrupted by %s\n" % self.interrupted
-        return cmd_rep
 
 
 class FDDrainer(object):
@@ -418,18 +380,20 @@ class FDDrainer(object):
                 bfr += tmp
                 if tmp.endswith(b'\n'):
                     for line in bfr.splitlines():
+                        line = astring.to_text(line, self._result.encoding)
                         if self._logger is not None:
                             self._logger.debug(self._logger_prefix, line)
                         if self._stream_logger is not None:
-                            self._stream_logger.debug('%s\n', line)
+                            self._stream_logger.debug(line)
                     bfr = b''
         # Write the rest of the bfr unfinished by \n
         if self._verbose and bfr:
             for line in bfr.splitlines():
+                line = astring.to_text(line, self._result.encoding)
                 if self._logger is not None:
                     self._logger.debug(self._logger_prefix, line)
                 if self._stream_logger is not None:
-                    self._stream_logger.debug(line)
+                    self._stream_logger.debug(astring.to_text(line))
 
     def start(self):
         self._thread = threading.Thread(target=self._drainer, name=self.name)
@@ -517,7 +481,6 @@ class SubProcess(object):
         """
         if encoding is None:
             encoding = sys.getdefaultencoding()
-        cmd = normalize_cmd(cmd, encoding)
         if sudo:
             self.cmd = self._prepend_sudo(cmd, shell)
         else:
@@ -590,7 +553,7 @@ class SubProcess(object):
             if self.verbose:
                 log.info("Running '%s'", self.cmd)
             if self.shell is False:
-                cmd = shlex.split(self.cmd)
+                cmd = cmd_split(self.cmd)
             else:
                 cmd = self.cmd
             try:
@@ -609,12 +572,18 @@ class SubProcess(object):
 
             self.start_time = time.time()
 
+            # The Thread to be started by the FDDrainer cannot have a name
+            # from a non-ascii string (this is a Python 2 internal limitation).
+            # To keep some relation between the command name and the Thread
+            # this resorts to attempting the conversion to ascii, replacing
+            # characters it can not convert
+            cmd_name = self.cmd.encode('ascii', 'replace')
             # prepare fd drainers
             if self.allow_output_check == 'combined':
                 self._combined_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
-                    name="%s-combined" % self.cmd,
+                    name="%s-combined" % cmd_name,
                     logger=log,
                     logger_prefix="[output] %s",
                     # FIXME, in fact, a new log has to be used here
@@ -633,7 +602,7 @@ class SubProcess(object):
                 self._stdout_drainer = FDDrainer(
                     self._popen.stdout.fileno(),
                     self.result,
-                    name="%s-stdout" % self.cmd,
+                    name="%s-stdout" % cmd_name,
                     logger=log,
                     logger_prefix="[stdout] %s",
                     stream_logger=stdout_stream_logger,
@@ -642,7 +611,7 @@ class SubProcess(object):
                 self._stderr_drainer = FDDrainer(
                     self._popen.stderr.fileno(),
                     self.result,
-                    name="%s-stderr" % self.cmd,
+                    name="%s-stderr" % cmd_name,
                     logger=log,
                     logger_prefix="[stderr] %s",
                     stream_logger=stderr_stream_logger,
@@ -896,10 +865,9 @@ class GDBSubProcess(object):
         """
         if encoding is None:
             encoding = sys.getdefaultencoding()
-        cmd = normalize_cmd(cmd, encoding)
         self.cmd = cmd
 
-        self.args = shlex.split(cmd)
+        self.args = cmd_split(cmd)
         self.binary = self.args[0]
         self.binary_path = os.path.abspath(self.cmd)
         self.result = CmdResult(cmd, encoding=encoding)
@@ -1184,7 +1152,7 @@ def should_run_inside_gdb(cmd):
         return False
 
     try:
-        args = shlex.split(cmd)
+        args = cmd_split(cmd)
     except ValueError:
         log.warning("Unable to check whether command '%s' should run inside "
                     "GDB, fallback to simplified method...", cmd)
@@ -1206,7 +1174,7 @@ def should_run_inside_wrapper(cmd):
     """
     global CURRENT_WRAPPER
     CURRENT_WRAPPER = None
-    args = shlex.split(cmd)
+    args = cmd_split(cmd)
     cmd_binary_name = args[0]
 
     for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:
@@ -1222,7 +1190,7 @@ def should_run_inside_wrapper(cmd):
         return True
 
 
-def get_sub_process_klass(cmd, encoding=None):
+def get_sub_process_klass(cmd):
     """
     Which sub process implementation should be used
 
@@ -1230,9 +1198,6 @@ def get_sub_process_klass(cmd, encoding=None):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    if encoding is None:
-        encoding = sys.getdefaultencoding()
-    cmd = normalize_cmd(cmd, encoding)
     if should_run_inside_gdb(cmd):
         return GDBSubProcess
     elif should_run_inside_wrapper(cmd):
@@ -1299,7 +1264,7 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
     """
     if encoding is None:
         encoding = sys.getdefaultencoding()
-    klass = get_sub_process_klass(cmd, encoding)
+    klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
                sudo=sudo, ignore_bg_processes=ignore_bg_processes,

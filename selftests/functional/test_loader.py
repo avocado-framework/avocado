@@ -329,8 +329,6 @@ class LoaderTestFunctional(unittest.TestCase):
         self.assertEqual(test, 11, "Number of tests is not 12 (%s):\n%s"
                          % (test, result))
 
-    @unittest.skipIf(sys.version_info[0] == 3,
-                     "Test currently broken on Python 3")
     def test_python_unittest(self):
         test_path = os.path.join(basedir, "selftests", ".data", "unittests.py")
         cmd = ("%s run --sysinfo=off --job-results-dir %s --json - -- %s"

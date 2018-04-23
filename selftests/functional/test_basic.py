@@ -1,4 +1,3 @@
-# This Python file uses the following encoding: utf-8
 import aexpect
 import glob
 import json
@@ -139,7 +138,9 @@ CC_BINARY = probe_binary('cc')
 GNU_ECHO_BINARY = probe_binary('echo')
 if GNU_ECHO_BINARY is not None:
     if probe_binary('man') is not None:
-        echo_manpage = process.run('man %s' % os.path.basename(GNU_ECHO_BINARY)).stdout
+        echo_cmd = 'man %s' % os.path.basename(GNU_ECHO_BINARY)
+        echo_manpage = process.run(echo_cmd, env={'LANG': 'C'},
+                                   encoding='ascii').stdout
         if b'-e' not in echo_manpage:
             GNU_ECHO_BINARY = probe_binary('gecho')
 READ_BINARY = probe_binary('read')
@@ -606,8 +607,6 @@ class RunnerHumanOutputTest(unittest.TestCase):
                       b'INTERRUPT 0 | CANCEL 1',
                       result.stdout)
 
-    @unittest.skipIf(sys.version_info[0] == 3,
-                     "Test currently broken on Python 3")
     @unittest.skipIf(not GNU_ECHO_BINARY,
                      'GNU style echo binary not available')
     def test_ugly_echo_cmd(self):
@@ -653,7 +652,7 @@ class RunnerSimpleTest(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         self.pass_script = script.TemporaryScript(
-            'ʊʋʉʈɑ ʅʛʌ',
+            u'\u00e1 \u00e9 \u00ed \u00f3 \u00fa',
             "#!/bin/sh\ntrue",
             'avocado_simpletest_functional')
         self.pass_script.save()

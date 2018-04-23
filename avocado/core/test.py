@@ -1120,6 +1120,10 @@ class SimpleTest(Test):
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
+            # process.run expects unicode as the command, but pipes.quote
+            # turns it into a "bytes" array in Python 2
+            if not astring.is_text(self._command):
+                self._command = astring.to_text(self._command, defaults.ENCODING)
 
     @property
     def filename(self):
@@ -1145,7 +1149,6 @@ class SimpleTest(Test):
             test_params = dict([(str(key), str(val)) for _, key, val in
                                 self.params.iteritems()])
 
-            # process.run uses shlex.split(), the self.path needs to be escaped
             result = process.run(self._command, verbose=True,
                                  env=test_params, encoding=defaults.ENCODING)
 

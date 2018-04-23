@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
@@ -139,8 +138,6 @@ class RunnerSimpleTest(unittest.TestCase):
                          (expected_rc, result))
         self.assertIn(tampered_msg, result.stdout)
 
-    @unittest.skipIf(sys.version_info[0] == 3,
-                     "Test currently broken on Python 3")
     def test_output_diff(self):
         self._check_output_record_all()
         tampered_msg_stdout = b"I PITY THE FOOL THAT STANDS ON STDOUT!"
