@@ -433,6 +433,7 @@ AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %exclude %{python2_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python2_sitelib}/avocado_framework_plugin_glib*
 %exclude %{python2_sitelib}/avocado/libexec*
+%exclude %{python2_sitelib}/tests*
 
 %if %{with_python3}
 %files -n python3-%{srcname}
@@ -455,6 +456,7 @@ AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %exclude %{python3_sitelib}/avocado_framework_plugin_golang*
 %exclude %{python3_sitelib}/avocado_framework_plugin_result_upload*
 %exclude %{python3_sitelib}/avocado_framework_plugin_glib*
+%exclude %{python3_sitelib}/tests*
 %endif
 
 %package common
