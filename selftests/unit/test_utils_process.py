@@ -172,6 +172,7 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    @unittest.skipUnless(os.path.exists('/bin/sudo'))
     @mock.patch.object(path, 'find_command',
                        mock.Mock(return_value='/bin/sudo'))
     @mock.patch.object(os, 'getuid', mock.Mock(return_value=1000))

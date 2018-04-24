@@ -302,7 +302,7 @@ def is_text(data):
     each character.
     """
     if sys.version_info[0] < 3:
-        return isinstance(data, unicode)
+        return isinstance(data, unicode)   # pylint: disable=E0602
     return isinstance(data, str)
 
 
