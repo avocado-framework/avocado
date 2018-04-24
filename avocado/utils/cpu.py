@@ -129,7 +129,8 @@ def get_cpu_arch():
                   '|^bogomips per cpu|^max thread id)', 's390'),
                  ('^type', 'sparc64'),
                  ('^flags.*:.* lm .*', 'x86_64'),
-                 ('^flags', 'i386')]
+                 ('^flags', 'i386'),
+                 ('^hart\s*: 1$', 'risc-v')]
     cpuinfo = _get_cpu_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
