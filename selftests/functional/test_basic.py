@@ -704,7 +704,7 @@ class RunnerSimpleTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" % (expected_rc, result))
 
-    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 1,
+    @unittest.skipIf(int(os.environ.get("AVOCADO_CHECK_LEVEL", 0)) < 2,
                      "Skipping test that take a long time to run, are "
                      "resource intensive or time sensitve")
     def test_runner_sleep_fail_sleep_timing(self):
