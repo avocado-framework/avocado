@@ -228,6 +228,118 @@ introduced by the next LTS version are:
   test writers that need consistent results across Python major
   versions.
 
+* The :mod:`avocado.core.utils.vmimage` library now allows users to
+  expand the builtin list of image providers.  If you have a local
+  cache of public images, or your own images, you can quickly and
+  easily register your own providers and thus use your images on your
+  tests.
+
+* Avocado can record the output generated from a test, which can then
+  be used to determine if the test passed or failed.  This feature is
+  commonly known as "output check".  Traditionally, users would choose
+  to record the output from ``STDOUT`` and/or ``STDERR`` into separate
+  streams, which would be saved into different files.  Some tests suites
+  actually put all content of ``STDOUT`` and ``STDERR`` together, and
+  unless we record them together, it'd be impossible to record them in
+  the right order.  This version introduces the ``combined`` option
+  to ``--output-check-record`` option, which does exactly that: it
+  records both ``STDOUT`` and ``STDERR`` into a single stream and
+  into a single file (named ``output`` in the test results, and
+  ``output.expected`` in the test data directory).
+
+* A new varianter plugin has been introduced, based on PICT.  PICT is
+  a "Pair Wise" combinatorial tool, that can generate optimal
+  combination of parameters to tests, so that (by default) at least a
+  unique pair of parameter values will be tested at once.
+
+* A new (optional) plugin is avaiable, the "result uploader".  It
+  allows job results to be copied over to a centralized results server
+  at the end of job execution.  Please refer to
+  :ref:`results-upload-plugin` for more information.
+
+* The ``default_parameters`` mechanism for setting default parameters
+  on tests has been removed.  This was introduced quite early in the
+  Avocado development, and allowed users to set a dictionary at the
+  class level with keys/values that would serve as default parameter
+  values.  The recommended approach now, is to just provide default
+  values when calling ``self.parameters.get`` within a test method,
+  such as ``self.parameters.get("key",
+  default="default_value_for_key")``.
+
+* The ``__getattr__`` interface for ``self.params`` has been removed.  It
+  used to allow users to use a syntax such as ``self.params.key`` when
+  attempting to access the value for key ``key``.  The supported syntax
+  is ``self.params.get("key")`` to achieve the same thing.
+
+* The :mod:`avocado.utils.vmimage` library now contains support for
+  Avocado's own JeOS image.  A nice addition given the fact that
+  it's the default image used in Avocado-VT and the latest version
+  is available in the following architectures: x86_64, aarch64, ppc64,
+  ppc64le and s390x.
+
+* The installation of Avocado from sources has improved and moved
+  towards a more "Pythonic" approach.  Installation of files in
+  "non-Pythonic locations" such as ``/etc`` are no longer attempted by
+  the Python ``setup.py`` code.  Configuration files, for instance,
+  are now considered package data files of the ``avocado`` package.
+  The end result is that installation from source works fine outside
+  virtual environments (in addition to installations *inside* virtual
+  environments).
+
+
+* A :ref:`new plugin <glib-plugin>` enables users to list and execute
+  tests based on the `GLib test framework
+  <https://developer.gnome.org/glib/stable/glib-Testing.html>`_.  This
+  plugin allows individual tests inside a single binary to be listed
+  and executed.
+
+* Users of the YAML test loader have now access to a few special keys
+  that can tweak test attributes, including adding prefixes to test
+  names.  This allows users to easily differentiate among execution of
+  the same test, but executed different configurations.  For more
+  information, look for "special keys" in the :ref:`YAML Loader plugin
+  documentation <yaml_loader>`.
+
+* Users can now dump variants to a (JSON) file, and also reuse a
+  previously created file in their future jobs execution.  This allows
+  users to avoid recomputing the variants on every job, which might
+  bring significant speed ups in job execution or simply better
+  control of the variants used during a job.  Also notice that even
+  when users do not manually dump a variants file to a specific
+  location, Avocado will automatically save a suitable file at
+  ``jobdata/variants.json`` as part of a Job results directory
+  structure.
+
+* SIMPLE tests were limited to returning PASS, FAIL and WARN statuses.
+  Now SIMPLE tests can now also return SKIP status.  At the same time,
+  SIMPLE tests were previously limited in how they would flag a WARN
+  or SKIP from the underlying executable.  This is now configurable by
+  means of regular expressions.
+
+* The :mod:`avocado.utils.process` has seen a number of changes
+  related to how it handles data from the executed processes.  In a
+  nutshell, process output (on both ``stdout`` and ``stderr``) is now
+  considered binary data.  Users that need to deal with text instead,
+  should use the newly added
+  :attr:`avocado.utils.process.CmdResult.stdout_text` and
+  :attr:`avocado.utils.process.CmdResult.stderr_text`, which are
+  convenience properties that will attempt to decode the ``stdout`` or
+  ``stderr`` data into a string-like type using the encoding set, and
+  if none is set, falling back to the system default encoding.  This
+  change of behavior was needed to accommodate Python's 2 and Python's
+  3 differences in bytes and string-like types and handling.
+
+* The TAP result format plugin received improvements, including
+  support for reporting Avocado tests with CANCEL status as SKIP
+  (which is the closest status available in the TAP specification),
+  and providing more visible warning information in case Avocado tests
+  finish with WARN status (while maintaining the test as a PASS, since
+  TAP doesn't define a WARN status).
+
+* Redundant (and deprecated) fields in the test sections of the JSON
+  result output were removed.  Now, instead of ``url``, ``test`` and
+  ``id`` carrying the same information, only ``id`` remains.
+
 Complete list of changes
 ========================
 
