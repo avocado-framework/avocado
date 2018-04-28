@@ -96,7 +96,7 @@ class XUnitResult(Result):
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
         testsuite.setAttribute('skipped', self._escape_attr(result.skipped + result.cancelled))
         testsuite.setAttribute('time', self._escape_attr(result.tests_total_time))
-        testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now()))
+        testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now().isoformat()))
         document.appendChild(testsuite)
         for test in result.tests:
             testcase = self._create_testcase_element(document, test)
