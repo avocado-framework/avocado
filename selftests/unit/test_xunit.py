@@ -84,15 +84,16 @@ class xUnitSucceedTest(unittest.TestCase):
         els = dom.getElementsByTagName('testcase')
         self.assertEqual(len(els), 1)
 
-        junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 os.path.pardir, ".data",
-                                                 'jenkins-junit.xsd'))
-        with open(junit_xsd, 'r') as f:
-            xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
-        # pylint: disable=I1101
-        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
-                        "Failed to validate against %s, content:\n%s\nerror log:\n%s" %
-                        (junit_xsd, xml, xmlschema.error_log))
+        for junit_xsd in ('jenkins-junit.xsd', 'junit-apache.xsd'):
+            junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                     os.path.pardir, ".data",
+                                                     junit_xsd))
+            with open(junit_xsd, 'r') as f:
+                xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
+            # pylint: disable=I1101
+            self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
+                            "Failed to validate against %s, content:\n%s\nerror log:\n%s" %
+                            (junit_xsd, xml, xmlschema.error_log))
 
     def test_max_test_log_size(self):
         log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
