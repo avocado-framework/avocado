@@ -200,9 +200,9 @@ def iter_tabular_output(matrix, header=None, strip=False):
         len_matrix[-1] = len_matrix[-1][:-1]
 
     if strip:
-        str_out = lambda x: " ".join(x).rstrip()
+        def str_out(x): " ".join(x).rstrip()
     else:
-        str_out = lambda x: " ".join(x)
+        def str_out(x): " ".join(x)
 
     for row, row_lens in zip(str_matrix, len_matrix):
         out = []

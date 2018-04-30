@@ -94,7 +94,8 @@ class TestLister(object):
                       output.TERM_SUPPORT.header_str('Test'),
                       output.TERM_SUPPORT.header_str('Tag(s)'))
 
-        for line in astring.iter_tabular_output(test_matrix, header=header):
+        for line in astring.iter_tabular_output(test_matrix, header=header,
+                                                strip=True):
             LOG_UI.debug(line)
 
         if self.args.verbose:
