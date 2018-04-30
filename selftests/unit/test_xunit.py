@@ -85,7 +85,8 @@ class xUnitSucceedTest(unittest.TestCase):
         self.assertEqual(len(els), 1)
 
         junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 os.path.pardir, ".data", 'junit-4.xsd'))
+                                                 os.path.pardir, ".data",
+                                                 'jenkins-junit.xsd'))
         with open(junit_xsd, 'r') as f:
             xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
         # pylint: disable=I1101
