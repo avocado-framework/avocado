@@ -91,8 +91,8 @@ class xUnitSucceedTest(unittest.TestCase):
             xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
         # pylint: disable=I1101
         self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
-                        "Failed to validate against %s, content:\n%s" %
-                        (self.junit, xml))
+                        "Failed to validate against %s, content:\n%s\nerror log:\n%s" %
+                        (self.junit, xml, xmlschema.error_log))
 
     def test_max_test_log_size(self):
         log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
