@@ -96,7 +96,11 @@ class XUnitResult(Result):
         testsuite.setAttribute('failures', self._escape_attr(result.failed))
         testsuite.setAttribute('skipped', self._escape_attr(result.skipped + result.cancelled))
         testsuite.setAttribute('time', self._escape_attr(result.tests_total_time))
-        testsuite.setAttribute('timestamp', self._escape_attr(datetime.datetime.now().isoformat()))
+        # this is a slightly adapted iso8601 format, which limits the
+        # the precision to seconds only
+        iso8601_format = '%Y-%m-%dT%H:%M:%S'
+        timestamp = datetime.datetime.now().strftime(iso8601_format)
+        testsuite.setAttribute('timestamp', self._escape_attr(timestamp))
         document.appendChild(testsuite)
         for test in result.tests:
             testcase = self._create_testcase_element(document, test)
