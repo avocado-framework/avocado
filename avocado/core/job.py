@@ -170,6 +170,7 @@ class Job(object):
             self.__remove_tmpdir = True
         self.tmpdir = tempfile.mkdtemp(prefix="avocado_job_",
                                        dir=base_tmpdir)
+        os.chmod(self.tmpdir, os.stat(base_tmpdir).st_mode)
 
     def _setup_job_results(self):
         """
