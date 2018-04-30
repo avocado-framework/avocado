@@ -153,7 +153,7 @@ def strip_console_codes(output, custom_codes=None):
     return return_str
 
 
-def iter_tabular_output(matrix, header=None):
+def iter_tabular_output(matrix, header=None, strip=False):
     """
     Generator for a pretty, aligned string representation of a nxm matrix.
 
@@ -163,6 +163,7 @@ def iter_tabular_output(matrix, header=None):
 
     :param matrix: Matrix representation (list with n rows of m elements).
     :param header: Optional tuple or list with header elements to be displayed.
+    :param strip:  Optionally remove trailing whitespace from each row.
     """
     def _get_matrix_with_header():
         return itertools.chain([header], matrix)
@@ -198,6 +199,11 @@ def iter_tabular_output(matrix, header=None):
         # but later in `yield` we don't want it in `len_matrix`
         len_matrix[-1] = len_matrix[-1][:-1]
 
+    if strip:
+        def str_out(x): " ".join(x).rstrip()
+    else:
+        def str_out(x): " ".join(x)
+
     for row, row_lens in zip(str_matrix, len_matrix):
         out = []
         padding = [" " * (lengths[i] - row_lens[i])
@@ -207,10 +213,10 @@ def iter_tabular_output(matrix, header=None):
             out.append(row[-1])
         except IndexError:
             continue    # Skip empty rows
-        yield " ".join(out)
+        yield str_out(out)
 
 
-def tabular_output(matrix, header=None):
+def tabular_output(matrix, header=None, strip=False):
     """
     Pretty, aligned string representation of a nxm matrix.
 
@@ -220,10 +226,11 @@ def tabular_output(matrix, header=None):
 
     :param matrix: Matrix representation (list with n rows of m elements).
     :param header: Optional tuple or list with header elements to be displayed.
+    :param strip:  Optionally remove trailing whitespace from each row.
     :return: String with the tabular output, lines separated by unix line feeds.
     :rtype: str
     """
-    return "\n".join(iter_tabular_output(matrix, header))
+    return "\n".join(iter_tabular_output(matrix, header, strip))
 
 
 def string_safe_encode(input_str):
