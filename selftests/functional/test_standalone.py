@@ -3,7 +3,7 @@ import sys
 import unittest
 
 from avocado.core import exit_codes
-from avocado.utils import process
+from avocado.utils import process, astring
 
 
 basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
@@ -24,7 +24,8 @@ class StandaloneTests(unittest.TestCase):
 
     def run_and_check(self, cmd_line, expected_rc, tstname):
         os.chdir(basedir)
-        result = process.run(cmd_line, ignore_status=True)
+        result = process.run(cmd_line, ignore_status=True,
+                             encoding=astring.ENCODING)
         self.assertEqual(result.exit_status, expected_rc,
                          "Stand alone %s did not return rc "
                          "%d:\n%s" % (tstname, expected_rc, result))
@@ -50,10 +51,10 @@ class StandaloneTests(unittest.TestCase):
         expected_rc = exit_codes.AVOCADO_TESTS_FAIL
         result = self.run_and_check(cmd_line, expected_rc, 'errortest_nasty')
         if sys.version_info[0] == 3:
-            exc = "errortest_nasty.NastyException: Nasty-string-like-exception"
+            exc = u"errortest_nasty.NastyException: Nasty-string-like-exception\u017e"
         else:
-            exc = "NastyException: Nasty-string-like-exception"
-        count = result.stdout_text.count("\n%s" % exc)
+            exc = u"NastyException: Nasty-string-like-exception\\u017e"
+        count = result.stdout_text.count(u"\n%s" % exc)
         self.assertEqual(count, 2, "Exception \\n%s should be present twice in"
                          "the log (once from the log, second time when parsing"
                          "exception details." % (exc))
