@@ -40,7 +40,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 61.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -371,7 +371,11 @@ popd
 # AVOCADO_CHECK_LEVEL: package build environments have the least
 # amount of resources we have observed so far.  Let's avoid tests that
 # require too much resources or are time sensitive
-LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python2} selftests/run
+# UNITTEST_AVOCADO_CMD: the "avocado" command to be run during
+# unittests needs to be a Python specific one on Fedora >= 28.  Let's
+# use the one that was setup in the source tree by the "setup.py
+# develop --user" step and is guaranteed to be version specific.
+LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python2} selftests/run
 %if %{with_python3}
 %{__python3} setup.py develop --user
 pushd optional_plugins/html
@@ -395,7 +399,7 @@ popd
 pushd optional_plugins/glib
 %{__python3} setup.py develop --user
 popd
-LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
+LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avocado %{__python3} selftests/run
 %endif
 %endif
 
@@ -762,6 +766,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue May  1 2018 Cleber Rosa <cleber@redhat.com> - 61.0-1
+- Use Python version specific "avocado" scripts on tests
+
 * Tue Apr 24 2018 Cleber Rosa <cleber@redhat.com> - 61.0-0
 - New release
 - Added python3-yaml require to varianter-yaml-to-mux package
