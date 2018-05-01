@@ -310,7 +310,7 @@ def is_text(data):
     return isinstance(data, str)
 
 
-def to_text(data, encoding=None):
+def to_text(data, encoding=ENCODING):
     """
     Convert data to text
 
@@ -324,7 +324,6 @@ def to_text(data, encoding=None):
     """
     if is_bytes(data):
         if encoding is None:
-            return data.decode()
-        else:
-            return data.decode(encoding)
+            encoding = ENCODING
+        return data.decode(encoding)
     return data
