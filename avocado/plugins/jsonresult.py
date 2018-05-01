@@ -23,6 +23,7 @@ import os
 from avocado.core.output import LOG_UI
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.plugin_interfaces import CLI, Result
+from avocado.utils import astring
 
 
 UNKNOWN = '<unknown>'
@@ -44,7 +45,7 @@ class JSONResult(Result):
                           'whiteboard': test.get('whiteboard', UNKNOWN),
                           'logdir': test.get('logdir', UNKNOWN),
                           'logfile': test.get('logfile', UNKNOWN),
-                          'fail_reason': str(test.get('fail_reason', UNKNOWN))})
+                          'fail_reason': astring.to_text(test.get('fail_reason', UNKNOWN))})
         content = {'job_id': result.job_unique_id,
                    'debuglog': result.logfile,
                    'tests': tests,
