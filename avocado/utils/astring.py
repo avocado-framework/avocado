@@ -321,11 +321,11 @@ def is_text(data):
 
 def to_text(data, encoding=ENCODING):
     """
-    Convert data to text
+    Convert anything to text decoded text
 
-    Action is only taken if data is "bytes", in which case it's
-    decoded into the given encoding and should produce a type that
-    passes the is_text() check.
+    When the data is bytes, it's decoded. When it's not of string types
+    it's re-formatted into text and returned. Otherwise (it's string)
+    it's returned unchanged.
 
     :param data: data to be transformed into text
     :param encoding: encoding of the data (only used when decoding
@@ -337,4 +337,9 @@ def to_text(data, encoding=ENCODING):
         if encoding is None:
             encoding = ENCODING
         return data.decode(encoding)
+    elif not isinstance(data, string_types):
+        if sys.version_info[0] < 3:
+            return unicode(data)    # pylint: disable=E0602
+        else:
+            return str(data)
     return data
