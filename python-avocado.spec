@@ -366,9 +366,11 @@ popd
 pushd optional_plugins/glib
 %{__python2} setup.py develop --user
 popd
-# Package build environments have the least amount of resources
-# we have observed so far.  Let's avoid tests that require too
-# much resources or are time sensitive
+# LANG: to make the results predictable, we pin the language
+# that is used during test execution.
+# AVOCADO_CHECK_LEVEL: package build environments have the least
+# amount of resources we have observed so far.  Let's avoid tests that
+# require too much resources or are time sensitive
 LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python2} selftests/run
 %if %{with_python3}
 %{__python3} setup.py develop --user
@@ -393,9 +395,6 @@ popd
 pushd optional_plugins/glib
 %{__python3} setup.py develop --user
 popd
-# Package build environments have the least amount of resources
-# we have observed so far.  Let's avoid tests that require too
-# much resources or are time sensitive
 LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 %{__python3} selftests/run
 %endif
 %endif
