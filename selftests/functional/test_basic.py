@@ -1028,7 +1028,7 @@ class PluginsTest(AbsPluginsTest, unittest.TestCase):
                          "Avocado did not return rc %d:\n%s"
                          % (exit_codes.AVOCADO_ALL_OK, result))
         exp = (b"Type    Test                 Tag(s)\n"
-               b"MISSING this-wont-be-matched \n\n"
+               b"MISSING this-wont-be-matched\n\n"
                b"TEST TYPES SUMMARY\n"
                b"==================\n"
                b"EXTERNAL: 0\n"
