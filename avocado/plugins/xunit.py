@@ -23,7 +23,7 @@ from xml.dom.minidom import Document
 from avocado.core.parser import FileOrStdoutAction
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
-from avocado.utils import data_structures
+from avocado.utils import astring, data_structures
 
 
 class XUnitResult(Result):
@@ -36,7 +36,7 @@ class XUnitResult(Result):
 
     def _escape_attr(self, attrib):
         attrib = ''.join(_ if _ in self.PRINTABLE else "\\x%02x" % ord(_)
-                         for _ in str(attrib))
+                         for _ in astring.to_text(attrib))
         return attrib
 
     def _escape_cdata(self, cdata):
