@@ -1,8 +1,10 @@
 import glob
 import os
-import tempfile
 import shutil
+import tempfile
 import unittest
+
+import pkg_resources
 
 from avocado.core import exit_codes
 from avocado.utils import process
@@ -12,6 +14,14 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 basedir = os.path.abspath(basedir)
 
 AVOCADO = os.environ.get("UNITTEST_AVOCADO_CMD", "./scripts/avocado")
+
+
+def remote_capable():
+    try:
+        pkg_resources.require('avocado-framework-plugin-runner-remote')
+        return True
+    except pkg_resources.DistributionNotFound:
+        return False
 
 
 class ReplayTests(unittest.TestCase):
@@ -148,6 +158,8 @@ class ReplayTests(unittest.TestCase):
                b'INTERRUPT 0')
         self.assertIn(msg, result.stdout)
 
+    @unittest.skipUnless(remote_capable(),
+                         "Remote runner plugin is not available")
     def test_run_replay_remotefail(self):
         """
         Runs a replay job using remote plugin (not supported).
