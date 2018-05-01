@@ -26,6 +26,7 @@ And not notice until their code starts failing.
 """
 
 import itertools
+import locale
 import re
 import sys
 import string
@@ -35,6 +36,9 @@ from six.moves import zip
 from six.moves import xrange as range
 
 
+#: Preferred encoding based on system locale (could be used as default)
+#: but in some cases might be wrong. Use it wisely!
+ENCODING = locale.getpreferredencoding()
 #: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
 FS_UNSAFE_CHARS = '<>:"/\\|?*;'
 
