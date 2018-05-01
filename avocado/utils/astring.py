@@ -320,7 +320,7 @@ def is_text(data):
     return isinstance(data, str)
 
 
-def to_text(data, encoding=None):
+def to_text(data, encoding=ENCODING):
     """
     Convert data to text
 
@@ -329,12 +329,13 @@ def to_text(data, encoding=None):
     passes the is_text() check.
 
     :param data: data to be transformed into text
+    :param encoding: encoding of the data (only used when decoding
+                     is necessary)
     :type data: either bytes or other data that will be returned
                 unchanged
     """
     if is_bytes(data):
         if encoding is None:
-            return data.decode()
-        else:
-            return data.decode(encoding)
+            encoding = ENCODING
+        return data.decode(encoding)
     return data
