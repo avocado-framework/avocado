@@ -93,7 +93,7 @@ class YamlTestsuiteLoader(loader.TestLoader):
             extra_params = copy.deepcopy(extra_params)
         return loader_class(args, extra_params)
 
-    def discover(self, reference, which_tests=loader.DEFAULT):
+    def discover(self, reference, which_tests=loader.WhichTests.DEFAULT):
         tests = []
         try:
             root = mux.apply_filters(create_from_yaml([reference], False),

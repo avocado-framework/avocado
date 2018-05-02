@@ -26,6 +26,7 @@ import re
 import shlex
 import sys
 
+from enum import Enum
 from six import string_types, iteritems
 
 from . import data_dir
@@ -36,12 +37,14 @@ from ..utils import stacktrace
 from .settings import settings
 from .output import LOG_UI
 
-#: Show default tests (for execution)
-DEFAULT = False
-#: Available tests (for listing purposes)
-AVAILABLE = None
-#: All tests (including broken ones)
-ALL = True
+
+class WhichTests(Enum):
+    #: Show default tests (for execution)
+    DEFAULT = 1
+    #: Available tests (for listing purposes)
+    AVAILABLE = 2
+    #: All tests (including broken ones)
+    ALL = 3
 
 
 # Regexp to find python unittests
@@ -249,14 +252,14 @@ class TestLoaderProxy(object):
                                "LoaderProxy.get_decorator_mapping")
         return self._decorator_mapping
 
-    def discover(self, references, which_tests=DEFAULT, force=None):
+    def discover(self, references, which_tests=WhichTests.DEFAULT, force=None):
         """
         Discover (possible) tests from test references.
 
         :param references: a list of tests references; if [] use plugin defaults
         :type references: builtin.list
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
-                            DEFAULT)
+        :param which_tests: Limit tests to be displayed
+        :type which_tests: :class:`WhichTests`
         :param force: don't raise an exception when some test references
                       are not resolved to tests.
         :return: A list of test factories (tuples (TestClass, test_params))
@@ -285,14 +288,14 @@ class TestLoaderProxy(object):
                         if _test:
                             tests.extend(_test)
                             handled = True
-                            if not which_tests:
+                            if not which_tests == WhichTests.ALL:
                                 break  # Don't process other plugins
                     except Exception as details:
                         handle_exception(loader_plugin, details)
                 if not handled:
                     unhandled_references.append(reference)
         if unhandled_references:
-            if which_tests:
+            if which_tests == WhichTests.ALL:
                 tests.extend([(MissingTest, {'name': reference})
                               for reference in unhandled_references])
             else:
@@ -422,14 +425,14 @@ class TestLoader(object):
         """
         return self.get_decorator_mapping()
 
-    def discover(self, reference, which_tests=DEFAULT):
+    def discover(self, reference, which_tests=WhichTests.DEFAULT):
         """
         Discover (possible) tests from an reference.
 
         :param reference: the reference to be inspected.
         :type reference: str
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
-                            DEFAULT)
+        :param which_tests: Limit tests to be displayed
+        :type which_tests: :class:`WhichTests`
         :return: a list of test matching the reference as params.
         """
         raise NotImplementedError
@@ -529,7 +532,7 @@ class FileLoader(TestLoader):
                 test.Test: output.TERM_SUPPORT.healthy_str,
                 test.PythonUnittest: output.TERM_SUPPORT.healthy_str}
 
-    def discover(self, reference, which_tests=DEFAULT):
+    def discover(self, reference, which_tests=WhichTests.DEFAULT):
         """
         Discover (possible) tests from a directory.
 
@@ -541,8 +544,8 @@ class FileLoader(TestLoader):
         partial match).
 
         :param reference: the directory path to inspect.
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
-                            DEFAULT)
+        :param which_tests: Limit tests to be displayed
+        :type which_tests: :class:`WhichTests`
         :return: list of matching tests
         """
         tests = self._discover(reference, which_tests)
@@ -563,18 +566,18 @@ class FileLoader(TestLoader):
                         return None
         return tests
 
-    def _discover(self, reference, which_tests=DEFAULT):
+    def _discover(self, reference, which_tests=WhichTests.DEFAULT):
         """
         Recursively walk in a directory and find tests params.
         The tests are returned in alphabetic order.
 
         :param reference: the directory path to inspect.
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
-                            DEFAULT)
+        :param which_tests: Limit tests to be displayed
+        :type which_tests: :class:`WhichTests`
         :return: list of matching tests
         """
         if reference is None:
-            if which_tests is DEFAULT:
+            if which_tests == WhichTests.DEFAULT:
                 return []  # Return empty set when not listing details
             else:
                 reference = data_dir.get_test_dir()
@@ -590,19 +593,21 @@ class FileLoader(TestLoader):
                 subtests_filter = re.compile(_subtests_filter)
 
         if not os.path.isdir(reference):  # Single file
-            return self._make_tests(reference, which_tests, subtests_filter)
+            return self._make_tests(reference, which_tests == WhichTests.ALL,
+                                    subtests_filter)
 
         tests = []
 
         def add_test_from_exception(exception):
             """ If the exc.filename is valid test it's added to tests """
-            tests.extend(self._make_tests(exception.filename, which_tests))
+            tests.extend(self._make_tests(exception.filename,
+                                          which_tests == WhichTests.ALL))
 
         def skip_non_test(exception):
             """ Always return None """
             return None
 
-        if which_tests is ALL:
+        if which_tests == WhichTests.ALL:
             onerror = add_test_from_exception
         else:  # DEFAULT, AVAILABLE => skip missing tests
             onerror = skip_non_test
@@ -616,7 +621,8 @@ class FileLoader(TestLoader):
                             break
                     else:
                         pth = os.path.join(dirpath, file_name)
-                        tests.extend(self._make_tests(pth, which_tests,
+                        tests.extend(self._make_tests(pth,
+                                                      which_tests == WhichTests.ALL,
                                                       subtests_filter))
         return tests
 
@@ -1034,11 +1040,11 @@ class ExternalLoader(TestLoader):
             raise LoaderError(msg)
         return None  # Skip external runner
 
-    def discover(self, reference, which_tests=DEFAULT):
+    def discover(self, reference, which_tests=WhichTests.DEFAULT):
         """
         :param reference: arguments passed to the external_runner
-        :param which_tests: Limit tests to be displayed (ALL, AVAILABLE or
-                            DEFAULT)
+        :param which_tests: Limit tests to be displayed
+        :type which_tests: :class:`WhichTests`
         :return: list of matching tests
         """
         if (not self._external_runner) or (reference is None):

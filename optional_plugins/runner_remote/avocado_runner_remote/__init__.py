@@ -192,7 +192,7 @@ class DummyLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(DummyLoader, self).__init__(args, extra_params)
 
-    def discover(self, url, which_tests=loader.DEFAULT):
+    def discover(self, url, which_tests=loader.WhichTests.DEFAULT):
         return [(MockingTest, {'name': url})]
 
     @staticmethod

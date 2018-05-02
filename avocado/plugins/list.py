@@ -43,7 +43,10 @@ class TestLister(object):
         loader.loader.get_extra_listing()
 
     def _get_test_suite(self, paths):
-        which_tests = loader.ALL if self.args.verbose else loader.AVAILABLE
+        if self.args.verbose:
+            which_tests = loader.WhichTests.ALL
+        else:
+            which_tests = loader.WhichTests.AVAILABLE
         try:
             return loader.loader.discover(paths,
                                           which_tests=which_tests)

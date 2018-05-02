@@ -85,7 +85,7 @@ class RobotLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(RobotLoader, self).__init__(args, extra_params)
 
-    def discover(self, url, which_tests=loader.DEFAULT):
+    def discover(self, url, which_tests=loader.WhichTests.DEFAULT):
         avocado_suite = []
         subtests_filter = None
 
@@ -101,7 +101,7 @@ class RobotLoader(loader.TestLoader):
                                  include_suites=SuiteNamePatterns())
             robot_suite = self._find_tests(test_data, test_suite={})
         except Exception as data:
-            if which_tests == loader.ALL:
+            if which_tests == loader.WhichTests.ALL:
                 return [(NotRobotTest, {"name": "%s: %s" % (url, data)})]
             return []
 
@@ -114,7 +114,7 @@ class RobotLoader(loader.TestLoader):
                     continue
                 avocado_suite.append((RobotTest, {'name': test_name,
                                                   'executable': test_name}))
-        if which_tests is loader.ALL and not avocado_suite:
+        if which_tests == loader.WhichTests.ALL and not avocado_suite:
             return [(NotRobotTest, {"name": "%s: No robot-like tests found"
                                     % url})]
         return avocado_suite

@@ -40,7 +40,7 @@
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
 Version: 61.0
-Release: 0%{?gitrel}%{?dist}
+Release: 1%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -58,6 +58,7 @@ BuildRequires: pystache
 BuildRequires: python-lxml
 BuildRequires: python-setuptools
 BuildRequires: python-stevedore
+BuildRequires: python-enum34
 BuildRequires: python2-aexpect
 BuildRequires: python2-devel
 BuildRequires: python2-docutils
@@ -73,6 +74,7 @@ BuildRequires: pystache
 BuildRequires: python2-aexpect
 BuildRequires: python2-devel
 BuildRequires: python2-docutils
+BuildRequires: python2-enum34
 BuildRequires: python2-lxml
 BuildRequires: python2-mock
 BuildRequires: python2-psutil
@@ -124,12 +126,14 @@ Requires: procps-ng
 Requires: pyliblzma
 %if 0%{?rhel} == 7
 Requires: python
+Requires: python-enum34
 Requires: python-setuptools
 Requires: python-six
 Requires: python-stevedore
 Requires: python2-requests
 %else
 Requires: python2
+Requires: python2-enum34
 Requires: python2-requests
 Requires: python2-setuptools
 Requires: python2-six
@@ -763,6 +767,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Wed May  2 2018 Cleber Rosa <cleber@redhat.com> - 61.0-1
+- Added new python[2]-enum34 requirement
+
 * Tue Apr 24 2018 Cleber Rosa <cleber@redhat.com> - 61.0-0
 - New release
 - Added python3-yaml require to varianter-yaml-to-mux package
