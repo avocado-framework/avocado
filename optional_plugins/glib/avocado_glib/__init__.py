@@ -74,7 +74,7 @@ class GLibLoader(loader.TestLoader):
     def __init__(self, args, extra_params):
         super(GLibLoader, self).__init__(args, extra_params)
 
-    def discover(self, reference, which_tests=loader.DEFAULT):
+    def discover(self, reference, which_tests=loader.WhichTests.DEFAULT):
         avocado_suite = []
         subtests_filter = None
 
@@ -91,7 +91,7 @@ class GLibLoader(loader.TestLoader):
                 cmd = '%s -l' % (reference)
                 result = process.run(cmd)
             except Exception as details:
-                if which_tests == loader.ALL:
+                if which_tests == loader.WhichTests.ALL:
                     return [(NotGLibTest,
                              {"name": "%s: %s" % (reference, details)})]
                 return []
@@ -103,7 +103,7 @@ class GLibLoader(loader.TestLoader):
                 avocado_suite.append((GLibTest, {'name': test_name,
                                                  'executable': test_name}))
 
-        if which_tests is loader.ALL and not avocado_suite:
+        if which_tests == loader.WhichTests.ALL and not avocado_suite:
             return [(NotGLibTest,
                      {"name": "%s: No GLib-like tests found" % reference})]
         return avocado_suite
