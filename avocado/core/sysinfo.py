@@ -327,8 +327,8 @@ class LogWatcher(Collectible):
             self.inode = current_inode
             self.size = current_size
 
-            with open(self.path) as in_messages:
-                with gzip.GzipFile(dstpath, "w") as out_messages:
+            with open(self.path, "rb") as in_messages:
+                with gzip.GzipFile(dstpath, "wb") as out_messages:
                     in_messages.seek(bytes_to_skip)
                     while True:
                         # Read data in manageable chunks rather than all at once.
