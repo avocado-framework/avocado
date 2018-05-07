@@ -55,7 +55,7 @@ class TestRunnerQueue(unittest.TestCase):
                     'base_logdir': self.tmpdir}]
         msg = self._run_test(factory)
 
-        self.assertEqual(msg['whiteboard'], 'ZGVmYXVsdCB3\n')
+        self.assertEqual(msg['whiteboard'], 'TXkgbWVzc2FnZSBlbmNvZGVkIGluIGJhc2U2NA==\n')
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
