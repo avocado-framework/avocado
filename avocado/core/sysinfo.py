@@ -238,7 +238,7 @@ class JournalctlWatcher(Collectible):
         try:
             cmd = 'journalctl --quiet --lines 1 --output json'
             result = process.system_output(cmd, verbose=False)
-            last_record = json.loads(result)
+            last_record = json.loads(astring.to_text(result, "utf-8"))
             return last_record['__CURSOR']
         except Exception as e:
             log.debug("Journalctl collection failed: %s", e)
@@ -249,7 +249,7 @@ class JournalctlWatcher(Collectible):
                 cmd = 'journalctl --quiet --after-cursor %s' % self.cursor
                 log_diff = process.system_output(cmd, verbose=False)
                 dstpath = os.path.join(logdir, self.logf)
-                with gzip.GzipFile(dstpath, "w") as out_journalctl:
+                with gzip.GzipFile(dstpath, "wb") as out_journalctl:
                     out_journalctl.write(log_diff)
             except IOError:
                 log.debug("Not logging journalctl (lack of permissions): %s",
