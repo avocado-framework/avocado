@@ -103,9 +103,9 @@ def loaded_module_info(module_name):
              dependent on, list of dictionary of param name and type
     :rtype: dict
     """
-    l_raw = process.system_output('/sbin/lsmod')
+    l_raw = process.system_output('/sbin/lsmod').decode('utf-8')
     modinfo_dic = parse_lsmod_for_module(l_raw, module_name)
-    output = process.system_output("/sbin/modinfo %s" % module_name)
+    output = process.system_output("/sbin/modinfo %s" % module_name).decode('utf-8')
     if output:
         param_list = []
         for line in output.splitlines():
