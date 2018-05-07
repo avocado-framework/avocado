@@ -408,7 +408,7 @@ class YumBackend(RpmBackend):
         y_cmd = executable + ' --version | head -1'
         cmd_result = process.run(y_cmd, ignore_status=True,
                                  verbose=False, shell=True)
-        out = cmd_result.stdout.strip()
+        out = cmd_result.stdout_text.strip()
         try:
             ver = re.findall(r'\d*.\d*.\d*', out)[0]
         except IndexError:
