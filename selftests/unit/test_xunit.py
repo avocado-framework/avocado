@@ -52,9 +52,6 @@ class xUnitSucceedTest(unittest.TestCase):
         self.test1 = SimpleTest(job=self.job, base_logdir=self.tmpdir)
         self.test1._Test__status = 'PASS'
         self.test1.time_elapsed = 1.23
-        junit_xsd = os.path.join(os.path.dirname(__file__),
-                                 os.path.pardir, ".data", 'junit-4.xsd')
-        self.junit = os.path.abspath(junit_xsd)
 
     def tearDown(self):
         errs = []
@@ -87,12 +84,16 @@ class xUnitSucceedTest(unittest.TestCase):
         els = dom.getElementsByTagName('testcase')
         self.assertEqual(len(els), 1)
 
-        with open(self.junit, 'r') as f:
-            xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
-        # pylint: disable=I1101
-        self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
-                        "Failed to validate against %s, content:\n%s" %
-                        (self.junit, xml))
+        for junit_xsd in ('jenkins-junit.xsd', 'junit-apache.xsd'):
+            junit_xsd = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                     os.path.pardir, ".data",
+                                                     junit_xsd))
+            with open(junit_xsd, 'r') as f:
+                xmlschema = etree.XMLSchema(etree.parse(f))   # pylint: disable=I1101
+            # pylint: disable=I1101
+            self.assertTrue(xmlschema.validate(etree.parse(BytesIO(xml))),
+                            "Failed to validate against %s, content:\n%s\nerror log:\n%s" %
+                            (junit_xsd, xml, xmlschema.error_log))
 
     def test_max_test_log_size(self):
         log = tempfile.NamedTemporaryFile(dir=self.tmpdir, delete=False)
