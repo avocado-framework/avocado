@@ -274,8 +274,8 @@ class CmdResult(object):
     :param pid: ID of the process
     :type pid: int
     :param encoding: the encoding to use for the text version
-                     of stdout and stderr, with the default being
-                     Python's own (:func:`sys.getdefaultencoding`).
+                     of stdout and stderr, by default
+                     :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
     """
 
@@ -292,7 +292,7 @@ class CmdResult(object):
         self.interrupted = False
         self.pid = pid
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         self.encoding = encoding
 
     @property
@@ -473,14 +473,13 @@ class SubProcess(object):
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
         :param encoding: the encoding to use for the text representation
-                         of the command result stdout and stderr, with the
-                         default being Python's own, that is,
-                         (:func:`sys.getdefaultencoding`).
+                         of the command result stdout and stderr, by default
+                         :mod:`avocado.utils.astring.ENCODING`
         :type encoding: str
         :raises: ValueError if incorrect values are given to parameters
         """
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         if sudo:
             self.cmd = self._prepend_sudo(cmd, shell)
         else:
@@ -862,9 +861,13 @@ class GDBSubProcess(object):
         :param ignore_bg_processes: This param will be ignored in this
                      implementation, since the GDB wrapping code does not have
                      support to run commands in that way.
+        :param encoding: the encoding to use for the text representation
+                         of the command result stdout and stderr, by default
+                         :mod:`avocado.utils.astring.ENCODING`
+        :type encoding: str
         """
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         self.cmd = cmd
 
         self.args = cmd_split(cmd)
@@ -1254,16 +1257,15 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
                  prompted. If that's not the case, the command will
                  straight out fail.
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     if encoding is None:
-        encoding = sys.getdefaultencoding()
+        encoding = astring.ENCODING
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
@@ -1324,9 +1326,8 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                  prompted. If that's not the case, the command will
                  straight out fail.
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: Exit code.
@@ -1392,9 +1393,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :param strip_trail_nl: Whether to strip the trailing newline
     :type strip_trail_nl: bool
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: Command output.
