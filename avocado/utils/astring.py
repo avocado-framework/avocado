@@ -26,6 +26,7 @@ And not notice until their code starts failing.
 """
 
 import itertools
+import locale
 import re
 import sys
 import string
@@ -35,6 +36,9 @@ from six.moves import zip
 from six.moves import xrange as range
 
 
+#: Preferred encoding based on system locale (could be used as default)
+#: but in some cases might be wrong. Use it wisely!
+ENCODING = locale.getpreferredencoding()
 #: String containing all fs-unfriendly chars (Windows-fat/Linux-ext3)
 FS_UNSAFE_CHARS = '<>:"/\\|?*;'
 
@@ -313,13 +317,13 @@ def is_text(data):
     return isinstance(data, str)
 
 
-def to_text(data, encoding=None):
+def to_text(data, encoding=ENCODING):
     """
-    Convert data to text
+    Convert anything to text decoded text
 
-    Action is only taken if data is "bytes", in which case it's
-    decoded into the given encoding and should produce a type that
-    passes the is_text() check.
+    When the data is bytes, it's decoded. When it's not of string types
+    it's re-formatted into text and returned. Otherwise (it's string)
+    it's returned unchanged.
 
     :param data: data to be transformed into text
     :type data: either bytes or other data that will be returned
@@ -327,7 +331,11 @@ def to_text(data, encoding=None):
     """
     if is_bytes(data):
         if encoding is None:
-            return data.decode()
+            encoding = ENCODING
+        return data.decode(encoding)
+    elif not isinstance(data, string_types):
+        if sys.version_info[0] < 3:
+            return unicode(data)    # pylint: disable=E0602
         else:
-            return data.decode(encoding)
+            return str(data)
     return data
