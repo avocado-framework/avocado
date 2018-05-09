@@ -29,6 +29,7 @@ import pystache
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI, Result
+from avocado.utils import astring
 
 
 class ReportModel(object):
@@ -156,7 +157,7 @@ class ReportModel(object):
             fail_reason = tst.get('fail_reason')
             if fail_reason is None:
                 fail_reason = '<unknown>'
-            fail_reason = str(fail_reason)
+            fail_reason = astring.to_text(fail_reason)
             if len(fail_reason) > exhibition_limit:
                 fail_reason = ('<a data-container="body" '
                                'data-toggle="popover" '

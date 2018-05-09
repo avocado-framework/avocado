@@ -997,20 +997,20 @@ class Test(unittest.TestCase, TestData):
         except exceptions.TestBaseException as detail:
             self.__status = detail.status
             self.__fail_class = detail.__class__.__name__
-            self.__fail_reason = str(detail)
+            self.__fail_reason = astring.to_text(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except AssertionError as detail:
             self.__status = 'FAIL'
             self.__fail_class = detail.__class__.__name__
-            self.__fail_reason = str(detail)
+            self.__fail_reason = astring.to_text(detail)
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
         except Exception as detail:
             self.__status = 'ERROR'
             tb_info = stacktrace.tb_info(sys.exc_info())
             self.__traceback = stacktrace.prepare_exc_info(sys.exc_info())
             try:
-                self.__fail_class = str(detail.__class__.__name__)
-                self.__fail_reason = str(detail)
+                self.__fail_class = astring.to_text(detail.__class__.__name__)
+                self.__fail_reason = astring.to_text(detail)
             except TypeError:
                 self.__fail_class = "Exception"
                 self.__fail_reason = ("Unable to get exception, check the "

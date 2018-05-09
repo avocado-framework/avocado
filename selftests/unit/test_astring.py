@@ -116,12 +116,16 @@ class AstringTest(unittest.TestCase):
         self.assertTrue(astring.is_text(astring.to_text('', 'ascii')))
         self.assertTrue(astring.is_text(astring.to_text(u'', 'ascii')))
 
-    def test_to_text_decode_utf_8(self):
+    def test_to_text(self):
         text_1 = astring.to_text(b'\xc3\xa1', 'utf-8')
         text_2 = astring.to_text(u'\u00e1', 'utf-8')
         self.assertTrue(astring.is_text(text_1))
-        self.assertTrue(astring.is_text(text_1))
         self.assertEqual(text_1, text_2)
+        self.assertEqual(astring.to_text(Exception(u'\u00e1')),
+                         u"\xe1")
+        # For tuple, dict and others astring.to_text is equivalent of str()
+        # because on py3 it's unicode and on py2 it uses __repr__ (is encoded)
+        self.assertEqual(astring.to_text({u'\xe1': 1}), str({u'\xe1': 1}))
 
 
 if __name__ == '__main__':
