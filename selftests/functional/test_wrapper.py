@@ -52,7 +52,7 @@ class WrapperTest(unittest.TestCase):
                      "C compiler is required by the underlying datadir.py test")
     def test_global_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off --wrapper %s '
+        cmd_line = ('%s --show all run --job-results-dir %s --sysinfo=off --wrapper %s '
                     'examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
@@ -63,20 +63,20 @@ class WrapperTest(unittest.TestCase):
         self.assertTrue(os.path.exists(self.tmpfile),
                         "Wrapper did not touch the tmp file %s\nStdout: "
                         "%s\nCmdline: %s" %
-                        (self.tmpfile, result.stdout, cmd_line))
+                        (self.tmpfile, result.stdout + result.stderr, cmd_line))
 
     @unittest.skipIf(missing_binary('cc'),
                      "C compiler is required by the underlying datadir.py test")
     def test_process_wrapper(self):
         os.chdir(basedir)
-        cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
+        cmd_line = ('%s --show all run --job-results-dir %s --sysinfo=off '
                     '--wrapper %s:*/datadir examples/tests/datadir.py'
                     % (AVOCADO, self.tmpdir, self.script.path))
         result = process.run(cmd_line, ignore_status=True)
         expected_rc = exit_codes.AVOCADO_ALL_OK
         self.assertEqual(result.exit_status, expected_rc,
                          "Avocado did not return rc %d:\n%s" %
-                         (expected_rc, result))
+                         (expected_rc, result.stdout + result.stderr))
         self.assertTrue(os.path.exists(self.tmpfile),
                         "Wrapper did not touch the tmp file %s\nStdout: "
                         "%s\nStdout: %s" %
