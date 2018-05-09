@@ -842,25 +842,12 @@ class GDBSubProcess(object):
 
         :param cmd: Command line to run.
         :type cmd: str
-        :param verbose: Whether to log the command run and stdout/stderr.
-                        Currently unused and provided for compatibility only.
-        :type verbose: bool
-        :param allow_output_check: Whether to log the command stream outputs
-                                   (stdout and stderr) in the test stream
-                                   files. Valid values: 'stdout', for
-                                   allowing only standard output, 'stderr',
-                                   to allow only standard error, 'all',
-                                   to allow both standard output and error
-                                   (default), and 'none', to allow
-                                   none to be recorded. Currently unused and
-                                   provided for compatibility only.
-        :type allow_output_check: str
-        :param sudo: This param will be ignored in this implementation,
-                     since the GDB wrapping code does not have support to run
-                     commands under sudo just yet.
-        :param ignore_bg_processes: This param will be ignored in this
-                     implementation, since the GDB wrapping code does not have
-                     support to run commands in that way.
+        :params verbose: Currently ignored in GDBSubProcess
+        :param allow_output_check: Currently ignored in GDBSubProcess
+        :param shell: Currently ignored in GDBSubProcess
+        :param env: Currently ignored in GDBSubProcess
+        :param sudo: Currently ignored in GDBSubProcess
+        :param ignore_bg_processes: Currently ignored in GDBSubProcess
         :param encoding: the encoding to use for the text representation
                          of the command result stdout and stderr, by default
                          :mod:`avocado.utils.astring.ENCODING`
