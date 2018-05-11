@@ -45,25 +45,33 @@ class TestGDBProcess(unittest.TestCase):
         gdb.GDB_RUN_BINARY_NAMES_EXPR = self.current_runtime_expr
 
     def test_should_run_inside_gdb(self):
-        gdb.GDB_RUN_BINARY_NAMES_EXPR = ['foo']
+        gdb.GDB_RUN_BINARY_NAMES_EXPR = [b'foo']
+        self.assertFalse(process.should_run_inside_gdb(''))
+        self.assertFalse(process.should_run_inside_gdb('   '))
         self.assertTrue(process.should_run_inside_gdb('foo'))
+        self.assertTrue(process.should_run_inside_gdb('  foo  '))
         self.assertTrue(process.should_run_inside_gdb('/usr/bin/foo'))
         self.assertFalse(process.should_run_inside_gdb('/usr/bin/fooz'))
 
-        gdb.GDB_RUN_BINARY_NAMES_EXPR.append('foo:main')
+        gdb.GDB_RUN_BINARY_NAMES_EXPR.append(b'foo:main')
         self.assertTrue(process.should_run_inside_gdb('foo'))
         self.assertFalse(process.should_run_inside_gdb('bar'))
 
-        gdb.GDB_RUN_BINARY_NAMES_EXPR.append('bar:main.c:5')
+        gdb.GDB_RUN_BINARY_NAMES_EXPR.append(b'bar:main.c:5')
         self.assertTrue(process.should_run_inside_gdb('bar'))
+        self.assertTrue(process.should_run_inside_gdb(b'bar'))
         self.assertFalse(process.should_run_inside_gdb('baz'))
+        self.assertFalse(process.should_run_inside_gdb(b'baz'))
         self.assertTrue(process.should_run_inside_gdb('bar 1 2 3'))
+        self.assertTrue(process.should_run_inside_gdb(b'bar 1 2 3'))
         self.assertTrue(process.should_run_inside_gdb('/usr/bin/bar 1 2 3'))
+        self.assertTrue(process.should_run_inside_gdb(b'/usr/bin/bar 1 2 3'))
 
     def test_should_run_inside_gdb_malformed_command(self):
-        gdb.GDB_RUN_BINARY_NAMES_EXPR = ['/bin/virsh']
-        cmd = """/bin/virsh node-memory-tune --shm-sleep-millisecs ~!@#$%^*()-=[]{}|_+":;'`,>?. """
+        gdb.GDB_RUN_BINARY_NAMES_EXPR = [b'/bin/vir\xc5\xa1']
+        cmd = b"""/bin/vir\xc5\xa1 node-memory-tune --shm-sleep-millisecs ~!@#$%^*()-=[]{}|_+":;'`,>?. """
         self.assertTrue(process.should_run_inside_gdb(cmd))
+        self.assertFalse(process.should_run_inside_gdb("/bin/virsh"))
         self.assertFalse(process.should_run_inside_gdb("foo bar baz"))
         self.assertFalse(process.should_run_inside_gdb("foo ' "))
 
@@ -72,7 +80,7 @@ class TestGDBProcess(unittest.TestCase):
         self.assertIs(process.get_sub_process_klass(FICTIONAL_CMD),
                       process.SubProcess)
 
-        gdb.GDB_RUN_BINARY_NAMES_EXPR.append('/bin/false')
+        gdb.GDB_RUN_BINARY_NAMES_EXPR.append(b'/bin/false')
         self.assertIs(process.get_sub_process_klass('/bin/false'),
                       process.GDBSubProcess)
         self.assertIs(process.get_sub_process_klass('false'),
@@ -218,39 +226,67 @@ class TestProcessRun(unittest.TestCase):
         p = process.run(cmd='ls -l', sudo=True, shell=True, ignore_status=True)
         self.assertEqual(p.command, expected_command)
 
+    def run_and_check_echo_output(self, text, encoded_text, lc_all, encoding):
+        """
+        :param test: Decoded (unicode) text to be "echoed"
+        :param encoded_text: Expected output text
+        :param encoding: Encoding to be passed to "process" while running
+                         the echo command.
+        """
+        cmd = (ECHO_CMD + " -n " + text).encode(encoding or astring.ENCODING)
+        if lc_all:
+            env = {'LC_ALL': lc_all}
+        else:
+            env = {}
+        result = process.run(cmd, encoding=encoding, env=env)
+        self.assertEqual(result.stdout, encoded_text)
+        self.assertEqual(result.stdout_text, text)
+
     @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
-    def test_run_unicode_output(self):
-        # Using encoded string as shlex does not support decoding
-        # but the behavior is exactly the same as if shell binary
-        # produced unicode
-        text = u"Avok\xe1do"
+    @unittest.skipUnless(astring.ENCODING.upper() == 'UTF-8', "Default "
+                         "encoding is not UTF-8")
+    def test_run_unicode_default(self):
         # Even though code point used is "LATIN SMALL LETTER A WITH ACUTE"
         # (http://unicode.scarfboy.com/?s=u%2B00e1) when encoded to proper
         # utf-8, it becomes two bytes because it is >= 0x80
         # See https://en.wikipedia.org/wiki/UTF-8
-        encoded_text = b'Avok\xc3\xa1do'
-        self.assertEqual(text.encode('utf-8'), encoded_text)
-        self.assertEqual(encoded_text.decode('utf-8'), text)
-        cmd = u"%s -n %s" % (ECHO_CMD, text)
-        result = process.run(cmd, encoding='utf-8')
-        self.assertEqual(result.stdout, encoded_text)
-        self.assertEqual(result.stdout_text, text)
+        self.run_and_check_echo_output(u"Avok\xe1do", b'Avok\xc3\xa1do',
+                                       None, None)
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    @unittest.skipUnless(os.path.exists('/usr/lib/locale/C.utf8'), "C.utf8 "
+                         "locale doesn't seems to be available.")
+    def test_run_unicode(self):
+        # Even though code point used is "LATIN SMALL LETTER A WITH ACUTE"
+        # (http://unicode.scarfboy.com/?s=u%2B00e1) when encoded to proper
+        # utf-8, it becomes two bytes because it is >= 0x80
+        # See https://en.wikipedia.org/wiki/UTF-8
+        self.run_and_check_echo_output(u"Avok\xe1do", b'Avok\xc3\xa1do',
+                                       'C.utf8', 'UTF-8')
+
+    @unittest.skipUnless(ECHO_CMD, "Echo command not available in system")
+    @unittest.skipUnless(os.path.exists('/usr/lib/locale/en_US.iso885915'),
+                         "en_US.iso885915 locale doesn't seem to be "
+                         "available")
+    def test_run_en_iso885915(self):
+        self.run_and_check_echo_output(u"Avok\xe1do", b'Avok\xe1do',
+                                       'en_US.iso885915', "ISO-8859-15")
 
 
 class MiscProcessTests(unittest.TestCase):
 
     def test_binary_from_shell(self):
-        self.assertEqual("binary", process.binary_from_shell_cmd("binary"))
+        self.assertEqual(b"binary", process.binary_from_shell_cmd("binary"))
         res = process.binary_from_shell_cmd("MY_VAR=foo myV4r=123 "
                                             "quote='a b c' QUOTE=\"1 2 && b\" "
                                             "QuOtE=\"1 2\"foo' 3 4' first_bin "
                                             "second_bin VAR=xyz")
-        self.assertEqual("first_bin", res)
+        self.assertEqual(b"first_bin", res)
         res = process.binary_from_shell_cmd("VAR=VALUE 1st_binary var=value "
                                             "second_binary")
-        self.assertEqual("1st_binary", res)
+        self.assertEqual(b"1st_binary", res)
         res = process.binary_from_shell_cmd("FOO=bar ./bin var=value")
-        self.assertEqual("./bin", res)
+        self.assertEqual(b"./bin", res)
 
     def test_cmd_split(self):
         plain_str = ''
@@ -274,9 +310,13 @@ class MiscProcessTests(unittest.TestCase):
         self.assertEqual(process.cmd_split(unicode_str), [])
         self.assertEqual(process.cmd_split(empty_bytes), [])
         unicode_command = u"avok\xe1do_test_runner arguments"
-        self.assertEqual(process.cmd_split(unicode_command),
-                         [u"avok\xe1do_test_runner",
-                          u"arguments"])
+        self.assertEqual(process.cmd_split(unicode_command, encoding='UTF-8'),
+                         [b"avok\xc3\xa1do_test_runner",
+                          b"arguments"])
+        self.assertEqual(process.cmd_split(unicode_command,
+                         encoding='ISO-8859-15'),
+                         [b"avok\xe1do_test_runner",
+                          b"arguments"])
 
 
 class CmdResultTests(unittest.TestCase):

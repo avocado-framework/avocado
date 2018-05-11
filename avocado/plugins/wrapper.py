@@ -18,7 +18,7 @@ import sys
 from avocado.core import exit_codes
 from avocado.core.output import LOG_UI
 from avocado.core.plugin_interfaces import CLI
-from avocado.utils import process
+from avocado.utils import astring, process
 
 
 class Wrapper(CLI):
@@ -58,15 +58,16 @@ class Wrapper(CLI):
             for wrap in args.wrapper:
                 if ':' not in wrap:
                     if process.WRAP_PROCESS is None:
-                        script = os.path.abspath(wrap)
-                        process.WRAP_PROCESS = os.path.abspath(script)
+                        script = os.path.abspath(wrap).encode(astring.ENCODING)
+                        process.WRAP_PROCESS = script
                     else:
                         LOG_UI.error("You can't have multiple global "
                                      "wrappers at once.")
                         sys.exit(exit_codes.AVOCADO_FAIL)
                 else:
                     script, cmd = wrap.split(':', 1)
-                    script = os.path.abspath(script)
+                    script = os.path.abspath(script).encode(astring.ENCODING)
+                    cmd = cmd.encode(astring.ENCODING)
                     process.WRAP_PROCESS_NAMES_EXPR.append((script, cmd))
                 if not os.path.exists(script):
                     LOG_UI.error("Wrapper '%s' not found!", script)
