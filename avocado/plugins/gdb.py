@@ -17,6 +17,7 @@
 from avocado.core import exceptions
 from avocado.core.plugin_interfaces import CLI
 from avocado.core.settings import settings
+from avocado.utils import astring
 from avocado.utils import gdb
 from avocado.utils import process
 from avocado.utils import path as utils_path
@@ -63,7 +64,8 @@ class GDB(CLI):
     def run(self, args):
         if 'gdb_run_bin' in args:
             for binary in args.gdb_run_bin:
-                gdb.GDB_RUN_BINARY_NAMES_EXPR.append(binary)
+                b_binary = binary.encode(astring.ENCODING)
+                gdb.GDB_RUN_BINARY_NAMES_EXPR.append(b_binary)
 
         if 'gdb_prerun_commands' in args:
             for commands in args.gdb_prerun_commands:
