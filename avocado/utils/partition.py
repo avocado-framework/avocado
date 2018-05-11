@@ -109,9 +109,9 @@ class Partition(object):
         """
         # list mounted file systems
         devices = [line.split()[0]
-                   for line in process.system_output('mount').splitlines()]
+                   for line in process.getoutput('mount').splitlines()]
         # list mounted swap devices
-        swaps = process.system_output('swapon -s').splitlines()
+        swaps = process.getoutput('swapon -s').splitlines()
         devices.extend([line.split()[0] for line in swaps
                         if line.startswith('/')])
         return devices
@@ -122,7 +122,7 @@ class Partition(object):
         Lists the mount points.
         """
         return [line.split()[2]
-                for line in process.system_output('mount').splitlines()]
+                for line in process.getoutput('mount').splitlines()]
 
     def get_mountpoint(self, filename=None):
         """
@@ -254,7 +254,7 @@ class Partition(object):
         # Try to kill all pids
         for pid in (line.split()[1] for line in out.splitlines()[1:]):
             try:
-                process.system("kill -9 %s" % pid, ignore_status=True,
+                process.system("kill -9 %d" % int(pid), ignore_status=True,
                                sudo=True)
             except OSError:
                 pass
