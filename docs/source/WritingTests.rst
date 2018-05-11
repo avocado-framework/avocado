@@ -918,6 +918,13 @@ unified diff was logged. The unified diffs are also present in the files
 	-Hello, Avocado!
 	+Hello, world!
 
+
+.. note:: Currently the `stdout`, `stderr` and `output` files are
+          stored in text mode.  Data that can not be decoded according
+          to current locale settings, will be replaced according to
+          https://docs.python.org/3/library/codecs.html#codecs.replace_errors.
+
+
 Test log, stdout and stderr in native Avocado modules
 =====================================================
 
