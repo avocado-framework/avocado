@@ -385,6 +385,24 @@ class FDDrainerTests(unittest.TestCase):
         os.close(write_fd)
         fd_drainer.flush()
 
+    def test_replace_incorrect_characters_in_log(self):
+        data = io.StringIO()
+        handler = logging.StreamHandler(data)
+        log = logging.getLogger("test_replace_incorrect_characters_in_log")
+        log.addHandler(handler)
+        log.setLevel(logging.DEBUG)
+        read_fd, write_fd = os.pipe()
+        result = process.CmdResult(encoding='ascii')
+        fd_drainer = process.FDDrainer(read_fd, result, name="test",
+                                       stream_logger=log, verbose=True)
+        fd_drainer.start()
+        os.write(write_fd, b"Avok\xc3\xa1do")
+        os.close(write_fd)
+        fd_drainer._thread.join(60)
+        self.assertFalse(fd_drainer._thread.is_alive())
+        # \n added by StreamLogger
+        self.assertEqual(data.getvalue(), u"Avok\ufffd\ufffddo\n")
+
 
 if __name__ == "__main__":
     unittest.main()

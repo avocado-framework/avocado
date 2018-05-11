@@ -918,6 +918,12 @@ unified diff was logged. The unified diffs are also present in the files
 	-Hello, Avocado!
 	+Hello, world!
 
+
+.. note:: Currently the `stdout` and `stderr` is being stored in `text` mode,
+          using `replace` in case of incorect characters (usually binary
+          data).
+
+
 Test log, stdout and stderr in native Avocado modules
 =====================================================
 
