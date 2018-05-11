@@ -387,7 +387,8 @@ class FDDrainer(object):
                 bfr += tmp
                 if tmp.endswith(b'\n'):
                     for line in bfr.splitlines():
-                        line = astring.to_text(line, self._result.encoding)
+                        line = astring.to_text(line, self._result.encoding,
+                                               'replace')
                         if self._logger is not None:
                             self._logger.debug(self._logger_prefix, line)
                         if self._stream_logger is not None:
