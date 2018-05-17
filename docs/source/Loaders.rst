@@ -114,60 +114,60 @@ expression.
 For instance, if you want to list all tests that are present in the
 ``gdbtest.py`` file, you can use the list command below::
 
-    $ avocado list /usr/share/avocado/tests/gdbtest.py
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_start_exit
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_generate_core
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_set_multiple_break
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_disconnect_raw
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_disconnect
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_remote_exec
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_stream_messages
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_connect_multiple_clients
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_server_exit
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_multiple_servers
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_args
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_exit_status
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_server_stderr
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_server_stdout
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_stdout
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_remote
+    $ avocado list /usr/share/doc/avocado/tests/gdbtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_start_exit
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_existing_commands
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_generate_core
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_set_multiple_break
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_disconnect_raw
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_disconnect
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_remote_exec
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_stream_messages
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_connect_multiple_clients
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_server_exit
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_multiple_servers
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive_args
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_exit_status
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_server_stderr
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_server_stdout
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive_stdout
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_remote
 
 To filter the results, listing only the tests that have
 ``test_interactive`` in their test method names, you can execute::
 
-    $ avocado list /usr/share/avocado/tests/gdbtest.py:test_interactive
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_args
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive_stdout
+    $ avocado list /usr/share/doc/avocado/tests/gdbtest.py:test_interactive
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive_args
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive_stdout
 
 As the string after the ``:`` is a regular expression, three tests were
 filtered in. You can manipulate the regular expression to have only the
 test with that exact name::
 
-    $ avocado list /usr/share/avocado/tests/gdbtest.py:test_interactive$
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_interactive
+    $ avocado list /usr/share/doc/avocado/tests/gdbtest.py:test_interactive$
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_interactive
 
 The regular expression enables you to have more complex filters.
 Example::
 
-    $ avocado list /usr/share/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
+    $ avocado list /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw
 
 Once the test reference is providing you the expected outcome, you can
 replace the ``list`` subcommand with the ``run`` subcommand to execute your
 tests::
 
-    $ avocado run /usr/share/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw
+    $ avocado run /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw
     JOB ID     : 333912fb02698ed5339a400b832795a80757b8af
     JOB LOG    : $HOME/avocado/job-results/job-2017-06-14T14.54-333912f/job.log
-     (1/2) /usr/share/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw: PASS (0.59 s)
-     (2/2) /usr/share/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw: PASS (0.42 s)
+     (1/2) /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_existing_commands_raw: PASS (0.59 s)
+     (2/2) /usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_load_set_breakpoint_run_exit_raw: PASS (0.42 s)
     RESULTS    : PASS 2 | ERROR 0 | FAIL 0 | SKIP 0 | WARN 0 | INTERRUPT 0 | CANCEL 0
     JOB TIME   : 1.15 s
     JOB HTML   : $HOME/avocado/job-results/job-2017-06-14T14.54-333912f/html/results.html
@@ -176,7 +176,7 @@ tests::
    to individually enclose your Test References in quotes to avoid bash
    of corrupting them. In that case, the command from the example above
    would be:
-   ``avocado run "/usr/share/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw"``
+   ``avocado run "/usr/share/doc/avocado/tests/gdbtest.py:GdbTest.test_[le].*raw"``
 
 External Loader
 ---------------

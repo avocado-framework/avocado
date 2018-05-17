@@ -254,24 +254,24 @@ If no arguments provided, Avocado lists "default" tests per each plugin.
 The output might look like this::
 
     $ avocado list
-    INSTRUMENTED /usr/share/avocado/tests/abort.py
-    INSTRUMENTED /usr/share/avocado/tests/datadir.py
-    INSTRUMENTED /usr/share/avocado/tests/doublefail.py
-    INSTRUMENTED /usr/share/avocado/tests/doublefree.py
-    INSTRUMENTED /usr/share/avocado/tests/errortest.py
-    INSTRUMENTED /usr/share/avocado/tests/failtest.py
-    INSTRUMENTED /usr/share/avocado/tests/fiotest.py
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py
-    INSTRUMENTED /usr/share/avocado/tests/gendata.py
-    INSTRUMENTED /usr/share/avocado/tests/linuxbuild.py
-    INSTRUMENTED /usr/share/avocado/tests/multiplextest.py
-    INSTRUMENTED /usr/share/avocado/tests/passtest.py
-    INSTRUMENTED /usr/share/avocado/tests/sleeptenmin.py
-    INSTRUMENTED /usr/share/avocado/tests/sleeptest.py
-    INSTRUMENTED /usr/share/avocado/tests/synctest.py
-    INSTRUMENTED /usr/share/avocado/tests/timeouttest.py
-    INSTRUMENTED /usr/share/avocado/tests/warntest.py
-    INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/doublefree.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/errortest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/failtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/fiotest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/gendata.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/linuxbuild.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/multiplextest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/passtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptenmin.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/synctest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/timeouttest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/warntest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/whiteboard.py
     ...
 
 These Python files are considered by Avocado to contain ``INSTRUMENTED``
@@ -280,11 +280,11 @@ tests.
 Let's now list only the executable shell scripts::
 
     $ avocado list | grep ^SIMPLE
-    SIMPLE       /usr/share/avocado/tests/env_variables.sh
-    SIMPLE       /usr/share/avocado/tests/output_check.sh
-    SIMPLE       /usr/share/avocado/tests/simplewarning.sh
-    SIMPLE       /usr/share/avocado/tests/failtest.sh
-    SIMPLE       /usr/share/avocado/tests/passtest.sh
+    SIMPLE       /usr/share/doc/avocado/tests/env_variables.sh
+    SIMPLE       /usr/share/doc/avocado/tests/output_check.sh
+    SIMPLE       /usr/share/doc/avocado/tests/simplewarning.sh
+    SIMPLE       /usr/share/doc/avocado/tests/failtest.sh
+    SIMPLE       /usr/share/doc/avocado/tests/passtest.sh
 
 Here, as mentioned before, ``SIMPLE`` means that those files are executables
 treated as simple tests. You can also give the ``--verbose`` or ``-V`` flag to

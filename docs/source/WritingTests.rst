@@ -1029,7 +1029,7 @@ the test parameters, as shown below.
 	2016-11-02 11:13:04,411 stacktrace       L0038 ERROR| 
 	2016-11-02 11:13:04,412 stacktrace       L0041 ERROR| Reproduced traceback from: $HOME/src/avocado/avocado/core/test.py:454
 	2016-11-02 11:13:04,412 stacktrace       L0044 ERROR| Traceback (most recent call last):
-	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|   File "/usr/share/avocado/tests/sleeptest.py", line 23, in test
+	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|   File "/usr/share/doc/avocado/tests/sleeptest.py", line 23, in test
 	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|     time.sleep(sleep_length)
 	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|   File "$HOME/src/avocado/avocado/core/runner.py", line 293, in sigterm_handler
 	2016-11-02 11:13:04,413 stacktrace       L0044 ERROR|     raise SystemExit("Test interrupted by SIGTERM")
@@ -1324,7 +1324,7 @@ from ``avocado.Test``.
 
 Example:
 
-File `/usr/share/avocado/tests/test_base_class.py`::
+File `/usr/share/doc/avocado/tests/test_base_class.py`::
 
     from avocado import Test
 
@@ -1335,7 +1335,7 @@ File `/usr/share/avocado/tests/test_base_class.py`::
             pass
 
 
-File `/usr/share/avocado/tests/test_first_child.py`::
+File `/usr/share/doc/avocado/tests/test_first_child.py`::
 
     from test_base_class import BaseClass
 
@@ -1346,7 +1346,7 @@ File `/usr/share/avocado/tests/test_first_child.py`::
             pass
 
 
-File `/usr/share/avocado/tests/test_second_child.py`::
+File `/usr/share/doc/avocado/tests/test_second_child.py`::
 
     from test_first_child import FirstChild
 
