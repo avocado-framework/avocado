@@ -216,6 +216,25 @@ def numa_nodes():
     return (sorted(nodes))
 
 
+def numa_nodes_with_memory():
+    """
+    Get a list of NUMA nodes present with memory on the system.
+
+    :return: List with nodes which has memory.
+    """
+    nodes = []
+    mem_path = '/sys/devices/system/node/has_normal_memory'
+    if not os.path.exists(mem_path):
+        mem_path = '/sys/devices/system/node/has_memory'
+    node_list = str(genio.read_file(mem_path).rstrip('\n')).split(',')
+    for nodeset in node_list:
+        if '-' in nodeset:
+            nodes.extend([int(node) for node in nodeset.split('-')])
+        else:
+            nodes.append(int(nodeset))
+    return nodes
+
+
 def node_size():
     """
     Return node size.
