@@ -245,10 +245,14 @@ popd
 %{__mv} %{buildroot}%{python2_sitelib}/avocado/etc %{buildroot}
 mv %{buildroot}%{_bindir}/avocado %{buildroot}%{_bindir}/avocado-%{python2_version}
 ln -s avocado-%{python2_version} %{buildroot}%{_bindir}/avocado-2
+mv %{buildroot}%{_bindir}/avocado-rest-client %{buildroot}%{_bindir}/avocado-rest-client-%{python2_version}
+ln -s avocado-rest-client-%{python2_version} %{buildroot}%{_bindir}/avocado-rest-client-2
 %if %{with_python3}
 %py3_install
 mv %{buildroot}%{_bindir}/avocado %{buildroot}%{_bindir}/avocado-%{python3_version}
 ln -s avocado-%{python3_version} %{buildroot}%{_bindir}/avocado-3
+mv %{buildroot}%{_bindir}/avocado-rest-client %{buildroot}%{_bindir}/avocado-rest-client-%{python3_version}
+ln -s avocado-rest-client-%{python3_version} %{buildroot}%{_bindir}/avocado-rest-client-3
 # configuration is held at /etc/avocado only and part of the
 # python-avocado-common package
 %{__rm} -rf %{buildroot}%{python3_sitelib}/avocado/etc
@@ -256,6 +260,7 @@ ln -s avocado-%{python3_version} %{buildroot}%{_bindir}/avocado-3
 %{__rm} -rf %{buildroot}%{python3_sitelib}/avocado/libexec
 %endif
 ln -s avocado-%{python2_version} %{buildroot}%{_bindir}/avocado
+ln -s avocado-rest-client-%{python2_version} %{buildroot}%{_bindir}/avocado-rest-client
 pushd optional_plugins/html
 %py2_install
 %if %{with_python3}
@@ -411,8 +416,8 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %{_bindir}/avocado-2
 %{_bindir}/avocado-%{python2_version}
 %{_bindir}/avocado-rest-client
-%{_mandir}/man1/avocado.1.gz
-%{_mandir}/man1/avocado-rest-client.1.gz
+%{_bindir}/avocado-rest-client-2
+%{_bindir}/avocado-rest-client-%{python2_version}
 %exclude %{python2_sitelib}/avocado_result_html*
 %exclude %{python2_sitelib}/avocado_runner_remote*
 %exclude %{python2_sitelib}/avocado_runner_vm*
@@ -444,6 +449,8 @@ LANG=en_US.UTF-8 AVOCADO_CHECK_LEVEL=0 UNITTEST_AVOCADO_CMD=$HOME/.local/bin/avo
 %doc README.rst LICENSE
 %{_bindir}/avocado-3
 %{_bindir}/avocado-%{python3_version}
+%{_bindir}/avocado-rest-client-3
+%{_bindir}/avocado-rest-client-%{python3_version}
 %{python3_sitelib}/avocado*
 %exclude %{python3_sitelib}/avocado_result_html*
 %exclude %{python3_sitelib}/avocado_loader_yaml*
@@ -469,9 +476,13 @@ Summary: Avocado common files
 Common files (such as configuration) for the Avocado Testing Framework.
 
 %files common
+%{_mandir}/man1/avocado.1.gz
+%{_mandir}/man1/avocado-rest-client.1.gz
 %dir %{_sysconfdir}/avocado
 %dir %{_sysconfdir}/avocado/conf.d
 %dir %{_sysconfdir}/avocado/sysinfo
+%dir %{_sysconfdir}/avocado/scripts
+%dir %{_sysconfdir}/avocado/scripts/job
 %dir %{_sysconfdir}/avocado/scripts/job/pre.d
 %dir %{_sysconfdir}/avocado/scripts/job/post.d
 %dir %{_sharedstatedir}/avocado
@@ -746,6 +757,7 @@ Some of them are used as functional tests of the framework, others serve as
 examples of how to write tests on your own.
 
 %files examples
+%dir %{_datadir}/avocado
 %{_datadir}/avocado/gdb-prerun-scripts
 %{_datadir}/avocado/plugins
 %{_datadir}/avocado/tests
