@@ -128,6 +128,24 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
     return (new_matrix, improvements, regressions, total)
 
 
+def comma_separated_ranges_to_list(string):
+    """
+    Provides a list from comma sepatated ranges
+
+    :param string: string of comma seperated range
+    :retrun list: list of integer values in comma seperated range
+    """
+    values = []
+    for value in string.split(','):
+        if '-' in value:
+            start, end = value.split('-')
+            for val in range(int(start), int(end) + 1):
+                values.append(int(val))
+        else:
+            values.append(int(value))
+    return values
+
+
 class Borg:
 
     """
