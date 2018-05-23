@@ -151,8 +151,16 @@ class FedoraImageProvider(ImageProviderBase):
                  arch=os.uname()[4]):
         super(FedoraImageProvider, self).__init__(version, build, arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora/linux/releases/'
-        self.url_images = self.url_versions + '{version}/CloudImages/{arch}/images/'
+        self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
         self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
+
+    def get_image_url(self):
+        if int(self.version) >= 28:
+            cloud = 'Cloud'
+        else:
+            cloud = 'CloudImages'
+        self.url_images = self.url_images % cloud
+        return super(FedoraImageProvider, self).get_image_url()
 
 
 class FedoraSecondaryImageProvider(ImageProviderBase):
@@ -167,8 +175,16 @@ class FedoraSecondaryImageProvider(ImageProviderBase):
         super(FedoraSecondaryImageProvider, self).__init__(version, build,
                                                            arch)
         self.url_versions = 'https://dl.fedoraproject.org/pub/fedora-secondary/releases/'
-        self.url_images = self.url_versions + '{version}/CloudImages/{arch}/images/'
+        self.url_images = self.url_versions + '{version}/%s/{arch}/images/'
         self.image_pattern = 'Fedora-Cloud-Base-{version}-{build}.{arch}.qcow2$'
+
+    def get_image_url(self):
+        if int(self.version) >= 28:
+            cloud = 'Cloud'
+        else:
+            cloud = 'CloudImages'
+        self.url_images = self.url_images % cloud
+        return super(FedoraSecondaryImageProvider, self).get_image_url()
 
 
 class CentOSImageProvider(ImageProviderBase):
