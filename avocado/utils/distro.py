@@ -331,6 +331,51 @@ class FedoraProbe(RedHatProbe):
     CHECK_VERSION_REGEX = re.compile(r'Fedora release (\d{1,2}).*')
 
 
+class AmazonLinuxProbe(Probe):
+
+    """
+    Probe for Amazon Linux systems
+    """
+
+    CHECK_FILE = '/etc/os-release'
+    CHECK_FILE_CONTAINS = 'Amazon Linux'
+    CHECK_FILE_DISTRO_NAME = 'amzn'
+
+    def get_distro(self):
+        dst = Probe.get_distro(self)
+
+        if not dst.name == self.CHECK_FILE_DISTRO_NAME:
+            return dst
+
+        version_re = re.compile(r'VERSION="(.*)"')
+        version = None
+
+        with open(self.CHECK_FILE) as check_file:
+            for line in check_file:
+                match = version_re.match(line)
+                if match:
+                    version = match.group(1)
+                    break
+
+        if version:
+            version_parts = version.split()
+            if len(version_parts) == 1:
+                dst.version = 1
+                try:
+                    dst.release = re.findall(r'\d*\.\d*', version_parts[0])[0]
+                except IndexError:
+                    dst.release = UNKNOWN_DISTRO_RELEASE
+            else:
+                try:
+                    dst.version = int(version_parts[0].split('.')[0])
+                    dst.release = re.findall(r'\d*\.\d*', version_parts[1])[0]
+                except IndexError:
+                    dst.version = UNKNOWN_DISTRO_VERSION
+                    dst.release = UNKNOWN_DISTRO_RELEASE
+
+        return dst
+
+
 class DebianProbe(Probe):
 
     """
@@ -398,6 +443,7 @@ def register_probe(probe_class):
 register_probe(RedHatProbe)
 register_probe(CentosProbe)
 register_probe(FedoraProbe)
+register_probe(AmazonLinuxProbe)
 register_probe(DebianProbe)
 register_probe(SUSEProbe)
 register_probe(StdLibProbe)
