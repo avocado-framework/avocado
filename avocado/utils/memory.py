@@ -26,6 +26,7 @@ import logging
 from . import process
 from . import genio
 from . import wait
+from . import data_structures
 from .data_structures import DataSize
 
 
@@ -214,6 +215,22 @@ def numa_nodes():
     node_paths = glob.glob('/sys/devices/system/node/node*')
     nodes = [int(re.sub(r'.*node(\d+)', r'\1', x)) for x in node_paths]
     return (sorted(nodes))
+
+
+def numa_nodes_with_memory():
+    """
+    Get a list of NUMA nodes present with memory on the system.
+
+    :return: List with nodes which has memory.
+    """
+    mem_path = '/sys/devices/system/node/has_normal_memory'
+    if not os.path.exists(mem_path):
+        mem_path = '/sys/devices/system/node/has_memory'
+        if not os.path.exists(mem_path):
+            raise MemError("No NUMA nodes have memory")
+
+    node_list = str(genio.read_file(mem_path).rstrip('\n'))
+    return data_structures.comma_separated_ranges_to_list(node_list)
 
 
 def node_size():
