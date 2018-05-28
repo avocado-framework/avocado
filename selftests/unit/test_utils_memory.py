@@ -15,9 +15,9 @@ class UtilsMemoryTest(unittest.TestCase):
         expected_values = [[0], [1, 2, 3], [0, 1, 12, 13, 14]]
         for value, exp in zip(file_values, expected_values):
             with mock.patch('os.path.exists', return_value=True):
-                with mock.patch('avocado.utils.genio.read_file', return_value=value):
-                    self.assertEqual(
-                        memory.numa_nodes_with_memory(), exp)
+                with mock.patch('avocado.utils.genio.read_file',
+                                return_value=value):
+                    self.assertEqual(memory.numa_nodes_with_memory(), exp)
 
 
 if __name__ == '__main__':
