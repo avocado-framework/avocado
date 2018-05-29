@@ -26,6 +26,30 @@ except ImportError:
 from avocado.utils import service
 
 
+class TestRunCalls(unittest.TestCase):
+
+    def setUp(self):
+        self.run_param1 = ["foo_target", "set_target", mock.Mock()]
+        self.run_param2 = ["foo_service", "start", mock.Mock()]
+        self.run_param1[-1].return_value.stdout = "systemd"
+        self.run_param2[-1].return_value.stdout = "init"
+        self.results = ["systemctl isolate foo_target",
+                        "service foo_service start"]
+
+    def test_run_calls(self):
+
+        def run_call(run_params):
+            run_mock = run_params[-1]
+            serv = service.service_manager(run=run_mock)
+            self.assertTrue(run_mock.called)
+            getattr(serv, run_params[1])(run_params[0])
+
+        for test_params, test_results in zip([self.run_param1, self.run_param2],
+                                             self.results):
+            run_call(test_params)
+            self.assertEqual(test_params[-1].call_args[0][0], test_results)
+
+
 class TestSystemd(unittest.TestCase):
 
     def setUp(self):

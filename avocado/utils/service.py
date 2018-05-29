@@ -395,7 +395,7 @@ class _ServiceCommandGenerator(object):
             setattr(self, command, command_generator(command))
 
 
-def _get_name_of_init(run=process.run):
+def get_name_of_init(run=process.run):
     """
     Internal function to determine what executable is PID 1
 
@@ -421,25 +421,6 @@ def _get_name_of_init(run=process.run):
     else:
         output = run("readlink /proc/1/exe").stdout.strip()
         return os.path.basename(output)
-
-
-def get_name_of_init(run=process.run):
-    """
-    Determine what executable is PID 1, aka init by checking /proc/1/exe
-    This init detection will only run once and cache the return value.
-
-    :return: executable name for PID 1, aka init
-    :rtype:  str
-    """
-    # _init_name is explicitly undefined so that we get the NameError on
-    # first access
-    # pylint: disable=W0601
-    global _init_name
-    try:
-        return _init_name
-    except (NameError, AttributeError):
-        _init_name = _get_name_of_init(run)
-        return _init_name
 
 
 class _SpecificServiceManager(object):
@@ -709,44 +690,6 @@ _service_managers = {"init": _SysVInitServiceManager,
                      "systemd": _SystemdServiceManager}
 
 
-def _get_service_result_parser(run=process.run):
-    """
-    Get the ServiceResultParser using the auto-detect init command.
-
-    :return: ServiceResultParser fro the current init command.
-    :rtype: _ServiceResultParser
-    """
-    # pylint: disable=W0601
-    global _service_result_parser
-    try:
-        return _service_result_parser
-    except NameError:
-        result_parser = _result_parsers[get_name_of_init(run)]
-        _service_result_parser = _ServiceResultParser(result_parser)
-        return _service_result_parser
-
-
-def _get_service_command_generator(run=process.run):
-    """
-    Lazy initializer for ServiceCommandGenerator using the auto-detect init
-    command.
-
-    :return: ServiceCommandGenerator for the current init command.
-    :rtype: _ServiceCommandGenerator
-    """
-    # service_command_generator is explicitly undefined so that we get the
-    # NameError on first access
-    # pylint: disable=W0601
-    global _service_command_generator
-    try:
-        return _service_command_generator
-    except NameError:
-        command_generator = _command_generators[get_name_of_init(run)]
-        _service_command_generator = _ServiceCommandGenerator(
-            command_generator)
-        return _service_command_generator
-
-
 def service_manager(run=process.run):
     """
     Detect which init program is being used, init or systemd and return a
@@ -771,20 +714,16 @@ def service_manager(run=process.run):
     :return: SysVInitServiceManager or SystemdServiceManager
     :rtype: _GenericServiceManager
     """
-    internal_service_manager = _service_managers[get_name_of_init(run)]
-    # service_command_generator is explicitly undefined so that we get the
-    # NameError on first access
-    # pylint: disable=W0601
-    global _service_manager
-    try:
-        return _service_manager
-    except NameError:
-        internal_generator = _get_service_command_generator
-        internal_parser = _get_service_result_parser
-        _service_manager = internal_service_manager(internal_generator(run),
-                                                    internal_parser(run),
-                                                    run=run)
-        return _service_manager
+    init = get_name_of_init(run)
+    internal_service_manager = _service_managers[init]
+    internal_command_generator = _command_generators[init]
+    internal_result_parser = _result_parsers[init]
+
+    internal_generator = _ServiceCommandGenerator(internal_command_generator)
+    internal_parser = _ServiceResultParser(internal_result_parser)
+    _service_manager = internal_service_manager(internal_generator,
+                                                internal_parser, run=run)
+    return _service_manager
 
 
 ServiceManager = service_manager
@@ -844,10 +783,12 @@ def specific_service_manager(service_name, run=process.run):
     :return: SpecificServiceManager that has start/stop methods
     :rtype: _SpecificServiceManager
     """
+    init = get_name_of_init(run)
+    result_parser = _result_parsers[init]
     specific_generator = _auto_create_specific_service_command_generator
     return _SpecificServiceManager(service_name,
                                    specific_generator(run),
-                                   _get_service_result_parser(run), run)
+                                   _ServiceResultParser(result_parser), run)
 
 
 SpecificServiceManager = specific_service_manager
