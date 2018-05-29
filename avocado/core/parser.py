@@ -39,6 +39,9 @@ class ArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         LOG_UI.debug(self.format_help())
         LOG_UI.error("%s: error: %s", self.prog, message)
+        if "unrecognized arguments" in message:
+            LOG_UI.warning("Perhaps a missing plugin; run 'avocado"
+                           " plugins' to list the installed ones")
         self.exit(exit_codes.AVOCADO_FAIL)
 
     def _get_option_tuples(self, option_string):

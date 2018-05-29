@@ -42,6 +42,7 @@ class ArgumentParsingTest(unittest.TestCase):
         subcommand_error_msg = (b'avocado run: error: unrecognized arguments: '
                                 b'--whacky-argument')
         self.assertIn(subcommand_error_msg, result.stderr)
+        self.assertIn(b"run 'avocado plugins'", result.stderr)
 
 
 class ArgumentParsingErrorEarlyTest(unittest.TestCase):
