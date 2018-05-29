@@ -277,6 +277,11 @@ def sys_v_init_command_generator(command):
             target = convert_systemd_target_to_runlevel(target)
             return ["telinit", target]
         return set_target_command
+    # Do not need reset failed, mask and unmask in sys_v style system.
+    elif command in ["reset_failed", "mask", "unmask"]:
+        def true_command(service_name):
+            return ["true"]
+        return true_command
 
     def method(service_name):
         return [command_name, service_name, command]
@@ -316,6 +321,8 @@ def systemd_command_generator(command):
         def set_target_command(target):
             return [command_name, "isolate", target]
         return set_target_command
+    elif command == "reset_failed":
+        command = "reset-failed"
 
     def method(service_name):
         return [command_name, command, "%s.service" % service_name]
@@ -335,6 +342,9 @@ COMMANDS = (
     ("is_enabled", False),
     ("list", False),
     ("set_target", True),
+    ("reset_failed", True),
+    ("mask", True),
+    ("unmask", True)
 )
 
 
