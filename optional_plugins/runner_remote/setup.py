@@ -19,9 +19,9 @@ from setuptools import setup, find_packages
 
 
 if sys.version_info[0] == 3:
-    fabric = 'Fabric3'
+    fabric = 'Fabric3<2.0.0'
 else:
-    fabric = 'fabric'
+    fabric = 'fabric<2.0.0'
 
 
 setup(name='avocado-framework-plugin-runner-remote',
