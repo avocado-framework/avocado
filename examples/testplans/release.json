@@ -3,6 +3,9 @@
     "description": "Test Plan to be performed before a release is cut",
 
     "tests": [
+	{"name": "Get the latest available requirements",
+	 "description": "Update your systems requirements to the latest pip ones to avoid new deps breakages, run `$ pip install -r requirements.txt --upgrade` inside Avocado sources"},
+
 	{"name": "Avocado source is sound",
 	 "description": "On your development machine, on a freshen Avocado source to be released, run `$ make check-full`. Expected result: Make command should say OK."},
 
