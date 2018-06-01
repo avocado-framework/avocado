@@ -23,6 +23,8 @@ Get information from the current's machine CPU.
 import re
 import os
 import platform
+import glob
+import logging
 
 
 def _list_matches(lst, pattern):
@@ -195,3 +197,59 @@ def offline(cpu):
     if _get_cpu_status(cpu):
         return 1
     return 0
+
+
+def get_cpuidle_state():
+    """
+    Get current cpu idle values
+
+    :return: Dict of cpuidle states values for all cpus
+    :rtype: Dict of dicts
+    """
+    cpus_list = cpu_online_list()
+    states = range(len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
+    cpu_idlestate = {}
+    for cpu in cpus_list:
+        cpu_idlestate[cpu] = {}
+        for state_no in states:
+            state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+            try:
+                cpu_idlestate[cpu][state_no] = int(open(state_file).read())
+            except IOError as err:
+                logging.warning("Failed to read idle state on cpu %s "
+                                "for state %s:\n%s", cpu, state_no, err)
+    return cpu_idlestate
+
+
+def set_cpuidle_state(state_number="all", disable=1, setstate=None):
+    """
+    Set/Reset cpu idle states for all cpus
+
+    :param state_number: cpuidle state number, default: `all` all states
+    :param disable: whether to disable/enable given cpu idle state, default: 1
+    :param setstate: cpuidle state value, output of `get_cpuidle_state()`
+    """
+    cpus_list = cpu_online_list()
+    if not setstate:
+        states = []
+        if state_number == 'all':
+            states = range(0, len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
+        else:
+            states.append(state_number)
+        for cpu in cpus_list:
+            for state_no in states:
+                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                try:
+                    open(state_file, "w").write(str(disable))
+                except IOError as err:
+                    logging.warning("Failed to set idle state on cpu %s "
+                                    "for state %s:\n%s", cpu, state_no, err)
+    else:
+        for cpu, stateval in setstate.items():
+            for state_no, value in stateval.items():
+                state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                try:
+                    open(state_file, "w").write(str(value))
+                except IOError as err:
+                    logging.warning("Failed to set idle state on cpu %s "
+                                    "for state %s:\n%s", cpu, state_no, err)
