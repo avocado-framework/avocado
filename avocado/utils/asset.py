@@ -84,7 +84,7 @@ class Asset(object):
         if self.nameobj.scheme:
             urls.append(self.nameobj.geturl())
 
-        # First let's find for the file in all cache locations
+        # First let's search for the file in each one of the cache locations
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             self.asset_file = os.path.join(cache_dir, self.basename)
