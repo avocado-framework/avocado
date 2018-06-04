@@ -72,7 +72,7 @@ UNDEFINED_BEHAVIOR_EXCEPTION = None
 OUTPUT_CHECK_RECORD_MODE = None
 
 # variable=value bash assignment
-_RE_BASH_SET_VARIABLE = re.compile(r"[a-zA-Z]\w*=.*")
+_RE_BASH_SET_VARIABLE = re.compile(b"[a-zA-Z]\\w*=.*")
 
 
 class CmdError(Exception):
@@ -219,7 +219,7 @@ def get_children_pids(ppid, recursive=False):
     return children
 
 
-def binary_from_shell_cmd(cmd):
+def binary_from_shell_cmd(cmd, encoding=None):
     """
     Tries to find the first binary path from a simple shell-like command.
 
@@ -229,14 +229,14 @@ def binary_from_shell_cmd(cmd):
     :type cmd: unicode string
     :return: first found binary from the cmd
     """
-    cmds = cmd_split(cmd)
+    cmds = cmd_split(cmd, encoding)
     for item in cmds:
         if not _RE_BASH_SET_VARIABLE.match(item):
             return item
     raise ValueError("Unable to parse first binary from '%s'" % cmd)
 
 
-def cmd_split(cmd):
+def cmd_split(cmd, encoding=astring.ENCODING):
     """
     Splits a command line into individual components
 
@@ -245,15 +245,22 @@ def cmd_split(cmd):
     but bytes on Python 2.
 
     :param cmd: text (a multi byte string) encoded as 'utf-8'
+    :param encoding: encoding used to encode the returned value and in some
+                     cases also to decode the cmd
+    :return: list of encoded arguments
     """
+    if encoding is None:
+        encoding = astring.ENCODING
     if sys.version_info[0] < 3:
-        data = cmd.encode('utf-8')
-        result = shlex.split(data)
-        result = [i.decode('utf-8') for i in result]
+        # On py2 shlex accepts encoded bytes
+        if not isinstance(cmd, bytes):
+            cmd = cmd.encode(encoding)
+        return shlex.split(cmd)
     else:
-        data = astring.to_text(cmd, 'utf-8')
-        result = shlex.split(data)
-    return result
+        # On py3 shlex accepts decoded string
+        if isinstance(cmd, bytes):
+            cmd = cmd.decode(encoding)
+        return [_.encode(encoding) for _ in shlex.split(cmd)]
 
 
 class CmdResult(object):
@@ -274,8 +281,8 @@ class CmdResult(object):
     :param pid: ID of the process
     :type pid: int
     :param encoding: the encoding to use for the text version
-                     of stdout and stderr, with the default being
-                     Python's own (:func:`sys.getdefaultencoding`).
+                     of stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
     """
 
@@ -292,7 +299,7 @@ class CmdResult(object):
         self.interrupted = False
         self.pid = pid
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         self.encoding = encoding
 
     @property
@@ -380,7 +387,8 @@ class FDDrainer(object):
                 bfr += tmp
                 if tmp.endswith(b'\n'):
                     for line in bfr.splitlines():
-                        line = astring.to_text(line, self._result.encoding)
+                        line = astring.to_text(line, self._result.encoding,
+                                               'replace')
                         if self._logger is not None:
                             self._logger.debug(self._logger_prefix, line)
                         if self._stream_logger is not None:
@@ -473,14 +481,13 @@ class SubProcess(object):
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
         :param encoding: the encoding to use for the text representation
-                         of the command result stdout and stderr, with the
-                         default being Python's own, that is,
-                         (:func:`sys.getdefaultencoding`).
+                         of the command result stdout and stderr, by default
+                         :mod:`avocado.utils.astring.ENCODING`
         :type encoding: str
         :raises: ValueError if incorrect values are given to parameters
         """
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         if sudo:
             self.cmd = self._prepend_sudo(cmd, shell)
         else:
@@ -553,7 +560,9 @@ class SubProcess(object):
             if self.verbose:
                 log.info("Running '%s'", self.cmd)
             if self.shell is False:
-                cmd = cmd_split(self.cmd)
+                cmd = cmd_split(self.cmd, self.result.encoding)
+            elif isinstance(self.cmd, bytes):
+                cmd = self.cmd.encode(self.result.encoding)
             else:
                 cmd = self.cmd
             try:
@@ -577,7 +586,7 @@ class SubProcess(object):
             # To keep some relation between the command name and the Thread
             # this resorts to attempting the conversion to ascii, replacing
             # characters it can not convert
-            cmd_name = self.cmd.encode('ascii', 'replace')
+            cmd_name = astring.to_text(self.cmd, self.result.encoding).encode('ascii', 'replace')
             # prepare fd drainers
             if self.allow_output_check == 'combined':
                 self._combined_drainer = FDDrainer(
@@ -823,7 +832,9 @@ class WrapSubProcess(SubProcess):
         if self.wrapper:
             if not os.path.exists(self.wrapper):
                 raise IOError("No such wrapper: '%s'" % self.wrapper)
-            cmd = wrapper + ' ' + cmd
+            if not isinstance(cmd, bytes):
+                cmd = cmd.encode(encoding)
+            cmd = wrapper + b' ' + cmd
         super(WrapSubProcess, self).__init__(cmd, verbose, allow_output_check,
                                              shell, env, sudo,
                                              ignore_bg_processes, encoding)
@@ -843,31 +854,22 @@ class GDBSubProcess(object):
 
         :param cmd: Command line to run.
         :type cmd: str
-        :param verbose: Whether to log the command run and stdout/stderr.
-                        Currently unused and provided for compatibility only.
-        :type verbose: bool
-        :param allow_output_check: Whether to log the command stream outputs
-                                   (stdout and stderr) in the test stream
-                                   files. Valid values: 'stdout', for
-                                   allowing only standard output, 'stderr',
-                                   to allow only standard error, 'all',
-                                   to allow both standard output and error
-                                   (default), and 'none', to allow
-                                   none to be recorded. Currently unused and
-                                   provided for compatibility only.
-        :type allow_output_check: str
-        :param sudo: This param will be ignored in this implementation,
-                     since the GDB wrapping code does not have support to run
-                     commands under sudo just yet.
-        :param ignore_bg_processes: This param will be ignored in this
-                     implementation, since the GDB wrapping code does not have
-                     support to run commands in that way.
+        :params verbose: Currently ignored in GDBSubProcess
+        :param allow_output_check: Currently ignored in GDBSubProcess
+        :param shell: Currently ignored in GDBSubProcess
+        :param env: Currently ignored in GDBSubProcess
+        :param sudo: Currently ignored in GDBSubProcess
+        :param ignore_bg_processes: Currently ignored in GDBSubProcess
+        :param encoding: the encoding to use for the text representation
+                         of the command result stdout and stderr, by default
+                         :mod:`avocado.utils.astring.ENCODING`
+        :type encoding: str
         """
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         self.cmd = cmd
 
-        self.args = cmd_split(cmd)
+        self.args = cmd_split(cmd, encoding)
         self.binary = self.args[0]
         self.binary_path = os.path.abspath(self.cmd)
         self.result = CmdResult(cmd, encoding=encoding)
@@ -1142,7 +1144,7 @@ def split_gdb_expr(expr):
     return r
 
 
-def should_run_inside_gdb(cmd):
+def should_run_inside_gdb(cmd, encoding=astring.ENCODING):
     """
     Whether the given command should be run inside the GNU debugger
 
@@ -1152,21 +1154,27 @@ def should_run_inside_gdb(cmd):
         return False
 
     try:
-        args = cmd_split(cmd)
+        args = cmd_split(cmd, encoding)
     except ValueError:
         log.warning("Unable to check whether command '%s' should run inside "
                     "GDB, fallback to simplified method...", cmd)
-        args = cmd.split()
+        args = cmd.split(None, 1)
+        if len(args) >= 1 and not isinstance(args[0], bytes):
+            args = [args[0].encode(encoding)]
+
+    if len(args) == 0:
+        return False
+
     cmd_binary_name = os.path.basename(args[0])
 
     for expr in gdb.GDB_RUN_BINARY_NAMES_EXPR:
-        binary_name = os.path.basename(expr.split(':', 1)[0])
+        binary_name = os.path.basename(expr.split(b':', 1)[0])
         if cmd_binary_name == binary_name:
             return True
     return False
 
 
-def should_run_inside_wrapper(cmd):
+def should_run_inside_wrapper(cmd, encoding=astring.ENCODING):
     """
     Whether the given command should be run inside the wrapper utility.
 
@@ -1174,7 +1182,9 @@ def should_run_inside_wrapper(cmd):
     """
     global CURRENT_WRAPPER
     CURRENT_WRAPPER = None
-    args = cmd_split(cmd)
+    args = cmd_split(cmd, encoding)
+    if len(args) == 0:
+        return False
     cmd_binary_name = args[0]
 
     for script, cmd_expr in WRAP_PROCESS_NAMES_EXPR:
@@ -1190,7 +1200,7 @@ def should_run_inside_wrapper(cmd):
         return True
 
 
-def get_sub_process_klass(cmd):
+def get_sub_process_klass(cmd, encoding=astring.ENCODING):
     """
     Which sub process implementation should be used
 
@@ -1198,9 +1208,9 @@ def get_sub_process_klass(cmd):
 
     :param cmd: the command arguments, from where we extract the binary name
     """
-    if should_run_inside_gdb(cmd):
+    if should_run_inside_gdb(cmd, encoding):
         return GDBSubProcess
-    elif should_run_inside_wrapper(cmd):
+    elif should_run_inside_wrapper(cmd, encoding):
         return WrapSubProcess
     else:
         return SubProcess
@@ -1254,17 +1264,16 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
                  prompted. If that's not the case, the command will
                  straight out fail.
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     if encoding is None:
-        encoding = sys.getdefaultencoding()
-    klass = get_sub_process_klass(cmd)
+        encoding = astring.ENCODING
+    klass = get_sub_process_klass(cmd, encoding)
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
                sudo=sudo, ignore_bg_processes=ignore_bg_processes,
@@ -1324,9 +1333,8 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                  prompted. If that's not the case, the command will
                  straight out fail.
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: Exit code.
@@ -1392,9 +1400,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :param strip_trail_nl: Whether to strip the trailing newline
     :type strip_trail_nl: bool
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :mod:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: Command output.
