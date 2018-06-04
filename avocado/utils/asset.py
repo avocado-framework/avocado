@@ -40,6 +40,12 @@ from .filelock import FileLock
 log = logging.getLogger('avocado.test')
 
 
+class UnsupportProtocolError(EnvironmentError):
+    """
+    Signals that the protocol of the asset URL is not supported
+    """
+
+
 class Asset(object):
     """
     Try to fetch/verify an asset file from multiple locations.
@@ -142,6 +148,9 @@ class Asset(object):
                 fetch = self._download
             elif urlobj.scheme == 'file':
                 fetch = self._get_local_file
+            else:
+                raise UnsupportProtocolError("Unsupported protocol"
+                                             ": %s" % urlobj.scheme)
             try:
                 if fetch(urlobj):
                     return self.asset_file
