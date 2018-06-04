@@ -17,20 +17,22 @@ Asset fetcher from multiple locations
 """
 
 import errno
+import hashlib
 import logging
 import os
 import re
 import shutil
 import stat
 import sys
-import time
 import tempfile
+import time
 
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
 
+from . import astring
 from . import crypto
 from . import path as utils_path
 from .download import url_download
@@ -38,6 +40,16 @@ from .filelock import FileLock
 
 
 log = logging.getLogger('avocado.test')
+
+
+#: The default hash algorithm to use on asset cache operations
+DEFAULT_HASH_ALGORITHM = 'sha256'
+
+
+class UnsupportProtocolError(EnvironmentError):
+    """
+    Signals that the protocol of the asset URL is not supported
+    """
 
 
 class Asset(object):
@@ -60,7 +72,7 @@ class Asset(object):
         self.name = name
         self.asset_hash = asset_hash
         if algorithm is None:
-            self.algorithm = 'sha1'
+            self.algorithm = DEFAULT_HASH_ALGORITHM
         else:
             self.algorithm = algorithm
         self.locations = locations
@@ -68,6 +80,38 @@ class Asset(object):
         self.nameobj = urlparse.urlparse(self.name)
         self.basename = os.path.basename(self.nameobj.path)
         self.expire = expire
+
+        #: This is a directory that lives on a cache directory, that will
+        #: contain the cached files.  Its name is based on the hash of
+        #: the base URL when no asset hash is given, and is an empty string
+        #: (so no extra directory above the cache directory) when an asset
+        #: hash is given.
+        self.cache_relative_dir = None
+        if self.asset_hash is None:
+            base_url = "%s://%s/%s" % (self.nameobj.scheme,
+                                       self.nameobj.netloc,
+                                       os.path.dirname(self.nameobj.path))
+            base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
+                                        base_url.encode(astring.ENCODING))
+            self.cache_relative_dir = base_url_hash.hexdigest()
+        else:
+            self.cache_relative_dir = ''
+
+    def _get_writable_cache_dir(self):
+        """
+        Returns the first available writable cache directory
+
+        When a asset has to be downloaded, a writable cache directory
+        is then needed. The first available writable cache directory
+        will be used.
+        """
+        result = None
+        for cache_dir in self.cache_dirs:
+            cache_dir = os.path.expanduser(cache_dir)
+            if utils_path.usable_rw_dir(cache_dir):
+                result = cache_dir
+                break
+        return result
 
     def fetch(self):
         """
@@ -84,10 +128,11 @@ class Asset(object):
         if self.nameobj.scheme:
             urls.append(self.nameobj.geturl())
 
-        # First let's find for the file in all cache locations
+        # First let's search for the file in each one of the cache locations
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            self.asset_file = os.path.join(cache_dir, self.basename)
+            self.asset_file = os.path.join(cache_dir, self.cache_relative_dir,
+                                           self.basename)
             self.hashfile = '%s-CHECKSUM' % self.asset_file
 
             # To use a cached file, it must:
@@ -107,52 +152,48 @@ class Asset(object):
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
         # writable cache directory will be used.
-        for cache_dir in self.cache_dirs:
-            cache_dir = os.path.expanduser(cache_dir)
-            self.asset_file = os.path.join(cache_dir, self.basename)
-            self.hashfile = '%s-CHECKSUM' % self.asset_file
-            if not utils_path.usable_rw_dir(cache_dir):
-                continue
+        cache_dir = self._get_writable_cache_dir()
+        if cache_dir is None:
+            raise EnvironmentError("Can't find a writable cache directory.")
 
-            # Now we have a writable cache_dir. Let's get the asset.
-            # Adding the user defined locations to the urls list:
-            if self.locations is not None:
-                for item in self.locations:
-                    urls.append(item)
+        self.asset_file = os.path.join(cache_dir, self.cache_relative_dir,
+                                       self.basename)
+        self.hashfile = '%s-CHECKSUM' % self.asset_file
 
-            for url in urls:
-                urlobj = urlparse.urlparse(url)
-                if urlobj.scheme in ['http', 'https', 'ftp']:
-                    try:
-                        if self._download(url):
-                            return self.asset_file
-                    except:
-                        exc_type, exc_value = sys.exc_info()[:2]
-                        log.error('%s: %s' % (exc_type.__name__, exc_value))
+        # Now we have a writable cache_dir. Let's get the asset.
+        # Adding the user defined locations to the urls list:
+        if self.locations is not None:
+            for item in self.locations:
+                urls.append(item)
 
-                elif urlobj.scheme == 'file':
-                    # Being flexible with the urlparse result
-                    if os.path.isdir(urlobj.path):
-                        path = os.path.join(urlobj.path, self.name)
-                    else:
-                        path = urlobj.path
+        for url in urls:
+            urlobj = urlparse.urlparse(url)
+            if urlobj.scheme in ['http', 'https', 'ftp']:
+                fetch = self._download
+            elif urlobj.scheme == 'file':
+                fetch = self._get_local_file
+            else:
+                raise UnsupportProtocolError("Unsupported protocol"
+                                             ": %s" % urlobj.scheme)
 
-                    try:
-                        if self._get_local_file(path):
-                            return self.asset_file
-                    except:
-                        exc_type, exc_value = sys.exc_info()[:2]
-                        log.error('%s: %s' % (exc_type.__name__, exc_value))
+            dirname = os.path.dirname(self.asset_file)
+            if not os.path.isdir(dirname):
+                os.mkdir(dirname)
+            try:
+                if fetch(urlobj):
+                    return self.asset_file
+            except:
+                exc_type, exc_value = sys.exc_info()[:2]
+                log.error('%s: %s' % (exc_type.__name__, exc_value))
 
-            raise EnvironmentError("Failed to fetch %s." % self.basename)
-        raise EnvironmentError("Can't find a writable cache directory.")
+        raise EnvironmentError("Failed to fetch %s." % self.basename)
 
-    def _download(self, url):
+    def _download(self, url_obj):
         try:
             # Temporary unique name to use while downloading
             temp = '%s.%s' % (self.asset_file,
                               next(tempfile._get_candidate_names()))
-            url_download(url, temp)
+            url_download(url_obj.geturl(), temp)
 
             # Acquire lock only after download the file
             with FileLock(self.asset_file, 1):
@@ -172,8 +213,8 @@ class Asset(object):
         if not os.path.isfile(self.hashfile):
             self._compute_hash()
 
-        with open(self.hashfile, 'r') as asset_file:
-            for line in asset_file:
+        with open(self.hashfile, 'r') as hash_file:
+            for line in hash_file:
                 # md5 is 32 chars big and sha512 is 128 chars big.
                 # others supported algorithms are between those.
                 pattern = '%s [a-f0-9]{32,128}' % self.algorithm
@@ -190,7 +231,12 @@ class Asset(object):
         else:
             return False
 
-    def _get_local_file(self, path):
+    def _get_local_file(self, url_obj):
+        if os.path.isdir(url_obj.path):
+            path = os.path.join(url_obj.path, self.name)
+        else:
+            path = url_obj.path
+
         try:
             with FileLock(self.asset_file, 1):
                 try:

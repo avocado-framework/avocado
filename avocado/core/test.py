@@ -567,12 +567,7 @@ class Test(unittest.TestCase, TestData):
         Returns a list of cache directories as set in config file.
         """
         if self.__cache_dirs is None:
-            cache_dirs = settings.get_value('datadir.paths', 'cache_dirs',
-                                            key_type=list, default=[])
-            datadir_cache = os.path.join(data_dir.get_data_dir(), 'cache')
-            if datadir_cache not in cache_dirs:
-                cache_dirs.append(datadir_cache)
-            self.__cache_dirs = cache_dirs
+            self.__cache_dirs = data_dir.get_cache_dirs()
         return self.__cache_dirs
 
     @property
@@ -1078,7 +1073,7 @@ class Test(unittest.TestCase, TestData):
         """
         raise exceptions.TestCancel(message)
 
-    def fetch_asset(self, name, asset_hash=None, algorithm='sha1',
+    def fetch_asset(self, name, asset_hash=None, algorithm=None,
                     locations=None, expire=None):
         """
         Method o call the utils.asset in order to fetch and asset file
@@ -1086,7 +1081,8 @@ class Test(unittest.TestCase, TestData):
 
         :param name: the asset filename or URL
         :param asset_hash: asset hash (optional)
-        :param algorithm: hash algorithm (optional, defaults to sha1)
+        :param algorithm: hash algorithm (optional, defaults to
+                          :data:`avocado.utils.asset.DEFAULT_HASH_ALGORITHM`)
         :param locations: list of URLs from where the asset can be
                           fetched (optional)
         :param expire: time for the asset to expire

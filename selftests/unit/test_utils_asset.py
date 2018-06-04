@@ -40,7 +40,7 @@ class TestAsset(unittest.TestCase):
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
 
-    def test_fecth_expire(self):
+    def test_fetch_expire(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
@@ -96,6 +96,37 @@ class TestAsset(unittest.TestCase):
                             cache_dirs=[self.cache_dir],
                             expire=None)
             self.assertRaises(EnvironmentError, a.fetch)
+
+    def test_unknown_scheme(self):
+        invalid = asset.Asset("weird-protocol://location/?params=foo",
+                              None, None, None, [self.cache_dir], None)
+        self.assertRaises(asset.UnsupportProtocolError, invalid.fetch)
+
+    def test_fetch_two_files_same_name_no_hash(self):
+        """
+        Checks that when two different assets which happen to have
+        the same *filename*, are properly stored in the cache
+        directory and that the right one will be given to the user,
+        no matter if a hash is used or not.
+        """
+        second_assetname = self.assetname
+        second_asset_origin_dir = tempfile.mkdtemp(dir=self.basedir)
+        second_asset_local_path = os.path.join(second_asset_origin_dir,
+                                               second_assetname)
+        second_asset_content = 'This is not your first asset content!'
+        with open(second_asset_local_path, 'w') as f:
+            f.write(second_asset_content)
+        second_asset_origin_url = 'file://%s' % second_asset_local_path
+
+        a1 = asset.Asset(self.url, self.assethash, 'sha1', None,
+                         [self.cache_dir], None)
+        a1.fetch()
+        a2 = asset.Asset(second_asset_origin_url, None, None,
+                         [second_asset_origin_dir], [self.cache_dir],
+                         None)
+        a2_path = a2.fetch()
+        with open(a2_path, 'r') as a2_file:
+            self.assertEqual(a2_file.read(), second_asset_content)
 
     def tearDown(self):
         shutil.rmtree(self.basedir)
