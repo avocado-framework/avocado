@@ -17,20 +17,22 @@ Asset fetcher from multiple locations
 """
 
 import errno
+import hashlib
 import logging
 import os
 import re
 import shutil
 import stat
 import sys
-import time
 import tempfile
+import time
 
 try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
 
+from . import astring
 from . import crypto
 from . import path as utils_path
 from .download import url_download
@@ -79,6 +81,22 @@ class Asset(object):
         self.basename = os.path.basename(self.nameobj.path)
         self.expire = expire
 
+        #: This is a directory that lives on a cache directory, that will
+        #: contain the cached files.  Its name is based on the hash of
+        #: the base URL when no asset hash is given, and is an empty string
+        #: (so no extra directory above the cache directory) when an asset
+        #: hash is given.
+        self.cache_relative_dir = None
+        if self.asset_hash is None:
+            base_url = "%s://%s/%s" % (self.nameobj.scheme,
+                                       self.nameobj.netloc,
+                                       os.path.dirname(self.nameobj.path))
+            base_url_hash = hashlib.new(DEFAULT_HASH_ALGORITHM,
+                                        base_url.encode(astring.ENCODING))
+            self.cache_relative_dir = base_url_hash.hexdigest()
+        else:
+            self.cache_relative_dir = ''
+
     def _get_writable_cache_dir(self):
         """
         Returns the first available writable cache directory
@@ -113,7 +131,8 @@ class Asset(object):
         # First let's search for the file in each one of the cache locations
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
-            self.asset_file = os.path.join(cache_dir, self.basename)
+            self.asset_file = os.path.join(cache_dir, self.cache_relative_dir,
+                                           self.basename)
             self.hashfile = '%s-CHECKSUM' % self.asset_file
 
             # To use a cached file, it must:
@@ -137,7 +156,8 @@ class Asset(object):
         if cache_dir is None:
             raise EnvironmentError("Can't find a writable cache directory.")
 
-        self.asset_file = os.path.join(cache_dir, self.basename)
+        self.asset_file = os.path.join(cache_dir, self.cache_relative_dir,
+                                       self.basename)
         self.hashfile = '%s-CHECKSUM' % self.asset_file
 
         # Now we have a writable cache_dir. Let's get the asset.
@@ -155,6 +175,10 @@ class Asset(object):
             else:
                 raise UnsupportProtocolError("Unsupported protocol"
                                              ": %s" % urlobj.scheme)
+
+            dirname = os.path.dirname(self.asset_file)
+            if not os.path.isdir(dirname):
+                os.mkdir(dirname)
             try:
                 if fetch(urlobj):
                     return self.asset_file
