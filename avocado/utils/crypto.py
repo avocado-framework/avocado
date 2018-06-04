@@ -45,9 +45,8 @@ def hash_file(filename, size=None, algorithm="md5"):
         dd if=filename bs=1024 count=size/1024 | sha1sum -
 
     :param filename: Path of the file that will have its hash calculated.
-    :param method: Method used to calculate the hash. Supported methods:
-                   * md5
-                   * sha1
+    :param algorithm: Method used to calculate the hash. Supported methods are
+                      md5 (default) or sha1
     :param size: If provided, hash only the first size bytes of the file.
     :return: Hash of the file, if something goes wrong, return None.
     """
