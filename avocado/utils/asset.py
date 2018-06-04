@@ -69,6 +69,22 @@ class Asset(object):
         self.basename = os.path.basename(self.nameobj.path)
         self.expire = expire
 
+    def _get_writable_cache_dir(self):
+        """
+        Returns the first available writable cache directory
+
+        When a asset has to be downloaded, a writable cache directory
+        is then needed. The first available writable cache directory
+        will be used.
+        """
+        result = None
+        for cache_dir in self.cache_dirs:
+            cache_dir = os.path.expanduser(cache_dir)
+            if utils_path.usable_rw_dir(cache_dir):
+                result = cache_dir
+                break
+        return result
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -107,45 +123,44 @@ class Asset(object):
         # If we get to this point, we have to download it from a location.
         # A writable cache directory is then needed. The first available
         # writable cache directory will be used.
-        for cache_dir in self.cache_dirs:
-            cache_dir = os.path.expanduser(cache_dir)
-            self.asset_file = os.path.join(cache_dir, self.basename)
-            self.hashfile = '%s-CHECKSUM' % self.asset_file
-            if not utils_path.usable_rw_dir(cache_dir):
-                continue
+        cache_dir = self._get_writable_cache_dir()
+        if cache_dir is None:
+            raise EnvironmentError("Can't find a writable cache directory.")
 
-            # Now we have a writable cache_dir. Let's get the asset.
-            # Adding the user defined locations to the urls list:
-            if self.locations is not None:
-                for item in self.locations:
-                    urls.append(item)
+        self.asset_file = os.path.join(cache_dir, self.basename)
+        self.hashfile = '%s-CHECKSUM' % self.asset_file
 
-            for url in urls:
-                urlobj = urlparse.urlparse(url)
-                if urlobj.scheme in ['http', 'https', 'ftp']:
-                    try:
-                        if self._download(url):
-                            return self.asset_file
-                    except:
-                        exc_type, exc_value = sys.exc_info()[:2]
-                        log.error('%s: %s' % (exc_type.__name__, exc_value))
+        # Now we have a writable cache_dir. Let's get the asset.
+        # Adding the user defined locations to the urls list:
+        if self.locations is not None:
+            for item in self.locations:
+                urls.append(item)
 
-                elif urlobj.scheme == 'file':
-                    # Being flexible with the urlparse result
-                    if os.path.isdir(urlobj.path):
-                        path = os.path.join(urlobj.path, self.name)
-                    else:
-                        path = urlobj.path
+        for url in urls:
+            urlobj = urlparse.urlparse(url)
+            if urlobj.scheme in ['http', 'https', 'ftp']:
+                try:
+                    if self._download(url):
+                        return self.asset_file
+                except:
+                    exc_type, exc_value = sys.exc_info()[:2]
+                    log.error('%s: %s' % (exc_type.__name__, exc_value))
 
-                    try:
-                        if self._get_local_file(path):
-                            return self.asset_file
-                    except:
-                        exc_type, exc_value = sys.exc_info()[:2]
-                        log.error('%s: %s' % (exc_type.__name__, exc_value))
+            elif urlobj.scheme == 'file':
+                # Being flexible with the urlparse result
+                if os.path.isdir(urlobj.path):
+                    path = os.path.join(urlobj.path, self.name)
+                else:
+                    path = urlobj.path
 
-            raise EnvironmentError("Failed to fetch %s." % self.basename)
-        raise EnvironmentError("Can't find a writable cache directory.")
+                try:
+                    if self._get_local_file(path):
+                        return self.asset_file
+                except:
+                    exc_type, exc_value = sys.exc_info()[:2]
+                    log.error('%s: %s' % (exc_type.__name__, exc_value))
+
+        raise EnvironmentError("Failed to fetch %s." % self.basename)
 
     def _download(self, url):
         try:
