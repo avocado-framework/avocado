@@ -485,8 +485,8 @@ class Test(unittest.TestCase, TestData):
         """
         Returns the path to the directory that may contain test data files
 
-        For test a test file hosted at /usr/share/avocado/tests/sleeptest.py
-        the datadir is /usr/share/avocado/tests/sleeptest.py.data.
+        For test a test file hosted at /usr/share/doc/avocado/tests/sleeptest.py
+        the datadir is /usr/share/doc/avocado/tests/sleeptest.py.data.
 
         Note that this directory has no specific relation to the test
         name, only to the file that contains the test.  It can be used to

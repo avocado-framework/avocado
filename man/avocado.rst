@@ -545,25 +545,25 @@ doubt about which one is that, you may use `avocado config --datadir`).
 The output looks like::
 
     $ avocado list
-    INSTRUMENTED /usr/share/avocado/tests/abort.py
-    INSTRUMENTED /usr/share/avocado/tests/datadir.py
-    INSTRUMENTED /usr/share/avocado/tests/doublefail.py
-    INSTRUMENTED /usr/share/avocado/tests/doublefree.py
-    INSTRUMENTED /usr/share/avocado/tests/errortest.py
-    INSTRUMENTED /usr/share/avocado/tests/failtest.py
-    INSTRUMENTED /usr/share/avocado/tests/fiotest.py
-    INSTRUMENTED /usr/share/avocado/tests/gdbtest.py
-    INSTRUMENTED /usr/share/avocado/tests/gendata.py
-    INSTRUMENTED /usr/share/avocado/tests/linuxbuild.py
-    INSTRUMENTED /usr/share/avocado/tests/multiplextest.py
-    INSTRUMENTED /usr/share/avocado/tests/passtest.py
-    INSTRUMENTED /usr/share/avocado/tests/skiptest.py
-    INSTRUMENTED /usr/share/avocado/tests/sleeptenmin.py
-    INSTRUMENTED /usr/share/avocado/tests/sleeptest.py
-    INSTRUMENTED /usr/share/avocado/tests/synctest.py
-    INSTRUMENTED /usr/share/avocado/tests/timeouttest.py
-    INSTRUMENTED /usr/share/avocado/tests/warntest.py
-    INSTRUMENTED /usr/share/avocado/tests/whiteboard.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/abort.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/datadir.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/doublefail.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/doublefree.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/errortest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/failtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/fiotest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/gdbtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/gendata.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/linuxbuild.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/multiplextest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/passtest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/skiptest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptenmin.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/sleeptest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/synctest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/timeouttest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/warntest.py
+    INSTRUMENTED /usr/share/doc/avocado/tests/whiteboard.py
 
 Here, `INSTRUMENTED` means that the files there are python files with an
 avocado test class in them, therefore, that they are what we call

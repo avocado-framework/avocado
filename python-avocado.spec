@@ -323,14 +323,14 @@ popd
 %{__install} -m 0644 man/avocado.1 %{buildroot}%{_mandir}/man1/avocado.1
 %{__install} -m 0644 man/avocado-rest-client.1 %{buildroot}%{_mandir}/man1/avocado-rest-client.1
 %{__install} -d -m 0755 %{buildroot}%{_sharedstatedir}/avocado/data
-%{__install} -d -m 0755 %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/plugins %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/tests %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/wrappers %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/yaml_to_mux %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_datadir}/avocado
-%{__cp} -r examples/varianter_pict %{buildroot}%{_datadir}/avocado
+%{__install} -d -m 0755 %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/gdb-prerun-scripts %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/plugins %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/tests %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/wrappers %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/yaml_to_mux %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/yaml_to_mux_loader %{buildroot}%{_docdir}/avocado
+%{__cp} -r examples/varianter_pict %{buildroot}%{_docdir}/avocado
 %{__mkdir} -p %{buildroot}%{_libexecdir}/avocado
 %{__mv} %{buildroot}%{python2_sitelib}/avocado/libexec/* %{buildroot}%{_libexecdir}/avocado
 
@@ -757,14 +757,14 @@ Some of them are used as functional tests of the framework, others serve as
 examples of how to write tests on your own.
 
 %files examples
-%dir %{_datadir}/avocado
-%{_datadir}/avocado/gdb-prerun-scripts
-%{_datadir}/avocado/plugins
-%{_datadir}/avocado/tests
-%{_datadir}/avocado/wrappers
-%{_datadir}/avocado/yaml_to_mux
-%{_datadir}/avocado/yaml_to_mux_loader
-%{_datadir}/avocado/varianter_pict
+%dir %{_docdir}/avocado
+%{_docdir}/avocado/gdb-prerun-scripts
+%{_docdir}/avocado/plugins
+%{_docdir}/avocado/tests
+%{_docdir}/avocado/wrappers
+%{_docdir}/avocado/yaml_to_mux
+%{_docdir}/avocado/yaml_to_mux_loader
+%{_docdir}/avocado/varianter_pict
 
 %package bash
 Summary: Avocado Test Framework Bash Utilities

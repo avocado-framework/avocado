@@ -15,7 +15,7 @@ that contain a number of `keys` and `values`. Take for example a basic Avocado c
 
     [datadir.paths]
     base_dir = /var/lib/avocado
-    test_dir = /usr/share/avocado/tests
+    test_dir = /usr/share/doc/avocado/tests
     data_dir = /var/lib/avocado/data
     logs_dir = ~/avocado/job-results
 
@@ -106,7 +106,7 @@ configuration, after all the files are parsed in their correct resolution order.
 
         Section.Key     Value
         runner.base_dir /var/lib/avocado
-        runner.test_dir /usr/share/avocado/tests
+        runner.test_dir /usr/share/doc/avocado/tests
         runner.data_dir /var/lib/avocado/data
         runner.logs_dir ~/avocado/job-results
 
