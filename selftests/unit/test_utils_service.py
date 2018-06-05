@@ -69,7 +69,8 @@ class TestSystemd(unittest.TestCase):
                 cmd = "is-enabled"
             if cmd == "reset_failed":
                 cmd = "reset-failed"
-            self.assertEqual(ret, ["systemctl", cmd, "%s.service" % self.service_name])
+            self.assertEqual(ret, ["systemctl", cmd, "%s.service" %
+                                   self.service_name])
 
     def test_set_target(self):
         ret = getattr(
@@ -160,7 +161,8 @@ class TestServiceManager(unittest.TestCase):
         service_command_generator = service._ServiceCommandGenerator(
             command_generator)
         service_result_parser = service._ServiceResultParser(result_parser)
-        return service_manager(service_command_generator, service_result_parser, run_mock)
+        return service_manager(service_command_generator, service_result_parser,
+                               run_mock)
 
 
 class TestSystemdServiceManager(TestServiceManager):
@@ -168,9 +170,10 @@ class TestSystemdServiceManager(TestServiceManager):
     def setUp(self):
         self.run_mock = mock.Mock()
         self.init_name = "systemd"
-        self.service_manager = super(TestSystemdServiceManager,
-                                     self).get_service_manager_from_init_and_run(self.init_name,
-                                                                                 self.run_mock)
+        self.service_manager = \
+            (super(TestSystemdServiceManager, self)
+             .get_service_manager_from_init_and_run(self.init_name,
+                                                    self.run_mock))
 
     def test_start(self):
         srv = "lldpad"
@@ -184,12 +187,13 @@ class TestSystemdServiceManager(TestServiceManager):
                                      "vsftpd.service disabled\n"
                                      "systemd-sysctl.service static\n")
         run_mock = mock.Mock(return_value=list_result_mock)
-        service_manager = super(TestSystemdServiceManager,
-                                self).get_service_manager_from_init_and_run(self.init_name,
-                                                                            run_mock)
+        service_manager = \
+            (super(TestSystemdServiceManager, self)
+             .get_service_manager_from_init_and_run(self.init_name, run_mock))
         list_result = service_manager.list(ignore_status=False)
         self.assertEqual(run_mock.call_args[0][0],
-                         "systemctl list-unit-files --type=service --no-pager --full")
+                         "systemctl list-unit-files --type=service "
+                         "--no-pager --full")
         self.assertEqual(list_result, {'sshd': "enabled",
                                        'vsftpd': "disabled",
                                        'systemd-sysctl': "static"})
@@ -229,28 +233,41 @@ class TestSysVInitServiceManager(TestServiceManager):
     def setUp(self):
         self.run_mock = mock.Mock()
         self.init_name = "init"
-        self.service_manager = super(TestSysVInitServiceManager,
-                                     self).get_service_manager_from_init_and_run(self.init_name,
-                                                                                 self.run_mock)
+        self.service_manager = \
+            super(TestSysVInitServiceManager,
+                  self).get_service_manager_from_init_and_run(self.init_name,
+                                                              self.run_mock)
+
+    def test_start(self):
+        srv = "lldpad"
+        self.service_manager.start(srv)
+        cmd = ("service %s start" % srv)
+        self.assertEqual(self.run_mock.call_args[0][0], cmd)
 
     def test_list(self):
         list_result_mock = mock.Mock(
             exit_status=0,
-            stdout="sshd             0:off   1:off   2:off   3:off   4:off   5:off   6:off\n"
-            "vsftpd           0:off   1:off   2:off   3:off   4:off   5:on   6:off\n"
+            stdout="sshd             0:off   1:off   "
+            "2:off   3:off   4:off   5:off   6:off\n"
+            "vsftpd           0:off   1:off   2:off "
+            "  3:off   4:off   5:on   6:off\n"
             "xinetd based services:\n"
             "        amanda:         off\n"
             "        chargen-dgram:  on\n")
 
         run_mock = mock.Mock(return_value=list_result_mock)
-        service_manager = super(TestSysVInitServiceManager,
-                                self).get_service_manager_from_init_and_run(self.init_name,
-                                                                            run_mock)
+        service_manager = \
+            super(TestSysVInitServiceManager,
+                  self).get_service_manager_from_init_and_run(self.init_name,
+                                                              run_mock)
         list_result = service_manager.list(ignore_status=False)
         self.assertEqual(run_mock.call_args[0][0], "chkconfig --list")
-        self.assertEqual(list_result, {'sshd': {0: "off", 1: "off", 2: "off", 3: "off", 4: "off", 5: "off", 6: "off"},
-                                       'vsftpd': {0: "off", 1: "off", 2: "off", 3: "off", 4: "off", 5: "on", 6: "off"},
-                                       'xinetd': {'amanda': "off", 'chargen-dgram': "on"}})
+        self.assertEqual(list_result,
+                         {'sshd': {0: "off", 1: "off", 2: "off", 3: "off",
+                                   4: "off", 5: "off", 6: "off"},
+                          'vsftpd': {0: "off", 1: "off", 2: "off", 3: "off",
+                                     4: "off", 5: "on", 6: "off"},
+                          'xinetd': {'amanda': "off", 'chargen-dgram': "on"}})
 
     def test_enable(self):
         srv = "lldpad"
