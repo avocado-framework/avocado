@@ -17,23 +17,6 @@ import logging
 import hashlib
 
 
-def hash_wrapper(algorithm='md5', data=None):
-    """
-    Returns an hash object of data using either md5 or sha1 only.
-
-    :param input: Optional input string that will be used to update the hash.
-    :returns: Hash object.
-    """
-    if algorithm not in ['md5', 'sha1']:
-        raise ValueError("Unsupported hash algorithm: %s" % algorithm)
-
-    hash_obj = hashlib.new(algorithm)
-    if data:
-        hash_obj.update(data)
-
-    return hash_obj
-
-
 def hash_file(filename, size=None, algorithm="md5"):
     """
     Calculate the hash value of filename.
@@ -45,8 +28,7 @@ def hash_file(filename, size=None, algorithm="md5"):
         dd if=filename bs=1024 count=size/1024 | sha1sum -
 
     :param filename: Path of the file that will have its hash calculated.
-    :param algorithm: Method used to calculate the hash. Supported methods are
-                      md5 (default) or sha1
+    :param algorithm: Method used to calculate the hash (default is md5).
     :param size: If provided, hash only the first size bytes of the file.
     :return: Hash of the file, if something goes wrong, return None.
     """
@@ -57,9 +39,10 @@ def hash_file(filename, size=None, algorithm="md5"):
         size = fsize
 
     try:
-        hash_obj = hash_wrapper(algorithm=algorithm)
-    except ValueError:
-        logging.error("Unknown hash algorithm %s, returning None", algorithm)
+        hash_obj = hashlib.new(algorithm)
+    except ValueError as e:
+        logging.error('Returning "None" due to inability to create hash '
+                      'object: "%s"', e)
         return None
 
     with open(filename, 'rb') as file_to_hash:
