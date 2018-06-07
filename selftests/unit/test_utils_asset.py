@@ -97,6 +97,11 @@ class TestAsset(unittest.TestCase):
                             expire=None)
             self.assertRaises(EnvironmentError, a.fetch)
 
+    def test_unknown_scheme(self):
+        invalid = asset.Asset("weird-protocol://location/?params=foo",
+                              None, None, None, [self.cache_dir], None)
+        self.assertRaises(asset.UnsupportedProtocolError, invalid.fetch)
+
     def tearDown(self):
         shutil.rmtree(self.basedir)
 
