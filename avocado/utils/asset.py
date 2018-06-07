@@ -222,8 +222,8 @@ class Asset(object):
                     os.symlink(path, self.asset_file)
                     self._compute_hash()
                     return self._verify()
-                except OSError as e:
-                    if e.errno == errno.EEXIST:
+                except OSError as detail:
+                    if detail.errno == errno.EEXIST:
                         os.remove(self.asset_file)
                         os.symlink(path, self.asset_file)
                         self._compute_hash()

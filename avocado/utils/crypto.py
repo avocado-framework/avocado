@@ -40,9 +40,9 @@ def hash_file(filename, size=None, algorithm="md5"):
 
     try:
         hash_obj = hashlib.new(algorithm)
-    except ValueError as e:
+    except ValueError as detail:
         logging.error('Returning "None" due to inability to create hash '
-                      'object: "%s"', e)
+                      'object: "%s"', detail)
         return None
 
     with open(filename, 'rb') as file_to_hash:

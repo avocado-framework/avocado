@@ -27,8 +27,8 @@ def list_brief(app):
     """
     try:
         data = app.connection.get_api_list()
-    except connection.UnexpectedHttpStatusCode as e:
-        if e.received == 403:
+    except connection.UnexpectedHttpStatusCode as detail:
+        if detail.received == 403:
             LOG_UI.error("Error: Access Forbidden")
             return False
 

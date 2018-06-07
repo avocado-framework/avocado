@@ -63,13 +63,13 @@ class AvocadoApp(object):
             self.parser.finish()
             if self.cli_dispatcher.extensions:
                 self.cli_dispatcher.map_method('run', self.parser.args)
-        except SystemExit as e:
+        except SystemExit as detail:
             # If someone tries to exit Avocado, we should first close the
             # STD_OUTPUT and only then exit.
             setattr(self.parser.args, 'paginator', 'off')
             output.reconfigure(self.parser.args)
             STD_OUTPUT.close()
-            sys.exit(e.code)
+            sys.exit(detail.code)
         except:
             # For any other exception we also need to close the STD_OUTPUT.
             setattr(self.parser.args, 'paginator', 'off')
