@@ -1202,6 +1202,8 @@ class PluginsXunitTest(AbsPluginsTest, unittest.TestCase):
                     ' --xunit - %s' % (AVOCADO, self.tmpdir, testname))
         result = process.run(cmd_line, ignore_status=True)
         xml_output = result.stdout
+        if hasattr(xml_output, 'encode'):
+            xml_output = xml_output.encode('utf-8')
         self.assertEqual(result.exit_status, e_rc,
                          "Avocado did not return rc %d:\n%s" %
                          (e_rc, result))
