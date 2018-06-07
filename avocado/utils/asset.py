@@ -40,6 +40,10 @@ from .filelock import FileLock
 log = logging.getLogger('avocado.test')
 
 
+#: The default hash algorithm to use on asset cache operations
+DEFAULT_HASH_ALGORITHM = 'sha1'
+
+
 class UnsupportedProtocolError(EnvironmentError):
     """
     Signals that the protocol of the asset URL is not supported
@@ -66,7 +70,7 @@ class Asset(object):
         self.name = name
         self.asset_hash = asset_hash
         if algorithm is None:
-            self.algorithm = 'sha1'
+            self.algorithm = DEFAULT_HASH_ALGORITHM
         else:
             self.algorithm = algorithm
         self.locations = locations
