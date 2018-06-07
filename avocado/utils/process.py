@@ -1398,7 +1398,7 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :type encoding: str
 
     :return: Command output.
-    :rtype: bytes
+    :rtype: str
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     cmd_result = run(cmd=cmd, timeout=timeout, verbose=verbose, ignore_status=ignore_status,
@@ -1406,8 +1406,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
                      sudo=sudo, ignore_bg_processes=ignore_bg_processes,
                      encoding=encoding)
     if strip_trail_nl:
-        return cmd_result.stdout.rstrip(b'\n\r')
-    return cmd_result.stdout
+        return cmd_result.stdout_text.rstrip('\n\r')
+    return cmd_result.stdout_text
 
 
 def getoutput(cmd, timeout=None, verbose=False, ignore_status=True,
