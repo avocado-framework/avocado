@@ -142,35 +142,24 @@ class Asset(object):
         for url in urls:
             urlobj = urlparse.urlparse(url)
             if urlobj.scheme in ['http', 'https', 'ftp']:
-                try:
-                    if self._download(url):
-                        return self.asset_file
-                except:
-                    exc_type, exc_value = sys.exc_info()[:2]
-                    log.error('%s: %s' % (exc_type.__name__, exc_value))
-
+                fetch = self._download
             elif urlobj.scheme == 'file':
-                # Being flexible with the urlparse result
-                if os.path.isdir(urlobj.path):
-                    path = os.path.join(urlobj.path, self.name)
-                else:
-                    path = urlobj.path
-
-                try:
-                    if self._get_local_file(path):
-                        return self.asset_file
-                except:
-                    exc_type, exc_value = sys.exc_info()[:2]
-                    log.error('%s: %s' % (exc_type.__name__, exc_value))
+                fetch = self._get_local_file
+            try:
+                if fetch(urlobj):
+                    return self.asset_file
+            except:
+                exc_type, exc_value = sys.exc_info()[:2]
+                log.error('%s: %s' % (exc_type.__name__, exc_value))
 
         raise EnvironmentError("Failed to fetch %s." % self.basename)
 
-    def _download(self, url):
+    def _download(self, url_obj):
         try:
             # Temporary unique name to use while downloading
             temp = '%s.%s' % (self.asset_file,
                               next(tempfile._get_candidate_names()))
-            url_download(url, temp)
+            url_download(url_obj.geturl(), temp)
 
             # Acquire lock only after download the file
             with FileLock(self.asset_file, 1):
@@ -208,7 +197,12 @@ class Asset(object):
         else:
             return False
 
-    def _get_local_file(self, path):
+    def _get_local_file(self, url_obj):
+        if os.path.isdir(url_obj.path):
+            path = os.path.join(url_obj.path, self.name)
+        else:
+            path = url_obj.path
+
         try:
             with FileLock(self.asset_file, 1):
                 try:
