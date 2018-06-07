@@ -299,8 +299,8 @@ class StdOutput(object):
         # indiscriminately.  By handling them here, we can be sure
         # that the failure was due to stdout or stderr not being
         # connected to an open PIPE.
-        except IOError as e:
-            if not e.errno == errno.EPIPE:
+        except IOError as detail:
+            if not detail.errno == errno.EPIPE:
                 raise
 
     def fake_outputs(self):

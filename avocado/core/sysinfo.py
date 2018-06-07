@@ -240,8 +240,8 @@ class JournalctlWatcher(Collectible):
             result = process.system_output(cmd, verbose=False)
             last_record = json.loads(astring.to_text(result, "utf-8"))
             return last_record['__CURSOR']
-        except Exception as e:
-            log.debug("Journalctl collection failed: %s", e)
+        except Exception as detail:
+            log.debug("Journalctl collection failed: %s", detail)
 
     def run(self, logdir):
         if self.cursor:
@@ -254,8 +254,8 @@ class JournalctlWatcher(Collectible):
             except IOError:
                 log.debug("Not logging journalctl (lack of permissions): %s",
                           dstpath)
-            except Exception as e:
-                log.debug("Journalctl collection failed: %s", e)
+            except Exception as detail:
+                log.debug("Journalctl collection failed: %s", detail)
 
 
 class LogWatcher(Collectible):
@@ -336,12 +336,12 @@ class LogWatcher(Collectible):
                         if not in_data:
                             break
                         out_messages.write(in_data)
-        except ValueError as e:
-            log.info(e)
+        except ValueError as detail:
+            log.info(detail)
         except (IOError, OSError):
             log.debug("Not logging %s (lack of permissions)", self.path)
-        except Exception as e:
-            log.error("Log file %s collection failed: %s", self.path, e)
+        except Exception as detail:
+            log.error("Log file %s collection failed: %s", self.path, detail)
 
 
 class SysInfo(object):
