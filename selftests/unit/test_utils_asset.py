@@ -40,7 +40,7 @@ class TestAsset(unittest.TestCase):
         expected_tarball = os.path.join(self.cache_dir, self.assetname)
         self.assertEqual(foo_tarball, expected_tarball)
 
-    def test_fecth_expire(self):
+    def test_fetch_expire(self):
         foo_tarball = asset.Asset(self.assetname,
                                   asset_hash=self.assethash,
                                   algorithm='sha1',
