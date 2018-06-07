@@ -199,6 +199,18 @@ def create_job_logs_dir(base_dir=None, unique_id=None):
                   % (logdir))
 
 
+def get_cache_dirs():
+    """
+    Returns the list of cache dirs, according to configuration and convention
+    """
+    cache_dirs = settings.settings.get_value('datadir.paths', 'cache_dirs',
+                                             key_type=list, default=[])
+    datadir_cache = os.path.join(get_data_dir(), 'cache')
+    if datadir_cache not in cache_dirs:
+        cache_dirs.append(datadir_cache)
+    return cache_dirs
+
+
 class _TmpDirTracker(Borg):
 
     def __init__(self):

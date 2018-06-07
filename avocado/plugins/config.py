@@ -70,3 +70,4 @@ class Config(CLICmd):
             LOG_UI.debug('    tests    ' + data_dir.get_test_dir())
             LOG_UI.debug('    data     ' + data_dir.get_data_dir())
             LOG_UI.debug('    logs     ' + data_dir.get_logs_dir())
+            LOG_UI.debug('    cache    ' + ", ".join(data_dir.get_cache_dirs()))
