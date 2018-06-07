@@ -521,7 +521,7 @@ class LoaderTest(unittest.TestCase):
             KEEP_METHODS_ORDER)
         avocado_keep_methods_order.save()
         expected_order = ['test2', 'testA', 'test1', 'testZZZ', 'test']
-        tests = self.loader._find_avocado_tests(avocado_keep_methods_order.path)[0]
+        tests = self.loader._avocado_discoverer.examine(avocado_keep_methods_order.path)[0]
         methods = [method[0] for method in tests['MyClass']]
         self.assertEqual(expected_order, methods)
         avocado_keep_methods_order.remove()
@@ -537,7 +537,7 @@ class LoaderTest(unittest.TestCase):
         avocado_recursive_discovery_test2.save()
 
         sys.path.append(os.path.dirname(avocado_recursive_discovery_test1.path))
-        tests = self.loader._find_avocado_tests(avocado_recursive_discovery_test2.path)[0]
+        tests = self.loader._avocado_discoverer.examine(avocado_recursive_discovery_test2.path)[0]
         expected = {'ThirdChild': [('test_third_child', set([])),
                                    ('test_second_child', set([])),
                                    ('test_first_child', set([])),
