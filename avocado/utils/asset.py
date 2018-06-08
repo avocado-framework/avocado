@@ -91,15 +91,11 @@ class Asset(object):
         :rtype: str
         :raises: EnvironmentError
         """
-        result = None
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             if utils_path.usable_rw_dir(cache_dir):
-                result = cache_dir
-                break
-        if result is None:
-            raise EnvironmentError("Can't find a writable cache directory.")
-        return result
+                return cache_dir
+        raise EnvironmentError("Can't find a writable cache directory.")
 
     def fetch(self):
         """
