@@ -631,7 +631,8 @@ class OutputPluginTest(unittest.TestCase):
         self.assertEqual(result.exit_status, expected_rc,
                          ("avocado run to broken pipe did not return "
                           "rc %d:\n%s" % (expected_rc, result)))
-        self.assertEqual(len(result.stderr.splitlines()), 1)
+        self.assertEqual(len(result.stderr.splitlines()), 1,
+                         "stderr line count is not 1:\n%s" % result.stderr)
         self.assertIn(b"whacky-unknown-command", result.stderr)
         self.assertIn(b"not found", result.stderr)
         self.assertNotIn(b"Avocado crashed", result.stderr)
