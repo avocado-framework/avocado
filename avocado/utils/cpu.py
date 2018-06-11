@@ -27,16 +27,15 @@ import glob
 import logging
 
 
-def _list_matches(lst, pattern):
+def _list_matches(content_list, pattern):
     """
-    True if any item in list matches the specified pattern.
+    Checks if any item in list matches the specified pattern
     """
-    compiled = re.compile(pattern)
-    for element in lst:
-        match = compiled.search(element)
+    for content in content_list:
+        match = re.search(pattern, content)
         if match:
-            return 1
-    return 0
+            return True
+    return False
 
 
 def _get_cpu_info():
