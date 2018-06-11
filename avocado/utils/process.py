@@ -274,8 +274,8 @@ class CmdResult(object):
     :param pid: ID of the process
     :type pid: int
     :param encoding: the encoding to use for the text version
-                     of stdout and stderr, with the default being
-                     Python's own (:func:`sys.getdefaultencoding`).
+                     of stdout and stderr, by default
+                     :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
     """
 
@@ -292,7 +292,7 @@ class CmdResult(object):
         self.interrupted = False
         self.pid = pid
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         self.encoding = encoding
 
     @property
@@ -380,7 +380,8 @@ class FDDrainer(object):
                 bfr += tmp
                 if tmp.endswith(b'\n'):
                     for line in bfr.splitlines():
-                        line = astring.to_text(line, self._result.encoding)
+                        line = astring.to_text(line, self._result.encoding,
+                                               'replace')
                         if self._logger is not None:
                             self._logger.debug(self._logger_prefix, line)
                         if self._stream_logger is not None:
@@ -389,11 +390,11 @@ class FDDrainer(object):
         # Write the rest of the bfr unfinished by \n
         if self._verbose and bfr:
             for line in bfr.splitlines():
-                line = astring.to_text(line, self._result.encoding)
+                line = astring.to_text(line, self._result.encoding, 'replace')
                 if self._logger is not None:
                     self._logger.debug(self._logger_prefix, line)
                 if self._stream_logger is not None:
-                    self._stream_logger.debug(astring.to_text(line))
+                    self._stream_logger.debug(line)
 
     def start(self):
         self._thread = threading.Thread(target=self._drainer, name=self.name)
@@ -473,14 +474,13 @@ class SubProcess(object):
                     main thread finishes and also it allows those daemons
                     to be running after the process finishes.
         :param encoding: the encoding to use for the text representation
-                         of the command result stdout and stderr, with the
-                         default being Python's own, that is,
-                         (:func:`sys.getdefaultencoding`).
+                         of the command result stdout and stderr, by default
+                         :data:`avocado.utils.astring.ENCODING`
         :type encoding: str
         :raises: ValueError if incorrect values are given to parameters
         """
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         if sudo:
             self.cmd = self._prepend_sudo(cmd, shell)
         else:
@@ -843,28 +843,19 @@ class GDBSubProcess(object):
 
         :param cmd: Command line to run.
         :type cmd: str
-        :param verbose: Whether to log the command run and stdout/stderr.
-                        Currently unused and provided for compatibility only.
-        :type verbose: bool
-        :param allow_output_check: Whether to log the command stream outputs
-                                   (stdout and stderr) in the test stream
-                                   files. Valid values: 'stdout', for
-                                   allowing only standard output, 'stderr',
-                                   to allow only standard error, 'all',
-                                   to allow both standard output and error
-                                   (default), and 'none', to allow
-                                   none to be recorded. Currently unused and
-                                   provided for compatibility only.
-        :type allow_output_check: str
-        :param sudo: This param will be ignored in this implementation,
-                     since the GDB wrapping code does not have support to run
-                     commands under sudo just yet.
-        :param ignore_bg_processes: This param will be ignored in this
-                     implementation, since the GDB wrapping code does not have
-                     support to run commands in that way.
+        :params verbose: Currently ignored in GDBSubProcess
+        :param allow_output_check: Currently ignored in GDBSubProcess
+        :param shell: Currently ignored in GDBSubProcess
+        :param env: Currently ignored in GDBSubProcess
+        :param sudo: Currently ignored in GDBSubProcess
+        :param ignore_bg_processes: Currently ignored in GDBSubProcess
+        :param encoding: the encoding to use for the text representation
+                         of the command result stdout and stderr, by default
+                         :data:`avocado.utils.astring.ENCODING`
+        :type encoding: str
         """
         if encoding is None:
-            encoding = sys.getdefaultencoding()
+            encoding = astring.ENCODING
         self.cmd = cmd
 
         self.args = cmd_split(cmd)
@@ -1254,16 +1245,15 @@ def run(cmd, timeout=None, verbose=True, ignore_status=False,
                  prompted. If that's not the case, the command will
                  straight out fail.
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: An :class:`CmdResult` object.
     :raise: :class:`CmdError`, if ``ignore_status=False``.
     """
     if encoding is None:
-        encoding = sys.getdefaultencoding()
+        encoding = astring.ENCODING
     klass = get_sub_process_klass(cmd)
     sp = klass(cmd=cmd, verbose=verbose,
                allow_output_check=allow_output_check, shell=shell, env=env,
@@ -1324,9 +1314,8 @@ def system(cmd, timeout=None, verbose=True, ignore_status=False,
                  prompted. If that's not the case, the command will
                  straight out fail.
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: Exit code.
@@ -1392,9 +1381,8 @@ def system_output(cmd, timeout=None, verbose=True, ignore_status=False,
     :param strip_trail_nl: Whether to strip the trailing newline
     :type strip_trail_nl: bool
     :param encoding: the encoding to use for the text representation
-                     of the command result stdout and stderr, with the
-                     default being Python's own, that is,
-                     (:func:`sys.getdefaultencoding`).
+                     of the command result stdout and stderr, by default
+                     :data:`avocado.utils.astring.ENCODING`
     :type encoding: str
 
     :return: Command output.

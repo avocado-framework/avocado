@@ -320,7 +320,7 @@ def is_text(data):
     return isinstance(data, str)
 
 
-def to_text(data, encoding=ENCODING):
+def to_text(data, encoding=ENCODING, errors='strict'):
     """
     Convert anything to text decoded text
 
@@ -329,15 +329,17 @@ def to_text(data, encoding=ENCODING):
     it's returned unchanged.
 
     :param data: data to be transformed into text
-    :param encoding: encoding of the data (only used when decoding
-                     is necessary)
     :type data: either bytes or other data that will be returned
                 unchanged
+    :param encoding: encoding of the data (only used when decoding
+                     is necessary)
+    :param errors: how to handle encode/decode errors, see:
+            https://docs.python.org/3/library/codecs.html#error-handlers
     """
     if is_bytes(data):
         if encoding is None:
             encoding = ENCODING
-        return data.decode(encoding)
+        return data.decode(encoding, errors=errors)
     elif not isinstance(data, string_types):
         if sys.version_info[0] < 3:
             return unicode(data)    # pylint: disable=E0602
