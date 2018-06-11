@@ -549,7 +549,7 @@ uarch	: sifive,rocket0
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
                     cpu.set_cpuidle_state()
-                    self.assertEqual(output.getvalue(), "1")
+                    self.assertEqual(output.getvalue(), b'1')
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
@@ -558,8 +558,8 @@ uarch	: sifive,rocket0
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state2']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
-                    cpu.set_cpuidle_state(disable='0', state_number='2')
-                    self.assertEqual(output.getvalue(), "0")
+                    cpu.set_cpuidle_state(disable=False, state_number='2')
+                    self.assertEqual(output.getvalue(), b'0')
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
@@ -569,7 +569,7 @@ uarch	: sifive,rocket0
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
                     cpu.set_cpuidle_state(setstate={0: {0: 1}, 2: {0: 0}})
-                    self.assertEqual(output.getvalue(), "10")
+                    self.assertEqual(output.getvalue(), b'10')
 
 
 if __name__ == "__main__":

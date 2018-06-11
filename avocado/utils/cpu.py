@@ -220,12 +220,39 @@ def get_cpuidle_state():
     return cpu_idlestate
 
 
-def set_cpuidle_state(state_number="all", disable=1, setstate=None):
+def _bool_to_binary(value):
+    '''
+    Turns a boolean value (True or False) into data suitable for writing to
+    /proc/* and /sys/* files.
+    '''
+    if value is True:
+        return b'1'
+    if value is False:
+        return b'0'
+    raise TypeError('Value is not a boolean: %s', value)
+
+
+def _legacy_disable(value):
+    '''
+    Support for the original acceptable disable parameter values
+
+    TODO: this should be removed in the near future
+    Reference: https://trello.com/c/aJzNUeA5/
+    '''
+    if value is 0:
+        return b'0'
+    if value is 1:
+        return b'1'
+    return _bool_to_binary(value)
+
+
+def set_cpuidle_state(state_number="all", disable=True, setstate=None):
     """
     Set/Reset cpu idle states for all cpus
 
     :param state_number: cpuidle state number, default: `all` all states
-    :param disable: whether to disable/enable given cpu idle state, default: 1
+    :param disable: whether to disable/enable given cpu idle state,
+                    default is to disable (True)
     :param setstate: cpuidle state value, output of `get_cpuidle_state()`
     """
     cpus_list = cpu_online_list()
@@ -238,8 +265,9 @@ def set_cpuidle_state(state_number="all", disable=1, setstate=None):
         for cpu in cpus_list:
             for state_no in states:
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                disable = _legacy_disable(disable)
                 try:
-                    open(state_file, "wb").write(bytes(disable))
+                    open(state_file, "wb").write(disable)
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
@@ -247,8 +275,9 @@ def set_cpuidle_state(state_number="all", disable=1, setstate=None):
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                disable = _legacy_disable(value)
                 try:
-                    open(state_file, "wb").write(bytes(value))
+                    open(state_file, "wb").write(disable)
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
