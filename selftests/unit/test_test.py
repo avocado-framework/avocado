@@ -98,12 +98,12 @@ class TestClassTestUnit(unittest.TestCase):
 
     def test_data_dir(self):
         """
-        Tests that a valid datadir exists following the test filename
+        Tests that a valid data dir exists following the test filename
         """
         max_length_name = os.path.join(self.tmpdir, "a" * 250)
         tst = self._get_fake_filename_test(max_length_name)
         self.assertEqual(os.path.join(self.tmpdir, max_length_name + ".data"),
-                         tst.datadir)
+                         tst.get_data('', 'file', False))
 
     def test_no_data_dir(self):
         """
@@ -111,7 +111,7 @@ class TestClassTestUnit(unittest.TestCase):
         """
         above_limit_name = os.path.join(self.tmpdir, "a" * 251)
         tst = self._get_fake_filename_test(above_limit_name)
-        self.assertFalse(tst.datadir)
+        self.assertFalse(tst.get_data('', 'file', False))
         tst._record_reference       # Should do nothing
         tst._record_reference('stdout', 'stdout.expected')
         tst._record_reference('stderr', 'stderr.expected')
