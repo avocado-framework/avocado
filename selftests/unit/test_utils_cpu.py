@@ -1,4 +1,5 @@
 import io
+import sys
 import unittest
 
 try:
@@ -11,8 +12,12 @@ from avocado.utils import cpu
 
 
 def recent_mock():
-    major = int(mock.__version__.split('.')[0])
-    return major >= 2
+    if sys.version_info[0] < 3:
+        major = int(mock.__version__.split('.')[0])
+        return major >= 2
+    elif sys.version_info[0] == 3 and sys.version_info[1] < 6:
+        return False
+    return True
 
 
 class Cpu(unittest.TestCase):
