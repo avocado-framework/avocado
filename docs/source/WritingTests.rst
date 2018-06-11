@@ -227,10 +227,12 @@ you intend to create it.
          for that specific test and execution conditions (such as with or
          without variants).  Look for "Test data directories" in the test logs.
 
-.. note:: An older API, :attr:`avocado.core.test.Test.datadir`, allows access
+.. note:: An extint API, ``avocado.core.test.Test.datadir``, allowed access
           to the data directory based on the test file location only.  This API
-          is limited, deprecated and will be removed.  All new users should rely
-          on ``get_data()`` instead.
+          has been removed.  If, for whatever reason you still need to
+          access the data directory based on the test file location only,
+          you can use ``get_data(filename='', source='file', must_exist=False)``
+          instead.
 
 .. _accessing-test-parameters:
 
@@ -1672,8 +1674,6 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_BASEDIR        | Base directory of Avocado tests       | $HOME/Downloads/avocado-source/avocado                                                              |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_DATADIR        | Data directory for the test           | $AVOCADO_TEST_BASEDIR/my_test.sh.data                                                               |
-+-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TEST_WORKDIR        | Work directory for the test           | /var/tmp/avocado_Bjr_rd/my_test.sh                                                                  |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | AVOCADO_TESTS_COMMON_TMPDIR | Temporary directory created by the    | /var/tmp/avocado_XhEdo/                                                                             |
@@ -1691,12 +1691,17 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_SRCDIR         | Source directory for the test         | /var/tmp/avocado_Bjr_rd/my-test.sh/src                                                              |
-+-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
-.. warning:: ``AVOCADO_TEST_SRCDIR`` is deprecated and will be removed
-             soon.  Please use ``AVOCADO_TEST_WORKDIR`` instead.
+.. warning:: ``AVOCADO_TEST_SRCDIR`` was present in earlier versions,
+             but has been deprecated on version 60.0, and removed on
+             version 62.0.  Please use ``AVOCADO_TEST_WORKDIR``
+             instead.
 
+.. warning:: ``AVOCADO_TEST_DATADIR`` was present in earlier versions,
+             but has been deprecated on version 60.0, and removed on
+             version 62.0.  The test data files (and directories) are
+             now dynamically evaluated and are not available as
+             environment variables
 
 SIMPLE Tests BASH extensions
 ============================
