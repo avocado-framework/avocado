@@ -1,11 +1,9 @@
 language: python
 
-virtualenv:
-  system_site_packages: true
-
 python:
     - "2.7"
     - "3.4"
+    - "3.6"
 
 branches:
     only:
@@ -17,11 +15,6 @@ cache:
         - $HOME/.cache/pip
 
 sudo: false
-
-addons:
-  apt:
-    packages:
-    - libvirt-dev
 
 install:
     - pip install -r requirements-travis.txt
