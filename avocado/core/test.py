@@ -190,15 +190,20 @@ class TestData(object):
     DATA_SOURCES = ["variant", "test", "file"]
 
     def __init__(self):
+        # Maximal allowed file name length is 255
+        file_datadir = None
+        if (self.filename is not None and
+                len(os.path.basename(self.filename)) < 251):
+            file_datadir = self.filename + '.data'
         self._data_sources_mapping = {
-            "variant": [lambda: self.datadir,
+            "variant": [lambda: file_datadir,
                         lambda: "%s.%s" % (self.__class__.__name__,
                                            self._testMethodName),
                         lambda: self.name.variant],
-            "test": [lambda: self.datadir,
+            "test": [lambda: file_datadir,
                      lambda: "%s.%s" % (self.__class__.__name__,
                                         self._testMethodName)],
-            "file": [lambda: self.datadir]
+            "file": [lambda: file_datadir]
         }
 
     def _check_valid_data_source(self, source):
@@ -273,7 +278,13 @@ class TestData(object):
         for attempt_source in sources:
             datadir = self._get_datadir(attempt_source)
             if datadir is not None:
-                path = os.path.join(datadir, filename)
+                # avoid returning a slash after the data directory name
+                # when a file was not requested (thus return the data
+                # directory itself)
+                if not filename:
+                    path = datadir
+                else:
+                    path = os.path.join(datadir, filename)
                 if not must_exist:
                     self.log.debug(log_fmt, filename, path,
                                    ("assumed to be located at %s source "
@@ -402,8 +413,7 @@ class Test(unittest.TestCase, TestData):
             base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
         self.__workdir = os.path.join(base_tmpdir,
                                       self.name.str_filesystem)
-        self.__srcdir_warning_logged = False
-        self.__srcdir = utils_path.init_dir(self.__workdir, 'src')
+        utils_path.init_dir(self.__workdir)
 
         self.log.debug("Test metadata:")
         if self.filename:
@@ -481,29 +491,6 @@ class Test(unittest.TestCase, TestData):
             return None
 
     @property
-    def datadir(self):
-        """
-        Returns the path to the directory that may contain test data files
-
-        For test a test file hosted at /usr/share/doc/avocado/tests/sleeptest.py
-        the datadir is /usr/share/doc/avocado/tests/sleeptest.py.data.
-
-        Note that this directory has no specific relation to the test
-        name, only to the file that contains the test.  It can be used to
-        host data files that are generic enough to be used for all tests
-        contained in a given test file.
-
-        This property is deprecated and will be removed in the future.
-        The :meth:`get_data` function should be used instead.
-        """
-        # Maximal allowed file name length is 255
-        if (self.filename is not None and
-                len(os.path.basename(self.filename)) < 251):
-            return self.filename + '.data'
-        else:
-            return None
-
-    @property
     def filename(self):
         """
         Returns the name of the file (path) that holds the current test
@@ -546,20 +533,6 @@ class Test(unittest.TestCase, TestData):
         building software, etc.
         """
         return self.__workdir
-
-    @property
-    def srcdir(self):
-        """
-        This property is deprecated and will be removed in the future.
-        The :meth:`workdir` property should be used instead.
-        """
-        if not self.__srcdir_warning_logged:
-            LOG_JOB.warn("DEPRECATION NOTICE: the test's \"srcdir\" property "
-                         "is deprecated and is planned to be removed no later "
-                         "than May 11 2018. Please use the \"workdir\" "
-                         "property instead.")
-            self.__srcdir_warning_logged = True
-        return self.__srcdir
 
     @property
     def cache_dirs(self):
@@ -969,15 +942,12 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_VERSION'] = VERSION
         if self.basedir is not None:
             os.environ['AVOCADO_TEST_BASEDIR'] = self.basedir
-        if self.datadir is not None:
-            os.environ['AVOCADO_TEST_DATADIR'] = self.datadir
         os.environ['AVOCADO_TEST_WORKDIR'] = self.workdir
         os.environ['AVOCADO_TEST_LOGDIR'] = self.logdir
         os.environ['AVOCADO_TEST_LOGFILE'] = self.logfile
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
         if self.__sysinfo_enabled:
             os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
-        os.environ['AVOCADO_TEST_SRCDIR'] = self.__srcdir
 
     def run_avocado(self):
         """
@@ -1110,9 +1080,14 @@ class SimpleTest(Test):
         self._filename = executable
         super(SimpleTest, self).__init__(name=name, params=params,
                                          base_logdir=base_logdir, job=job)
-        self._data_sources_mapping = {"variant": [lambda: self.datadir,
+        # Maximal allowed file name length is 255
+        file_datadir = None
+        if (self.filename is not None and
+                len(os.path.basename(self.filename)) < 251):
+            file_datadir = self.filename + '.data'
+        self._data_sources_mapping = {"variant": [lambda: file_datadir,
                                                   lambda: self.name.variant],
-                                      "file": [lambda: self.datadir]}
+                                      "file": [lambda: file_datadir]}
         self._command = None
         if self.filename is not None:
             self._command = pipes.quote(self.filename)
