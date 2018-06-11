@@ -1,6 +1,5 @@
 import io
 import unittest
-import StringIO
 
 try:
     from unittest import mock
@@ -530,7 +529,7 @@ uarch	: sifive,rocket0
         retval = {0: {0: 0}}
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=StringIO.StringIO('0')):
+                with mock.patch('avocado.utils.cpu.open', return_value=io.StringIO('0')):
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     @unittest.skipUnless(recent_mock(),
@@ -539,13 +538,13 @@ uarch	: sifive,rocket0
         retval = {0: {0: 1}}
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=StringIO.StringIO('1')):
+                with mock.patch('avocado.utils.cpu.open', return_value=io.StringIO('1')):
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_default(self):
-        output = StringIO.StringIO()
+        output = io.StringIO()
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
@@ -555,7 +554,7 @@ uarch	: sifive,rocket0
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_withstateno(self):
-        output = StringIO.StringIO()
+        output = io.StringIO()
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state2']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
@@ -565,7 +564,7 @@ uarch	: sifive,rocket0
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_withsetstate(self):
-        output = StringIO.StringIO()
+        output = io.StringIO()
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0, 2]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
