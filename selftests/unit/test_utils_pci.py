@@ -20,6 +20,13 @@ class UtilsPciTest(unittest.TestCase):
                                 return_value=value):
                     self.assertEqual(pci.get_slot_from_sysfs(pcid), exp)
 
+    def test_get_slot_from_sysfs_negative(self):
+        with mock.patch('os.path.isfile', return_value=True):
+            with mock.patch('avocado.utils.genio.read_file',
+                            return_value='.....bad-value.....'):
+                self.assertRaises(ValueError, pci.get_slot_from_sysfs,
+                                  '0002:01:00.1')
+
 
 if __name__ == '__main__':
     unittest.main()

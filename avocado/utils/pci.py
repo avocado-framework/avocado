@@ -186,7 +186,9 @@ def get_slot_from_sysfs(full_pci_address):
     if slot_ibm:
         return slot_ibm.group()
     slot_openpower = re.match(r'(\w+)[\s]*(\w+)(\d*)', slot)
-    return slot_openpower.group()
+    if slot_openpower:
+        return slot_openpower.group()
+    raise ValueError("Failed to get slot from: '%s'" % slot)
 
 
 def get_slot_list():
