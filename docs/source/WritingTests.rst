@@ -1691,11 +1691,11 @@ tests:
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 | `***`                       | All variables from --mux-yaml         | TIMEOUT=60; IO_WORKERS=10; VM_BYTES=512M; ...                                                       |
 +-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
-| AVOCADO_TEST_SRCDIR         | Source directory for the test         | /var/tmp/avocado_Bjr_rd/my-test.sh/src                                                              |
-+-----------------------------+---------------------------------------+-----------------------------------------------------------------------------------------------------+
 
-.. warning:: ``AVOCADO_TEST_SRCDIR`` is deprecated and will be removed
-             soon.  Please use ``AVOCADO_TEST_WORKDIR`` instead.
+.. warning:: ``AVOCADO_TEST_SRCDIR`` was present in earlier versions,
+             but has been deprecated on version 60.0, and removed on
+             version 62.0.  Please use ``AVOCADO_TEST_WORKDIR``
+             instead.
 
 
 SIMPLE Tests BASH extensions

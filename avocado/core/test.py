@@ -402,8 +402,7 @@ class Test(unittest.TestCase, TestData):
             base_tmpdir = tempfile.mkdtemp(prefix="tmp_dir", dir=self.logdir)
         self.__workdir = os.path.join(base_tmpdir,
                                       self.name.str_filesystem)
-        self.__srcdir_warning_logged = False
-        self.__srcdir = utils_path.init_dir(self.__workdir, 'src')
+        utils_path.init_dir(self.__workdir)
 
         self.log.debug("Test metadata:")
         if self.filename:
@@ -546,20 +545,6 @@ class Test(unittest.TestCase, TestData):
         building software, etc.
         """
         return self.__workdir
-
-    @property
-    def srcdir(self):
-        """
-        This property is deprecated and will be removed in the future.
-        The :meth:`workdir` property should be used instead.
-        """
-        if not self.__srcdir_warning_logged:
-            LOG_JOB.warn("DEPRECATION NOTICE: the test's \"srcdir\" property "
-                         "is deprecated and is planned to be removed no later "
-                         "than May 11 2018. Please use the \"workdir\" "
-                         "property instead.")
-            self.__srcdir_warning_logged = True
-        return self.__srcdir
 
     @property
     def cache_dirs(self):
@@ -977,7 +962,6 @@ class Test(unittest.TestCase, TestData):
         os.environ['AVOCADO_TEST_OUTPUTDIR'] = self.outputdir
         if self.__sysinfo_enabled:
             os.environ['AVOCADO_TEST_SYSINFODIR'] = self.__sysinfodir
-        os.environ['AVOCADO_TEST_SRCDIR'] = self.__srcdir
 
     def run_avocado(self):
         """

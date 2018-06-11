@@ -28,7 +28,7 @@ class LinuxBuildTest(Test):
 
         self.linux_build = kernel.KernelBuild(kernel_version,
                                               linux_config,
-                                              self.srcdir,
+                                              self.workdir,
                                               self.cache_dirs)
         self.linux_build.download(kernel_src_url)
         self.linux_build.uncompress()
