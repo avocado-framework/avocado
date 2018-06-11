@@ -1,6 +1,5 @@
 import io
 import unittest
-import StringIO
 
 try:
     from unittest import mock
@@ -21,14 +20,14 @@ class Cpu(unittest.TestCase):
     @staticmethod
     def _get_file_mock(content):
         file_mock = mock.Mock()
-        file_mock.__enter__ = mock.Mock(return_value=io.StringIO(content))
+        file_mock.__enter__ = mock.Mock(return_value=io.BytesIO(content))
         file_mock.__exit__ = mock.Mock()
         return file_mock
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_s390x_cpu_online(self):
-        s390x = u"""vendor_id       : IBM/S390
+        s390x = b"""vendor_id       : IBM/S390
 # processors    : 2
 bogomips per cpu: 2913.00
 max thread id   : 0
@@ -53,7 +52,7 @@ cpu MHz static  : 5504
 
 """
 
-        s390x_2 = u"""vendor_id       : IBM/S390
+        s390x_2 = b"""vendor_id       : IBM/S390
 # processors    : 4
 bogomips per cpu: 2913.00
 max thread id   : 0
@@ -98,7 +97,7 @@ cpu MHz static  : 5504
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_x86_64_cpu_online(self):
-        x86_64 = u"""processor	: 0
+        x86_64 = b"""processor	: 0
 vendor_id	: GenuineIntel
 cpu family	: 6
 model		: 60
@@ -323,7 +322,7 @@ power management:
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_i386(self):
-        cpu_output = u"""processor       : 0
+        cpu_output = b"""processor       : 0
 vendor_id       : GenuineIntel
 cpu family      : 6
 model           : 13
@@ -360,7 +359,7 @@ power management:
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_x86_64(self):
-        cpu_output = u"""processor       : 0
+        cpu_output = b"""processor       : 0
 vendor_id       : GenuineIntel
 cpu family      : 6
 model           : 60
@@ -394,7 +393,7 @@ power management:
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_ppc64_power8(self):
-        cpu_output = u"""processor       : 88
+        cpu_output = b"""processor       : 88
 cpu             : POWER8E (raw), altivec supported
 clock           : 3325.000000MHz
 revision        : 2.1 (pvr 004b 0201)
@@ -412,7 +411,7 @@ firmware        : OPAL v3
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_ppc64_le_power8(self):
-        cpu_output = u"""processor       : 88
+        cpu_output = b"""processor       : 88
 cpu             : POWER8E (raw), altivec supported
 clock           : 3325.000000MHz
 revision        : 2.1 (pvr 004b 0201)
@@ -430,7 +429,7 @@ firmware        : OPAL v3
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_ppc64_le_power9(self):
-        cpu_output = u"""processor	: 20
+        cpu_output = b"""processor	: 20
 cpu		: POWER9 (raw), altivec supported
 clock		: 2050.000000MHz
 revision	: 1.0 (pvr 004e 0100)
@@ -448,7 +447,7 @@ firmware	: OPAL
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_s390(self):
-        cpu_output = u"""vendor_id       : IBM/S390
+        cpu_output = b"""vendor_id       : IBM/S390
 # processors    : 2
 bogomips per cpu: 2913.00
 max thread id   : 0
@@ -478,7 +477,7 @@ cpu MHz static  : 5504
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_arm_v7(self):
-        cpu_output = u"""Processor       : ARMv7 Processor rev 2 (v7l)
+        cpu_output = b"""Processor       : ARMv7 Processor rev 2 (v7l)
 BogoMIPS        : 994.65
 Features        : swp half thumb fastmult vfp edsp thumbee neon vfpv3
 CPU implementer : 0x41
@@ -498,7 +497,7 @@ Serial          : 3534268a5e0700ec
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_arm_v8(self):
-        cpu_output = u"""processor       : 0
+        cpu_output = b"""processor       : 0
 BogoMIPS        : 200.00
 Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid
 CPU implementer : 0x43
@@ -515,7 +514,7 @@ CPU revision    : 1
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_cpu_arch_risc_v(self):
-        cpu_output = u"""hart	: 1
+        cpu_output = b"""hart	: 1
 isa	: rv64imafdc
 mmu	: sv39
 uarch	: sifive,rocket0
@@ -530,7 +529,7 @@ uarch	: sifive,rocket0
         retval = {0: {0: 0}}
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=StringIO.StringIO('0')):
+                with mock.patch('avocado.utils.cpu.open', return_value=io.BytesIO(b'0')):
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     @unittest.skipUnless(recent_mock(),
@@ -539,13 +538,13 @@ uarch	: sifive,rocket0
         retval = {0: {0: 1}}
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
-                with mock.patch('avocado.utils.cpu.open', return_value=StringIO.StringIO('1')):
+                with mock.patch('avocado.utils.cpu.open', return_value=io.BytesIO(b'1')):
                     self.assertEqual(cpu.get_cpuidle_state(), retval)
 
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_default(self):
-        output = StringIO.StringIO()
+        output = io.BytesIO()
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
@@ -555,7 +554,7 @@ uarch	: sifive,rocket0
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_withstateno(self):
-        output = StringIO.StringIO()
+        output = io.BytesIO()
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state2']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
@@ -565,7 +564,7 @@ uarch	: sifive,rocket0
     @unittest.skipUnless(recent_mock(),
                          "mock library version cannot (easily) patch open()")
     def test_set_cpuidle_state_withsetstate(self):
-        output = StringIO.StringIO()
+        output = io.BytesIO()
         with mock.patch('avocado.utils.cpu.cpu_online_list', return_value=[0, 2]):
             with mock.patch('glob.glob', return_value=['/sys/devices/system/cpu/cpu0/cpuidle/state1']):
                 with mock.patch('avocado.utils.cpu.open', return_value=output):
