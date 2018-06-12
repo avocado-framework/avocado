@@ -660,13 +660,13 @@ class _SystemdServiceManager(_GenericServiceManager):
         os.rename(tmp_symlink, "/etc/systemd/system/default.target")
 
 
-_command_generators = {"init": sys_v_init_command_generator,
+_COMMAND_GENERATORS = {"init": sys_v_init_command_generator,
                        "systemd": systemd_command_generator}
 
-_result_parsers = {"init": sys_v_init_result_parser,
+_RESULT_PARSERS = {"init": sys_v_init_result_parser,
                    "systemd": systemd_result_parser}
 
-_service_managers = {"init": _SysVInitServiceManager,
+_SERVICE_MANAGERS = {"init": _SysVInitServiceManager,
                      "systemd": _SystemdServiceManager}
 
 
@@ -695,9 +695,9 @@ def service_manager(run=process.run):
     :rtype: _GenericServiceManager
     """
     init = get_name_of_init(run)
-    internal_service_manager = _service_managers[init]
-    internal_command_generator = _command_generators[init]
-    internal_result_parser = _result_parsers[init]
+    internal_service_manager = _SERVICE_MANAGERS[init]
+    internal_command_generator = _COMMAND_GENERATORS[init]
+    internal_result_parser = _RESULT_PARSERS[init]
 
     internal_generator = _ServiceCommandGenerator(internal_command_generator)
     internal_parser = _ServiceResultParser(internal_result_parser)
@@ -717,7 +717,7 @@ def _auto_create_specific_service_result_parser(run=process.run):
     :return: A ServiceResultParser for the auto-detected init command.
     :rtype: _ServiceResultParser
     """
-    result_parser = _result_parsers[get_name_of_init(run)]
+    result_parser = _RESULT_PARSERS[get_name_of_init(run)]
     # remove list method
     command_list = [(c, r) for (c, r) in COMMANDS if
                     c not in ["list", "set_target"]]
@@ -737,7 +737,7 @@ def _auto_create_specific_service_command_generator(run=process.run):
     :return: A ServiceCommandGenerator for the auto-detected init command.
     :rtype: _ServiceCommandGenerator
     """
-    command_generator = _command_generators[get_name_of_init(run)]
+    command_generator = _COMMAND_GENERATORS[get_name_of_init(run)]
     # remove list method
     command_list = [(c, r) for (c, r) in COMMANDS if
                     c not in ["list", "set_target"]]
@@ -764,7 +764,7 @@ def specific_service_manager(service_name, run=process.run):
     :rtype: _SpecificServiceManager
     """
     init = get_name_of_init(run)
-    result_parser = _result_parsers[init]
+    result_parser = _RESULT_PARSERS[init]
     specific_generator = _auto_create_specific_service_command_generator
     return _SpecificServiceManager(service_name,
                                    specific_generator(run),
