@@ -35,6 +35,11 @@ Installing Avocado
 Avocado is primarily written in Python, so a standard Python installation
 is possible and often preferable.
 
+.. tip:: If you are looking for Virtualization specific testing, also
+         consider looking at `Avocado-VT installation instructions
+         <https://avocado-vt.readthedocs.io/en/latest/GetStartedGuide.html#installing-avocado-vt>`_
+         after finishing the Avocado installation.
+
 Installing with standard Python tools
 -------------------------------------
 
