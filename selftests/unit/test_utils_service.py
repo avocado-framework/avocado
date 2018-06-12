@@ -55,17 +55,23 @@ class TestSystemd(unittest.TestCase):
             command_generator)
 
     def test_all_commands(self):
+        # Test all commands except "set_target" which is tested elsewhere
         for cmd, _ in ((c, r) for (c, r) in
                        self.service_command_generator.commands if
-                       c not in ["list", "set_target"]):
+                       c not in ["set_target"]):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
             if cmd == "is_enabled":
                 cmd = "is-enabled"
             if cmd == "reset_failed":
                 cmd = "reset-failed"
-            self.assertEqual(ret, ["systemctl", cmd, "%s.service" %
-                                   self.service_name])
+            if cmd == "list":
+                self.assertEqual(ret, ['systemctl', 'list-unit-files',
+                                       '--type=service', '--no-pager',
+                                       '--full'])
+            else:
+                self.assertEqual(ret, ["systemctl", cmd, "%s.service" %
+                                       self.service_name])
 
     def test_set_target(self):
         ret = getattr(
@@ -84,22 +90,28 @@ class TestSysVInit(unittest.TestCase):
 
     def test_all_commands(self):
         command_name = "service"
+        # Test all commands except "set_target" which is tested elsewhere
         for cmd, _ in ((c, r) for (c, r) in
-                       self.service_command_generator.commands if
-                       c not in ["list", "set_target", "reset_failed", "mask",
-                                 "unmask"]):
+                       self.service_command_generator.commands
+                       if c != 'set_target'):
             ret = getattr(
                 self.service_command_generator, cmd)(self.service_name)
-            if cmd == "is_enabled":
-                command_name = "chkconfig"
-                cmd = ""
-            elif cmd == 'enable':
-                command_name = "chkconfig"
-                cmd = "on"
-            elif cmd == 'disable':
-                command_name = "chkconfig"
-                cmd = "off"
-            self.assertEqual(ret, [command_name, self.service_name, cmd])
+            if cmd in ['set_target', 'reset_failed', 'mask', 'unmask']:
+                exp = ['true']
+            elif cmd == 'list':
+                exp = ['chkconfig', '--list']
+            else:
+                if cmd == "is_enabled":
+                    command_name = "chkconfig"
+                    cmd = ""
+                elif cmd == 'enable':
+                    command_name = "chkconfig"
+                    cmd = "on"
+                elif cmd == 'disable':
+                    command_name = "chkconfig"
+                    cmd = "off"
+                exp = [command_name, self.service_name, cmd]
+            self.assertEqual(ret, exp, (ret, exp, cmd))
 
     def test_set_target(self):
         ret = getattr(
