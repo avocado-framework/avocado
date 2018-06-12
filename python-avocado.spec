@@ -10,10 +10,10 @@
     %global gittar          %{srcname}-%{version}.tar.gz
 %else
     %if ! 0%{?commit:1}
-        %global commit      6c9fb563adf92581fb9368dff68c447bea4364a4
+        %global commit      0eec108df704ed3a7b6614b6fb422ee57681b378
     %endif
     %if ! 0%{?commit_date:1}
-        %global commit_date 20180424
+        %global commit_date 20180612
     %endif
     %global shortcommit     %(c=%{commit};echo ${c:0:8})
     %global gitrel          .%{commit_date}git%{shortcommit}
@@ -39,8 +39,8 @@
 
 Summary: Framework with tools and libraries for Automated Testing
 Name: python-%{srcname}
-Version: 61.0
-Release: 1%{?gitrel}%{?dist}
+Version: 62.0
+Release: 0%{?gitrel}%{?dist}
 License: GPLv2
 Group: Development/Tools
 URL: http://avocado-framework.github.io/
@@ -778,6 +778,9 @@ Again Shell code (and possibly other similar shells).
 %{_libexecdir}/avocado*
 
 %changelog
+* Tue Jun 12 2018 Cleber Rosa <cleber@redhat.com> - 62.0-0
+- New release
+
 * Tue May  1 2018 Cleber Rosa <cleber@redhat.com> - 61.0-1
 - Use Python version specific "avocado" scripts on tests
 

@@ -228,6 +228,49 @@ introduced by the next LTS version are:
   test writers that need consistent results across Python major
   versions.
 
+* The ``avocado.Test.srcdir`` attribute has been removed, and with it,
+  the ``AVOCADO_TEST_SRCDIR`` environment variable set by Avocado.
+  This was done after a deprecation period, so tests should have been
+  modified by now to make use of the :attr:`avocado.Test.workdir`
+  instead.
+
+* The ``avocado.Test.datadir`` attribute has been removed, and with
+  it, the ``AVOCADO_TEST_DATADIR`` environment variable set by
+  Avocado.  This was done after a deprecation period, so tests should
+  have been modified by now to make use of the
+  :func:`avocado.Test.get_data() <avocado.core.test.TestData.get_data>`
+  instead.
+
+* The :func:`avocado.utils.cpu.set_cpuidle_state` function now takes a
+  boolean value for its ``disable`` parameter (while still allowing
+  the previous integer (0/1) values to be used).  The goal is to have
+  a more Pythonic interface, and to drop support legacy integer (0/1)
+  use in the upcoming releases.
+
+* :data:`avocado.utils.astring.ENCODING` is a new addition, and holds
+  the encoding used on many other Avocado utilities.  If your test
+  needs to convert between binary data and text, we recommend you use
+  it as the default encoding (unless your test knows better).
+
+* :func:`avocado.utils.astring.to_text` now supports setting the error
+  handler.  This means that when a perfect decoding is not possible,
+  users can choose how to handle it, like, for example, ignoring the
+  offending characters.
+
+* When running a process by means of the :mod:`avocado.utils.process`
+  module utilities, the output of such a process is captured and can
+  be logged in a ``stdout``/``stderr`` (or combined ``output``) file.
+  The logging is now more resilient to decode errors, and will use the
+  ``replace`` error handler by default.  Please note that the downside
+  is that this *may* produce different content in those files, from
+  what was actually output by the processes if decoding error
+  conditions happen.
+
+* The :func:`avocado.utils.astring.tabular_output` will now properly
+  strip trailing whitespace from lines that don't contain data for all
+  "columns".  This is also reflected in the (tabular) output of
+  commands such as ``avocado list -v``.
+
 Complete list of changes
 ========================
 

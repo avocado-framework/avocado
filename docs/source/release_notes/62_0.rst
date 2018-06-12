@@ -1,0 +1,109 @@
+=============
+62.0 Farewell
+=============
+
+The Avocado team is proud to present another release: Avocado version
+62.0, AKA "Farewell", is now available!
+
+Release documentation: `Avocado 62.0
+<http://avocado-framework.readthedocs.io/en/62.0/>`_
+
+The major changes introduced on this version are listed below,
+roughly categorized into major topics and intended audience:
+
+Users/Test Writers
+==================
+
+* The ``avocado.Test.srcdir`` attribute has been removed, and with it,
+  the ``AVOCADO_TEST_SRCDIR`` environment variable set by Avocado.
+  This was done after a deprecation period, so tests should have been
+  modified by now to make use of the :attr:`avocado.Test.workdir`
+  instead.
+
+* The ``avocado.Test.datadir`` attribute has been removed, and with
+  it, the ``AVOCADO_TEST_DATADIR`` environment variable set by
+  Avocado.  This was done after a deprecation period, so tests should
+  have been modified by now to make use of the
+  :func:`avocado.Test.get_data() <avocado.core.test.TestData.get_data>`
+  instead.
+
+* The :func:`avocado.utils.cpu.set_cpuidle_state` function now takes a
+  boolean value for its ``disable`` parameter (while still allowing
+  the previous integer (0/1) values to be used).  The goal is to have
+  a more Pythonic interface, and to drop support legacy integer (0/1)
+  use in the upcoming releases.
+
+* :data:`avocado.utils.astring.ENCODING` is a new addition, and holds
+  the encoding used on many other Avocado utilities.  If your test
+  needs to convert between binary data and text, we recommend you use
+  it as the default encoding (unless your test knows better).
+
+* :func:`avocado.utils.astring.to_text` now supports setting the error
+  handler.  This means that when a perfect decoding is not possible,
+  users can choose how to handle it, like, for example, ignoring the
+  offending characters.
+
+* When running a process by means of the :mod:`avocado.utils.process`
+  module utilities, the output of such a process is captured and can
+  be logged in a ``stdout``/``stderr`` (or combined ``output``) file.
+  The logging is now more resilient to decode errors, and will use the
+  ``replace`` error handler by default.  Please note that the downside
+  is that this *may* produce different content in those files, from
+  what was actually output by the processes if decoding error
+  conditions happen.
+
+* The :func:`avocado.utils.astring.tabular_output` will now properly
+  strip trailing whitespace from lines that don't contain data for all
+  "columns".  This is also reflected in the (tabular) output of
+  commands such as ``avocado list -v``.
+
+Bug Fixes
+=========
+
+* Users of the :mod:`avocado.utils.service` module can now safely
+  instantiate the service manager multiple times.  It was previously
+  limited to a single instance per interpreter.
+
+* The :mod:`avocado.utils.vmimage` library default usage broke with
+  the release of Fedora 28, which added a different directory layout
+  for its cloud images.  This has now been fixed and should allow for
+  a successful ``image = avocado.utils.vmimage()`` usage.
+
+Internal Changes
+================
+
+* Refactor of the :mod:`avocado.utils.asset` module, in preparation
+  for new functionality.
+
+* The :mod:`avocado.utils.cpu` module now treats reads/writes to/from
+  ``/proc/*`` and ``/sys/*`` as binary data.
+
+* The selftests for the :mod:`avocado.utils.cpu` module will now run
+  under Python 3 (>= 3.6), due to more detailed checks of capable
+  mock versions.
+
+* The test that serves as the example for the :ref:`whiteboard
+  <saving-test-generated-custom-data>` feature has been simplified, and
+  the more complex test moved to ``selftests``.
+
+* Package builds with ``make rpm`` are now done with the systemd-nspawn
+  based chroot implementation for ``mock``.
+
+For more information, please check out the complete
+`Avocado changelog
+<https://github.com/avocado-framework/avocado/compare/61.0...62.0>`_.
+
+Release Meeting
+===============
+
+The Avocado release meetings are now open to the community via
+Hangouts on Air.  The meetings are recorded and made available on the
+`Avocado Test Framework YouTube channel
+<https://www.youtube.com/channel/UC-RVZ_HFTbEztDM7wNY4NfA>`_.
+
+For this release, you can watch the meeting on `this link
+<https://www.youtube.com/watch?v=cJXt0kzQta4>`_.
+
+----
+
+| Sprint theme: https://trello.com/c/4KtpSeGT/1305-sprint-theme-farewell-2009

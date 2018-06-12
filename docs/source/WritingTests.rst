@@ -146,6 +146,8 @@ Once again, keeping your tests up-to-date and distinguishing between
 ``FAIL`` and ``ERROR`` will save you a lot of time while reviewing the
 test results.
 
+.. _saving-test-generated-custom-data:
+
 Saving test generated (custom) data
 ===================================
 
