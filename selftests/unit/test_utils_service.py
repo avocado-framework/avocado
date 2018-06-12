@@ -26,28 +26,23 @@ except ImportError:
 from avocado.utils import service
 
 
-class TestRunCalls(unittest.TestCase):
+class TestMultipleInstances(unittest.TestCase):
 
-    def setUp(self):
-        self.run_param1 = ["foo_target", "set_target", mock.Mock()]
-        self.run_param2 = ["foo_service", "start", mock.Mock()]
-        self.run_param1[-1].return_value.stdout = "systemd"
-        self.run_param2[-1].return_value.stdout = "init"
-        self.results = ["systemctl isolate foo_target",
-                        "service foo_service start"]
-
-    def test_run_calls(self):
-
-        def run_call(run_params):
-            run_mock = run_params[-1]
-            serv = service.service_manager(run=run_mock)
-            self.assertTrue(run_mock.called)
-            getattr(serv, run_params[1])(run_params[0])
-
-        for test_params, test_results in zip([self.run_param1, self.run_param2],
-                                             self.results):
-            run_call(test_params)
-            self.assertEqual(test_params[-1].call_args[0][0], test_results)
+    def test_different_runners(self):
+        # Call 'set_target' on first runner
+        runner1 = mock.Mock()
+        runner1.return_value.stdout = 'systemd'
+        service1 = service.service_manager(run=runner1)
+        service1.set_target('foo_target')
+        self.assertEqual(runner1.call_args[0][0],
+                         'systemctl isolate foo_target')
+        # Call 'start' on second runner
+        runner2 = mock.Mock()
+        runner2.return_value.stdout = 'init'
+        service2 = service.service_manager(run=runner2)
+        service2.start('foo_service')
+        self.assertEqual(runner2.call_args[0][0],
+                         'service foo_service start')
 
 
 class TestSystemd(unittest.TestCase):
