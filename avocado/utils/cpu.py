@@ -27,16 +27,15 @@ import glob
 import logging
 
 
-def _list_matches(lst, pattern):
+def _list_matches(content_list, pattern):
     """
-    True if any item in list matches the specified pattern.
+    Checks if any item in list matches the specified pattern
     """
-    compiled = re.compile(pattern)
-    for element in lst:
-        match = compiled.search(element)
+    for content in content_list:
+        match = re.search(pattern, content)
         if match:
-            return 1
-    return 0
+            return True
+    return False
 
 
 def _get_cpu_info():
@@ -47,9 +46,9 @@ def _get_cpu_info():
     :rtype: `list`
     """
     cpuinfo = []
-    with open('/proc/cpuinfo') as proc_cpuinfo:
+    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
         for line in proc_cpuinfo:
-            if line == '\n':
+            if line == b'\n':
                 break
             cpuinfo.append(line)
     return cpuinfo
@@ -64,8 +63,8 @@ def _get_cpu_status(cpu):
     :returns: `bool` True if online or False if not
     :rtype: 'bool'
     """
-    with open('/sys/devices/system/cpu/cpu%s/online' % cpu) as online:
-        if '1' in online.read():
+    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as online:
+        if b'1' in online.read():
             return True
     return False
 
@@ -117,22 +116,22 @@ def get_cpu_arch():
     """
     Work out which CPU architecture we're running on
     """
-    cpu_table = [('^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
-                 ('^cpu.*POWER4', 'power4'),
-                 ('^cpu.*POWER5', 'power5'),
-                 ('^cpu.*POWER6', 'power6'),
-                 ('^cpu.*POWER7', 'power7'),
-                 ('^cpu.*POWER8', 'power8'),
-                 ('^cpu.*POWER9', 'power9'),
-                 ('^cpu.*PPC970', 'power970'),
-                 ('(ARM|^CPU implementer|^CPU part|^CPU variant'
-                  '|^Features|^BogoMIPS|^CPU revision)', 'arm'),
-                 ('(^cpu MHz dynamic|^cpu MHz static|^features'
-                  '|^bogomips per cpu|^max thread id)', 's390'),
-                 ('^type', 'sparc64'),
-                 ('^flags.*:.* lm .*', 'x86_64'),
-                 ('^flags', 'i386'),
-                 ('^hart\\s*: 1$', 'riscv')]
+    cpu_table = [(b'^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
+                 (b'^cpu.*POWER4', 'power4'),
+                 (b'^cpu.*POWER5', 'power5'),
+                 (b'^cpu.*POWER6', 'power6'),
+                 (b'^cpu.*POWER7', 'power7'),
+                 (b'^cpu.*POWER8', 'power8'),
+                 (b'^cpu.*POWER9', 'power9'),
+                 (b'^cpu.*PPC970', 'power970'),
+                 (b'(ARM|^CPU implementer|^CPU part|^CPU variant'
+                  b'|^Features|^BogoMIPS|^CPU revision)', 'arm'),
+                 (b'(^cpu MHz dynamic|^cpu MHz static|^features'
+                  b'|^bogomips per cpu|^max thread id)', 's390'),
+                 (b'^type', 'sparc64'),
+                 (b'^flags.*:.* lm .*', 'x86_64'),
+                 (b'^flags', 'i386'),
+                 (b'^hart\\s*: 1$', 'riscv')]
     cpuinfo = _get_cpu_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
@@ -151,12 +150,12 @@ def cpu_online_list():
     Reports a list of indexes of the online cpus
     """
     cpus = []
-    search_str = 'processor'
+    search_str = b'processor'
     index = 2
     if platform.machine() == 's390x':
-        search_str = 'cpu number'
+        search_str = b'cpu number'
         index = 3
-    with open('/proc/cpuinfo', 'r') as proc_cpuinfo:
+    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
         for line in proc_cpuinfo:
             if line.startswith(search_str):
                 cpus.append(int(line.split()[index]))  # grab cpu number
@@ -181,8 +180,8 @@ def online(cpu):
     """
     Online given CPU
     """
-    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "w") as fd:
-        fd.write('1')
+    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+        fd.write(b'1')
     if _get_cpu_status(cpu):
         return 0
     return 1
@@ -192,8 +191,8 @@ def offline(cpu):
     """
     Offline given CPU
     """
-    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "w") as fd:
-        fd.write('0')
+    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+        fd.write(b'0')
     if _get_cpu_status(cpu):
         return 1
     return 0
@@ -214,19 +213,46 @@ def get_cpuidle_state():
         for state_no in states:
             state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
             try:
-                cpu_idlestate[cpu][state_no] = int(open(state_file).read())
+                cpu_idlestate[cpu][state_no] = int(open(state_file, 'rb').read())
             except IOError as err:
                 logging.warning("Failed to read idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
     return cpu_idlestate
 
 
-def set_cpuidle_state(state_number="all", disable=1, setstate=None):
+def _bool_to_binary(value):
+    '''
+    Turns a boolean value (True or False) into data suitable for writing to
+    /proc/* and /sys/* files.
+    '''
+    if value is True:
+        return b'1'
+    if value is False:
+        return b'0'
+    raise TypeError('Value is not a boolean: %s', value)
+
+
+def _legacy_disable(value):
+    '''
+    Support for the original acceptable disable parameter values
+
+    TODO: this should be removed in the near future
+    Reference: https://trello.com/c/aJzNUeA5/
+    '''
+    if value is 0:
+        return b'0'
+    if value is 1:
+        return b'1'
+    return _bool_to_binary(value)
+
+
+def set_cpuidle_state(state_number="all", disable=True, setstate=None):
     """
     Set/Reset cpu idle states for all cpus
 
     :param state_number: cpuidle state number, default: `all` all states
-    :param disable: whether to disable/enable given cpu idle state, default: 1
+    :param disable: whether to disable/enable given cpu idle state,
+                    default is to disable (True)
     :param setstate: cpuidle state value, output of `get_cpuidle_state()`
     """
     cpus_list = cpu_online_list()
@@ -239,8 +265,9 @@ def set_cpuidle_state(state_number="all", disable=1, setstate=None):
         for cpu in cpus_list:
             for state_no in states:
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                disable = _legacy_disable(disable)
                 try:
-                    open(state_file, "w").write(str(disable))
+                    open(state_file, "wb").write(disable)
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
@@ -248,8 +275,9 @@ def set_cpuidle_state(state_number="all", disable=1, setstate=None):
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
+                disable = _legacy_disable(value)
                 try:
-                    open(state_file, "w").write(str(value))
+                    open(state_file, "wb").write(disable)
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
