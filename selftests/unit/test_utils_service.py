@@ -50,7 +50,7 @@ class TestSystemd(unittest.TestCase):
     def setUp(self):
         self.service_name = "fake_service"
         init_name = "systemd"
-        command_generator = service._command_generators[init_name]
+        command_generator = service._COMMAND_GENERATORS[init_name]
         self.service_command_generator = service._ServiceCommandGenerator(
             command_generator)
 
@@ -84,7 +84,7 @@ class TestSysVInit(unittest.TestCase):
     def setUp(self):
         self.service_name = "fake_service"
         init_name = "init"
-        command_generator = service._command_generators[init_name]
+        command_generator = service._COMMAND_GENERATORS[init_name]
         self.service_command_generator = service._ServiceCommandGenerator(
             command_generator)
 
@@ -162,9 +162,9 @@ class TestServiceManager(unittest.TestCase):
 
     @staticmethod
     def get_service_manager_from_init_and_run(init_name, run_mock):
-        command_generator = service._command_generators[init_name]
-        result_parser = service._result_parsers[init_name]
-        service_manager = service._service_managers[init_name]
+        command_generator = service._COMMAND_GENERATORS[init_name]
+        result_parser = service._RESULT_PARSERS[init_name]
+        service_manager = service._SERVICE_MANAGERS[init_name]
         service_command_generator = service._ServiceCommandGenerator(
             command_generator)
         service_result_parser = service._ServiceResultParser(result_parser)
