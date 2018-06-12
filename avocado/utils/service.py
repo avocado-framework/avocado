@@ -109,7 +109,7 @@ def sys_v_init_result_parser(command):
     if command == "status":
         def method(cmd_result):
             """
-            Parse method for service XXX status.
+            Parse _method for service XXX status.
 
             Returns True if XXX is running.
             Returns False if XXX is stopped.
@@ -132,7 +132,7 @@ def sys_v_init_result_parser(command):
     elif command == "list":
         def method(cmd_result):
             """
-            Parse method for service XXX list.
+            Parse _method for service XXX list.
 
             Return dict from service name to status.
 
@@ -148,39 +148,38 @@ def sys_v_init_result_parser(command):
             if cmd_result.exit_status:
                 raise process.CmdError(cmd_result.command, cmd_result)
             # The final dict to return.
-            _service2statusOnTarget_dict = {}
+            services_statuses_dict = {}
             # Dict to store status on every target for each service.
-            _status_on_target = {}
+            status_per_target_dict = {}
             # Dict to store the status for service based on xinetd.
-            _service2statusOnXinet_dict = {}
+            xinet_services_dict = {}
             lines = cmd_result.stdout.strip().splitlines()
             for line in lines:
                 sublines = line.strip().split()
                 if len(sublines) == 8:
                     # Service and status on each target.
                     service_name = sublines[0]
-                    # Store the status of each target in _status_on_target.
+                    # Store the status of each target in status_per_target_dict
                     for target in range(7):
                         status = sublines[target + 1].split(":")[-1]
-                        _status_on_target[target] = status
-                    _service2statusOnTarget_dict[service_name] = (
-                        _status_on_target.copy())
+                        status_per_target_dict[target] = status
+                    services_statuses_dict[service_name] = (
+                        status_per_target_dict.copy())
 
                 elif len(sublines) == 2:
                     # Service based on xinetd.
                     service_name = sublines[0].strip(":")
                     status = sublines[-1]
-                    _service2statusOnXinet_dict[service_name] = status
+                    xinet_services_dict[service_name] = status
 
                 else:
                     # Header or some lines useless.
                     continue
             # Add xinetd based service in the main dict.
-            _service2statusOnTarget_dict["xinetd"] = _service2statusOnXinet_dict
-            return _service2statusOnTarget_dict
+            services_statuses_dict["xinetd"] = xinet_services_dict
+            return services_statuses_dict
         return method
-    else:
-        return _ServiceResultParser.default_method
+    return _ServiceResultParser.default_method
 
 
 def systemd_result_parser(command):
@@ -199,7 +198,7 @@ def systemd_result_parser(command):
     if command == "status":
         def method(cmd_result):
             """
-            Parse method for systemctl status XXX.service.
+            Parse _method for systemctl status XXX.service.
 
             Returns True if XXX.service is running.
             Returns False if XXX.service is stopped.
@@ -217,7 +216,7 @@ def systemd_result_parser(command):
     elif command == "list":
         def method(cmd_result):
             """
-            Parse method for systemctl list XXX.service.
+            Parse _method for systemctl list XXX.service.
 
             Return a dict from service name to status.
 
@@ -244,8 +243,7 @@ def systemd_result_parser(command):
                 _service2status_dict[service_name] = status
             return _service2status_dict
         return method
-    else:
-        return _ServiceResultParser.default_method
+    return _ServiceResultParser.default_method
 
 
 def sys_v_init_command_generator(command):
@@ -269,23 +267,23 @@ def sys_v_init_command_generator(command):
         command = "off"
     elif command == 'list':
         # noinspection PyUnusedLocal
-        def list_command(service_name):
+        def _list_command(_):
             return ["chkconfig", "--list"]
-        return list_command
+        return _list_command
     elif command == "set_target":
-        def set_target_command(target):
+        def _set_target_command(target):
             target = convert_systemd_target_to_runlevel(target)
             return ["telinit", target]
-        return set_target_command
+        return _set_target_command
     # Do not need reset failed, mask and unmask in sys_v style system.
     elif command in ["reset_failed", "mask", "unmask"]:
-        def true_command(service_name):
+        def _true_command(_):
             return ["true"]
-        return true_command
+        return _true_command
 
-    def method(service_name):
+    def _method(service_name):
         return [command_name, service_name, command]
-    return method
+    return _method
 
 
 def systemd_command_generator(command):
@@ -294,8 +292,8 @@ def systemd_command_generator(command):
 
     One argument per string for compatibility Popen
 
-    WARNING: If systemctl detects that it is running on a tty it will use color,
-    pipe to $PAGER, change column sizes and not truncate unit names.
+    WARNING: If systemctl detects that it is running on a tty it will use
+    color, pipe to $PAGER, change column sizes and not truncate unit names.
     Use --no-pager to suppress pager output, or set PAGER=cat in the
     environment. You may need to take other steps to suppress color output.
     See https://bugzilla.redhat.com/show_bug.cgi?id=713567
@@ -311,22 +309,22 @@ def systemd_command_generator(command):
         command = "is-enabled"
     elif command == "list":
         # noinspection PyUnusedLocal
-        def list_command(service_name):
+        def _list_command(_):
             # systemctl pipes to `less` or $PAGER by default. Workaround this
             # add '--full' to avoid systemctl truncates service names.
             return [command_name, "list-unit-files",
                     "--type=service", "--no-pager", "--full"]
-        return list_command
+        return _list_command
     elif command == "set_target":
-        def set_target_command(target):
+        def _set_target_command(target):
             return [command_name, "isolate", target]
-        return set_target_command
+        return _set_target_command
     elif command == "reset_failed":
         command = "reset-failed"
 
-    def method(service_name):
+    def _method(service_name):
         return [command_name, command, "%s.service" % service_name]
-    return method
+    return _method
 
 
 # mapping command/whether it requires root
@@ -348,7 +346,7 @@ COMMANDS = (
 )
 
 
-class _ServiceResultParser(object):
+class _ServiceResultParser(object):  # pylint: disable=too-few-public-methods
 
     """
     A class that contains staticmethods to parse the result of service command.
@@ -372,18 +370,18 @@ class _ServiceResultParser(object):
     @staticmethod
     def default_method(cmd_result):
         """
-        Default method to parse result from command which is not 'list'/'status'
+        Default _method to parse result from command which is not 'list'/
+        'status'
 
         Returns True if command was executed successfully.
         """
         if cmd_result.exit_status:
             LOG.debug(cmd_result)
             return False
-        else:
-            return True
+        return True
 
 
-class _ServiceCommandGenerator(object):
+class _ServiceCommandGenerator(object):  # pylint: disable=too-few-public-methods
 
     """
     Generate command lists for starting/stopping services.
@@ -433,7 +431,7 @@ def get_name_of_init(run=process.run):
         return os.path.basename(output)
 
 
-class _SpecificServiceManager(object):
+class _SpecificServiceManager(object):  # pylint: disable=too-few-public-methods
 
     def __init__(self, service_name, service_command_generator,
                  service_result_parser, run=process.run):
@@ -510,7 +508,7 @@ class _SpecificServiceManager(object):
         return run
 
 
-class _GenericServiceManager(object):
+class _GenericServiceManager(object):  # pylint: disable=too-few-public-methods
 
     """
     Base class for SysVInitServiceManager and SystemdServiceManager.
@@ -564,9 +562,9 @@ class _GenericServiceManager(object):
 
             :param service: service name, e.g. crond, dbus, etc.
             :param kwargs: extra arguments to process.run, .e.g. timeout.
-                    But not for ignore_status.
-                    We need a CmdResult to parse and raise a exception.TestError
-                    if command failed. We will not let the CmdError out.
+                    But not for ignore_status. We need a CmdResult to parse
+                    and raise a exception.TestError if command failed.
+                    We will not let the CmdError out.
             :return: result of parse_func.
             """
             # If run_func is process.run by default, we need to set
@@ -583,25 +581,11 @@ class _GenericServiceManager(object):
         return run
 
 
-class _SysVInitServiceManager(_GenericServiceManager):
+class _SysVInitServiceManager(_GenericServiceManager):  # pylint: disable=too-few-public-methods
 
     """
     Concrete class that implements the SysVInitServiceManager
     """
-
-    def __init__(self, service_command_generator, service_result_parser,
-                 run=process.run):
-        """
-        Create the GenericServiceManager for SysV services.
-
-        :param service_command_generator:
-        :type service_command_generator: _ServiceCommandGenerator
-        :param run: function to call to run the commands, default process.run
-        :type run: function
-        """
-        super(_SysVInitServiceManager, self).__init__(service_command_generator,
-                                                      service_result_parser,
-                                                      run)
 
 
 def convert_sysv_runlevel(level):
@@ -660,19 +644,6 @@ class _SystemdServiceManager(_GenericServiceManager):
     """
     Concrete class that implements the SystemdServiceManager
     """
-
-    def __init__(self, service_command_generator, service_result_parser,
-                 run=process.run):
-        """
-        Create the GenericServiceManager for systemd services.
-
-        :param service_command_generator:
-        :type service_command_generator: _ServiceCommandGenerator
-        :param run: function to call to run the commands, default process.run
-        :type run: function
-        """
-        super(_SystemdServiceManager, self).__init__(service_command_generator,
-                                                     service_result_parser, run)
 
     @staticmethod
     def change_default_runlevel(runlevel='multi-user.target'):
@@ -748,7 +719,7 @@ def _auto_create_specific_service_result_parser(run=process.run):
     :rtype: _ServiceResultParser
     """
     result_parser = _result_parsers[get_name_of_init(run)]
-    # remove list method
+    # remove list _method
     command_list = [(c, r) for (c, r) in COMMANDS if
                     c not in ["list", "set_target"]]
     return _ServiceResultParser(result_parser, command_list)
@@ -768,7 +739,7 @@ def _auto_create_specific_service_command_generator(run=process.run):
     :rtype: _ServiceCommandGenerator
     """
     command_generator = _command_generators[get_name_of_init(run)]
-    # remove list method
+    # remove list _method
     command_list = [(c, r) for (c, r) in COMMANDS if
                     c not in ["list", "set_target"]]
     return _ServiceCommandGenerator(command_generator, command_list)
