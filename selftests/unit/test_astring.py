@@ -80,7 +80,7 @@ class AstringTest(unittest.TestCase):
     def test_is_bytes(self):
         """
         Verifies what bytes means, basically that they are the same
-        thing accross Python 2 and 3 and can be decoded into "text"
+        thing across Python 2 and 3 and can be decoded into "text"
         """
         binary = b''
         text = u''

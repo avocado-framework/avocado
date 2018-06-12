@@ -130,10 +130,10 @@ def compare_matrices(matrix1, matrix2, threshold=0.05):
 
 def comma_separated_ranges_to_list(string):
     """
-    Provides a list from comma sepatated ranges
+    Provides a list from comma separated ranges
 
-    :param string: string of comma seperated range
-    :retrun list: list of integer values in comma seperated range
+    :param string: string of comma separated range
+    :return list: list of integer values in comma separated range
     """
     values = []
     for value in string.split(','):
