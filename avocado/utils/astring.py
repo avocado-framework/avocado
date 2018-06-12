@@ -346,3 +346,23 @@ def to_text(data, encoding=ENCODING, errors='strict'):
         else:
             return str(data)
     return data
+
+
+def to_bytes(data, encoding=ENCODING, errors='strict'):
+    """
+    Converts anything to encoded bytes
+
+    When data is bytes, it's returned. When it's not of string types,
+    it's turned into string and then encoded using encoding. Otherwise
+    it's simply encoded.
+
+    :param data: data to be transformed into bytes
+    :param encoding: encoding of the data (used to encode)
+    :param errors: how to handle encode/decode errors, see:
+            https://docs.python.org/3/library/codecs.html#error-handlers
+    """
+    if is_bytes(data):
+        return data
+    elif not isinstance(data, string_types):
+        data = to_text(data, encoding, errors)
+    return data.encode(encoding, errors)
