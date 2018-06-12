@@ -46,9 +46,9 @@ def _get_cpu_info():
     :rtype: `list`
     """
     cpuinfo = []
-    with open('/proc/cpuinfo') as proc_cpuinfo:
+    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
         for line in proc_cpuinfo:
-            if line == '\n':
+            if line == b'\n':
                 break
             cpuinfo.append(line)
     return cpuinfo
@@ -63,8 +63,8 @@ def _get_cpu_status(cpu):
     :returns: `bool` True if online or False if not
     :rtype: 'bool'
     """
-    with open('/sys/devices/system/cpu/cpu%s/online' % cpu) as online:
-        if '1' in online.read():
+    with open('/sys/devices/system/cpu/cpu%s/online' % cpu, 'rb') as online:
+        if b'1' in online.read():
             return True
     return False
 
@@ -116,22 +116,22 @@ def get_cpu_arch():
     """
     Work out which CPU architecture we're running on
     """
-    cpu_table = [('^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
-                 ('^cpu.*POWER4', 'power4'),
-                 ('^cpu.*POWER5', 'power5'),
-                 ('^cpu.*POWER6', 'power6'),
-                 ('^cpu.*POWER7', 'power7'),
-                 ('^cpu.*POWER8', 'power8'),
-                 ('^cpu.*POWER9', 'power9'),
-                 ('^cpu.*PPC970', 'power970'),
-                 ('(ARM|^CPU implementer|^CPU part|^CPU variant'
-                  '|^Features|^BogoMIPS|^CPU revision)', 'arm'),
-                 ('(^cpu MHz dynamic|^cpu MHz static|^features'
-                  '|^bogomips per cpu|^max thread id)', 's390'),
-                 ('^type', 'sparc64'),
-                 ('^flags.*:.* lm .*', 'x86_64'),
-                 ('^flags', 'i386'),
-                 ('^hart\\s*: 1$', 'riscv')]
+    cpu_table = [(b'^cpu.*(RS64|POWER3|Broadband Engine)', 'power'),
+                 (b'^cpu.*POWER4', 'power4'),
+                 (b'^cpu.*POWER5', 'power5'),
+                 (b'^cpu.*POWER6', 'power6'),
+                 (b'^cpu.*POWER7', 'power7'),
+                 (b'^cpu.*POWER8', 'power8'),
+                 (b'^cpu.*POWER9', 'power9'),
+                 (b'^cpu.*PPC970', 'power970'),
+                 (b'(ARM|^CPU implementer|^CPU part|^CPU variant'
+                  b'|^Features|^BogoMIPS|^CPU revision)', 'arm'),
+                 (b'(^cpu MHz dynamic|^cpu MHz static|^features'
+                  b'|^bogomips per cpu|^max thread id)', 's390'),
+                 (b'^type', 'sparc64'),
+                 (b'^flags.*:.* lm .*', 'x86_64'),
+                 (b'^flags', 'i386'),
+                 (b'^hart\\s*: 1$', 'riscv')]
     cpuinfo = _get_cpu_info()
     for (pattern, arch) in cpu_table:
         if _list_matches(cpuinfo, pattern):
@@ -150,12 +150,12 @@ def cpu_online_list():
     Reports a list of indexes of the online cpus
     """
     cpus = []
-    search_str = 'processor'
+    search_str = b'processor'
     index = 2
     if platform.machine() == 's390x':
-        search_str = 'cpu number'
+        search_str = b'cpu number'
         index = 3
-    with open('/proc/cpuinfo', 'r') as proc_cpuinfo:
+    with open('/proc/cpuinfo', 'rb') as proc_cpuinfo:
         for line in proc_cpuinfo:
             if line.startswith(search_str):
                 cpus.append(int(line.split()[index]))  # grab cpu number
@@ -180,8 +180,8 @@ def online(cpu):
     """
     Online given CPU
     """
-    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "w") as fd:
-        fd.write('1')
+    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+        fd.write(b'1')
     if _get_cpu_status(cpu):
         return 0
     return 1
@@ -191,8 +191,8 @@ def offline(cpu):
     """
     Offline given CPU
     """
-    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "w") as fd:
-        fd.write('0')
+    with open("/sys/devices/system/cpu/cpu%s/online" % cpu, "wb") as fd:
+        fd.write(b'0')
     if _get_cpu_status(cpu):
         return 1
     return 0
@@ -213,7 +213,7 @@ def get_cpuidle_state():
         for state_no in states:
             state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
             try:
-                cpu_idlestate[cpu][state_no] = int(open(state_file).read())
+                cpu_idlestate[cpu][state_no] = int(open(state_file, 'rb').read())
             except IOError as err:
                 logging.warning("Failed to read idle state on cpu %s "
                                 "for state %s:\n%s", cpu, state_no, err)
@@ -239,7 +239,7 @@ def set_cpuidle_state(state_number="all", disable=1, setstate=None):
             for state_no in states:
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
                 try:
-                    open(state_file, "w").write(str(disable))
+                    open(state_file, "wb").write(bytes(disable))
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
@@ -248,7 +248,7 @@ def set_cpuidle_state(state_number="all", disable=1, setstate=None):
             for state_no, value in stateval.items():
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
                 try:
-                    open(state_file, "w").write(str(value))
+                    open(state_file, "wb").write(bytes(value))
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
