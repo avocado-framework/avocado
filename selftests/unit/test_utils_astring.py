@@ -42,6 +42,15 @@ class AstringUtilsTest(unittest.TestCase):
                          "v2100 v22  v23" + "\n" +
                          "v31   v320 v33")
 
+    def test_to_bytes(self):
+        self.assertEqual(astring.to_bytes(b'\x00\x80\xff'), b'\x00\x80\xff')
+        self.assertEqual(astring.to_bytes(u'avok\xe1do', 'utf-8'),
+                         b'avok\xc3\xa1do')
+        self.assertEqual(astring.to_bytes(b'avok\xe1do', 'ISO-8859-15'),
+                         b'avok\xe1do')
+        data = Exception(b'avok\xc3\xa1do'.decode('utf-8'))
+        self.assertEqual(astring.to_bytes(data, 'utf-8'), b'avok\xc3\xa1do')
+
 
 if __name__ == '__main__':
     unittest.main()
