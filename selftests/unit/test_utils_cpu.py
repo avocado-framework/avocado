@@ -2,6 +2,8 @@ import io
 import sys
 import unittest
 
+import StringIO
+
 try:
     from unittest import mock
 except ImportError:
