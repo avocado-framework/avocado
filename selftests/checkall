@@ -85,6 +85,18 @@ parallel_selftests() {
                 for FAILURE in $(cat "${TMPS[$I]}" | sed -n 's/\(ERROR\|FAIL\): \([^ ]*\) (\([^)]*\)).*/\3.\2/p'); do
                     FAILED_ONCE+=("$FAILURE")
                 done
+                # On Python 3.4, load errors are not treated as test failures, and we can
+                # not easily tell which test failed to be loaded.  Let's return immediately.
+                grep -q "AttributeError: 'module' object has no attribute" "${TMPS[$I]}"
+                if [ $? == 0 ]; then
+                    echo
+                    echo ----------------------------------------------------------------------
+                    echo "ERROR: failed to load at least 1 test"
+                    echo "Check the following log output for more information:"
+                    cat "${TMPS[$I]}"
+                    echo ----------------------------------------------------------------------
+                    return 1;
+                fi
             else
                 rm ${TMPS[$I]}
             fi
