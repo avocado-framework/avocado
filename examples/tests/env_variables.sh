@@ -3,7 +3,6 @@
 # information, exported through environment variables.
 echo "Avocado Version: $AVOCADO_VERSION"
 echo "Avocado Test basedir: $AVOCADO_TEST_BASEDIR"
-echo "Avocado Test datadir: $AVOCADO_TEST_DATADIR"
 echo "Avocado Test workdir: $AVOCADO_TEST_WORKDIR"
 echo "Avocado Test logdir: $AVOCADO_TEST_LOGDIR"
 echo "Avocado Test logfile: $AVOCADO_TEST_LOGFILE"
