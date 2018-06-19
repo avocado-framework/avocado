@@ -211,7 +211,8 @@ class MuxPlugin(object):
             # summary == 0 means disable, but in plugin it's brief
             tree_repr = tree.tree_view(self.root, verbose=summary - 1,
                                        use_utf8=kwargs.get("use_utf8", None))
-            out.append(tree_repr)
+            # ascii is a subset of UTF-8, let's use always UTF-8 to decode here
+            out.append(tree_repr.decode('utf-8'))
             out.append("")
 
         if variants:
