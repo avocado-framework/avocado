@@ -144,7 +144,8 @@ class Dispatcher(EnabledExtensionManager):
             except KeyboardInterrupt:
                 raise
             except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
+                stacktrace.log_exc_info(sys.exc_info(),
+                                        logger='avocado.app.debug')
                 LOG_UI.error('Error running method "%s" of plugin "%s": %s',
                              method_name, ext.name, sys.exc_info()[1])
         return ret
@@ -166,7 +167,8 @@ class Dispatcher(EnabledExtensionManager):
             except KeyboardInterrupt:
                 raise
             except:     # catch any exception pylint: disable=W0702
-                stacktrace.log_exc_info(sys.exc_info(), logger='avocado.debug')
+                stacktrace.log_exc_info(sys.exc_info(),
+                                        logger='avocado.app.debug')
                 LOG_UI.error('Error running method "%s" of plugin "%s": %s',
                              method_name, ext.name, sys.exc_info()[1])
 
