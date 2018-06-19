@@ -295,6 +295,12 @@ class CmdResult(object):
             encoding = astring.ENCODING
         self.encoding = encoding
 
+    def __str__(self):
+        return '\n'.join("%s: %r" % (key, getattr(self, key, "MISSING"))
+                         for key in ('command', 'exit_status', 'duration',
+                                     'interrupted', 'pid', 'encoding',
+                                     'stdout', 'stderr'))
+
     @property
     def stdout_text(self):
         if hasattr(self.stdout, 'decode'):
