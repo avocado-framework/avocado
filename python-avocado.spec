@@ -50,9 +50,14 @@ Source0: https://github.com/avocado-framework/%{srcname}/archive/%{version}.tar.
 Source0: https://github.com/avocado-framework/%{srcname}/archive/%{commit}.tar.gz#/%{gittar}
 %endif
 BuildArch: noarch
-BuildRequires: fabric
 BuildRequires: procps-ng
 BuildRequires: kmod
+%if 0%{?fedora} >= 29
+BuildRequires: python2-fabric3
+%else
+BuildRequires: fabric
+%endif
+
 %if 0%{?rhel} == 7
 BuildRequires: pystache
 BuildRequires: python-lxml
@@ -527,7 +532,11 @@ arbitrary filesystem location.
 %package -n python2-%{srcname}-plugins-runner-remote
 Summary: Avocado Runner for Remote Execution
 Requires: python2-%{srcname} == %{version}
+%if 0%{?fedora} >= 29
+Requires: python2-fabric3
+%else
 Requires: fabric
+%endif
 
 %description -n python2-%{srcname}-plugins-runner-remote
 Allows Avocado to run jobs on a remote machine, by means of an SSH
