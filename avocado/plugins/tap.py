@@ -65,6 +65,7 @@ class TAPResult(ResultEvents):
             log = open(output, "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
+        self.__include_logs = getattr(args, 'tap_include_logs', False)
         self.is_header_printed = False
 
     def __write(self, msg, *writeargs):
@@ -104,13 +105,15 @@ class TAPResult(ResultEvents):
             name.replace('#', '_')  # Name must not contain #
             if name[0].isdigit():   # Name must not start with digit
                 name = "_" + name
+
         # First log the system output
-        self.__write("# debug.log of %s:", name)
+        if self.__include_logs:
+            self.__write("# debug.log of %s:", name)
+            with open(state.get("logfile"), "r") as logfile_obj:
+                for line in logfile_obj:
+                    self.__write("#   %s", line.rstrip())
 
-        with open(state.get("logfile"), "r") as logfile_obj:
-            for line in logfile_obj:
-                self.__write("#   %s", line.rstrip())
-
+        # Then the status
         if status == "PASS":
             self.__write("ok %s %s", result.tests_run, name)
         elif status == "WARN":
@@ -155,6 +158,11 @@ class TAP(CLI):
                                        "default TAP result in the job results"
                                        " directory. File will be named "
                                        "\"results.tap\".")
+
+        cmd_parser.output.add_argument('--tap-include-logs',
+                                       action='store_true', help='Include '
+                                       'test logs as comments in TAP output ('
+                                       '(%(default)s)')
 
     def run(self, args):
         pass
