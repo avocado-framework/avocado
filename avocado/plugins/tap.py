@@ -39,8 +39,6 @@ def file_log_factory(log_file):
                 raise TypeError("%s: msg='%s' args='%s'" %
                                 (details, msg, writeargs))
         ret = log_file.write(msg + "\n")
-        log_file.flush()
-        os.fsync(log_file)
         return ret
     return writeln
 
@@ -75,6 +73,14 @@ class TAPResult(ResultEvents):
         for log in self.__logs:
             log(msg, *writeargs)
 
+    def __flush(self):
+        """
+        Force-flush the output to opened files.
+        """
+        for opened_file in self.__open_files:
+            opened_file.flush()
+            os.fsync(opened_file)
+
     def pre_tests(self, job):
         """
         Log the test plan
@@ -94,6 +100,7 @@ class TAPResult(ResultEvents):
         """
         if not self.is_header_printed:
             self.__write("1..%d", result.tests_total)
+            self.__flush()
             self.is_header_printed = True
 
         status = state.get("status", "ERROR")
@@ -124,6 +131,7 @@ class TAPResult(ResultEvents):
                          state.get("fail_reason"))
         else:
             self.__write("not ok %s %s", result.tests_run, name)
+        self.__flush()
 
     def test_progress(self, progress=False):
         pass
