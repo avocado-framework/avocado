@@ -225,9 +225,9 @@ def _bool_to_binary(value):
     Turns a boolean value (True or False) into data suitable for writing to
     /proc/* and /sys/* files.
     '''
-    if value is True:
+    if value:
         return b'1'
-    if value is False:
+    else:
         return b'0'
     raise TypeError('Value is not a boolean: %s', value)
 
@@ -256,6 +256,7 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
     :param setstate: cpuidle state value, output of `get_cpuidle_state()`
     """
     cpus_list = cpu_online_list()
+    disable = _legacy_disable(disable)
     if not setstate:
         states = []
         if state_number == 'all':
@@ -275,9 +276,8 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
         for cpu, stateval in setstate.items():
             for state_no, value in stateval.items():
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
-                disable = _legacy_disable(value)
                 try:
-                    open(state_file, "wb").write(disable)
+                    open(state_file, "wb").write(value)
                 except IOError as err:
                     logging.warning("Failed to set idle state on cpu %s "
                                     "for state %s:\n%s", cpu, state_no, err)
