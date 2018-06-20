@@ -262,10 +262,10 @@ def set_cpuidle_state(state_number="all", disable=True, setstate=None):
             states = range(0, len(glob.glob("/sys/devices/system/cpu/cpu0/cpuidle/state*")))
         else:
             states.append(state_number)
+        disable = _legacy_disable(disable)
         for cpu in cpus_list:
             for state_no in states:
                 state_file = "/sys/devices/system/cpu/cpu%s/cpuidle/state%s/disable" % (cpu, state_no)
-                disable = _legacy_disable(disable)
                 try:
                     open(state_file, "wb").write(disable)
                 except IOError as err:
