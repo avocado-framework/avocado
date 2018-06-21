@@ -58,8 +58,9 @@ def form_conf_mpath_file(blacklist="", defaults_extra=""):
     # The reason for sleep here is to give some time for change in
     # multipath.conf file to take effect.
     time.sleep(5)
-    service.SpecificServiceManager(get_svc_name()).restart()
-    time.sleep(4)
+    mpath_svc = service.SpecificServiceManager(get_svc_name())
+    mpath_svc.restart()
+    wait.wait_for(mpath_svc.status, timeout=10)
 
 
 def device_exists(path):
