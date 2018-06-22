@@ -385,14 +385,10 @@ class _AvocadoTestDiscoverer(object):
                   force-disabled.
         :rtype: tuple
         """
-        # If only the Test class was imported from the avocado namespace
-        test_import = False
         # The name used, in case of 'from avocado import Test as AvocadoTest'
-        test_import_name = None
+        test_import = ""
         # If the "avocado" module itself was imported
-        mod_import = False
-        # The name used, in case of 'import avocado as avocadolib'
-        mod_import_name = None
+        mod_import = ""
         # The resulting test classes
         result = collections.OrderedDict()
         disabled = set()
@@ -410,22 +406,20 @@ class _AvocadoTestDiscoverer(object):
 
                 for name in statement.names:
                     if name.name == 'Test':
-                        test_import = True
                         if name.asname is not None:
-                            test_import_name = name.asname
+                            test_import = name.asname
                         else:
-                            test_import_name = name.name
+                            test_import = name.name
                         break
 
             # Looking for a 'import avocado'
             elif isinstance(statement, ast.Import):
                 for name in statement.names:
                     if name.name == 'avocado':
-                        mod_import = True
                         if name.asname is not None:
-                            mod_import_name = name.nasname
+                            mod_import = name.nasname
                         else:
-                            mod_import_name = name.name
+                            mod_import = name.name
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
@@ -533,7 +527,7 @@ class _AvocadoTestDiscoverer(object):
                     base_ids = [base.id for base in statement.bases
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
-                    if test_import_name in base_ids:
+                    if test_import in base_ids:
                         info = self._get_methods_info(statement.body,
                                                       cl_tags)
                         result[statement.name] = info
@@ -544,7 +538,7 @@ class _AvocadoTestDiscoverer(object):
                     for base in statement.bases:
                         module = base.value.id
                         klass = base.attr
-                        if module == mod_import_name and klass == 'Test':
+                        if module == mod_import and klass == 'Test':
                             info = self._get_methods_info(statement.body,
                                                           cl_tags)
                             result[statement.name] = info
