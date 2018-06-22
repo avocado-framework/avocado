@@ -268,12 +268,11 @@ def find_avocado_tests(path, class_name=None):
 
                 # Searching the parents in the same module
                 for parent in parents[:]:
-                    # Looking for a 'class FooTest(module.Parent)'
-                    if isinstance(parent, ast.Attribute):
-                        parent_class = parent.attr
                     # Looking for a 'class FooTest(Parent)'
-                    else:
-                        parent_class = parent.id
+                    if not isinstance(parent, ast.Name):
+                        # 'class FooTest(bar.Bar)' not supported within a module
+                        continue
+                    parent_class = parent.id
                     res, dis = find_avocado_tests(path, parent_class)
                     if res:
                         parents.remove(parent)
@@ -330,9 +329,10 @@ def find_avocado_tests(path, class_name=None):
 
                 continue
 
+            # Looking for a 'class FooTest(Test):'
             if test_import:
                 base_ids = [base.id for base in statement.bases
-                            if hasattr(base, 'id')]
+                            if isinstance(base, ast.Name)]
                 # Looking for a 'class FooTest(Test):'
                 if test_import in base_ids:
                     info = get_methods_info(statement.body,
@@ -343,6 +343,9 @@ def find_avocado_tests(path, class_name=None):
             # Looking for a 'class FooTest(avocado.Test):'
             if mod_import:
                 for base in statement.bases:
+                    if not isinstance(base, ast.Attribute):
+                        # Check only 'module.Class' bases
+                        continue
                     module = base.value.id
                     klass = base.attr
                     if module == mod_import and klass == 'Test':
