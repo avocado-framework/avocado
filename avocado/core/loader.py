@@ -370,6 +370,16 @@ class _AvocadoTestDiscoverer(object):
     """
     Object used to discover Avocado tests from path
     """
+    class _AvocadoTestModule(object):
+        """
+        Representation of a module that might contain avocado.Test tests
+        """
+        __slots__ = 'path', 'test_import', 'mod_import'
+
+        def __init__(self, path, test_import=False, mod_import=False):
+            self.path = path
+            self.test_import = test_import
+            self.mod_import = mod_import
 
     def examine(self, path, class_name=None):
         """
@@ -385,10 +395,7 @@ class _AvocadoTestDiscoverer(object):
                   force-disabled.
         :rtype: tuple
         """
-        # The name used, in case of 'from avocado import Test as AvocadoTest'
-        test_import = ""
-        # If the "avocado" module itself was imported
-        mod_import = ""
+        module = self._AvocadoTestModule(path)
         # The resulting test classes
         result = collections.OrderedDict()
         disabled = set()
@@ -407,9 +414,9 @@ class _AvocadoTestDiscoverer(object):
                 for name in statement.names:
                     if name.name == 'Test':
                         if name.asname is not None:
-                            test_import = name.asname
+                            module.test_import = name.asname
                         else:
-                            test_import = name.name
+                            module.test_import = name.name
                         break
 
             # Looking for a 'import avocado'
@@ -417,13 +424,12 @@ class _AvocadoTestDiscoverer(object):
                 for name in statement.names:
                     if name.name == 'avocado':
                         if name.asname is not None:
-                            mod_import = name.nasname
+                            module.mod_import = name.nasname
                         else:
-                            mod_import = name.name
+                            module.mod_import = name.name
 
             # Looking for a 'class Anything(anything):'
             elif isinstance(statement, ast.ClassDef):
-
                 # class_name will exist only under recursion. In that
                 # case, we will only process the class if it has the
                 # expected class_name.
@@ -523,22 +529,22 @@ class _AvocadoTestDiscoverer(object):
 
                     continue
 
-                if test_import:
+                if module.test_import:
                     base_ids = [base.id for base in statement.bases
                                 if hasattr(base, 'id')]
                     # Looking for a 'class FooTest(Test):'
-                    if test_import in base_ids:
+                    if module.test_import in base_ids:
                         info = self._get_methods_info(statement.body,
                                                       cl_tags)
                         result[statement.name] = info
                         continue
 
                 # Looking for a 'class FooTest(avocado.Test):'
-                if mod_import:
+                if module.mod_import:
                     for base in statement.bases:
-                        module = base.value.id
+                        cls_module = base.value.id
                         klass = base.attr
-                        if module == mod_import and klass == 'Test':
+                        if cls_module == module.mod_import and klass == 'Test':
                             info = self._get_methods_info(statement.body,
                                                           cl_tags)
                             result[statement.name] = info
