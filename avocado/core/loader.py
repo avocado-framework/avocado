@@ -428,7 +428,7 @@ class _AvocadoTestDiscoverer(object):
                     for name in statement.names:
                         if name.name == 'avocado':
                             if name.asname is not None:
-                                self.mod_import = name.nasname
+                                self.mod_import = name.asname
                             else:
                                 self.mod_import = name.name
 
