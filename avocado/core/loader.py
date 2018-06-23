@@ -370,7 +370,7 @@ class _AvocadoTestDiscoverer(object):
     """
     Object used to discover Avocado tests from path
     """
-    class _AvocadoTestModule(object):
+    class Module(object):
         """
         Representation of a module that might contain avocado.Test tests
         """
@@ -429,7 +429,7 @@ class _AvocadoTestDiscoverer(object):
                   look like avocado tests but are force-disabled.
         :rtype: tuple
         """
-        module = self._AvocadoTestModule(path)
+        module = self.Module(path)
         info = []
         disabled = []
 
@@ -521,7 +521,7 @@ class _AvocadoTestDiscoverer(object):
                   force-disabled.
         :rtype: tuple
         """
-        module = self._AvocadoTestModule(path)
+        module = self.Module(path)
         # The resulting test classes
         result = collections.OrderedDict()
         disabled = set()
