@@ -24,7 +24,7 @@ class DiscoverMe(avocado.Test):
 
 
 # The same as "DontCrash1" only this one should be discovered
-class DiscoverMe2(object, avocado.Test, main):  # pylint: disable=E0240,E0602
+class DiscoverMe2(object, avocado.Test, main):      # pylint: disable=E0240,E0602
     def test(self):
         pass
 
