@@ -490,6 +490,17 @@ class LoaderTest(unittest.TestCase):
                 ('DiscoverMe4', 'selftests/.data/loader_instrumented/dont_crash.py:DiscoverMe4.test')]
         self.assertEqual(names, exps)
 
+    def test_double_import(self):
+        # This is currently broken in Avocado, so let's just document the
+        # current behavior.
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            '.data', 'loader_instrumented', 'double_import.py')
+        tests = self.loader.discover(path)
+        names = [(_[0], _[1]['name']) for _ in tests]
+        exps = [('Test2', 'selftests/.data/loader_instrumented/double_import.py:Test2.test2'),
+                ('Test4', 'selftests/.data/loader_instrumented/double_import.py:Test4.test4')]
+        self.assertEqual(names, exps, tests)
+
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 

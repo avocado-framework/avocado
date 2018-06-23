@@ -227,7 +227,7 @@ def find_avocado_tests(path, class_name=None):
                 if name.name == 'avocado':
                     mod_import = True
                     if name.asname is not None:
-                        mod_import = name.nasname
+                        mod_import = name.asname
                     else:
                         mod_import = name.name
 
