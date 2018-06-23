@@ -416,7 +416,98 @@ class _AvocadoTestDiscoverer(object):
                 elif isinstance(statement, ast.ClassDef):
                     yield statement
 
-    def examine(self, path, class_name=None):
+    def _examine(self, path, class_name):
+        """
+        Examine a class from a given path
+
+        :param path: path to a Python source code file
+        :type path: str
+        :param class_name: the specific class to be found
+        :type path: str
+        :returns: tuple where first item is a list of test methods detected
+                  for given class; second item is set of class names which
+                  look like avocado tests but are force-disabled.
+        :rtype: tuple
+        """
+        module = self._AvocadoTestModule(path)
+        info = []
+        disabled = []
+
+        for klass in module.iter_classes():
+            if class_name != klass.name:
+                continue
+
+            docstring = ast.get_docstring(klass)
+            cl_tags = safeloader.get_docstring_directives_tags(docstring)
+            info = self._get_methods_info(klass.body, cl_tags)
+            disabled = set()
+
+            # Getting the list of parents of the current class
+            parents = klass.bases
+
+            # Searching the parents in the same module
+            for parent in parents[:]:
+                # Looking for a 'class FooTest(Parent)'
+                if not isinstance(parent, ast.Name):
+                    # 'class FooTest(bar.Bar)' not supported withing
+                    # a module
+                    continue
+                parent_class = parent.id
+                _info, _disabled = self._examine(path, parent_class)
+                if _info:
+                    parents.remove(parent)
+                    info.extend(_info)
+                    disabled.update(_disabled)
+
+            # If there are parents left to be discovered, they
+            # might be in a different module.
+            for parent in parents:
+                if isinstance(parent, ast.Attribute):
+                    # Looking for a 'class FooTest(module.Parent)'
+                    parent_module = parent.value.id
+                    parent_class = parent.attr
+                else:
+                    # Looking for a 'class FooTest(Parent)'
+                    parent_module = None
+                    parent_class = parent.id
+
+                for node in module.mod.body:
+                    reference = None
+                    # Looking for 'from parent import class'
+                    if isinstance(node, ast.ImportFrom):
+                        reference = parent_class
+                    # Looking for 'import parent'
+                    elif isinstance(node, ast.Import):
+                        reference = parent_module
+
+                    if reference is None:
+                        continue
+
+                    for artifact in node.names:
+                        # Looking for a class alias
+                        # ('from parent import class as alias')
+                        if artifact.asname is not None:
+                            parent_class = reference = artifact.name
+                        # If the parent class or the parent module
+                        # is found in the imports, discover the
+                        # parent module path and find the parent
+                        # class there
+                        if artifact.name == reference:
+                            modules_paths = [os.path.dirname(path)]
+                            modules_paths.extend(sys.path)
+                            if parent_module is None:
+                                parent_module = node.module
+                            _, ppath, _ = imp.find_module(parent_module,
+                                                          modules_paths)
+                            _info, _disable = self._examine(ppath,
+                                                            parent_class)
+                            if _info:
+                                info.extend(_info)
+                                disabled.update(_disable)
+
+        return info, disabled
+
+    def examine(self, path):
         """
         Attempts to find Avocado instrumented tests from Python source files
 
@@ -436,35 +527,22 @@ class _AvocadoTestDiscoverer(object):
         disabled = set()
 
         for klass in module.iter_classes():
-            # class_name will exist only under recursion. In that
-            # case, we will only process the class if it has the
-            # expected class_name.
-            if class_name is not None and class_name != klass.name:
-                continue
-
             docstring = ast.get_docstring(klass)
             # Looking for a class that has in the docstring either
             # ":avocado: enable" or ":avocado: disable
-            has_disable = safeloader.check_docstring_directive(docstring,
-                                                               'disable')
-            if (has_disable and class_name is None):
+            if safeloader.check_docstring_directive(docstring, 'disable'):
                 disabled.add(klass.name)
                 continue
 
             cl_tags = safeloader.get_docstring_directives_tags(docstring)
 
-            has_enable = safeloader.check_docstring_directive(docstring,
-                                                              'enable')
-            if (has_enable and class_name is None):
+            if safeloader.check_docstring_directive(docstring, 'enable'):
                 info = self._get_methods_info(klass.body, cl_tags)
                 result[klass.name] = info
                 continue
 
-            # Looking for the 'recursive' docstring or a 'class_name'
-            # (meaning we are under recursion)
-            has_recurse = safeloader.check_docstring_directive(docstring,
-                                                               'recursive')
-            if (has_recurse or class_name is not None):
+            # Looking for the 'recursive' docstring
+            if safeloader.check_docstring_directive(docstring, 'recursive'):
                 info = self._get_methods_info(klass.body, cl_tags)
                 result[klass.name] = info
 
@@ -479,12 +557,11 @@ class _AvocadoTestDiscoverer(object):
                         # a module
                         continue
                     parent_class = parent.id
-                    res, dis = self.examine(path, parent_class)
-                    if res:
+                    _info, _disabled = self._examine(path, parent_class)
+                    if _info:
                         parents.remove(parent)
-                        for cls in res:
-                            info.extend(res[cls])
-                    disabled.update(dis)
+                        info.extend(_info)
+                        disabled.update(_disabled)
 
                 # If there are parents left to be discovered, they
                 # might be in a different module.
@@ -526,12 +603,11 @@ class _AvocadoTestDiscoverer(object):
                                     parent_module = node.module
                                 _, ppath, _ = imp.find_module(parent_module,
                                                               modules_paths)
-                                res, dis = self.examine(ppath,
-                                                        parent_class)
-                                if res:
-                                    for cls in res:
-                                        info.extend(res[cls])
-                                disabled.update(dis)
+                                _info, _disable = self._examine(ppath,
+                                                                parent_class)
+                                if _info:
+                                    info.extend(_info)
+                                    disabled.update(_disable)
 
                 continue
 
