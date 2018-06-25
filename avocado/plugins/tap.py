@@ -39,8 +39,6 @@ def file_log_factory(log_file):
                 raise TypeError("%s: msg='%s' args='%s'" %
                                 (details, msg, writeargs))
         ret = log_file.write(msg + "\n")
-        log_file.flush()
-        os.fsync(log_file)
         return ret
     return writeln
 
@@ -65,6 +63,7 @@ class TAPResult(ResultEvents):
             log = open(output, "w", 1)
             self.__open_files.append(log)
             self.__logs.append(file_log_factory(log))
+        self.__include_logs = getattr(args, 'tap_include_logs', False)
         self.is_header_printed = False
 
     def __write(self, msg, *writeargs):
@@ -73,6 +72,14 @@ class TAPResult(ResultEvents):
         """
         for log in self.__logs:
             log(msg, *writeargs)
+
+    def __flush(self):
+        """
+        Force-flush the output to opened files.
+        """
+        for opened_file in self.__open_files:
+            opened_file.flush()
+            os.fsync(opened_file)
 
     def pre_tests(self, job):
         """
@@ -93,6 +100,7 @@ class TAPResult(ResultEvents):
         """
         if not self.is_header_printed:
             self.__write("1..%d", result.tests_total)
+            self.__flush()
             self.is_header_printed = True
 
         status = state.get("status", "ERROR")
@@ -104,13 +112,15 @@ class TAPResult(ResultEvents):
             name.replace('#', '_')  # Name must not contain #
             if name[0].isdigit():   # Name must not start with digit
                 name = "_" + name
+
         # First log the system output
-        self.__write("# debug.log of %s:", name)
+        if self.__include_logs:
+            self.__write("# debug.log of %s:", name)
+            with open(state.get("logfile"), "r") as logfile_obj:
+                for line in logfile_obj:
+                    self.__write("#   %s", line.rstrip())
 
-        with open(state.get("logfile"), "r") as logfile_obj:
-            for line in logfile_obj:
-                self.__write("#   %s", line.rstrip())
-
+        # Then the status
         if status == "PASS":
             self.__write("ok %s %s", result.tests_run, name)
         elif status == "WARN":
@@ -121,6 +131,7 @@ class TAPResult(ResultEvents):
                          state.get("fail_reason"))
         else:
             self.__write("not ok %s %s", result.tests_run, name)
+        self.__flush()
 
     def test_progress(self, progress=False):
         pass
@@ -155,6 +166,11 @@ class TAP(CLI):
                                        "default TAP result in the job results"
                                        " directory. File will be named "
                                        "\"results.tap\".")
+
+        cmd_parser.output.add_argument('--tap-include-logs',
+                                       action='store_true', help='Include '
+                                       'test logs as comments in TAP output.'
+                                       ' Defaults to %(default)s')
 
     def run(self, args):
         pass

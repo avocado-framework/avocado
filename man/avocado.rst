@@ -126,6 +126,8 @@ Options for subcommand `run` (`avocado run --help`)::
       --tap-job-result {on,off}
                             Enables default TAP result in the job results
                             directory. File will be named "results.tap".
+      --tap-include-logs    Include test logs as comments in TAP output. Defaults
+                            to False
       --xunit FILE          Enable xUnit result format and write it to FILE. Use
                             '-' to redirect to the standard output.
       --xunit-job-result {on,off}

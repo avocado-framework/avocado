@@ -271,6 +271,9 @@ introduced by the next LTS version are:
   "columns".  This is also reflected in the (tabular) output of
   commands such as ``avocado list -v``.
 
+* Including test logs in TAP plugin is disabled by default and can
+  be enabled using ``--tap-include-logs``.
+
 Complete list of changes
 ========================
 

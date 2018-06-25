@@ -358,8 +358,8 @@ class OutputPluginTest(unittest.TestCase):
     def test_output_compatible_setup_2(self):
         tmpfile = tempfile.mktemp()
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    '--xunit - --json %s passtest.py' %
-                    (AVOCADO, self.tmpdir, tmpfile))
+                    '--xunit - --json %s --tap-include-logs passtest.py'
+                    % (AVOCADO, self.tmpdir, tmpfile))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -387,8 +387,9 @@ class OutputPluginTest(unittest.TestCase):
         tmpdir = tempfile.mkdtemp(prefix='avocado_' + __name__)
         tmpfile3 = os.path.join(tmpdir, "result.html")
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    '--xunit %s --json %s --html %s passtest.py'
-                    % (AVOCADO, self.tmpdir, tmpfile, tmpfile2, tmpfile3))
+                    '--xunit %s --json %s --html %s --tap-include-logs '
+                    'passtest.py' % (AVOCADO, self.tmpdir, tmpfile, tmpfile2,
+                                     tmpfile3))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -420,8 +421,8 @@ class OutputPluginTest(unittest.TestCase):
         tmpfile2 = tempfile.mktemp()
         # Verify --silent can be supplied as app argument
         cmd_line = ('%s --silent run --job-results-dir %s '
-                    '--sysinfo=off --xunit %s --json %s passtest.py'
-                    % (AVOCADO, self.tmpdir, tmpfile, tmpfile2))
+                    '--sysinfo=off --xunit %s --json %s --tap-include-logs '
+                    'passtest.py' % (AVOCADO, self.tmpdir, tmpfile, tmpfile2))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout + result.stderr
         expected_rc = exit_codes.AVOCADO_ALL_OK
@@ -446,7 +447,7 @@ class OutputPluginTest(unittest.TestCase):
     def test_nonprintable_chars(self):
         cmd_line = ("%s run --external-runner /bin/ls "
                     "'NON_EXISTING_FILE_WITH_NONPRINTABLE_CHARS_IN_HERE\x1b' "
-                    "--job-results-dir %s --sysinfo=off"
+                    "--job-results-dir %s --sysinfo=off --tap-include-logs"
                     % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout_text + result.stderr_text
@@ -493,7 +494,8 @@ class OutputPluginTest(unittest.TestCase):
 
     def test_default_enabled_plugins(self):
         cmd_line = ('%s run --job-results-dir %s --sysinfo=off '
-                    'passtest.py' % (AVOCADO, self.tmpdir))
+                    '--tap-include-logs passtest.py'
+                    % (AVOCADO, self.tmpdir))
         result = process.run(cmd_line, ignore_status=True)
         output = result.stdout_text + result.stderr_text
         expected_rc = exit_codes.AVOCADO_ALL_OK
