@@ -321,7 +321,15 @@ class StdOutput(object):
         """
         Enable paginator
         """
-        self.stdout = self.stderr = Paginator()
+        try:
+            paginator = Paginator()
+        except RuntimeError as details:
+            # Paginator not available
+            logging.getLogger('avocado.app.debug').error("Failed to enable "
+                                                         "paginator %s"
+                                                         % details)
+            return
+        self.stdout = self.stderr = paginator
 
     def enable_stderr(self):
         """
@@ -536,17 +544,14 @@ class Paginator(object):
     """
 
     def __init__(self):
-        try:
-            paginator = "%s -FRX" % utils_path.find_command('less')
-        except utils_path.CmdNotFoundError:
-            paginator = None
+        paginator = os.environ.get('PAGER')
+        if not paginator:
+            try:
+                paginator = "%s -FRX" % utils_path.find_command('less')
+            except utils_path.CmdNotFoundError as details:
+                raise RuntimeError("Unable to enable pagination: %s" % details)
 
-        paginator = os.environ.get('PAGER', paginator)
-
-        if paginator is None:
-            self.pipe = sys.stdout
-        else:
-            self.pipe = os.popen(paginator, 'w')
+        self.pipe = os.popen(paginator, 'w')
 
     def __del__(self):
         self.close()

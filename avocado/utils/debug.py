@@ -23,7 +23,7 @@ from six import iteritems
 
 
 # Use this for debug logging
-LOGGER = logging.getLogger("avocado.debug")
+LOGGER = logging.getLogger("avocado.app.debug")
 
 # measure_duration global storage
 __MEASURE_DURATION = {}
