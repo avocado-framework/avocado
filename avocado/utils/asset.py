@@ -95,6 +95,13 @@ class Asset(object):
                 return cache_dir
         raise EnvironmentError("Can't find a writable cache directory.")
 
+    @staticmethod
+    def _get_hash_file(asset_file):
+        """
+        Returns the file name that contains the hash for a given asset file
+        """
+        return '%s-CHECKSUM' % asset_file
+
     def fetch(self):
         """
         Fetches the asset. First tries to find the asset on the provided
@@ -116,7 +123,6 @@ class Asset(object):
         for cache_dir in self.cache_dirs:
             cache_dir = os.path.expanduser(cache_dir)
             asset_file = os.path.join(cache_dir, basename)
-            self.hashfile = '%s-CHECKSUM' % asset_file
 
             # To use a cached file, it must:
             # - Exists.
@@ -137,7 +143,6 @@ class Asset(object):
         # writable cache directory will be used.
         cache_dir = self._get_writable_cache_dir()
         asset_file = os.path.join(cache_dir, basename)
-        self.hashfile = '%s-CHECKSUM' % asset_file
 
         # Now we have a writable cache_dir. Let's get the asset.
         # Adding the user defined locations to the urls list:
@@ -180,15 +185,16 @@ class Asset(object):
 
     def _compute_hash(self, asset_file):
         result = crypto.hash_file(asset_file, algorithm=self.algorithm)
-        with open(self.hashfile, 'w') as f:
+        with open(self._get_hash_file(asset_file), 'w') as f:
             f.write('%s %s\n' % (self.algorithm, result))
 
     def _get_hash_from_file(self, asset_file):
         discovered = None
-        if not os.path.isfile(self.hashfile):
+        hash_file = self._get_hash_file(asset_file)
+        if not os.path.isfile(hash_file):
             self._compute_hash(asset_file)
 
-        with open(self.hashfile, 'r') as hash_file:
+        with open(hash_file, 'r') as hash_file:
             for line in hash_file:
                 # md5 is 32 chars big and sha512 is 128 chars big.
                 # others supported algorithms are between those.
